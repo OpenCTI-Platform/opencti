@@ -6,7 +6,6 @@ interface UseExternalTabProps {
   expectedOrigin: string | null;
   onMessage: (event: MessageEvent) => void;
   onClosingTab: () => void;
-  onOriginMismatch: (receivedOrigin: string) => void;
 }
 
 const CLOSING_TAB_ACTIONS = ['cancel', 'register', 'unregister'];
@@ -24,7 +23,6 @@ const useExternalTab = ({
   expectedOrigin,
   onMessage,
   onClosingTab,
-  onOriginMismatch,
 }: UseExternalTabProps): UseExternalTabReturn => {
   const tabRef = useRef<WindowProxy | null>(null);
   const [isTabOpen, setIsTabOpen] = useState(false);
@@ -57,7 +55,6 @@ const useExternalTab = ({
       if (event.origin !== expectedOrigin) {
         if (isClosingTabAction) {
           console.warn(`XTM Hub: message ignored, it comes from "${event.origin}" but the configured XTM Hub origin is "${expectedOrigin}"`);
-          onOriginMismatch(event.origin);
         }
         return;
       }

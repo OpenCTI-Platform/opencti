@@ -13,7 +13,6 @@ import { getXtmHubOrigin } from '../../../../utils/xtm-hub-client';
 import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
-import XtmHubOriginMismatchDialog from './XtmHubOriginMismatchDialog';
 import type { Theme } from '../../../../components/Theme';
 import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
 import { useLocation, useNavigate } from 'react-router';
@@ -77,8 +76,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
   const [operationType, setOperationType] = useState<OperationType | null>(
     null,
   );
-  const [mismatchedOrigin, setMismatchedOrigin] = useState<string | null>(null);
-  const expectedHubOrigin = getXtmHubOrigin(registrationHubUrl);
   const [commitRegistration] = useApiMutation(
     xtmHubTabSettingsFieldPatchMutation,
     undefined,
@@ -115,10 +112,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
 
   const handleClosingTab = () => {
     setProcessStep(ProcessSteps.CANCELED);
-  };
-
-  const handleOriginMismatch = (receivedOrigin: string) => {
-    setMismatchedOrigin(receivedOrigin);
   };
 
   const handleRegistration = (token: string) => {
@@ -171,7 +164,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
     (event: MessageEvent) => {
       const eventData = event.data;
       const { action, token } = eventData;
-      setMismatchedOrigin(null);
       if (action === 'register') {
         setOperationType(OperationType.REGISTER);
         handleRegistration(token);
@@ -190,10 +182,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
   const { openTab, closeTab, focusTab } = useExternalTab({
     url: isRegistered ? unregistrationUrl : registrationUrl,
     tabName: isRegistered ? 'xtmhub-unregistration' : 'xtmhub-registration',
-    expectedOrigin: expectedHubOrigin,
+    expectedOrigin: getXtmHubOrigin(registrationHubUrl),
     onMessage: handleTabMessage,
     onClosingTab: handleClosingTab,
-    onOriginMismatch: handleOriginMismatch,
   });
 
   const clearAutoRegisterQueryParam = useCallback(() => {
@@ -231,7 +222,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
 
   const handleCloseDialog = () => {
     closeTab();
-    setMismatchedOrigin(null);
     setIsDialogOpen(false);
     setShowConfirmation(false);
     setProcessStep(ProcessSteps.INSTRUCTIONS);
@@ -329,15 +319,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
     return renderer && isDialogOpen ? renderer() : null;
   };
 
-  const originMismatchDialog = (
-    <XtmHubOriginMismatchDialog
-      open={mismatchedOrigin !== null}
-      expectedOrigin={expectedHubOrigin}
-      receivedOrigin={mismatchedOrigin}
-      onClose={() => setMismatchedOrigin(null)}
-    />
-  );
-
   const getButtonText = () => {
     if (isRegistered) {
       return t_i18n('Disconnect from XTM Hub');
@@ -383,7 +364,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
           onConfirm={handleCloseDialog}
           onCancel={handleCancelClose}
         />
-        {originMismatchDialog}
       </>
     );
   }
@@ -441,7 +421,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
         onConfirm={handleCloseDialog}
         onCancel={handleCancelClose}
       />
-      {originMismatchDialog}
     </>
   );
 };
