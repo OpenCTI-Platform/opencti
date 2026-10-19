@@ -1,4 +1,5 @@
 import datetime
+from urllib.parse import quote
 
 import pytest
 
@@ -180,6 +181,77 @@ def test_extract_embedded_storage_path_from_relative_embedded_path_with_context(
     )
 
     assert result == "embedded/Report/internal-report-id/upload_image_example.png"
+
+
+# A markdown url is the stored file name encoded once: it must be decoded exactly once,
+# the stored name itself may hold a literal "%xx" (#19008).
+EMBEDDED_FILE_NAMES = [
+    ("literal%22quotes%22.png", "literal%2522quotes%2522.png"),
+    ("twin a%20b.png", "twin%20a%2520b.png"),
+    ("sp ace.png", "sp%20ace.png"),
+    ("100% sure.png", "100%25%20sure.png"),
+    (
+        "ünïcödé 图片 🙂.png",
+        "%C3%BCn%C3%AFc%C3%B6d%C3%A9%20%E5%9B%BE%E7%89%87%20%F0%9F%99%82.png",
+    ),
+    ("hash #1 & plus+ (v2).png", "hash%20%231%20%26%20plus%2B%20(v2).png"),
+    ("semi;colon,comma=eq@at.png", "semi%3Bcolon%2Ccomma%3Deq%40at.png"),
+    ("what?.png", "what%3F.png"),
+]
+
+
+@pytest.mark.parametrize("file_name,markdown_file_name", EMBEDDED_FILE_NAMES)
+def test_extract_embedded_storage_path_decodes_the_markdown_url_once(
+    opencti_stix2: OpenCTIStix2, file_name: str, markdown_file_name: str
+):
+    result = opencti_stix2._extract_embedded_storage_path(
+        f"embedded/{markdown_file_name}",
+        entity_type="Report",
+        entity_id="internal-report-id",
+    )
+
+    assert result == f"embedded/Report/internal-report-id/{file_name}"
+
+
+def test_extract_embedded_storage_path_ignores_a_malformed_uri(
+    opencti_stix2: OpenCTIStix2,
+):
+    assert opencti_stix2._extract_embedded_storage_path("//[bad/embedded/a.png") is None
+
+
+@pytest.mark.parametrize("file_name,markdown_file_name", EMBEDDED_FILE_NAMES)
+def test_bundle_level_rewrite_fetches_the_stored_file_name_encoded_once(
+    opencti_stix2: OpenCTIStix2, monkeypatch, file_name: str, markdown_file_name: str
+):
+    fetch_calls = []
+
+    def fake_fetch(url, binary=False, serialize=False):
+        fetch_calls.append(url)
+        return "Zm9v"
+
+    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--11111111-1111-4111-8111-111111111111",
+        "objects": [
+            {
+                "type": "report",
+                "id": "report--392ef26a-4496-50ae-9828-4c3c72328245",
+                "x_opencti_type": "Report",
+                "x_opencti_id": "internal-report-id",
+                "description": f"![img](embedded/{markdown_file_name})",
+            }
+        ],
+    }
+
+    opencti_stix2._rewrite_embedded_image_uris_in_bundle_for_export(bundle)
+
+    assert "data:image/png;base64,Zm9v" in bundle["objects"][0]["description"]
+    # One request, the file name encoded once: the platform decodes it back to the stored name.
+    assert len(fetch_calls) == 1
+    assert fetch_calls[0].endswith(
+        f"/storage/get/embedded/Report/internal-report-id/{quote(file_name, safe='')}"
+    )
 
 
 def test_prepare_export_rewrites_relative_embedded_markdown_image_uri(

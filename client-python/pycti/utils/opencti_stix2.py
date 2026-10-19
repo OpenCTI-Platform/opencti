@@ -10,7 +10,7 @@ import time
 import traceback
 import uuid
 from typing import Any, Dict, List, Optional, Tuple, Union
-from urllib.parse import quote, unquote, urljoin, urlparse
+from urllib.parse import quote, unquote, urljoin, urlsplit
 
 import dateutil.parser
 import pytz
@@ -265,8 +265,9 @@ class OpenCTIStix2:
             return None
 
         def _normalize_embedded_path(path: str) -> Optional[str]:
-            normalized_path = unquote(path).split("?", 1)[0].split("#", 1)[0]
-            normalized_path = normalized_path.lstrip("/")
+            # The markdown url is the stored path with each segment percent-encoded once:
+            # decode it exactly once, the stored file name may itself hold a literal "%xx".
+            normalized_path = unquote(path).lstrip("/")
             if not normalized_path.startswith("embedded/"):
                 return None
             # Relative markdown links such as embedded/file.png need entity context.
@@ -281,9 +282,13 @@ class OpenCTIStix2:
                     normalized_path = f"embedded/{expected_prefix}{relative_tail}"
             return normalized_path
 
-        normalized_uri = unquote(uri)
-        parsed_uri = urlparse(normalized_uri)
-        normalized_path = parsed_uri.path or normalized_uri
+        # Split query and fragment off the raw uri: a decoded "%3F" or "%23" belongs to the file name.
+        try:
+            parsed_uri = urlsplit(uri)
+        except ValueError:
+            # Malformed link (e.g. an invalid IPv6 host): not an embedded file, keep it untouched.
+            return None
+        normalized_path = parsed_uri.path or uri
 
         direct_embedded_path = _normalize_embedded_path(normalized_path)
         if direct_embedded_path is not None:
@@ -300,8 +305,7 @@ class OpenCTIStix2:
         if not isinstance(markdown, str):
             return markdown
 
-        normalized_markdown = unquote(markdown)
-        if "embedded/" not in normalized_markdown:
+        if "embedded/" not in markdown:
             return markdown
 
         embedded_data_uri_by_path: Dict[str, str] = {}
@@ -318,28 +322,18 @@ class OpenCTIStix2:
             guessed_mime_type = mimetypes.guess_type(embedded_storage_path)[0]
 
             if embedded_storage_path not in embedded_data_uri_by_path:
+                # Always encode the stored path once: the platform decodes it back to the stored name,
+                # a raw "%22", "#" or "?" in the name would be decoded or cut and miss (or hit another file).
+                encoded_storage_path = quote(embedded_storage_path, safe="/")
                 storage_url = urljoin(
                     self.opencti.api_url.replace("graphql", ""),
-                    f"storage/get/{embedded_storage_path}",
+                    f"storage/get/{encoded_storage_path}",
                 )
                 encoded_data = self.opencti.fetch_opencti_file(
                     storage_url,
                     binary=True,
                     serialize=True,
                 )
-                if not encoded_data:
-                    # Some HTTP stacks reject raw spaces/special chars in path; retry with encoded path.
-                    encoded_storage_path = quote(embedded_storage_path, safe="/")
-                    encoded_storage_url = urljoin(
-                        self.opencti.api_url.replace("graphql", ""),
-                        f"storage/get/{encoded_storage_path}",
-                    )
-                    if encoded_storage_url != storage_url:
-                        encoded_data = self.opencti.fetch_opencti_file(
-                            encoded_storage_url,
-                            binary=True,
-                            serialize=True,
-                        )
                 if not encoded_data:
                     return full_match
                 mime_type = (
