@@ -81,28 +81,30 @@ const DATA_URI_IMAGE_REGEX = /^data:([^;,\s]+)(;base64)?,([\s\S]*)$/i;
 
 const normalizeMimeType = (mimeType: string) => mimeType.toLowerCase().trim();
 
-const normalizeEmbeddedStoragePath = (storagePath: string): string => {
-  const normalizedStoragePath = storagePath.replace(/^\/+/, '').split(/[?#]/)[0];
+// A markdown url is the stored path with every segment encoded once (encodeURIComponent), so it is decoded exactly once,
+// here. The result is the stored path: it may legitimately hold a literal "%xx" (file name "a%20b.png"), never decode it again.
+const decodeStorageSegment = (segment: string): string => {
   try {
-    // Keep encoded separators (e.g. %2F) untouched while decoding readable characters.
-    return decodeURI(normalizedStoragePath);
+    // Keep an encoded path separator (%2F) inside its segment, decode everything else.
+    return segment.split(/(%2F)/i).map((part, index) => (index % 2 === 1 ? part : decodeURIComponent(part))).join('');
   } catch {
-    return normalizedStoragePath;
+    // Malformed percent-sequence (e.g. a lone '%' in the file name): keep the raw segment.
+    return segment;
   }
 };
 
+const normalizeEmbeddedStoragePath = (storagePath: string): string => {
+  const normalizedStoragePath = storagePath.replace(/^\/+/, '').split(/[?#]/)[0];
+  return normalizedStoragePath.split('/').map(decodeStorageSegment).join('/');
+};
+
+// Inverse of normalizeEmbeddedStoragePath: the stored file name is encoded as is, never decoded first.
 export const encodeEmbeddedStoragePathForMarkdownUrl = (storagePath: string): string => {
   const normalizedStoragePath = storagePath.replace(/^\/+/, '');
   return normalizedStoragePath
     .split('/')
     .filter((segment) => segment.length > 0)
-    .map((segment) => {
-      try {
-        return encodeURIComponent(decodeURIComponent(segment));
-      } catch {
-        return encodeURIComponent(segment);
-      }
-    })
+    .map((segment) => encodeURIComponent(segment))
     .join('/');
 };
 
@@ -207,7 +209,8 @@ export const resolveEmbeddedStoragePathWithContext = (
   embeddedStoragePath: string,
   context: EmbeddedStoragePathContext = {},
 ): string => {
-  const normalizedPath = normalizeEmbeddedStoragePath(embeddedStoragePath.trim());
+  // The path comes from extractEmbeddedStoragePathFromUrl (or a decoded storage path): already decoded, so '#' or '%' are part of the name.
+  const normalizedPath = embeddedStoragePath.trim().replace(/^\/+/, '');
   if (!normalizedPath.startsWith('embedded/')) {
     return normalizedPath;
   }
