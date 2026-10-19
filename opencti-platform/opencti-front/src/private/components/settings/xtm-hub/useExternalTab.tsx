@@ -6,7 +6,10 @@ interface UseExternalTabProps {
   expectedOrigin: string | null;
   onMessage: (event: MessageEvent) => void;
   onClosingTab: () => void;
+  onOriginMismatch: () => void;
 }
+
+const CLOSING_TAB_ACTIONS = ['cancel', 'register', 'unregister'];
 
 interface UseExternalTabReturn {
   isTabOpen: boolean;
@@ -21,6 +24,7 @@ const useExternalTab = ({
   expectedOrigin,
   onMessage,
   onClosingTab,
+  onOriginMismatch,
 }: UseExternalTabProps): UseExternalTabReturn => {
   const tabRef = useRef<WindowProxy | null>(null);
   const [isTabOpen, setIsTabOpen] = useState(false);
@@ -46,13 +50,24 @@ const useExternalTab = ({
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.source === tabRef.current && event.origin === expectedOrigin) {
-        const closingTabEvent = ['cancel', 'register', 'unregister'];
-        if (closingTabEvent.includes(event.data.action)) {
-          closeTab();
-        }
-        onMessage(event);
+      if (event.source !== tabRef.current) {
+        return;
       }
+      const isClosingTabAction = CLOSING_TAB_ACTIONS.includes(event.data?.action);
+      if (event.origin !== expectedOrigin) {
+        // A Hub action from another origin usually means the configured XTM Hub URL
+        // does not match the Hub that answered: fail visibly instead of waiting forever.
+        if (isClosingTabAction) {
+          console.warn(`XTM Hub: message ignored, it comes from "${event.origin}" but the configured XTM Hub origin is "${expectedOrigin}"`);
+          closeTab();
+          onOriginMismatch();
+        }
+        return;
+      }
+      if (isClosingTabAction) {
+        closeTab();
+      }
+      onMessage(event);
     };
     if (isTabOpen) {
       window.addEventListener('message', handleMessage);

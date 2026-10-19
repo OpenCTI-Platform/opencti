@@ -21,9 +21,16 @@ const useXtmHubUserPlatformToken = (hubUrl?: string | null): Return => {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.source === window.opener && event.origin === hubOrigin) {
-        onMessage(event);
+      if (event.source !== window.opener) {
+        return;
       }
+      if (event.origin !== hubOrigin) {
+        if (event.data?.action === 'set-token') {
+          console.warn(`XTM Hub: token ignored, it comes from "${event.origin}" but the configured XTM Hub origin is "${hubOrigin}"`);
+        }
+        return;
+      }
+      onMessage(event);
     };
     window.addEventListener('message', handleMessage);
 

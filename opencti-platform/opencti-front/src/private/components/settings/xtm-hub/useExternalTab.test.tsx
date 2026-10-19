@@ -10,7 +10,7 @@ const dispatchMessage = (source: unknown, origin: string, data: Record<string, u
   window.dispatchEvent(event);
 };
 
-const openHubTab = (onMessage: (event: MessageEvent) => void) => {
+const openHubTab = (onMessage: (event: MessageEvent) => void, onOriginMismatch = vi.fn()) => {
   const tab = { closed: false, close: vi.fn(), focus: vi.fn() };
   vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window);
   const { result } = renderHook(() => useExternalTab({
@@ -19,6 +19,7 @@ const openHubTab = (onMessage: (event: MessageEvent) => void) => {
     expectedOrigin: HUB_ORIGIN,
     onMessage,
     onClosingTab: vi.fn(),
+    onOriginMismatch,
   }));
   act(() => {
     result.current.openTab();
@@ -48,26 +49,63 @@ describe('Hook: useExternalTab', () => {
     expect(tab.close).toHaveBeenCalledOnce();
   });
 
-  it('ignores a message sent by the opened tab from another origin', () => {
+  it('rejects a Hub action sent by the opened tab from another origin', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const onMessage = vi.fn();
-    const tab = openHubTab(onMessage);
+    const onOriginMismatch = vi.fn();
+    const tab = openHubTab(onMessage, onOriginMismatch);
 
     act(() => {
       dispatchMessage(tab, 'https://other.example', { action: 'register', token: 'token' });
     });
 
     expect(onMessage).not.toHaveBeenCalled();
+    expect(onOriginMismatch).toHaveBeenCalledOnce();
+    expect(tab.close).toHaveBeenCalledOnce();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('"https://other.example"'));
+    expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('token'));
+  });
+
+  it('silently ignores an unknown message sent by the opened tab from another origin', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const onMessage = vi.fn();
+    const onOriginMismatch = vi.fn();
+    const tab = openHubTab(onMessage, onOriginMismatch);
+
+    act(() => {
+      dispatchMessage(tab, 'https://sso.example', { type: 'analytics' });
+    });
+
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(onOriginMismatch).not.toHaveBeenCalled();
     expect(tab.close).not.toHaveBeenCalled();
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it('ignores a message from the expected origin sent by another window', () => {
     const onMessage = vi.fn();
-    openHubTab(onMessage);
+    const onOriginMismatch = vi.fn();
+    openHubTab(onMessage, onOriginMismatch);
 
     act(() => {
       dispatchMessage({}, HUB_ORIGIN, { action: 'register', token: 'token' });
     });
 
     expect(onMessage).not.toHaveBeenCalled();
+    expect(onOriginMismatch).not.toHaveBeenCalled();
+  });
+
+  it('ignores a Hub action from another origin sent by another window', () => {
+    const onMessage = vi.fn();
+    const onOriginMismatch = vi.fn();
+    const tab = openHubTab(onMessage, onOriginMismatch);
+
+    act(() => {
+      dispatchMessage({}, 'https://other.example', { action: 'register', token: 'token' });
+    });
+
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(onOriginMismatch).not.toHaveBeenCalled();
+    expect(tab.close).not.toHaveBeenCalled();
   });
 });

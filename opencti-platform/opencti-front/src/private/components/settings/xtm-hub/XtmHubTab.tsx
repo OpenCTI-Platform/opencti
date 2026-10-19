@@ -114,6 +114,10 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
     setProcessStep(ProcessSteps.CANCELED);
   };
 
+  const handleOriginMismatch = () => {
+    setProcessStep(ProcessSteps.ERROR);
+  };
+
   const handleRegistration = (token: string) => {
     commitRegistration({
       variables: {
@@ -185,6 +189,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
     expectedOrigin: getXtmHubOrigin(registrationHubUrl),
     onMessage: handleTabMessage,
     onClosingTab: handleClosingTab,
+    onOriginMismatch: handleOriginMismatch,
   });
 
   const clearAutoRegisterQueryParam = useCallback(() => {
