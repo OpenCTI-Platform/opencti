@@ -25,7 +25,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperParsed, type JsonMapperRepresentation } from '../internal/jsonMapper/jsonMapper-types';
 import { type EditInput, FilterMode, IngestionAuthType, type IngestionJsonAddInput, type JsonMapperTestResult } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import conf, { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../../config/conf';
+import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { getHttpClient, type GetHttpClient, OpenCTIHeaders } from '../../utils/http-client';
 import { isEmptyField, isNotEmptyField, wait } from '../../database/utils';
@@ -35,7 +35,7 @@ import jsonMappingExecution from '../../parser/json-mapper';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
+import { encryptIngestionCredential, decryptIngestionCredential, FEED_REQUEST_TIMEOUT } from './ingestion-common';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
@@ -48,8 +48,6 @@ interface JsonQueryFetchOpts {
   maxResults?: number;
   timeout?: number;
 }
-
-const DEFAULT_FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
 
 const getValueFromPath = (path: string, json: any) => {
   return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
@@ -137,7 +135,7 @@ const filterVariablesForAttributes = (attributes: Array<DataParam>, variables: R
 };
 
 export const executeJsonQuery = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson, opts: JsonQueryFetchOpts = {}) => {
-  const { maxResults = 0, timeout = DEFAULT_FEED_REQUEST_TIMEOUT } = opts;
+  const { maxResults = 0, timeout = FEED_REQUEST_TIMEOUT } = opts;
   let certificates;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/json';

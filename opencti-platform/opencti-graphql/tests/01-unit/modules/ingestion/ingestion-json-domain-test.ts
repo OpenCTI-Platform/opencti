@@ -6,7 +6,7 @@ const attribute = (to: string, state_operation: DataParam['state_operation']) =>
   type: 'data', from: `meta.${to}`, to, default: '', state_operation, data_operation: 'data', exposed: 'query_param',
 } as DataParam);
 
-describe('ingestion-json-domain: mergeQueryState', () => {
+describe('ingestion-json-domain: mergeIngestionJsonState', () => {
   it('should add the new value to the previous one for a sum attribute', () => {
     expect(mergeIngestionJsonState([attribute('offset', 'sum')], { offset: 10 }, { offset: 5 })).toEqual({ offset: 15 });
   });

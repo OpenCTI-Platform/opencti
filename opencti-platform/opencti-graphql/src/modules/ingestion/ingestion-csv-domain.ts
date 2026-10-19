@@ -14,7 +14,7 @@ import {
   IngestionCsvMapperType,
 } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import conf, { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import {
   type BasicStoreEntityCsvMapper,
@@ -27,7 +27,14 @@ import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } 
 import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
-import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, encryptIngestionCredential, decryptIngestionCredential, verifyIngestionUri } from './ingestion-common';
+import {
+  addAuthenticationCredentials,
+  verifyIngestionAuthenticationContent,
+  encryptIngestionCredential,
+  decryptIngestionCredential,
+  verifyIngestionUri,
+  FEED_REQUEST_TIMEOUT,
+} from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -45,7 +52,6 @@ import {
 } from './ingestion-execution-identity';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
-const DEFAULT_FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -260,7 +266,7 @@ export const fetchCsvFromUrl = async (
   ingestion: BasicStoreEntityIngestionCsv,
   opts: { limit?: number; timeout?: number } = {},
 ): Promise<CsvResponseData> => {
-  const { limit = undefined, timeout = DEFAULT_FEED_REQUEST_TIMEOUT } = opts;
+  const { limit = undefined, timeout = FEED_REQUEST_TIMEOUT } = opts;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/csv';
   const decryptedAuthValue = await decryptIngestionCredential(ingestion.authentication_value);

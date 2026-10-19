@@ -23,7 +23,7 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => {
 });
 
 vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', async (importOriginal) => ({
-  mergeQueryState: (await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-json-domain')>()).mergeIngestionJsonState,
+  mergeIngestionJsonState: (await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-json-domain')>()).mergeIngestionJsonState,
   findAllJsonIngestion: findAllJsonIngestionMock,
   patchJsonIngestion: patchJsonIngestionMock,
   executeJsonQuery: executeJsonQueryMock,

@@ -8,6 +8,7 @@ import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../datab
 import { booleanTrueFilter } from '../../utils/filtering/filtering-utils';
 import conf from '../../config/conf';
 
+// Timeout in ms of the HTTP requests sent to a feed source (RSS, TAXII, CSV, JSON), 5 minutes by default
 export const FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
 
 // Only a feed explicitly started is processed: polled by the ingestion manager, accepting pushes on the TAXII endpoint
