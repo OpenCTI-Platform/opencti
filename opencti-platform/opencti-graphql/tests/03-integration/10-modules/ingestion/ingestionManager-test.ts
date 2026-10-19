@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, taxiiExecutor, type TaxiiResponseData } from '../../../../src/manager/ingestionManager';
+import { processCsvLines, processTaxiiResponse, taxiiExecutor } from '../../../../src/manager/ingestionManager';
+import { prepareTaxiiGetParam, type TaxiiResponseData } from '../../../../src/modules/ingestion/ingestion-taxii-utils';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ingestionTaxiiAdd, findTaxiiIngestionById, ingestionTaxiiDelete, patchTaxiiIngestion } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../../src/generated/graphql';
