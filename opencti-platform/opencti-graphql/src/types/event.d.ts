@@ -103,7 +103,7 @@ type DataEvent = UpdateEvent | DataEvent | MergeEvent;
 
 export interface ActivityStreamEvent {
   version: string;
-  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'health';
+  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'ingestion_health';
   event_access: 'extended' | 'administration';
   prevent_indexing: boolean;
   event_scope: string;

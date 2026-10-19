@@ -7,7 +7,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 interface BasicUserAction {
   user: AuthUser;
   status?: 'success' | 'error'; // nothing = success
-  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'health';
+  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'ingestion_health';
   event_scope: string;
   event_access: 'extended' | 'administration';
   prevent_indexing?: boolean;
@@ -164,7 +164,7 @@ export interface UserModificationAction extends BasicUserAction {
 
 // region health
 export interface IngestionHealthAction extends BasicUserAction {
-  event_type: 'health';
+  event_type: 'ingestion_health';
   event_scope: 'critical' | 'degraded' | 'recovered' | 'stopped';
   message: string;
   // Only fields mapped under context_data: the history index mapping is strict

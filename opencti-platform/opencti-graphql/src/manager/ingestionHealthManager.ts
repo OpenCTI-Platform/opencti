@@ -117,7 +117,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   if (transition) {
     await publishUserAction({
       user: INGESTION_HEALTH_MANAGER_USER,
-      event_type: 'health',
+      event_type: 'ingestion_health',
       event_scope: transition,
       event_access: 'administration',
       status: transition === HealthTransition.Recovered ? 'success' : 'error',

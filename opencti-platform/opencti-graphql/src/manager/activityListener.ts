@@ -34,7 +34,7 @@ const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; // add 'objectOrganization' ?
 export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot', 'critical', 'degraded', 'recovered', 'stopped'];
-export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', 'health'];
+export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', 'ingestion_health'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
@@ -256,7 +256,7 @@ const initActivityManager = () => {
           await activityLogger(action, action.message);
         }
       }
-      if (action.event_type === 'health') {
+      if (action.event_type === 'ingestion_health') {
         await activityLogger(action, action.message);
       }
     },
