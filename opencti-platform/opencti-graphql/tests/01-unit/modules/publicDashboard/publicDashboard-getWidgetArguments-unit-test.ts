@@ -13,7 +13,7 @@ vi.mock('../../../../src/utils/markingDefinition-utils', () => ({
   cleanMarkings: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../../../../src/domain/user', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({
   computeAvailableMarkings: vi.fn().mockResolvedValue([]),
 }));
 

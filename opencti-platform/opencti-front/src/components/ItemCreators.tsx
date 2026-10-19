@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import Security from '../utils/Security';
+import { navigationClickHandlers } from '../utils/domEvent';
 import { SETTINGS_SETACCESSES } from '../utils/hooks/useGranted';
 import { Stack } from '@mui/material';
 import Tag from '@common/tag/Tag';
@@ -18,9 +19,10 @@ interface ItemCreatorsProps {
     readonly id: string;
     readonly name: string;
   }[];
+  maxWidth?: number | string;
 }
 
-const ItemCreators = ({ creators }: ItemCreatorsProps) => {
+const ItemCreators = ({ creators, maxWidth }: ItemCreatorsProps) => {
   const navigate = useNavigate();
 
   return (
@@ -31,16 +33,19 @@ const ItemCreators = ({ creators }: ItemCreatorsProps) => {
             key={creator.id}
             needs={[SETTINGS_SETACCESSES]}
             placeholder={(
-              <Tag label={creator.name} />
+              <Tag label={creator.name} maxWidth={maxWidth} />
             )}
           >
             {systemUsers.includes(creator.id) ? (
-              <Tag label={creator.name} />
+              <Tag label={creator.name} maxWidth={maxWidth} />
             ) : (
+              // FDS-WORKAROUND #62: the library Chip cannot render as a link, so
+              // the new tab clicks of a link are handled by hand.
               <Tag
                 key={creator.id}
                 label={creator.name}
-                onClick={() => navigate(`/dashboard/settings/accesses/users/${creator.id}`)}
+                maxWidth={maxWidth}
+                {...navigationClickHandlers(`/dashboard/settings/accesses/users/${creator.id}`, navigate)}
               />
             )}
           </Security>

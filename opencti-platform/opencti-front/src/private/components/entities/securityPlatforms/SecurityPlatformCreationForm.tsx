@@ -1,4 +1,7 @@
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { securityPlatformCreationMutation } from '@components/entities/securityPlatforms/SecurityPlatformCreation';
@@ -99,6 +102,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     const allNames = splitMultilines(values.name);
     const variables: SecurityPlatformCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(),
         name,
         description: values.description,
@@ -138,6 +142,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
 
   return (
     <Formik<SecurityPlatformCreationFormData>
+      entityType={SECURITY_PLATFORM_TYPE}
       initialValues={initialValues}
       validationSchema={securityPlatformValidator}
       validateOnChange={false}
@@ -231,6 +236,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

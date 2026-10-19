@@ -1,5 +1,5 @@
 import React from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
 import { ArrowRightAlt } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
@@ -22,8 +22,10 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { minutesBefore, now } from '../../../../utils/Time';
-import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
+import CoverageInformationField from '../form/CoverageInformationField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CustomFieldsFormik from '../custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '../custom_fields/CustomFieldValuesCreation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -101,7 +103,7 @@ export const stixCoreRelationshipBasicShape = (t, isCoverage = false) => {
   if (isCoverage) {
     return {
       ...baseSchema,
-      coverage: Yup.array().of(
+      coverage_information: Yup.array().of(
         Yup.object().shape({
           coverage_name: Yup.string().required(t('This field is required')),
           coverage_score: Yup.number()
@@ -120,7 +122,10 @@ const STIX_CORE_RELATIONSHIP_TYPE = 'stix-core-relationship';
 
 const StixCoreRelationshipCreationForm = ({
   fromEntities,
+  // Can be empty if the targets are resolved later (ex: in backend by filters).
   toEntities,
+  // Type displayed when toEntities is empty.
+  toEntityType = 'Stix-Core-Object',
   relationshipTypes,
   handleReverseRelation,
   handleResetSelection,
@@ -138,9 +143,10 @@ const StixCoreRelationshipCreationForm = ({
   const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n, isCoverage));
 
   const fromEntity = fromEntities[0];
-  const toEntity = toEntities[0];
+  const isToUnresolved = !toEntities || toEntities.length === 0;
+  const toEntity = isToUnresolved ? { entity_type: toEntityType } : toEntities[0];
   const isMultipleFrom = fromEntities.length > 1;
-  const isMultipleTo = toEntities.length > 1;
+  const isMultipleTo = isToUnresolved || toEntities.length > 1;
 
   const defaultRelationshipType = R.head(relationshipTypes)
     ? R.head(relationshipTypes)
@@ -167,7 +173,8 @@ const StixCoreRelationshipCreationForm = ({
   );
 
   return (
-    <Formik
+    <CustomFieldsFormik
+      entityType={STIX_CORE_RELATIONSHIP_TYPE}
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={stixCoreRelationshipValidator}
@@ -311,11 +318,9 @@ const StixCoreRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
             />
             {isCoverage && (
-              <CoverageInformationFieldAdd
+              <Field
+                component={CoverageInformationField}
                 name="coverage_information"
-                values={values.coverage_information || []}
-                containerStyle={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
               />
             )}
             {hasKillChainPhase(values.relationship_type) ? (
@@ -341,6 +346,7 @@ const StixCoreRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            <CustomFieldValuesCreation />
 
             <FormButtonContainer>
               {typeof handleResetSelection === 'function' && (
@@ -369,7 +375,7 @@ const StixCoreRelationshipCreationForm = ({
           </div>
         </Form>
       )}
-    </Formik>
+    </CustomFieldsFormik>
   );
 };
 

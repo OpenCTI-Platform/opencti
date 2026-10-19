@@ -6,7 +6,7 @@ import { csvMapperMockSimpleCities } from './importCsv-connector/csv-mapper-citi
 import { createWork, findById as findWorkById } from '../../../src/domain/work';
 import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
 import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import { resolveUserByIdFromCache } from '../../../src/domain/user';
+import { resolveUserByIdFromCache } from '../../../src/modules/user/user-domain';
 import type { AuthUser } from '../../../src/types/user';
 import conf from '../../../src/config/conf';
 import { IMPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';

@@ -20,6 +20,7 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
@@ -88,6 +89,7 @@ export const toolMutationRelationDelete = graphql`
 const toolEditionOverviewFragment = graphql`
   fragment ToolEditionOverview_tool on Tool {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     tool_types
@@ -335,6 +337,13 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={<SubscriptionFocus context={context} fieldName="tool_version" />}
+          />
+          <CustomFieldValuesEdition
+            entityType={TOOL_TYPE}
+            entityId={tool.id}
+            values={tool.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

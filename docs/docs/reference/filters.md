@@ -40,6 +40,8 @@ You can add as many filters as you want, even use the same key twice with differ
 
 The boolean modes (and/or) are either **global** (between every attribute filters) or **local** (between values inside a filter). Both can be switched with a single click, changing the logic of your filtering.
 
+To mix `and` and `or` between different attributes, choose **Add Filter Group** in the select box: the group is a set of conditions with its own mode (see `filterGroups` in [Filters format](#filters-format)). Groups can be nested to allow more complex usage.
+
 ## Sharing filters
 
 OpenCTI allows you to save filters and share them with other members (users, groups, organizations). This feature enables teams to collaborate by reusing the same filter configurations across different views.
@@ -456,17 +458,17 @@ filters = {
 !!! warning "This filter may exclude some results for technical reasons"
 
     This filter is based on denormalized information for relationships.
-    In a given entity, we directly store the id of the entities with which the entity has a relationship. 
+    In a given entity, we directly store the id of the entities with which the entity has a relationship.
     This significatively improves query speed.
-    
-    However, this approach might lead to ever-growing entities in database, with hundreds of thousands of ids stored in a given entity. 
-    Take for example a very active Intrusion Set, related to thousands of observables. 
+
+    However, this approach might lead to ever-growing entities in database, with hundreds of thousands of ids stored in a given entity.
+    Take for example a very active Intrusion Set, related to thousands of observables.
     The corresponding denormalization data in the Intrusion Set would represent a significant overhead, leading to dramatical performance drop when manipulating this object.
     For performance reasons, the denormalized information is thus not stored in the source entity for some relationships involving high data volumes.
-    
-    This impacts the ``regardingOf`` filter, that will only look at the denormalized data in search of exiting relationships. 
-    The following relationships will not be detected: 
- 
+
+    This impacts the ``regardingOf`` filter, that will only look at the denormalized data in search of exiting relationships.
+    The following relationships will not be detected:
+
     - the relationships of type ``related_to`` with an ``Observable`` as source type,
 
         Example: given the relationship "Winscp.rnd (file observable) related to APT41 (intrusion set)" present in the platform
@@ -493,7 +495,7 @@ If a values combination may not return all the results because one of the above 
 
 The ``dynamicRegardingOf`` filter key, displayed as `in regards of (dynamic)` in the UI enables to target the entities having a relationship of a certain type with entities matching a given filter.
 The ``values`` of this filter can take two subfilters with the ``eq`` opeartor:
-- the ``relationship_type`` values indicates which relationship types are concerned 
+- the ``relationship_type`` values indicates which relationship types are concerned
 - the ``dynamic`` values contains the filter the entities involved in the relationships should match
 
 Here is an example of filter to fetch the entities targeting malwares with a given label:

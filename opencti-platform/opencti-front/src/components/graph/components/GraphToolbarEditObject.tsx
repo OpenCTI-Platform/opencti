@@ -46,8 +46,13 @@ const GraphToolbarEditObject = ({
     [objectToEdit] = selectedLinks;
   }
 
+  const isNotEditableFromGraph = !!objectToEdit
+    && (objectToEdit.parent_types.includes('Stix-Meta-Object')
+      || objectToEdit.parent_types.includes('Internal-Object')
+      || objectToEdit.parent_types.includes('internal-relationship'));
+
   const openEditionForm = () => {
-    if (!objectToEdit) return;
+    if (!objectToEdit || isNotEditableFromGraph) return;
     const { parent_types, entity_type } = objectToEdit;
     if (!parent_types.includes('basic-relationship')
       && !parent_types.includes('Stix-Cyber-Observable')) {
@@ -83,12 +88,14 @@ const GraphToolbarEditObject = ({
     <>
       <GraphToolbarItem
         Icon={<EditOutlined />}
-        disabled={!objectToEdit}
+        disabled={!objectToEdit || isNotEditableFromGraph}
         color="primary"
         onClick={openEditionForm}
-        title={t_i18n('Edit the selected item')}
+        title={isNotEditableFromGraph
+          ? t_i18n("This item can't be edited from the graph")
+          : t_i18n('Edit the selected item')}
       />
-      {objectToEdit && (
+      {objectToEdit && !isNotEditableFromGraph && (
         <>
           <StixDomainObjectEdition
             noStoreUpdate

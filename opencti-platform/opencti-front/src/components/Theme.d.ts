@@ -47,6 +47,7 @@ declare module '@mui/material/styles' {
     border: {
       main: string;
       primary: string;
+      focus: string;
     };
     gradient?: {
       main: string;
@@ -86,6 +87,7 @@ declare module '@mui/material/styles' {
     border?: {
       main?: string;
       primary?: string;
+      focus?: string;
     };
     gradient?: {
       main?: string;
@@ -270,6 +272,8 @@ interface ExtendedPaletteOptions extends PaletteOptions {
     primary: string;
     secondary: string;
     pagination: string;
+    // Focus ring of the toggle buttons (and of the AI search caret beside them).
+    focus: string;
     main?: string;
     lightBackground?: string;
     paper?: string;

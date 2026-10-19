@@ -8,9 +8,18 @@ export const connectorsStateQuery = graphql`
     connectors {
       id
       active
+      last_seen_at
       auto
       manager_current_status
       manager_requested_status
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+        }
+      }
     }
     rabbitMQMetrics {
       queues {

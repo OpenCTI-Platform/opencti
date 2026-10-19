@@ -34,11 +34,11 @@ vi.mock('../../../src/database/middleware', () => ({
   stixLoadByIds: vi.fn(async () => []),
 }));
 
-vi.mock('../../../src/database/repository', () => ({
-  connectors: vi.fn(async () => []),
+vi.mock('../../../src/modules/connector/connector-domain', () => ({
+  connectorsForCache: vi.fn(async () => []),
 }));
 
-vi.mock('../../../src/domain/user', () => ({
+vi.mock('../../../src/modules/user/user-domain', () => ({
   buildCompleteUsers: vi.fn(async () => []),
   resolveUserById: vi.fn(async () => ({})),
 }));

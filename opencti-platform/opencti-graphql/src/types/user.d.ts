@@ -3,6 +3,7 @@ import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } f
 import type { Group } from './group';
 import type { ConfidenceLevel } from '../generated/graphql';
 import type { TracingContext } from '../utils/access';
+import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
 
 interface UserRole extends BasicStoreIdentifier {
   name: string;
@@ -50,7 +51,7 @@ interface AuthUser extends BasicStoreIdentifier {
   roles: Array<UserRole>;
   groups: Array<Group>;
   organizations: Array<BasicStoreCommon>;
-  administrated_organizations: Array<BasicStoreCommon>;
+  administrated_organizations: Array<BasicStoreEntityOrganization>;
   capabilities: Array<UserCapability>;
   capabilitiesInDraft?: Array<UserCapability>;
   allowed_marking: Array<StoreMarkingDefinition>;

@@ -94,6 +94,8 @@ class OpenCTIConnector:
         enrichment_resolution: str,
         listen_callback_uri=None,
         xtm_one_intent=None,
+        version=None,
+        slug=None,
     ):
         """Initialize the OpenCTIConnector instance.
 
@@ -119,6 +121,10 @@ class OpenCTIConnector:
         :type enrichment_resolution: str
         :param listen_callback_uri: Optional callback URI for API listening
         :type listen_callback_uri: str or None
+        :param version: Optional connector version reported to the platform
+        :type version: str or None
+        :param slug: Optional catalog slug identifying the connector
+        :type slug: str or None
 
         :raises ValueError: If connector_type is not a valid ConnectorType
         """
@@ -141,6 +147,8 @@ class OpenCTIConnector:
         self.playbook_compatible = playbook_compatible
         self.listen_callback_uri = listen_callback_uri
         self.xtm_one_intent = xtm_one_intent
+        self.version = version
+        self.slug = slug
 
     def to_input(self) -> dict:
         """Convert connector configuration to API input format.
@@ -167,6 +175,8 @@ class OpenCTIConnector:
                 "only_contextual": self.only_contextual,
                 "playbook_compatible": self.playbook_compatible,
                 "listen_callback_uri": self.listen_callback_uri,
+                "version": self.version,
+                "slug": self.slug,
                 **(
                     {"xtm_one_intent": self.xtm_one_intent}
                     if self.xtm_one_intent

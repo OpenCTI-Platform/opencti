@@ -1,6 +1,6 @@
 import { testContext } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
-import { userDelete, userEditField } from '../../../../src/domain/user';
+import { userDelete, userEditField } from '../../../../src/modules/user/user-domain';
 import { USER_MERGED_INTO_FIELD } from '../../../../src/modules/userMerge/userMerge-types';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';

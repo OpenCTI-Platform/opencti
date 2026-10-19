@@ -44,6 +44,8 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
 import IngestionCatalogUnverifiedDeploymentPopover from '@components/integrations/catalog/IngestionCatalogUnverifiedDeploymentPopover';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
+import IngestionCatalogCompatibilityAlert from '@components/integrations/catalog/IngestionCatalogCompatibilityAlert';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
@@ -339,13 +341,13 @@ const IngestionCatalogConnectorCreation = ({
           >
             {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
               const errors = compiledValidator?.validate(values)?.errors;
-              const canDeployConnector = hasActiveManagers && isEnterpriseEdition;
-              const disableForm = !canDeployConnector;
+              const canDeploy = hasActiveManagers && isEnterpriseEdition && canDeployConnector(connector);
+              const disableForm = !canDeploy;
 
-              const disableCreate = !isValid || isSubmitting || !!errors?.[0];
+              const disableCreate = !canDeploy || !isValid || isSubmitting || !!errors?.[0];
 
               const createConnectorDeployment = () => {
-                if (!canDeployConnector) {
+                if (!canDeploy) {
                   return;
                 }
                 submitConnectorManagementCreation(values, {
@@ -369,6 +371,7 @@ const IngestionCatalogConnectorCreation = ({
                       {t_i18n('Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.')}
                     </Alert>
                   )}
+                  <IngestionCatalogCompatibilityAlert connector={connector} />
 
                   <fieldset
                     disabled={disableForm}

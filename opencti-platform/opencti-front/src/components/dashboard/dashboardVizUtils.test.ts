@@ -527,6 +527,100 @@ describe('resolvedDataSelection', () => {
       expect(isMissingSavedFilters).toBe(false);
     });
   });
+
+  describe('when dashboard variables are used', () => {
+    const VAR_A = '11111111-1111-4111-8111-111111111111';
+    const token = `$var:${VAR_A}`;
+    const regardingOfToken = (): FilterGroup => ({
+      mode: 'and',
+      filters: [{ key: stixCoreObjectAvailableFilterKey, values: [{ key: 'id', values: [token] }], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    });
+    const regardingOfIds = (group?: FilterGroup | null) => group?.filters[0].values[0].values;
+
+    it('substitutes tokens in filters, dynamicFrom and dynamicTo', async () => {
+      const { resolvedDataSelection, hasUnresolvedVariables } = await resolveDataSelection({
+        filterKeysSchema,
+        perspective: 'relationships',
+        dataSelection: [{
+          filters: { mode: 'and', filters: [{ key: relationshipsAvailableFilterKey, values: [token], operator: 'eq', mode: 'or' }], filterGroups: [] },
+          dynamicFrom: regardingOfToken(),
+          dynamicTo: regardingOfToken(),
+        }],
+        variableValues: new Map([[VAR_A, 'org-id']]),
+      });
+      expect(hasUnresolvedVariables).toBe(false);
+      const [selection] = resolvedDataSelection;
+      expect(selection.filters?.filters[0].values).toEqual(['org-id']);
+      expect(regardingOfIds(selection.dynamicFrom)).toEqual(['org-id']);
+      expect(regardingOfIds(selection.dynamicTo)).toEqual(['org-id']);
+    });
+
+    it('shifts a date variable by one day for lte, like a fixed date, only when it is known as a date', async () => {
+      // January, in UTC: one calendar day later is the same instant in any common time zone (no daylight saving change).
+      const dataSelection = [{
+        filters: { mode: 'and', filters: [{ key: relationshipsAvailableFilterKey, values: [token], operator: 'lte', mode: 'or' }], filterGroups: [] },
+      }] as WidgetDataSelection[];
+      const variableValues = new Map([[VAR_A, '2024-01-15T00:00:00.000Z']]);
+      const asDate = await resolveDataSelection({ filterKeysSchema, perspective: 'relationships', dataSelection, variableValues, dateVariableIds: new Set([VAR_A]) });
+      expect(asDate.resolvedDataSelection[0].filters?.filters[0].values).toEqual(['2024-01-16T00:00:00.000Z']);
+      const notDate = await resolveDataSelection({ filterKeysSchema, perspective: 'relationships', dataSelection, variableValues });
+      expect(notDate.resolvedDataSelection[0].filters?.filters[0].values).toEqual(['2024-01-15T00:00:00.000Z']);
+    });
+
+    it('flags unresolved variables instead of dropping the filter', async () => {
+      const { hasUnresolvedVariables } = await resolveDataSelection({
+        filterKeysSchema,
+        perspective: 'entities',
+        dataSelection: [{ filters: regardingOfToken() }],
+      });
+      expect(hasUnresolvedVariables).toBe(true);
+    });
+
+    it('resolves variables after saved filters are hydrated', async () => {
+      (fetchQuery as ReturnType<typeof vi.fn>).mockReturnValue({
+        toPromise: () => Promise.resolve({
+          savedFilter: { id: 'saved-filter-id', name: 'With variable', filters: JSON.stringify(regardingOfToken()), scope: 'Stix-Core-Object' },
+        }),
+      });
+      const { resolvedDataSelection, hasUnresolvedVariables } = await resolveDataSelection({
+        filterKeysSchema,
+        perspective: 'entities',
+        dataSelection: [{ filters_id: 'saved-filter-id' }],
+        variableValues: new Map([[VAR_A, 'org-id']]),
+      });
+      expect(hasUnresolvedVariables).toBe(false);
+      expect(regardingOfIds(resolvedDataSelection[0].filters)).toEqual(['org-id']);
+    });
+
+    it('resolves variables before the custom view SELF_ID', async () => {
+      const customViewTargetEntityId = 'ebe9a2a0-787d-4417-950e-39bfc8cc2381';
+      const { resolvedDataSelection, hasUnresolvedVariables } = await resolveDataSelection({
+        filterKeysSchema,
+        perspective: 'entities',
+        dataSelection: [{
+          filters: {
+            mode: 'and',
+            filters: [{ key: stixCoreObjectAvailableFilterKey, values: [{ key: 'id', values: [token, selfIdValue] }], operator: 'eq', mode: 'or' }],
+            filterGroups: [],
+          },
+        }],
+        host: { kind: 'custom-view', customViewTargetEntityType: 'Campaign', customViewTargetEntityId },
+        variableValues: new Map([[VAR_A, 'org-id']]),
+      });
+      expect(hasUnresolvedVariables).toBe(false);
+      expect(regardingOfIds(resolvedDataSelection[0].filters)).toEqual(['org-id', customViewTargetEntityId]);
+    });
+
+    it('reports no unresolved variable for a widget without tokens', async () => {
+      const { hasUnresolvedVariables } = await resolveDataSelection({
+        filterKeysSchema,
+        perspective: 'entities',
+        dataSelection: [{ filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom) }],
+      });
+      expect(hasUnresolvedVariables).toBe(false);
+    });
+  });
 });
 
 describe('computeStartEndDates', () => {

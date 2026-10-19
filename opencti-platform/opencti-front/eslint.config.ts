@@ -9,6 +9,7 @@ import importPlugin from 'eslint-plugin-import';
 import importNewlines from 'eslint-plugin-import-newlines';
 import customRules from 'eslint-plugin-custom-rules';
 import stylistic from '@stylistic/eslint-plugin';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default defineConfig([
   // Build and tool output is already named once, in `.gitignore`.
@@ -31,6 +32,37 @@ export default defineConfig([
 
   // Typescript rules
   tseslint.configs.recommended,
+
+  // a11y rules
+  {
+    plugins: {
+      'jsx-a11y': jsxA11y,
+    },
+    files: ['**/*.{ts,tsx,js,jsx}'],
+    languageOptions: {
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    rules: {
+      ...jsxA11y.configs.recommended.rules,
+    },
+    settings: {
+      'jsx-a11y': {
+        // Lints these components as the native element they render. The match is
+        // by JSX name, not import source: every Button and IconButton here (the
+        // product wrappers, the design system's, MUI's) renders a <button>.
+        // Select, TextField or Switch would not fit: their root is a <div>, a
+        // <span> or no element at all, not the native control.
+        components: {
+          Button: 'button',
+          IconButton: 'button',
+        },
+      },
+    },
+  },
 
   // React rules
   {
@@ -111,6 +143,7 @@ export default defineConfig([
       '@stylistic/semi': ['error', 'always'],
       'custom-rules/classes-rule': 1,
       'custom-rules/no-deprecated-components': 'warn',
+      'custom-rules/no-fragment-ref-anchor': 'error',
       'custom-rules/no-replaced-components': 'error',
       'no-restricted-syntax': 0,
       'react/no-unused-prop-types': 0,

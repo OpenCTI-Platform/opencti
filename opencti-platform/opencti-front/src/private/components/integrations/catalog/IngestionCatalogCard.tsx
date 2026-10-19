@@ -1,7 +1,6 @@
 import React from 'react';
 import { CardActions, Stack, Typography } from '@mui/material';
 import { GroupsOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router';
 import { alpha, useTheme } from '@mui/material/styles';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
@@ -10,10 +9,13 @@ import Box from '@mui/material/Box';
 import IngestionCatalogCardDeployButton from '@components/integrations/catalog/components/card/IngestionCatalogCardDeployButton';
 import ConnectorUseCases from '@components/integrations/catalog/components/card/usecases/ConnectorUseCases';
 import Tooltip from '@mui/material/Tooltip';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
+import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
 import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import Card from '../../../../components/common/card/Card';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { LogoFiligranIcon } from 'filigran-icon';
 import { paperBorder } from '../paperSurface';
@@ -98,6 +100,12 @@ const ConnectorActions = ({
   deploymentCount,
   onClickDeploy,
 }: ConnectorActionsProps) => {
+  const canDeploy = canDeployConnector(connector);
+  const compatibilityMessage = useConnectorCompatibilityMessage(connector);
+  const shouldRenderDeploy = connector.manager_supported === true;
+  // Community Edition: the EE upsell only where EE would make the connector deployable
+  const showEnterpriseUpsell = !isEnterpriseEdition && canDeploy;
+
   return (
     <CardActions
       sx={{
@@ -110,27 +118,32 @@ const ConnectorActions = ({
       }}
     >
       <ConnectorUseCases useCases={connector.use_cases} />
-      <Stack
-        sx={{ marginLeft: '0!important' }}
-        direction="row"
-        gap={1}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          {isEnterpriseEdition ? (
-            <IngestionCatalogCardDeployButton
-              deploymentCount={deploymentCount}
-              deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
-              onClick={onClickDeploy}
-            />
-          ) : (
-            <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-              {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
-              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-            </Box>
-          )}
-        </Security>
-      </Stack>
+      {shouldRenderDeploy && (
+        <Stack
+          sx={{ marginLeft: '0!important' }}
+          direction="row"
+          gap={1}
+          onClick={stopLinkNavigation}
+          onAuxClick={stopLinkNavigation}
+        >
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            {showEnterpriseUpsell ? (
+              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+                {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
+                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+              </Box>
+            ) : (
+              <IngestionCatalogCardDeployButton
+                deploymentCount={deploymentCount}
+                deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
+                disabled={!canDeploy}
+                disabledReason={compatibilityMessage}
+                onClick={onClickDeploy}
+              />
+            )}
+          </Security>
+        </Stack>
+      )}
     </CardActions>
   );
 };
@@ -144,18 +157,12 @@ const IngestionCatalogCard = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
-  const navigate = useNavigate();
-
   const link = `/dashboard/integrations/catalog/${connector.slug}`;
 
   const connectorMetadata = getConnectorMetadata(
     connector.container_type,
     t_i18n,
   );
-
-  const handleCardClick = () => {
-    navigate(link);
-  };
 
   return (
     <Box
@@ -174,7 +181,8 @@ const IngestionCatalogCard = ({
       }}
     >
       <Card
-        onClick={handleCardClick}
+        // A real link, so ctrl/cmd and middle click open the connector in a new tab.
+        to={link}
         sx={{
           height: 280,
           borderRadius: 1,

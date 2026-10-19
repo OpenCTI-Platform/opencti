@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { testContext } from '../../../utils/testQuery';
 import { addGroup, addRole } from '../../../../src/domain/grant';
 import { groupAddRelation } from '../../../../src/domain/group';
-import { addUser, assignGroupToUser } from '../../../../src/domain/user';
+import { addUser, assignGroupToUser } from '../../../../src/modules/user/user-domain';
 import { deleteMergeableUser } from './userMerge-testFixtures';
 import { addCaseRfi } from '../../../../src/modules/case/case-rfi/case-rfi-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../../src/modules/case/case-rfi/case-rfi-types';
