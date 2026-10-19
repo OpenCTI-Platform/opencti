@@ -109,9 +109,9 @@ def test_ping_without_errors_clears_previous_ones(
     assert read_connector_errors(api_client, connector_id) == []
 
 
-@fixture
-@parametrize_with_cases("data", cases=ExternalImportConnectorTest)
-def external_import_connector_data(data, api_client, api_connector, api_work):
+@pytest.fixture(params=cases_of(ExternalImportConnectorTest), ids=case_id)
+def external_import_connector_data(request, api_client, api_connector, api_work):
+    data = request.param()
     connector = ExternalImportConnector(data["config"], api_client, data["data"])
     connector.run()
     yield data["data"]
