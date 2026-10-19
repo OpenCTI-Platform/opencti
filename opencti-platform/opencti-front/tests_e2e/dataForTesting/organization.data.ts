@@ -107,3 +107,15 @@ export const restrictOrganizationVisibility = async (request: APIRequestContext,
   ).toEqual(expect.arrayContaining(expectedMembers));
   expect(authorizedMembers).toHaveLength(expectedMembers.length);
 };
+
+/** Lifts any visibility restriction from an organization (counterpart of `restrictOrganizationVisibility`). */
+export const unrestrictOrganizationVisibility = async (request: APIRequestContext, organizationName: string) => {
+  const target = (await getOrganizationNodes(request)).find((node) => node.name === organizationName);
+  if (!target) return;
+  await executeGraphql(
+    request,
+    `Unrestrict organization ${organizationName}`,
+    'mutation FixtureUnrestrictOrganization($id: String!) { stixDomainObjectEdit(id: $id) { editAuthorizedMembers { id } } }',
+    { id: target.id },
+  );
+};
