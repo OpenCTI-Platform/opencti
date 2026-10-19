@@ -101,28 +101,14 @@ const securityCoverageResultListLineFragment = graphql`
       id
       name
     }
-    objectLabel {
-      id
-      value
-      color
-    }
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-    }
   }
 `;
 
 const DATA_COLUMNS: DataTableProps['dataColumns'] = {
-  name: { percentWidth: 30 },
-  coverage: { percentWidth: 15 },
-  objectLabel: { percentWidth: 15 },
-  createdBy: { percentWidth: 15, isSortable: false },
-  objectMarking: { percentWidth: 10 },
-  created_at: { percentWidth: 15 },
+  name: { percentWidth: 40 },
+  coverage: { percentWidth: 20 },
+  createdBy: { percentWidth: 20, isSortable: false },
+  created_at: { percentWidth: 20 },
 };
 
 interface SecurityCoverageResultListProps {

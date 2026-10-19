@@ -328,6 +328,7 @@ const SecurityCoverageResultFormDrawer = ({
                 onCreate={(entities) => {
                   submit(formDetails, entities);
                 }}
+                isUpdate={isUpdate}
               />
             </div>
           )}

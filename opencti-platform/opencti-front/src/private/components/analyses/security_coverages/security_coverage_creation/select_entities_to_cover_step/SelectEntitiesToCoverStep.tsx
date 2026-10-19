@@ -30,6 +30,7 @@ interface SelectEntitiesToCoverStepProps {
   onNext: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCreate?: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCancel?: () => void;
+  isUpdate?: boolean;
 }
 
 export const selectEntitiesToCoverStepLinesQuery = graphql`
@@ -143,6 +144,7 @@ const SelectEntitiesToCoverStep = ({
   onNext,
   onCreate,
   onCancel,
+  isUpdate = false,
 }: SelectEntitiesToCoverStepProps) => {
   const { t_i18n } = useFormatter();
 
@@ -228,7 +230,7 @@ const SelectEntitiesToCoverStep = ({
             variant="secondary"
             onClick={() => onCreate(selection, Object.values(selectedElements))}
           >
-            {t_i18n('Create')}
+            {isUpdate ? t_i18n('Update') : t_i18n('Create')}
           </Button>
         )}
         <Button
