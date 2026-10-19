@@ -18,6 +18,7 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import Tag from '@common/tag/Tag';
+import NotifierChips from './NotifierChips';
 import { useTheme } from '@mui/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -150,12 +151,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.notifiers.width }}
             >
-              {(data.notifiers
-                && data.notifiers.length > 0)
-                ? data.notifiers
-                    .map<React.ReactNode>((n) => <code key={n.id} style={{ marginRight: 5 }}>{n.name}</code>)
-                : EMPTY_VALUE
-              }
+              <NotifierChips notifiers={data.notifiers} />
             </div>
             <div
               className={classes.bodyItem}
