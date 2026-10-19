@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getSessionStorageItem, setSessionStorageItem } from '../sessionStorage';
 import { getXtmHubOrigin } from '../xtm-hub-client';
+import { logXtmHubIgnoredMessage } from '../xtmHubLog';
 
 const XTM_HUB_USER_PLATFORM_TOKEN_KEY = 'XTM_HUB_USER_PLATFORM_TOKEN_KEY';
 
@@ -26,7 +27,7 @@ const useXtmHubUserPlatformToken = (hubUrl?: string | null): Return => {
       }
       if (event.origin !== hubOrigin) {
         if (event.data?.action === 'set-token') {
-          console.warn(`XTM Hub: token ignored, it comes from "${event.origin}" but the configured XTM Hub origin is "${hubOrigin}"`);
+          logXtmHubIgnoredMessage(event.origin, hubOrigin);
         }
         return;
       }

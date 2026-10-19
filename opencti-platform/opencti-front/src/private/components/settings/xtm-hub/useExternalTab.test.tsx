@@ -1,6 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useExternalTab from './useExternalTab';
+import { logXtmHubIgnoredMessage } from '../../../../utils/xtmHubLog';
+
+vi.mock('../../../../utils/xtmHubLog', () => ({ logXtmHubIgnoredMessage: vi.fn() }));
 
 const HUB_ORIGIN = 'https://hub.filigran.io';
 
@@ -28,6 +31,7 @@ const openHubTab = (onMessage: (event: MessageEvent) => void, onClosingTab = vi.
 
 describe('Hook: useExternalTab', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.useFakeTimers();
   });
 
@@ -49,7 +53,6 @@ describe('Hook: useExternalTab', () => {
   });
 
   it('logs and ignores a Hub action sent by the opened tab from another origin', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const onMessage = vi.fn();
     const tab = openHubTab(onMessage);
 
@@ -59,12 +62,10 @@ describe('Hook: useExternalTab', () => {
 
     expect(onMessage).not.toHaveBeenCalled();
     expect(tab.close).not.toHaveBeenCalled();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('"https://other.example"'));
-    expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('token'));
+    expect(logXtmHubIgnoredMessage).toHaveBeenCalledExactlyOnceWith('https://other.example', HUB_ORIGIN);
   });
 
   it('keeps listening after a message from another origin and handles a later one from the expected origin', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
     const onMessage = vi.fn();
     const tab = openHubTab(onMessage);
 
@@ -80,7 +81,6 @@ describe('Hook: useExternalTab', () => {
   });
 
   it('reports the tab as closed when the user closes it after a message from another origin', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
     const onMessage = vi.fn();
     const onClosingTab = vi.fn();
     const tab = openHubTab(onMessage, onClosingTab);
@@ -98,7 +98,6 @@ describe('Hook: useExternalTab', () => {
   });
 
   it('silently ignores an unknown message sent by the opened tab from another origin', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const onMessage = vi.fn();
     const tab = openHubTab(onMessage);
 
@@ -108,7 +107,7 @@ describe('Hook: useExternalTab', () => {
 
     expect(onMessage).not.toHaveBeenCalled();
     expect(tab.close).not.toHaveBeenCalled();
-    expect(warn).not.toHaveBeenCalled();
+    expect(logXtmHubIgnoredMessage).not.toHaveBeenCalled();
   });
 
   it('ignores a message from the expected origin sent by another window', () => {
@@ -123,7 +122,6 @@ describe('Hook: useExternalTab', () => {
   });
 
   it('ignores a Hub action from another origin sent by another window', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const onMessage = vi.fn();
     const tab = openHubTab(onMessage);
 
@@ -133,6 +131,6 @@ describe('Hook: useExternalTab', () => {
 
     expect(onMessage).not.toHaveBeenCalled();
     expect(tab.close).not.toHaveBeenCalled();
-    expect(warn).not.toHaveBeenCalled();
+    expect(logXtmHubIgnoredMessage).not.toHaveBeenCalled();
   });
 });

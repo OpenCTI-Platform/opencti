@@ -1,6 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useXtmHubUserPlatformToken from './useXtmHubUserPlatformToken';
+import { logXtmHubIgnoredMessage } from '../xtmHubLog';
+
+vi.mock('../xtmHubLog', () => ({ logXtmHubIgnoredMessage: vi.fn() }));
 
 const HUB_URL = 'https://hub.filigran.io/app';
 const HUB_ORIGIN = 'https://hub.filigran.io';
@@ -19,6 +22,7 @@ describe('Hook: useXtmHubUserPlatformToken', () => {
   let opener: { postMessage: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
+    vi.clearAllMocks();
     window.sessionStorage.clear();
     opener = { postMessage: vi.fn() };
     setOpener(opener);
@@ -46,7 +50,6 @@ describe('Hook: useXtmHubUserPlatformToken', () => {
   });
 
   it('ignores and reports a token sent from another origin', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { result } = renderHook(() => useXtmHubUserPlatformToken(HUB_URL));
 
     act(() => {
@@ -54,12 +57,10 @@ describe('Hook: useXtmHubUserPlatformToken', () => {
     });
 
     expect(result.current.userPlatformToken).toBeNull();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('"https://other.example"'));
-    expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('other-token'));
+    expect(logXtmHubIgnoredMessage).toHaveBeenCalledExactlyOnceWith('https://other.example', HUB_ORIGIN);
   });
 
   it('silently ignores an unknown message sent from another origin', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { result } = renderHook(() => useXtmHubUserPlatformToken(HUB_URL));
 
     act(() => {
@@ -67,7 +68,7 @@ describe('Hook: useXtmHubUserPlatformToken', () => {
     });
 
     expect(result.current.userPlatformToken).toBeNull();
-    expect(warn).not.toHaveBeenCalled();
+    expect(logXtmHubIgnoredMessage).not.toHaveBeenCalled();
   });
 
   it('does not ask for a token when the Hub URL is unknown', () => {

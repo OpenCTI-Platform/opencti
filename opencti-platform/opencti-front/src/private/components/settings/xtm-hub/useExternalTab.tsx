@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { logXtmHubIgnoredMessage } from '../../../../utils/xtmHubLog';
 
 interface UseExternalTabProps {
   url: string;
@@ -54,7 +55,7 @@ const useExternalTab = ({
       const isClosingTabAction = CLOSING_TAB_ACTIONS.includes(event.data?.action);
       if (event.origin !== expectedOrigin) {
         if (isClosingTabAction) {
-          console.warn(`XTM Hub: message ignored, it comes from "${event.origin}" but the configured XTM Hub origin is "${expectedOrigin}"`);
+          logXtmHubIgnoredMessage(event.origin, expectedOrigin);
         }
         return;
       }
