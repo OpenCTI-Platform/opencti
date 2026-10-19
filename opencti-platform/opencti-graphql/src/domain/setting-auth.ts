@@ -22,10 +22,11 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
 import { FunctionalError } from '../config/errors';
-import { type CertAuthConfigInput, type HeadersAuthConfigInput, type LocalAuthConfigInput, LocalAuthLockoutFinalAction } from '../generated/graphql';
+import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from '../modules/user/user-domain';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from './local-auth-lockout';
 
 export const buildAvailableProviders = async (platformSettings: BasicStoreSettings) => {
   const availableProviders = [...PROVIDERS];
@@ -56,19 +57,8 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
   return availableProviders;
 };
 
-// Values returned for the local authentication lockout policy when the settings hold none.
-// Thresholds and window follow NIST SP 800-53 AC-7: 3 attempts for administrative accounts, 10 for the other users, within 15 minutes
-export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
-  // Existing platforms keep the lockout disabled, new platforms start with it enabled (data initialization)
-  local_auth_lockout_enabled: false,
-  local_auth_lockout_max_attempts: 10,
-  local_auth_lockout_admin_max_attempts: 3,
-  // Applied once max attempts are reached: a lock for the whole window, or the account set to Locked until an admin unlocks it
-  local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Temporary,
-  local_auth_lockout_window: 15, // minutes
-  local_auth_lockout_duration: 30, // seconds
-  local_auth_lockout_max_duration: 10800, // seconds, 3h
-};
+// Defined with the lockout itself, which user-domain imports: defining them here would create an import cycle
+export { LOCAL_AUTH_LOCKOUT_DEFAULTS };
 
 // Upper bounds of the lockout policy, mirrored by the local strategy form
 export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
