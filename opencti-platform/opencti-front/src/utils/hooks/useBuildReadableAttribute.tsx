@@ -18,10 +18,23 @@ const MARKDOWN_ATTRIBUTES = [
   'objective',
 ];
 
+// representative.secondary falls back to the content of the entity (HTML from the rich text editor)
+// when there is no description. This HTML must not be parsed as markdown: a blank line inside a tag,
+// as in the alternative text Word gives to pictures, ends the HTML block and the rest of the tag is escaped.
+const isRichTextHtml = (value: string) => {
+  const { body } = new DOMParser().parseFromString(value, 'text/html');
+  const nodes = Array.from(body.childNodes).filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent?.trim());
+  return nodes.length > 0 && nodes.every((node) => node.nodeType === Node.ELEMENT_NODE);
+};
+
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
   let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
 
-  if (attributeType === 'date') {
+  if (attributeType === 'html') {
+    // !! Don't remove the call to sanitize, it's important to secure the call to dangerouslySetInnerHTML !!
+    const stringHtml = DOMPurify.sanitize(value, inTable ? { FORBID_TAGS: ['a'] } : undefined);
+    value = <div dangerouslySetInnerHTML={{ __html: stringHtml }} />;
+  } else if (attributeType === 'date') {
     value = dateFormat(new Date(value)) ?? '';
   } else if (attributeType === 'markdown') {
     const mark = marked.parse(value, {
@@ -54,6 +67,9 @@ const useBuildReadableAttribute = () => {
     if (attribute) {
       attributeType = stixCoreObjectsAttributesMap.get(attribute)?.type;
       if (MARKDOWN_ATTRIBUTES.includes(attribute)) attributeType = 'markdown';
+      if (attribute === 'representative.secondary' && typeof attributeData === 'string' && isRichTextHtml(attributeData)) {
+        attributeType = 'html';
+      }
     }
     // Attributes unknown to the standard schema (e.g. custom fields) carry their own
     // attributeType directly on the column: use it as a fallback.

@@ -56,6 +56,30 @@ describe('Hook: useBuildReadableAttribute', () => {
     expect(typeof textAttribute2).toEqual('object');
     expect(textAttribute2).toEqual(result);
   });
+  it('should keep the content used as representative.secondary as html', () => {
+    const { hook } = testRenderHook(() => useBuildReadableAttribute());
+    const { buildReadableAttribute } = hook.result.current;
+    // Word gives pictures an alternative text with a blank line, which ends an html block in markdown.
+    const content = '<p>Intro</p><p><img src="data:image/png;base64,AAAA" alt="A shield\n\nDescription automatically generated" width="373"></p><p>**not markdown**</p>';
+
+    const html = renderToString(buildReadableAttribute(content, { attribute: 'representative.secondary' }) as ReactElement);
+    expect(html).not.toContain('&lt;img');
+    expect(html).toContain('<img src="data:image/png;base64,AAAA" alt="A shield\n\nDescription automatically generated" width="373">');
+    expect(html).toContain('<p>**not markdown**</p>');
+
+    const unsafe = renderToString(buildReadableAttribute('<p><img src="x" onerror="alert(\'not happening\')"></p>', { attribute: 'representative.secondary' }) as ReactElement);
+    expect(unsafe).toContain('<img src="x">');
+    expect(unsafe).not.toContain('onerror');
+  });
+  it('should keep rendering a markdown description used as representative.secondary', () => {
+    const { hook } = testRenderHook(() => useBuildReadableAttribute());
+    const { buildReadableAttribute } = hook.result.current;
+
+    const markdown = renderToString(buildReadableAttribute('**Bold** text', { attribute: 'representative.secondary' }) as ReactElement);
+    expect(markdown).toContain('<strong>Bold</strong> text');
+    const markdownStartingWithHtml = renderToString(buildReadableAttribute('<b>Title</b> and **bold**', { attribute: 'representative.secondary' }) as ReactElement);
+    expect(markdownStartingWithHtml).toContain('<strong>bold</strong>');
+  });
   it('should render markdown links as plain text only in tables', () => {
     const { hook } = testRenderHook(() => useBuildReadableAttribute());
     const { buildReadableAttribute } = hook.result.current;
