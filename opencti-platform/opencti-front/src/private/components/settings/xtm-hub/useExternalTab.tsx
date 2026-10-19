@@ -55,9 +55,6 @@ const useExternalTab = ({
       }
       const isClosingTabAction = CLOSING_TAB_ACTIONS.includes(event.data?.action);
       if (event.origin !== expectedOrigin) {
-        // A Hub action from another origin usually means the configured XTM Hub URL
-        // does not match the Hub that answered: report it, but keep the tab open and
-        // keep listening, since a message from the expected origin may still come.
         if (isClosingTabAction) {
           console.warn(`XTM Hub: message ignored, it comes from "${event.origin}" but the configured XTM Hub origin is "${expectedOrigin}"`);
           onOriginMismatch(event.origin);
