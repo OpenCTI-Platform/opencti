@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import XtmHubTab from './XtmHubTab';
 import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from '../../RedirectByPath';
@@ -101,6 +101,25 @@ describe('XtmHubTab', () => {
 
       expect(screen.getByRole('button', { name: 'Custom trigger' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Connect to XTM Hub' })).not.toBeInTheDocument();
+    });
+
+    it('explains the misconfiguration when the XTM Hub answers from another origin', async () => {
+      const { user } = renderXtmHubTab(route);
+      const { onOriginMismatch } = mockUseExternalTab.mock.lastCall?.[0] as unknown as { onOriginMismatch: (origin: string) => void };
+
+      act(() => {
+        onOriginMismatch('https://other-hub.example');
+      });
+
+      const dialog = await screen.findByRole('dialog', { name: 'XTM Hub misconfiguration' });
+      expect(within(dialog).getByText('https://hub.filigran.io')).toBeInTheDocument();
+      expect(within(dialog).getByText('https://other-hub.example')).toBeInTheDocument();
+      expect(mockCloseTab).not.toHaveBeenCalled();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Close' }));
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog', { name: 'XTM Hub misconfiguration' })).not.toBeInTheDocument();
+      });
     });
 
     it('opens the connection dialog through the openDialog callback given to renderTrigger', async () => {

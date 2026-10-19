@@ -49,7 +49,7 @@ describe('Hook: useExternalTab', () => {
     expect(tab.close).toHaveBeenCalledOnce();
   });
 
-  it('rejects a Hub action sent by the opened tab from another origin', () => {
+  it('reports a Hub action sent by the opened tab from another origin without handling it', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const onMessage = vi.fn();
     const onOriginMismatch = vi.fn();
@@ -60,10 +60,28 @@ describe('Hook: useExternalTab', () => {
     });
 
     expect(onMessage).not.toHaveBeenCalled();
-    expect(onOriginMismatch).toHaveBeenCalledOnce();
-    expect(tab.close).toHaveBeenCalledOnce();
+    expect(onOriginMismatch).toHaveBeenCalledExactlyOnceWith('https://other.example');
+    expect(tab.close).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('"https://other.example"'));
     expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('token'));
+  });
+
+  it('keeps listening after an origin mismatch and handles a later message from the expected origin', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const onMessage = vi.fn();
+    const onOriginMismatch = vi.fn();
+    const tab = openHubTab(onMessage, onOriginMismatch);
+
+    act(() => {
+      dispatchMessage(tab, 'https://other.example', { action: 'register', token: 'token' });
+    });
+    act(() => {
+      dispatchMessage(tab, HUB_ORIGIN, { action: 'register', token: 'token' });
+    });
+
+    expect(onOriginMismatch).toHaveBeenCalledOnce();
+    expect(onMessage).toHaveBeenCalledOnce();
+    expect(tab.close).toHaveBeenCalledOnce();
   });
 
   it('silently ignores an unknown message sent by the opened tab from another origin', () => {
