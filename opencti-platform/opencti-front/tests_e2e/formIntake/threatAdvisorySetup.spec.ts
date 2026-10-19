@@ -11,6 +11,8 @@ import FormIntakeCatalogPageModel from '../model/formIntake/formIntakeCatalog.pa
 import FormIntakeBuilderPageModel from '../model/formIntake/formIntakeBuilder.pageModel';
 import PlaybookBuilderPageModel from '../model/playbook/playbookBuilder.pageModel';
 import { restoreAdminSession } from '../restoreAdminSession';
+import { authenticateAdminApi } from '../dataForTesting/session.data';
+import { deletePlaybooksByName, THREAT_ADVISORY_PLAYBOOK_NAME } from '../dataForTesting/playbook.data';
 
 test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
   test.setTimeout(300000); // 5 minutes, to allow for slow dev-mode SPA reloads
@@ -71,8 +73,12 @@ test('Create the "Threat Advisories" form intake definition', { tag: ['@ee', '@w
   await restoreAdminSession(page);
 });
 
-test('Create and activate the Threat Advisory Report access-restrictions playbook', { tag: ['@ee', '@workflow'] }, async ({ page }) => {
+test('Create and activate the Threat Advisory Report access-restrictions playbook', { tag: ['@ee', '@workflow'] }, async ({ page, request }) => {
   test.setTimeout(300000); // 5 minutes, to allow for slow dev-mode SPA reloads
+  // A leftover active playbook from a previous run would keep rewriting authorized members on every Report creation.
+  await authenticateAdminApi(request);
+  await deletePlaybooksByName(request, THREAT_ADVISORY_PLAYBOOK_NAME);
+
   const topBar = new TopMenuProfilePage(page);
   const loginForm = new LoginFormPageModel(page);
   const playbook = new PlaybookBuilderPageModel(page);
@@ -84,7 +90,7 @@ test('Create and activate the Threat Advisory Report access-restrictions playboo
   await test.step('Create the playbook', async () => {
     await playbook.goto();
     await playbook.createPlaybook(
-      'Threat Advisory Report access restrictions',
+      THREAT_ADVISORY_PLAYBOOK_NAME,
       'On every Report creation, applies the final authorized members for the Threat Advisory scenario.',
     );
   });

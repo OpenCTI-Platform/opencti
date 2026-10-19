@@ -69,6 +69,8 @@ export default defineConfig({
     {
       name: 'workflow setup',
       testMatch: 'workflow/threatAdvisoryWorkflowSetup.spec.ts',
+      // Runs once every project depending on this one (form intake setup, workflow e2e) is done.
+      teardown: 'workflow teardown',
       use: {
         ...devices['Desktop Chrome'],
         trace: 'retain-on-failure',
@@ -79,6 +81,14 @@ export default defineConfig({
         },
       },
       dependencies: ['init data'],
+    },
+    {
+      name: 'workflow teardown',
+      testMatch: 'workflow/threatAdvisoryTeardown.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests_e2e/.setup/.auth/user.json',
+      },
     },
     {
       name: 'form intake setup',
@@ -171,6 +181,7 @@ export default defineConfig({
       },
       testIgnore: [
         'workflow/threatAdvisoryWorkflowSetup.spec.ts',
+        'workflow/threatAdvisoryTeardown.spec.ts',
         'formIntake/threatAdvisorySetup.spec.ts',
         'drafts/draftsList.spec.ts',
         'drafts/threatAdvisoryHappyFlow.spec.ts',
