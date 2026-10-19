@@ -1060,6 +1060,7 @@
   "Support version": "支持版本",
   "SWID": "SWID",
   "Sync workflow statuses by name": "按名称同步工作流状态",
+  "SYNC_INFLIGHT_CLEANUP_MANAGER": "传输中同步文件清理管理器",
   "Synchronized": "同步",
   "Tags": "标签",
   "Target entity": "目标实体",

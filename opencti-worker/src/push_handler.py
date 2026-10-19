@@ -104,6 +104,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             self.api.set_draft_id(data.get("draft_id"))
             self.api.set_synchronized_upsert_header(data.get("synchronized", False))
             self.api.set_previous_standard_header(data.get("previous_standard"))
+            # Not a header, add_file_ref takes sync_id from the queue, not the message.
+            self.api.connector_id = self.connector_id
             work_id = data.get("work_id")
             self.api.set_work_id(work_id)
 

@@ -19,22 +19,32 @@ import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
+import { lockResources } from '../lock/master-lock';
 // Storage path constants are imported directly from this dependency-free module (not document-domain.ts)
 // to avoid a circular import evaluation-order issue where these constants could be undefined
 // at the time ALL_MERGEABLE_FOLDERS/ALL_ROOT_FOLDERS are computed below.
-import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-types';
+import {
+  EMBEDDED_STORAGE_PATH,
+  EXPORT_STORAGE_PATH,
+  FROM_TEMPLATE_STORAGE_PATH,
+  IMPORT_STORAGE_PATH,
+  SUPPORT_STORAGE_PATH,
+  SYNC_INFLIGHT_STORAGE_PATH,
+} from '../modules/internal/document/document-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
 import { getDraftFilePrefix, isDraftFile } from './draft-utils';
-import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
+import { deleteFileFromStorage, downloadFile, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
 import { promiseMap } from '../utils/promiseUtils';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { pushAll } from '../utils/arrayUtil';
 import { getEntitiesMapFromCache } from './cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 
 // Minio configuration
@@ -95,6 +105,40 @@ interface S3FileObject {
   mimeType: string;
 }
 
+export type SyncInflightStorageKeyValidationResult
+  = | { valid: true; normalizedKey: string }
+    | { valid: false; reason: string };
+
+const MAX_STORAGE_KEY_LENGTH = 512;
+export const validateSyncInflightStorageKey = (storageKey: unknown, expectedSyncId: string): SyncInflightStorageKeyValidationResult => {
+  if (typeof storageKey !== 'string' || storageKey.trim().length === 0 || storageKey.length > MAX_STORAGE_KEY_LENGTH) {
+    return { valid: false, reason: `storage_key must be a non-empty string of at most ${MAX_STORAGE_KEY_LENGTH} characters` };
+  }
+  const trimmed = storageKey.trim();
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed) || trimmed.startsWith('/') || trimmed.includes('\\') || trimmed.includes('\0')) {
+    return { valid: false, reason: 'storage_key must be a plain relative path' };
+  }
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(trimmed);
+  } catch {
+    return { valid: false, reason: 'storage_key contains an invalid percent-encoding' };
+  }
+  const hasInvalidSegment = (candidate: string) => candidate.split('/').some((segment) => segment === '..' || segment === '.' || segment.length === 0);
+  if (hasInvalidSegment(trimmed) || hasInvalidSegment(decoded)) {
+    return { valid: false, reason: 'storage_key must not contain path traversal or empty segments' };
+  }
+  const expectedPrefix = `${SYNC_INFLIGHT_STORAGE_PATH}/${expectedSyncId}/`;
+  if (!decoded.startsWith(expectedPrefix)) {
+    return { valid: false, reason: `storage_key must be located under ${expectedPrefix}` };
+  }
+  const segmentsAfterPrefix = decoded.slice(expectedPrefix.length).split('/');
+  if (segmentsAfterPrefix.length < 2) {
+    return { valid: false, reason: 'storage_key must include a remoteFileId and a filename' };
+  }
+  return { valid: true, normalizedKey: decoded };
+};
+
 /**
  * Get file metadata from database, or else from S3.
  */
@@ -109,6 +153,12 @@ export const loadFile = async (
       throw FunctionalError('File path not specified');
     }
     const pathForPermissionChecks = fileS3Path.replace(/^draft\/[^/]+\//, '');
+    if (pathForPermissionChecks.startsWith(SYNC_INFLIGHT_STORAGE_PATH)) {
+      if (opts.dontThrow) {
+        return undefined;
+      }
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
     // 01. Check if user as enough capability to get support packages
     if (pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
       if (opts.dontThrow) {
@@ -345,6 +395,205 @@ export const guessMimeType = (fileId: string): string => {
     return 'application/octet-stream';
   }
   return mimeType;
+};
+
+export interface SyncFileReferenceCopyProps {
+  storageKey: string;
+  name: string;
+  mimeType?: string;
+  version?: string;
+  fileMarkings?: string[];
+  entityId: string;
+  externalReferenceId?: string;
+  noTriggerImport?: boolean;
+  importContextEntities?: BasicStoreEntity[];
+}
+
+const normalizeAndValidateFileMarkings = async (context: AuthContext, user: AuthUser, fileMarkings: string[]): Promise<string[]> => {
+  const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const normalizedMarkings = fileMarkings.map((m) => {
+    const marking = markings.get(m);
+    return marking ? marking.internal_id : m;
+  });
+  const filteredMarkings = normalizedMarkings.filter((id) => id);
+  for (let index = 0; index < filteredMarkings.length; index += 1) {
+    await validateMarking(context, user, filteredMarkings[index], markings);
+  }
+  return filteredMarkings;
+};
+
+interface StoredSync extends BasicStoreBase {
+  user_id?: string;
+}
+
+// The sync manager sends its bundles on behalf of this user, so only this user may consume the sync's staged files.
+const isSyncApplicant = async (context: AuthContext, user: AuthUser, syncId: string): Promise<boolean> => {
+  const sync: StoredSync | undefined = await internalLoadById<StoredSync>(context, SYSTEM_USER, syncId, { type: ENTITY_TYPE_SYNC });
+  if (!sync) {
+    return false;
+  }
+  const applicantId = sync.user_id ?? OPENCTI_SYSTEM_UUID;
+  return user.id === applicantId;
+};
+
+interface SyncFileCopyPath {
+  targetId: string;
+  truncatedName: string;
+}
+
+interface SyncFileCopyTarget {
+  id: string;
+  name: string;
+  creatorId: string;
+}
+
+const resolveSyncCopyTargetId = (context: AuthContext, user: AuthUser, filePath: string, name: string): SyncFileCopyPath => {
+  const truncatedName = `${truncate(path.parse(name).name, 200, false)}${truncate(path.parse(name).ext, 10, false)}`;
+  const draftContext = getDraftContext(context, user);
+  const prefix = draftContext ? getDraftFilePrefix(draftContext) : '';
+  return { truncatedName, targetId: `${prefix}${filePath}/${truncatedName.toLowerCase()}` };
+};
+
+const asUntouchedSyncFile = (currentFile: BasicStoreEntityDocument | undefined, version?: string): LoadedFile | null => {
+  if (currentFile && utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(version ?? now()))) {
+    return { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile;
+  }
+  return null;
+};
+
+const buildSyncFileCopyTarget = (user: AuthUser, currentFile: BasicStoreEntityDocument | undefined, copyPath: SyncFileCopyPath): SyncFileCopyTarget => ({
+  id: currentFile?.internal_id ?? copyPath.targetId,
+  name: copyPath.truncatedName,
+  creatorId: (currentFile?.metaData as FileMetadata | undefined)?.creator_id || user.id,
+});
+
+const deleteStagedSyncFile = async (storageKey: string, syncId: string, targetId: string): Promise<boolean> => {
+  try {
+    await deleteFileFromStorage(storageKey);
+    return true;
+  } catch (deleteErr) {
+    logApp.warn('[FILE STORAGE] Failed to delete staged sync file source (left for TTL cleanup backstop)', { cause: deleteErr, syncId, targetId });
+    return false;
+  }
+};
+
+const computeStoredFileSha256 = async (storageKey: string): Promise<string> => {
+  const stream = await downloadFile(storageKey);
+  if (!stream) {
+    throw UnsupportedError('Staged sync file not found', { storageKey });
+  }
+  const hash = crypto.createHash('sha256');
+  for await (const chunk of stream) {
+    hash.update(chunk);
+  }
+  return hash.digest('hex');
+};
+
+const copyAndIndexSyncFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  storageKey: string,
+  copyTarget: SyncFileCopyTarget,
+  copyProps: SyncFileReferenceCopyProps,
+): Promise<LoadedFile> => {
+  const { mimeType, version, fileMarkings = [], entityId, externalReferenceId } = copyProps;
+  const sha256 = await computeStoredFileSha256(storageKey);
+  await rawCopyFile(storageKey, copyTarget.id);
+  const fileSize = await getFileSize(user, copyTarget.id);
+  const file: LoadedFile = {
+    id: copyTarget.id,
+    name: copyTarget.name,
+    size: fileSize,
+    information: '',
+    lastModified: new Date(),
+    lastModifiedSinceMin: sinceNowInMinutes(new Date()),
+    metaData: {
+      version: version ?? now(),
+      filename: encodeURIComponent(copyTarget.name),
+      mimetype: mimeType ?? guessMimeType(copyTarget.id),
+      encoding: '7bit',
+      sha256,
+      creator_id: copyTarget.creatorId,
+      entity_id: entityId,
+      file_markings: fileMarkings,
+      messages: [],
+      errors: [],
+      ...(externalReferenceId ? { external_reference_id: externalReferenceId } : {}),
+    },
+    uploadStatus: 'complete',
+  };
+  await indexFileToDocument(context, file);
+  return file;
+};
+
+const triggerSyncFileImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  filePath: string,
+  file: LoadedFile,
+  syncId: string,
+  noTriggerImport: boolean,
+  importContextEntities: BasicStoreEntity[],
+) => {
+  try {
+    const isImportEligiblePath = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
+    if (!noTriggerImport && isImportEligiblePath) {
+      await triggerJobImport(context, user, file, importContextEntities);
+    }
+  } catch (triggerErr) {
+    logApp.warn('[FILE STORAGE] Copied referenced sync file, but failed to trigger its import enrichment job', { cause: triggerErr, syncId, targetId: file.id });
+  }
+};
+
+export const copyFileFromSyncReference = async (
+  context: AuthContext,
+  user: AuthUser,
+  syncId: string,
+  filePath: string,
+  copyProps: SyncFileReferenceCopyProps,
+): Promise<{ upload: LoadedFile; untouched: boolean } | null> => {
+  const { storageKey, name, noTriggerImport = false, importContextEntities = [] } = copyProps;
+  const validation = validateSyncInflightStorageKey(storageKey, syncId);
+  if (!validation.valid) {
+    logApp.warn('[FILE STORAGE] Rejected sync file reference copy: invalid or unauthorized storage_key', { syncId, reason: validation.reason });
+    return null;
+  }
+  const isApplicant = await isSyncApplicant(context, user, syncId);
+  if (!isApplicant) {
+    logApp.warn('[FILE STORAGE] Rejected sync file reference copy: caller is not the sync user', { syncId, userId: user.id });
+    return null;
+  }
+  const fileMarkings = await normalizeAndValidateFileMarkings(context, user, copyProps.fileMarkings ?? []);
+  const validatedCopyProps: SyncFileReferenceCopyProps = { ...copyProps, fileMarkings };
+  let lock;
+  try {
+    lock = await lockResources([`sync-inflight-copy:${validation.normalizedKey}`], { retryCount: 0 });
+  } catch {
+    logApp.warn('[FILE STORAGE] Rejected sync file reference copy: storage_key is already being consumed', { syncId });
+    return null;
+  }
+  const copyPath = resolveSyncCopyTargetId(context, user, filePath, name);
+  const { targetId } = copyPath;
+  try {
+    const currentFile = await documentFindById(context, user, targetId);
+    const untouchedFile = asUntouchedSyncFile(currentFile, copyProps.version);
+    if (untouchedFile) {
+      await deleteStagedSyncFile(validation.normalizedKey, syncId, targetId);
+      return { upload: untouchedFile, untouched: true };
+    }
+    const copyTarget = buildSyncFileCopyTarget(user, currentFile, copyPath);
+    const file = await copyAndIndexSyncFile(context, user, validation.normalizedKey, copyTarget, validatedCopyProps);
+    if (await deleteStagedSyncFile(validation.normalizedKey, syncId, targetId)) {
+      logApp.info('[FILE STORAGE] Copy referenced sync file to S3 in success', { document: file, storageKey: validation.normalizedKey, targetId: file.id });
+    }
+    await triggerSyncFileImport(context, user, filePath, file, syncId, noTriggerImport, importContextEntities);
+    return { upload: file, untouched: false };
+  } catch (err) {
+    logApp.error('[FILE STORAGE] Cannot copy referenced sync file in S3', { cause: err, syncId, targetId });
+    return null;
+  } finally {
+    await lock.unlock();
+  }
 };
 
 /**
@@ -607,17 +856,7 @@ export const upload = async (
   opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [], creatorId: creatorIdOpt } = opts;
-  const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const normalized_file_markings = file_markings?.map((m) => {
-    const marking = markings.get(m);
-    return marking ? marking.internal_id : m;
-  }) ?? [];
-  const filtered_markings = normalized_file_markings.filter((id) => id) as string[];
-  // Verify markings
-  for (let index = 0; index < (filtered_markings ?? []).length; index += 1) {
-    const markingId = filtered_markings[index];
-    await validateMarking(context, user, markingId, markings);
-  }
+  const filtered_markings = await normalizeAndValidateFileMarkings(context, user, file_markings ?? []);
   const metadata: FileMetadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
