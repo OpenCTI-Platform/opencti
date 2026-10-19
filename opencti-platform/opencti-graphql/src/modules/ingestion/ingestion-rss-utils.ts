@@ -13,6 +13,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import type { StixBundle } from '../../types/stix-2-1-common';
 import type { BasicStoreEntityIngestionRss } from './ingestion-types';
 import { FEED_REQUEST_TIMEOUT } from './ingestion-common';
+import { asArray } from '../../utils/arrayUtil';
 
 const RSS_FEED_USER_AGENT = conf.get('ingestion_manager:rss_feed:user_agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0';
 
@@ -46,16 +47,6 @@ export interface DataItem {
   pubDate: Moment;
 }
 
-const asArray = (data: unknown) => {
-  if (data) {
-    if (Array.isArray(data)) {
-      return data;
-    }
-    return [data];
-  }
-  return [];
-};
-
 const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
   const { updated } = feed;
   // Safe access to link with fallback to empty string
@@ -85,7 +76,7 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
     description: turndownService.turndown(item.description?._ ?? ''),
     link: link || undefined,
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
-    labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => (c as { _: string })._.trim())),
+    labels: R.uniq(asArray(item.category, { falsyAsEmpty: true }).filter((c) => isNotEmptyField(c)).map((c) => (c as { _: string })._.trim())),
     pubDate: utcDate(sanitizeForMomentParsing(item.pubDate?._ ?? pubDate?._ ?? FROM_START_STR)),
   };
 };
@@ -120,13 +111,13 @@ const rssDataFilter = (items: DataItem[], current_state_date: Date | undefined):
 export const rssDataParser = async (turndownService: TurndownService, data: convertableToString, current_state_date: Date | undefined): Promise<DataItem[]> => {
   const xmlData = await xmlParse(data, { explicitArray: false, trim: true, explicitCharkey: true, mergeAttrs: true });
   if (xmlData?.feed) { // Atom V1
-    const entries = asArray(xmlData.feed.entry);
+    const entries = asArray(xmlData.feed.entry, { falsyAsEmpty: true });
     const rssItems = entries.map((entry) => rssItemV1Convert(turndownService, xmlData.feed, entry));
     return rssDataFilter(rssItems, current_state_date);
   }
   if (xmlData?.rss) { // Atom V2
-    const channels = asArray(xmlData?.rss?.channel);
-    const rssItems = channels.map((channel) => asArray(channel.item).map((item) => rssItemV2Convert(turndownService, channel, item))).flat();
+    const channels = asArray(xmlData?.rss?.channel, { falsyAsEmpty: true });
+    const rssItems = channels.map((channel) => asArray(channel.item, { falsyAsEmpty: true }).map((item) => rssItemV2Convert(turndownService, channel, item))).flat();
     return rssDataFilter(rssItems, current_state_date);
   }
   return [];

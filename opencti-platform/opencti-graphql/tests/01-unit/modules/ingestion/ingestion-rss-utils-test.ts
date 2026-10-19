@@ -66,7 +66,7 @@ describe('ingestion-rss-utils', () => {
     });
 
     it('should fall back to the channel date when an item has no date', async () => {
-      const xml = `<?xml version="1.0"?><rss version="2.0"><channel><pubDate>Tue, 02 Jan 2024 10:00:00 GMT</pubDate><item><title>No date</title></item></channel></rss>`;
+      const xml = '<?xml version="1.0"?><rss version="2.0"><channel><pubDate>Tue, 02 Jan 2024 10:00:00 GMT</pubDate><item><title>No date</title></item></channel></rss>';
       const items = await rssDataParser(turndownService, xml, undefined);
       expect(items[0].pubDate.toISOString()).toBe('2024-01-02T10:00:00.000Z');
     });
@@ -93,7 +93,7 @@ describe('ingestion-rss-utils', () => {
       const options = rssHttpClientOptions(buildIngestion());
       expect(options.responseType).toBe('text');
       expect(options.timeout).toBe(FEED_REQUEST_TIMEOUT);
-      expect(options.headers?.['User-Agent']).toEqual(expect.any(String));
+      expect(options.headers).toMatchObject({ 'User-Agent': expect.any(String) });
     });
 
     it('should not verify SSL unless the feed asks for it', () => {
