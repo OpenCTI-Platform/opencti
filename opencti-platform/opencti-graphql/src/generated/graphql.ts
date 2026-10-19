@@ -6574,6 +6574,7 @@ export type CustomFieldValue = {
   date_value?: Maybe<Scalars['DateTime']['output']>;
   field_id: Scalars['ID']['output'];
   field_name: Scalars['String']['output'];
+  float_value?: Maybe<Scalars['Float']['output']>;
   int_value?: Maybe<Scalars['Int']['output']>;
   select_value?: Maybe<Scalars['String']['output']>;
   select_values?: Maybe<Array<Scalars['String']['output']>>;
@@ -45165,6 +45166,7 @@ export type CustomFieldValueResolvers<ContextType = any, ParentType extends Reso
   date_value?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   field_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   field_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  float_value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   int_value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   select_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   select_values?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;

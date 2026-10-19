@@ -142,6 +142,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                 <SelectItem value="string">{t_i18n('Text')}</SelectItem>
                 <SelectItem value="markdown">{t_i18n('Markdown')}</SelectItem>
                 <SelectItem value="integer">{t_i18n('Integer')}</SelectItem>
+                <SelectItem value="decimal">{t_i18n('Decimal')}</SelectItem>
                 <SelectItem value="boolean">{t_i18n('Boolean')}</SelectItem>
                 <SelectItem value="date">{t_i18n('Date')}</SelectItem>
                 <SelectItem value="select">{t_i18n('Selection list')}</SelectItem>

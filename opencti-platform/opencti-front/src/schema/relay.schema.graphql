@@ -17584,6 +17584,7 @@ type CustomFieldValue {
   field_id: ID!
   field_name: String!
   int_value: Int
+  float_value: Float
   string_value: String
   boolean_value: Boolean
   date_value: DateTime

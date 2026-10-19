@@ -20,7 +20,7 @@ interface CustomFieldUpsertOperation {
 }
 
 const convertPatchValue = (fieldType: CustomFieldType, value: string) => {
-  if (fieldType === 'integer') return Number(value);
+  if (fieldType === 'integer' || fieldType === 'decimal') return Number(value);
   if (fieldType === 'boolean') return value.toLowerCase() === 'true';
   return value;
 };

@@ -12,6 +12,7 @@ export interface CustomFieldStoredValue {
   field_id: string;
   field_name: string;
   int_value?: number | null;
+  float_value?: number | null;
   string_value?: string | null;
   boolean_value?: boolean | null;
   date_value?: string | null;
@@ -57,10 +58,12 @@ export const getCustomFieldValueError = (
   rawValue: CustomFieldValue,
   t_i18n: (key: string) => string,
 ): string | undefined => {
-  if (definition.field_type !== 'integer') return undefined;
+  if (definition.field_type !== 'integer' && definition.field_type !== 'decimal') return undefined;
   const trimmed = String(rawValue).trim();
   if (trimmed === '') return undefined;
   const parsed = Number(trimmed);
+  // A decimal has no min / max bounds, as the EPSS score of the vulnerabilities
+  if (definition.field_type === 'decimal') return Number.isFinite(parsed) ? undefined : t_i18n('The value must be a number');
   if (!Number.isInteger(parsed)) return t_i18n('The value must be an integer');
   const { min, max } = getIntegerBounds(definition);
   if (parsed < min || parsed > max) {
@@ -97,6 +100,12 @@ export const buildCustomFieldsValidationSchema = (
       if (def.field_type === 'integer') {
         return [def.id, buildIntegerValidationSchema(def, isMandatory, t_i18n)];
       }
+      if (def.field_type === 'decimal') {
+        const decimalSchema = Yup.number()
+          .transform((value, originalValue) => (originalValue === '' || originalValue === null ? undefined : value))
+          .typeError(t_i18n('The value must be a number'));
+        return [def.id, isMandatory ? decimalSchema.required(requiredMessage) : decimalSchema.notRequired()];
+      }
       if (def.field_type === 'multi_select') {
         return [def.id, isMandatory ? Yup.array().min(1, requiredMessage) : Yup.array().nullable()];
       }
@@ -122,6 +131,8 @@ export const getCustomFieldCurrentValue = (
   switch (definition.field_type) {
     case 'integer':
       return entry.int_value != null ? String(entry.int_value) : '';
+    case 'decimal':
+      return entry.float_value != null ? String(entry.float_value) : '';
     case 'boolean':
       return entry.boolean_value ?? false;
     case 'date':
@@ -137,7 +148,8 @@ export const getCustomFieldCurrentValue = (
 
 const parseCustomFieldRawValue = (definition: CustomFieldDef, rawValue: CustomFieldValue) => {
   switch (definition.field_type) {
-    case 'integer': {
+    case 'integer':
+    case 'decimal': {
       // Number() (unlike parseInt) never truncates: '1e3' is 1000 like for Yup, '1.9' stays 1.9 for validation to reject.
       // An empty input is "no value" (Number('') would be 0).
       const trimmed = String(rawValue).trim();
@@ -189,6 +201,8 @@ export const buildCustomFieldValueEntry = (
   switch (definition.field_type) {
     case 'integer':
       return { ...base, int_value: parsedValue as number };
+    case 'decimal':
+      return { ...base, float_value: parsedValue as number };
     case 'boolean':
       return { ...base, boolean_value: parsedValue as boolean };
     case 'date':
@@ -217,9 +231,9 @@ export const updateCustomFieldValues = (
 ): CustomFieldStoredValue[] => {
   const withoutField = storedValues.filter((v) => v.field_id !== definition.id);
   const entry = buildCustomFieldValueEntry(definition, rawValue);
-  const isValidValue = definition.field_type === 'integer'
-    ? entry.int_value !== undefined
-    : isCustomFieldValueSet(rawValue);
+  let isValidValue = isCustomFieldValueSet(rawValue);
+  if (definition.field_type === 'integer') isValidValue = entry.int_value !== undefined;
+  if (definition.field_type === 'decimal') isValidValue = entry.float_value !== undefined;
   return isValidValue ? [...withoutField, entry] : withoutField;
 };
 
@@ -246,6 +260,9 @@ export const getCustomFieldDisplayValue = (
   }
   if (value.int_value !== null && value.int_value !== undefined) {
     return String(value.int_value);
+  }
+  if (value.float_value !== null && value.float_value !== undefined) {
+    return String(value.float_value);
   }
   if (value.select_values && value.select_values.length > 0) {
     return value.select_values.join(', ');
@@ -329,6 +346,7 @@ export const getCustomFieldRawValueByFieldName = (
   if (entry.boolean_value !== null && entry.boolean_value !== undefined) return entry.boolean_value;
   if (entry.date_value !== null && entry.date_value !== undefined) return entry.date_value;
   if (entry.int_value !== null && entry.int_value !== undefined) return entry.int_value;
+  if (entry.float_value !== null && entry.float_value !== undefined) return entry.float_value;
   if (entry.select_values && entry.select_values.length > 0) return [...entry.select_values];
   if (entry.select_value !== null && entry.select_value !== undefined) return entry.select_value;
   return entry.string_value ?? undefined;
