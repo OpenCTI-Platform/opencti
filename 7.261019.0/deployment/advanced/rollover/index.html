@@ -7359,7 +7359,7 @@
 <h1 id="indices-and-rollover-policies">Indices and rollover policies</h1>
 <h2 id="introduction">Introduction</h2>
 <p>ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been designed to be able to use aliases for indices and so supports index lifecycle policies very well. Thus, by default OpenCTI initializes indices with a suffix of <code>-00001</code> and uses wildcards to query indices. When rollover policies are implemented (default starting OpenCTI 5.9.X if you initialized your platform at this version), indices are splitted to keep a reasonable volume of data in shards.</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/indices-f6f3a99d97.png" data-desc-position="bottom"><img alt="Indices" src="/shared-assets/indices-f6f3a99d97.png"></a></p>
 <h2 id="opencti-integration-user-permissions-in-opensearchelasticsearch">OpenCTI Integration User Permissions in OpenSearch/ElasticSearch</h2>
 <ul>
 <li>

@@ -7291,7 +7291,7 @@
 <h2 id="create-an-exclusion-list">Create an exclusion  list</h2>
 <p>Exclusion lists can be configured on the "Settings &gt; Customization &gt; Exclusion lists" menu.</p>
 <p>On this first screen, you can see the main view of the interface aiming to present a clear, organised presentation of the existing lists.</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/exclusion-lists-interface-b3730e4131.png" data-desc-position="bottom"><img alt="Exclusion lists interface" src="/shared-assets/exclusion-lists-interface-b3730e4131.png"></a></p>
 <p>When creating a list, you can provide the following data:</p>
 <ul>
 <li>Name</li>
@@ -7309,13 +7309,13 @@
 </ul>
 <p>As said before, there are different indicator observable types possible :</p>
 <p><code>Artifact</code>, <code>Domain-name</code>, <code>Email-Addr</code>, <code>Hostname</code>, <code>Ipv4-Addr</code>, <code>ipv6-Addr</code>, <code>StixFile</code>, <code>Url</code></p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/exclusion-lists-creation-drawer-f0ca2a9a8d.png" data-desc-position="bottom"><img alt="Exclusion lists creation drawer" src="/shared-assets/exclusion-lists-creation-drawer-f0ca2a9a8d.png"></a></p>
 <p>Once created, you can see that the status is In progress and that the Last modification date has changed.
 This is because the new exclusion list has been created, but still need to be propagated to all of the platform nodes.</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/exclusion-lists-interface-in-progress-34fa757f23.png" data-desc-position="bottom"><img alt="Exclusion lists in progress" src="/shared-assets/exclusion-lists-interface-in-progress-34fa757f23.png"></a></p>
 <p>Once the <code>last modification date</code> and the <code>Current cache version date</code> are up to date, the status is <code>Synchronized</code> again. Your new exclusion list is ready to be applied!
 On the list of exclusion lists, you can also see some additional information: the number of lines contained in your list, the creation date and the activation status.</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/exclusion-lists-interface-with-list-8122946cf0.png" data-desc-position="bottom"><img alt="Exclusion lists with list" src="/shared-assets/exclusion-lists-interface-with-list-8122946cf0.png"></a></p>
 <p>There are several options available in your exclusion list:</p>
 <ul>
 <li>delete: if you want to completely remove the list from the settings</li>
@@ -7323,12 +7323,12 @@ On the list of exclusion lists, you can also see some additional information: th
 <li>edit: if you want to edit my current list</li>
 </ul>
 <p>You can also download the raw file containing all of your exclusion list values.</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/exclusion-lists-popover-839a6e5901.png" data-desc-position="bottom"><img alt="Exclusion lists popover" src="/shared-assets/exclusion-lists-popover-839a6e5901.png"></a></p>
 <h2 id="edit-an-exclusion-list">Edit an exclusion list</h2>
 <p>If you want to modify my list, you can open the edit drawer.
 Here the information can be changed and you can edit the contents of your file directly (if the file size is less than 1M).</p>
 <p>It is also possible to completely change the file, by toggling <code>Upload a file</code> .</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/exclusion-lists-edition-drawer-3ce4e09364.png" data-desc-position="bottom"><img alt="Exclusion lists edition drawer" src="/shared-assets/exclusion-lists-edition-drawer-3ce4e09364.png"></a></p>
 <h2 id="use-an-exclusion-list">Use an exclusion list</h2>
 <p>From now on, when an indicator is about to be created, if its pattern contains an observable value belonging to an exclusion list, then this indicator will not be created, with an error message of <code>Indicator of type stix is contained in exclusion list</code>.
 This applies regardless of the source of ingestion: Manual, Connectors, Feed ingestors (CSV, RSS, TAXII) and also Playbook.</p>
@@ -7336,7 +7336,7 @@ This applies regardless of the source of ingestion: Manual, Connectors, Feed ing
 <p>"Exclusion lists apply to Indicators, not Observables"
     The check is only performed when an Indicator is created from a STIX pattern. A standalone Observable created directly (for instance by a connector or feed ingestor that does not generate an Indicator) is not filtered by exclusion lists.</p>
 </blockquote>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/exclusion-lists-indicator-creation-02ce728727.png" data-desc-position="bottom"><img alt="Exclusion lists indicator creation" src="/shared-assets/exclusion-lists-indicator-creation-02ce728727.png"></a></p>
 
 
 

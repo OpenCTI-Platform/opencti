@@ -7473,7 +7473,7 @@
 <p>The OpenCTI platform technological stack has been designed to be able to scale horizontally. All dependencies such as Elastic or Redis can be deployed in cluster mode and performances can be drastically increased by deploying multiple platform and worker instances.</p>
 <h2 id="high-level-architecture">High level architecture</h2>
 <p>Here is the high level architecture for customers and Filigran cloud platform to ensure both high availability and throughput.</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/cluster-8f2add443b.png" data-desc-position="bottom"><img alt="Cluster" src="/shared-assets/cluster-8f2add443b.png"></a></p>
 <h2 id="configuration">Configuration</h2>
 <h3 id="dependencies">Dependencies</h3>
 <h4 id="elasticsearch">ElasticSearch</h4>
@@ -7515,10 +7515,10 @@
 </li>
 </ul>
 <p>When enabling clustering, the number of nodes is displayed in Settings &gt; Parameters.</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/cluster-mode-6318eabf2a.png" data-desc-position="bottom"><img alt="Cluster mode" src="/shared-assets/cluster-mode-6318eabf2a.png"></a></p>
 <h3 id="managers-and-schedulers">Managers and schedulers</h3>
 <p>Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitly <a href="../../configuration/#engines-schedules-managers">disabled in the configuration</a>.</p>
-<p></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/managers-8d2ab60a8f.png" data-desc-position="bottom"><img alt="Managers" src="/shared-assets/managers-8d2ab60a8f.png"></a></p>
 
 
 
