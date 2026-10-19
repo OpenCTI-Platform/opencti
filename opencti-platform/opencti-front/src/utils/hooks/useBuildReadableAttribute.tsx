@@ -21,10 +21,13 @@ const MARKDOWN_ATTRIBUTES = [
 // representative.secondary falls back to the content of the entity (HTML from the rich text editor)
 // when there is no description. This HTML must not be parsed as markdown: a blank line inside a tag,
 // as in the alternative text Word gives to pictures, ends the HTML block and the rest of the tag is escaped.
+// The rich text editor only writes block elements at the top level: anything else (text, inline tags,
+// markdown autolinks like <https://example.com> that the parser reads as unknown elements) is markdown.
+const RICH_TEXT_BLOCK_TAGS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'TABLE', 'BLOCKQUOTE', 'PRE', 'FIGURE', 'DIV', 'HR', 'IMG']);
 const isRichTextHtml = (value: string) => {
   const { body } = new DOMParser().parseFromString(value, 'text/html');
   const nodes = Array.from(body.childNodes).filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent?.trim());
-  return nodes.length > 0 && nodes.every((node) => node.nodeType === Node.ELEMENT_NODE);
+  return nodes.length > 0 && nodes.every((node) => node instanceof Element && RICH_TEXT_BLOCK_TAGS.has(node.tagName));
 };
 
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {

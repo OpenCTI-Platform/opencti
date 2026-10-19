@@ -79,6 +79,12 @@ describe('Hook: useBuildReadableAttribute', () => {
     expect(markdown).toContain('<strong>Bold</strong> text');
     const markdownStartingWithHtml = renderToString(buildReadableAttribute('<b>Title</b> and **bold**', { attribute: 'representative.secondary' }) as ReactElement);
     expect(markdownStartingWithHtml).toContain('<strong>bold</strong>');
+    // Autolinks are read as unknown elements by the html parser: they must stay markdown.
+    const urlAutolink = renderToString(buildReadableAttribute('<https://example.com>', { attribute: 'representative.secondary' }) as ReactElement);
+    expect(urlAutolink).toContain('<a href="https://example.com">https://example.com</a>');
+    const emailAutolink = renderToString(buildReadableAttribute('<analyst@example.com>', { attribute: 'representative.secondary' }) as ReactElement);
+    expect(emailAutolink).toContain('href="mailto:analyst@example.com"');
+    expect(emailAutolink).toContain('analyst@example.com</a>');
   });
   it('should render markdown links as plain text only in tables', () => {
     const { hook } = testRenderHook(() => useBuildReadableAttribute());
