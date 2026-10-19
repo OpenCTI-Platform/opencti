@@ -1053,13 +1053,6 @@ class PingAlive(threading.Thread):
                 self.connector_logger.debug("PingAlive running.")
                 initial_state = self.get_state()
                 connector_info = self.connector_info.all_details
-
-                if len(self.connector_info.errors) > 0:
-                    self.connector_logger.error(
-                        "[PING] ERROR during last run",
-                        {"errors": self.connector_info.errors},
-                    )
-
                 self.connector_logger.debug(
                     "PingAlive ConnectorInfo", {"connector_info": connector_info}
                 )
@@ -1840,6 +1833,8 @@ def _parse_criticity(value) -> int:
 
 def _sanitize_connector_error(error) -> Optional[Dict]:
     try:
+        if isinstance(error, ConnectorRunError):
+            error = error.model_dump()
         code = error.get("code")
         if code is None:
             return None
@@ -1908,7 +1903,7 @@ class ConnectorInfo:
         queue_messages_size: float = 0.0,
         next_run_datetime: datetime = None,
         last_run_datetime: datetime = None,
-        errors: List[ConnectorRunError] = [],
+        errors: Optional[List[Dict]] = None,
     ):
         """Initialize ConnectorInfo with runtime parameters.
 
@@ -3226,10 +3221,38 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             sys.excepthook(*sys.exc_info())
 
+    def _run_and_collect_errors(
+        self, message_callback: Callable[[], Optional[List[Dict]]]
+    ) -> None:
+        # Errors belong to a run: cleared before it so those added with add_error during it are kept
+        self.connector_info.clear_errors()
+        error_list = message_callback()
+        # Strings, bytes and mappings are iterable but are not a list of errors
+        if isinstance(error_list, Iterable) and not isinstance(
+            error_list, (str, bytes, Mapping)
+        ):
+            returned_errors: List[Dict] = []
+            for error in error_list:
+                try:
+                    returned_errors.append(
+                        ConnectorRunError.model_validate(error).model_dump()
+                    )
+                except ValidationError as e:
+                    self.connector_logger.error(
+                        "Malformed error response from the connector",
+                        {"received": repr(error), "reason": str(e)},
+                    )
+            self.connector_info.errors = self.connector_info.errors + returned_errors
+        if self.connector_info.errors:
+            self.connector_logger.info(
+                "Errors reported by the connector run",
+                {"errors": self.connector_info.errors},
+            )
+
     def _schedule_process(
         self,
         scheduler: sched.scheduler,
-        message_callback: Callable[[], None],
+        message_callback: Callable[[], Optional[List[Dict]]],
         duration_period: Union[int, float],
     ) -> None:
         """Execute scheduled connector process if queue is not buffering.
@@ -3240,7 +3263,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param scheduler: Scheduler containing tasks to be started
         :type scheduler: sched.scheduler
         :param message_callback: The connector process callback function
-        :type message_callback: Callable[[], None]
+        :type message_callback: Callable[[], Optional[List[Dict]]]
         :param duration_period: The connector's interval in seconds
         :type duration_period: Union[int, float]
         """
@@ -3250,7 +3273,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
             if not check_connector_buffering:
                 # Start running the connector
-                message_callback()
+                self._run_and_collect_errors(message_callback)
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
 
@@ -3308,23 +3331,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 sys.exit(0)
             else:
                 # Start running the connector
-                error_list = message_callback()
-                # Strings, bytes and mappings are iterable but are not a list of errors
-                if not isinstance(error_list, Iterable) or isinstance(
-                    error_list, (str, bytes, Mapping)
-                ):
-                    self.connector_info.errors = []
-                else:
-                    result: List[ConnectorRunError] = []
-                    for error in error_list:
-                        try:
-                            result.append(ConnectorRunError.model_validate(error))
-                        except ValidationError as e:
-                            self.connector_logger.error(
-                                "Malformed error response from the connector",
-                                {"received": repr(error), "reason": str(e)},
-                            )
-                    self.connector_info.errors = result
+                self._run_and_collect_errors(message_callback)
 
                 # Set queue_threshold and queue_messages_size for the first run
                 self.check_connector_buffering()
