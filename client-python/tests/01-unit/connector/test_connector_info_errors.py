@@ -6,6 +6,7 @@ from pycti.connector.opencti_connector_helper import (
     CONNECTOR_ERROR_MESSAGE_MAX_LENGTH,
     CONNECTOR_ERRORS_MAX_COUNT,
     ConnectorInfo,
+    ConnectorRunError,
     PingAlive,
 )
 
@@ -138,3 +139,34 @@ def test_ping_alive_sends_errors_to_platform():
 
     sent_connector_info = fake_api.connector.ping.call_args.args[2]
     assert sent_connector_info["errors"] == [API_ERROR]
+
+
+def test_ping_alive_does_not_log_errors_on_each_ping():
+    connector_info = ConnectorInfo()
+    connector_info.add_error("API_UNREACHABLE", "Source API returned 503", 2)
+    connector_logger = MagicMock()
+    fake_api = MagicMock()
+
+    def fake_ping(connector_id, state, info):
+        ping_alive.exit_event.set()
+        return {"connector_state": None}
+
+    fake_api.connector.ping.side_effect = fake_ping
+    ping_alive = PingAlive(
+        connector_logger=connector_logger,
+        connector_id="test-connector-id",
+        api=fake_api,
+        get_state=lambda: None,
+        set_state=lambda state: None,
+        metric=MagicMock(),
+        connector_info=connector_info,
+    )
+    ping_alive.ping()
+
+    connector_logger.info.assert_not_called()
+    connector_logger.error.assert_not_called()
+
+
+def test_connector_run_error_objects_are_sent():
+    info = ConnectorInfo(errors=[ConnectorRunError.model_validate(API_ERROR)])
+    assert info.all_details["errors"] == [API_ERROR]

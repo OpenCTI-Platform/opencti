@@ -43,7 +43,7 @@ def _run(callback_result) -> OpenCTIConnectorHelper:
 
 
 def _stored_errors(helper: OpenCTIConnectorHelper) -> list:
-    return [error.model_dump() for error in helper.connector_info.errors]
+    return helper.connector_info.errors
 
 
 def test_none_result_clears_errors():
@@ -128,3 +128,107 @@ def test_mixed_list_keeps_valid_errors_and_logs_malformed_ones():
     assert _stored_errors(helper) == [API_ERROR, RATE_ERROR]
     helper.connector_logger.error.assert_called_once()
     assert helper.connector_logger.error.call_args.args[1]["received"] == "'oops'"
+
+
+def _run_errors_logs(helper: OpenCTIConnectorHelper) -> list:
+    return [
+        call.args
+        for call in helper.connector_logger.info.call_args_list
+        if call.args[0] == "Errors reported by the connector run"
+    ]
+
+
+def test_valid_errors_are_logged_once_per_run():
+    helper = _run([API_ERROR, RATE_ERROR])
+    assert _run_errors_logs(helper) == [
+        ("Errors reported by the connector run", {"errors": [API_ERROR, RATE_ERROR]})
+    ]
+
+
+@pytest.mark.parametrize(
+    "callback_result",
+    [None, [], ["oops"]],
+    ids=["none", "empty-list", "only-malformed"],
+)
+def test_no_errors_log_without_valid_errors(callback_result):
+    helper = _run(callback_result)
+    assert _run_errors_logs(helper) == []
+
+
+def _run_with_add_error(callback_result) -> OpenCTIConnectorHelper:
+    helper = _build_helper()
+
+    def process():
+        helper.connector_info.add_error(**API_ERROR)
+        return callback_result
+
+    helper.schedule_process(process, duration_period=60)
+    helper.metric.inc.assert_not_called()
+    return helper
+
+
+def test_errors_added_during_the_run_are_kept():
+    helper = _run_with_add_error(None)
+    assert helper.connector_info.errors == [API_ERROR]
+
+
+def test_errors_added_during_the_run_are_kept_with_returned_ones():
+    helper = _run_with_add_error([RATE_ERROR])
+    assert helper.connector_info.errors == [API_ERROR, RATE_ERROR]
+
+
+def test_errors_from_the_previous_run_are_dropped():
+    helper = _run_with_add_error([RATE_ERROR])
+    assert PREVIOUS_RUN_ERROR not in helper.connector_info.errors
+
+
+def test_returned_errors_are_sent_on_ping():
+    helper = _run([RATE_ERROR, API_ERROR])
+    assert helper.connector_info.all_details["errors"] == [API_ERROR, RATE_ERROR]
+
+
+def test_errors_added_during_the_run_are_logged_with_returned_ones():
+    helper = _run_with_add_error([RATE_ERROR])
+    assert _run_errors_logs(helper) == [
+        ("Errors reported by the connector run", {"errors": [API_ERROR, RATE_ERROR]})
+    ]
+
+
+def _run_later(process) -> OpenCTIConnectorHelper:
+    helper = _build_helper()
+    helper._schedule_process(MagicMock(), process, 60)
+    helper.metric.inc.assert_not_called()
+    return helper
+
+
+def test_later_runs_replace_errors_with_returned_ones():
+    helper = _run_later(lambda: [RATE_ERROR])
+    assert helper.connector_info.errors == [RATE_ERROR]
+    assert _run_errors_logs(helper) == [
+        ("Errors reported by the connector run", {"errors": [RATE_ERROR]})
+    ]
+
+
+def test_later_runs_without_errors_clear_previous_ones():
+    helper = _run_later(lambda: None)
+    assert helper.connector_info.errors == []
+    assert _run_errors_logs(helper) == []
+
+
+def test_later_runs_keep_errors_added_during_the_run():
+    helper = _build_helper()
+
+    def process():
+        helper.connector_info.add_error(**API_ERROR)
+
+    helper._schedule_process(MagicMock(), process, 60)
+    assert helper.connector_info.errors == [API_ERROR]
+
+
+def test_buffering_skips_the_run_and_keeps_previous_errors():
+    helper = _build_helper()
+    helper.check_connector_buffering.return_value = True
+    process = MagicMock(return_value=[RATE_ERROR])
+    helper._schedule_process(MagicMock(), process, 60)
+    process.assert_not_called()
+    assert helper.connector_info.errors == [PREVIOUS_RUN_ERROR]
