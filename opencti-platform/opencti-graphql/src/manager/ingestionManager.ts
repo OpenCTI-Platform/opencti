@@ -8,14 +8,13 @@ import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isNotEmptyField } from '../database/utils';
 import { isDateInRange, now, schedulingPeriodToMs, sinceNowInMinutes, utcDate } from '../utils/format';
 import { findAllRssIngestion, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, DataParam } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestion, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
-import { IngestionAuthType, IngestionCsvMapperType, TaxiiVersion } from '../generated/graphql';
+import { IngestionCsvMapperType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestion, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
@@ -28,9 +27,9 @@ import { queueDetails } from '../modules/connector/connector-domain';
 import { connectorIdFromIngestId } from '../domain/connector';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
-import { decryptIngestionCredential, FEED_REQUEST_TIMEOUT, runningIngestionsFilters } from '../modules/ingestion/ingestion-common';
+import { FEED_REQUEST_TIMEOUT, runningIngestionsFilters } from '../modules/ingestion/ingestion-common';
 import { buildRssReportsBundle, rssDataParser, type RssGetter, rssHttpGetter } from '../modules/ingestion/ingestion-rss-utils';
-import { handleConfidenceToScoreTransformation } from '../modules/ingestion/ingestion-taxii-utils';
+import { computeTaxiiNextState, handleConfidenceToScoreTransformation, taxiiHttpGet, type TaxiiResponseData } from '../modules/ingestion/ingestion-taxii-utils';
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
 import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
@@ -41,7 +40,6 @@ import { assertIngestionExecutionIdentityAllowed } from '../modules/ingestion/in
 // If the lock is free, every API as the right to take it.
 
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
-const INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST = conf.get('ingestion_manager:taxii_feed:limit_per_request') || 0;
 const RSS_FEED_MIN_INTERVAL_MINUTES = conf.get('ingestion_manager:rss_feed:min_interval_minutes') || 5;
 const CSV_FEED_MIN_INTERVAL_MINUTES = conf.get('ingestion_manager:csv_feed:min_interval_minutes') || 5;
 
@@ -163,93 +161,6 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
 // endregion
 
 // region Taxii ingestion
-export interface TaxiiResponseData {
-  data: { more: boolean | undefined; next: string | undefined; objects: StixObject[] };
-  addedLastHeader: string | undefined | null;
-}
-
-interface TaxiiGetParams {
-  next: string | undefined;
-  added_after: string | undefined;
-  limit?: string | undefined;
-}
-
-/**
- *  Compute HTTP GET parameters to send to taxii server.
- *
- *  @see https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107519
- *   // If the more property is set to true and the next property is populated
- *   // then the client can paginate through the remaining records
- *   // using the next URL parameter along with the same original query options.
- *   // If the more property is set to true and the next property is empty
- *   // then the client may paginate through the remaining records by using the added_after URL parameter with the
- *   // date/time value from the X-TAXII-Date-Added-Last header along with the same original query options.
- * @param ingestion
- */
-export const prepareTaxiiGetParam = (ingestion: BasicStoreEntityIngestionTaxii) => {
-  const params: TaxiiGetParams = { next: ingestion.current_state_cursor, added_after: ingestion.added_after_start };
-  if (INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST > 0) {
-    params.limit = INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST;
-  }
-  return params;
-};
-
-export const buildTaxiiHttpClientOptions = async (ingestion: BasicStoreEntityIngestionTaxii) => {
-  const octiHeaders = new OpenCTIHeaders();
-  octiHeaders.Accept = 'application/taxii+json;version=2.1';
-
-  const decryptedAuthValue = await decryptIngestionCredential(ingestion.authentication_value) ?? '';
-
-  if (ingestion.authentication_type === IngestionAuthType.Basic) {
-    const auth = Buffer.from(decryptedAuthValue, 'utf-8').toString('base64');
-    octiHeaders.Authorization = `Basic ${auth}`;
-  }
-  if (ingestion.authentication_type === IngestionAuthType.Bearer) {
-    octiHeaders.Authorization = `Bearer ${decryptedAuthValue}`;
-  }
-  let certificates;
-  if (ingestion.authentication_type === IngestionAuthType.Certificate) {
-    certificates = { cert: decryptedAuthValue.split(':')[0], key: decryptedAuthValue.split(':')[1], ca: decryptedAuthValue.split(':')[2] };
-  }
-
-  const httpClientOptions: GetHttpClient = {
-    headers: octiHeaders,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
-    timeout: FEED_REQUEST_TIMEOUT,
-    responseType: 'json',
-    certificates,
-  };
-  return httpClientOptions;
-};
-
-const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {
-  const httpClientOptions = await buildTaxiiHttpClientOptions(ingestion);
-  const httpClient = getHttpClient(httpClientOptions);
-  const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
-  const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
-  const params = prepareTaxiiGetParam(ingestion);
-
-  logApp.info('[OPENCTI-MODULE] Taxii HTTP sending', {
-    ingestion: ingestion.name,
-    request: {
-      params,
-      url,
-    },
-  });
-  const { data, headers, status } = await httpClient.get(url, { params });
-  logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', {
-    ingestion: ingestion.name,
-    response: {
-      addedLastHeader: headers['x-taxii-date-added-last'],
-      addedFirstHeader: headers['x-taxii-date-added-first'],
-      more: data.more,
-      next: data.next,
-      status,
-    },
-  });
-  return { data, addedLastHeader: headers['x-taxii-date-added-last'] };
-};
-
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<TaxiiExecutionResult>;
 
 interface TaxiiExecutionResult {
@@ -263,36 +174,19 @@ export const processTaxiiResponse = async (
   taxiResponse: TaxiiResponseData,
 ): Promise<TaxiiExecutionResult> => {
   const { data, addedLastHeader } = taxiResponse;
+  let objects: StixObject[] = [];
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
-    const objects = handleConfidenceToScoreTransformation(ingestion, data.objects);
+    objects = handleConfidenceToScoreTransformation(ingestion, data.objects);
     const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects };
     // Push the bundle to absorption queue
     await pushBundleToConnectorQueue(context, ingestion, bundle);
-    const more = data.more || false;
-    // Update the state
-    if (more && isNotEmptyField(data.next)) {
-      // Do not touch to added_after_start
-      const state = { current_state_cursor: data.next, last_execution_date: now() };
-      const ingestionUpdate = await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
-      const connectorState = { current_state_cursor: ingestionUpdate.current_state_cursor, added_after_start: ingestionUpdate.added_after_start };
-      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: connectorState });
-    } else {
-      // Reset the pagination cursor, and update date
-      const state = {
-        current_state_cursor: undefined,
-        added_after_start: addedLastHeader ? utcDate(addedLastHeader).toISOString() : now(),
-        last_execution_date: now(),
-      };
-      const ingestionUpdate = await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
-      const connectorState = { current_state_cursor: ingestionUpdate.current_state_cursor, added_after_start: ingestionUpdate.added_after_start };
-      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: connectorState });
-    }
-    return { objectsCount: data.objects.length, objects };
-  } else {
-    const ingestionUpdate = await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), current_state_cursor: undefined });
-    const connectorState = { current_state_cursor: ingestionUpdate.current_state_cursor, added_after_start: ingestionUpdate.added_after_start };
-    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: connectorState });
+  }
+  // Update the state
+  const ingestionUpdate = await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, computeTaxiiNextState(taxiResponse));
+  const connectorState = { current_state_cursor: ingestionUpdate.current_state_cursor, added_after_start: ingestionUpdate.added_after_start };
+  await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: connectorState });
+  if (objects.length === 0) {
     logApp.info('[OPENCTI-MODULE] Taxii ingestion - taxii server has not sent any object.', {
       next: data.next,
       more: data.more,
@@ -300,8 +194,8 @@ export const processTaxiiResponse = async (
       ingestionId: ingestion.id,
       ingestionName: ingestion.name,
     });
-    return { objectsCount: 0, objects: [] };
   }
+  return { objectsCount: objects.length, objects };
 };
 
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
