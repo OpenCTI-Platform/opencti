@@ -1265,6 +1265,26 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     expect(res.json).toHaveBeenCalledWith({ error: 'Request failed with status code 502' });
   });
 
+  it('should stop reading an error body and answer nothing when the browser leaves meanwhile', async () => {
+    const browser = new AbortController();
+    setupAuthenticatedContext({ requestAbortSignal: browser.signal });
+    const errorBody = new PassThrough();
+    const httpError = new Error('Request failed with status code 409') as any;
+    httpError.response = { status: 409, headers: {}, data: errorBody };
+    mockPost.mockRejectedValue(httpError);
+    errorBody.write('{"detail": "This video');
+
+    const pending = postChatbotArtifactDownload(buildDownloadReq('video', REPORT_ID, { format: 'mp4' }), res);
+    // The first chunk is consumed: the handler is now waiting for the rest of the body.
+    await vi.waitFor(() => expect(errorBody.readableLength).toBe(0));
+    browser.abort();
+    await vi.waitFor(() => expect(errorBody.destroyed).toBe(true));
+    await pending;
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+  });
+
   it('should return 503 when XTM One cannot be reached', async () => {
     mockPost.mockRejectedValue(new Error('Network failure'));
 

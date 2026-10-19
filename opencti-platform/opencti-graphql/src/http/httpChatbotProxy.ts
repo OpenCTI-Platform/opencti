@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { addAbortSignal } from 'node:stream';
 import { brotliDecompressSync, unzipSync } from 'node:zlib';
 import type Express from 'express';
 import nconf from 'nconf';
@@ -874,11 +875,13 @@ const decodeUpstreamBody = (body: Buffer, contentEncoding: unknown): Buffer => {
 };
 
 /** The upstream `detail` of a failed call, read from a parsed body or from a stream. */
-const upstreamDetail = async ({ data, headers }: HttpResponseError, fallback: string): Promise<unknown> => {
+const upstreamDetail = async ({ data, headers }: HttpResponseError, fallback: string, signal?: AbortSignal): Promise<unknown> => {
   try {
     if (typeof data === 'object' && data !== null) {
       if ('detail' in data) return data.detail;
       if (typeof data.pipe === 'function') {
+        // axios lets go of the signal once the call has failed: the error body is read under it here.
+        if (signal) addAbortSignal(signal, data);
         const chunks: Buffer[] = [];
         let size = 0;
         for await (const chunk of data as AsyncIterable<Buffer>) {
@@ -948,7 +951,9 @@ export const getChatbotArtifact = async (req: Express.Request, res: Express.Resp
     const httpErr = getResponseError(e);
     logArtifactFailure('Error in chatbot artifact read', e, httpErr);
     if (httpErr) {
-      res.status(httpErr.status).json({ error: detailToText(await upstreamDetail(httpErr, message), message) });
+      const detail = await upstreamDetail(httpErr, message, signal);
+      if (signal?.aborted) return;
+      res.status(httpErr.status).json({ error: detailToText(detail, message) });
     } else {
       res.status(503).json({ error: 'XTM One is unreachable' });
     }
@@ -1007,7 +1012,9 @@ export const postChatbotArtifactDownload = async (req: Express.Request, res: Exp
     const httpErr = getResponseError(e);
     logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr);
     if (httpErr) {
-      res.status(httpErr.status).json({ error: detailToText(await upstreamDetail(httpErr, message), message) });
+      const detail = await upstreamDetail(httpErr, message, signal);
+      if (signal?.aborted) return;
+      res.status(httpErr.status).json({ error: detailToText(detail, message) });
     } else {
       res.status(503).json({ error: 'XTM One is unreachable' });
     }
