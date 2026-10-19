@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { addAbortSignal } from 'node:stream';
+import { brotliDecompressSync, unzipSync } from 'node:zlib';
 import type Express from 'express';
 import nconf from 'nconf';
 import Busboy from 'busboy';
@@ -14,7 +16,7 @@ import { isBrowserSessionRequest, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { getXtmOneIdentity, issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
-import { getHttpClient, getResponseError } from '../utils/http-client';
+import { getHttpClient, getResponseError, type HttpResponseError } from '../utils/http-client';
 import { redisDeleteXtmAgentResponse, redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
 import { checkDraftInContext } from './httpServer-draft';
 import { addAiInsightRequestCount, addChatbotMessageCount, addXtmAgentCallCount } from '../manager/telemetryManager';
@@ -833,6 +835,186 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
         // If parsing fails, fall back to the generic error message.
       }
       res.status(httpErr.status).json({ error: detail });
+    } else {
+      res.status(503).json({ error: 'XTM One is unreachable' });
+    }
+  }
+};
+
+// ── Decks, reports and videos an answer made ────────────────────────────
+// XTM One describes them in the chat answer (`artifacts`); the chatbot's
+// cards download them and follow a video's render through the two routes
+// below. As for files, the user is authenticated to OpenCTI only and the XTM
+// One JWT is minted here.
+const ARTIFACT_KINDS = new Set(['presentation', 'report', 'video']);
+const ARTIFACT_FORMAT_RE = /^[a-z0-9_]{1,20}$/;
+const ARTIFACT_FORWARD_HEADERS = ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control'];
+// An error body is a short `{detail}`: a larger one is not read, nor inflated past this.
+const UPSTREAM_ERROR_MAX_BYTES = 64 * 1024;
+
+/** The validated `kind` / `artifactId` of an artifact route, or null (anything else never reaches XTM One). */
+const artifactTarget = (req: Express.Request): { kind: string; artifactId: string } | null => {
+  const kind = String(req.params.kind ?? '');
+  const artifactId = String(req.params.artifactId ?? '');
+  return ARTIFACT_KINDS.has(kind) && UUID_RE.test(artifactId) ? { kind, artifactId } : null;
+};
+
+/** A body read with `decompress: false` is still in its `content-encoding`. */
+const decodeUpstreamBody = (body: Buffer, contentEncoding: unknown): Buffer => {
+  const options = { maxOutputLength: UPSTREAM_ERROR_MAX_BYTES };
+  switch (String(contentEncoding ?? '').trim().toLowerCase()) {
+    case 'gzip':
+    case 'x-gzip':
+    case 'deflate':
+      return unzipSync(body, options);
+    case 'br':
+      return brotliDecompressSync(body, options);
+    default:
+      return body;
+  }
+};
+
+/** The upstream `detail` of a failed call, read from a parsed body or from a stream. */
+const upstreamDetail = async ({ data, headers }: HttpResponseError, fallback: string, signal?: AbortSignal): Promise<unknown> => {
+  try {
+    if (typeof data === 'object' && data !== null) {
+      if ('detail' in data) return data.detail;
+      if (typeof data.pipe === 'function') {
+        // axios lets go of the signal once the call has failed: the error body is read under it here.
+        if (signal) addAbortSignal(signal, data);
+        const chunks: Buffer[] = [];
+        let size = 0;
+        for await (const chunk of data as AsyncIterable<Buffer>) {
+          size += chunk.length;
+          if (size > UPSTREAM_ERROR_MAX_BYTES) return fallback;
+          chunks.push(Buffer.from(chunk));
+        }
+        const body = decodeUpstreamBody(Buffer.concat(chunks), headers?.['content-encoding']);
+        return JSON.parse(body.toString('utf-8')).detail ?? fallback;
+      }
+    }
+  } catch {
+    // An unreadable body: the generic message stands.
+  }
+  return fallback;
+};
+
+/** An upstream refusal (unknown artifact, render not finished) answers the user; only the rest is a platform failure. */
+const logArtifactFailure = (message: string, cause: unknown, httpErr: HttpResponseError | null) => {
+  if (httpErr && httpErr.status < 500) {
+    logApp.warn(message, { cause, status: httpErr.status });
+  } else {
+    logApp.error(message, { cause });
+  }
+};
+
+/** Artifact routes reach XTM One with the validated draft, like file downloads. */
+const artifactHeaders = async (req: Express.Request, res: Express.Response, context: AuthContext) => {
+  try {
+    await checkDraftInContext(context);
+  } catch (draftErr: unknown) {
+    logApp.warn('Chatbot artifact request rejected due to invalid draft context', { cause: draftErr });
+    res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+    return null;
+  }
+  const headers = await generateBasicHeaders(req, context);
+  headers['opencti-draft-id'] = context.draft_context ?? '';
+  return headers;
+};
+
+// ── GET /chatbot/artifacts/:kind/:artifactId ────────────────────────────
+// The artifact described again, as of now: a card follows a video whose
+// render was still running when the answer arrived.
+export const getChatbotArtifact = async (req: Express.Request, res: Express.Response) => {
+  let signal: AbortSignal | undefined;
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    signal = context.requestAbortSignal;
+    const target = artifactTarget(req);
+    if (!target) {
+      res.status(400).json({ error: 'Invalid artifact' });
+      return;
+    }
+    const headers = await artifactHeaders(req, res, context);
+    if (!headers) return;
+    const httpClient = getXtmClient('json', headers);
+    const response = await httpClient.get(`/api/v1/platform/chat/artifacts/${target.kind}/${target.artifactId}`, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+      signal,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    // The browser left: the upstream call is cancelled and nobody reads an answer.
+    if (signal?.aborted) return;
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    logArtifactFailure('Error in chatbot artifact read', e, httpErr);
+    if (httpErr) {
+      const detail = await upstreamDetail(httpErr, message, signal);
+      if (signal?.aborted) return;
+      res.status(httpErr.status).json({ error: detailToText(detail, message) });
+    } else {
+      res.status(503).json({ error: 'XTM One is unreachable' });
+    }
+  }
+};
+
+// ── POST /chatbot/artifacts/:kind/:artifactId/download ──────────────────
+// The file of a deck (pdf, pptx, pptx_native), a report (pdf) or a video
+// (mp4), streamed back with its content headers. XTM One exports a deck or
+// a report on the spot, against the user's export budget.
+export const postChatbotArtifactDownload = async (req: Express.Request, res: Express.Response) => {
+  let signal: AbortSignal | undefined;
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    signal = context.requestAbortSignal;
+    const target = artifactTarget(req);
+    const format = typeof req.body?.format === 'string' ? req.body.format : '';
+    if (!target || !ARTIFACT_FORMAT_RE.test(format)) {
+      res.status(400).json({ error: 'Invalid artifact download' });
+      return;
+    }
+    const headers = await artifactHeaders(req, res, context);
+    if (!headers) return;
+    const httpClient = getXtmClient('stream', headers);
+    const response = await httpClient.post(
+      `/api/v1/platform/chat/artifacts/${target.kind}/${target.artifactId}/download`,
+      { format },
+      // Streaming pipe, as for files: a deck export or a long video must not
+      // be cut by a response timeout. The browser leaving cancels it instead,
+      // during the export as during the stream; the request's own `close`
+      // cannot tell, it fires as soon as the JSON body has been read.
+      { decompress: false, timeout: 0, signal },
+    );
+    Object.entries(response.headers).forEach(([key, value]) => {
+      if (ARTIFACT_FORWARD_HEADERS.includes(key.toLowerCase()) && value) {
+        res.setHeader(key, value as string);
+      }
+    });
+    response.data.pipe(res);
+    response.data.on('error', (error: Error) => {
+      if (signal?.aborted) return;
+      logApp.error('Stream error in chatbot artifact download proxy', { cause: error });
+      if (res.headersSent) {
+        // Ending a chunked response would hand the browser a truncated file as complete.
+        res.destroy();
+      } else {
+        // The file's headers would mislabel the JSON error, which a `content-encoding` makes unreadable.
+        ARTIFACT_FORWARD_HEADERS.forEach((header) => res.removeHeader(header));
+        res.status(500).send({ status: 'error', error: error.message });
+      }
+    });
+  } catch (e: unknown) {
+    if (signal?.aborted) return;
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr);
+    if (httpErr) {
+      const detail = await upstreamDetail(httpErr, message, signal);
+      if (signal?.aborted) return;
+      res.status(httpErr.status).json({ error: detailToText(detail, message) });
     } else {
       res.status(503).json({ error: 'XTM One is unreachable' });
     }
