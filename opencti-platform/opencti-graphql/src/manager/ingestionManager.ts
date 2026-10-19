@@ -18,13 +18,7 @@ import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { findAllRssIngestion, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext, AuthUser } from '../types/user';
-import type {
-  BasicStoreEntityIngestionCsv,
-  BasicStoreEntityIngestionRss,
-  BasicStoreEntityIngestionTaxii,
-  BasicStoreEntityIngestionTaxiiCollection,
-  DataParam,
-} from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, DataParam } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestion, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { IngestionAuthType, IngestionCsvMapperType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestion, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
@@ -37,11 +31,10 @@ import { compareHashSHA256, hashSHA256 } from '../utils/hash';
 import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import { queueDetails } from '../modules/connector/connector-domain';
 import { connectorIdFromIngestId } from '../domain/connector';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
 import { decryptIngestionCredential } from '../modules/ingestion/ingestion-common';
+import { handleConfidenceToScoreTransformation } from '../modules/ingestion/ingestion-taxii-utils';
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
 import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
@@ -407,32 +400,6 @@ interface TaxiiExecutionResult {
   objectsCount: number;
   objects: StixObject[];
 }
-
-export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntityIngestionTaxii | BasicStoreEntityIngestionTaxiiCollection, objects: StixObject[]) => {
-  if (ingestion.confidence_to_score === true) {
-    return objects.map((o) => {
-      if (o.type === 'indicator') {
-        const indicator = o as StixIndicator;
-        if (isNotEmptyField(indicator.confidence)) {
-          if (indicator.extensions && indicator.extensions[STIX_EXT_OCTI]) {
-            indicator.extensions[STIX_EXT_OCTI].score = indicator.confidence;
-          } else if (indicator.extensions) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            indicator.extensions[STIX_EXT_OCTI] = { score: indicator.confidence };
-          } else {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            indicator.extensions = { [STIX_EXT_OCTI]: { score: indicator.confidence } };
-          }
-          return indicator;
-        }
-      }
-      return o;
-    });
-  }
-  return objects;
-};
 
 export const processTaxiiResponse = async (
   context: AuthContext,
