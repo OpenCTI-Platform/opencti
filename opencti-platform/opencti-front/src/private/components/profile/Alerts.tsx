@@ -132,7 +132,7 @@ interface AlertsLineActionsProps {
 
 // Event type is categorical, so the tone carries the distinction without asserting a level:
 // create -> low, update -> info, delete -> critical, several at once -> medium.
-// Ingestion health transitions follow IngestionHealthChip: critical, degraded -> high, recovered -> low, stopped -> neutral.
+// Ingestion health transitions follow IngestionHealthChip: critical, degraded -> high, recovered -> low.
 const operationSeverity = (operation: string): ChipSeverity => {
   switch (operation) {
     case 'update':
@@ -142,8 +142,6 @@ const operationSeverity = (operation: string): ChipSeverity => {
       return 'critical';
     case 'degraded':
       return 'high';
-    case 'stopped':
-      return 'neutral';
     case 'multiple':
       return 'medium';
     default:
@@ -302,7 +300,6 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           critical: t_i18n('Critical'),
           degraded: t_i18n('Degraded'),
           recovered: t_i18n('Recovered'),
-          stopped: t_i18n('Stopped'),
         };
         return (
           <div style={{ fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>

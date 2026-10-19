@@ -165,7 +165,7 @@ export interface UserModificationAction extends BasicUserAction {
 // region health
 export interface IngestionHealthAction extends BasicUserAction {
   event_type: 'ingestion_health';
-  event_scope: 'critical' | 'degraded' | 'recovered' | 'stopped';
+  event_scope: 'critical' | 'degraded' | 'recovered';
   message: string;
   // Only fields mapped under context_data: the history index mapping is strict
   context_data: {
