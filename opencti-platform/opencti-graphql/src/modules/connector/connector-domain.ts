@@ -629,15 +629,31 @@ export const CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024;
 // Truncate on code points so a cut never leaves a lone surrogate that the engine would reject.
 const truncate = (value: string, maxLength: number) => Array.from(value.trim()).slice(0, maxLength).join('');
 
+const invalidConnectorErrorReason = ({ code, criticity }: ConnectorInfoError) => {
+  if (code.length === 0) {
+    return 'blank code';
+  }
+  if (!Number.isInteger(criticity)) {
+    return 'non-integer criticity';
+  }
+  return undefined;
+};
+
 // Errors are only reported by the connector: invalid entries are dropped, never thrown, so ping keeps working.
-export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null | undefined): ConnectorInfoError[] => {
+export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null | undefined, connectorId?: string): ConnectorInfoError[] => {
   return (errors ?? [])
     .map(({ code, message, criticity }) => ({
       code: truncate(code ?? '', CONNECTOR_ERROR_CODE_MAX_LENGTH),
       message: truncate(message ?? '', CONNECTOR_ERROR_MESSAGE_MAX_LENGTH),
       criticity,
     }))
-    .filter(({ code, criticity }) => code.length > 0 && Number.isInteger(criticity))
+    .filter((error) => {
+      const reason = invalidConnectorErrorReason(error);
+      if (reason) {
+        logApp.info('[CONNECTOR] Invalid error reported on ping, entry dropped', { connectorId, reason, code: error.code, criticity: error.criticity });
+      }
+      return reason === undefined;
+    })
     .sort((a, b) => b.criticity - a.criticity)
     .slice(0, CONNECTOR_ERRORS_MAX_COUNT);
 };
@@ -666,7 +682,7 @@ export const updateConnectorWithConnectorInfo = async (
       queue_messages_size: connectorInfo.queue_messages_size,
       next_run_datetime: connectorInfo.next_run_datetime,
       last_run_datetime: connectorInfo.last_run_datetime,
-      errors: sanitizeConnectorInfoErrors(connectorInfo.errors),
+      errors: sanitizeConnectorInfoErrors(connectorInfo.errors, connectorEntity.id),
     };
 
     connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };

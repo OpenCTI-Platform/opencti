@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { logApp } from '../../../../src/config/conf';
 import {
   CONNECTOR_ERROR_CODE_MAX_LENGTH,
   CONNECTOR_ERROR_MESSAGE_MAX_LENGTH,
@@ -64,5 +65,31 @@ describe('sanitizeConnectorInfoErrors', () => {
     expect(sanitized).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
     expect(sanitized[0]).toEqual(criticalError);
     expect(sanitized[sanitized.length - 1].code).toBe(`LOW_${CONNECTOR_ERRORS_MAX_COUNT - 2}`);
+  });
+
+  describe('dropped entries logging', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should log each dropped entry with the connector id and the reason', () => {
+      const infoSpy = vi.spyOn(logApp, 'info').mockImplementation(() => {});
+      const errors = [
+        API_ERROR,
+        { code: '   ', message: 'blank code', criticity: 0 },
+        { code: 'STRING_CRITICITY', message: 'string criticity', criticity: 'HIGH' },
+      ] as ConnectorInfoError[];
+      sanitizeConnectorInfoErrors(errors, 'connector-id');
+      expect(infoSpy.mock.calls).toEqual([
+        ['[CONNECTOR] Invalid error reported on ping, entry dropped', { connectorId: 'connector-id', reason: 'blank code', code: '', criticity: 0 }],
+        ['[CONNECTOR] Invalid error reported on ping, entry dropped', { connectorId: 'connector-id', reason: 'non-integer criticity', code: 'STRING_CRITICITY', criticity: 'HIGH' }],
+      ]);
+    });
+
+    it('should not log when every entry is valid', () => {
+      const infoSpy = vi.spyOn(logApp, 'info').mockImplementation(() => {});
+      sanitizeConnectorInfoErrors([API_ERROR], 'connector-id');
+      expect(infoSpy).not.toHaveBeenCalled();
+    });
   });
 });
