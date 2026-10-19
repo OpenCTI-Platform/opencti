@@ -181,7 +181,8 @@ jobs:
     name: Publish pycti (dry-run)
     runs-on: ubuntu-26.04
     timeout-minutes: 10
-    needs: [validate, build-pycti]
+    # wait-connectors: on a tag push CircleCI may not have published pycti yet, the comparison would see a 404
+    needs: [validate, build-pycti, wait-connectors]
     steps:
       - name: Download pycti distribution
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
@@ -380,8 +381,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { variant: standard, action: tar-platform, archive_suffix: "" }
-          - { variant: musl, action: tar-platform-musl, archive_suffix: "_musl" }
+          - { variant: standard, archive_suffix: "" }
+          - { variant: musl, archive_suffix: "_musl" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
