@@ -18,7 +18,6 @@ import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-
 import { now } from '../utils/format';
 import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
-import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
 import { handleConfidenceToScoreTransformation } from '../modules/ingestion/ingestion-taxii-utils';
 import { TAXIIAPI } from '../modules/user/user-domain';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
