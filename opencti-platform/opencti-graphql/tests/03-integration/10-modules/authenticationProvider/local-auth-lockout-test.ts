@@ -46,10 +46,23 @@ const resetLockout = (email: string) => {
   const keys = keysOf(email);
   return getClientBase().del(keys.failures, keys.lock, keys.level);
 };
-// Redis TTLs cannot be faked, so expirations are simulated by deleting the key
+// Redis TTLs cannot be faked, so expirations are simulated by deleting the keys
 const expireLock = (email: string) => getClientBase().del(keysOf(email).lock);
-const expireWindow = (email: string) => getClientBase().del(keysOf(email).failures);
+// The lock level expires with the failure counter: same window, counted from the first failure
+const expireWindow = (email: string) => {
+  const keys = keysOf(email);
+  return getClientBase().del(keys.failures, keys.level);
+};
 const lockRemainingMs = (email: string) => getClientBase().pttl(keysOf(email).lock);
+// Shortens a key TTL, so that a TTL reset to the full window can be told apart from the original one
+const SHORT_TTL_MS = 30000;
+const shortenTtl = (key: string) => getClientBase().pexpire(key, SHORT_TTL_MS);
+const expectTtlNotExtended = async (key: string) => {
+  const remainingMs = await getClientBase().pttl(key);
+  // pttl returns a negative value when the key does not exist or has no TTL
+  expect(remainingMs).toBeGreaterThan(0);
+  expect(remainingMs).toBeLessThanOrEqual(SHORT_TTL_MS);
+};
 
 const setLockoutPolicy = async (policy: Record<string, boolean | number | null>) => {
   const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
@@ -151,13 +164,6 @@ describe('Local authentication lockout', () => {
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
     });
 
-    it('should start the counter again from zero when the window has expired', async () => {
-      await failLogin(LOCKOUT_USER.email, 2);
-      await expireWindow(LOCKOUT_USER.email);
-      await failLogin(LOCKOUT_USER.email, 2);
-      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
-    });
-
     it('should lock an unknown email exactly like a real account', async () => {
       await failLogin(UNKNOWN_EMAIL, 2);
       await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD), 15);
@@ -178,6 +184,58 @@ describe('Local authentication lockout', () => {
       // The next lock is the second level, not a higher one
       await expireLock(LOCKOUT_USER.email);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 30);
+    });
+  });
+
+  // The window is fixed: it starts on the first failure and is never extended
+  describe('Failure window', () => {
+    it('should start the counter again from zero when the window has expired', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expireWindow(LOCKOUT_USER.email);
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+    });
+
+    it('should not extend the window on the next failures', async () => {
+      const { failures } = keysOf(LOCKOUT_USER.email);
+      await failLogin(LOCKOUT_USER.email, 1);
+      await shortenTtl(failures);
+      await failLogin(LOCKOUT_USER.email, 1);
+      await expectTtlNotExtended(failures);
+    });
+
+    it('should make the lock level expire with the window, even after a new lock', async () => {
+      const { failures, level } = keysOf(LOCKOUT_USER.email);
+      await failLogin(LOCKOUT_USER.email, 1);
+      await shortenTtl(failures);
+      await failLogin(LOCKOUT_USER.email, 1);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+      await expectTtlNotExtended(level);
+      // A new lock in the same window does not extend it either
+      await expireLock(LOCKOUT_USER.email);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 30);
+      await expectTtlNotExtended(level);
+    });
+
+    it('should reset the counter and the lock level once the window has expired', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+      await expireLock(LOCKOUT_USER.email);
+      await expireWindow(LOCKOUT_USER.email);
+      // The next failures count from zero: no immediate lock
+      await failLogin(LOCKOUT_USER.email, 2);
+      // And the next lock is back to the first level
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+    });
+
+    it('should not lift a lock in progress when the window expires', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+      await expireWindow(LOCKOUT_USER.email);
+      await expectLocked(login(LOCKOUT_USER.email, LOCKOUT_USER.password), 15);
+      // Once the lock is over, the first failure counts as the first one
+      await expireLock(LOCKOUT_USER.email);
+      await expectBadCredentials(login(LOCKOUT_USER.email, WRONG_PASSWORD));
     });
   });
 
@@ -208,7 +266,7 @@ describe('Local authentication lockout', () => {
   });
 
   describe('After a lock', () => {
-    it('should lock again on the first failure with a doubled duration, up to the max duration', async () => {
+    it('should lock again on the first failure within the window, with a doubled duration up to the max duration', async () => {
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
       for (const expectedMinutes of [30, 60, 120, 180, 180]) {
