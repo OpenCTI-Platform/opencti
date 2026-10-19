@@ -2771,7 +2771,7 @@
   "Infrastructures": "인프라",
   "Infrastructures | Observations": "인프라 | 관찰",
   "Ingested entities": "수집된 엔터티",
-  "Ingesting": "섭취",
+  "Ingesting": "수집 중",
   "Ingestion": "수집",
   "Ingestion and connectors": "수집 및 커넥터",
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "수집 관리자가 비활성화되었거나 구성되지 않은 경우 플랫폼 설정으로 이동하여 활성화하세요.",
