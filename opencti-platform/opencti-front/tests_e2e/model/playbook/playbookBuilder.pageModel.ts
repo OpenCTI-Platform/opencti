@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { expect } from '../../fixtures/baseFixtures';
 import FiltersPageModel from '../filters.pageModel';
 import TextFieldPageModel from '../field/TextField.pageModel';
 import WorkflowAuthorizedMembersPageModel from '../workflow/workflowAuthorizedMembers.pageModel';
@@ -39,13 +40,16 @@ export default class PlaybookBuilderPageModel {
     return this.page.locator('.react-flow__node').filter({ hasText: '+' });
   }
 
-  clickPlaceholder() {
-    return this.getPlaceholderNode().click();
-  }
-
-  /** Picks a component from the "Add component" list (`PlaybookFlowSelectComponent.tsx`), by its exact visible name. */
-  selectComponent(componentName: string) {
-    return this.page.getByText(componentName, { exact: true }).click();
+  /** Picks a component from the "Add component" list (`PlaybookFlowSelectComponent.tsx`), by its exact visible name.
+   * The click on "+" is retried until the list shows: the placeholder moves while the graph re-lays out
+   * after a node is added, and under load a click on its old position is swallowed. */
+  async addComponent(componentName: string) {
+    const component = this.page.getByText(componentName, { exact: true });
+    await expect(async () => {
+      await this.getPlaceholderNode().click({ timeout: 5000 });
+      await component.waitFor({ state: 'visible', timeout: 5000 });
+    }).toPass({ timeout: 60000 });
+    await component.click();
   }
 
   /** The component configuration form's required "Name" field (`PlaybookFlowForm.tsx`). Scoped

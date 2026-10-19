@@ -96,16 +96,14 @@ test('Create and activate the Threat Advisory Report access-restrictions playboo
   });
 
   await test.step('Add the "Listen knowledge events" trigger, filtered to Report creation', async () => {
-    await playbook.clickPlaceholder();
-    await playbook.selectComponent('Listen knowledge events');
+    await playbook.addComponent('Listen knowledge events');
     await playbook.setComponentName('Report created');
     await playbook.addFilter('Entity type', 'Report');
     await playbook.submitComponent();
   });
 
   await test.step('Add the "Manage access restrictions" action with the final authorized-members rules', async () => {
-    await playbook.clickPlaceholder();
-    await playbook.selectComponent('Manage access restrictions');
+    await playbook.addComponent('Manage access restrictions');
     await playbook.setComponentName('Apply Threat Advisory Report access');
 
     // Default "Everyone on the platform" row is already "no access" - nothing to remove here.
@@ -119,8 +117,7 @@ test('Create and activate the Threat Advisory Report access-restrictions playboo
   });
 
   await test.step('Add the terminal "Send for ingestion" node - without it the access-restriction patch is only computed in-memory and never persisted', async () => {
-    await playbook.clickPlaceholder();
-    await playbook.selectComponent('Send for ingestion');
+    await playbook.addComponent('Send for ingestion');
     await playbook.setComponentName('Persist access restrictions');
     await playbook.submitComponent();
   });
