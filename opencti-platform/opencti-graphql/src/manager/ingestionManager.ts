@@ -1,21 +1,16 @@
-import type { convertableToString } from 'xml2js';
-import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import type { Moment } from 'moment';
 import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
-import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { FROM_START_STR, isDateInRange, now, sanitizeForMomentParsing, schedulingPeriodToMs, sinceNowInMinutes, utcDate } from '../utils/format';
-import { generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
+import { isNotEmptyField } from '../database/utils';
+import { isDateInRange, now, schedulingPeriodToMs, sinceNowInMinutes, utcDate } from '../utils/format';
 import { findAllRssIngestion, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, DataParam } from '../modules/ingestion/ingestion-types';
@@ -33,7 +28,8 @@ import { queueDetails } from '../modules/connector/connector-domain';
 import { connectorIdFromIngestId } from '../domain/connector';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
-import { decryptIngestionCredential } from '../modules/ingestion/ingestion-common';
+import { decryptIngestionCredential, FEED_REQUEST_TIMEOUT, runningIngestionsFilters } from '../modules/ingestion/ingestion-common';
+import { buildRssReportsBundle, rssDataParser, type RssGetter, rssHttpGetter } from '../modules/ingestion/ingestion-rss-utils';
 import { handleConfidenceToScoreTransformation } from '../modules/ingestion/ingestion-taxii-utils';
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
@@ -47,23 +43,11 @@ import { assertIngestionExecutionIdentityAllowed } from '../modules/ingestion/in
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
 const INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST = conf.get('ingestion_manager:taxii_feed:limit_per_request') || 0;
 const RSS_FEED_MIN_INTERVAL_MINUTES = conf.get('ingestion_manager:rss_feed:min_interval_minutes') || 5;
-const RSS_FEED_USER_AGENT = conf.get('ingestion_manager:rss_feed:user_agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0';
-const FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
 const CSV_FEED_MIN_INTERVAL_MINUTES = conf.get('ingestion_manager:csv_feed:min_interval_minutes') || 5;
 
 let running = false;
 
 // region utils
-const asArray = (data: unknown) => {
-  if (data) {
-    if (Array.isArray(data)) {
-      return data;
-    }
-    return [data];
-  }
-  return [];
-};
-
 /**
  * Checks whether the user-configured scheduling period has elapsed since the last execution.
  * This is schedule as string (e.g. PT1H, PT6H, PT1D).
@@ -95,142 +79,14 @@ const shouldExecuteIngestion = (ingestion: BasicStoreEntityIngestionRss | BasicS
 // endregion
 
 // region Rss ingestion
-type Getter = (uri: string) => Promise<object>;
-
-interface RssElement {
-  pubDate: { _: string };
-  lastBuildDate: { _: string };
-  updated: { _: string };
-}
-
-interface RssItem {
-  title: { _: string };
-  summary: { _: string };
-  description: { _: string };
-  link: { _: string; href?: string };
-  content: { _: string };
-  'content:encoded': { _: string };
-  category: { _: string } | { _: string }[];
-  pubDate: { _: string };
-  lastBuildDate: { _: string };
-  updated: { _: string };
-}
-
-interface DataItem {
-  title: string;
-  description: string;
-  link: string | undefined;
-  content: string;
-  labels: string[];
-  pubDate: Moment;
-}
-
-const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
-  const { updated } = feed;
-  // Safe access to link with fallback to empty string
-  const link = entry.link?.href?.trim() ?? '';
-  // Use link as fallback if title is missing, or 'Untitled' as last resort
-  const title = entry.title?._ || link || 'Untitled';
-
-  return {
-    title,
-    description: turndownService.turndown(entry.summary?._ ?? ''),
-    link: link || undefined,
-    content: turndownService.turndown(entry.content?._ ?? ''),
-    labels: [], // No label in rss v1
-    pubDate: utcDate(sanitizeForMomentParsing(entry.updated?._ ?? updated?._ ?? FROM_START_STR)),
-  };
-};
-
-const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement, item: RssItem): DataItem => {
-  const { pubDate } = channel;
-  // Safe access to link with fallback to empty string
-  const link = item.link?._?.trim() ?? '';
-  // Use link as fallback if title is missing, or 'Untitled' as last resort
-  const title = item.title?._ || link || 'Untitled';
-
-  return {
-    title,
-    description: turndownService.turndown(item.description?._ ?? ''),
-    link: link || undefined,
-    content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
-    labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => (c as { _: string })._.trim())),
-    pubDate: utcDate(sanitizeForMomentParsing(item.pubDate?._ ?? pubDate?._ ?? FROM_START_STR)),
-  };
-};
-
-export const rssHttpClientOptions = (ingestion: BasicStoreEntityIngestionRss) => {
-  const httpClientOptions: GetHttpClient = {
-    responseType: 'text',
-    headers: { 'User-Agent': RSS_FEED_USER_AGENT },
-    timeout: FEED_REQUEST_TIMEOUT,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
-  };
-  return httpClientOptions;
-};
-
-const rssHttpGetter = (ingestion: BasicStoreEntityIngestionRss): Getter => {
-  const httpClient = getHttpClient(rssHttpClientOptions(ingestion));
-  return async (uri: string) => {
-    const { data } = await httpClient.get(uri);
-    return data;
-  };
-};
-
-// RSS Title is mandatory
-// A valid date is required, and after the current_state_date
-const rssDataFilter = (items: DataItem[], current_state_date: Date | undefined): DataItem[] => {
-  return items.filter((e) => isNotEmptyField(e.title))
-    .filter((e) => e.pubDate.isValid())
-    .filter((e) => isEmptyField(current_state_date) || e.pubDate.isAfter(current_state_date))
-    .sort((a, b) => a.pubDate.diff(b.pubDate));
-};
-
-export const rssDataParser = async (turndownService: TurndownService, data: convertableToString, current_state_date: Date | undefined): Promise<DataItem[]> => {
-  const xmlData = await xmlParse(data, { explicitArray: false, trim: true, explicitCharkey: true, mergeAttrs: true });
-  if (xmlData?.feed) { // Atom V1
-    const entries = asArray(xmlData.feed.entry);
-    const rssItems = entries.map((entry) => rssItemV1Convert(turndownService, xmlData.feed, entry));
-    return rssDataFilter(rssItems, current_state_date);
-  }
-  if (xmlData?.rss) { // Atom V2
-    const channels = asArray(xmlData?.rss?.channel);
-    const rssItems = channels.map((channel) => asArray(channel.item).map((item) => rssItemV2Convert(turndownService, channel, item))).flat();
-    return rssDataFilter(rssItems, current_state_date);
-  }
-  return [];
-};
-
-const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndownService: TurndownService, ingestion: BasicStoreEntityIngestionRss) => {
+const rssDataHandler = async (context: AuthContext, httpRssGet: RssGetter, turndownService: TurndownService, ingestion: BasicStoreEntityIngestionRss) => {
   logApp.info(`[OPENCTI-MODULE] Executing Rss ingestion for ${ingestion.name}`);
   const data = await httpRssGet(ingestion.uri);
   const items = await rssDataParser(turndownService, data, ingestion.current_state_date);
-  // Build Stix bundle from items
   let lastPubDate;
   if (items.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Rss ingestion execution for ${items.length} items`);
-    const reports = items.map((item) => {
-      const report: any = {
-        type: 'report',
-        name: item.title,
-        labels: item.labels,
-        description: item.description,
-        created_by_ref: ingestion.created_by_ref,
-        object_marking_refs: ingestion.object_marking_refs,
-        report_types: ingestion.report_types,
-        published: item.pubDate.toISOString(),
-      };
-      report.id = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, report);
-      if (item.link) {
-        report.external_references = [{
-          source_name: item.title,
-          description: `${ingestion.name} ${item.title}. Retrieved ${item.pubDate.toISOString()}.`,
-          url: item.link,
-        }];
-      }
-      return report;
-    });
-    const bundle: StixBundle = { type: 'bundle', spec_version: '2.1', id: `bundle--${uuidv4()}`, objects: reports };
+    const bundle = buildRssReportsBundle(ingestion, items);
     // Push the bundle to absorption queue
     await pushBundleToConnectorQueue(context, ingestion, bundle);
     // Update the state
