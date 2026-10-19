@@ -297,12 +297,26 @@ export const customFieldDefinitionToWidgetColumn = (definition: CustomFieldWidge
   label: definition.label,
   attributeType: mapCustomFieldTypeToWidgetColumnAttributeType(definition.field_type),
 });
+// Label of a custom field, read from the filter keys schema of the given entity types (technical name if unknown).
+export const getCustomFieldLabelFromFilterKeysSchema = (
+  filterKeysSchema: Map<string, Map<string, { label: string }>>,
+  entityTypes: readonly string[],
+  name: string,
+): string => entityTypes
+  .map((entityType) => filterKeysSchema.get(entityType)?.get(name)?.label)
+  .find((label) => !!label) ?? name;
+// A definition attached to no entity type cannot hold any value: it is never offered as a column.
+// As in the backend, a relationship type (e.g. targets) inherits the definitions attached to stix-core-relationship.
 export const customFieldDefinitionsToWidgetColumns = (
   definitions: readonly CustomFieldWidgetDefinition[],
   entityType?: string,
-): WidgetColumn[] => definitions
-  .filter((def) => !entityType || !def.entity_types || def.entity_types.length === 0 || def.entity_types.includes(entityType))
-  .map(customFieldDefinitionToWidgetColumn);
+  isRelationshipType = false,
+): WidgetColumn[] => {
+  const entityTypes = isRelationshipType && entityType ? [entityType, 'stix-core-relationship'] : [entityType];
+  return definitions
+    .filter((def) => (def.entity_types ?? []).length > 0 && (!entityType || entityTypes.some((type) => (def.entity_types ?? []).includes(type ?? ''))))
+    .map(customFieldDefinitionToWidgetColumn);
+};
 // Extracts the raw, correctly-typed value (string | number | boolean | string[] | undefined) of a
 // custom field from an entity's stored `customFieldValues`, matched by field_name (== WidgetColumn.attribute).
 // Field type doesn'"'"'t need to be known here: exactly one of the typed slots is populated per entry.
