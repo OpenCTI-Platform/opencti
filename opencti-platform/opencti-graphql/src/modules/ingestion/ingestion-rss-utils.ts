@@ -15,6 +15,7 @@ import type { BasicStoreEntityIngestionRss } from './ingestion-types';
 import { FEED_REQUEST_TIMEOUT } from './ingestion-common';
 import { asArray } from '../../utils/arrayUtil';
 
+// User-Agent sent to RSS sources: a browser one by default, as some hosts reject requests from unknown clients
 const RSS_FEED_USER_AGENT = conf.get('ingestion_manager:rss_feed:user_agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0';
 
 export type RssGetter = (uri: string) => Promise<object>;
@@ -47,6 +48,10 @@ export interface DataItem {
   pubDate: Moment;
 }
 
+/**
+ * Converts an Atom 1.0 entry (`<feed><entry>`) to an item: link from its `href` attribute,
+ * summary and content as markdown, no labels, date from the entry or else the feed `updated`.
+ */
 const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
   const { updated } = feed;
   // Safe access to link with fallback to empty string
@@ -64,6 +69,10 @@ const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, en
   };
 };
 
+/**
+ * Converts an RSS 2.0 item (`<rss><channel><item>`) to an item: description and content
+ * (`content:encoded` first) as markdown, categories as labels, date from the item or else the channel `pubDate`.
+ */
 const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement, item: RssItem): DataItem => {
   const { pubDate } = channel;
   // Safe access to link with fallback to empty string
@@ -99,8 +108,9 @@ export const rssHttpGetter = (ingestion: BasicStoreEntityIngestionRss): RssGette
   };
 };
 
-// RSS Title is mandatory
-// A valid date is required, and after the current_state_date
+/**
+ * Keeps the items to ingest (a title, a valid date after current_state_date), oldest first.
+ */
 const rssDataFilter = (items: DataItem[], current_state_date: Date | undefined): DataItem[] => {
   return items.filter((e) => isNotEmptyField(e.title))
     .filter((e) => e.pubDate.isValid())
