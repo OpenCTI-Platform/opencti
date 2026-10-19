@@ -115,7 +115,7 @@ export const unrestrictOrganizationVisibility = async (request: APIRequestContex
   await executeGraphql(
     request,
     `Unrestrict organization ${organizationName}`,
-    'mutation FixtureUnrestrictOrganization($id: String!) { stixDomainObjectEdit(id: $id) { editAuthorizedMembers { id } } }',
+    'mutation FixtureUnrestrictOrganization($id: ID!) { stixDomainObjectEdit(id: $id) { editAuthorizedMembers { id } } }',
     { id: target.id },
   );
 };
