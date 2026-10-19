@@ -1,5 +1,4 @@
 import { PassThrough, Readable } from 'node:stream';
-import { brotliCompressSync, gzipSync } from 'node:zlib';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
@@ -1133,7 +1132,6 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     expect(url).toBe(`/api/v1/platform/chat/artifacts/report/${REPORT_ID}/download`);
     expect(body).toEqual({ format: 'pdf' });
     expect(opts.timeout).toBe(0);
-    expect(opts.decompress).toBe(false);
     expect(res.setHeader).toHaveBeenCalledWith('content-type', 'application/pdf');
     expect(res.setHeader).toHaveBeenCalledWith('content-disposition', 'attachment; filename="Q3 readout.pdf"');
     expect(res.setHeader).toHaveBeenCalledWith('content-length', '2048');
@@ -1163,7 +1161,7 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     setupAuthenticatedContext({ requestAbortSignal: browser.signal });
     const upstream = new PassThrough();
     vi.spyOn(upstream, 'pipe').mockReturnValue(res);
-    // What axios does to an open response stream when its signal aborts.
+    // What the http client does to an open response stream when its signal aborts.
     mockPost.mockImplementation(async (_url: string, _body: unknown, opts: { signal: AbortSignal }) => {
       opts.signal.addEventListener('abort', () => {
         upstream.emit('error', new Error('canceled'));
@@ -1235,24 +1233,6 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     expect(logApp.error).not.toHaveBeenCalled();
   });
 
-  it.each([
-    ['gzip', gzipSync],
-    ['br', brotliCompressSync],
-  ])('should read the detail of a %s-encoded error body', async (encoding, compress) => {
-    const httpError = new Error('Request failed with status code 409') as any;
-    httpError.response = {
-      status: 409,
-      headers: { 'content-encoding': encoding },
-      data: Readable.from([compress(Buffer.from(JSON.stringify({ detail: 'This video has no finished render yet.' })))]),
-    };
-    mockPost.mockRejectedValue(httpError);
-
-    await postChatbotArtifactDownload(buildDownloadReq('video', REPORT_ID, { format: 'mp4' }), res);
-
-    expect(res.status).toHaveBeenCalledWith(409);
-    expect(res.json).toHaveBeenCalledWith({ error: 'This video has no finished render yet.' });
-  });
-
   it('should keep the generic message when an error body is too large to be a detail', async () => {
     const httpError = new Error('Request failed with status code 502') as any;
     httpError.response = { status: 502, headers: {}, data: Readable.from([Buffer.alloc(65 * 1024, 'x')]) };
@@ -1270,7 +1250,10 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     const errorBody = new PassThrough();
     const httpError = new Error('Request failed with status code 409') as any;
     httpError.response = { status: 409, headers: {}, data: errorBody };
-    mockPost.mockRejectedValue(httpError);
+    mockPost.mockImplementation(async (_url: string, _body: unknown, opts: { signal: AbortSignal }) => {
+      opts.signal.addEventListener('abort', () => errorBody.destroy(new Error('canceled')));
+      throw httpError;
+    });
     errorBody.write('{"detail": "This video');
 
     const pending = postChatbotArtifactDownload(buildDownloadReq('video', REPORT_ID, { format: 'mp4' }), res);

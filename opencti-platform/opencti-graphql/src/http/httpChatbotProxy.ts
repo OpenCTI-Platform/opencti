@@ -1,6 +1,4 @@
 import { createHash } from 'node:crypto';
-import { addAbortSignal } from 'node:stream';
-import { brotliDecompressSync, unzipSync } from 'node:zlib';
 import type Express from 'express';
 import nconf from 'nconf';
 import Busboy from 'busboy';
@@ -855,29 +853,12 @@ const artifactTarget = (req: Express.Request): { kind: string; artifactId: strin
   return ARTIFACT_KINDS.has(kind) && UUID_RE.test(artifactId) ? { kind, artifactId } : null;
 };
 
-/** A body read with `decompress: false` is still in its `content-encoding`. */
-const decodeUpstreamBody = (body: Buffer, contentEncoding: unknown): Buffer => {
-  const options = { maxOutputLength: UPSTREAM_ERROR_MAX_BYTES };
-  switch (String(contentEncoding ?? '').trim().toLowerCase()) {
-    case 'gzip':
-    case 'x-gzip':
-    case 'deflate':
-      return unzipSync(body, options);
-    case 'br':
-      return brotliDecompressSync(body, options);
-    default:
-      return body;
-  }
-};
-
 /** The upstream `detail` of a failed call, read from a parsed body or from a stream. */
-const upstreamDetail = async ({ data, headers }: HttpResponseError, fallback: string, signal?: AbortSignal): Promise<unknown> => {
+const upstreamDetail = async ({ data }: HttpResponseError, fallback: string): Promise<unknown> => {
   try {
     if (typeof data === 'object' && data !== null) {
       if ('detail' in data) return data.detail;
       if (typeof data.pipe === 'function') {
-        // axios lets go of the signal once the call has failed: the error body is read under it here.
-        if (signal) addAbortSignal(signal, data);
         const chunks: Buffer[] = [];
         let size = 0;
         for await (const chunk of data as AsyncIterable<Buffer>) {
@@ -885,8 +866,7 @@ const upstreamDetail = async ({ data, headers }: HttpResponseError, fallback: st
           if (size > UPSTREAM_ERROR_MAX_BYTES) return fallback;
           chunks.push(Buffer.from(chunk));
         }
-        const body = decodeUpstreamBody(Buffer.concat(chunks), headers?.['content-encoding']);
-        return JSON.parse(body.toString('utf-8')).detail ?? fallback;
+        return JSON.parse(Buffer.concat(chunks).toString('utf-8')).detail ?? fallback;
       }
     }
   } catch {
@@ -947,7 +927,7 @@ export const getChatbotArtifact = async (req: Express.Request, res: Express.Resp
     const httpErr = getResponseError(e);
     logArtifactFailure('Error in chatbot artifact read', e, httpErr);
     if (httpErr) {
-      const detail = await upstreamDetail(httpErr, message, signal);
+      const detail = await upstreamDetail(httpErr, message);
       if (signal?.aborted) return;
       res.status(httpErr.status).json({ error: detailToText(detail, message) });
     } else {
@@ -982,7 +962,7 @@ export const postChatbotArtifactDownload = async (req: Express.Request, res: Exp
       // be cut by a response timeout. The browser leaving cancels it instead,
       // during the export as during the stream; the request's own `close`
       // cannot tell, it fires as soon as the JSON body has been read.
-      { decompress: false, timeout: 0, signal },
+      { timeout: 0, signal },
     );
     Object.entries(response.headers).forEach(([key, value]) => {
       if (ARTIFACT_FORWARD_HEADERS.includes(key.toLowerCase()) && value) {
@@ -1008,7 +988,7 @@ export const postChatbotArtifactDownload = async (req: Express.Request, res: Exp
     const httpErr = getResponseError(e);
     logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr);
     if (httpErr) {
-      const detail = await upstreamDetail(httpErr, message, signal);
+      const detail = await upstreamDetail(httpErr, message);
       if (signal?.aborted) return;
       res.status(httpErr.status).json({ error: detailToText(detail, message) });
     } else {
