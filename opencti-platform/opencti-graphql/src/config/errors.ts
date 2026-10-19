@@ -190,6 +190,15 @@ export const ValidationError = (message: string, field?: string | number, data?:
   ...(data ?? {}),
 });
 
+// The caller sent a filter key that the platform cannot use (unknown or malformed).
+// It is a mistake of the client, already reported in the response: not a platform failure.
+export const FILTER_KEYS_ERROR = 'FILTER_KEYS_ERROR';
+export const FilterKeysError = (reason: string, data?: any) => error(FILTER_KEYS_ERROR, reason, {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const RESOURCE_NOT_FOUND_ERROR = 'RESOURCE_NOT_FOUND';
 export const ResourceNotFoundError = (reason?: string, data?: any) => error(RESOURCE_NOT_FOUND_ERROR, reason || 'Resource not found', {
   http_status: 404,
@@ -236,5 +245,10 @@ export const FUNCTIONAL_ERRORS = [
   RESOURCE_NOT_FOUND_ERROR,
   TYPE_LOCK_ERROR,
   CLIENT_ABORT_ERROR,
+];
+
+// Errors caused by the input of the client, already returned to it: logged at info level
+export const CLIENT_INPUT_ERRORS = [
+  FILTER_KEYS_ERROR,
 ];
 // endregion
