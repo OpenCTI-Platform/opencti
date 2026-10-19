@@ -100,12 +100,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: RssGetter, turnd
 };
 
 export const rssExecutor = async (context: AuthContext, turndownService: TurndownService) => {
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'ingestion_running', values: [true] }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true };
+  const opts = { filters: runningIngestionsFilters(), noFiltersChecking: true };
   const ingestions = await findAllRssIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -205,12 +200,7 @@ const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler,
 };
 export const taxiiExecutor = async (context: AuthContext) => {
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'ingestion_running', values: [true] }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true };
+  const opts = { filters: runningIngestionsFilters(), noFiltersChecking: true };
   const ingestions = await findAllTaxiiIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -322,12 +312,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
 };
 
 export const csvExecutor = async (context: AuthContext) => {
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'ingestion_running', values: [true] }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true };
+  const opts = { filters: runningIngestionsFilters(), noFiltersChecking: true };
   const ingestions = await findAllCsvIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -379,12 +364,7 @@ export const csvExecutor = async (context: AuthContext) => {
 
 // region json ingestion
 export const jsonExecutor = async (context: AuthContext) => {
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'ingestion_running', values: [true] }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true };
+  const opts = { filters: runningIngestionsFilters(), noFiltersChecking: true };
   const ingestions = await findAllJsonIngestion(context, SYSTEM_USER, opts);
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
