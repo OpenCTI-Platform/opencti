@@ -122,7 +122,8 @@ def main():
     for iso3, old, new, method in updated:
         print(f"  {iso3}  {old} -> {new}  [{method}]")
     print(f"Matched, name already aligned ({len(unchanged)}):")
-    print("  " + ", ".join(properties["ISO3"] for properties in unchanged))
+    for properties in unchanged:
+        print(f"  {properties['ISO3']}  {properties['NAME']}")
     print(f"In countries.json, not in the PMTiles ({len(not_in_pmtiles)}):")
     for properties, wikidata in not_in_pmtiles:
         print(f"  {properties['ISO3']}  {properties['NAME']}  ({wikidata})")
@@ -133,6 +134,13 @@ def main():
         print(f"In countries.json, not in Natural Earth ({len(not_in_natural_earth)}):")
         for properties in not_in_natural_earth:
             print(f"  {properties['ISO3']}  {properties['NAME']}")
+    print("Summary:")
+    print(f"  updated: {len(updated)}")
+    print(f"  matched, name already aligned: {len(unchanged)}")
+    print(f"  countries.json only: {len(not_in_pmtiles)}")
+    print(f"  PMTiles only: {len(pmtiles_only)}")
+    if not_in_natural_earth:
+        print(f"  not in Natural Earth: {len(not_in_natural_earth)}")
         return 1
     return 0
 
