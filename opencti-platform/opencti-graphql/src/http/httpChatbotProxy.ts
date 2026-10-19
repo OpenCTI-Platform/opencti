@@ -896,6 +896,15 @@ const upstreamDetail = async ({ data, headers }: HttpResponseError, fallback: st
   return fallback;
 };
 
+/** An upstream refusal (unknown artifact, render not finished) answers the user; only the rest is a platform failure. */
+const logArtifactFailure = (message: string, cause: unknown, httpErr: HttpResponseError | null) => {
+  if (httpErr && httpErr.status < 500) {
+    logApp.warn(message, { cause, status: httpErr.status });
+  } else {
+    logApp.error(message, { cause });
+  }
+};
+
 /** Artifact routes reach XTM One with the validated draft, like file downloads. */
 const artifactHeaders = async (req: Express.Request, res: Express.Response, context: AuthContext) => {
   try {
@@ -935,9 +944,9 @@ export const getChatbotArtifact = async (req: Express.Request, res: Express.Resp
   } catch (e: unknown) {
     // The browser left: the upstream call is cancelled and nobody reads an answer.
     if (signal?.aborted) return;
-    logApp.error('Error in chatbot artifact read', { cause: e });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
+    logArtifactFailure('Error in chatbot artifact read', e, httpErr);
     if (httpErr) {
       res.status(httpErr.status).json({ error: detailToText(await upstreamDetail(httpErr, message), message) });
     } else {
@@ -983,17 +992,20 @@ export const postChatbotArtifactDownload = async (req: Express.Request, res: Exp
     response.data.on('error', (error: Error) => {
       if (signal?.aborted) return;
       logApp.error('Stream error in chatbot artifact download proxy', { cause: error });
-      if (!res.headersSent) {
-        res.status(500).send({ status: 'error', error: error.message });
+      if (res.headersSent) {
+        // Ending a chunked response would hand the browser a truncated file as complete.
+        res.destroy();
       } else {
-        res.end();
+        // The file's headers would mislabel the JSON error, which a `content-encoding` makes unreadable.
+        ARTIFACT_FORWARD_HEADERS.forEach((header) => res.removeHeader(header));
+        res.status(500).send({ status: 'error', error: error.message });
       }
     });
   } catch (e: unknown) {
     if (signal?.aborted) return;
-    logApp.error('Error in chatbot artifact download proxy', { cause: e });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
+    logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr);
     if (httpErr) {
       res.status(httpErr.status).json({ error: detailToText(await upstreamDetail(httpErr, message), message) });
     } else {

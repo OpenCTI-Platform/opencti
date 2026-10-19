@@ -203,9 +203,11 @@ const buildRes = () => {
   res.send = vi.fn().mockReturnValue(res);
   res.sendStatus = vi.fn().mockReturnValue(res);
   res.setHeader = vi.fn().mockReturnValue(res);
+  res.removeHeader = vi.fn();
   res.set = vi.fn().mockReturnValue(res);
   res.write = vi.fn().mockReturnValue(res);
   res.end = vi.fn().mockReturnValue(res);
+  res.destroy = vi.fn().mockReturnValue(res);
   return res;
 };
 
@@ -1048,6 +1050,9 @@ describe('httpChatbotProxy: getChatbotArtifact', () => {
 
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ error: 'Not found' });
+    // A refusal XTM One explains is not a platform failure.
+    expect(logApp.warn).toHaveBeenCalledWith('Error in chatbot artifact read', expect.objectContaining({ status: 404 }));
+    expect(logApp.error).not.toHaveBeenCalled();
   });
 
   it('should cancel the upstream read and answer nothing when the browser leaves', async () => {
@@ -1176,6 +1181,41 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     expect(logApp.error).not.toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
     expect(res.end).not.toHaveBeenCalled();
+    expect(res.destroy).not.toHaveBeenCalled();
+  });
+
+  it('should break the response, not end it, when XTM One fails mid-download', async () => {
+    const upstream = new PassThrough();
+    vi.spyOn(upstream, 'pipe').mockReturnValue(res);
+    mockPost.mockResolvedValue({ data: upstream, headers: { 'content-type': 'video/mp4' } });
+
+    await postChatbotArtifactDownload(buildDownloadReq('video', REPORT_ID, { format: 'mp4' }), res);
+    res.headersSent = true;
+    upstream.emit('error', new Error('socket hang up'));
+
+    // A cleanly ended chunked response would read as a complete, truncated file.
+    expect(res.destroy).toHaveBeenCalled();
+    expect(res.end).not.toHaveBeenCalled();
+    expect(logApp.error).toHaveBeenCalledWith('Stream error in chatbot artifact download proxy', expect.any(Object));
+  });
+
+  it('should answer a plain JSON error, without the file headers, when XTM One fails before the first byte', async () => {
+    const upstream = new PassThrough();
+    vi.spyOn(upstream, 'pipe').mockReturnValue(res);
+    mockPost.mockResolvedValue({
+      data: upstream,
+      headers: { 'content-type': 'application/pdf', 'content-encoding': 'br', 'content-length': '4096' },
+    });
+
+    await postChatbotArtifactDownload(buildDownloadReq('report', REPORT_ID, { format: 'pdf' }), res);
+    upstream.emit('error', new Error('socket hang up'));
+
+    for (const header of ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control']) {
+      expect(res.removeHeader).toHaveBeenCalledWith(header);
+    }
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'socket hang up' });
+    expect(res.destroy).not.toHaveBeenCalled();
   });
 
   it('should propagate the upstream status and detail, read from a stream body', async () => {
@@ -1192,6 +1232,8 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
 
     expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({ error: 'This video has no finished render yet.' });
+    expect(logApp.warn).toHaveBeenCalledWith('Error in chatbot artifact download proxy', expect.objectContaining({ status: 409 }));
+    expect(logApp.error).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -1230,6 +1272,7 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.json).toHaveBeenCalledWith({ error: 'XTM One is unreachable' });
+    expect(logApp.error).toHaveBeenCalledWith('Error in chatbot artifact download proxy', expect.any(Object));
   });
 });
 
