@@ -19,7 +19,7 @@ const ingestionHealthFragment = graphql`
 `;
 
 interface IngestionHealthChipProps {
-  // Null until the manager first evaluates the ingestion
+  // Null until the manager first evaluates the ingestion, or when the status is unknown: no chip
   ingestionHealth?: IngestionHealthChip_ingestionHealth$key | null;
 }
 
@@ -28,22 +28,18 @@ const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
   critical: 'critical',
   degraded: 'high',
   healthy: 'low',
-  unknown: 'neutral',
 };
 
 const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth: ingestionHealthKey }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const ingestionHealth = useFragment(ingestionHealthFragment, ingestionHealthKey ?? null);
-  if (!isFeatureEnable('INGESTION_HEALTH')) {
+  // No health: not evaluated yet or unknown, nothing to show
+  if (!isFeatureEnable('INGESTION_HEALTH') || !ingestionHealth) {
     return null;
   }
-  const status = ingestionHealth?.status ?? 'unknown';
-  const checks = ingestionHealth?.healthChecks ?? [];
-  let emptyMessage = t_i18n('No health issue detected');
-  if (!ingestionHealth) {
-    emptyMessage = t_i18n('Not evaluated yet');
-  }
+  const { status } = ingestionHealth;
+  const checks = ingestionHealth.healthChecks ?? [];
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -53,10 +49,10 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHeal
         </span>
       </TooltipTrigger>
       <TooltipContent>
-        {ingestionHealth && <div>{`${t_i18n('Since')} ${nsdt(ingestionHealth.status_since)}`}</div>}
+        <div>{`${t_i18n('Since')} ${nsdt(ingestionHealth.status_since)}`}</div>
         {checks.length > 0
           ? checks.map((check) => <div key={check.health_check_code}>{check.health_check_message ?? check.health_check_code}</div>)
-          : <div>{emptyMessage}</div>}
+          : <div>{t_i18n('No health issue detected')}</div>}
       </TooltipContent>
     </Tooltip>
   );
