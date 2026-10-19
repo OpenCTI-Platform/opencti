@@ -169,6 +169,7 @@ import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
 import { verifyXtmJwt, isOwnIssuer } from '../../domain/xtm-auth';
 import { getSettings } from '../../domain/settings';
+import { clearLocalAuthLockout, isLocalAuthLockedError, loadLocalAuthLockout } from '../../domain/local-auth-lockout';
 import {
   EnvStrategyType,
   getConfigurationAdminEmail,
@@ -1771,12 +1772,25 @@ export const getUserByEmail = async (email: string) => {
   return await elLoadBy<BasicStoreEntityUser>(context, SYSTEM_USER, 'user_email', normalizeEmail(email), ENTITY_TYPE_USER);
 };
 
+const isAccountDisabled = (user: BasicStoreEntityUser) => {
+  if (user.account_status !== ACCOUNT_STATUS_ACTIVE) return true;
+  return !!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date));
+};
+
 export const login = async (email: string, password: string) => {
+  // Undefined when the local authentication lockout is disabled
+  const lockout = await loadLocalAuthLockout(email);
+  // During a lock, the password is not even checked
+  await lockout?.assertNotLocked();
   const user = await getUserByEmail(email);
-  if (!user) throw AuthenticationFailure();
-  const dbPassword = user.password;
-  const match = bcrypt.compareSync(password, dbPassword);
-  if (!match) throw AuthenticationFailure();
+  // With the lockout, an inactive or expired account is rejected without checking its password.
+  // The failure is counted like a wrong password, so that the account cannot be told apart from an unknown email.
+  const isPasswordChecked = !!user && !(lockout && isAccountDisabled(user));
+  if (!user || !isPasswordChecked || !bcrypt.compareSync(password, user.password)) {
+    await lockout?.recordFailure();
+    throw AuthenticationFailure();
+  }
+  await lockout?.clear();
   return user;
 };
 
@@ -1895,14 +1909,18 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     if (user) {
       await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
+      // The local lockout never blocks other providers, and their successful logins reset it
+      await clearLocalAuthLockout(input.email);
       break;
     }
   }
   // Try local is activated
+  let localError: unknown;
   if (!loggedUser) {
     const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
     const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
       passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
+        localError = err;
         if (err || info) {
           logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
         }
@@ -1938,6 +1956,10 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   });
   // User cannot be authenticated in any providers
   logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
+  // A local lock is returned as is, so that the login form can show the remaining minutes
+  if (isLocalAuthLockedError(localError)) {
+    throw localError;
+  }
   throw AuthenticationFailure();
 };
 

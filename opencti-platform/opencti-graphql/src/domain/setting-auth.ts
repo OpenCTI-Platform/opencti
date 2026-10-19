@@ -26,6 +26,7 @@ import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput 
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from '../modules/user/user-domain';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from './local-auth-lockout';
 
 export const buildAvailableProviders = async (platformSettings: BasicStoreSettings) => {
   const availableProviders = [...PROVIDERS];
@@ -56,14 +57,8 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
   return availableProviders;
 };
 
-// Values returned for the local authentication lockout policy when the settings hold none
-export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
-  local_auth_lockout_enabled: false,
-  local_auth_lockout_max_attempts: 5,
-  local_auth_lockout_window: 1440, // minutes, 24h
-  local_auth_lockout_duration: 15, // minutes
-  local_auth_lockout_max_duration: 180, // minutes, 3h
-};
+// Defined with the lockout itself, which user-domain imports: defining them here would create an import cycle
+export { LOCAL_AUTH_LOCKOUT_DEFAULTS };
 
 // Upper bounds of the lockout policy, mirrored by the local strategy form
 export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
