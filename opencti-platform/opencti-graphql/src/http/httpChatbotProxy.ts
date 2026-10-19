@@ -1,6 +1,4 @@
 import { createHash } from 'node:crypto';
-import { addAbortSignal } from 'node:stream';
-import { brotliDecompressSync, unzipSync } from 'node:zlib';
 import type Express from 'express';
 import nconf from 'nconf';
 import Busboy from 'busboy';
@@ -252,7 +250,7 @@ export const getChatbotSessions = async (req: Express.Request, res: Express.Resp
     const { message } = e as Error;
     const httpErr = getResponseError(e);
     // Surface the upstream `detail` / `message` (e.g. FastAPI validation
-    // errors) instead of the generic axios "Request failed with status
+    // errors) instead of the generic "Request failed with status
     // code N", so failures are actionable in the UI and logs.
     const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
     res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
@@ -591,7 +589,6 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
     const headers = await generateBasicHeaders(req, context);
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.post('/api/v1/platform/chat/messages', req.body, {
-      decompress: false,
       timeout: 0,
     });
 
@@ -696,8 +693,8 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
       const httpClient = getXtmClient('json', { ...authHeaders, ...form.getHeaders() });
       const uploadRes = await httpClient.post(
         `/api/v1/chat/conversations/${conversationId}/upload?create_message=false`,
-        form,
-        { timeout: MULTIPART_XTM_TIMEOUT, maxContentLength: Infinity, maxBodyLength: Infinity },
+        form.getBuffer(),
+        { timeout: MULTIPART_XTM_TIMEOUT },
       );
       if (uploadRes.data?.file_id) {
         fileIds.push(uploadRes.data.file_id);
@@ -773,7 +770,6 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     headers['opencti-draft-id'] = context.draft_context ?? '';
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.get(`/api/v1/chat/files/${fileId}/download`, {
-      decompress: false,
       // Streaming pipe — no response timeout (matches the other streaming
       // proxy calls). A 2-minute cap could abort a large/slow download
       // prematurely; the stream ends naturally and `req.on('close')` below
@@ -783,8 +779,6 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
 
     // Forward the content headers so the browser saves the file with the
     // right name and type. `content-disposition` is built CRLF-safe by XTM One.
-    // `content-encoding` MUST be forwarded because `decompress: false` leaves a
-    // gzip/br payload compressed — the browser needs the header to decode it.
     const forwardHeaders = ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control'];
     Object.entries(response.headers).forEach(([key, value]) => {
       if (forwardHeaders.includes(key.toLowerCase()) && value) {
@@ -813,7 +807,7 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     setCookieError(res, message);
     if (httpErr) {
       // Surface the upstream `detail` (e.g. "File not found" / "Access denied")
-      // instead of the generic axios "Request failed with status code N".
+      // instead of the generic "Request failed with status code N".
       // With responseType 'stream' the error body may arrive as a stream, so
       // handle both the parsed-object and stream cases (matches the
       // `postChatbotMessage` error path).
@@ -859,29 +853,12 @@ const artifactTarget = (req: Express.Request): { kind: string; artifactId: strin
   return ARTIFACT_KINDS.has(kind) && UUID_RE.test(artifactId) ? { kind, artifactId } : null;
 };
 
-/** A body read with `decompress: false` is still in its `content-encoding`. */
-const decodeUpstreamBody = (body: Buffer, contentEncoding: unknown): Buffer => {
-  const options = { maxOutputLength: UPSTREAM_ERROR_MAX_BYTES };
-  switch (String(contentEncoding ?? '').trim().toLowerCase()) {
-    case 'gzip':
-    case 'x-gzip':
-    case 'deflate':
-      return unzipSync(body, options);
-    case 'br':
-      return brotliDecompressSync(body, options);
-    default:
-      return body;
-  }
-};
-
 /** The upstream `detail` of a failed call, read from a parsed body or from a stream. */
-const upstreamDetail = async ({ data, headers }: HttpResponseError, fallback: string, signal?: AbortSignal): Promise<unknown> => {
+const upstreamDetail = async ({ data }: HttpResponseError, fallback: string): Promise<unknown> => {
   try {
     if (typeof data === 'object' && data !== null) {
       if ('detail' in data) return data.detail;
       if (typeof data.pipe === 'function') {
-        // axios lets go of the signal once the call has failed: the error body is read under it here.
-        if (signal) addAbortSignal(signal, data);
         const chunks: Buffer[] = [];
         let size = 0;
         for await (const chunk of data as AsyncIterable<Buffer>) {
@@ -889,8 +866,7 @@ const upstreamDetail = async ({ data, headers }: HttpResponseError, fallback: st
           if (size > UPSTREAM_ERROR_MAX_BYTES) return fallback;
           chunks.push(Buffer.from(chunk));
         }
-        const body = decodeUpstreamBody(Buffer.concat(chunks), headers?.['content-encoding']);
-        return JSON.parse(body.toString('utf-8')).detail ?? fallback;
+        return JSON.parse(Buffer.concat(chunks).toString('utf-8')).detail ?? fallback;
       }
     }
   } catch {
@@ -951,7 +927,7 @@ export const getChatbotArtifact = async (req: Express.Request, res: Express.Resp
     const httpErr = getResponseError(e);
     logArtifactFailure('Error in chatbot artifact read', e, httpErr);
     if (httpErr) {
-      const detail = await upstreamDetail(httpErr, message, signal);
+      const detail = await upstreamDetail(httpErr, message);
       if (signal?.aborted) return;
       res.status(httpErr.status).json({ error: detailToText(detail, message) });
     } else {
@@ -986,7 +962,7 @@ export const postChatbotArtifactDownload = async (req: Express.Request, res: Exp
       // be cut by a response timeout. The browser leaving cancels it instead,
       // during the export as during the stream; the request's own `close`
       // cannot tell, it fires as soon as the JSON body has been read.
-      { decompress: false, timeout: 0, signal },
+      { timeout: 0, signal },
     );
     Object.entries(response.headers).forEach(([key, value]) => {
       if (ARTIFACT_FORWARD_HEADERS.includes(key.toLowerCase()) && value) {
@@ -1012,7 +988,7 @@ export const postChatbotArtifactDownload = async (req: Express.Request, res: Exp
     const httpErr = getResponseError(e);
     logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr);
     if (httpErr) {
-      const detail = await upstreamDetail(httpErr, message, signal);
+      const detail = await upstreamDetail(httpErr, message);
       if (signal?.aborted) return;
       res.status(httpErr.status).json({ error: detailToText(detail, message) });
     } else {
@@ -1067,8 +1043,8 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
         const uploadClient = getXtmClient('json', { ...authHeaders, ...form.getHeaders() });
         const uploadRes = await uploadClient.post(
           `/api/v1/chat/conversations/${conversationId}/upload?create_message=false`,
-          form,
-          { timeout: MULTIPART_XTM_TIMEOUT, maxContentLength: Infinity, maxBodyLength: Infinity },
+          form.getBuffer(),
+          { timeout: MULTIPART_XTM_TIMEOUT },
         );
         if (uploadRes.data?.file_id) {
           fileIds.push(uploadRes.data.file_id);
@@ -1288,7 +1264,6 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       content,
       stream: true,
     }, {
-      decompress: false,
       timeout: 0,
     });
 
@@ -1321,7 +1296,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       // aborts, capture overflow, or when the cache is disabled. Node
       // typically does not emit `'end'` after `'error'`, but the explicit
       // `streamErrored` guard is cheap insurance against caching a partial
-      // or transport-failed response if a future Node / undici / axios
+      // or transport-failed response if a future Node / undici
       // version reorders events.
       if (!cacheEnabled || !cacheKey || clientAborted || streamErrored || captureOverflow) return;
       const raw = Buffer.concat(captureChunks).toString('utf-8');
@@ -1451,7 +1426,6 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
 
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.post('/chatbot', enhancedBody, {
-      decompress: false,
       timeout: 0,
     });
 

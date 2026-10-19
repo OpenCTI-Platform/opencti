@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import TurndownService from 'turndown';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
@@ -83,12 +82,13 @@ vi.mock('../../../../src/manager/ingestionManager/ingestionManagerPushToQueue', 
   updateBuiltInConnectorInfo: vi.fn(),
 }));
 
-vi.mock('../../../../src/utils/http-client', () => ({
-  OpenCTIHeaders: class OpenCTIHeaders {},
+vi.mock('../../../../src/utils/http-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/http-client')>()),
   getHttpClient: getHttpClientMock,
 }));
 
-const timeoutError = new AxiosError('timeout', 'ECONNABORTED');
+const { HttpClientError } = await import('../../../../src/utils/http-client');
+const timeoutError = new HttpClientError('timeout', 'ECONNABORTED');
 const validRss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
