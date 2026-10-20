@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 // Registers all entity/relation modules so schemaAttributesDefinition / schemaRelationsRefDefinition
 // are populated, without requiring a live DB/ES stack (pure in-memory schema registration).
 import '../../../src/modules/index';
-import { addFilter, checkFiltersValidity, convertRelationRefsFilterKeys } from '../../../src/utils/filtering/filtering-utils';
+import { addFilter, booleanTrueFilter, checkFiltersValidity, convertRelationRefsFilterKeys } from '../../../src/utils/filtering/filtering-utils';
 import { buildRefRelationKey } from '../../../src/schema/general';
 import { RELATION_OBJECT, RELATION_CREATED_BY } from '../../../src/schema/stixRefRelationship';
 import type { FilterGroup } from '../../../src/generated/graphql';
@@ -105,5 +105,19 @@ describe('Filtering utils', () => {
     } as unknown as FilterGroup;
 
     expect(() => checkFiltersValidity(filterGroup)).not.toThrow();
+  });
+});
+
+describe('booleanTrueFilter', () => {
+  it('should build a filter group matching the entities whose boolean attribute is true', () => {
+    expect(booleanTrueFilter('ingestion_running')).toEqual({
+      mode: 'and',
+      filters: [{ key: ['ingestion_running'], values: ['true'] }],
+      filterGroups: [],
+    });
+  });
+
+  it('should build a valid filter group for a boolean attribute of the schema', () => {
+    expect(() => checkFiltersValidity(booleanTrueFilter('ingestion_running'))).not.toThrow();
   });
 });

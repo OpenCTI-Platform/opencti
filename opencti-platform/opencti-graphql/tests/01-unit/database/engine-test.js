@@ -87,6 +87,17 @@ describe('buildLocalMustFilter testing', () => {
     });
   });
 
+  it('should buildLocalMustFilter wrap a negated nested filter in must_not', () => {
+    const nested = [
+      { key: 'field_name', values: ['x_opencti_cf_field'], operator: 'eq' },
+      { key: 'string_value', values: [], operator: 'not_nil' },
+    ];
+    const positive = buildLocalMustFilter({ key: ['custom_field_values'], values: [], nested });
+    const negated = buildLocalMustFilter({ key: ['custom_field_values'], values: [], nested, negateNested: true });
+    expect(positive.nested.path).toBe('custom_field_values');
+    expect(negated).toStrictEqual({ bool: { must_not: [positive] } });
+  });
+
   const sampleKeys = [
     "name']; ctx._source.value = true; //",
     "name.foo']; ctx._source.value = true; //",

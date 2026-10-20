@@ -49,6 +49,8 @@ import {
   postChatbotMessageSteer,
   postChatbotUpload,
   getChatbotFileDownload,
+  getChatbotArtifact,
+  postChatbotArtifactDownload,
   postAgentMessage,
   postAgentMessageStream,
   getLegacyChatbotProxy,
@@ -600,6 +602,8 @@ const createApp = async (app, schema) => {
   app.delete(`${basePath}/chatbot/conversations/:conversationId/messages/:messageId/feedback`, deleteChatbotMessageFeedback);
   app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
   app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
+  app.get(`${basePath}/chatbot/artifacts/:kind/:artifactId`, getChatbotArtifact);
+  app.post(`${basePath}/chatbot/artifacts/:kind/:artifactId/download`, postChatbotArtifactDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);
   app.post(`${basePath}/chatbot/agent/stream`, postAgentMessageStream);
   // Legacy Flowise proxy (used when xtm_one_token is NOT set)

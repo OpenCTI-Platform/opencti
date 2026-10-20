@@ -800,6 +800,13 @@ replaces the popover under it. `TopBar.libraryOnly.test.ts` names `Popover` in
 `EXEMPTED` so that importing one directly stays a declared, dated exemption
 rather than a new arrival.
 
+**Second consumer, 2026-10-04:** the graph toolbar (`GraphToolbar.tsx`) folds its
+creation and removal tools into one button on a narrow graph and opens them in
+a MUI `Popover`. It needs `keepMounted`: the tools own their creation dialogs
+(the relationship drawn with the right button included), which must open while
+the popover is closed. A library popover will have to offer the same
+keep-mounted behaviour to replace it.
+
 **Not exempted, and now closed:** `Stack` and `Box` were still inside the NLQ
 toggle — MUI layout, not the control. Replaced by plain elements at the same
 geometry (4px caret margin and padding, unchanged 1px divider). The guard reads
@@ -2619,13 +2626,14 @@ for the tooltip:
 - `DisabledReasonTooltip`, around the library `Button` of the Deploy
   actions in `AvailableIntegrationLine`, `IngestionCatalogConnectorHeader`
   and `IngestionCatalogCardDeployButton`.
-- `GraphToolbarItem`, around every graph toolbar tool. It still renders the
-  MUI `IconButton` and `Tooltip`; moving it to the library's would hit this
-  same gap, so the span stays either way.
+- `GraphToolbarItem`, around every disabled graph toolbar tool. It renders
+  the library `IconButton` and `Tooltip`, which hit this same gap, so the
+  span stays: it carries `role="button"`, `aria-disabled` and the disabled
+  reason.
 
-The span is a focusable element with no role, which
-`jsx-a11y/no-noninteractive-tabindex` flags and is disabled at both sites:
-the Tab stop lands on that span, not on the button.
+In `DisabledReasonTooltip` the span is a focusable element with no role,
+which `jsx-a11y/no-noninteractive-tabindex` flags and is disabled there. At
+both sites the Tab stop lands on that span, not on the button.
 
 **Ask.** A disabled mode of `Button` and `IconButton` that renders
 `aria-disabled` instead of `disabled`, keeps focus and pointer events, and
@@ -2633,9 +2641,8 @@ blocks activation in JavaScript, for example a `focusableWhenDisabled`
 prop. That would make the button itself the tooltip trigger.
 
 **Removal test.** At a pin with that mode: pass the disabled state through
-it on the three Deploy buttons and on `GraphToolbarItem` (moved to the
-library `IconButton` and `Tooltip`), delete both `<span>`s with their
-markers and eslint-disables, and check that the tooltip shows on hover and
+it on the three Deploy buttons and on `GraphToolbarItem`, delete both
+`<span>`s with their markers and eslint-disable, and check that the tooltip shows on hover and
 on keyboard focus, that the screen reader announces the button as
 disabled, and that a click or Enter does nothing. In the graph toolbar,
 also check that each tool keeps its size and alignment, which the span's
@@ -2664,7 +2671,35 @@ variable must still open its popover on click and keep its hover tooltip.
 
 ---
 
-## 70. `Checkbox` `presentational` drops `label` silently, so a row can ship with unnamed boxes
+## 70. `Menu` opens only from a trigger element, so a context menu at the pointer needs a hidden one
+
+**Needed.** The graphs open a context menu where the reader right-clicks an
+entity, a relationship or the empty canvas (and from the keyboard with
+Shift+F10 or the context-menu key), with the sections, submenus, shortcuts and
+disabled reasons of the toolbar's "More actions" menu.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0):
+`Menu` wraps the Radix dropdown menu and positions `MenuContent` against its
+`MenuTrigger` element only. The library has no context-menu component and no
+way to anchor a `Menu` at a point.
+
+**Workaround.** `GraphContextMenu.tsx` renders a controlled `Menu` whose
+`MenuTrigger` is a one-pixel, `aria-hidden`, non-focusable span placed at the
+pointer inside the graph container, under one `FDS-WORKAROUND #70` marker.
+`onCloseAutoFocus` gives the focus back to the element that had it, as the
+trigger cannot take it.
+
+**Ask.** A `ContextMenu` (the Radix context menu, with the `Menu` item
+components) or an `anchor` point on `Menu`, both opening from the keyboard.
+
+**Removal test.** At a pin with either: replace the hidden trigger by the
+library anchor, delete the marker, and check that a right click on a node of a
+report graph opens the menu at the pointer, that Shift+F10 opens it for the
+entity of the keyboard list, and that Escape gives the focus back.
+
+---
+
+## 71. `Checkbox` `presentational` drops `label` silently, so a row can ship with unnamed boxes
 
 **Needed.** A menu or list row that is itself the control (a `MenuItem` or a
 `role="option"` toggling a filter value) draws a check box next to the name of

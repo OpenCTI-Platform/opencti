@@ -256,6 +256,8 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       const elementsForSearch = isSelectLike && cfDef.select_options
         ? cfDef.select_options
         : [];
+      // A custom field attached to several types keeps all of them, as a standard attribute
+      const existingSubEntityTypes = filterDefinitionsMap.get(cfDef.name)?.subEntityTypes ?? [];
 
       filterDefinitionsMap.set(
         cfDef.name,
@@ -265,7 +267,7 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
           label: cfDef.label,
           multiple: cfDef.multiple ?? false,
           elementsForFilterValuesSearch: elementsForSearch,
-          subEntityTypes,
+          subEntityTypes: uniq(existingSubEntityTypes.concat(subEntityTypes)),
           subFilters: [],
         },
       );

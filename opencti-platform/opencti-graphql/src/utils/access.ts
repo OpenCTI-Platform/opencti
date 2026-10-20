@@ -15,10 +15,11 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalOb
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { isStixObject } from '../schema/stixCoreObject';
+import { isBasicObject, isStixObject } from '../schema/stixCoreObject';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import type { UpdateEvent } from '../types/event';
 import { fullEntitiesList, fullRelationsList, pageEntitiesConnection } from '../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -852,7 +853,12 @@ export const isOrganizationAllowed = (context: AuthContext, element: BasicStoreC
   return isEntityOrganizationsAllowed(context, element.internal_id, elementOrganizations, user, hasPlatformOrg);
 };
 
-const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
+const isOrganizationUnrestrictedForEntityType = (entityType: string | undefined) => {
+  // The type can be missing or unknown for raw stix coming from outside the platform (ex: a location
+  // without x_opencti_location_type in a bundle returned by a connector): apply the organization check.
+  if (!entityType || !(isBasicObject(entityType) || isBasicRelationship(entityType))) {
+    return false;
+  }
   const types = [entityType, ...getParentTypes(entityType)];
   if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
     return true;

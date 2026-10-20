@@ -1808,6 +1808,7 @@ export enum BackgroundTaskActionType {
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
   RemoveAuthMembers = 'REMOVE_AUTH_MEMBERS',
+  RemoveCustomFieldValues = 'REMOVE_CUSTOM_FIELD_VALUES',
   RemoveFromDraft = 'REMOVE_FROM_DRAFT',
   RemoveGroups = 'REMOVE_GROUPS',
   RemoveOrganizations = 'REMOVE_ORGANIZATIONS',
@@ -17805,6 +17806,7 @@ export type Mutation = {
   securityCoverageRelationDelete?: Maybe<SecurityCoverage>;
   securityCoverageResultAdd?: Maybe<SecurityCoverageResult>;
   securityCoverageResultDelete?: Maybe<Scalars['ID']['output']>;
+  securityCoverageResultEdit?: Maybe<SecurityCoverageResult>;
   securityCoverageResultRelationAdd?: Maybe<StixRefRelationship>;
   securityCoverageResultRelationDelete?: Maybe<SecurityCoverage>;
   securityPlatformAdd?: Maybe<SecurityPlatform>;
@@ -19962,6 +19964,12 @@ export type MutationSecurityCoverageResultAddArgs = {
 
 export type MutationSecurityCoverageResultDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSecurityCoverageResultEditArgs = {
+  id: Scalars['ID']['input'];
+  input: SecurityCoverageResultEditInput;
 };
 
 
@@ -31267,6 +31275,20 @@ export type SecurityCoverageResultEdge = {
   node: SecurityCoverageResult;
 };
 
+export type SecurityCoverageResultEditInput = {
+  add_related_entities?: InputMaybe<SecurityCoverageSelectedEntitiesInput>;
+  confidence?: InputMaybe<Scalars['Int']['input']>;
+  coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
+  coverage_valid_from?: InputMaybe<Scalars['DateTime']['input']>;
+  coverage_valid_to?: InputMaybe<Scalars['DateTime']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  external_uri?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
 export enum SecurityCoverageResultOrdering {
   Score = '_score',
   Confidence = 'confidence',
@@ -42233,6 +42255,7 @@ export type ResolversTypes = ResolversObject<{
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: ResolverTypeWrapper<Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversTypes['SecurityCoverageResultEdge']> }>;
   SecurityCoverageResultEdge: ResolverTypeWrapper<Omit<SecurityCoverageResultEdge, 'node'> & { node: ResolversTypes['SecurityCoverageResult'] }>;
+  SecurityCoverageResultEditInput: SecurityCoverageResultEditInput;
   SecurityCoverageResultOrdering: SecurityCoverageResultOrdering;
   SecurityCoverageSelectedEntitiesInput: SecurityCoverageSelectedEntitiesInput;
   SecurityPlatform: ResolverTypeWrapper<BasicStoreEntitySecurityPlatform>;
@@ -43336,6 +43359,7 @@ export type ResolversParentTypes = ResolversObject<{
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversParentTypes['SecurityCoverageResultEdge']> };
   SecurityCoverageResultEdge: Omit<SecurityCoverageResultEdge, 'node'> & { node: ResolversParentTypes['SecurityCoverageResult'] };
+  SecurityCoverageResultEditInput: SecurityCoverageResultEditInput;
   SecurityCoverageSelectedEntitiesInput: SecurityCoverageSelectedEntitiesInput;
   SecurityPlatform: BasicStoreEntitySecurityPlatform;
   SecurityPlatformAddInput: SecurityPlatformAddInput;
@@ -50013,6 +50037,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   securityCoverageRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   securityCoverageResultAdd?: Resolver<Maybe<ResolversTypes['SecurityCoverageResult']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultAddArgs, 'input'>>;
   securityCoverageResultDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultDeleteArgs, 'id'>>;
+  securityCoverageResultEdit?: Resolver<Maybe<ResolversTypes['SecurityCoverageResult']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultEditArgs, 'id' | 'input'>>;
   securityCoverageResultRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultRelationAddArgs, 'id' | 'input'>>;
   securityCoverageResultRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   securityPlatformAdd?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformAddArgs, 'input'>>;

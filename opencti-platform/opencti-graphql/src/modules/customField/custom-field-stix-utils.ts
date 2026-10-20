@@ -97,6 +97,9 @@ export const buildCustomFieldStixFilterTester = (customFieldDefinition: BasicSto
   };
 };
 
+// A deleted custom field is tested as a custom field the stix object does not have
+export const deletedCustomFieldStixFilterTester: TesterFunction = (_stix, filter, changeContext) => testStringFilter(filter, [], changeContext);
+
 export const getCustomFieldsStixFilterTesters = async (context: AuthContext, user: AuthUser): Promise<Record<string, TesterFunction>> => {
   const customFieldsDefinitions = await getCustomFieldDefinitions(context, user);
   const customFieldsTestersMap: Record<string, TesterFunction> = {};
