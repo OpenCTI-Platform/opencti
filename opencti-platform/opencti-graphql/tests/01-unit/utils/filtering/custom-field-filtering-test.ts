@@ -35,7 +35,8 @@ const seed = (...definitions: BasicStoreEntityCustomFieldDefinition[]) => {
   vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue(definitions);
 };
 
-const adapt = (filter: Filter) => adaptFilterToCustomFieldFilterKey(CONTEXT, USER, filter);
+// The adapter returns either a filter or a filter group (several integer values): each test reads the one it expects
+const adapt = async (filter: Filter) => (await adaptFilterToCustomFieldFilterKey(CONTEXT, USER, filter)) as { newFilter: any; newFilterGroup: any };
 
 describe('isCustomFieldFilterKey', () => {
   it('returns true for keys starting with the custom field prefix', () => {
@@ -67,10 +68,23 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
     vi.restoreAllMocks();
   });
 
-  it('throws when the definition is not found in the cache', async () => {
-    seed();
-    const filter = makeFilter({ key: ['x_opencti_cf_unknown'] });
-    await expect(adapt(filter)).rejects.toThrow('Custom field definition not found for filter key');
+  describe('deleted custom field (definition not found)', () => {
+    const unmatchableNested = [
+      { key: 'field_name', values: ['x_opencti_cf_deleted'], operator: FilterOperator.Eq },
+      { key: 'field_id', values: [], operator: FilterOperator.Nil },
+    ];
+
+    it('matches nothing with a positive operator', async () => {
+      seed();
+      const { newFilter } = await adapt(makeFilter({ key: ['x_opencti_cf_deleted'], values: ['a'], operator: FilterOperator.Eq }));
+      expect(newFilter).toEqual({ key: ['custom_field_values'], values: [], nested: unmatchableNested });
+    });
+
+    it('matches everything with a negative operator', async () => {
+      seed();
+      const { newFilter } = await adapt(makeFilter({ key: ['x_opencti_cf_deleted'], values: [], operator: FilterOperator.Nil }));
+      expect(newFilter).toEqual({ key: ['custom_field_values'], values: [], nested: unmatchableNested, negateNested: true });
+    });
   });
 
   describe('string fields', () => {
@@ -199,6 +213,110 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
       expect(newFilter.nested).toEqual(expect.arrayContaining([
         { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
       ]));
+    });
+  });
+
+  describe('negative operators (entities without the field must match)', () => {
+    it('does not negate positive operators', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['hello'], operator: FilterOperator.Eq }));
+      expect(newFilter).not.toHaveProperty('negateNested');
+    });
+
+    it('translates nil into the negation of not_nil', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      const { newFilter } = await adapt(makeFilter({ values: [], operator: FilterOperator.Nil }));
+      expect(newFilter).toEqual({
+        key: ['custom_field_values'],
+        values: [],
+        nested: [
+          { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
+          { key: 'string_value', values: [], operator: FilterOperator.NotNil },
+        ],
+        negateNested: true,
+      });
+    });
+
+    it.each([
+      [FilterOperator.NotEq, FilterOperator.Eq],
+      [FilterOperator.NotContains, FilterOperator.Contains],
+      [FilterOperator.NotStartsWith, FilterOperator.StartsWith],
+      [FilterOperator.NotEndsWith, FilterOperator.EndsWith],
+    ])('translates %s into the negation of %s', async (operator, positiveOperator) => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['hello'], operator }));
+      expect(newFilter.negateNested).toBe(true);
+      expect(newFilter.nested).toEqual([
+        { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
+        { key: 'string_value', values: ['hello'], operator: positiveOperator },
+      ]);
+    });
+
+    it.each([FilterOperator.Eq, FilterOperator.NotEq, FilterOperator.Contains])('rejects %s without value, as for a standard attribute', async (operator) => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      await expect(adapt(makeFilter({ values: [], operator }))).rejects.toThrow('Invalid filter configuration');
+    });
+
+    it('translates not_eq on an integer into the negation of the exact range', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'integer' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['42'], operator: FilterOperator.NotEq }));
+      expect(newFilter.negateNested).toBe(true);
+      expect(newFilter.nested).toEqual([
+        { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
+        { key: 'int_value', values: [42], operator: FilterOperator.Gte },
+        { key: 'int_value', values: [42], operator: FilterOperator.Lte },
+      ]);
+    });
+  });
+
+  describe('several values, combined with the filter mode as for a standard attribute', () => {
+    const exactFilter = (value: number, negated: boolean) => ({
+      key: ['custom_field_values'],
+      values: [],
+      nested: [
+        { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
+        { key: 'int_value', values: [value], operator: FilterOperator.Gte },
+        { key: 'int_value', values: [value], operator: FilterOperator.Lte },
+      ],
+      ...(negated ? { negateNested: true } : {}),
+    });
+
+    it.each([
+      [FilterOperator.Eq, 'or', false],
+      [FilterOperator.Eq, 'and', false],
+      [FilterOperator.NotEq, 'or', true],
+      [FilterOperator.NotEq, 'and', true],
+    ])('matches each integer value exactly with %s in %s mode, not the interval between them', async (operator, mode, negated) => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'integer' }));
+      const { newFilter, newFilterGroup } = await adapt(makeFilter({ values: ['10', '20'], operator, mode } as Partial<Filter>));
+      expect(newFilter).toBeUndefined();
+      expect(newFilterGroup).toEqual({ mode, filters: [exactFilter(10, negated), exactFilter(20, negated)], filterGroups: [] });
+    });
+
+    it.each([
+      [FilterOperator.Eq, 'or', 'or'],
+      [FilterOperator.Eq, 'and', 'and'],
+      [FilterOperator.NotEq, 'or', 'and'],
+      [FilterOperator.NotEq, 'and', 'or'],
+    ])('combines the values of %s in %s mode with the %s mode in the nested filter', async (operator, mode, nestedMode) => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'multi_select' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['a', 'b'], operator, mode } as Partial<Filter>));
+      expect(newFilter.mode).toBe(nestedMode);
+    });
+
+    it('does not apply the mode to the two bounds of within', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'date' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['2026-01-01', '2026-12-31'], operator: FilterOperator.Within, mode: 'and' } as Partial<Filter>));
+      expect(newFilter).not.toHaveProperty('mode');
+      expect(newFilter.nested).toEqual(expect.arrayContaining([
+        { key: 'date_value', values: ['2026-01-01', '2026-12-31'], operator: FilterOperator.Within },
+      ]));
+    });
+
+    it('keeps the default mode with a single value', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['a'], operator: FilterOperator.NotEq, mode: 'and' } as Partial<Filter>));
+      expect(newFilter).not.toHaveProperty('mode');
     });
   });
 

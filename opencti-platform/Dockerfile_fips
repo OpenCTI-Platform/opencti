@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.27
+# syntax=docker/dockerfile:1.28
 FROM filigran/alpine-python-nodejs-fips:python3.12-nodejs24 AS base
 FROM node:24-alpine3.23 AS base-nonfips
 
@@ -72,6 +72,7 @@ RUN <<EOT
   set -euxo pipefail
 
   apk --no-cache add tini python3-dev
+  rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   rm /var/log/apk.log
 EOT
 

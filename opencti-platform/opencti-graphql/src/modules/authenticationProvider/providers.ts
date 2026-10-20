@@ -18,7 +18,7 @@ import { findAllAuthenticationProvider, resolveProviderIdentifier } from './auth
 import { registerLocalStrategy } from './provider-local';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { registerHeadersStrategy } from './provider-headers';
-import { loginFromProvider } from '../../domain/user';
+import { loginFromProvider } from '../user/user-domain';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import conf, { logApp } from '../../config/conf';

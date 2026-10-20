@@ -1,6 +1,6 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
-import { roleCapabilities } from '../domain/user';
+import { roleCapabilities } from '../modules/user/user-domain';
 import { elList } from '../database/engine';
 import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';

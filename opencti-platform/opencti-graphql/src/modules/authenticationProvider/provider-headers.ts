@@ -6,7 +6,7 @@ import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { AuthType, EnvStrategyType, HEADERS_STRATEGY_IDENTIFIER, type ProviderConfiguration } from './providers-configuration';
-import { sessionAuthenticateUser } from '../../domain/user';
+import { sessionAuthenticateUser } from '../user/user-domain';
 import type { Request, Response } from 'express';
 import { extractRefererPathFromReq, setCookieError } from '../../http/httpUtils';
 

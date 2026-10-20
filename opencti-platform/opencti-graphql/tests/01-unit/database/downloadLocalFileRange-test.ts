@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { fileURLToPath } from 'node:url';
+import { copyFile, readFile, utimes, writeFile, rm } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { downloadLocalFileRange, streamToString } from '../../../src/database/raw-file-storage';
 
 const TEST_FILE = fileURLToPath(new URL('../../data/test-map-file.pmtiles', import.meta.url));
@@ -60,6 +64,50 @@ describe('downloadLocalFileRange', () => {
     expect(result1!.etag).toEqual(result2!.etag);
     result1!.stream.destroy();
     result2!.stream.destroy();
+  });
+
+  it('should keep the etag when only the modification time changes', async () => {
+    const copy = join(tmpdir(), `etag-mtime-${Date.now()}.bin`);
+    await copyFile(TEST_FILE, copy);
+    try {
+      const before = await downloadLocalFileRange(copy);
+      before!.stream.destroy();
+      const later = new Date(Date.now() + 60_000);
+      await utimes(copy, later, later);
+      const after = await downloadLocalFileRange(copy);
+      after!.stream.destroy();
+      expect(after!.etag).toEqual(before!.etag);
+    } finally {
+      await rm(copy, { force: true });
+    }
+  });
+
+  it('should derive the etag from a digest of the content', async () => {
+    const result = await downloadLocalFileRange(TEST_FILE);
+    result!.stream.destroy();
+    const expected = createHash('sha256')
+      .update(await readFile(TEST_FILE))
+      .digest('hex')
+      .slice(0, 32);
+    expect(result!.etag).toEqual(`"bundled-${expected}"`);
+  });
+
+  it('should give two files of the same size different etags', async () => {
+    const first = join(tmpdir(), `etag-a-${Date.now()}.bin`);
+    const second = join(tmpdir(), `etag-b-${Date.now()}.bin`);
+    await writeFile(first, 'aaaaaaaaaa');
+    await writeFile(second, 'bbbbbbbbbb');
+    try {
+      const a = await downloadLocalFileRange(first);
+      const b = await downloadLocalFileRange(second);
+      a!.stream.destroy();
+      b!.stream.destroy();
+      expect(a!.totalSize).toEqual(b!.totalSize);
+      expect(a!.etag).not.toEqual(b!.etag);
+    } finally {
+      await rm(first, { force: true });
+      await rm(second, { force: true });
+    }
   });
 
   it('should clamp an end offset beyond EOF to the actual file size', async () => {

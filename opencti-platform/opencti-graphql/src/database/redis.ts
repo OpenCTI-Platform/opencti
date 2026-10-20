@@ -325,7 +325,7 @@ export const redisInit = async () => {
   }
 };
 export const getRedisVersion = async () => {
-  const serverInfo = await getClientBase().call('INFO') as string;
+  const serverInfo = await getClientBase().info();
   const versionString = serverInfo.split('\r\n')[1];
   return versionString.split(':')[1];
 };
@@ -845,15 +845,6 @@ export interface FeedLog {
   count?: number;
 }
 
-export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
-  const data = JSON.stringify(logs);
-  await getClientBase().set(`connector-${connectorId}-logs`, data);
-};
-export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
-  const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
-  return rawLogs ? JSON.parse(rawLogs) : [];
-};
-
 const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
 
 const INGESTION_DEDUP_MAX_COUNT = 100;
@@ -910,26 +901,6 @@ export const redisAddIngestionHistory = async (feedId: string, log: FeedLog) => 
 export const redisGetIngestionHistory = async (feedId: string): Promise<FeedLog[]> => {
   const rawLogs = await getClientBase().lrange(getIngestionLogKey(feedId), 0, -1);
   return rawLogs.map((entry) => JSON.parse(entry) as FeedLog);
-};
-// endregion
-
-// region connector health metrics
-export interface ConnectorHealthMetrics {
-  restart_count: number;
-  started_at: string;
-  last_update: string;
-  is_in_reboot_loop: boolean;
-}
-
-export const redisSetConnectorHealthMetrics = async (connectorId: string, metrics: ConnectorHealthMetrics) => {
-  const data = JSON.stringify(metrics);
-  // TTL of 5 minutes (300 seconds)
-  await getClientBase().set(`connector-${connectorId}-health`, data, 'EX', 300);
-};
-
-export const redisGetConnectorHealthMetrics = async (connectorId: string): Promise<ConnectorHealthMetrics | null> => {
-  const rawMetrics = await getClientBase().get(`connector-${connectorId}-health`);
-  return rawMetrics ? JSON.parse(rawMetrics) : null;
 };
 // endregion
 

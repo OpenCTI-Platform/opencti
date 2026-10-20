@@ -809,3 +809,86 @@ def test_prepare_export_fetches_generic_import_files_by_id(
     assert fetch_by_id_calls == [
         ("import/Intrusion-Set/internal-intrusion-set-id/notes.txt", True, True)
     ]
+
+
+def test_import_relationship_guesses_default_date_from_external_reference(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    stix2 = opencti_stix2_no_server
+    stix2.mapping_cache_permanent["vocabularies_definition_fields"] = []
+    default_dates = []
+
+    def fake_import_from_stix2(**kwargs):
+        default_dates.append(kwargs["defaultDate"])
+        return None
+
+    monkeypatch.setattr(
+        stix2.opencti.stix_core_relationship,
+        "import_from_stix2",
+        fake_import_from_stix2,
+    )
+
+    for external_reference in (
+        {"source_name": "Example Labs", "description": "first seen 1970-01-01"},
+        {"source_name": "Example Labs report of January 20, 2021"},
+    ):
+        stix2.import_relationship(
+            {
+                "id": "relationship--66666666-6666-4666-8666-666666666666",
+                "type": "relationship",
+                "relationship_type": "uses",
+                "source_ref": "malware--77777777-7777-4777-8777-777777777777",
+                "target_ref": "attack-pattern--88888888-8888-4888-8888-888888888888",
+                "external_references": [external_reference],
+            }
+        )
+
+    assert default_dates == ["1970-01-01T00:00:00Z", "2021-01-20T00:00:00Z"]
+
+
+def test_extract_embedded_relationships_dates_external_reference_reports(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    stix2 = opencti_stix2_no_server
+    stix2.mapping_cache_permanent["vocabularies_definition_fields"] = []
+    stix2.set_in_cache("marking_tlpclear", {"id": "marking-tlp-clear-id"})
+    monkeypatch.setattr(
+        stix2.opencti.external_reference,
+        "create",
+        lambda **kwargs: {"id": "external-reference-" + kwargs["url"]},
+    )
+    published_dates = {}
+
+    def fake_report_create(**kwargs):
+        published_dates[kwargs["name"]] = kwargs["published"]
+        return {"id": kwargs["id"]}
+
+    monkeypatch.setattr(stix2.opencti.report, "create", fake_report_create)
+
+    embedded = stix2.extract_embedded_relationships(
+        {
+            "id": "malware--99999999-9999-4999-8999-999999999999",
+            "type": "malware",
+            "name": "Example malware",
+            "external_references": [
+                {
+                    "source_name": "Example Labs blog",
+                    "url": "https://labs.example/blog",
+                    "description": "Deep dive, retrieved January 20, 2021",
+                },
+                {
+                    "source_name": "Example Labs feed",
+                    "url": "https://labs.example/feed",
+                },
+            ],
+        },
+        types=["external-reference-as-report"],
+    )
+
+    # A reference without a past date falls back to one second after the epoch, in
+    # UTC whatever the worker time zone: the report id is derived from this date.
+    assert published_dates == {
+        "Example Labs blog": "2021-01-20T00:00:00Z",
+        "Example Labs feed": "1970-01-01T00:00:01Z",
+    }
+    assert len(embedded["reports"]) == 2

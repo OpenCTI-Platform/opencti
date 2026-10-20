@@ -65,6 +65,14 @@ class StixCyberObservablesExportsContentComponent extends Component {
     );
     return (
       <div>
+        <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+          <StixCyberObservablesExportCreation
+            data={data}
+            paginationOptions={paginationOptions}
+            exportContext={exportContext}
+            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
+          />
+        </Security>
         <List>
           {stixCyberObservablesExportFiles.length > 0 ? (
             stixCyberObservablesExportFiles.map((file) => file?.node && (
@@ -90,14 +98,6 @@ class StixCyberObservablesExportsContentComponent extends Component {
             </div>
           )}
         </List>
-        <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-          <StixCyberObservablesExportCreation
-            data={data}
-            paginationOptions={paginationOptions}
-            exportContext={exportContext}
-            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
-          />
-        </Security>
       </div>
     );
   }

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import ipWhitelistMiddleware, { ipMatchesWhitelist, isUserExcluded, isLoginOnlyRequest, checkIpWhitelistForRequest } from '../../../src/http/ipWhitelistMiddleware';
 import * as cache from '../../../src/database/cache';
-import * as userDomain from '../../../src/domain/user';
+import * as userDomain from '../../../src/modules/user/user-domain';
 import * as listener from '../../../src/listener/UserActionListener';
 import { logApp } from '../../../src/config/conf';
 
@@ -10,7 +10,7 @@ vi.mock('../../../src/database/cache', () => ({
   getEntitiesMapFromCache: vi.fn(),
 }));
 
-vi.mock('../../../src/domain/user', () => ({
+vi.mock('../../../src/modules/user/user-domain', () => ({
   authenticateUserFromRequest: vi.fn(),
   userWithOrigin: vi.fn((req, user) => user),
 }));

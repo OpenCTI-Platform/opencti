@@ -18,6 +18,7 @@
 > - `create-creation-form` — Scaffold a creation form drawer (Formik + Relay mutation)
 > - `create-playbook-component` — Add a new playbook automation component
 > - `create-workflow` — Scaffold a new GitHub Actions workflow
+> - `add-feature-flag` — Put a feature behind a feature flag (constant, attribute `featureFlag`, `@ff`, domain, manager and UI gating) or remove one
 
 ## Project Overview
 

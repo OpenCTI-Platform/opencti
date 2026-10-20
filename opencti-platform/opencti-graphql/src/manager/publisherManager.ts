@@ -21,10 +21,12 @@ import {
 } from '../modules/notifier/notifier-statics';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import type { StoreMarkingDefinition } from '../types/store';
 import type { SseEvent, StreamNotifEvent } from '../types/event';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
 import {
@@ -93,6 +95,34 @@ export async function processNotificationData(
   return generatedContent;
 }
 
+export type NotificationTemplateMarking = Pick<StoreMarkingDefinition, 'id' | 'standard_id' | 'definition_type' | 'definition' | 'x_opencti_color' | 'x_opencti_order'>;
+
+/**
+ * STIX instances only carry marking ids (object_marking_refs).
+ * Resolve them so notifier templates can display marking information.
+**/
+export function resolveNotificationDataMarkings(
+  data: NotificationData[],
+  markingsMap: Map<string, StoreMarkingDefinition>,
+  user: AuthUser | undefined,
+): NotificationData[] {
+  const canSeeAllMarkings = !!user && isBypassUser(user);
+  const userMarkingIds = new Set((user?.allowed_marking ?? []).map((m) => m.internal_id));
+  return data.map((notificationData) => {
+    const { instance } = notificationData;
+    const markingRefs = 'object_marking_refs' in instance ? (instance.object_marking_refs ?? []) : [];
+    const objectMarking: NotificationTemplateMarking[] = [];
+    for (let i = 0; i < markingRefs.length; i += 1) {
+      const marking = markingsMap.get(markingRefs[i]);
+      if (marking && (canSeeAllMarkings || userMarkingIds.has(marking.internal_id))) {
+        const { id, standard_id, definition_type, definition, x_opencti_color, x_opencti_order } = marking;
+        objectMarking.push({ id, standard_id, definition_type, definition, x_opencti_color, x_opencti_order });
+      }
+    }
+    return { ...notificationData, instance: { ...instance, objectMarking } };
+  });
+}
+
 export function assembleTemplateData(
   content: Array<{ title: string; events: NotificationContentEvent[] }>,
   triggers: BasicStoreEntityTrigger[],
@@ -113,6 +143,20 @@ export function assembleTemplateData(
     background_color: platformBackgroundColor,
   };
 }
+
+// A rejection carrying this marker failed to WRITE the notification, rather than failing to
+// reach a remote notifier or to honour the user's configuration. The stream position advances
+// either way, so a write failure loses the notification with no retry — that is the half of
+// these fire-and-forget catches someone has to act on. The marker is set where the write
+// happens, because a rejection can also come from earlier steps on the same UI notifier.
+const NOTIFICATION_WRITE_FAILURE = Symbol('notification_write_failure');
+const markWriteFailure = (error: unknown) => {
+  if (error && typeof error === 'object') {
+    Object.assign(error, { [NOTIFICATION_WRITE_FAILURE]: true });
+  }
+  return error;
+};
+const isWriteFailure = (error: unknown) => !!(error && typeof error === 'object' && (error as Record<symbol, unknown>)[NOTIFICATION_WRITE_FAILURE]);
 
 export async function handleUINotification(
   context: AuthContext,
@@ -137,8 +181,8 @@ export async function handleUINotification(
   try {
     await addNotification(context, SYSTEM_USER, notificationPayload);
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager add notification error', { cause: error, manager: 'PUBLISHER_MANAGER' });
-    throw error;
+    // Deliberately not logged here: the caller's catch logs it once and picks the level.
+    throw markWriteFailure(error);
   }
 }
 
@@ -259,7 +303,9 @@ export const internalProcessNotification = async (
 
   const content = Object.entries(contentEventMapping).map(([title, events]) => ({ title, events }));
 
-  const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, notificationData);
+  const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(authContext, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const templateNotificationData = resolveNotificationDataMarkings(notificationData, markingsMap, usersMap.get(notificationUser.user_id));
+  const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, templateNotificationData);
 
   // Telemetry: notifications sent by channel (attempts semantics, counted
   // before the delivery call; simplified email counts as email).
@@ -315,13 +361,18 @@ export const processNotificationEvent = async (
     // There is no await in purpose; the goal is to send notification and continue without waiting result.
     internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap)
       .catch((reason) => {
-        logApp.error('[OPENCTI-MODULE] Publisher manager notification processing error', {
+        const meta = {
           cause: reason,
           manager: 'PUBLISHER_MANAGER',
           notifierType: notifier.notifier_connector_id,
           userId: user.user_id,
           notificationId,
-        });
+        };
+        if (isWriteFailure(reason)) {
+          logApp.error('[OPENCTI-MODULE] Publisher manager notification write failed', meta);
+        } else {
+          logApp.warn('[OPENCTI-MODULE] Publisher manager notification processing error', meta);
+        }
       });
   }
 };
@@ -436,16 +487,21 @@ const processBufferedEvents = async (
             triggersInDataToSend as BasicStoreEntityTrigger[],
             usersFromCache,
           ).catch((reason) => {
-            logApp.error('[OPENCTI-MODULE] Publisher manager buffered notification processing error', {
+            const meta = {
               cause: reason,
               manager: 'PUBLISHER_MANAGER',
               notifierType: notifierEntity.notifier_connector_id,
               userId: currentUser.user_id,
               triggerCount: triggersInDataToSend.length,
-            });
+            };
+            if (isWriteFailure(reason)) {
+              logApp.error('[OPENCTI-MODULE] Publisher manager buffered notification write failed', meta);
+            } else {
+              logApp.warn('[OPENCTI-MODULE] Publisher manager buffered notification processing error', meta);
+            }
           });
         } else {
-          logApp.error('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
+          logApp.warn('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
         }
       }
     }

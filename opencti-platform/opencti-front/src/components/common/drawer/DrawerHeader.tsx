@@ -26,6 +26,7 @@ const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: Dra
       }}
     >
       <Typography
+        id="drawer-title"
         variant="h5"
         style={{ textWrap: 'nowrap' }}
       >

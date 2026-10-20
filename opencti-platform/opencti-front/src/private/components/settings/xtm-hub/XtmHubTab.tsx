@@ -398,7 +398,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
           <Button variant="secondary" onClick={handleCancelAutoRegistration} color="primary">
             {t_i18n('Cancel')}
           </Button>
-          <Button onClick={handleConfirmAutoRegistration} color="primary" autoFocus>
+          <Button onClick={handleConfirmAutoRegistration} color="primary">
             {t_i18n('Continue')}
           </Button>
         </DialogActions>

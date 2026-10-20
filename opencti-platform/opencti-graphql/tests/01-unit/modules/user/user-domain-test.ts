@@ -28,7 +28,7 @@ vi.mock('../../../../src/database/middleware-loader', () => ({
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { notify } from '../../../../src/database/redis';
 import { elLoadBy } from '../../../../src/database/engine';
-import { validateAndNormalizeEmailInput } from '../../../../src/domain/user';
+import { validateAndNormalizeEmailInput } from '../../../../src/modules/user/user-domain';
 
 describe('User Domain', () => {
   const context = {

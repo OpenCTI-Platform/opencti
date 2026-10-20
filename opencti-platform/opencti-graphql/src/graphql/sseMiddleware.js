@@ -3,7 +3,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
-import { TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../modules/user/user-domain';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -13,6 +13,7 @@ import {
   EVENT_TYPE_DELETE,
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
+  EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
   extractIdsFromStoreObject,
   isEmptyField,
@@ -27,6 +28,7 @@ import {
 import {
   BYPASS,
   checkOTPValidationStatus,
+  checkUserCanAccessStixElement,
   computeUserMemberAccessIds,
   isUserCanAccessStixElement,
   isUserCanAccessStreamUpdateEvent,
@@ -61,6 +63,7 @@ import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { extractStixRepresentative } from '../database/stix-representative';
 import { doYield } from '../utils/eventloop-utils';
 import { registerConsumer, trackEventDelivered, trackEventsProcessed, trackMissingResolution, unregisterConsumer } from './streamConsumerRegistry';
 import { getStreamConsumerInformation } from '../modules/dataSharing/streamCollection-domain';
@@ -328,6 +331,22 @@ export const sendEventWithFilteredObjectRefs = async (
     eventToSend.eventData.data.object_refs = objectsRefs;
   }
   return client.sendEvent(eventToSend.eventId, eventToSend.eventType, eventToSend.eventData);
+};
+
+export const filterMergeEventSources = async (context, user, eventData) => {
+  const sources = eventData.context?.sources ?? [];
+  if (sources.length === 0) {
+    return eventData;
+  }
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const hasPlatformOrg = !!settings.platform_organization;
+  const accessibleSources = sources.filter((source) => checkUserCanAccessStixElement(context, user, source, hasPlatformOrg));
+  if (accessibleSources.length === sources.length) {
+    return eventData;
+  }
+  const sourcesNames = accessibleSources.map((source) => extractStixRepresentative(source)).join(', ');
+  const message = `merges ${eventData.data.extensions[STIX_EXT_OCTI].type} \`${sourcesNames}\` in \`${extractStixRepresentative(eventData.data)}\``;
+  return { ...eventData, message, context: { ...eventData.context, sources: accessibleSources } };
 };
 
 const createSseMiddleware = () => {
@@ -819,7 +838,8 @@ const createSseMiddleware = () => {
                       } else { // Create and merge
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
-                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
+                          const eventToSend = type === EVENT_TYPE_MERGE ? await filterMergeEventSources(context, user, eventData) : eventData;
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData: eventToSend });
                           cache.set(stix.id, 'hit');
                         }
                       }

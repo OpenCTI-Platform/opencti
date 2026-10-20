@@ -16,6 +16,7 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
+import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 
 const styles = (theme) => ({
   container: {
@@ -51,7 +52,7 @@ const styles = (theme) => ({
     flex: '0 1 auto',
     minWidth: 0,
     margin: 0,
-    marginRight: theme.spacing(1),
+    marginRight: theme.spacing(2),
     '& .MuiListItemText-primary, & .MuiListItemText-secondary': {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
@@ -152,22 +153,15 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                         </ListItemIcon>
                         <ListItemText
                           classes={{ root: classes.itemText }}
-                          primary={
-                            stixDomainObject.name
-                            || stixDomainObject.attribute_abstract
-                            || truncate(stixDomainObject.content, 30)
-                            || stixDomainObject.opinion
-                          }
-                          secondary={truncate(
-                            stixDomainObject.description,
-                            100,
-                          )}
+                          primary={truncate(getMainRepresentative(stixDomainObject), 100)}
+                          secondary={truncate(stixDomainObject.description, 100)}
                         />
                         <div className={classes.itemLabels}>
                           <StixCoreObjectLabels
                             variant="inList"
                             labels={stixDomainObject.objectLabel}
                             revoked={stixDomainObject.revoked}
+                            defaultValueIfEmpty=""
                           />
                         </div>
                       </ListItemButton>

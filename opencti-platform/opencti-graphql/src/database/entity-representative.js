@@ -9,6 +9,7 @@ import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteO
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../modules/xtm/hub/news-feed/news-feed-types';
+import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
 
 export const extractRepresentativeDescription = (entityData) => {
   let secondValue;
@@ -57,6 +58,8 @@ export const extractEntityRepresentativeName = (entityData) => {
     mainValue = entityData.target_type;
   } else if (entityData.entity_type === ENTITY_TYPE_MANAGER_CONFIGURATION) {
     mainValue = entityData.manager_id;
+  } else if (entityData.entity_type === ENTITY_TYPE_CUSTOM_FIELD_DEFINITION) {
+    mainValue = entityData.label;
   } else if (entityData.entity_type === ENTITY_TYPE_CAPABILITY) {
     return entityData.description;
   } else if (isStixCyberObservable(entityData.entity_type)) {

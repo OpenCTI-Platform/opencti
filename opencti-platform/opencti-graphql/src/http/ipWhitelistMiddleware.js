@@ -5,7 +5,7 @@ import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import conf, { logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
-import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
+import { authenticateUserFromRequest, userWithOrigin } from '../modules/user/user-domain';
 import { publishUserAction } from '../listener/UserActionListener';
 
 // Escape hatch: set app:ip_whitelist_enabled to false in config to bypass

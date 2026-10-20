@@ -125,11 +125,13 @@
     },
     "performance_logger": false,
     "map_bundled_file_path": "./static/maps/world.pmtiles",
+    "map_countries_bundled_file_path": "./static/maps/countries.json",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
     "python_execution_venv": "../../../.python-venv/lib/python3.12/site-packages",
     "artifact_zip_password": "infected",
+    "artifact_zip_max_extracted_size": 104857600,
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",
@@ -307,7 +309,7 @@
     "interval": 60000
   },
   "platform_usage_metrics_manager": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "platform_usage_metrics_manager_lock"
   },
   "garbage_collection_manager": {
@@ -380,6 +382,11 @@
   "exclusion_list_cache_sync_manager": {
     "lock_key": "exclusion_list_cache_sync_manager_lock",
     "interval": 10000
+  },
+  "ingestion_health_manager": {
+    "enabled": true,
+    "lock_key": "ingestion_health_manager_lock",
+    "interval": 60000
   },
   "catalog_manager": {
     "enabled": true,

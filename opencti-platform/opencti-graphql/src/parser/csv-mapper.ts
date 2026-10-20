@@ -20,6 +20,7 @@ import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { CsvMapperOperator } from '../generated/graphql';
 import type { ComplexAttributePath, JsonMapperParsed, JsonMapperRepresentation, SimpleAttributePath } from '../modules/internal/jsonMapper/jsonMapper-types';
+import { getCustomFieldAttributeDefinitions, moveCustomFieldValuesToInput } from '../modules/customField/custom-field-attributes';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 const USER_CHOICE_MARKING_CONFIG = 'user-choice';
@@ -233,6 +234,7 @@ const handleAttributes = (
   input: Record<string, InputType>,
   otherEntities: Map<string, Record<string, InputType>>,
   refEntities: Record<string, BasicStoreObject>,
+  customFieldAttributes: Map<string, AttributeDefinition>,
 ) => {
   const { entity_type } = representation.target;
   const hashesNames = getHashesNames(entity_type);
@@ -256,6 +258,8 @@ const handleAttributes = (
         // Handle column attribute
         handleDirectAttribute(attribute, input, record, attributeDef, []);
       }
+    } else if (customFieldAttributes.has(attribute.key)) {
+      handleDirectAttribute(attribute, input, record, customFieldAttributes.get(attribute.key) as AttributeDefinition, []);
     } else if (refDef || ['from', 'to'].includes(attribute.key)) {
       handleBasedOnAttribute(attribute, input, refDef, otherEntities, refEntities);
     } else {
@@ -328,12 +332,14 @@ const mapRecord = async (
   handleType(representation, input);
   input = handleInnerType(input, entity_type);
 
-  handleAttributes(record, representation, input, otherEntities, refEntities);
+  const customFieldAttributes = await getCustomFieldAttributeDefinitions(context, user, entity_type, (representation.attributes ?? []).map((a) => a.key));
+  handleAttributes(record, representation, input, otherEntities, refEntities, customFieldAttributes);
+  await moveCustomFieldValuesToInput(context, user, input, customFieldAttributes, entity_type);
 
   const entitySetting = await getEntitySettingFromCache(context, entity_type);
   handleDefaultMarkings(entitySetting, representation, input, refEntities, chosenMarkings, user);
 
-  const filledInput = fillDefaultValues(user, input, entitySetting);
+  const filledInput = await fillDefaultValues(user, input, entitySetting);
   if (!isValidInput(filledInput)) {
     return null;
   }

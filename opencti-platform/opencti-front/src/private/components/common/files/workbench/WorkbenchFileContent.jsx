@@ -6,7 +6,6 @@ import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@m
 import { ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
-import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -61,6 +60,7 @@ import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/Sti
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
+import { onActivationKey } from '../../../../../utils/domEvent';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -1694,6 +1694,9 @@ const WorkbenchFileContentComponent = ({
         <div
           style={inlineStylesHeaders[field]}
           onClick={() => reverseBy(field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={onActivationKey(() => reverseBy(field))}
         >
           <span>{t_i18n(label)}</span>
           {sortBy === field ? sortComponent : ''}
@@ -1721,6 +1724,9 @@ const WorkbenchFileContentComponent = ({
         <div
           style={inlineStylesHeaders[field]}
           onClick={() => containerReverseBy(field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={onActivationKey(() => containerReverseBy(field))}
         >
           <span>{t_i18n(label)}</span>
           {containerSortBy === field ? sortComponent : ''}
@@ -3312,18 +3318,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenEntity(null, null)}
-          color="primary"
-          aria-label="Add"
+          variant="primary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add entity')}
+        </Button>
         <Drawer
           open={entityStep != null}
           onClose={handleCloseEntity}
@@ -3558,18 +3561,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenObservable(null, null)}
-          color="secondary"
-          aria-label="Add"
+          variant="primary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add observable')}
+        </Button>
         <Drawer
           open={displayObservable}
           onClose={handleCloseObservable}
@@ -4108,18 +4108,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenContainer(null, null)}
-          color="secondary"
-          aria-label="Add"
+          variant="primary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add container')}
+        </Button>
         <Drawer
           open={containerStep != null}
           onClose={handleCloseContainer}

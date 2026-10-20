@@ -12,7 +12,7 @@ import * as UserActionListener from '../../../src/listener/UserActionListener';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { synchronizeCatalogs } from '../../../src/modules/catalog/sync/catalog-sync-domain';
 import conf from '../../../src/config/conf';
-import { connector } from '../../../src/database/repository';
+import { connector } from '../../../src/modules/connector/connector-domain';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -163,6 +163,7 @@ const GET_CONNECTOR_QUERY_CURRENT_STATUS = gql`
     connector(id: $id) {
       id
       manager_current_status
+      active
     }
   }
 `; // Verify the connector is now started
@@ -408,7 +409,7 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data?.connectorManager).not.toBeNull();
       expect(result.data?.connectorManager.id).toEqual(TEST_COMPOSER_ID);
       expect(result.data?.connectorManager.name).toEqual('Test Composer Updated');
-      expect(result.data?.connectorManager.active).toBeDefined();
+      expect(result.data?.connectorManager.active).toEqual(true);
     });
 
     it('should list all connector composers', async () => {
@@ -564,6 +565,13 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(stopResult.data).toBeDefined();
       expect(stopResult.data?.updateConnectorRequestedStatus.manager_requested_status).toEqual('stopping');
 
+      const connectorActiveResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
+        variables: { id: deploymentConnectorId },
+      });
+      // should already be inactive
+      expect(connectorActiveResult.data?.connector.active).toEqual(false);
+
       // Wait for XTM Composer to detect and stop the connector
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
@@ -583,6 +591,7 @@ describe('Connector Composer and Managed Connectors', () => {
       });
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('stopped');
+      expect(connectorResult.data?.connector.active).toEqual(false);
     });
 
     it('should restart a connector', async () => {

@@ -54,13 +54,13 @@ import {
   isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { createWork, worksForSource, workToExportFile } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { createWork, findExportApplicantId, worksForSource, workToExportFile } from './work';
+import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
-import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { findById as documentFindById, paginatedForExportContext, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
@@ -82,7 +82,7 @@ import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filter
 import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
-import { connectorsForAnalysis } from '../database/repository';
+import { connectorsForAnalysis } from '../modules/connector/connector-domain';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator, ValidationMode } from '../generated/graphql';
 import {
@@ -525,6 +525,11 @@ export const stixCoreObjectsMultiDistribution = (context, user, args) => {
 // endregion
 
 // region export
+export const stixCoreObjectsExportFiles = async (context, user, exportContext, args) => {
+  const { first } = args;
+  return paginatedForExportContext(context, user, exportContext, { first });
+};
+
 export const stixCoreObjectsExportAsk = async (context, user, args) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot ask for export in draft');
@@ -550,8 +555,11 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, i
 export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, file_markings, listFilters) => {
   const meta = { list_filters: listFilters };
   const entity = entity_id ? await internalLoadById(context, user, entity_id) : undefined;
-  const opts = { entity, meta, file_markings };
-  await uploadToStorage(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, opts);
+  const path = `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`;
+  const { filename } = await file;
+  const creatorId = await findExportApplicantId(context, user, path, filename);
+  const opts = { entity, meta, file_markings, creatorId };
+  await uploadToStorage(context, user, path, file, opts);
   return true;
 };
 
@@ -561,7 +569,10 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const path = `export/${previous.entity_type}/${entityId}`;
-  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
+  const { filename } = await args.file;
+  const creatorId = await findExportApplicantId(context, user, path, filename);
+  const opts = { entity: previous, file_markings: args.file_markings, creatorId };
+  const { upload: up } = await uploadToStorage(context, user, path, args.file, opts);
   const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,

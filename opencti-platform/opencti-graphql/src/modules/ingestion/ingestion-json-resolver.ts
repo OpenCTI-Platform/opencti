@@ -32,6 +32,7 @@ import { decryptIngestionCredential } from './ingestion-common';
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionJson } from './ingestion-types';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
 
 const ingestionJsonResolvers: Resolvers = {
   Query: {
@@ -43,6 +44,7 @@ const ingestionJsonResolvers: Resolvers = {
     },
   },
   IngestionJson: {
+    ...ingestionHealthFieldResolvers,
     authentication_value: async (ingestionJson) => {
       const decrypted = await decryptIngestionCredential(ingestionJson.authentication_value);
       return removeAuthenticationCredentials(ingestionJson.authentication_type, decrypted);

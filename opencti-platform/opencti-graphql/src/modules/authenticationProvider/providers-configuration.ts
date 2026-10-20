@@ -1,5 +1,5 @@
 import conf, { booleanConf, logApp } from '../../config/conf';
-import { loginFromProvider } from '../../domain/user';
+import { loginFromProvider } from '../user/user-domain';
 import * as R from 'ramda';
 import type { AuthenticationProviderType } from '../../generated/graphql';
 import { addUserLoginCount } from '../../manager/telemetryManager';

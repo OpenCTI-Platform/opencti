@@ -150,6 +150,7 @@ const AttackPatternsMatrixColumns = ({
   handleAdd,
   selectedKillChain,
   isModeOnlyActive,
+  expandAll,
   inPaper,
   isCoverage = false,
   coverageMap,
@@ -316,6 +317,7 @@ const AttackPatternsMatrixColumns = ({
                                 isCoverage={isCoverage}
                                 coverageMap={coverageMap}
                                 entityId={entityId}
+                                expandAll={expandAll}
                               />
                             </AttackPatternsMatrixBadge>
                           );

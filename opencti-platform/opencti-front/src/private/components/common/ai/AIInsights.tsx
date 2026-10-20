@@ -18,11 +18,12 @@ import Tooltip from '@mui/material/Tooltip';
 import { createStyles } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
+import { canonicalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useAI from '../../../../utils/hooks/useAI';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -269,7 +270,9 @@ const AIInsights = ({
     filterGroups: [],
   };
   // TODO make the filter "objects" readonly?
-  const [containersFilters] = useFiltersState(initialContainersFilters);
+  const [containersFiltersState] = useFiltersState(initialContainersFilters);
+  // the filters state carries frontend-only ids the FilterGroup input rejects
+  const containersFilters = useMemo(() => canonicalizeFilterGroupForBackend(containersFiltersState), [containersFiltersState]);
   if (!enabled) return null;
   if (!isEnterpriseEdition && enabled) {
     return (

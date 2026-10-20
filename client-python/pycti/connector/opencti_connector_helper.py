@@ -52,6 +52,7 @@ from pika.exceptions import NackError, UnroutableError
 from pydantic import TypeAdapter
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
+from pycti.connector import opencti_connector_build
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
@@ -2422,6 +2423,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             metrics_subsystem,
             metrics_port,
         )
+        # Read from the build manifest/stamp only, so the reported values match the running image
+        self.connect_version, self.connect_slug, build_source = (
+            opencti_connector_build.resolve()
+        )
+        self.connector_logger.debug(
+            "Connector build metadata resolved",
+            {
+                "version": self.connect_version,
+                "slug": self.connect_slug,
+                "source": build_source,
+            },
+        )
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
             connector_id=self.connect_id,
@@ -2439,6 +2452,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 else None
             ),
             xtm_one_intent=self.connect_xtm_one_intent,
+            version=self.connect_version,
+            slug=self.connect_slug,
         )
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_logger.info(

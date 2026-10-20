@@ -6,6 +6,7 @@ import * as Redis from '../../../../src/database/redis';
 import * as UserActionListener from '../../../../src/listener/UserActionListener';
 import * as Access from '../../../../src/utils/access';
 import * as CacheModule from '../../../../src/database/cache';
+import * as TelemetryManager from '../../../../src/manager/telemetryManager';
 import { EditOperation, FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import {
   customFieldDefinitionAdd,
@@ -15,10 +16,9 @@ import {
   customFieldDefinitionRemoveEntityType,
   customFieldDefinitionUpdateEntityType,
   findById,
-  findCustomFieldDefinitionByName,
   findCustomFieldDefinitionsForEntityType,
   findCustomFieldDefinitionsPaginated,
-  isCustomFieldKey,
+  findCustomFieldStixFilterKeys,
 } from '../../../../src/modules/customField/custom-field-domain';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../../src/modules/customField/custom-field-types';
 
@@ -45,6 +45,10 @@ vi.mock('../../../../src/database/redis', () => ({
 
 vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
+}));
+
+vi.mock('../../../../src/manager/telemetryManager', () => ({
+  addCustomFieldCreatedCount: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/cache', () => ({
@@ -92,16 +96,6 @@ beforeEach(() => {
   vi.mocked(Access.executionContext).mockReturnValue({ source: 'testing' } as any);
 });
 
-describe('isCustomFieldKey', () => {
-  it('returns true for keys prefixed with the custom field prefix', () => {
-    expect(isCustomFieldKey('x_opencti_cf_score')).toBe(true);
-  });
-
-  it('returns false for keys not prefixed with the custom field prefix', () => {
-    expect(isCustomFieldKey('name')).toBe(false);
-  });
-});
-
 describe('findById / findCustomFieldDefinitionsPaginated / findCustomFieldDefinitionsForEntityType', () => {
   it('findById delegates to storeLoadById with the CustomFieldDefinition type', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(makeDefinition() as any);
@@ -125,18 +119,31 @@ describe('findById / findCustomFieldDefinitionsPaginated / findCustomFieldDefini
       },
     });
   });
+});
 
-  it('findCustomFieldDefinitionByName returns the node when found', async () => {
-    const def = makeDefinition({ name: 'x_opencti_cf_field' });
-    vi.mocked(MiddlewareLoader.pageEntitiesConnection).mockResolvedValue({ edges: [{ node: def }], pageInfo: {} } as any);
-    const result = await findCustomFieldDefinitionByName(mockContext, mockUser, 'x_opencti_cf_field');
-    expect(result).toEqual(def);
+describe('findCustomFieldStixFilterKeys', () => {
+  it('returns the names of all definitions when no entityType is given', async () => {
+    seedCustomFieldDefinitions(
+      makeDefinition({ name: 'x_opencti_cf_score' }),
+      makeDefinition({ name: 'x_opencti_cf_label' }),
+    );
+    const result = await findCustomFieldStixFilterKeys(mockContext, mockUser, null);
+    expect(result.sort()).toEqual(['x_opencti_cf_label', 'x_opencti_cf_score']);
   });
 
-  it('findCustomFieldDefinitionByName returns null when not found', async () => {
-    vi.mocked(MiddlewareLoader.pageEntitiesConnection).mockResolvedValue({ edges: [], pageInfo: {} } as any);
-    const result = await findCustomFieldDefinitionByName(mockContext, mockUser, 'x_opencti_cf_unknown');
-    expect(result).toBeNull();
+  it('filters definitions by entity type when provided', async () => {
+    seedCustomFieldDefinitions(
+      makeDefinition({ name: 'x_opencti_cf_score', entity_types: ['Case-Incident'] }),
+      makeDefinition({ name: 'x_opencti_cf_label', entity_types: ['Report'] }),
+    );
+    const result = await findCustomFieldStixFilterKeys(mockContext, mockUser, 'Case-Incident');
+    expect(result).toEqual(['x_opencti_cf_score']);
+  });
+
+  it('returns an empty array when no definition matches the entity type', async () => {
+    seedCustomFieldDefinitions(makeDefinition({ name: 'x_opencti_cf_score', entity_types: ['Report'] }));
+    const result = await findCustomFieldStixFilterKeys(mockContext, mockUser, 'Case-Incident');
+    expect(result).toEqual([]);
   });
 });
 
@@ -159,6 +166,7 @@ describe('customFieldDefinitionAdd', () => {
     await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, name: 'invalid_name' }))
       .rejects.toThrow('Technical name must start with "x_opencti_cf_"');
     expect(Middleware.createEntity).not.toHaveBeenCalled();
+    expect(TelemetryManager.addCustomFieldCreatedCount).not.toHaveBeenCalled();
   });
 
   it('throws when the technical name already exists', async () => {
@@ -171,6 +179,18 @@ describe('customFieldDefinitionAdd', () => {
     seedCustomFieldDefinitions(makeDefinition({ name: 'x_opencti_cf_other', label: 'Score' }));
     await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput))
       .rejects.toThrow('A custom field with this label already exists');
+  });
+
+  it('throws when the new name collides with an existing alias', async () => {
+    seedCustomFieldDefinitions(makeDefinition({ name: 'x_opencti_cf_other', aliases: ['x_opencti_cf_score'] } as any));
+    await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput))
+      .rejects.toThrow('A custom field with this technical name already exists');
+  });
+
+  it('throws when a provided alias collides with an existing name or alias', async () => {
+    seedCustomFieldDefinitions(makeDefinition({ name: 'x_opencti_cf_existing' }));
+    await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, aliases: ['x_opencti_cf_existing'] }))
+      .rejects.toThrow('A custom field with this alias already exists');
   });
 
   it('throws on an unsupported field_type', async () => {
@@ -204,6 +224,19 @@ describe('customFieldDefinitionAdd', () => {
       message: 'creates custom field definition `x_opencti_cf_tags`',
     }));
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), created, mockUser);
+    expect(TelemetryManager.addCustomFieldCreatedCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('respects the provided multiple flag for a non-multi_select field type', async () => {
+    const created = { id: 'cf-id-1', name: 'x_opencti_cf_score' };
+    vi.mocked(Middleware.createEntity).mockResolvedValue(created as any);
+    await customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, multiple: true });
+    expect(Middleware.createEntity).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      expect.objectContaining({ multiple: true }),
+      'CustomFieldDefinition',
+    );
   });
 });
 
@@ -295,6 +328,93 @@ describe('customFieldDefinitionEdit', () => {
     expect(Middleware.updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'cf-id-1', 'CustomFieldDefinition', edit);
     expect(UserActionListener.publishUserAction).toHaveBeenCalledWith(expect.objectContaining({ event_scope: 'update' }));
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), updatedElem, mockUser);
+  });
+});
+
+describe('customFieldDefinitionEdit - aliases uniqueness', () => {
+  it('throws when a new alias is already used as the technical name or an alias of another definition', async () => {
+    seedCustomFieldDefinitions(makeDefinition({ id: 'cf-id-2', name: 'x_opencti_cf_other' }));
+    const edit = [{ key: 'aliases', value: ['x_opencti_cf_other'], operation: EditOperation.Add } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit))
+      .rejects.toThrow('A custom field with this alias already exists');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('does not check uniqueness when the aliases edit is a Remove operation', async () => {
+    seedCustomFieldDefinitions(makeDefinition({ id: 'cf-id-2', name: 'x_opencti_cf_other' }));
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: makeDefinition({ id: 'cf-id-1' }) } as any);
+    const edit = [{ key: 'aliases', value: ['x_opencti_cf_other'], operation: EditOperation.Remove } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit)).resolves.not.toThrow();
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
+
+  it('allows a new alias that is not used by any other definition', async () => {
+    seedCustomFieldDefinitions(makeDefinition({ id: 'cf-id-2', name: 'x_opencti_cf_other' }));
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: makeDefinition({ id: 'cf-id-1' }) } as any);
+    const edit = [{ key: 'aliases', value: ['x_opencti_cf_free'], operation: EditOperation.Add } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit)).resolves.not.toThrow();
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
+});
+
+describe('customFieldDefinitionEdit - integer bounds edge cases', () => {
+  it('throws when tightening max_value beyond an already-stored value', async () => {
+    const definition = makeDefinition({ field_type: 'integer', min_value: 0, max_value: 100 });
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(definition as any);
+    vi.mocked(MiddlewareLoader.countAllThings).mockResolvedValue(2);
+    const edit = [{ key: 'max_value', value: ['50'] } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit))
+      .rejects.toThrow('Cannot restrict the value range');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('throws when the edited bounds are incoherent (min greater than max)', async () => {
+    const definition = makeDefinition({ field_type: 'integer', min_value: 0, max_value: 100 });
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(definition as any);
+    vi.mocked(MiddlewareLoader.countAllThings).mockResolvedValue(0);
+    const edit = [{ key: 'min_value', value: ['200'] } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit))
+      .rejects.toThrow('min_value cannot be greater than max_value');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('does not re-check bounds for a non-integer field type', async () => {
+    const definition = makeDefinition({ field_type: 'string' });
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(definition as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: definition } as any);
+    const edit = [{ key: 'min_value', value: ['10'] } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit)).resolves.not.toThrow();
+    expect(MiddlewareLoader.countAllThings).not.toHaveBeenCalled();
+  });
+});
+
+describe('customFieldDefinitionEdit - select_options edit operations', () => {
+  it('does not check usage when EditOperation is Add (nothing removed)', async () => {
+    const definition = makeDefinition({ field_type: 'select', select_options: ['a', 'b'] });
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(definition as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: definition } as any);
+    const edit = [{ key: 'select_options', value: ['c'], operation: EditOperation.Add } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit)).resolves.not.toThrow();
+    expect(MiddlewareLoader.countAllThings).not.toHaveBeenCalled();
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
+
+  it('checks usage for the removed options with EditOperation.Remove', async () => {
+    const definition = makeDefinition({ field_type: 'select', select_options: ['a', 'b'] });
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(definition as any);
+    vi.mocked(MiddlewareLoader.countAllThings).mockResolvedValue(1);
+    const edit = [{ key: 'select_options', value: ['a'], operation: EditOperation.Remove } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit))
+      .rejects.toThrow('Cannot remove a select option that is still used');
+  });
+
+  it('does not check usage for a non-select/multi_select field type', async () => {
+    const definition = makeDefinition({ field_type: 'string' });
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(definition as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: definition } as any);
+    const edit = [{ key: 'select_options', value: ['a'], operation: EditOperation.Replace } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit)).resolves.not.toThrow();
+    expect(MiddlewareLoader.countAllThings).not.toHaveBeenCalled();
   });
 });
 
