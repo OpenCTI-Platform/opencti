@@ -63,7 +63,7 @@ test('Update a manual security coverage result', { tag: ['@securityCoverage', '@
   await expect(resultForm.getUpdateTitle()).toBeVisible();
   // Step 1: select the result to update
   await expect(resultForm.getResultFromList(resultName)).toBeVisible();
-  await resultForm.selectResultToUpdate();
+  await resultForm.selectResultToUpdate(resultName);
   // Step 2: details, prefilled with the values of the result
   await expect(resultForm.nameField.get()).toHaveValue(resultName);
   const updatedName = `Updated result - ${testId}`;

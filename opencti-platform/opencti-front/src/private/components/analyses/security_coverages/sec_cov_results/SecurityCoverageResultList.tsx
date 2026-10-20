@@ -105,10 +105,10 @@ const securityCoverageResultListLineFragment = graphql`
 `;
 
 const DATA_COLUMNS: DataTableProps['dataColumns'] = {
-  name: { percentWidth: 40 },
+  name: { percentWidth: 35 },
   coverage: { percentWidth: 20 },
   createdBy: { percentWidth: 20, isSortable: false },
-  created_at: { percentWidth: 20 },
+  created_at: { percentWidth: 25 },
 };
 
 interface SecurityCoverageResultListProps {
@@ -182,18 +182,9 @@ const SecurityCoverageResultList = ({
           disableNavigation
           disableLineSelection
           disableToolBar
-          actionsColumnWidth={100}
-          actions={(row: { id: string }) => {
+          onLineClick={(row: { id: string }) => {
             const result = results.find((r) => r.id === row.id);
-            return (
-              <Button
-                size="small"
-                disabled={!result}
-                onClick={() => result && onSelect(result)}
-              >
-                {t_i18n('Update')}
-              </Button>
-            );
+            if (result) onSelect(result);
           }}
         />
       )}

@@ -13,7 +13,7 @@ export default class SecurityCoverageResultFormPage {
   }
 
   async openUpdateForm() {
-    await this.page.getByRole('button', { name: 'Add manual Coverage Result' }).click();
+    await this.page.locator('#security-coverage-result-split-button').getByRole('button', { name: 'Open menu' }).click();
     return this.page.getByRole('menuitem', { name: 'Update existing Security Coverage Result' }).click();
   }
 
@@ -25,8 +25,8 @@ export default class SecurityCoverageResultFormPage {
     return this.formLocator.getByText(name, { exact: true });
   }
 
-  selectResultToUpdate() {
-    return this.formLocator.getByRole('button', { name: 'Update', exact: true }).first().click();
+  selectResultToUpdate(name: string) {
+    return this.getResultFromList(name).click();
   }
 
   getEntityFromList(name: string) {
