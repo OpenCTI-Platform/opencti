@@ -283,6 +283,7 @@ const GraphClusters = () => {
             {more > 0 && (
               <Tooltip>
                 <TooltipTrigger asChild>
+                  {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
                   <span tabIndex={0} style={{ whiteSpace: 'nowrap' }}>
                     <Text variant="content-caption" as="span">{t_i18n('and {count} more', { values: { count: more } })}</Text>
                   </span>

@@ -74,7 +74,7 @@ interface GraphTopHubsWidgetProps {
 
 const GraphTopHubsChart = ({ variant, height, dataSelection, parameters = {}, popover, host, refreshRate = null, config }: GraphTopHubsWidgetProps) => {
   const { t_i18n } = useFormatter();
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<GraphTopHubsWidgetQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<GraphTopHubsWidgetQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -93,8 +93,7 @@ const GraphTopHubsChart = ({ variant, height, dataSelection, parameters = {}, po
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

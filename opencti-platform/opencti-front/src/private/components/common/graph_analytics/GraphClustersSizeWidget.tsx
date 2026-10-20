@@ -104,7 +104,7 @@ const GraphClustersSizeWidget = ({
   host,
 }: GraphClustersSizeWidgetProps) => {
   const { t_i18n } = useFormatter();
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<GraphClustersSizeWidgetQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<GraphClustersSizeWidgetQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -124,8 +124,7 @@ const GraphClustersSizeWidget = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

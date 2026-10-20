@@ -15,6 +15,7 @@ const GraphSimilarityScore = ({ score, jaccard, structural }: GraphSimilaritySco
   return (
     <Tooltip>
       <TooltipTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span tabIndex={0} data-testid="graph-similarity-score">
           <Chip label={t_i18n('{score} similar', { values: { score: formatSimilarityScore(score) } })} severity={similarityScoreSeverity(score)} />
         </span>

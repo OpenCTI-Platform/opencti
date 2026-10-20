@@ -15,6 +15,7 @@ const GraphRelativeTime = ({ date, template }: GraphRelativeTimeProps) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span tabIndex={0} data-testid="graph-relative-time">
           {template ? t_i18n(template, { values: { time: relative } }) : relative}
         </span>

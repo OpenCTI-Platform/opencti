@@ -78,7 +78,7 @@ const GraphSimilarityMatrixWidget = ({
   host,
 }: GraphSimilarityMatrixWidgetProps) => {
   const { t_i18n } = useFormatter();
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<GraphSimilarityMatrixWidgetQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<GraphSimilarityMatrixWidgetQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -98,8 +98,7 @@ const GraphSimilarityMatrixWidget = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >
