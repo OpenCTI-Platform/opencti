@@ -51,4 +51,28 @@ describe('logger pipeline', () => {
     expect(exception?.message).toBe('value.split is not a function');
     expect(exception?.stacktrace).toContain('TypeError: value.split is not a function');
   });
+
+  it.each([
+    ['undefined', undefined, '[object Undefined]'],
+    ['a plain object', { reason: 'nope' }, '[object Object]'],
+    ['a null-prototype object', Object.create(null), '[object Object]'],
+    ['a DOM Event', new Event('error'), '[object Event]'],
+  ])('wraps %s thrown into an Error that names its type', (_label, thrown, type) => {
+    logger.error('Unhandled promise rejection', {
+      eventName: 'opencti.frontend.unhandled_rejection',
+      error: thrown,
+    });
+
+    const [record] = exporter.getFinishedLogRecords();
+    const { exception } = toFrontendLogInput(record);
+    expect(exception?.type).toBe('Error');
+    expect(exception?.message).toBe(`Non-Error value thrown: ${type}`);
+  });
+
+  it('leaves the exception empty when no error is given', () => {
+    logger.warn('Filter value is not a string', { eventName: 'opencti.filter.value_not_string' });
+
+    const [record] = exporter.getFinishedLogRecords();
+    expect(toFrontendLogInput(record).exception).toBeNull();
+  });
 });

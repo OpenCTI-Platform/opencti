@@ -18,6 +18,16 @@ export interface LogOptions {
   error?: unknown;
 }
 
+// The SDK fills the exception fields only from an Error, a string or a number. Anything else
+// thrown (undefined, a plain or null-prototype object, a DOM Event) leaves them empty or makes
+// the SDK throw, so it is wrapped into an Error that names its type.
+const toException = (thrown: unknown) => {
+  if (thrown instanceof Error || typeof thrown === 'string' || typeof thrown === 'number') {
+    return thrown;
+  }
+  return new Error(`Non-Error value thrown: ${Object.prototype.toString.call(thrown)}`);
+};
+
 const emit = (level: LogLevel, message: string, options: LogOptions) => {
   try {
     logs.getLogger(LOGGER_NAME).emit({
@@ -26,7 +36,7 @@ const emit = (level: LogLevel, message: string, options: LogOptions) => {
       severityNumber: SEVERITY_NUMBERS[level],
       body: message,
       attributes: options.data ? { data: options.data as AnyValueMap } : {},
-      exception: options.error,
+      exception: 'error' in options ? toException(options.error) : undefined,
     });
   } catch {
     // A logging failure must never surface
