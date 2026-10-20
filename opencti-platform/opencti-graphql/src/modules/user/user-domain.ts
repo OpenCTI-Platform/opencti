@@ -1478,6 +1478,10 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   } finally {
     if (lock) await lock.unlock();
   }
+  // Setting an account back to Active also lifts its local authentication lockout
+  if (inputs.some((i) => i.key === 'account_status' && R.head(i.value) === ACCOUNT_STATUS_ACTIVE)) {
+    await clearLocalAuthLockout(element.user_email);
+  }
   // The password history is internal bookkeeping of a password change: it never reaches the audit log
   const auditedInputs = inputs.filter((i) => i.key !== 'password_history');
   const input = updatedInputsToData(element, auditedInputs);
@@ -2132,7 +2136,8 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     if (user) {
       await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
-      // The local lockout never blocks other providers, and their successful logins reset it
+      // The local lockout never blocks other providers. The session clears the lockout of the user email,
+      // but the counter is keyed on what was typed, which can be another identifier (LDAP uid)
       await clearLocalAuthLockout(input.email);
       break;
     }
@@ -2155,7 +2160,6 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
       await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
-      await clearLocalAuthLockout(input.email);
     }
   }
   if (loggedUser) {
@@ -2575,6 +2579,8 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged!, settings, { skipForcePasswordCheck: true });
+  // Any accepted session login (local, LDAP, SSO, certificate or headers) resets the local lockout
+  await clearLocalAuthLockout(logged!.user_email);
   const numberOfKilledSessions = await killUserSessionsOverLimit(logged!.id, settings.platform_session_max_concurrent);
   // Regenerate the session id before binding the identity, preventing session fixation.
   // The referer is kept as the auth callback still reads it from the session as a redirect fallback
