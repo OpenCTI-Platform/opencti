@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { expect } from '../fixtures/baseFixtures';
 import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
 import ImportFilesDialogPageModel from '../model/formIntake/importFilesDialog.pageModel';
@@ -28,10 +29,15 @@ export const loginAs = async (page: Page, user: TestUser) => {
   await toolbar.exitDraftIfPresent();
 };
 
+/** A goto can be aborted by a navigation the app starts itself (e.g. a reload after login): retry it. */
+export const gotoDraft = (page: Page, draftId: string, tab: 'containers' | 'overview' = 'containers') => expect(async () => {
+  await page.goto(`/dashboard/data/import/draft/${draftId}/${tab}`, { waitUntil: 'domcontentloaded' });
+}).toPass({ timeout: 60000, intervals: [1000] });
+
 /** Report is a Container-type entity, shown under the "Containers" tab, not "Entities". */
 export const openDraft = async (page: Page, draftId: string, user: TestUser, tab: 'containers' | 'overview' = 'containers') => {
   await loginAs(page, user);
-  await page.goto(`/dashboard/data/import/draft/${draftId}/${tab}`, { waitUntil: 'domcontentloaded' });
+  await gotoDraft(page, draftId, tab);
 };
 
 /** Submits a fresh Threat Advisory form as AnalystOrgA (status NEW) and returns the draft id. */
