@@ -50,6 +50,7 @@ import {
   postChatbotWorkspace,
   patchChatbotWorkspace,
   deleteChatbotWorkspace,
+  getChatbotConversationReferences,
   postChatbotMessage,
   postChatbotMessageSteer,
   postChatbotUpload,
@@ -599,6 +600,8 @@ const createApp = async (app, schema) => {
   app.post(`${basePath}/chatbot/workspaces`, postChatbotWorkspace);
   app.patch(`${basePath}/chatbot/workspaces/:workspaceId`, patchChatbotWorkspace);
   app.delete(`${basePath}/chatbot/workspaces/:workspaceId`, deleteChatbotWorkspace);
+  // The conversations the chat panel's `@` menu offers, to reference one in a message.
+  app.get(`${basePath}/chatbot/conversation-references`, getChatbotConversationReferences);
   app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
   app.post(`${basePath}/chatbot/messages/steer`, postChatbotMessageSteer);
   // Human-in-the-loop tool approval: the decision channel back into a turn
