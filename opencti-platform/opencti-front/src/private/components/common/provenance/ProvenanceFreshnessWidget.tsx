@@ -76,7 +76,7 @@ const ProvenanceFreshnessWidget = ({
   refreshRate = null,
 }: ProvenanceFreshnessWidgetProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<ProvenanceFreshnessWidgetQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<ProvenanceFreshnessWidgetQuery>({
     perspective,
     dataSelection,
     host,
@@ -95,8 +95,7 @@ const ProvenanceFreshnessWidget = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

@@ -74,7 +74,7 @@ const ProvenanceSingleSourcedWidget = ({
   refreshRate = null,
 }: ProvenanceSingleSourcedWidgetProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<ProvenanceSingleSourcedWidgetQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<ProvenanceSingleSourcedWidgetQuery>({
     perspective,
     dataSelection,
     host,
@@ -93,8 +93,7 @@ const ProvenanceSingleSourcedWidget = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >
