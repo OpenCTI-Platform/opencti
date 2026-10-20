@@ -91,7 +91,7 @@ vi.mock('../../../../src/schema/identifier', () => ({
   generateStandardId: vi.fn((entityType: string, data: Record<string, string>) => `${entityType}-${Object.values(data).join('-')}-standard`),
 }));
 
-import { synchronizeCatalogs } from '../../../../src/modules/catalog/sync/catalog-sync-domain';
+import { isEmbeddedOnlyCatalogSyncComplete, synchronizeCatalogs } from '../../../../src/modules/catalog/sync/catalog-sync-domain';
 
 const buildSourceCatalog = (id: string) => ({
   id,
@@ -249,5 +249,38 @@ describe('catalog-sync-domain', () => {
     expect(result).toEqual(['embedded-catalog']);
     expect(mockFindAllCatalogsExcluding).not.toHaveBeenCalled();
     expect(mockDeleteCatalogs).not.toHaveBeenCalled();
+  });
+
+  describe('isEmbeddedOnlyCatalogSyncComplete', () => {
+    it('should be complete when the embedded source is the only one and it is synchronized', () => {
+      expect(isEmbeddedOnlyCatalogSyncComplete(['embedded-catalog'])).toBe(true);
+    });
+
+    it('should not be complete when the embedded source failed to synchronize', () => {
+      expect(isEmbeddedOnlyCatalogSyncComplete([])).toBe(false);
+    });
+
+    it('should not be complete when a custom catalog is configured', () => {
+      mockConfGet.mockImplementation((key: string) => {
+        if (key === 'app:custom_catalogs') return ['/tmp/custom-catalog.json'];
+        return undefined;
+      });
+      expect(isEmbeddedOnlyCatalogSyncComplete(['embedded-catalog', 'custom-catalog'])).toBe(false);
+    });
+
+    it('should not be complete when the xtm hub source fell back to embedded', () => {
+      featureFlagState.value = true;
+      mockConfGet.mockImplementation((key: string) => {
+        if (key === 'xtm:xtmhub_url') return 'https://xtm.example.org';
+        if (key === 'app:custom_catalogs') return [];
+        return undefined;
+      });
+      expect(isEmbeddedOnlyCatalogSyncComplete(['embedded-fallback'])).toBe(false);
+    });
+
+    it('should be complete when decoupling is enabled without any remote source configured', () => {
+      featureFlagState.value = true;
+      expect(isEmbeddedOnlyCatalogSyncComplete(['embedded-catalog'])).toBe(true);
+    });
   });
 });

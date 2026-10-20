@@ -473,3 +473,10 @@ export const synchronizeCatalogs = async (
   }
   return syncedCatalogs;
 };
+
+// Embedded catalogs only change with the platform version: once every source is embedded
+// and synchronized, the next synchronizations would change nothing until the platform restarts.
+export const isEmbeddedOnlyCatalogSyncComplete = (synchronizedCatalogIds: string[]) => {
+  const sources = initSyncSources();
+  return sources.every((source) => source.kind === 'embedded') && synchronizedCatalogIds.length === sources.length;
+};
