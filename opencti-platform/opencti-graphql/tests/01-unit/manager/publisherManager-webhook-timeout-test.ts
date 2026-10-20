@@ -43,11 +43,11 @@ describe('handleWebhookNotification webhook timeout configuration', () => {
 
   it('hands the signal of its sending to the webhook call, so that aborting the sending cancels the call', async () => {
     const configurationString = JSON.stringify({ url: 'https://my-webhook-endpoint.com/test', verb: 'POST', template: '{}' });
-    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'success' });
+    mockedCall.mockResolvedValue({ status: 200, data: 'success' });
     const sending = new AbortController();
 
     await handleWebhookNotification(configurationString, {}, sending.signal);
 
-    expect(mockedAxiosInstance).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://my-webhook-endpoint.com/test', signal: sending.signal }));
+    expect(mockedCall).toHaveBeenCalledWith(expect.objectContaining({ url: 'https://my-webhook-endpoint.com/test', signal: sending.signal }));
   });
 });

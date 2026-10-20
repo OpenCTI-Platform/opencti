@@ -80,6 +80,7 @@ const SinceLastVisitChips = ({ entityId, changesPath }: SinceLastVisitChipsProps
     <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }} data-testid="since-last-visit" role="status">
       <Tooltip open={breakdownOpen}>
         <TooltipTrigger asChild>
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <span
             onPointerEnter={() => setBreakdownOpen(true)}
             onPointerLeave={() => setBreakdownOpen(false)}

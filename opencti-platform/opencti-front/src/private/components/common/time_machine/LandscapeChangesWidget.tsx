@@ -140,7 +140,7 @@ const LandscapeChangesWidget = ({ variant, dataSelection, parameters, popover, h
     'landscape-techniques': t_i18n('New techniques by tactic'),
     'landscape-top-entities': t_i18n('Top changed entities'),
   };
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<LandscapeChangesWidgetQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<LandscapeChangesWidgetQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -157,8 +157,7 @@ const LandscapeChangesWidget = ({ variant, dataSelection, parameters, popover, h
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >
