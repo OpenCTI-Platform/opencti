@@ -13,9 +13,9 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 26;
+testCreatedCounter['attack-pattern'] = 29;
 testCreatedCounter.campaign = 7;
-testCreatedCounter['case-incident'] = 9;
+testCreatedCounter['case-incident'] = 18;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
@@ -47,9 +47,9 @@ testCreatedCounter['ipv4-addr'] = 2;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
 testCreatedCounter.language = 1;
-testCreatedCounter.location = 21;
+testCreatedCounter.location = 22;
 testCreatedCounter['mac-addr'] = 1;
-testCreatedCounter.malware = 64;
+testCreatedCounter.malware = 66;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
@@ -62,9 +62,9 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // 2 created by the hunt test of an incident opened without a draft (related to its hunt and its security platform)
-testCreatedCounter.relationship = 158;
-testCreatedCounter.report = 60;
-testCreatedCounter.sighting = 8;
+testCreatedCounter.relationship = 159;
+testCreatedCounter.report = 61;
+testCreatedCounter.sighting = 9;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
@@ -74,21 +74,21 @@ testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 26;
-testCreatedCounter['security-coverage-result'] = 21;
+testCreatedCounter['security-coverage'] = 27;
+testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 8;
+testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
-testUpdatedCounter.malware = 20;
+testUpdatedCounter.malware = 22;
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 5;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
-testUpdatedCounter['case-incident'] = 13;
+testUpdatedCounter['case-incident'] = 18;
 testUpdatedCounter.feedback = 1;
 testUpdatedCounter.report = 28;
 testUpdatedCounter['course-of-action'] = 3;
@@ -120,6 +120,7 @@ testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
 testUpdatedCounter.imsi = 1;
 testUpdatedCounter['security-coverage'] = 1;
+testUpdatedCounter['security-coverage-result'] = 4;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 5;
@@ -128,12 +129,13 @@ testMergedCounter.report = 3;
 testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
+testMergedCounter['case-incident'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 21;
+testDeletedCounter['attack-pattern'] = 24;
 testDeletedCounter.campaign = 3;
-testDeletedCounter['case-incident'] = 9;
+testDeletedCounter['case-incident'] = 16;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
@@ -160,9 +162,9 @@ testDeletedCounter['intrusion-set'] = 11;
 testDeletedCounter['ipv4-addr'] = 2;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
-testDeletedCounter.location = 16;
+testDeletedCounter.location = 17;
 testDeletedCounter['mac-addr'] = 1;
-testDeletedCounter.malware = 37;
+testDeletedCounter.malware = 39;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 13;
 testDeletedCounter.narrative = 1;
@@ -172,9 +174,9 @@ testDeletedCounter['observed-data'] = 6; // created and deleted by observedData-
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
-testDeletedCounter.relationship = 13;
-testDeletedCounter.report = 51;
-testDeletedCounter.sighting = 3;
+testDeletedCounter.relationship = 14;
+testDeletedCounter.report = 52;
+testDeletedCounter.sighting = 4;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
@@ -186,8 +188,8 @@ testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 24;
-testDeletedCounter['security-coverage-result'] = 19;
+testDeletedCounter['security-coverage'] = 25;
+testDeletedCounter['security-coverage-result'] = 20;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);

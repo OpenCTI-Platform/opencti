@@ -34,7 +34,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cach
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
-import { buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
+import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -160,7 +160,8 @@ const createPrivateManifest = async (
     // Variable values are frozen at publication: the private manifest never holds a token.
     // A token without value would otherwise reach the queries as a literal (with not_eq, matching everything).
     const variableValues = buildDashboardVariableDefaultValues(parsedManifest.variables);
-    const { widgets, unresolved } = resolveDashboardVariablesInWidgets(parsedManifest.widgets, variableValues);
+    const dateVariableIds = buildDashboardDateVariableIds(parsedManifest.variables);
+    const { widgets, unresolved } = resolveDashboardVariablesInWidgets(parsedManifest.widgets, variableValues, { dateVariableIds });
     if (unresolved.length > 0) {
       throw FunctionalError('Cannot publish this dashboard, some widgets use dashboard variables without value', { variableIds: unresolved });
     }

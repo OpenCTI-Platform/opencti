@@ -83,10 +83,12 @@ const investigationGraphObjectsFragment = graphql`
           node {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }
             ... on StixCoreObject {
+              is_inferred
               created_at
               numberOfConnectedElement
               createdBy {
@@ -106,6 +108,7 @@ const investigationGraphObjectsFragment = graphql`
             }
             ... on StixDomainObject {
               created
+              confidence
               numberOfConnectedElement
             }
             ... on AttackPattern {
@@ -282,6 +285,7 @@ const investigationGraphObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -299,6 +303,7 @@ const investigationGraphObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -320,6 +325,7 @@ const investigationGraphObjectsFragment = graphql`
               start_time
               stop_time
               confidence
+              is_inferred
               created
               created_at
               createdBy {
@@ -347,6 +353,7 @@ const investigationGraphObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -362,6 +369,7 @@ const investigationGraphObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
