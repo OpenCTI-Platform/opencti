@@ -28,8 +28,9 @@ describe('runFunctionAsLongRunning testing', () => {
   });
 
   const trackConcurrency = () => {
-    const state = { running: 0, maxRunning: 0 };
+    const state = { calls: 0, running: 0, maxRunning: 0 };
     const trackedFunction = async () => {
+      state.calls += 1;
       state.running += 1;
       state.maxRunning = Math.max(state.maxRunning, state.running);
       await wait(2000);
@@ -46,6 +47,7 @@ describe('runFunctionAsLongRunning testing', () => {
       runFunctionAsLongRunning(testContext, ADMIN_USER, trackedFunction, uuidv4()),
     ]);
     expect(results).toEqual([true, true]);
+    expect(state.calls).toBe(2);
     expect(state.maxRunning).toBe(2);
   });
 
@@ -58,6 +60,8 @@ describe('runFunctionAsLongRunning testing', () => {
       runFunctionAsLongRunning(testContext, ADMIN_USER, trackedFunction, uuidv4(), lockId),
     ]);
     expect(results).toEqual([true, true]);
+    // Both executions really run (the call state stays per execution), one after the other
+    expect(state.calls).toBe(2);
     expect(state.maxRunning).toBe(1);
   });
 });

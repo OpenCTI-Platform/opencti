@@ -382,6 +382,11 @@ export const ruleApply = async (context: AuthContext, user: AuthUser, elementId:
   return executeRuleApply(context, user, rule, elementId);
 };
 
+// One application of a rule on an element at a time, whatever the message (execution) that asked for it
+export const ruleApplyLockId = (elementId: string, ruleId: string): string => uuidv5(jsonCanonicalize({ elementId, ruleId }) as string, OPENCTI_NAMESPACE);
+// One rescan of an element at a time, whatever the message (execution) that asked for it
+export const ruleRescanLockId = (elementId: string): string => uuidv5(jsonCanonicalize({ elementId }) as string, OPENCTI_NAMESPACE);
+
 export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string, executionId: string): Promise<boolean> => {
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   if (!rule) {
@@ -389,12 +394,10 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
   }
   const dataCanonicalize = jsonCanonicalize({ elementId, ruleId, executionId }) as string;
   const ruleApplyId = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
-  // One application of a rule on an element at a time, whatever the message that asked for it
-  const ruleApplyLockId = uuidv5(jsonCanonicalize({ elementId, ruleId }) as string, OPENCTI_NAMESPACE);
   const ruleApplyFunction = async () => {
     await executeRuleApply(context, user, rule, elementId);
   };
-  return runFunctionAsLongRunning(context, user, ruleApplyFunction, ruleApplyId, ruleApplyLockId);
+  return runFunctionAsLongRunning(context, user, ruleApplyFunction, ruleApplyId, ruleApplyLockId(elementId, ruleId));
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
@@ -451,12 +454,10 @@ export const rulesRescanAsync = async (context: AuthContext, user: AuthUser, ele
   if (elem) {
     const dataCanonicalize = jsonCanonicalize({ elementId, executionId }) as string;
     const ruleRescanId = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
-    // One rescan of an element at a time, whatever the message that asked for it
-    const ruleRescanLockId = uuidv5(jsonCanonicalize({ elementId }) as string, OPENCTI_NAMESPACE);
     const ruleRescanFunction = async () => {
       await executeRuleElementRescan(context, user, elem);
     };
-    return runFunctionAsLongRunning(context, user, ruleRescanFunction, ruleRescanId, ruleRescanLockId);
+    return runFunctionAsLongRunning(context, user, ruleRescanFunction, ruleRescanId, ruleRescanLockId(elementId));
   }
   // If the element is not found, we consider that the rescan is done (nothing to do)
   return true;
