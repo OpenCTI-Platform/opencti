@@ -471,9 +471,10 @@ export const searchEngineInit = async (): Promise<boolean> => {
   // 8.x types everywhere (same call shapes at runtime, response envelope unchanged).
   const elasticSearch9Client = new Elk9Client(elkSearchConfiguration) as unknown as ElkClient;
   const openSearchClient = new OpenClient(openSearchConfiguration);
-  // ES server >= 9 rejects the 8.x client requests (compatible-with=8 is only accepted one major back),
-  // so the client major must match the server major. The 8.x client still probes an ES 9 server fine
-  // (compatibility bridge), which keeps the engine_selector=elk detection path working.
+  // ES 8 rejects the 9.x client requests (compatible-with=9 is one major ahead), so an ES 8 server
+  // needs the 8.x client. ES 9 accepts the 8.x client through REST API compatibility (compatible-with=8
+  // is one major back): this is why the 8.x client can probe an ES 9 server below, but on ES 9 the
+  // 9.x client is preferred, so the platform does not rely on that compatibility mode.
   const elkClientForVersion = (version: string) => (semver.major(semver.coerce(version) ?? '8.0.0') >= 9 ? elasticSearch9Client : elasticSearchClient);
   if (engineSelector === ELK_ENGINE) {
     logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
