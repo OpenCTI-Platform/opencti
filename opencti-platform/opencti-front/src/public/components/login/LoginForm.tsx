@@ -27,6 +27,9 @@ interface RelayResponseError extends Error {
       message?: string;
       extensions?: {
         code?: string;
+        data?: {
+          remaining_minutes?: number;
+        };
       };
     }[];
   };
@@ -55,8 +58,11 @@ const LoginForm = () => {
           setSubmitting(false);
           return;
         }
-        const errorMsg = firstError?.message;
-        const errorMessage = t_i18n(errorMsg ?? 'Unknown');
+        // A locked account comes with the remaining lock time
+        const remainingMinutes = firstError?.extensions?.data?.remaining_minutes;
+        const errorMessage = remainingMinutes !== undefined
+          ? t_i18n('Your account has been locked for security reasons. Please try again in {minutes} minutes.', { values: { minutes: remainingMinutes } })
+          : t_i18n(firstError?.message ?? 'Unknown');
         setErrors({ email: errorMessage });
         setSubmitting(false);
       },
