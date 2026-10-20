@@ -37,42 +37,52 @@ export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
+export const cleanInputData = (obj: any) => {
+  if (!obj || typeof obj !== 'object') {
+    return obj;
+  }
+  const stack = [obj];
+  while (stack.length > 0) {
+    const currentObj = stack.pop() as any;
+    Object.keys(currentObj).forEach((key) => {
+      if (LOGS_SENSITIVE_FIELDS.includes(key)) {
+        currentObj[key] = REDACTED_INFORMATION;
+      }
+      // Need special case to clean inputs
+      if (key === 'input' && Array.isArray(currentObj[key])) {
+        const preparedElements = [];
+        for (let index = 0; index < currentObj[key].length; index += 1) {
+          const currentObjElementElement = currentObj[key][index];
+          if (currentObjElementElement.key && currentObjElementElement.value && LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)) {
+            preparedElements.push({ [currentObjElementElement.key]: REDACTED_INFORMATION });
+          } else {
+            preparedElements.push(currentObjElementElement);
+          }
+        }
+        currentObj[key] = preparedElements;
+      }
+      if (['filters', 'dynamicFrom', 'dynamicTo'].includes(key) && typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+        try {
+          currentObj[key] = JSON.stringify(currentObj[key]);
+        } catch {
+          delete currentObj[key];
+        }
+      } else if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+        if (key === 'input') {
+          // remove unsupported props in input like sort, _id that cause errors for old databases.
+          UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
+            delete currentObj[key][prop];
+          });
+        }
+        stack.push(currentObj[key]);
+      }
+    });
+  }
+  return obj;
+};
+
 const initActivityManager = () => {
   const activityReadCache = new LRUCache({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
-  const cleanInputData = (obj: any) => {
-    const stack = [obj];
-    while (stack.length > 0) {
-      const currentObj = stack.pop() as any;
-      Object.keys(currentObj).forEach((key) => {
-        if (LOGS_SENSITIVE_FIELDS.includes(key)) {
-          currentObj[key] = REDACTED_INFORMATION;
-        }
-        // Need special case to clean inputs
-        if (key === 'input' && Array.isArray(currentObj[key])) {
-          const preparedElements = [];
-          for (let index = 0; index < currentObj[key].length; index += 1) {
-            const currentObjElementElement = currentObj[key][index];
-            if (currentObjElementElement.key && currentObjElementElement.value && LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)) {
-              preparedElements.push({ [currentObjElementElement.key]: REDACTED_INFORMATION });
-            } else {
-              preparedElements.push(currentObjElementElement);
-            }
-          }
-          currentObj[key] = preparedElements;
-        }
-        if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
-          if (key === 'input') {
-            // remove unsupported props in input like sort, _id that cause errors for old databases.
-            UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
-              delete currentObj[key][prop];
-            });
-          }
-          stack.push(currentObj[key]);
-        }
-      });
-    }
-    return obj;
-  };
   const buildActivityStreamEvent = (action: UserAction, message: string): ActivityStreamEvent => {
     const data = cleanInputData(action.context_data ?? {});
     return {
