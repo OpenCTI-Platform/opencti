@@ -21,7 +21,7 @@ import { allFilesForPaths } from '../internal/document/document-domain';
 import { CONFIG_PRESET_STORAGE_PATH } from '../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../manager/telemetryManager';
-import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetItem } from './configPreset-registry';
+import { CONFIG_PRESET_FAMILIES, configPresetItemBundleId, configPresetItemFilePath, exportConfigPresetItem } from './configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from './configPreset-types';
 import { buildConfigPresetFileName, sanitizeBundleName } from './configPreset-utils';
 
@@ -32,6 +32,7 @@ const toExportableItem = (item: ConfigPresetItemDefinition): ConfigPresetExporta
   key: item.id,
   label: item.label,
   translatable: item.translatable,
+  isDefault: item.isDefault ?? false,
 });
 
 const findConfigPresetFamily = (type: string) => {
@@ -190,8 +191,8 @@ const writeConfigPresetZip = async (
     return {
       entity_types: families.map((family) => family.id),
       counts,
-      // The items written in the zip, in registry order
-      items: Object.fromEntries(families.map((family) => [family.id, family.items.map((item) => item.id)])),
+      // The bundle ids of the items written in the zip, in registry order
+      items: Object.fromEntries(families.map((family) => [family.id, family.items.map((item) => configPresetItemBundleId(item))])),
     };
   } catch (err) {
     // The original error is the one reported, a stream error caused by the abort is ignored

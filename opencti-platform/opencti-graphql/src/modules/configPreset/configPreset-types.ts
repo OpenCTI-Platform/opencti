@@ -8,18 +8,23 @@ export interface ConfigPresetItemFile {
   openCTI_version: string;
   // `<group id>.<category id>`
   type: string;
-  // The id of the item in its category
+  // Bundle id of the item
   id: string;
   configuration: ConfigPresetConfiguration;
 }
 
 export interface ConfigPresetItemDefinition {
+  // API id: the category id for a singleton, the internal id for an entity
   id: string;
+  // Id in the bundle, the same on every platform: the standard id for an entity, the API id when absent
+  bundleId?: string;
   label: string;
   // True when the label is a static string the UI translates; false when it is user data (an entity name)
   translatable: boolean;
   // File name of the item in the family folder, `${id}.json` when absent
   fileName?: string;
+  // The platform default (the default theme)
+  isDefault?: boolean;
   // Returns the allowlisted configuration of the item, never secrets
   exporter: (context: AuthContext, user: AuthUser) => Promise<ConfigPresetConfiguration>;
 }

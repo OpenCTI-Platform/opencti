@@ -11,6 +11,8 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
+  pageEntitiesConnection: vi.fn(),
+  storeLoadById: vi.fn(),
 }));
 vi.mock('../../../../src/database/file-storage', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/file-storage')>()),
@@ -25,7 +27,7 @@ vi.mock('../../../../src/manager/telemetryManager', async (importOriginal) => ({
   addConfigPresetExportCount: vi.fn(),
 }));
 
-import { fullEntitiesList, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { uploadToStorage } from '../../../../src/database/file-storage';
 import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../src/listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../../src/manager/telemetryManager';
@@ -36,6 +38,7 @@ import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
 import { configPresetExport, resolveConfigPresetSelections } from '../../../../src/modules/configPreset/configPreset-domain';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
+import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from './configPreset-themes-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;
@@ -75,7 +78,7 @@ const storedSettings = {
   platform_consent_message: 'Consent',
   platform_consent_confirm_text: 'I agree',
   platform_no_access_message: 'No access',
-  platform_theme: 'theme-id',
+  platform_theme: builtInTheme.id,
   platform_whitemark: true,
   enterprise_license: 'secret-license',
 };
@@ -130,7 +133,7 @@ describe('Config preset export', () => {
     uploadedZip = undefined;
     tmpFileModeDuringUpload = undefined;
     vi.mocked(topEntitiesList).mockResolvedValue([storedSettings] as never);
-    vi.mocked(fullEntitiesList).mockResolvedValue([{ target_type: 'Channel', platform_hidden_type: true }] as never);
+    mockThemeLoaders([{ target_type: 'Channel', platform_hidden_type: true }]);
     mockUploadReadingTheZip();
   });
 
@@ -331,6 +334,19 @@ describe('Config preset export', () => {
     expect(addConfigPresetExportCount).not.toHaveBeenCalled();
   });
 
+  it('exports a selected theme under its standard id, in the theme import format', async () => {
+    await configPresetExport(context, bypassUser, [{ type: 'branding', items: ['whitemark', builtInTheme.id] }]);
+    const entries = await readZip(uploadedZip!);
+    const builtInThemeFile = entries[`platform_settings/branding/${builtInTheme.standard_id}.json`];
+    expect(builtInThemeFile).toMatchObject({ type: 'platformSettings.branding', id: builtInTheme.standard_id, configuration: { standard_id: builtInTheme.standard_id, name: 'Filigran Dark' } });
+    // Not part of the theme import format
+    expect(builtInThemeFile.configuration).not.toHaveProperty('built_in');
+    expect(entries['platform_settings/branding/whitemark.json']).toMatchObject({ type: 'platformSettings.branding', id: 'whitemark', configuration: { platform_whitemark: true } });
+    // The bundle ids in the summary, never an internal id
+    expect(publishedSummary().items).toEqual({ branding: ['whitemark', builtInTheme.standard_id] });
+    expect(JSON.stringify(entries)).not.toContain(builtInTheme.id);
+  });
+
   it('refuses a user without BYPASS', async () => {
     await expect(configPresetExport(context, settingsUser, ALL_CATEGORIES)).rejects.toThrow('You are not allowed to do this.');
     expectNothingWritten();
@@ -345,6 +361,7 @@ describe('Config preset export', () => {
 describe('Config preset selections', () => {
   beforeEach(() => {
     vi.mocked(topEntitiesList).mockResolvedValue([storedSettings] as never);
+    mockThemeLoaders();
   });
 
   const resolveIds = async (selections: Parameters<typeof resolveConfigPresetSelections>[2]) => {
@@ -375,27 +392,31 @@ describe('Config preset selections', () => {
   });
 
   it('takes every item but the excluded ones, and refuses excluded items with an explicit list', async () => {
-    expect(await resolveIds([{ type: 'messages', excluded_items: ['login'] }])).toEqual([['messages', ['banner', 'consent', 'noAccess']]]);
-    expect(await resolveIds([{ type: 'messages', items: null, excluded_items: [] }])).toEqual([['messages', MESSAGE_IDS]]);
+    expect(await resolveIds([{ type: 'branding', excluded_items: [customTheme.id] }])).toEqual([['branding', ['whitemark', otherCustomTheme.id, builtInTheme.id]]]);
+    expect(await resolveIds([{ type: 'branding', items: null, excluded_items: [] }])).toEqual([['branding', ['whitemark', otherCustomTheme.id, builtInTheme.id, customTheme.id]]]);
     expect(await resolveIds([{ type: 'messages', excluded_items: MESSAGE_IDS }, { type: 'platform' }])).toEqual([['platform', ['platform']]]);
-    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'messages', items: ['banner'], excluded_items: ['login'] }]))
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'branding', items: [customTheme.id], excluded_items: [otherCustomTheme.id] }]))
       .rejects.toThrow('Excluded items require a selection of every item of the type');
-    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'messages', items: [], excluded_items: ['login'] }]))
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'branding', items: [], excluded_items: [customTheme.id] }]))
       .rejects.toThrow('Excluded items require a selection of every item of the type');
     // Excluding everything leaves nothing to export
-    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'messages', excluded_items: MESSAGE_IDS }]))
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'branding', excluded_items: ['whitemark', customTheme.id, otherCustomTheme.id, builtInTheme.id] }]))
       .rejects.toThrow('Select at least one configuration item to export');
   });
 
   it('adds up selections of the same type: an item stays excluded only when no selection takes it', async () => {
     expect(await resolveIds([
-      { type: 'messages', excluded_items: ['banner', 'login'] },
-      { type: 'messages', excluded_items: ['banner'] },
-    ])).toEqual([['messages', ['login', 'consent', 'noAccess']]]);
+      { type: 'branding', excluded_items: [customTheme.id, otherCustomTheme.id] },
+      { type: 'branding', excluded_items: [customTheme.id] },
+    ])).toEqual([['branding', ['whitemark', otherCustomTheme.id, builtInTheme.id]]]);
     expect(await resolveIds([
-      { type: 'messages', excluded_items: ['banner'] },
-      { type: 'messages', items: ['banner'] },
-    ])).toEqual([['messages', MESSAGE_IDS]]);
+      { type: 'branding', excluded_items: [customTheme.id] },
+      { type: 'branding', items: [customTheme.id] },
+    ])).toEqual([['branding', ['whitemark', otherCustomTheme.id, builtInTheme.id, customTheme.id]]]);
+  });
+
+  it('takes a built-in theme like any other', async () => {
+    expect(await resolveIds([{ type: 'branding', items: [builtInTheme.id] }])).toEqual([['branding', [builtInTheme.id]]]);
   });
 
   it('still rejects an unknown item merged with a null selection', async () => {

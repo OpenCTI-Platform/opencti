@@ -4590,6 +4590,7 @@ export type ConfigPresetExportableGroup = {
 
 export type ConfigPresetExportableItem = {
   __typename?: 'ConfigPresetExportableItem';
+  isDefault: Scalars['Boolean']['output'];
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
   translatable: Scalars['Boolean']['output'];
@@ -44606,6 +44607,7 @@ export type ConfigPresetExportableGroupResolvers<ContextType = any, ParentType e
 }>;
 
 export type ConfigPresetExportableItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItem'] = ResolversParentTypes['ConfigPresetExportableItem']> = ResolversObject<{
+  isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

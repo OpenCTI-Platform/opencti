@@ -17717,6 +17717,7 @@ type ConfigPresetExportableItem {
   key: String!
   label: String!
   translatable: Boolean!
+  isDefault: Boolean!
 }
 
 type ConfigPresetExportableItemEdge {
