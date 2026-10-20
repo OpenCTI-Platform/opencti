@@ -20,6 +20,8 @@ export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
   local_auth_lockout_duration: 15, // minutes
   local_auth_lockout_max_duration: 180, // minutes, 3h
 };
+export type LocalAuthLockoutKey = keyof typeof LOCAL_AUTH_LOCKOUT_DEFAULTS;
+export const LOCAL_AUTH_LOCKOUT_KEYS = Object.keys(LOCAL_AUTH_LOCKOUT_DEFAULTS) as LocalAuthLockoutKey[];
 
 const MINUTE_MS = 60 * 1000;
 

@@ -5831,6 +5831,7 @@
   "You will find here the result in JSON format.": "Здесь вы найдете результат в формате JSON.",
   "you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "вы больше не будете иметь отношения к основной организации платформы, если только вам не был предоставлен специальный доступ к этой организации.",
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "Вы нацеливаетесь на более чем 1000 объектов с помощью этого фонового задания, будьте уверены в том, что делаете!",
+  "Your account has been locked for security reasons. Please try again in {minutes} minutes.": "Ваша учетная запись заблокирована по соображениям безопасности. Повторите попытку через {minutes} мин.",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "Срок действия вашей учетной записи истек. Если вы хотите активировать свою учетную запись, обратитесь к администратору.",
   "Your answer is ready": "Ваш ответ готов",
   "Your confidence level is insufficient to edit this object.": "Ваш уровень доверия недостаточен для редактирования этого объекта.",

@@ -26,7 +26,7 @@ import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput 
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from '../modules/user/user-domain';
-import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from './local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS, LOCAL_AUTH_LOCKOUT_KEYS, type LocalAuthLockoutKey } from './local-auth-lockout';
 
 export const buildAvailableProviders = async (platformSettings: BasicStoreSettings) => {
   const availableProviders = [...PROVIDERS];
@@ -57,9 +57,6 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
   return availableProviders;
 };
 
-// Defined with the lockout itself, which user-domain imports: defining them here would create an import cycle
-export { LOCAL_AUTH_LOCKOUT_DEFAULTS };
-
 // Upper bounds of the lockout policy, mirrored by the local strategy form
 export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
 export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h by the specification
@@ -69,13 +66,9 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
     return {};
   }
-  const patch = {
-    ...(input.local_auth_lockout_enabled !== undefined && { local_auth_lockout_enabled: input.local_auth_lockout_enabled }),
-    ...(input.local_auth_lockout_max_attempts !== undefined && { local_auth_lockout_max_attempts: input.local_auth_lockout_max_attempts }),
-    ...(input.local_auth_lockout_window !== undefined && { local_auth_lockout_window: input.local_auth_lockout_window }),
-    ...(input.local_auth_lockout_duration !== undefined && { local_auth_lockout_duration: input.local_auth_lockout_duration }),
-    ...(input.local_auth_lockout_max_duration !== undefined && { local_auth_lockout_max_duration: input.local_auth_lockout_max_duration }),
-  };
+  const patch: Partial<Pick<LocalAuthConfigInput, LocalAuthLockoutKey>> = Object.fromEntries(
+    LOCAL_AUTH_LOCKOUT_KEYS.filter((key) => input[key] !== undefined).map((key) => [key, input[key]]),
+  );
   // Leaving the values untouched or disabling the lockout never checks them, so stored values cannot block other local auth updates
   const changesValues = Object.keys(patch).some((key) => key !== 'local_auth_lockout_enabled');
   if (!changesValues && patch.local_auth_lockout_enabled !== true) {
@@ -84,8 +77,8 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   // Validate the values the settings will hold once patched (a null input falls back to the default)
   // Stored values are read from the database, as the settings cache can lag behind a previous update
   const storedSettings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
-  const effectiveValue = (key: 'local_auth_lockout_max_attempts' | 'local_auth_lockout_window' | 'local_auth_lockout_duration' | 'local_auth_lockout_max_duration') => {
-    const value = key in patch ? input[key] : storedSettings?.[key];
+  const effectiveValue = (key: Exclude<LocalAuthLockoutKey, 'local_auth_lockout_enabled'>) => {
+    const value = Object.hasOwn(patch, key) ? input[key] : storedSettings?.[key];
     return value ?? LOCAL_AUTH_LOCKOUT_DEFAULTS[key];
   };
   const maxAttempts = effectiveValue('local_auth_lockout_max_attempts');
