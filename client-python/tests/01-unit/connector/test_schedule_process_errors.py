@@ -232,3 +232,69 @@ def test_buffering_skips_the_run_and_keeps_previous_errors():
     helper._schedule_process(MagicMock(), process, 60)
     process.assert_not_called()
     assert helper.connector_info.errors == [PREVIOUS_RUN_ERROR]
+
+
+def _run_and_terminate(process, run_and_terminate=True, duration_period=60):
+    helper = _build_helper()
+    helper.connect_run_and_terminate = run_and_terminate
+    sent_on_force_ping = []
+    helper.force_ping = MagicMock(
+        side_effect=lambda: sent_on_force_ping.append(
+            helper.connector_info.all_details.get("errors")
+        )
+    )
+    # A zero duration without run_and_terminate swallows the SystemExit in schedule_process
+    try:
+        helper.schedule_process(process, duration_period=duration_period)
+    except SystemExit:
+        pass
+    return helper, sent_on_force_ping
+
+
+@pytest.mark.parametrize(
+    "run_and_terminate, duration_period",
+    [(True, 60), (False, 0)],
+    ids=["run-and-terminate", "zero-duration"],
+)
+def test_run_and_terminate_sends_returned_errors_on_final_ping(
+    run_and_terminate, duration_period
+):
+    helper, sent_on_force_ping = _run_and_terminate(
+        lambda: [RATE_ERROR, API_ERROR], run_and_terminate, duration_period
+    )
+    assert helper.connector_info.errors == [RATE_ERROR, API_ERROR]
+    assert sent_on_force_ping[0] == [API_ERROR, RATE_ERROR]
+    assert _run_errors_logs(helper) == [
+        ("Errors reported by the connector run", {"errors": [RATE_ERROR, API_ERROR]})
+    ]
+
+
+def test_run_and_terminate_keeps_errors_added_during_the_run():
+    helper = _build_helper()
+
+    def process():
+        helper.connector_info.add_error(**API_ERROR)
+
+    helper.connect_run_and_terminate = True
+    helper.force_ping = MagicMock()
+    with pytest.raises(SystemExit):
+        helper.schedule_process(process, duration_period=60)
+    assert helper.connector_info.errors == [API_ERROR]
+
+
+def test_run_and_terminate_without_errors_sends_none():
+    helper, sent_on_force_ping = _run_and_terminate(lambda: None)
+    assert helper.connector_info.errors == []
+    assert sent_on_force_ping[0] is None
+
+
+def test_run_and_terminate_buffering_skips_the_run():
+    helper = _build_helper()
+    helper.connect_run_and_terminate = True
+    helper.check_connector_buffering.return_value = True
+    helper.force_ping = MagicMock()
+    process = MagicMock(return_value=[RATE_ERROR])
+    with pytest.raises(SystemExit):
+        helper.schedule_process(process, duration_period=60)
+    process.assert_not_called()
+    assert helper.connector_info.errors == [PREVIOUS_RUN_ERROR]
