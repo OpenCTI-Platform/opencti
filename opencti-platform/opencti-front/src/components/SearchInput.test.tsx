@@ -19,6 +19,53 @@ vi.mock('../private/components/common/entreprise_edition/EnterpriseEditionAgreem
 vi.mock('../private/components/settings/ValidateTermsOfUseDialog', () => ({ default: () => null }));
 vi.mock('../private/components/cases/feedbacks/FeedbackCreation', () => ({ default: () => null }));
 
+vi.mock('../private/components/nav/useNavSearch', () => ({
+  default: () => [{ path: '/dashboard/data/import', label: 'Import', parents: ['Data'] }],
+}));
+const mockNavigate = vi.fn();
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: () => mockNavigate,
+}));
+
+describe('SearchInput (top bar) pages dropdown', () => {
+  const setup = () => {
+    const onSubmit = vi.fn();
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={onSubmit} keyword="" />);
+    return { onSubmit, user };
+  };
+
+  it('lists matching pages and a trailing "Search" row while typing', async () => {
+    const { user } = setup();
+    await user.type(screen.getByRole('combobox'), 'imp');
+
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(2);
+    expect(options[0]).toHaveTextContent('Import');
+    expect(options[1]).toHaveTextContent('Search: imp');
+  });
+
+  it('runs the classic search on Enter when no row is highlighted', async () => {
+    const { onSubmit, user } = setup();
+    await user.type(screen.getByRole('combobox'), 'imp{Enter}');
+
+    expect(onSubmit).toHaveBeenCalledWith('imp', false, undefined);
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(screen.queryAllByRole('option')).toHaveLength(0);
+  });
+
+  it('navigates to the highlighted page with the arrow keys, or searches from the last row', async () => {
+    const { onSubmit, user } = setup();
+    await user.type(screen.getByRole('combobox'), 'imp{ArrowDown}{Enter}');
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard/data/import');
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    // the first ArrowDown reopens the closed dropdown, the next two reach the last row
+    await user.type(screen.getByRole('combobox'), '{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('imp', false, undefined);
+  });
+});
+
 describe('SearchInput (top bar)', () => {
   it('names every mode toggle, including the icon-only AI toggle', () => {
     testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />);
