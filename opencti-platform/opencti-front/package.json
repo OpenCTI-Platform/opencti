@@ -160,7 +160,7 @@
     "@types/react-virtualized": "9.22.4",
     "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "6.1.2",
-    "@vitest/coverage-v8": "5.0.4",
+    "@vitest/coverage-istanbul": "5.0.4",
     "babel-plugin-relay": "21.0.1",
     "dom-accessibility-api": "0.7.1",
     "esbuild": "0.28.2",
