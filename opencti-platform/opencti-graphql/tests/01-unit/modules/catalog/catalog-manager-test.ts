@@ -2,17 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   mockSynchronizeCatalogs,
-  mockIsEmbeddedOnlyCatalogSyncComplete,
   mockAutoUpgradeManagedConnectors,
 } = vi.hoisted(() => ({
   mockSynchronizeCatalogs: vi.fn(),
-  mockIsEmbeddedOnlyCatalogSyncComplete: vi.fn(),
   mockAutoUpgradeManagedConnectors: vi.fn(),
 }));
 
 vi.mock('../../../../src/modules/catalog/sync/catalog-sync-domain', () => ({
   synchronizeCatalogs: mockSynchronizeCatalogs,
-  isEmbeddedOnlyCatalogSyncComplete: mockIsEmbeddedOnlyCatalogSyncComplete,
 }));
 
 vi.mock('../../../../src/modules/connector/connector-domain', () => ({
@@ -33,8 +30,7 @@ const loadCatalogManagerHandler = async () => {
 describe('catalog-manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSynchronizeCatalogs.mockResolvedValue(['embedded-catalog']);
-    mockIsEmbeddedOnlyCatalogSyncComplete.mockReturnValue(true);
+    mockSynchronizeCatalogs.mockResolvedValue({ synchronizedCatalogIds: ['embedded-catalog'], isEmbeddedOnlySyncComplete: true });
     mockAutoUpgradeManagedConnectors.mockResolvedValue({ hasErrors: false });
   });
 
@@ -44,11 +40,11 @@ describe('catalog-manager', () => {
     await catalogManagerHandler();
     expect(mockSynchronizeCatalogs).toHaveBeenCalledTimes(1);
     expect(mockAutoUpgradeManagedConnectors).toHaveBeenCalledTimes(1);
-    expect(mockIsEmbeddedOnlyCatalogSyncComplete).toHaveBeenCalledWith(['embedded-catalog']);
+    expect(mockAutoUpgradeManagedConnectors).toHaveBeenCalledWith(expect.anything(), expect.anything(), ['embedded-catalog']);
   });
 
   it('should keep running while a non embedded catalog source is configured', async () => {
-    mockIsEmbeddedOnlyCatalogSyncComplete.mockReturnValue(false);
+    mockSynchronizeCatalogs.mockResolvedValue({ synchronizedCatalogIds: ['embedded-catalog', 'custom-catalog'], isEmbeddedOnlySyncComplete: false });
     const catalogManagerHandler = await loadCatalogManagerHandler();
     await catalogManagerHandler();
     await catalogManagerHandler();

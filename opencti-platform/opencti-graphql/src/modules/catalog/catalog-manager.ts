@@ -1,7 +1,7 @@
 import conf, { booleanConf, logApp } from '../../config/conf';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { autoUpgradeManagedConnectors } from '../connector/connector-domain';
-import { isEmbeddedOnlyCatalogSyncComplete, synchronizeCatalogs } from './sync/catalog-sync-domain';
+import { synchronizeCatalogs } from './sync/catalog-sync-domain';
 import { registerManager, type ManagerDefinition } from '../../manager/managerModule';
 
 const CATALOG_MANAGER_ID = 'CATALOG_MANAGER';
@@ -31,7 +31,7 @@ export const catalogManagerHandler = async () => {
   }
   const context = executionContext('catalog_manager');
   // Sync catalogs to ES
-  const synchronizedCatalogIds = await synchronizeCatalogs(context, SYSTEM_USER, {
+  const { synchronizedCatalogIds, isEmbeddedOnlySyncComplete } = await synchronizeCatalogs(context, SYSTEM_USER, {
     remoteCatalogTimeoutMs: resolveCatalogSyncRemoteTimeoutMs(),
   });
   // TODO Replace this cross-module call with a catalog-synchronized event once
@@ -40,7 +40,7 @@ export const catalogManagerHandler = async () => {
   // connector auto-upgrade is retried even when the manifest itself is unchanged.
   const { hasErrors } = await autoUpgradeManagedConnectors(context, SYSTEM_USER, synchronizedCatalogIds);
   // A failed connector auto-upgrade keeps the next runs going so it gets retried.
-  isSyncCompleteUntilRestart = isEmbeddedOnlyCatalogSyncComplete(synchronizedCatalogIds) && !hasErrors;
+  isSyncCompleteUntilRestart = isEmbeddedOnlySyncComplete && !hasErrors;
   if (isSyncCompleteUntilRestart) {
     logApp.info('[OPENCTI-MODULE] Embedded catalogs synchronized, skipping the next catalog synchronizations until restart', { module: 'catalog' });
   }
