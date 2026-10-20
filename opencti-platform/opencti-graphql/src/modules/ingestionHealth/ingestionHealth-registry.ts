@@ -114,8 +114,10 @@ export const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
 };
 
 // The values read by the runtime checks for one ingestion, by check code, typed by the getRuntimeData of each check
-type RuntimeCheckCode = { [C in keyof typeof HEALTH_CHECKS]: (typeof HEALTH_CHECKS)[C] extends RuntimeCheckDefinition<any> ? C : never }[keyof typeof HEALTH_CHECKS];
-export type RuntimeData = { [C in RuntimeCheckCode]?: (typeof HEALTH_CHECKS)[C] extends RuntimeCheckDefinition<infer T> ? T : never };
+type RuntimeCheckCode = {
+  [C in keyof typeof HEALTH_CHECK_REGISTRY]: (typeof HEALTH_CHECK_REGISTRY)[C] extends RuntimeCheckDefinition<any> ? C : never
+}[keyof typeof HEALTH_CHECK_REGISTRY];
+export type RuntimeData = { [C in RuntimeCheckCode]?: (typeof HEALTH_CHECK_REGISTRY)[C] extends RuntimeCheckDefinition<infer T> ? T : never };
 
 export type HealthCheckCode = keyof typeof HEALTH_CHECK_REGISTRY;
 
