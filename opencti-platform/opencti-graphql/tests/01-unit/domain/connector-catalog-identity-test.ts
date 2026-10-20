@@ -38,7 +38,7 @@ vi.mock('../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
 
-vi.mock('../../../src/database/repository', () => ({
+vi.mock('../../../src/modules/connector/connector-domain', () => ({
   completeConnector: (connector: unknown) => connector,
 }));
 

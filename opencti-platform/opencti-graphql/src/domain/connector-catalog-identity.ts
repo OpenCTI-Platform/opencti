@@ -1,6 +1,6 @@
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList, storeLoadById } from '../database/middleware-loader';
-import { completeConnector } from '../database/repository';
+import { completeConnector } from '../modules/connector/connector-domain';
 import { notify } from '../database/redis';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { BUS_TOPICS } from '../config/conf';
@@ -11,7 +11,7 @@ import { type BasicStoreEntityCatalogContract, ENTITY_TYPE_CATALOG_CONTRACT } fr
 import { selectLatestContractsBySlug } from '../modules/catalog/catalog-version-utils';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector, StoreEntityConnector } from '../modules/connector/connector-types';
 import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
@@ -299,7 +299,7 @@ export const connectorCatalogIdentityUpdate = async (context: AuthContext, user:
     catalogSlug = contract.slug;
   }
   const patch = { catalog_slug_manual: catalogSlug };
-  const { element } = await patchAttribute<BasicStoreEntityConnector>(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
+  const { element } = await patchAttribute<StoreEntityConnector>(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
   await publishUserAction({
     user,
     event_type: 'mutation',

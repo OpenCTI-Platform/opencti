@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { registerConnector } from '../../../src/domain/connector';
+import { registerConnector } from '../../../src/modules/connector/connector-domain';
 import { patchAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ConnectorType } from '../../../src/generated/graphql';
@@ -20,7 +20,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   pageEntitiesConnection: vi.fn(),
 }));
 
-vi.mock('../../../src/database/rabbitmq', () => ({
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(),
   getConnectorQueueDetails: vi.fn(),
