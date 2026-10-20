@@ -16,7 +16,8 @@ import { dayStartDate } from '../../../../../utils/Time';
 import { AlertingLine_node$key } from './__generated__/AlertingLine_node.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertingPopover from './AlertingPopover';
-import { deserializeFilterGroupForFrontend } from '../../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../../utils/filters/filtersUtils';
+import { EMPTY_VALUE } from '../../../../../utils/String';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/styles';
@@ -137,13 +138,24 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                   ))
                   .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
-            {data.trigger_type === 'live' && filters && (
-              <FilterIconButton
-                filters={filters}
-                variant="small"
-                redirection
-                showGroupsSummaryButtonOnReadOnly
-              />
+            {data.trigger_type === 'live' && (
+              isFilterGroupNotEmpty(filters)
+                ? (
+                    <FilterIconButton
+                      filters={filters}
+                      variant="small"
+                      redirection
+                      showGroupsSummaryButtonOnReadOnly
+                    />
+                  )
+                : (
+                    <div
+                      className={classes.bodyItem}
+                      style={{ width: dataColumns.filters.width }}
+                    >
+                      {EMPTY_VALUE}
+                    </div>
+                  )
             )}
             {data.trigger_type === 'digest' && (
               <Stack

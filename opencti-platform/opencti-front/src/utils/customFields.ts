@@ -41,14 +41,62 @@ export const getCustomFieldsInitialValues = (
   }),
 );
 
+// Integer values are stored as 32-bit signed integers (GraphQL Int, Elasticsearch integer):
+// without min/max on the definition, these are the bounds.
+const INTEGER_MIN = -2147483648;
+const INTEGER_MAX = 2147483647;
+const getIntegerBounds = (definition: CustomFieldDef) => ({
+  min: definition.min_value ?? INTEGER_MIN,
+  max: definition.max_value ?? INTEGER_MAX,
+});
+
+// Same rules as the creation schema below, for the edition which saves field by field without Yup.
+// An empty input is valid: it clears the value.
+export const getCustomFieldValueError = (
+  definition: CustomFieldDef,
+  rawValue: CustomFieldValue,
+  t_i18n: (key: string) => string,
+): string | undefined => {
+  if (definition.field_type !== 'integer') return undefined;
+  const trimmed = String(rawValue).trim();
+  if (trimmed === '') return undefined;
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed)) return t_i18n('The value must be an integer');
+  const { min, max } = getIntegerBounds(definition);
+  if (parsed < min || parsed > max) {
+    return t_i18n('The value must be between min and max value');
+  }
+  return undefined;
+};
+
+const buildIntegerValidationSchema = (
+  definition: CustomFieldDef,
+  isMandatory: boolean,
+  t_i18n: (key: string) => string,
+) => {
+  const { min, max } = getIntegerBounds(definition);
+  const schema = Yup.number()
+    // An empty input means "no value": only a mandatory field requires one
+    .transform((value, originalValue) => (originalValue === '' || originalValue === null ? undefined : value))
+    .typeError(t_i18n('The value must be an integer'))
+    .integer(t_i18n('The value must be an integer'))
+    .min(min, t_i18n('The value must be between min and max value'))
+    .max(max, t_i18n('The value must be between min and max value'));
+  return isMandatory ? schema.required(t_i18n('This field is required')) : schema.notRequired();
+};
+
 export const buildCustomFieldsValidationSchema = (
   definitions: readonly CustomFieldDef[],
   entityType: string,
-  requiredMessage: string,
+  t_i18n: (key: string) => string,
 ) => Yup.object().shape(
   Object.fromEntries(
     definitions.map((def) => {
       const isMandatory = getCustomFieldSetting(def, entityType)?.mandatory ?? false;
+      const requiredMessage = t_i18n('This field is required');
+      if (def.field_type === 'integer') {
+        return [def.id, buildIntegerValidationSchema(def, isMandatory, t_i18n)];
+      }
       if (def.field_type === 'multi_select') {
         return [def.id, isMandatory ? Yup.array().min(1, requiredMessage) : Yup.array().nullable()];
       }
@@ -90,8 +138,11 @@ export const getCustomFieldCurrentValue = (
 const parseCustomFieldRawValue = (definition: CustomFieldDef, rawValue: CustomFieldValue) => {
   switch (definition.field_type) {
     case 'integer': {
-      const parsed = parseInt(String(rawValue), 10);
-      return Number.isNaN(parsed) ? undefined : parsed;
+      // Number() (unlike parseInt) never truncates: '1e3' is 1000 like for Yup, '1.9' stays 1.9 for validation to reject.
+      // An empty input is "no value" (Number('') would be 0).
+      const trimmed = String(rawValue).trim();
+      const parsed = Number(trimmed);
+      return trimmed === '' || Number.isNaN(parsed) ? undefined : parsed;
     }
     case 'boolean':
       return rawValue === true;
@@ -246,12 +297,26 @@ export const customFieldDefinitionToWidgetColumn = (definition: CustomFieldWidge
   label: definition.label,
   attributeType: mapCustomFieldTypeToWidgetColumnAttributeType(definition.field_type),
 });
+// Label of a custom field, read from the filter keys schema of the given entity types (technical name if unknown).
+export const getCustomFieldLabelFromFilterKeysSchema = (
+  filterKeysSchema: Map<string, Map<string, { label: string }>>,
+  entityTypes: readonly string[],
+  name: string,
+): string => entityTypes
+  .map((entityType) => filterKeysSchema.get(entityType)?.get(name)?.label)
+  .find((label) => !!label) ?? name;
+// A definition attached to no entity type cannot hold any value: it is never offered as a column.
+// As in the backend, a relationship type (e.g. targets) inherits the definitions attached to stix-core-relationship.
 export const customFieldDefinitionsToWidgetColumns = (
   definitions: readonly CustomFieldWidgetDefinition[],
   entityType?: string,
-): WidgetColumn[] => definitions
-  .filter((def) => !entityType || !def.entity_types || def.entity_types.length === 0 || def.entity_types.includes(entityType))
-  .map(customFieldDefinitionToWidgetColumn);
+  isRelationshipType = false,
+): WidgetColumn[] => {
+  const entityTypes = isRelationshipType && entityType ? [entityType, 'stix-core-relationship'] : [entityType];
+  return definitions
+    .filter((def) => (def.entity_types ?? []).length > 0 && (!entityType || entityTypes.some((type) => (def.entity_types ?? []).includes(type ?? ''))))
+    .map(customFieldDefinitionToWidgetColumn);
+};
 // Extracts the raw, correctly-typed value (string | number | boolean | string[] | undefined) of a
 // custom field from an entity's stored `customFieldValues`, matched by field_name (== WidgetColumn.attribute).
 // Field type doesn'"'"'t need to be known here: exactly one of the typed slots is populated per entry.
@@ -267,4 +332,40 @@ export const getCustomFieldRawValueByFieldName = (
   if (entry.select_values && entry.select_values.length > 0) return [...entry.select_values];
   if (entry.select_value !== null && entry.select_value !== undefined) return entry.select_value;
   return entry.string_value ?? undefined;
+};
+
+// Custom field definitions carried by every given entity type: as in the platform, a relationship type
+// inherits the custom fields attached to stix-core-relationship.
+export const getCustomFieldDefinitionsOfTypes = <T extends { entity_types?: readonly string[] | null }>(
+  definitions: readonly T[],
+  entityTypes: string[],
+  isRelationship: (entityType: string) => boolean,
+): T[] => definitions.filter((definition) => entityTypes.every((entityType) => {
+  const definitionTypes = definition.entity_types ?? [];
+  return definitionTypes.includes(entityType) || (isRelationship(entityType) && definitionTypes.includes('stix-core-relationship'));
+}));
+
+// Types targeted by a background task: the types of the selected rows for a manual selection (a list filtered
+// on an abstract type holds concrete ones), the filtered types or else the list types when everything is selected
+export const getTaskTargetedTypes = (
+  selectAll: boolean,
+  selectedElements: readonly { entity_type?: string }[],
+  filteredTypes: readonly string[],
+  listTypes?: readonly string[] | null,
+): string[] => {
+  if (!selectAll) {
+    return [...new Set(selectedElements.map((element) => element.entity_type).filter((type): type is string => !!type))];
+  }
+  return [...(filteredTypes.length > 0 ? filteredTypes : (listTypes ?? []))];
+};
+
+// Background task values are strings: one per multi_select option, a single one otherwise
+export const customFieldValueToTaskValues = (value: CustomFieldValue): string[] => (Array.isArray(value)
+  ? [...value]
+  : [String(value)].filter((v) => v !== ''));
+
+export const taskValuesToCustomFieldValue = (fieldType: string, values: readonly string[] | undefined): CustomFieldValue => {
+  if (fieldType === 'multi_select') return [...(values ?? [])];
+  if (fieldType === 'boolean') return values?.[0] === 'true';
+  return values?.[0] ?? '';
 };

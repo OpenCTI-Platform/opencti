@@ -42,6 +42,9 @@ function useDashboard({
     [serializedManifest],
   );
 
+  // Dashboard variables, refreshed when workspace is updated.
+  const variables = useMemo(() => manifest.variables ?? [], [manifest]);
+
   // Array of all widgets, refreshed when workspace is updated.
   const widgetsArray = useMemo(() => Object.values(manifest.widgets), [manifest]);
 
@@ -219,6 +222,7 @@ function useDashboard({
     config,
     widgetsArray,
     widgetsLayouts,
+    variables,
   };
 }
 

@@ -42,6 +42,7 @@ import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@compon
 import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidgetColumns';
+import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 'src/utils/customFields';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import useGraphMetricsPlatformView, { GRAPH_METRICS_SORT_KEYS } from '@components/common/graph_analytics/useGraphMetricsPlatformView';
 
@@ -52,6 +53,7 @@ const WidgetCreationParameters = () => {
   const hasGraphMetricsPlatformView = useGraphMetricsPlatformView();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
+    schema: { filterKeysSchema },
   } = useAuth();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
@@ -862,11 +864,9 @@ const WidgetCreationParameters = () => {
                                             key={value}
                                             value={value}
                                           >
-                                            {t_i18n(
-                                              capitalizeFirstLetter(
-                                                value,
-                                              ),
-                                            )}
+                                            {isCustomFieldAttribute(value)
+                                              ? getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, getCurrentSelectedEntityTypes(i), value)
+                                              : t_i18n(capitalizeFirstLetter(value))}
                                           </SelectItem>
                                         ))}
                                       </SelectContent>

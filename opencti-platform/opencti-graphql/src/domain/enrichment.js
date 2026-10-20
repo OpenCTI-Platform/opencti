@@ -1,7 +1,7 @@
 import { Promise } from 'bluebird';
 import { map } from 'ramda';
 import { createWork } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { getEntitiesListFromCache } from '../database/cache';
@@ -12,6 +12,7 @@ import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
 import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { refreshConnectorsLiveness } from '../modules/connector/connector-domain';
 
 const publishEventToConnectors = async (context, user, element, targetConnectors, trigger, stixLoaders) => {
   const draftContext = getDraftContext(context, user);
@@ -81,9 +82,29 @@ export const createEntityAutoEnrichment = async (context, user, element, scope, 
   return publishEventToConnectors(context, user, element, targetConnectors, 'create', stixLoaders);
 };
 
+const isConnectorInScope = (conn, scope) => {
+  return scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
+};
+
+// Trigger flags of filterConnectorsForElementEnrichment, without evaluating the trigger filters
+const isConnectorAutoTriggerable = (conn, mode) => {
+  if (mode === 'creation') {
+    return Boolean(conn.connector_trigger_filters) || conn.auto === true;
+  }
+  if (mode === 'update') {
+    return Boolean(conn.auto_update);
+  }
+  return false;
+};
+
 const findConnectorsForElementEnrichment = async (context, user, element, scope, opts = {}) => {
   const connectors = await getEntitiesListFromCache(context, user, ENTITY_TYPE_CONNECTOR);
-  return filterConnectorsForElementEnrichment(context, connectors, element, scope, opts);
+  // Liveness is not part of the connectors cache: compute it, only for the connectors that could enrich the element
+  const candidates = connectors.filter((conn) => conn.connector_type === CONNECTOR_INTERNAL_ENRICHMENT
+    && isConnectorInScope(conn, scope)
+    && isConnectorAutoTriggerable(conn, opts.mode));
+  const liveCandidates = await refreshConnectorsLiveness(candidates);
+  return filterConnectorsForElementEnrichment(context, liveCandidates, element, scope, opts);
 };
 
 export const filterConnectorsForElementEnrichment = async (context, connectors, element, scope, opts = {}) => {
@@ -93,7 +114,7 @@ export const filterConnectorsForElementEnrichment = async (context, connectors, 
   const targetConnectors = [];
   for (let i = 0; i < activeConnectors.length; i += 1) {
     const conn = activeConnectors[i];
-    const scopeMatch = scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
+    const scopeMatch = isConnectorInScope(conn, scope);
     let hasAccessToElement = false;
     let autoTrigger = false;
     if (mode === 'creation') {

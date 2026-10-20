@@ -51,6 +51,58 @@ const getAttributeMappingFromPath = (path: string, schemaDef: AttributeDefinitio
   return mapping;
 };
 
+const isEnabledMapping = (mapping: MappingDefinition) => !mapping.featureFlag || isFeatureEnabled(mapping.featureFlag);
+
+/**
+ * Returns a copy of the attribute without the mappings under a disabled feature flag, at every level of the object.
+ */
+const removeDisabledMappings = <T extends AttributeDefinition>(attribute: T): T => {
+  if (!isObjectAttributeWithMappings(attribute)) {
+    return { ...attribute };
+  }
+  return { ...attribute, mappings: attribute.mappings.filter(isEnabledMapping).map(removeDisabledMappings) };
+};
+
+/**
+ * Check that two attributes sharing the same name are stored the same way, as they share the same engine mapping.
+ * Mappings of objects (standard and nested) are checked recursively, path being the dotted path of the mapping inside the object.
+ */
+const checkAttributesHomogeneity = (
+  existingAttribute: AttributeDefinition,
+  attribute: AttributeDefinition,
+  path?: string,
+) => {
+  const errorData = { existingAttribute, attribute, path };
+  if (existingAttribute.type !== attribute.type) {
+    throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', errorData);
+  }
+  if (existingAttribute.type === 'string' && attribute.type === 'string' && existingAttribute.format !== attribute.format) {
+    if (!(shortStringFormats.includes(existingAttribute.format) && shortStringFormats.includes(attribute.format))) {
+      throw UnsupportedError('You can\'t have two string attributes with the same name and different format if the formats are not both short format', errorData);
+    }
+  }
+  if (existingAttribute.type === 'numeric' && attribute.type === 'numeric' && existingAttribute.precision !== attribute.precision) {
+    throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', errorData);
+  }
+  if (existingAttribute.type === 'object' && attribute.type === 'object' && existingAttribute.format !== attribute.format) {
+    throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', errorData);
+  }
+  // Objects with the same name share the same engine mapping, so their mappings must be identical
+  if (isObjectAttributeWithMappings(existingAttribute) && isObjectAttributeWithMappings(attribute)) {
+    const existingMappings = new Map(existingAttribute.mappings.map((m) => [m.name, m]));
+    const mappings = new Map(attribute.mappings.map((m) => [m.name, m]));
+    new Set([...existingMappings.keys(), ...mappings.keys()]).forEach((name) => {
+      const mappingPath = path ? `${path}.${name}` : `${attribute.name}.${name}`;
+      const existingMapping = existingMappings.get(name);
+      const mapping = mappings.get(name);
+      if (!existingMapping || !mapping) {
+        throw UnsupportedError('You can\'t have two object attributes with the same name and different mappings in the platform', { ...errorData, path: mappingPath });
+      }
+      checkAttributesHomogeneity(existingMapping, mapping, mappingPath);
+    });
+  }
+};
+
 // Flag to track if the schema was rea; when read for the first time the schema is then read-only and new registration is diallowed
 let usageProtection = false;
 
@@ -93,49 +145,12 @@ export const schemaAttributesDefinition = {
             });
           }
         });
+      // Filter feature flagged mappings, so the attribute is checked and registered as it will be stored
+      const registeredAttribute = removeDisabledMappings(attribute);
       // Check the homogeneity of attribute types
       const existingAttribute = currentAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
       if (existingAttribute) {
-        if (existingAttribute.type === 'string') {
-          if (existingAttribute.type !== attribute.type) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-          if (existingAttribute.format !== attribute.format) {
-            if (!(shortStringFormats.includes(existingAttribute.format) && shortStringFormats.includes(attribute.format))) {
-              throw UnsupportedError('You can\'t have two string attributes with the same name and different format if the formats are not both short format', {
-                existingAttribute,
-                attribute,
-              });
-            }
-          }
-        }
-        if (existingAttribute.type === 'numeric') {
-          if (existingAttribute.type !== attribute.type || existingAttribute.precision !== attribute.precision) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-        }
-        if (existingAttribute.type === 'object') {
-          if (existingAttribute.type !== attribute.type || existingAttribute.format !== attribute.format) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-        }
-        if (existingAttribute.type === 'date' || existingAttribute.type === 'boolean') {
-          if (existingAttribute.type !== attribute.type) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-        }
+        checkAttributesHomogeneity(existingAttribute, registeredAttribute);
       }
       // Check duplicate attributes
       if (directAttributes.has(attribute.name)) {
@@ -153,14 +168,6 @@ export const schemaAttributesDefinition = {
             entityType,
           });
         }
-      }
-      let registeredAttribute: AttributeDefinition = { ...attribute };
-      if (isObjectAttributeWithMappings(registeredAttribute) && registeredAttribute.mappings.length > 0) {
-        registeredAttribute = {
-          ...registeredAttribute,
-          // filter feature flagged attributes
-          mappings: registeredAttribute.mappings.filter((a) => !a.featureFlag || isFeatureEnabled(a.featureFlag)),
-        };
       }
       // set attribute
       directAttributes.set(registeredAttribute.name, registeredAttribute);

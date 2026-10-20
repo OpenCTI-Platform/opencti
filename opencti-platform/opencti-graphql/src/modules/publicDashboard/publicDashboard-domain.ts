@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -37,6 +38,7 @@ import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, St
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { graphClustersSizeTimeSeries, graphSimilarityMatrix } from '../graphAnalytics/graphAnalytics-domain';
+import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -56,6 +58,7 @@ import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
+import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS } from '../workspace/workspace-variables-types';
 
 // Sorts of public lists: the values of the StixCoreObjectsOrdering enum, mapped to their fields like by the private API
 const STIX_CORE_OBJECTS_ORDERINGS: string[] = Object.values(StixCoreObjectsOrdering);
@@ -156,7 +159,8 @@ export const getAllowedMarkings = async (
 
 /**
  * Creates the private manifest by resolving saved filter references
- * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters.
+ * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters,
+ * then dashboard variable tokens into their default values.
  */
 const createPrivateManifest = async (
   context: AuthContext,
@@ -166,15 +170,27 @@ const createPrivateManifest = async (
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const widgetDefinitions = Object.values(parsedManifest.widgets);
     await Promise.all(widgetDefinitions.map((widget: any) => resolveSavedFiltersInDataSelection(context, user, widget)));
+    // Variable values are frozen at publication: the private manifest never holds a token.
+    // A token without value would otherwise reach the queries as a literal (with not_eq, matching everything).
+    const variableValues = buildDashboardVariableDefaultValues(parsedManifest.variables);
+    const dateVariableIds = buildDashboardDateVariableIds(parsedManifest.variables);
+    const { widgets, unresolved } = resolveDashboardVariablesInWidgets(parsedManifest.widgets, variableValues, { dateVariableIds });
+    if (unresolved.length > 0) {
+      throw FunctionalError('Cannot publish this dashboard, some widgets use dashboard variables without value', { variableIds: unresolved });
+    }
+    return toB64({ ...R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest), widgets });
   }
-  return toB64(parsedManifest ?? '{}');
+  return toB64(parsedManifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest) : '{}');
 };
 
 /**
  * Creates the public manifest by stripping each widget's dataSelection
  * to only keep display-related properties (no filters, no query data).
  */
-const createPublicManifest = (parsedManifest: any) => {
+const createPublicManifest = (manifest: any) => {
+  // Dashboard variables and presets are internal definitions (filters, ids, default values):
+  // the public manifest is served to anonymous visitors and must never carry them.
+  const parsedManifest = manifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest) : manifest;
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const publicWidgets = Object.fromEntries(
       Object.entries(parsedManifest.widgets).map(([widgetId, widget]: [string, any]) => {

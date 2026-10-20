@@ -10,6 +10,7 @@ import {
   formatFiltersInPirContext,
   getAvailableOperatorForFilter,
   getEntityTypeThreeFirstLevelsFilterValues,
+  getSelectedOptions,
   isDraftWorkspaceFilterGroup,
   isFilterGroupFormatCorrect,
   isFilterGroupNotEmpty,
@@ -26,6 +27,7 @@ import {
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
   useStixFilters,
+  getStixFiltersDisplayedKeys,
   GqlFilterGroup,
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
@@ -1582,6 +1584,29 @@ describe('isDraftWorkspaceFilterGroup', () => {
   });
 });
 
+describe('getStixFiltersDisplayedKeys', () => {
+  const availableKeys = ['entity_type', 'x_opencti_cf_score'];
+  const filterGroup = (keys: string[], nestedKeys: string[] = []): FilterGroup => ({
+    mode: 'and',
+    filters: keys.map((key) => ({ id: key, key, values: ['a'], operator: 'eq', mode: 'or' })),
+    filterGroups: nestedKeys.length > 0 ? [filterGroup(nestedKeys)] : [],
+  }) as unknown as FilterGroup;
+
+  it('keeps the available keys when no stored filter uses a deleted custom field', () => {
+    expect(getStixFiltersDisplayedKeys(availableKeys, undefined)).toBe(availableKeys);
+    expect(getStixFiltersDisplayedKeys(availableKeys, filterGroup(['entity_type', 'x_opencti_cf_score']))).toBe(availableKeys);
+  });
+
+  it('adds the stored filters on a deleted custom field, even nested, so that they can be removed', () => {
+    expect(getStixFiltersDisplayedKeys(availableKeys, filterGroup(['x_opencti_cf_deleted'], ['x_opencti_cf_nested', 'x_opencti_cf_deleted'])))
+      .toEqual([...availableKeys, 'x_opencti_cf_nested', 'x_opencti_cf_deleted']);
+  });
+
+  it('never adds an unavailable standard key', () => {
+    expect(getStixFiltersDisplayedKeys(availableKeys, filterGroup(['objectLabel']))).toBe(availableKeys);
+  });
+});
+
 describe('useStixFilters', () => {
   it('should include the SSVC filter keys', () => {
     const { hook } = testRenderHook(
@@ -2462,5 +2487,45 @@ describe('isFilterGroupNotEmpty', () => {
       filters: [],
       filterGroups: [{ mode: 'and', filters: [{ key: 'name', values: ['a'] }], filterGroups: [] }],
     })).toBe(true);
+  });
+});
+
+describe('getSelectedOptions with dashboard variable tokens', () => {
+  const t_i18n = (s: string) => s;
+  const variableId = '11111111-1111-4111-8111-111111111111';
+  const token = `$var:${variableId}`;
+  const deletedToken = '$var:99999999-9999-4999-8999-999999999999';
+  const variables = [{ id: variableId, name: 'Client label', type: 'label' as const, restriction: { mode: 'none' as const }, defaultValue: null }];
+  // What the representatives query answers for a token: the back cannot resolve it.
+  const representatives = new Map([
+    [token, { representativeId: token, value: null, entity_type: null, color: null }],
+    [deletedToken, { representativeId: deletedToken, value: null, entity_type: null, color: null }],
+    ['label-1', { representativeId: 'label-1', value: 'APT', entity_type: 'Label', color: '#ff0000' }],
+  ]);
+
+  it('shows a known variable token under the variable name, in the selected group', () => {
+    expect(getSelectedOptions([], [token], representatives, t_i18n, variables)).toEqual([
+      { value: token, label: 'Client label', type: 'Variable', parentTypes: [], group: 'Selected' },
+    ]);
+  });
+
+  it('shows a token of a variable that no longer exists as a deleted variable', () => {
+    expect(getSelectedOptions([], [deletedToken], representatives, t_i18n, variables)).toEqual([
+      { value: deletedToken, label: 'Deleted variable', type: 'Variable', parentTypes: [], group: 'Selected' },
+    ]);
+    // Even when every variable of the dashboard is gone.
+    expect(getSelectedOptions([], [deletedToken], representatives, t_i18n, [])[0].label).toBe('Deleted variable');
+  });
+
+  it('keeps the literal values unchanged next to a token', () => {
+    const options = getSelectedOptions([], ['label-1', token], representatives, t_i18n, variables);
+    expect(options.map((o) => o.label)).toEqual(['APT', 'Client label']);
+  });
+
+  it('outside a dashboard (no variables given), handles a token-looking value exactly as before', () => {
+    expect(getSelectedOptions([], [token, 'label-1'], representatives, t_i18n)).toEqual([
+      { value: 'label-1', type: 'Label', parentTypes: [], group: 'Selected', label: 'APT', color: '#ff0000' },
+      { value: token, type: 'deleted', parentTypes: [], group: 'Selected', label: 'deleted', color: undefined },
+    ]);
   });
 });
