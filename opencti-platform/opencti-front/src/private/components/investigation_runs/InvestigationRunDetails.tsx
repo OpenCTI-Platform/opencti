@@ -46,7 +46,10 @@ const CustomPack = ({ slug }: { slug: string }) => {
   const { t_i18n } = useFormatter();
   return (
     <Tooltip>
-      <TooltipTrigger asChild><span tabIndex={0}>{t_i18n('Custom pack')}</span></TooltipTrigger>
+      <TooltipTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+        <span tabIndex={0}>{t_i18n('Custom pack')}</span>
+      </TooltipTrigger>
       <TooltipContent>{slug}</TooltipContent>
     </Tooltip>
   );
@@ -127,7 +130,10 @@ const InvestigationRunDetails = ({ run, currentEntityId }: InvestigationRunDetai
         <Row label={t_i18n('Started')}>
           {run.started_at ? (
             <Tooltip>
-              <TooltipTrigger asChild><span tabIndex={0}>{rd(run.started_at)}</span></TooltipTrigger>
+              <TooltipTrigger asChild>
+                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+                <span tabIndex={0}>{rd(run.started_at)}</span>
+              </TooltipTrigger>
               <TooltipContent>{fldt(run.started_at)}</TooltipContent>
             </Tooltip>
           ) : t_i18n('Not started yet')}

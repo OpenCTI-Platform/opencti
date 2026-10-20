@@ -163,7 +163,10 @@ const ConnectorCount = ({ ids, names, empty }: { ids: readonly string[]; names: 
   if (listed.length === 0) return <>{label}</>;
   return (
     <Tooltip>
-      <TooltipTrigger asChild><span tabIndex={0}>{label}</span></TooltipTrigger>
+      <TooltipTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+        <span tabIndex={0}>{label}</span>
+      </TooltipTrigger>
       <TooltipContent>{listed.join(', ')}</TooltipContent>
     </Tooltip>
   );

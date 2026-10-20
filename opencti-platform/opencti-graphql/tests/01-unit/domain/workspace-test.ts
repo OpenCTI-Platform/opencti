@@ -169,6 +169,8 @@ describe('workspace field patch audit', () => {
   });
 
   it('never publishes the manifest in the audit event of a field patch', async () => {
+    // No Case Autopilot run holds the investigation graph: none is withheld from its readers.
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([]);
     const editSpy = vi.spyOn(internalObject, 'editInternalObject').mockResolvedValue({ id: 'workspace-id' } as any);
     await workspaceEditField(context, user, 'workspace-id', [{ key: 'name', value: ['New name'] }]);
     const opts = editSpy.mock.calls[0][5];

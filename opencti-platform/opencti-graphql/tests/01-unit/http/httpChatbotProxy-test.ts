@@ -187,7 +187,6 @@ import {
   postChatbotMessageSteer,
 } from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
-import { logApp } from '../../../src/config/conf';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

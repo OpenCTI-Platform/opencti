@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { v4 as uuid } from 'uuid';
 import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
+import { connectorDelete, registerConnector } from '../../../../src/modules/connector/connector-domain';
 import { createWork, updateProcessedTime } from '../../../../src/domain/work';
 import { ConnectorType, InvestigationEvidenceKind, InvestigationRunPhase, InvestigationRunStatus, InvestigationRunTrigger } from '../../../../src/generated/graphql';
 import { MARKING_TLP_AMBER, MARKING_TLP_RED } from '../../../../src/schema/identifier';

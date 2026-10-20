@@ -298,6 +298,7 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
         {startBlocker ? (
           <Tooltip>
             <TooltipTrigger asChild>
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
               <span tabIndex={0}>
                 <Button intent="ai" disabled data-testid="run-case-autopilot-start">{t_i18n('Run Case Autopilot')}</Button>
               </span>
