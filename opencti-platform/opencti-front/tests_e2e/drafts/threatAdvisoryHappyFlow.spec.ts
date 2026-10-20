@@ -16,6 +16,7 @@ import DraftOverviewPageModel from '../model/drafts/draftOverview.pageModel';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
 import { restoreAdminSession } from '../restoreAdminSession';
+import { gotoDraft } from './threatAdvisoryDraftHelpers';
 
 const findLatestReportName = async (request: import('@playwright/test').APIRequestContext, namePrefix: string): Promise<string> => {
   const query = `
@@ -78,7 +79,7 @@ test.describe.serial('Threat Advisory happy flow', () => {
     const openDraft = async (user: { email: string; password: string }) => {
       await loginAs(user);
       // Report is a Container-type entity, shown under the "Containers" tab, not "Entities".
-      await page.goto(`/dashboard/data/import/draft/${draftId}/containers`, { waitUntil: 'domcontentloaded' });
+      await gotoDraft(page, draftId);
     };
 
     await test.step('Step 1: AnalystOrgA submits the Threat Advisory form as a draft (status New)', async () => {
@@ -125,7 +126,7 @@ test.describe.serial('Threat Advisory happy flow', () => {
     await test.step('Step 7: ManagerOrgA can edit and sees REJECT + "Send to OrgC for review"', async () => {
       await openDraft(USERS.managerOrgA);
       // The "Update" button lives on the draft's Overview tab, not Containers.
-      await page.goto(`/dashboard/data/import/draft/${draftId}/overview`, { waitUntil: 'domcontentloaded' });
+      await gotoDraft(page, draftId, 'overview');
       await overview.assertCanEdit();
       await toolbar.assertTransitionVisible('Reject');
       await toolbar.assertTransitionVisible('Send to OrgC for review');
