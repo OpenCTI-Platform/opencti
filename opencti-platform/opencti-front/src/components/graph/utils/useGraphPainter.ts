@@ -10,6 +10,7 @@ import { type Box, computeLinkCurvatures, computeObstacleBends, type LinkEnds, l
 import type { LayoutPositions } from './graphLayouts';
 import { type GraphFocus, type GraphPath, neighbourhood } from './graphFocus';
 import {
+  corroboratedLinkLabel,
   createNodeBoxes,
   graphLinkLabel,
   type LevelOfDetail,
@@ -34,15 +35,6 @@ export interface GraphHoverTarget {
   sourceId?: string;
   targetId?: string;
 }
-
-// Corroboration ring: invisible for single-sourced knowledge, thicker with every additional source
-const MAX_RING_SOURCES = 8;
-export const corroborationRingWidth = (corroborationCount: number | undefined) => {
-  if (!corroborationCount || corroborationCount < 2) {
-    return 0;
-  }
-  return 0.25 + 0.15 * (Math.min(corroborationCount, MAX_RING_SOURCES) - 1);
-};
 
 interface UseGraphPainterArgs {
   selectedLinks: GraphLink[];
@@ -368,7 +360,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     let angle = Math.atan2(end.y - start.y, end.x - start.x);
     if (angle > Math.PI / 2) angle -= Math.PI;
     if (angle < -Math.PI / 2) angle += Math.PI;
-    paintLinkLabels(ctx, [{ text: graphLinkLabel(link), x: middle.x, y: middle.y, angle, priority: 0, emphasised: false }], { palette, globalScale });
+    paintLinkLabels(ctx, [{ text: corroboratedLinkLabel(link), x: middle.x, y: middle.y, angle, priority: 0, emphasised: false }], { palette, globalScale });
   };
 
   /** The sphere of a node in 3D: the selection accent when selected, as in 2D. */
