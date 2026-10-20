@@ -223,3 +223,31 @@ describe('Hook: useImportAccess - canOpenDraft', () => {
     expect(hook.result.current.canOpenDraft).toBe(expected);
   });
 });
+
+describe('Hook: useImportAccess - isForcedFormSubmissionToDraft', () => {
+  it.each([
+    // the form capability in main lets the submission stay in main, whatever is granted in draft
+    { capabilities: [KNOWLEDGE_KNFORMINTAKE], capabilitiesInDraft: [KNOWLEDGE_KNUPDATE], expected: false },
+    { capabilities: [KNOWLEDGE_KNFORMINTAKE], capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT], expected: false },
+    { capabilities: [KNOWLEDGE_KNFORMINTAKE], capabilitiesInDraft: [], expected: false },
+    // without it, the forcing of the import applies
+    { capabilities: [], capabilitiesInDraft: [KNOWLEDGE_KNFORMINTAKE], expected: true },
+    { capabilities: [], capabilitiesInDraft: [KNOWLEDGE_KNUPDATE], expected: true },
+    { capabilities: [KNOWLEDGE_KNUPDATE], capabilitiesInDraft: [], expected: false },
+  ])('should be $expected with $capabilities in main and $capabilitiesInDraft in draft', ({ capabilities, capabilitiesInDraft, expected }) => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext(capabilities, capabilitiesInDraft) },
+    );
+    expect(hook.result.current.isForcedFormSubmissionToDraft).toBe(expected);
+  });
+
+  it('should keep forcing the file import of a user with Create / Update knowledge in draft only', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([KNOWLEDGE_KNFORMINTAKE], [KNOWLEDGE_KNUPDATE]) },
+    );
+    expect(hook.result.current.isForcedImportToDraft).toBe(true);
+    expect(hook.result.current.hasKnowledgeUpdateInMain).toBe(false);
+  });
+});

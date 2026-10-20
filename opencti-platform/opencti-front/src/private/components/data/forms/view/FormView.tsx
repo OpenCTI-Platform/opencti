@@ -37,7 +37,7 @@ import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import { FormSchemaDefinition } from '../Form.d';
 import { FormFieldRendererProps } from './FormFieldRenderer';
 import FormFields from './FormFields';
-import { computeDraftPolicy, convertFormSchemaToYupSchema, getSubmitErrorMessage, prepareFormSubmission } from './FormViewUtils';
+import { computeDraftPolicy, convertFormSchemaToYupSchema, getSubmitErrorMessage, hasPendingLookupCreation, prepareFormSubmission } from './FormViewUtils';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import TextareaField from '../../../../../components/TextareaField';
 import { Checkbox } from '@filigran/design-system';
@@ -157,7 +157,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
   const isBypass = useGranted([BYPASS]);
-  const { isForcedImportToDraft, canOpenDraft } = useImportAccess();
+  const { isForcedFormSubmissionToDraft, hasKnowledgeUpdateInMain, canOpenDraft } = useImportAccess();
   const pendingStore = useIntakePendingStore();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
@@ -409,7 +409,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   }, [schema, isBypass, draftPolicy]);
 
   // Initialize isDraft based on schema settings or import context override
-  const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
+  const [isDraft, setIsDraft] = useState(isForcedFormSubmissionToDraft || schema.isDraftByDefault || false);
   const deferredCreation = useMemo(() => ({ ...pendingStore, toDraft: isDraft }), [pendingStore, isDraft]);
 
   const validationSchema = React.useMemo(() => {
@@ -616,6 +616,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
               const showDraftObjectParticipant = isDraft && draftPolicy.objectParticipant.visible;
               const showDraftAuthor = isDraft && draftPolicy.author.visible;
               const showDraftAuthorizedMembers = isDraft && draftPolicy.authorizedMembers.visible;
+              // Objects created on the fly are written in the destination of the submission: in main, only with Create / Update knowledge
+              const canCreateOnTheFly = isDraft || hasKnowledgeUpdateInMain;
+              const keepsDraftForPendingCreation = isDraft && !hasKnowledgeUpdateInMain && hasPendingLookupCreation(values, schema);
               const showDraftSection = showDraftName
                 || showDraftDescription
                 || showDraftObjectAssignee
@@ -641,7 +644,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                             style={{ width: '100%', marginTop: 20 }}
                             helpertext={schema.mainEntityMultiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                             multiple={schema.mainEntityMultiple}
-                            disableCreation={schema.mainEntityDisableCreation}
+                            disableCreation={schema.mainEntityDisableCreation || !canCreateOnTheFly}
                             deferCreation
                           />
                         );
@@ -801,7 +804,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                     style={{ width: '100%', marginTop: 20 }}
                                     helpertext={additionalEntity.multiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                                     multiple={additionalEntity.multiple}
-                                    disableCreation={additionalEntity.disableCreation}
+                                    disableCreation={additionalEntity.disableCreation || !canCreateOnTheFly}
                                     deferCreation
                                   />
                                 );
@@ -999,12 +1002,20 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       <Checkbox
                         checked={isDraft}
                         onCheckedChange={(checked) => setIsDraft(checked === true)}
-                        disabled={isSubmitting || isForcedImportToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
+                        disabled={isSubmitting
+                          || isForcedFormSubmissionToDraft
+                          || keepsDraftForPendingCreation
+                          || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
                         style={{ marginRight: 10 }}
                       />
                     )}
                     label={t_i18n('Create as draft')}
                   />
+                  {keepsDraftForPendingCreation && (
+                    <Typography variant="caption" component="p" color="textSecondary" style={{ marginBottom: 12 }}>
+                      {t_i18n('Remove the entities created in this form to submit it outside a draft.')}
+                    </Typography>
+                  )}
                   {showDraftSection && (
                     <>
                       <Typography variant="h5" className={classes.sectionTitle} style={{ marginTop: 0 }}>
