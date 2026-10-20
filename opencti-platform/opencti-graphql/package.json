@@ -124,7 +124,7 @@
     "graphql-no-alias": "3.0.3",
     "graphql-rate-limit-directive": "2.0.6",
     "graphql-redis-subscriptions": "2.7.0",
-    "graphql-scalars": "2.0.0",
+    "graphql-scalars": "2.0.1",
     "graphql-subscriptions": "3.0.0",
     "graphql-upload": "18.0.1",
     "graphql-ws": "6.4.0",
