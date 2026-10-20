@@ -15,6 +15,7 @@ import DataTable from '../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../../components/i18n';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
+import NavigationSearchResults from './search/NavigationSearchResults';
 
 const LOCAL_STORAGE_KEY = 'search';
 
@@ -231,6 +232,7 @@ const Search = () => {
 
   return (
     <>
+      <NavigationSearchResults keyword={searchTerm} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
