@@ -7,6 +7,10 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './setup-vitest.ts',
+    // Reuse each worker, its jsdom and the node_modules it loaded across test
+    // files: per-file isolation spent most of the run re-importing them.
+    // setup-vitest.ts resets modules, mocks and globals before each file.
+    isolate: false,
     include: ['src/**/*.test.{ts,tsx}'],
     globals: true,
     server: {

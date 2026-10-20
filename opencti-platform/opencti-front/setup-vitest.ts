@@ -2,6 +2,25 @@ import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { expect, afterEach, vi } from 'vitest';
 
+// vitest.config.ts sets isolate: false, so one worker and one jsdom run many
+// test files in a row. This file runs before each of them: undo what the
+// previous file may have left. Module and mock registries are reset the way
+// vitest does it itself between isolated files; the mocker reset has no public
+// API, hence the global.
+(globalThis as { __vitest_mocker__?: { reset: () => void } }).__vitest_mocker__?.reset();
+vi.resetModules();
+vi.restoreAllMocks();
+vi.unstubAllGlobals();
+vi.unstubAllEnvs();
+vi.useRealTimers();
+localStorage.clear();
+sessionStorage.clear();
+window.history.replaceState(null, '', '/');
+[document.documentElement, document.body].forEach((element) => {
+  [...element.attributes].forEach(({ name }) => element.removeAttribute(name));
+});
+document.body.replaceChildren();
+
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 global.jest = vi;
