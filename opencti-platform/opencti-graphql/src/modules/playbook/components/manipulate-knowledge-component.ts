@@ -31,7 +31,6 @@ import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
-import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
 import { CUSTOM_FIELD_PREFIX } from '../../customField/custom-field-types';
 import { getCustomFieldDefinitionsForEntityType } from '../../customField/custom-field-cache';
 import { buildCustomFieldPlaybookOperations } from '../../customField/custom-field-playbook';
@@ -196,9 +195,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       return value;
     };
 
-    const customFieldActions = isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)
-      ? actions.filter((action) => action.attribute.startsWith(CUSTOM_FIELD_PREFIX))
-      : [];
+    const customFieldActions = actions.filter((action) => action.attribute.startsWith(CUSTOM_FIELD_PREFIX));
 
     const patchOperations: jsonpatch.Operation[] = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {

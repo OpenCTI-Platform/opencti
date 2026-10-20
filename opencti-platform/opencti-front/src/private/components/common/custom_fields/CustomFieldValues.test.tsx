@@ -3,6 +3,8 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Field, Form, Formik } from 'formik';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Yup from 'yup';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
+import ThemeDark from '../../../../components/ThemeDark';
 import { CustomFieldDef, CustomFieldStoredValue, CustomFieldValue } from '../../../../utils/customFields';
 import CustomFieldsFormik from './CustomFieldsFormik';
 import DynamicCustomFieldsFormik from './DynamicCustomFieldsFormik';
@@ -11,16 +13,24 @@ import CustomFieldValuesEdition from './CustomFieldValuesEdition';
 import CustomFieldValuesDisplay from './CustomFieldValuesDisplay';
 
 const state = vi.hoisted(() => ({
-  enabled: true,
   definitions: {} as Record<string, CustomFieldDef[]>,
   delayed: false,
   loaders: [] as (() => void)[],
   query: vi.fn(),
 }));
 
-vi.mock('../../../../utils/hooks/useHelper', () => ({ default: () => ({ isFeatureEnable: () => state.enabled }) }));
 vi.mock('../../../../components/i18n', () => ({ useFormatter: () => ({ t_i18n: (key: string) => key, fldt: (date: string) => date }) }));
 vi.mock('react-relay', () => ({ useLazyLoadQuery: (...args: unknown[]) => state.query(...args) }));
+// Resolved with the definitions loader, as both requests are the same query
+vi.mock('../../../../relay/environment', () => ({
+  fetchQuery: (query: unknown, variables: { entityType: string }) => ({
+    toPromise: () => new Promise((resolve) => {
+      const load = () => resolve(state.query(query, variables));
+      if (state.delayed) state.loaders.push(load);
+      else load();
+    }),
+  }),
+}));
 vi.mock('./CustomFieldsInput', () => ({
   customFieldDefinitionsForEntityTypeQuery: {},
   CustomFieldsLoader: ({ entityType, onLoaded }: { entityType: string; onLoaded: (definitions: CustomFieldDef[]) => void }) => {
@@ -78,7 +88,6 @@ const creationFields = (
 );
 
 beforeEach(() => {
-  state.enabled = true;
   state.delayed = false;
   state.loaders = [];
   state.definitions = { Report: [definition('risk', 'Report', 'default risk')] };
@@ -116,17 +125,6 @@ describe.each(['Report', 'stix-core-relationship', 'stix-sighting-relationship']
     await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
   });
 
-  it('does not query or submit custom fields when the feature is disabled', async () => {
-    state.enabled = false;
-    const submit = vi.fn();
-    render(<CustomFieldsFormik entityType={entityType} initialValues={{ name: 'report' }} onSubmit={submit}>{creationFields}</CustomFieldsFormik>);
-    expect(state.query).not.toHaveBeenCalled();
-    expect(screen.queryByLabelText('risk')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText('Save'));
-    await waitFor(() => expect(submit).toHaveBeenCalled());
-    expect(submit.mock.calls[0][0]).toEqual({ name: 'report' });
-  });
-
   it('waits for definitions before mounting a fixed-type form', async () => {
     let resolve: () => void = () => {};
     const pending = new Promise<void>((done) => {
@@ -147,7 +145,7 @@ describe.each(['Report', 'stix-core-relationship', 'stix-sighting-relationship']
     expect(await screen.findByLabelText('risk')).toHaveValue('default risk');
   });
 
-  it('keeps other inputs when switching concrete types and blocks submission until new defaults load', async () => {
+  it('keeps other inputs when switching concrete types and submits with the new defaults once they load', async () => {
     state.definitions = { City: [definition('city field', 'City', 'city default')], Country: [definition('country field', 'Country', 'country default')] };
     state.delayed = true;
     const submit = vi.fn();
@@ -172,9 +170,54 @@ describe.each(['Report', 'stix-core-relationship', 'stix-sighting-relationship']
     await act(async () => state.loaders.splice(0).forEach((load) => load()));
     expect(screen.queryByLabelText('city field')).not.toBeInTheDocument();
     expect(screen.getByLabelText('country field')).toHaveValue('country default');
-    fireEvent.click(screen.getByText('Save'));
-    await waitFor(() => expect(submit).toHaveBeenCalled());
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
     expect(submit.mock.calls[0][0]).toEqual({ name: 'keep name', type: 'Country', customFieldValues: [{ field_name: 'country field', value: ['country default'] }] });
+  });
+
+  it('submits a click made while the definitions of the selected type load', async () => {
+    state.definitions = { Individual: [definition('individual field', 'Individual', 'individual default')] };
+    state.delayed = true;
+    const submit = vi.fn();
+    render(
+      <DynamicCustomFieldsFormik typeField="type" initialValues={{ name: 'Jeanne', type: '' }} onSubmit={submit}>
+        <Form>
+          <Field name="type" aria-label="Type" as="select"><option value="" /><option>Individual</option></Field>
+          <CustomFieldValuesCreation />
+          <button type="submit">Save</button>
+        </Form>
+      </DynamicCustomFieldsFormik>,
+    );
+    fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'Individual' } });
+    await act(async () => fireEvent.click(screen.getByText('Save')));
+    expect(submit).not.toHaveBeenCalled();
+    await act(async () => state.loaders.splice(0).forEach((load) => load()));
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
+    expect(submit.mock.calls[0][0]).toEqual({ name: 'Jeanne', type: 'Individual', customFieldValues: [{ field_name: 'individual field', value: ['individual default'] }] });
+  });
+
+  it.each([false, true])('leaves the end of the submission to the consumer (definitions loading: %s)', async (loading) => {
+    state.definitions = { Individual: [definition('individual field', 'Individual', 'individual default')] };
+    state.delayed = true;
+    const submit = vi.fn();
+    render(
+      <DynamicCustomFieldsFormik typeField="type" initialValues={{ name: 'Jeanne', type: '' }} onSubmit={submit}>
+        {({ isSubmitting }) => (
+          <Form>
+            <Field name="type" aria-label="Type" as="select"><option value="" /><option>Individual</option></Field>
+            <CustomFieldValuesCreation />
+            <button type="submit" disabled={isSubmitting}>Save</button>
+          </Form>
+        )}
+      </DynamicCustomFieldsFormik>,
+    );
+    fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'Individual' } });
+    if (!loading) await act(async () => state.loaders.splice(0).forEach((load) => load()));
+    await act(async () => fireEvent.click(screen.getByText('Save')));
+    if (loading) await act(async () => state.loaders.splice(0).forEach((load) => load()));
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('Save')).toBeDisabled();
+    await act(async () => submit.mock.calls[0][1].setSubmitting(false));
+    expect(screen.getByText('Save')).toBeEnabled();
   });
 });
 
@@ -268,11 +311,15 @@ describe.each(['Report', 'stix-core-relationship', 'stix-sighting-relationship']
     expect(submit.mock.calls[0][0].custom_field_values).toEqual([...stored, { field_id: 'score', field_name: 'score', int_value: 1.9 }]);
   });
 
-  it('hides existing values when the feature is disabled', () => {
-    state.enabled = false;
-    const { container } = render(<CustomFieldValuesDisplay entityType={entityType} values={stored} />);
-    expect(container).toBeEmptyDOMElement();
-    expect(state.query).not.toHaveBeenCalled();
+  it('displays the stored values with the label of their definition', async () => {
+    state.definitions[entityType] = [{ ...definition('unrelated', entityType), label: 'Unrelated label' }];
+    render(
+      <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
+        <CustomFieldValuesDisplay entityType={entityType} values={stored} />
+      </ThemeProvider>,
+    );
+    expect(await screen.findByText('Unrelated label')).toBeInTheDocument();
+    expect(screen.getByText('keep')).toBeInTheDocument();
   });
 });
 
