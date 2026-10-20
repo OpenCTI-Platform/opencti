@@ -25,7 +25,14 @@ import {
   computeIngestionHealthPatch,
   HealthTransition,
 } from '../modules/ingestionHealth/ingestionHealth-checks';
-import { type GlobalIngestionHealthContext, HEALTH_CHECK_REGISTRY, type RuntimeCheckDefinition, type RuntimeData } from '../modules/ingestionHealth/ingestionHealth-registry';
+import {
+  type GlobalIngestionHealthContext,
+  HEALTH_CHECK_REGISTRY,
+  type HealthCheckCode,
+  type HealthCheckDefinition,
+  type RuntimeCheckDefinition,
+  type RuntimeData,
+} from '../modules/ingestionHealth/ingestionHealth-registry';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 import { IngestionHealthCheckKind } from '../generated/graphql';
@@ -94,8 +101,8 @@ const loadRuntimeData = async (ingestionIds: string[]): Promise<Map<string, Runt
   if (ingestionIds.length === 0) {
     return new Map();
   }
-  const runtimeChecks = Object.entries(HEALTH_CHECK_REGISTRY)
-    .filter((entry): entry is [string, RuntimeCheckDefinition<unknown>] => entry[1].kind === IngestionHealthCheckKind.Runtime);
+  const runtimeChecks = (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][])
+    .filter((entry): entry is [HealthCheckCode, RuntimeCheckDefinition<unknown>] => entry[1].kind === IngestionHealthCheckKind.Runtime);
   const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => definition.getRuntimeData()));
   return new Map(ingestionIds.map((ingestionId) => {
     const runtimeData = Object.fromEntries(runtimeChecks.map(([code], index) => [code, valuesByCheck[index].get(ingestionId)]));

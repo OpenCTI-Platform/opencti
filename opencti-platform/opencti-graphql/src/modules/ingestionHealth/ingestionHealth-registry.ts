@@ -7,6 +7,16 @@ import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
 export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
 
+// Every check of the registry: adding a check adds its code here
+export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
+  | typeof HEALTH_CHECK_HEARTBEAT_MISSING;
+
+// The runtime checks among them: adding a runtime check adds its code here, and the type of its value in RuntimeData
+type RuntimeCheckCode = typeof HEALTH_CHECK_HEARTBEAT_MISSING;
+
+// The values read by the runtime checks for one ingestion, by check code
+export type RuntimeData = { [C in RuntimeCheckCode]?: (typeof HEALTH_CHECK_REGISTRY)[C] extends RuntimeCheckDefinition<infer T> ? T : never };
+
 // The ingestor evaluated: a connector, a feed or a sync
 export interface HealthCheckIngestor {
   internal_id: string;
@@ -62,7 +72,7 @@ export interface RuntimeCheckDefinition<T> extends BaseHealthCheckDefinition {
   getFailure: (value: T | undefined, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
 }
 
-// The type of the value is inferred from getRuntimeData, so that getFailure is checked against it
+// Given the type of the value in RuntimeData, so that getRuntimeData and getFailure are checked against it
 const defineRuntimeCheck = <T>(definition: RuntimeCheckDefinition<T>): RuntimeCheckDefinition<T> => definition;
 
 export type HealthCheckDefinition = ConfigurationCheckDefinition | RuntimeCheckDefinition<any>;
@@ -88,7 +98,7 @@ export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: str
 
 // Kind, severity and message describe the type of check, not one occurrence: they are never stored,
 // so changing them never requires rewriting Elasticsearch.
-export const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
+export const HEALTH_CHECK_REGISTRY: Record<HealthCheckCode, HealthCheckDefinition> = {
   // No user id or name in the message: reading a connector only needs MODULES, its user is reserved to SETTINGS_SETACCESSES
   [HEALTH_CHECK_USER_MISSING]: {
     kind: IngestionHealthCheckKind.Configuration,
@@ -111,16 +121,4 @@ export const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
     getRuntimeData: redisGetConnectorsHeartbeats,
     getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : {}),
   }),
-};
-
-// The values read by the runtime checks for one ingestion, by check code, typed by the getRuntimeData of each check
-type RuntimeCheckCode = {
-  [C in keyof typeof HEALTH_CHECK_REGISTRY]: (typeof HEALTH_CHECK_REGISTRY)[C] extends RuntimeCheckDefinition<any> ? C : never
-}[keyof typeof HEALTH_CHECK_REGISTRY];
-export type RuntimeData = { [C in RuntimeCheckCode]?: (typeof HEALTH_CHECK_REGISTRY)[C] extends RuntimeCheckDefinition<infer T> ? T : never };
-
-export type HealthCheckCode = keyof typeof HEALTH_CHECK_REGISTRY;
-
-export const getHealthCheckDefinition = (code: HealthCheckCode): HealthCheckDefinition | undefined => {
-  return HEALTH_CHECK_REGISTRY[code];
 };

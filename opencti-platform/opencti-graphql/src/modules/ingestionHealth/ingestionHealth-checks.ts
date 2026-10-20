@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
 import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
 import {
-  getHealthCheckDefinition,
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_REGISTRY,
   type HealthCheckCode,
@@ -53,7 +52,7 @@ export const computeIngestionHealthChecks = (
 export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: SourceIngestionHealthContext): IngestionHealthStatus | null => {
   // A code unknown to this platform version has no definition: it cannot change the status
   const healthChecks = checks
-    .map((check) => getHealthCheckDefinition(check.health_check_code))
+    .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code])
     .filter((definition): definition is HealthCheckDefinition => !!definition);
   // blocking AND runtime -> critical
   if (healthChecks.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
@@ -148,7 +147,7 @@ export const buildHealthTransitionMessage = (element: { name: string; entity_typ
 // region api
 export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
   return (checks ?? []).flatMap((check) => {
-    const definition = getHealthCheckDefinition(check.health_check_code);
+    const definition = HEALTH_CHECK_REGISTRY[check.health_check_code];
     if (!definition) {
       // Code unknown to this platform version: nothing reliable to show
       return [];
