@@ -306,6 +306,7 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
                       {gap.last_validation_requested_at ? (
                         <Tooltip>
                           <TooltipTrigger asChild>
+                            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
                             <span tabIndex={0} style={{ cursor: 'help' }}>{rd(gap.last_validation_requested_at)}</span>
                           </TooltipTrigger>
                           <TooltipContent>{fldt(gap.last_validation_requested_at)}</TooltipContent>

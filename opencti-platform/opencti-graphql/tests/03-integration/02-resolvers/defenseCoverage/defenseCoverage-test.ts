@@ -18,7 +18,7 @@ import { redisSetDefensePendingValidationTracking } from '../../../../src/databa
 import { fullEntitiesList, internalFindByIds } from '../../../../src/database/middleware-loader';
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import * as securityCoverageDomain from '../../../../src/modules/securityCoverage/securityCoverage-domain';
-import * as repository from '../../../../src/database/repository';
+import * as repository from '../../../../src/modules/connector/connector-domain';
 import * as telemetryManager from '../../../../src/manager/telemetryManager';
 import * as defenseCoverageUtils from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../../src/modules/securityCoverage/securityCoverage-types';

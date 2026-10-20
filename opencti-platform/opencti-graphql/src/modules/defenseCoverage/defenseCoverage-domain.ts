@@ -17,7 +17,7 @@ import { addStixCoreRelationship } from '../../domain/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
-import { connectorsForEnrichment } from '../../database/repository';
+import { connectorsForEnrichment } from '../connector/connector-domain';
 import { isModuleActivated } from '../../database/cluster-module';
 import type { BasicStoreEntityDataComponent } from '../dataComponent/dataComponent-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';

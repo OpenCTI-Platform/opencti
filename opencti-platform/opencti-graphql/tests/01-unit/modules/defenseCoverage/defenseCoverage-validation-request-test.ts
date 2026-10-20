@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
-import { connectorsForEnrichment } from '../../../../src/database/repository';
+import { connectorsForEnrichment } from '../../../../src/modules/connector/connector-domain';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { addGrouping } from '../../../../src/modules/grouping/grouping-domain';
 import { addSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
@@ -15,8 +15,8 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   fullEntitiesList: vi.fn(async () => []),
   fullRelationsList: vi.fn(async () => []),
 }));
-vi.mock('../../../../src/database/repository', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/database/repository')>()),
+vi.mock('../../../../src/modules/connector/connector-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/connector/connector-domain')>()),
   connectorsForEnrichment: vi.fn(async () => []),
 }));
 vi.mock('../../../../src/database/middleware', async (importOriginal) => ({

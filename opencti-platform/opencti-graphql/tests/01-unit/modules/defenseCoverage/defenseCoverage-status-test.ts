@@ -9,8 +9,8 @@ vi.mock('../../../../src/database/cluster-module', () => ({
   isModuleActivated: vi.fn(async () => true),
 }));
 
-vi.mock('../../../../src/database/repository', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/database/repository')>()),
+vi.mock('../../../../src/modules/connector/connector-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/connector/connector-domain')>()),
   connectorsForEnrichment: vi.fn(async () => []),
 }));
 

@@ -204,6 +204,7 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
                       <TableCell sx={{ whiteSpace: 'nowrap' }}>
                         <Tooltip>
                           <TooltipTrigger asChild>
+                            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
                             <span tabIndex={0} style={{ cursor: 'help' }}>{rd(mapping.updated_at)}</span>
                           </TooltipTrigger>
                           <TooltipContent>{fldt(mapping.updated_at)}</TooltipContent>
