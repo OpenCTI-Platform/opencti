@@ -119,7 +119,10 @@ export type HealthTransition = typeof HealthTransition[keyof typeof HealthTransi
 // it is a recovery only for an ingestion that was failing.
 // A stopped ingestion is not evaluated: its health is removed and nothing is reported.
 // A restart is reported only when it fails: a stopped ingestion has no health, it has nothing to recover from.
-export const computeHealthTransition = (previous: IngestionHealthStatus | undefined, next: IngestionHealthStatus | undefined): HealthTransition | null => {
+export const computeHealthTransition = (
+  previous: IngestionHealthStatus | undefined,
+  next: IngestionHealthStatus | undefined,
+): HealthTransition | null => {
   if (previous === next) {
     return null;
   }
