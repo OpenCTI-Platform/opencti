@@ -1,14 +1,34 @@
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { expect, afterEach, vi } from 'vitest';
+import * as muiStyles from '@mui/styles';
 
 // vitest.config.ts sets isolate: false, so one worker and one jsdom run many
 // test files in a row. This file runs before each of them: undo what the
-// previous file may have left. Module and mock registries are reset the way
-// vitest does it itself between isolated files; the mocker reset has no public
-// API, hence the global.
-(globalThis as { __vitest_mocker__?: { reset: () => void } }).__vitest_mocker__?.reset();
+// previous file may have left.
+//
+// Modules and mocks are reset the way vitest does it itself between isolated
+// files, which has no public API, hence the globals. vi.resetModules() alone
+// keeps mocked modules, and so do module-level caches in node_modules: either
+// would hold every previous file's module graph alive, ~14 MB a file, enough
+// to exhaust the CI runner's memory over the suite.
+type ModuleNode = { importers: Set<string>; meta?: object };
+const vitestGlobals = globalThis as {
+  __vitest_mocker__?: { reset: () => void };
+  __vitest_worker__?: {
+    evaluatedModules: { idToModuleMap: Map<string, ModuleNode>; invalidateModule: (node: ModuleNode) => void };
+  };
+};
+vitestGlobals.__vitest_mocker__?.reset();
 vi.resetModules();
+const evaluatedModules = vitestGlobals.__vitest_worker__?.evaluatedModules;
+evaluatedModules?.idToModuleMap.forEach((node, id) => {
+  if (!id.startsWith('mock:') && !(node.meta && 'mockedModule' in node.meta)) return;
+  evaluatedModules.invalidateModule(node);
+  node.importers.clear();
+});
+// makeStyles registers each style creator here and never drops the key.
+(muiStyles as unknown as { sheetsManager: Map<unknown, unknown> }).sheetsManager.clear();
 vi.restoreAllMocks();
 vi.unstubAllGlobals();
 vi.unstubAllEnvs();
