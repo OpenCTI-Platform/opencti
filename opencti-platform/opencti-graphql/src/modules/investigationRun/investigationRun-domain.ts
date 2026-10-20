@@ -63,7 +63,7 @@ import {
 } from '../../utils/access';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../../schema/general';
+import { buildRefRelationKey, CONNECTOR_INTERNAL_ENRICHMENT } from '../../schema/general';
 import { iAliasedIds, xOpenctiStixIds } from '../../schema/attribute-definition';
 import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { taskAdd } from '../task/task-domain';
@@ -78,7 +78,7 @@ import {
   type WithheldElementsProvider,
   type WithheldListingCandidates,
 } from '../../utils/withheldElements';
-import { connectorsForEnrichment } from '../../database/repository';
+import { connectorsFor } from '../connector/connector-domain';
 import { isUserAccountValid, resolveUserByIdFromCache } from '../user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { addInvestigationFeedbackCount, addInvestigationRunCount, addInvestigationRunOutcomeCount } from '../../manager/telemetryManager';
@@ -1284,7 +1284,13 @@ const runContextFor = (context: AuthContext, run: BasicStoreEntityInvestigationR
 });
 
 export const listPolicyEnrichmentConnectors = async (context: AuthContext, user: AuthUser, policy: BasicStoreEntityInvestigationPolicy) => {
-  const connectors = await connectorsForEnrichment(outOfDraft(context), user, null, true) as Array<{ internal_id: string; name: string; connector_scope?: string[] }>;
+  const connectors = await connectorsFor(
+    outOfDraft(context),
+    user,
+    CONNECTOR_INTERNAL_ENRICHMENT,
+    null,
+    true,
+  ) as Array<{ internal_id: string; name: string; connector_scope?: string[] }>;
   const allowList = policy.enrichment_connector_ids ?? [];
   return connectors.filter((connector) => allowList.length === 0 || allowList.includes(connector.internal_id));
 };

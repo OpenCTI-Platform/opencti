@@ -28,7 +28,8 @@ import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { INVESTIGATION_MANAGER_USER } from '../../utils/access';
 import { assertRunAsUserAllowed } from '../playbook/components/ai-agent-shared';
-import { connectorsForEnrichment } from '../../database/repository';
+import { connectorsFor } from '../connector/connector-domain';
+import { CONNECTOR_INTERNAL_ENRICHMENT } from '../../schema/general';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import {
   ACTIVE_RUN_STATUSES,
@@ -120,7 +121,7 @@ export const sanitizePackOptions = (value: unknown): Record<string, string> | nu
 // Connectors referenced by a policy must be enrichment connectors.
 const assertEnrichmentConnectors = async (context: AuthContext, user: AuthUser, connectorIds: string[]) => {
   if (connectorIds.length === 0) return;
-  const enrichmentConnectors = await connectorsForEnrichment(context, user, null, false);
+  const enrichmentConnectors = await connectorsFor(context, user, CONNECTOR_INTERNAL_ENRICHMENT, null, false);
   const known = new Set(enrichmentConnectors.map((connector: { internal_id: string }) => connector.internal_id));
   const unknown = connectorIds.filter((id) => !known.has(id));
   if (unknown.length > 0) {
@@ -132,7 +133,13 @@ const assertEnrichmentConnectors = async (context: AuthContext, user: AuthUser, 
 // manage connectors themselves.
 export const listInvestigationEnrichmentConnectors = async (context: AuthContext, user: AuthUser) => {
   await checkEnterpriseEdition(context);
-  const connectors = await connectorsForEnrichment(context, user, null, false) as Array<{ internal_id: string; name: string; active?: boolean; connector_scope?: string[] }>;
+  const connectors = await connectorsFor(
+    context,
+    user,
+    CONNECTOR_INTERNAL_ENRICHMENT,
+    null,
+    false,
+  ) as Array<{ internal_id: string; name: string; active?: boolean; connector_scope?: string[] }>;
   return connectors
     .map((connector) => ({ id: connector.internal_id, name: connector.name, active: connector.active === true, connector_scope: connector.connector_scope ?? [] }))
     .sort((a, b) => a.name.localeCompare(b.name));
