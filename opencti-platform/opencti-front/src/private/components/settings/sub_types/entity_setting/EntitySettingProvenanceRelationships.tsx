@@ -139,6 +139,7 @@ const EntitySettingProvenanceRelationships = ({ entitySettingData }: EntitySetti
       <TooltipTrigger asChild>
         {/* A disabled button receives no pointer event: the wrapper keeps the tooltip reachable */}
         <span
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
           tabIndex={isRecommendedTracked ? 0 : -1}
           className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
         >
