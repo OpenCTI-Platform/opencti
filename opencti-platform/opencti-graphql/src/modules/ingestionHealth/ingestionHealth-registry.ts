@@ -11,11 +11,13 @@ export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
 export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
   | typeof HEALTH_CHECK_HEARTBEAT_MISSING;
 
-// The runtime checks among them: adding a runtime check adds its code here, and the type of its value in RuntimeData
-type RuntimeCheckCode = typeof HEALTH_CHECK_HEARTBEAT_MISSING;
-
-// The values read by the runtime checks for one ingestion, by check code
-export type RuntimeData = { [C in RuntimeCheckCode]?: (typeof HEALTH_CHECK_REGISTRY)[C] extends RuntimeCheckDefinition<infer T> ? T : never };
+// The values read by the runtime checks for one ingestion, by check code.
+// Inferred from the registry: the type of each value is the one returned by the getRuntimeData of its check
+type Registry = typeof HEALTH_CHECK_REGISTRY;
+type RuntimeCheckCode = { [C in HealthCheckCode]: Registry[C] extends RuntimeCheckDefinition<any> ? C : never }[HealthCheckCode];
+// The runtime checks of the registry, each with the type of its value: a union when they read different types
+export type RuntimeCheck = Extract<Registry[HealthCheckCode], { kind: IngestionHealthCheckKind.Runtime }>;
+export type RuntimeData = { [C in RuntimeCheckCode]?: Registry[C] extends RuntimeCheckDefinition<infer T> ? T : never };
 
 // The ingestor evaluated: a connector, a feed or a sync
 export interface HealthCheckIngestor {
@@ -72,7 +74,7 @@ export interface RuntimeCheckDefinition<T> extends BaseHealthCheckDefinition {
   getFailure: (value: T | undefined, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
 }
 
-// Given the type of the value in RuntimeData, so that getRuntimeData and getFailure are checked against it
+// The type of the value is inferred from getRuntimeData, so that getFailure is checked against it
 const defineRuntimeCheck = <T>(definition: RuntimeCheckDefinition<T>): RuntimeCheckDefinition<T> => definition;
 
 export type HealthCheckDefinition = ConfigurationCheckDefinition | RuntimeCheckDefinition<any>;
@@ -98,7 +100,9 @@ export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: str
 
 // Kind, severity and message describe the type of check, not one occurrence: they are never stored,
 // so changing them never requires rewriting Elasticsearch.
-export const HEALTH_CHECK_REGISTRY: Record<HealthCheckCode, HealthCheckDefinition> = {
+// Not annotated but checked with satisfies: the annotation would widen every check to HealthCheckDefinition,
+// losing the type of the runtime values that RuntimeData is inferred from
+export const HEALTH_CHECK_REGISTRY = {
   // No user id or name in the message: reading a connector only needs MODULES, its user is reserved to SETTINGS_SETACCESSES
   [HEALTH_CHECK_USER_MISSING]: {
     kind: IngestionHealthCheckKind.Configuration,
@@ -121,4 +125,4 @@ export const HEALTH_CHECK_REGISTRY: Record<HealthCheckCode, HealthCheckDefinitio
     getRuntimeData: redisGetConnectorsHeartbeats,
     getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : {}),
   }),
-};
+} satisfies Record<HealthCheckCode, HealthCheckDefinition>;

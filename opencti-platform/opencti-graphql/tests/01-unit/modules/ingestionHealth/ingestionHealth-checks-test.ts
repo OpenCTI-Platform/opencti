@@ -8,7 +8,12 @@ import {
   toGraphqlHealthChecks,
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
-import { HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_REGISTRY, HEALTH_CHECK_USER_MISSING } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
+import {
+  HEALTH_CHECK_HEARTBEAT_MISSING,
+  HEALTH_CHECK_REGISTRY,
+  HEALTH_CHECK_USER_MISSING,
+  type HealthCheckCode,
+} from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/connector/connector-types';
 import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
@@ -19,8 +24,8 @@ const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
 const CONTEXT = { evaluatedAt: EVALUATED_AT, pingingConnectorsIds: new Set<string>(), isExistingUser: () => true };
 const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} };
 const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
-// Not in the registry: never changes the status
-const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_metadata: {} };
+// Not in the registry (stored by another platform version): never changes the status
+const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK' as HealthCheckCode, health_check_metadata: {} };
 const CONNECTOR = { internal_id: 'connector-id', entity_type: 'Connector' };
 const FEED = { internal_id: 'feed-id', entity_type: 'IngestionRss' };
 const PINGING = { pingingConnectorsIds: new Set([CONNECTOR.internal_id]) };
@@ -66,7 +71,7 @@ describe('computeIngestionHealthPatch', () => {
 
   it('should write the checks but keep since when only the metadata changed', () => {
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    const changedMetadata = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: { log: 'new log' } };
+    const changedMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: { log: 'new log' } };
     const patch = computeIngestionHealthPatch(current, [changedMetadata], CONTEXT);
     expect(patch).toEqual({
       ingestion_health: {

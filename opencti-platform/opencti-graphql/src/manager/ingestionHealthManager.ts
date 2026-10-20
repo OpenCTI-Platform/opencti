@@ -29,7 +29,7 @@ import {
   type GlobalIngestionHealthContext,
   HEALTH_CHECK_REGISTRY,
   type HealthCheckCode,
-  type RuntimeCheckDefinition,
+  type RuntimeCheck,
   type RuntimeData,
 } from '../modules/ingestionHealth/ingestionHealth-registry';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -101,7 +101,7 @@ const loadRuntimeData = async (ingestionIds: string[]): Promise<Map<string, Runt
     return new Map();
   }
   const runtimeChecks = (Object.entries(HEALTH_CHECK_REGISTRY))
-    .filter((entry): entry is [HealthCheckCode, RuntimeCheckDefinition<unknown>] => entry[1].kind === IngestionHealthCheckKind.Runtime);
+    .filter((entry): entry is [HealthCheckCode, RuntimeCheck] => entry[1].kind === IngestionHealthCheckKind.Runtime);
   const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => definition.getRuntimeData()));
   return new Map(ingestionIds.map((ingestionId) => {
     const runtimeData = Object.fromEntries(runtimeChecks.map(([code], index) => [code, valuesByCheck[index].get(ingestionId)]));

@@ -53,7 +53,7 @@ export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, 
   // A code unknown to this platform version has no definition: it cannot change the status
   const healthChecks = checks
     .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code])
-    .filter((definition): definition is HealthCheckDefinition => !!definition);
+    .filter((definition) => !!definition);
   // blocking AND runtime -> critical
   if (healthChecks.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
     && definition.severity === IngestionHealthCheckSeverity.Blocking)) {
