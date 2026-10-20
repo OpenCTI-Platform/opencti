@@ -27,7 +27,9 @@ const RICH_TEXT_BLOCK_TAGS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', '
 const isRichTextHtml = (value: string) => {
   const { body } = new DOMParser().parseFromString(value, 'text/html');
   const nodes = Array.from(body.childNodes).filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent?.trim());
-  return nodes.length > 0 && nodes.every((node) => node instanceof Element && RICH_TEXT_BLOCK_TAGS.has(node.tagName));
+  return nodes.length > 0 && nodes.every((node) => node instanceof Element && RICH_TEXT_BLOCK_TAGS.has(node.tagName)
+    // A markdown wrapper div (GitHub README style) holds text directly; editor divs only hold blocks.
+    && (node.tagName !== 'DIV' || Array.from(node.childNodes).every((child) => child.nodeType !== Node.TEXT_NODE || !child.textContent?.trim())));
 };
 
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {

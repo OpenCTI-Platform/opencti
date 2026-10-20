@@ -85,6 +85,10 @@ describe('Hook: useBuildReadableAttribute', () => {
     const emailAutolink = renderToString(buildReadableAttribute('<analyst@example.com>', { attribute: 'representative.secondary' }) as ReactElement);
     expect(emailAutolink).toContain('href="mailto:analyst@example.com"');
     expect(emailAutolink).toContain('analyst@example.com</a>');
+    // A wrapper div around markdown (GitHub README style) must not be taken for rich text html.
+    const wrapperDiv = renderToString(buildReadableAttribute('<div align="center">\n\n**Bold** and [link](https://x.io)\n\n</div>', { attribute: 'representative.secondary' }) as ReactElement);
+    expect(wrapperDiv).toContain('<strong>Bold</strong>');
+    expect(wrapperDiv).toContain('<a href="https://x.io">link</a>');
   });
   it('should render markdown links as plain text only in tables', () => {
     const { hook } = testRenderHook(() => useBuildReadableAttribute());
