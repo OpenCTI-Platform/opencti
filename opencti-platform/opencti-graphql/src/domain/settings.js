@@ -537,14 +537,13 @@ export const getCriticalAlerts = async (context, user) => {
 // Allowlists of the Settings fields a configuration preset carries. Anything not listed here
 // (credentials, license, providers, theme, branding) never leaves the platform through a preset.
 export const CONFIG_PRESET_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
-export const CONFIG_PRESET_MESSAGES_FIELDS = [
-  'platform_banner_text',
-  'platform_banner_level',
-  'platform_login_message',
-  'platform_consent_message',
-  'platform_consent_confirm_text',
-  'platform_no_access_message',
-];
+// One configuration preset item per message
+export const CONFIG_PRESET_MESSAGES_FIELDS = {
+  banner: ['platform_banner_text', 'platform_banner_level'],
+  login: ['platform_login_message'],
+  consent: ['platform_consent_message', 'platform_consent_confirm_text'],
+  noAccess: ['platform_no_access_message'],
+};
 
 const pickConfigPresetFields = (settings, fields) => Object.fromEntries(fields.map((field) => [field, settings[field] ?? null]));
 
@@ -553,8 +552,9 @@ export const getPlatformConfigPresetConfiguration = async (context) => {
   return pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS);
 };
 
-export const getMessagesConfigPresetConfiguration = async (context) => {
+// The configuration of each message, by message id
+export const getMessagesConfigPresetConfigurations = async (context) => {
   const settings = await getSettingsFromDatabase(context);
-  return pickConfigPresetFields(settings, CONFIG_PRESET_MESSAGES_FIELDS);
+  return Object.fromEntries(Object.entries(CONFIG_PRESET_MESSAGES_FIELDS).map(([id, fields]) => [id, pickConfigPresetFields(settings, fields)]));
 };
 // endregion

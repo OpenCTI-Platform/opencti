@@ -16,10 +16,35 @@ const EXPORT_MUTATION = gql`
   }
 `;
 
+const SETTINGS_QUERY = gql`
+  query ConfigPresetStorageTestSettings {
+    settings {
+      id
+      platform_banner_text
+      platform_login_message
+      platform_consent_message
+      platform_no_access_message
+    }
+  }
+`;
+
+const SETTINGS_EDIT_MUTATION = gql`
+  mutation ConfigPresetStorageTestSettingsEdit($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
+// A message that is not set is not exportable: these are set for the duration of the test
+const MESSAGES_FIELDS = ['platform_banner_text', 'platform_login_message', 'platform_consent_message', 'platform_no_access_message'];
+
 const EXPORT_VARIABLES = {
   selections: [
     { type: 'platform', items: ['platform'] },
-    { type: 'messages', items: ['messages'] },
+    { type: 'messages', items: ['banner', 'login', 'consent', 'noAccess'] },
     { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'] },
   ],
   bundle_name: 'Integration bundle',
@@ -35,14 +60,28 @@ const editorAuthorization = generateBasicAuth(USER_EDITOR.email, USER_EDITOR.pas
 describe('Config preset bundle storage round trip', () => {
   let fileId: string;
   let fileName: string;
+  let settingsId: string;
+  let previousMessages: Record<string, string | null>;
+
+  const patchMessages = async (values: Record<string, string>) => {
+    const input = MESSAGES_FIELDS.map((key) => ({ key, value: [values[key]] }));
+    await queryAsAdminWithSuccess({ query: SETTINGS_EDIT_MUTATION, variables: { id: settingsId, input } });
+  };
 
   beforeAll(async () => {
+    const { data: settingsData } = await queryAsAdminWithSuccess({ query: SETTINGS_QUERY, variables: {} });
+    settingsId = settingsData.settings.id;
+    previousMessages = Object.fromEntries(MESSAGES_FIELDS.map((key) => [key, settingsData.settings[key]]));
+    await patchMessages(Object.fromEntries(MESSAGES_FIELDS.map((key) => [key, `${key} for the export`])));
     const { data } = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: EXPORT_VARIABLES });
     fileId = data.configPresetExport.id;
     fileName = data.configPresetExport.name;
   });
 
   afterAll(async () => {
+    if (settingsId) {
+      await patchMessages(Object.fromEntries(MESSAGES_FIELDS.map((key) => [key, previousMessages[key] ?? ''])));
+    }
     // config_preset/ is not a root cleaned by the test teardown
     if (fileId) {
       await deleteFile(testContext, ADMIN_USER, fileId);
@@ -63,7 +102,10 @@ describe('Config preset bundle storage round trip', () => {
     expect(paths).toEqual([
       'data_model/hidden_entity_types.json',
       'metadata.json',
-      'platform_settings/messages.json',
+      'platform_settings/messages/banner.json',
+      'platform_settings/messages/consent.json',
+      'platform_settings/messages/login.json',
+      'platform_settings/messages/noAccess.json',
       'platform_settings/platform.json',
     ]);
     const metadataFile = directory.files.find((file: { path: string }) => file.path === 'metadata.json');

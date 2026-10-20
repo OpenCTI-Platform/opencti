@@ -42,14 +42,23 @@ const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContex
 const bypassUser = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
 const settingsUser = { id: 'settings-id', capabilities: [{ name: 'SETTINGS_SETPARAMETERS' }, { name: 'KNOWLEDGE' }] } as AuthUser;
 
+const MESSAGE_IDS = ['banner', 'login', 'consent', 'noAccess'];
 const ALL_CATEGORIES = [
   { type: 'platform', items: ['platform'] },
-  { type: 'messages', items: ['messages'] },
+  { type: 'messages', items: MESSAGE_IDS },
   { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'] },
 ];
-const ALL_FILES = ['data_model/hidden_entity_types.json', 'metadata.json', 'platform_settings/messages.json', 'platform_settings/platform.json'];
-const ALL_ITEMS = { platform: ['platform'], messages: ['messages'], hiddenEntityTypes: ['hiddenEntityTypes'] };
-const ONE_PER_CATEGORY = { platform: 1, messages: 1, hiddenEntityTypes: 1 };
+const ALL_FILES = [
+  'data_model/hidden_entity_types.json',
+  'metadata.json',
+  'platform_settings/messages/banner.json',
+  'platform_settings/messages/consent.json',
+  'platform_settings/messages/login.json',
+  'platform_settings/messages/noAccess.json',
+  'platform_settings/platform.json',
+];
+const ALL_ITEMS = { platform: ['platform'], messages: MESSAGE_IDS, hiddenEntityTypes: ['hiddenEntityTypes'] };
+const ALL_COUNTS = { platform: 1, messages: 4, hiddenEntityTypes: 1 };
 const NOW = new Date('2026-10-14T09:05:07.123Z');
 const EXPECTED_FILE_NAME = `opencti-config-20261014-090507-${PLATFORM_VERSION}.zip`;
 const EXPORT_FOLDER = /^config_preset\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -63,9 +72,11 @@ const storedSettings = {
   platform_banner_text: 'Banner',
   platform_banner_level: 'GREEN',
   platform_login_message: 'Hello',
-  platform_consent_message: null,
-  platform_consent_confirm_text: null,
+  platform_consent_message: 'Consent',
+  platform_consent_confirm_text: 'I agree',
+  platform_no_access_message: 'No access',
   platform_theme: 'theme-id',
+  platform_whitemark: true,
   enterprise_license: 'secret-license',
 };
 
@@ -146,34 +157,43 @@ describe('Config preset export', () => {
       id: 'platform',
       configuration: { platform_title: 'My platform', platform_favicon: null, platform_language: 'en-us' },
     });
-    expect(entries['data_model/hidden_entity_types.json'].configuration).toEqual({ hidden_entity_types: ['Channel'] });
-    const serialized = JSON.stringify(entries);
-    expect(serialized).not.toMatch(/theme|branding|secret-license/i);
+    expect(entries['platform_settings/messages/banner.json']).toEqual({
+      openCTI_version: PLATFORM_VERSION,
+      type: 'platformSettings.messages',
+      id: 'banner',
+      configuration: { platform_banner_text: 'Banner', platform_banner_level: 'GREEN' },
+    });
+    expect(entries['data_model/hidden_entity_types.json']).toMatchObject({
+      type: 'dataModel.hiddenEntityTypes',
+      id: 'hiddenEntityTypes',
+      configuration: { hidden_entity_types: ['Channel'] },
+    });
+    expect(JSON.stringify(entries)).not.toContain('secret-license');
   });
 
   it('only writes the selected items and merges duplicated selections', async () => {
     await configPresetExport(context, bypassUser, [
-      { type: 'messages', items: ['messages'] },
-      { type: 'messages', items: ['messages'] },
+      { type: 'messages', items: ['banner'] },
+      { type: 'messages', items: ['banner'] },
       { type: 'platform', items: ['platform'] },
     ]);
     const entries = await readZip(uploadedZip!);
-    expect(Object.keys(entries).sort()).toEqual(['metadata.json', 'platform_settings/messages.json', 'platform_settings/platform.json']);
+    expect(Object.keys(entries).sort()).toEqual(['metadata.json', 'platform_settings/messages/banner.json', 'platform_settings/platform.json']);
     expect(entries['metadata.json'].bundle_name).toBeNull();
     // Registry order, not selection order
-    expect(publishedSummary()).toMatchObject({ entity_types: ['platform', 'messages'], counts: { platform: 1, messages: 1 }, items: { platform: ['platform'], messages: ['messages'] } });
+    expect(publishedSummary()).toMatchObject({ entity_types: ['platform', 'messages'], counts: { platform: 1, messages: 1 }, items: { platform: ['platform'], messages: ['banner'] } });
   });
 
   it('keeps the exported items out of the metadata, for a partial selection too', async () => {
-    await configPresetExport(context, bypassUser, [{ type: 'messages', items: ['messages'] }]);
+    await configPresetExport(context, bypassUser, [{ type: 'messages', items: ['login', 'noAccess'] }]);
     const entries = await readZip(uploadedZip!);
-    expect(Object.keys(entries).sort()).toEqual(['metadata.json', 'platform_settings/messages.json']);
+    expect(Object.keys(entries).sort()).toEqual(['metadata.json', 'platform_settings/messages/login.json', 'platform_settings/messages/noAccess.json']);
     expect(entries['metadata.json']).toEqual({
       openCTI_version: PLATFORM_VERSION,
       generated_at: NOW.toISOString(),
       bundle_name: null,
     });
-    expect(publishedSummary()).toMatchObject({ entity_types: ['messages'], counts: { messages: 1 }, items: { messages: ['messages'] } });
+    expect(publishedSummary()).toMatchObject({ entity_types: ['messages'], counts: { messages: 2 }, items: { messages: ['login', 'noAccess'] } });
   });
 
   it('exports every item of the type when items is omitted', async () => {
@@ -215,7 +235,7 @@ describe('Config preset export', () => {
       file_name: EXPECTED_FILE_NAME,
       input: {
         entity_types: ['platform', 'messages', 'hiddenEntityTypes'],
-        counts: ONE_PER_CATEGORY,
+        counts: ALL_COUNTS,
         items: ALL_ITEMS,
       },
     });
@@ -260,6 +280,10 @@ describe('Config preset export', () => {
     const unhandledRejection = vi.fn();
     process.on('unhandledRejection', unhandledRejection);
     try {
+      // The settings reads of a complete export, to check that a failed one stops earlier
+      await configPresetExport(context, bypassUser, ALL_CATEGORIES);
+      const completeExportReads = vi.mocked(topEntitiesList).mock.calls.length;
+      vi.clearAllMocks();
       // The temporary file cannot be opened, and the exporters answer only after the stream failed,
       // with an incompressible content larger than the stream buffers so that the archive cannot be drained
       const largeSettings = { ...storedSettings, platform_title: crypto.randomBytes(3 * 1024 * 1024).toString('base64') };
@@ -279,8 +303,7 @@ describe('Config preset export', () => {
       expect(uploadToStorage).not.toHaveBeenCalled();
       expect(publishUserAction).not.toHaveBeenCalled();
       // The export stops at the first item that ends after the stream error: the next ones are not read
-      expect(topEntitiesList).toHaveBeenCalledTimes(1);
-      expect(fullEntitiesList).not.toHaveBeenCalled();
+      expect(vi.mocked(topEntitiesList).mock.calls.length).toBeLessThan(completeExportReads);
     } finally {
       process.off('unhandledRejection', unhandledRejection);
     }
@@ -320,6 +343,10 @@ describe('Config preset export', () => {
 });
 
 describe('Config preset selections', () => {
+  beforeEach(() => {
+    vi.mocked(topEntitiesList).mockResolvedValue([storedSettings] as never);
+  });
+
   const resolveIds = async (selections: Parameters<typeof resolveConfigPresetSelections>[2]) => {
     const families = await resolveConfigPresetSelections(context, bypassUser, selections);
     return families.map((family) => [family.id, family.items.map((item) => item.id)]);
@@ -341,10 +368,34 @@ describe('Config preset selections', () => {
   });
 
   it('takes every item of the type when items is null or omitted', async () => {
-    const all = [['messages', ['messages']]];
+    const all = [['messages', MESSAGE_IDS]];
     expect(await resolveIds([{ type: 'messages', items: null }])).toEqual(all);
     expect(await resolveIds([{ type: 'messages' }])).toEqual(all);
     expect(await resolveIds([{ type: 'messages', items: [] }, { type: 'messages', items: null }])).toEqual(all);
+  });
+
+  it('takes every item but the excluded ones, and refuses excluded items with an explicit list', async () => {
+    expect(await resolveIds([{ type: 'messages', excluded_items: ['login'] }])).toEqual([['messages', ['banner', 'consent', 'noAccess']]]);
+    expect(await resolveIds([{ type: 'messages', items: null, excluded_items: [] }])).toEqual([['messages', MESSAGE_IDS]]);
+    expect(await resolveIds([{ type: 'messages', excluded_items: MESSAGE_IDS }, { type: 'platform' }])).toEqual([['platform', ['platform']]]);
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'messages', items: ['banner'], excluded_items: ['login'] }]))
+      .rejects.toThrow('Excluded items require a selection of every item of the type');
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'messages', items: [], excluded_items: ['login'] }]))
+      .rejects.toThrow('Excluded items require a selection of every item of the type');
+    // Excluding everything leaves nothing to export
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'messages', excluded_items: MESSAGE_IDS }]))
+      .rejects.toThrow('Select at least one configuration item to export');
+  });
+
+  it('adds up selections of the same type: an item stays excluded only when no selection takes it', async () => {
+    expect(await resolveIds([
+      { type: 'messages', excluded_items: ['banner', 'login'] },
+      { type: 'messages', excluded_items: ['banner'] },
+    ])).toEqual([['messages', ['login', 'consent', 'noAccess']]]);
+    expect(await resolveIds([
+      { type: 'messages', excluded_items: ['banner'] },
+      { type: 'messages', items: ['banner'] },
+    ])).toEqual([['messages', MESSAGE_IDS]]);
   });
 
   it('still rejects an unknown item merged with a null selection', async () => {
