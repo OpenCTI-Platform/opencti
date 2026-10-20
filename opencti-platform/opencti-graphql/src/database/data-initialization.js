@@ -39,7 +39,7 @@ export const TAXII_CAPABILITIES = {
   ],
 };
 // Sibling of KNUPDATE on purpose: capabilities are matched by name inclusion, a child of KNUPDATE would imply it.
-export const FORM_INTAKE_CAPABILITY = { name: KNOWLEDGE_FORM_INTAKE, description: 'Create knowledge via Form Intake', attribute_order: 350 };
+export const FORM_INTAKE_CAPABILITY = { name: KNOWLEDGE_FORM_INTAKE, description: 'Create knowledge via Form Intake', attribute_order: 170 };
 export const SHARE_FILTERS_CAPABILITY = { name: KNOWLEDGE_SHARE_FILTERS, description: 'Share filters', attribute_order: 950 };
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,
@@ -48,6 +48,7 @@ const KNOWLEDGE_CAPABILITIES = {
   dependencies: [
     { name: KNOWLEDGE_COLLABORATION, description: 'Access to collaborative creation', attribute_order: 150 },
     { name: KNOWLEDGE_FRONTEND_EXPORT, description: 'Can use web interface export functions (PDF, PNG, etc.)', attribute_order: 160 },
+    FORM_INTAKE_CAPABILITY,
     {
       name: KNOWLEDGE_UPDATE,
       description: 'Create / Update knowledge',
@@ -61,7 +62,6 @@ const KNOWLEDGE_CAPABILITIES = {
         { name: 'KNBYPASSFIELDS', description: 'Bypass mandatory fields', attribute_order: 330 },
       ],
     },
-    FORM_INTAKE_CAPABILITY,
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
     { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
     {
