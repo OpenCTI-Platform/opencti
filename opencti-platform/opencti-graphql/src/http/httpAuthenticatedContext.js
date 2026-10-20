@@ -23,7 +23,7 @@ import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_US
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
 import { batchConnectorCatalogIdentities } from '../domain/connector-catalog-identity';
-import { computeConnectorsUpdateStatus } from '../database/repository';
+import { computeConnectorsUpdateStatus } from '../modules/connector/connector-domain';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders

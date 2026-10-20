@@ -1,4 +1,4 @@
-import React, { FunctionComponent, MutableRefObject, useCallback, useEffect, useRef } from 'react';
+import React, { FunctionComponent, MutableRefObject, useEffect, useRef } from 'react';
 import { SimplePaletteColorOptions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -27,26 +27,13 @@ interface LassoSelectionProps {
   graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
 }
 
-interface Coord {
-  x: number;
-  y: number;
-}
+type LassoContext = CanvasRenderingContext2D & { reset: () => void };
 
-interface ContextHandlerProps {
-  ctx?: CanvasRenderingContext2D | null;
-  coord?: Coord;
-  freeHand?: boolean;
-  freePathCoords?: Coord[];
-  selectedNodes?: Set<GraphNode>;
-  graphDataNodes?: GraphNode[];
-  canvas?: HTMLCanvasElement;
-  theme?: Theme;
-  setSelectedNodes?: (nodes: Set<GraphNode>) => void;
-  activated?: boolean;
-  storeFreeSelectionFunction?: (event: MouseEvent) => void;
-  graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
-}
-
+/**
+ * Lasso selection: the left-button path drawn over the canvas selects the nodes it encloses.
+ * The gesture outlives the renders of the graph (hover, cards, panels): its state and the latest
+ * props are kept in references, and the document listeners are registered once while the tool is on.
+ */
 const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   width,
   height,
@@ -58,111 +45,84 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const lassoRef = useRef<HTMLCanvasElement>(null);
-
-  const currentContext = lassoRef.current?.getContext('2d') as CanvasRenderingContext2D & { reset: () => void };
-
-  const contextHandler = useRef<ContextHandlerProps>({});
-
-  const reposition = (event: MouseEvent) => {
-    const { left, top } = lassoRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
-    return { x: event.pageX - left, y: event.pageY - top };
-  };
-
-  let freeHand = false;
-  let coord = { x: 0, y: 0 };
-  let freePathCoords: number[][] = [];
-  const selectedNodes = new Set<GraphNode>();
-
-  const startFreeHand = (e: MouseEvent, mouseMoveFunction: (e: MouseEvent) => void) => {
-    if ((e.target as HTMLDivElement)?.tagName !== 'CANVAS' || !currentContext) {
-      return;
-    }
-    if (e.button === 2) {
-      document.removeEventListener('mousemove', mouseMoveFunction);
-      return;
-    }
-    document.addEventListener('mousemove', mouseMoveFunction);
-    freeHand = true;
-    coord = reposition(e);
-    currentContext.moveTo(coord.x, coord.y);
-    currentContext.lineWidth = 1;
-    currentContext.setLineDash([1, 3]);
-    currentContext.lineCap = 'round';
-    currentContext.strokeStyle = (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
-    currentContext.beginPath();
-  };
-
-  const stopFreeHand = (e: MouseEvent, mouseMoveFunction: (e: MouseEvent) => void) => {
-    if ((e.target as HTMLDivElement)?.tagName !== 'CANVAS' || !currentContext) {
-      return;
-    }
-    document.removeEventListener('mousemove', mouseMoveFunction);
-    freeHand = false;
-    currentContext.closePath();
-    selectedNodes.clear();
-    graphDataNodes?.forEach((g) => {
-      if (pointInPolygon(freePathCoords, [g.x, g.y])) {
-        selectedNodes.add(g);
-      }
-    });
-    freePathCoords = [];
-    currentContext.setLineDash([]);
-    currentContext.reset();
-    setSelectedNodes(selectedNodes);
-  };
-
-  const storeFreeSelection = (e: MouseEvent) => {
-    if (freeHand && activated && graph.current) {
-      coord = reposition(e);
-      currentContext.lineTo(coord.x, coord.y);
-      const { left, top } = lassoRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
-      const coords: Coord = graph.current.screen2GraphCoords(e.pageX - left, e.pageY - top);
-      freePathCoords.push([coords.x, coords.y]);
-      currentContext.stroke();
-    }
-  };
-
-  const storeFreeSelectionFunction = useCallback((event: MouseEvent) => {
-    storeFreeSelection(event);
-  }, [graph, activated, graphDataNodes]);
-  const stopFreeHandFunction = useCallback((event: MouseEvent) => {
-    stopFreeHand(event, storeFreeSelectionFunction);
-  }, [graph, activated, graphDataNodes]);
-  const startFreeHandFunction = useCallback((event: MouseEvent) => {
-    startFreeHand(event, storeFreeSelectionFunction);
-  }, [graph, activated, graphDataNodes]);
+  const gesture = useRef<{ freeHand: boolean; path: number[][] }>({ freeHand: false, path: [] });
+  const latest = useRef({ graphDataNodes, setSelectedNodes, theme });
+  latest.current = { graphDataNodes, setSelectedNodes, theme };
 
   useEffect(() => {
-    if (lassoRef.current) {
-      contextHandler.current = {
-        ctx: currentContext,
-        coord: { x: 0, y: 0 },
-        freeHand: false,
-        freePathCoords: [],
-        selectedNodes: new Set(),
-        graphDataNodes,
-        canvas: lassoRef.current,
-        theme,
-        setSelectedNodes,
-        activated,
-        storeFreeSelectionFunction,
-        graph,
-      };
-    }
-    if (activated) {
-      document.addEventListener('mousedown', startFreeHandFunction);
-      document.addEventListener('mouseup', stopFreeHandFunction);
-    } else {
-      document.removeEventListener('mousedown', startFreeHandFunction);
-      document.removeEventListener('mouseup', stopFreeHandFunction);
-      document.removeEventListener('mousemove', storeFreeSelectionFunction);
-    }
-    return () => {
-      document.removeEventListener('mousedown', startFreeHandFunction);
-      document.removeEventListener('mouseup', stopFreeHandFunction);
-      document.removeEventListener('mousemove', storeFreeSelectionFunction);
+    if (!activated) return undefined;
+    const lassoContext = () => lassoRef.current?.getContext('2d') as LassoContext | null | undefined;
+    // The canvas box and the pointer, both in viewport coordinates: a scrolled page offsets neither.
+    const reposition = (event: MouseEvent) => {
+      const { left, top } = lassoRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
+      return { x: event.clientX - left, y: event.clientY - top };
     };
-  }, [activated, graphDataNodes, graph]);
+    // The canvases of this graph, the drawing and its overlays, share the parent of this one.
+    const isGraphCanvas = (target: EventTarget | null) => target instanceof HTMLCanvasElement
+      && !!lassoRef.current?.parentElement?.contains(target);
+
+    const onMove = (event: MouseEvent) => {
+      const ctx = lassoContext();
+      if (!gesture.current.freeHand || !graph.current || !ctx) return;
+      const coord = reposition(event);
+      ctx.lineTo(coord.x, coord.y);
+      const coords = graph.current.screen2GraphCoords(coord.x, coord.y);
+      gesture.current.path.push([coords.x, coords.y]);
+      ctx.stroke();
+    };
+
+    const onDown = (event: MouseEvent) => {
+      const ctx = lassoContext();
+      if (!isGraphCanvas(event.target) || !ctx) {
+        return;
+      }
+      if (event.button !== 0) {
+        document.removeEventListener('mousemove', onMove);
+        return;
+      }
+      document.addEventListener('mousemove', onMove);
+      gesture.current.freeHand = true;
+      const coord = reposition(event);
+      // The path starts where the button is pressed, not at the first move reported after it.
+      const origin = graph.current?.screen2GraphCoords(coord.x, coord.y);
+      gesture.current.path = origin ? [[origin.x, origin.y]] : [];
+      ctx.lineWidth = 1;
+      ctx.setLineDash([1, 3]);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = (latest.current.theme.palette.warning as SimplePaletteColorOptions)?.main ?? latest.current.theme.palette.common.white;
+      ctx.beginPath();
+      ctx.moveTo(coord.x, coord.y);
+    };
+
+    // The path is followed over the whole document: the gesture ends wherever the button is released,
+    // and closes from the release point, however far the last move reported lies from it.
+    const onUp = (event: MouseEvent) => {
+      if (!gesture.current.freeHand) return;
+      document.removeEventListener('mousemove', onMove);
+      gesture.current.freeHand = false;
+      const { path } = gesture.current;
+      gesture.current.path = [];
+      const coord = reposition(event);
+      const release = graph.current?.screen2GraphCoords(coord.x, coord.y);
+      if (release) path.push([release.x, release.y]);
+      const ctx = lassoContext();
+      if (!ctx) return;
+      ctx.closePath();
+      const selectedNodes = new Set(latest.current.graphDataNodes.filter((node) => pointInPolygon(path, [node.x, node.y])));
+      ctx.setLineDash([]);
+      ctx.reset();
+      latest.current.setSelectedNodes(selectedNodes);
+    };
+
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('mouseup', onUp);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMove);
+      gesture.current.freeHand = false;
+    };
+  }, [activated, graph]);
 
   return (
     <canvas

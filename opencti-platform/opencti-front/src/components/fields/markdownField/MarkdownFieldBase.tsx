@@ -243,6 +243,13 @@ const MarkdownFieldBase = ({
           }
         }}
         generateMarkdownPreview={(markdown) => Promise.resolve(
+          // Preview mode is read-only Markdown rendering, not an interactive
+          // control: onMouseUp here only captures a mouse text-selection so
+          // callers relying on `onSelect` still work in preview mode too
+          // (e.g. StixCoreObjectMappableContent.tsx), since the native
+          // `select` event only fires on form elements (the write-mode
+          // textarea), not on a generic rendered `<div>`.
+          // eslint-disable-next-line jsx-a11y/no-static-element-interactions
           <div onMouseUp={() => internalOnSelect()}>
             <MarkdownDisplay
               content={markdown}

@@ -1,0 +1,35 @@
+import type { DashboardVariableType } from '../dashboard-types';
+import type { FilterSearchContext } from '../../../utils/filters/filtersUtils';
+
+// Variable types whose values are entity ids: their labels are resolved through the filters representatives.
+export const ID_VARIABLE_TYPES: readonly DashboardVariableType[] = ['entity', 'label', 'marking', 'user', 'group', 'status', 'killChainPhase'];
+
+export const isIdVariableType = (type: DashboardVariableType) => ID_VARIABLE_TYPES.includes(type);
+
+/**
+ * Label of a kill chain phase, `[kill chain name] phase name` as in the options of the search. The representatives
+ * of a phase only carry its name: a label that already starts with a kill chain is left as is.
+ */
+export const formatKillChainPhaseLabel = (phaseName: string, killChainName: string | undefined) => (
+  !killChainName || phaseName.startsWith('[') ? phaseName : `[${killChainName}] ${phaseName}`
+);
+
+// The schema keys below (objectLabel, objectMarking, workflow_id) are Stix-Core-Object keys.
+export const VARIABLE_SEARCH_CONTEXT: FilterSearchContext = { entityTypes: ['Stix-Core-Object'] };
+
+/**
+ * Filter key handed to `useSearchEntities` to list the candidate values of a variable type.
+ * Each key is checked in variableTypeSearch.test.tsx against the back filter keys schema and the query it runs.
+ * `members_user`, `members_group`, `id` and `entity_type` have a search of their own in `useSearchEntities`:
+ * every platform user / group, every entity of the search scope, every type of the schema.
+ * A kill chain phase has a search of its own, scoped to the kill chain of the variable (ValueInputs/useKillChainPhaseSearch.ts).
+ */
+export const VARIABLE_TYPE_SEARCH: Partial<Record<DashboardVariableType, string>> = {
+  entity: 'id',
+  label: 'objectLabel',
+  marking: 'objectMarking',
+  user: 'members_user',
+  group: 'members_group',
+  status: 'workflow_id',
+  entityType: 'entity_type',
+};

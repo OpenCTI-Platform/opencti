@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { getConnectorMetadata, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
 import ConnectorsLogos, { connectorsLogosQuery } from '@components/data/connectors/ConnectorsLogos';
 import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
@@ -449,8 +450,9 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             <div className={classes.bodyItem}>
                               {n(connector.messages)}
                             </div>
-                            <div className={classes.bodyItem}>
+                            <div className={classes.bodyItem} style={{ gap: 4 }}>
                               <ConnectorStatusChip connector={connector} />
+                              <IngestionHealthChip ingestionHealth={connector.ingestionHealth} />
                             </div>
                             <div className={classes.bodyItem}>
                               <span className={classes.bodyItemText}>

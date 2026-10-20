@@ -5,6 +5,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { catalogIdentityHint, isSameConnectorName } from '@components/data/connectors/utils/connectorCatalogIdentity';
@@ -257,6 +258,9 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
           <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
             {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
             {statusChip}
+            {item.kind !== 'form' && (
+              <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
+            )}
           </Stack>
         </Stack>
       </Card>
