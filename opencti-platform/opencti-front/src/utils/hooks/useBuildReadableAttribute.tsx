@@ -35,28 +35,25 @@ const isRichTextHtml = (value: string) => {
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
   let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
 
-  if (attributeType === 'html') {
+  if (attributeType === 'html' || attributeType === 'markdown') {
+    const html = attributeType === 'markdown'
+      ? marked.parse(value, {
+        async: false,
+        breaks: true,
+        walkTokens: (token) => {
+          if (token.type === 'text' && inTable) {
+            token.text = stringWithZeroWidthSpace(token.text);
+          }
+        },
+      })
+      : value;
     // !! Don't remove the call to sanitize, it's important to secure the call to dangerouslySetInnerHTML !!
-    const stringHtml = DOMPurify.sanitize(value, inTable ? { FORBID_TAGS: ['a'] } : undefined);
+    // In tables, the only link wanted is the one to the entity page: other links
+    // (markdown, auto-detected like www.example.com, or raw HTML) are unwrapped, their text is kept.
+    const stringHtml = DOMPurify.sanitize(html, inTable ? { FORBID_TAGS: ['a'] } : undefined);
     value = <div dangerouslySetInnerHTML={{ __html: stringHtml }} />;
   } else if (attributeType === 'date') {
     value = dateFormat(new Date(value)) ?? '';
-  } else if (attributeType === 'markdown') {
-    const mark = marked.parse(value, {
-      async: false,
-      breaks: true,
-      walkTokens: (token) => {
-        if (token.type === 'text' && inTable) {
-          token.text = stringWithZeroWidthSpace(token.text);
-        }
-      },
-    });
-    // !! Don't remove the call to sanitize, it's important to secure the call to dangerouslySetInnerHTML !!
-    // We sanitize the given html above.
-    // In tables, the only link wanted is the one to the entity page: other links
-    // (markdown, auto-detected like www.example.com, or raw HTML) are unwrapped, their text is kept.
-    const stringHtml = DOMPurify.sanitize(mark, inTable ? { FORBID_TAGS: ['a'] } : undefined);
-    value = <div dangerouslySetInnerHTML={{ __html: stringHtml }} />;
   } else if (inTable) {
     value = stringWithZeroWidthSpace(value);
   }
