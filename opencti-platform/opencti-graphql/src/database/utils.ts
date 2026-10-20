@@ -370,7 +370,10 @@ export const runFunctionAsLongRunning = async (
     const currentAsyncCall = await redisGetAsyncCall(executionId);
     // If a call was already processed and is finished, return true
     if (currentAsyncCall && currentAsyncCall !== '0') {
-      await lock?.unlock();
+      // Released once: the catch below must not unlock this handle again
+      const heldLock = lock;
+      lock = undefined;
+      await heldLock?.unlock();
       return true;
     } else {
       // Otherwise, it means that either the rule apply wasn't started yet, or the node processing it went down and that the call couldn't finish.
@@ -383,8 +386,19 @@ export const runFunctionAsLongRunning = async (
         } catch (err: any) {
           logApp.error('[OPENCTI] Error during function run', { cause: err });
         }
-        await redisFinishAsyncCall(executionId);
-        await lock?.unlock();
+        try {
+          await redisFinishAsyncCall(executionId);
+        } catch (err: any) {
+          // Once the call has returned (timeout), nobody else would see this failure
+          logApp.warn('[OPENCTI] Unable to record the end of a long running call', { cause: err, executionId });
+          throw err;
+        } finally {
+          // A lock left behind would block every execution sharing the lock id until the process stops.
+          // Released once: with the child lock process, a second unlock of the same handle never gets an answer.
+          const heldLock = lock;
+          lock = undefined;
+          await heldLock?.unlock();
+        }
       };
       const fullRuleApplyPromise = fullFunctionRun();
       const raceResult = await Promise.race([fullRuleApplyPromise, timeoutPromise]) as { timeout?: boolean };
