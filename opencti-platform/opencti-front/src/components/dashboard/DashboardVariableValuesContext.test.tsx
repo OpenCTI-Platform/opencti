@@ -1,38 +1,39 @@
-import { describe, expect, it, vi } from 'vitest';
+import React from 'react';
+import { describe, expect, it } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type { DashboardVariable } from './dashboard-types';
-import { useDashboardDefaultVariableValues } from './DashboardVariableValuesContext';
+import { DashboardVariableValuesProvider, useDashboardDateVariableIds, useDashboardVariableValues } from './DashboardVariableValuesContext';
 
-let enabledFlags: string[] = [];
-vi.mock('../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (flag: string) => enabledFlags.includes(flag) }),
-}));
-
-const variables = [
-  { id: 'v1', name: 'Sector', type: 'text', restriction: { mode: 'none' }, defaultValue: 'energy' },
-] as DashboardVariable[];
-
-describe('useDashboardDefaultVariableValues', () => {
-  it('provides the default values when the feature flag is enabled', () => {
-    enabledFlags = ['DASHBOARD_VARIABLES'];
-    const { result } = renderHook(() => useDashboardDefaultVariableValues(variables));
-    expect(result.current).toEqual(new Map([['v1', 'energy']]));
+describe('useDashboardVariableValues', () => {
+  it('reads the values given to the provider', () => {
+    const values = new Map([['v1', 'energy']]);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <DashboardVariableValuesProvider values={values}>{children}</DashboardVariableValuesProvider>
+    );
+    const { result } = renderHook(() => useDashboardVariableValues(), { wrapper });
+    expect(result.current).toBe(values);
   });
 
-  it('provides no value when the feature flag is disabled', () => {
-    enabledFlags = [];
-    const { result } = renderHook(() => useDashboardDefaultVariableValues(variables));
+  it('is an empty map without provider', () => {
+    const { result } = renderHook(() => useDashboardVariableValues());
     expect(result.current.size).toEqual(0);
   });
-  it('keeps the same values while the variables content does not change', () => {
-    enabledFlags = ['DASHBOARD_VARIABLES'];
-    const { result, rerender } = renderHook(({ list }) => useDashboardDefaultVariableValues(list), { initialProps: { list: variables } });
-    const first = result.current;
-    // A manifest save gives a new array with the same content: widgets must not all re-resolve
-    rerender({ list: variables.map((v) => ({ ...v })) });
-    expect(result.current).toBe(first);
-    rerender({ list: [{ ...variables[0], defaultValue: 'finance' }] as DashboardVariable[] });
-    expect(result.current).not.toBe(first);
-    expect(result.current.get('v1')).toEqual('finance');
+});
+
+describe('useDashboardDateVariableIds', () => {
+  it('reads the date variable ids given to the provider', () => {
+    const dateVariableIds = new Set(['v1']);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <DashboardVariableValuesProvider values={new Map()} dateVariableIds={dateVariableIds}>{children}</DashboardVariableValuesProvider>
+    );
+    const { result } = renderHook(() => useDashboardDateVariableIds(), { wrapper });
+    expect(result.current).toBe(dateVariableIds);
+  });
+
+  it('is empty without provider, or when the provider is given none', () => {
+    expect(renderHook(() => useDashboardDateVariableIds()).result.current.size).toEqual(0);
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <DashboardVariableValuesProvider values={new Map()}>{children}</DashboardVariableValuesProvider>
+    );
+    expect(renderHook(() => useDashboardDateVariableIds(), { wrapper }).result.current.size).toEqual(0);
   });
 });
