@@ -137,7 +137,6 @@ export default defineConfig({
     {
       name: 'workflow e2e (2)',
       testMatch: [
-        'drafts/draftsList.spec.ts',
         'drafts/threatAdvisoryOrgSharingRetry.spec.ts',
       ],
       use: {
@@ -183,7 +182,6 @@ export default defineConfig({
         'workflow/threatAdvisoryWorkflowSetup.spec.ts',
         'workflow/threatAdvisoryTeardown.spec.ts',
         'formIntake/threatAdvisorySetup.spec.ts',
-        'drafts/draftsList.spec.ts',
         'drafts/threatAdvisoryHappyFlow.spec.ts',
         'drafts/threatAdvisoryOrgSharingRetry.spec.ts',
         'drafts/threatAdvisoryRejectionByAnalystOrgC.spec.ts',

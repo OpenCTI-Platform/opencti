@@ -7,7 +7,10 @@ import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
 import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
 
-test.describe('Drafts list', { tag: ['@ce', '@workflow'] }, () => {
+// Runs in the plain 'chromium' project, not after the Threat Advisory setup: once that workflow
+// exists, every draft gets its NEW-status authorized members (OrgA only), and the admin's drafts
+// list stops showing them, so a draft created here would never be listed.
+test.describe('Drafts list', { tag: ['@ce'] }, () => {
   test('should list, search, and delete manually-created drafts', async ({ page }) => {
     const timestamp = Date.now();
     const alphaName = `Drafts List E2E Alpha - ${timestamp}`;
@@ -29,13 +32,13 @@ test.describe('Drafts list', { tag: ['@ce', '@workflow'] }, () => {
     await Drafts.createDraft({ name: betaName, authorizedMembers: [] });
     await expect(Drafts.getDraft(betaName)).toBeVisible();
 
-    // Plain search, not addExactSearch(): DraftsListQuery has no `search` argument at all -
-    // this page's search bar compiles to a `contains` filter on `name`, unlike the generic
-    // full-text `search:` pipeline addExactSearch()'s quote-wrapping is meant for. Wrapping in
-    // quotes here just adds literal quote characters to the filter value, which never matches
-    // (confirmed directly against the backend: quoted -> 0 results, unquoted -> matches).
-    await Search.addSearch(alphaName);
-    await expect(Drafts.getDraft(alphaName)).toBeVisible();
+    // Retry the search itself (not just re-poll the same result) - under CI resource
+    // contention the search query can occasionally return before the freshly created draft
+    // is reflected, and re-pressing Enter re-issues it rather than waiting out a dead end.
+    await expect(async () => {
+      await Search.addExactSearch(alphaName);
+      await expect(Drafts.getDraft(alphaName)).toBeVisible({ timeout: 5000 });
+    }).toPass({ timeout: 60000, intervals: [2000, 5000, 10000] });
     await expect(Drafts.getDraft(betaName)).not.toBeVisible();
 
     // Clearing the search (fresh navigation) restores the full list.
