@@ -222,7 +222,8 @@ const Stream = () => {
               <FilterIconButton
                 filters={deserializedFilters}
                 variant="small"
-                entityTypes={['Stix-Filtering']}
+                // as the stream edition form, so that a custom field filter is shown with its label
+                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
               />
             )
           : EMPTY_VALUE;

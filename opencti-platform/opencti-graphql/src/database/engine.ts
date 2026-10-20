@@ -1055,7 +1055,7 @@ export const elIndexGetAlias = async (indexName: string): Promise<any> => {
   return oebp(r_1);
 };
 export const elPlatformIndices = async (): Promise<any> => {
-  const args = { index: `${ES_INDEX_PREFIX}*`, format: 'JSON' };
+  const args = { index: `${ES_INDEX_PREFIX}*`, format: 'json' as const };
   if (engine instanceof ElkClient) {
     const r = await engine.cat.indices(args);
     return oebp(r);
@@ -1086,7 +1086,7 @@ export const elIndexSetting = async (index: any): Promise<{ settings: any; rollo
   return { settings, rollover_alias };
 };
 export const elPlatformTemplates = async (): Promise<any[]> => {
-  const args = { name: `${ES_INDEX_PREFIX}*`, format: 'JSON' };
+  const args = { name: `${ES_INDEX_PREFIX}*`, format: 'json' as const };
   if (engine instanceof ElkClient) {
     const r = await engine.cat.templates(args);
     return oebp(r);
@@ -2171,7 +2171,7 @@ const buildFieldForScriptQuery = (field: string) => {
 export const buildLocalMustFilter = (validFilter: any) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
-  const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
+  const { key, values, nested, negateNested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
   if (isEmptyField(key)) {
     throw FunctionalError('A filter key must be defined', { key });
   }
@@ -2287,6 +2287,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
         },
       },
     };
+    // A document without any nested element must also match a negated filter
+    if (negateNested) {
+      return { bool: { must_not: [{ nested: nestedQuery }] } };
+    }
     return { nested: nestedQuery };
   }
   // 02. Handle nil and not_nil operators

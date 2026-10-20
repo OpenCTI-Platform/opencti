@@ -1,6 +1,6 @@
 import { v5 as uuidv5 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import type { BasicStoreEntity } from '../../types/store';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { elRawSearch } from '../../database/engine';

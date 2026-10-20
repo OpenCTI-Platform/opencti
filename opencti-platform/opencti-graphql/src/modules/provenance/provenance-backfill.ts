@@ -21,7 +21,7 @@ import { RULE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import { internalFindByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
 import { findByManagerId } from '../managerConfiguration/managerConfiguration-domain';

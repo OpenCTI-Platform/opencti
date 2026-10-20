@@ -3,6 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { DecayRuleAddInput, EditInput, KnowledgeDecayRuleAddInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
+import { booleanTrueFilter } from '../../utils/filtering/filtering-utils';
 import {
   ATTRIBUTE_FRESHNESS_CONFIGURED_AT,
   type BasicStoreEntityDecayRule,
@@ -429,13 +430,7 @@ export const BUILT_IN_DECAY_RULES = [
  * @param user
  */
 export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
-  const args = {
-    filters: {
-      mode: 'and' as FilterMode,
-      filters: [{ key: ['built_in'], values: [true] }],
-      filterGroups: [],
-    },
-  };
+  const args = { filters: booleanTrueFilter('built_in') };
   const currentBuiltInDecayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
   if (!currentBuiltInDecayRules.some((rule) => !isKnowledgeDecayRule(rule))) {
     // no built-in indicator decay rule, we should create the default ones

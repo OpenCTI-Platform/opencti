@@ -34,7 +34,7 @@ describe('Component: FilterGroupChipButton', () => {
   it('calls onClick when clicked', () => {
     const onClick = vi.fn();
     testRender(<FilterGroupChipButton filterGroup={buildGroup()} isOpen={false} onClick={onClick} />);
-    fireEvent.click(screen.getByTestId('filter-group-chip-group-1'));
+    fireEvent.click(screen.getByRole('button', { name: '3 rules' }));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 });

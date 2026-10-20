@@ -1,6 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
+import { GraphQLError } from 'graphql';
 import Bluebird, { Promise as BluePromise } from 'bluebird';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -25,7 +26,7 @@ import {
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
-import { cleanupEntityWorkflow, initializeEntityWorkflow } from '../modules/workflow/domain/workflow-domain';
+import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -219,7 +220,17 @@ import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/ups
 import { computeCreationProvenance, recordUpsertProvenance, removeProvenanceInputs } from '../modules/provenance/provenance-write';
 import { creationProceduresBuilder, mergeProvenanceOnEntitiesMerge, prepareUpsertProvenance } from '../modules/provenance/provenance-upsert';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
-import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  confidence,
+  customFieldValues,
+  iAliasedIds,
+  iAttributes,
+  modified,
+  type RefAttribute,
+  updatedAt,
+} from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -286,7 +297,10 @@ import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
-  normalizeCustomFieldValuesDates,
+  foldCustomFieldValuesInputs,
+  isCustomFieldOptionsRemove,
+  mergeCustomFieldValues,
+  normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
@@ -1411,7 +1425,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           // `field_id` is a stable per-entry identifier used by nested object attributes that don't
           // have a plain `id` (e.g. custom_field_values), allowing a precise removal that is recomputed
           // against the live value at apply time instead of a stale pre-computed snapshot.
-          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c)));
+          const isRemoved = (c: any) => toRemove.some((r) => (r.id !== undefined && r.id === c.id)
+            || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c));
+          const newValues = current.filter((c) => !isRemoved(c));
           patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
@@ -1871,7 +1887,13 @@ const mergeEntitiesRaw = async (
     const sourceFieldValue = (takenFrom as Record<string, any>)[targetFieldKey];
     const fieldValues = R.flatten((sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isObjectAttribute(targetFieldKey)) {
+    if (targetFieldKey === customFieldValues.name) {
+      // Custom fields are merged one by one as standard attributes, not appended as a list of objects
+      if (fieldValues.length > 0) {
+        const sourcesCustomFieldValues = (sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey]);
+        updateAttributes.push({ key: targetFieldKey, value: mergeCustomFieldValues(mergedEntityCurrentFieldValue, sourcesCustomFieldValues) });
+      }
+    } else if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
       const isObjectMultiple = isMultipleAttribute(targetType, targetFieldKey);
       if (isObjectMultiple) {
@@ -2517,7 +2539,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   initial: T,
   inputs: EditInput[],
   opts: UpdateAttributeMetaResolvedOpts = {},
-): Promise<{ element: T; event?: UpdateEvent | null; isCreation?: boolean }> => {
+): Promise<{ element: T; event?: UpdateEvent | null; isCreation?: boolean; workflowStatusChanged?: boolean }> => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -2955,7 +2977,8 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage as BasicStoreBase);
       }
       // endregion
-      return { element: updatedInstance as T, event, isCreation: false };
+      const workflowStatusChanged = updatedInputs.some((input) => input.key === X_WORKFLOW_ID);
+      return { element: updatedInstance as T, event, isCreation: false, workflowStatusChanged };
     }
     // Return updated element after waiting for it.
     return { element: updatedInstance as T, event: null, isCreation: false };
@@ -3008,7 +3031,10 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
+  // Set by the workflow projection so its own write is not synced back as an external write
+  workflowInternalWrite?: boolean;
+};
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -3025,17 +3051,24 @@ export const updateAttribute = async <T extends StoreObject>(
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
   // Validate custom field values against their definitions (mandatory / min-max / select options)
-  if (inputs.filter((input) => input.key === 'custom_field_values').length > 1) {
-    throw FunctionalError('Only one custom_field_values input is allowed', { id, type });
-  }
   let finalInputs = inputs;
-  const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
-  if (customFieldValuesInput) {
+  const customFieldValuesInputs = inputs.filter((inputData) => inputData.key === customFieldValues.name);
+  if (customFieldValuesInputs.length > 0) {
     if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
-      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValuesDates(resolvedValues) };
-      await validateCustomFieldValuesEditInput(context, user, normalizedCustomFieldValuesInput, initial);
-      finalInputs = inputs.map((inputData) => (inputData === customFieldValuesInput ? normalizedCustomFieldValuesInput : inputData));
+      const normalizedInputs: EditInput[] = [];
+      for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
+        const customFieldValuesInput = customFieldValuesInputs[i];
+        const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+        normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
+      }
+      // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
+      const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
+      const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
+      const customFieldValuesInput = isFolded
+        ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
+        : normalizedInputs[0];
+      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+      finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
     } else {
       throw FunctionalError('Custom fields feature is not enabled', { id, type });
     }
@@ -3045,6 +3078,9 @@ export const updateAttribute = async <T extends StoreObject>(
   if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
+  }
+  if (data.workflowStatusChanged && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    await syncWorkflowInstanceFromExternalWrite(context, user, data.element, (data.element as BasicStoreBase).x_opencti_workflow_id);
   }
   return data;
 };
@@ -4245,8 +4281,13 @@ export const createEntity = async (
     if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
     }
-  } else if (data.event !== null && !opts.noEnrichOnUpdate) { // upsert
-    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+  } else { // upsert
+    if (data.event !== null && !opts.noEnrichOnUpdate) {
+      await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+    }
+    if (data.workflowStatusChanged && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      await syncWorkflowInstanceFromExternalWrite(context, user, data.element, data.element.x_opencti_workflow_id);
+    }
   }
   return isCompleteResult ? data : data.element;
 };
@@ -4368,6 +4409,10 @@ export const internalDeleteElementById = async <T extends StoreObject>(
       }
       const targetElement = { ...relationElement.to, i_relation: relationElement };
       const previous = await storeLoadByIdWithRefs(context, user, relationElement.fromId) as Record<string, any>;
+      if (!previous) {
+        // The source of the ref has been deleted in the meantime, along with its refs
+        throw AlreadyDeletedError({ id: relationElement.fromId });
+      }
       const instance = structuredClone(previous);
       const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationElement.entity_type);
       let inputs: EditInput[] = [];
@@ -4507,8 +4552,8 @@ export const deleteInferredRuleElement = async (
       const ruleOpts = { fromRule, fromRuleDeletion: true };
       await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, ruleOpts);
     }
-  } catch (err: any) {
-    if (err.name === ALREADY_DELETED_ERROR) {
+  } catch (err: unknown) {
+    if (err instanceof GraphQLError && err.extensions.code === ALREADY_DELETED_ERROR) {
       logApp.info(err);
     } else {
       logApp.error('Error handling inference', { cause: err });

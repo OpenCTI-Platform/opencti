@@ -110,7 +110,7 @@ const FilterGroupDialog: FunctionComponent<FilterGroupDialogProps> = ({
         </Box>
       </DialogContent>
       <DialogActions sx={{ mr: 2, mb: 2 }}>
-        <Button onClick={onClose} autoFocus>
+        <Button onClick={onClose}>
           {t_i18n('Close')}
         </Button>
       </DialogActions>

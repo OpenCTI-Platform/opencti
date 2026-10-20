@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import axios from 'axios';
 import { ADMIN_API_TOKEN, API_URI } from '../utils/testQuery';
 
 // A request the platform cannot read is a caller mistake: it must be answered with its own 4xx,
@@ -21,17 +20,29 @@ const multipartBody = (parts: { name: string; value: string; filename?: string }
   return `${body}--${BOUNDARY}--\r\n`;
 };
 
+const send = async (url: string, init?: RequestInit) => {
+  const response = await fetch(url, init);
+  const text = await response.text();
+  try {
+    return { status: response.status, data: JSON.parse(text) };
+  } catch {
+    return { status: response.status, data: text };
+  }
+};
+
 const postMultipart = (parts: { name: string; value: string; filename?: string }[], headers: Record<string, string> = {}) => {
-  return axios.post(`${API_URI}/graphql`, multipartBody(parts), {
+  return send(`${API_URI}/graphql`, {
+    method: 'POST',
+    body: multipartBody(parts),
     headers: { 'Content-Type': `multipart/form-data; boundary=${BOUNDARY}`, ...headers },
-    validateStatus: () => true,
   });
 };
 
 const postRaw = (body: string, contentType: string) => {
-  return axios.post(`${API_URI}/graphql`, body, {
+  return send(`${API_URI}/graphql`, {
+    method: 'POST',
+    body,
     headers: { 'Content-Type': contentType },
-    validateStatus: () => true,
   });
 };
 
@@ -124,7 +135,7 @@ describe('Malformed http request handling', () => {
     it('should answer 400 without quoting the faulty path back', async () => {
       // Overlong utf-8 encoding of '.', a path traversal probe. The router raises a URIError with a
       // status but no expose flag, so the message must not be returned to the caller.
-      const response = await axios.get(`${API_URI}/.env%c0%ae`, { validateStatus: () => true });
+      const response = await send(`${API_URI}/.env%c0%ae`);
 
       expect(response.status).toBe(400);
       expect(response.data?.status).toBe('error');

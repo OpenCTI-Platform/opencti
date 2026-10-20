@@ -233,13 +233,20 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
   const [commitDelete] = useApiMutation(
     alertsLineNotificationDeleteMutation,
   );
+  const [commitMarkRead] = useApiMutation(alertsLineNotificationMarkReadMutation);
   const [notificationToDelete, setNotificationToDelete] = useState<AlertsLine_node$data>();
   const [notificationDigestToOpen, setNotificationDigestToOpen] = useState<AlertsLine_node$data>();
 
   const handleLineClick = (data: AlertsLine_node$data) => {
     const events = data.notification_content.map((n) => n.events).flat();
     const isDigest = events.length > 1;
+    const markAsRead = () => {
+      if (!data.is_read) {
+        commitMarkRead({ variables: { id: data.id, read: true } });
+      }
+    };
     if (isDigest) {
+      markAsRead();
       setNotificationDigestToOpen(data);
     }
 
@@ -247,6 +254,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
     const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
     const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
     if (isLinkAvailable && firstEvent.instance_id) {
+      markAsRead();
       if (firstEvent.entity_type === 'DraftWorkspace') {
         navigate(`/dashboard/data/import/draft/${firstEvent.instance_id}`);
       } else {

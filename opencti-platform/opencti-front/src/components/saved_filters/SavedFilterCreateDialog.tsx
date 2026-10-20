@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
@@ -56,6 +56,7 @@ interface SavedFilterFormValues {
 const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: SavedFilterDialogProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
 
   const owner = { id: me.id, name: me.name, entity_type: 'User' };
 
@@ -122,6 +123,12 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
       onClose={onClose}
       size="medium"
       title={t_i18n('Save filter')}
+      slotProps={{
+        // MUI's transition mounts asynchronously; focusing on mount would
+        // race the DOM insertion, so wait for it to fully enter instead
+        // (same pattern as WorkflowTransitions.tsx's comment dialog).
+        transition: { onEntered: () => nameInputRef.current?.focus() },
+      }}
     >
       <Formik<SavedFilterFormValues>
         initialValues={{ authorized_members: null }}
@@ -130,11 +137,11 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
         {({ submitForm }) => (
           <Form>
             <Input
+              ref={nameInputRef}
               label={t_i18n('Name')}
               placeholder={t_i18n('My saved filter')}
               value={filterName}
               onChange={handleChange}
-              autoFocus
             />
             <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
               <SavedFilterSharingSection
