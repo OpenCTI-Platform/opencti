@@ -89,6 +89,9 @@ describe('Hook: useBuildReadableAttribute', () => {
     const wrapperDiv = renderToString(buildReadableAttribute('<div align="center">\n\n**Bold** and [link](https://x.io)\n\n</div>', { attribute: 'representative.secondary' }) as ReactElement);
     expect(wrapperDiv).toContain('<strong>Bold</strong>');
     expect(wrapperDiv).toContain('<a href="https://x.io">link</a>');
+    const nestedWrapperDiv = renderToString(buildReadableAttribute('<div align="center"><div>\n\n**Bold** and [link](https://x.io)\n\n</div></div>', { attribute: 'representative.secondary' }) as ReactElement);
+    expect(nestedWrapperDiv).toContain('<strong>Bold</strong>');
+    expect(nestedWrapperDiv).toContain('<a href="https://x.io">link</a>');
   });
   it('should render markdown links as plain text only in tables', () => {
     const { hook } = testRenderHook(() => useBuildReadableAttribute());

@@ -24,12 +24,17 @@ const MARKDOWN_ATTRIBUTES = [
 // The rich text editor only writes block elements at the top level: anything else (text, inline tags,
 // markdown autolinks like <https://example.com> that the parser reads as unknown elements) is markdown.
 const RICH_TEXT_BLOCK_TAGS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'TABLE', 'BLOCKQUOTE', 'PRE', 'FIGURE', 'DIV', 'HR', 'IMG']);
+// A markdown wrapper div (GitHub README style) holds text directly, possibly through nested divs;
+// editor divs only hold blocks.
+const holdsTextInDiv = (div: Element): boolean => Array.from(div.childNodes).some((child) => {
+  if (child.nodeType === Node.TEXT_NODE) return !!child.textContent?.trim();
+  return child instanceof Element && child.tagName === 'DIV' && holdsTextInDiv(child);
+});
 const isRichTextHtml = (value: string) => {
   const { body } = new DOMParser().parseFromString(value, 'text/html');
   const nodes = Array.from(body.childNodes).filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent?.trim());
   return nodes.length > 0 && nodes.every((node) => node instanceof Element && RICH_TEXT_BLOCK_TAGS.has(node.tagName)
-    // A markdown wrapper div (GitHub README style) holds text directly; editor divs only hold blocks.
-    && (node.tagName !== 'DIV' || Array.from(node.childNodes).every((child) => child.nodeType !== Node.TEXT_NODE || !child.textContent?.trim())));
+    && (node.tagName !== 'DIV' || !holdsTextInDiv(node)));
 };
 
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
