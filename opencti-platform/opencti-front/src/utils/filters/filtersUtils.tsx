@@ -7,7 +7,6 @@ import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import type { filtersUtilsCustomFieldStixFilterKeysQuery } from './__generated__/filtersUtilsCustomFieldStixFilterKeysQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
-import useHelper from '../hooks/useHelper';
 import { fetchQuery } from '../../relay/environment';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
@@ -250,19 +249,12 @@ const customFieldStixFilterKeysQuery = graphql`
 /**
  * Centralizes the fetching of the custom fields filter keys usable in stix filtering
  * (streams, playbooks, triggers, connectors, ...), so that callers don't have to
- * each implement their own loading strategy (feature flag check, query, caching...).
- * Returns an empty array while loading, or if the CUSTOM_FIELDS feature flag is disabled
- * (the underlying query field would otherwise throw server-side).
+ * each implement their own loading strategy (query, caching...).
+ * Returns an empty array while loading.
  */
 const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
-  const { isFeatureEnable } = useHelper();
-  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
   const [customFieldFilterKeys, setCustomFieldFilterKeys] = useState<string[]>([]);
   useEffect(() => {
-    if (!isCustomFieldsEnabled) {
-      setCustomFieldFilterKeys([]);
-      return undefined;
-    }
     let isMounted = true;
     fetchQuery<filtersUtilsCustomFieldStixFilterKeysQuery>(
       customFieldStixFilterKeysQuery,
@@ -277,14 +269,14 @@ const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
     return () => {
       isMounted = false;
     };
-  }, [isCustomFieldsEnabled, entityType]);
+  }, [entityType]);
   return customFieldFilterKeys;
 };
 
 /**
  * Returns the full list of filter keys usable in stix filtering (streams, playbooks, triggers,
  * connectors, ...): the static list of built-in keys, concatenated with the dynamic list of
- * custom fields filter keys (fetched and feature-flagged centrally by this hook).
+ * custom fields filter keys (fetched centrally by this hook).
  * This is the single entry point callers should use instead of hard-coding/duplicating
  * the custom fields loading logic.
  */

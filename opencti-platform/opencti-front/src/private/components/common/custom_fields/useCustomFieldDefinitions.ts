@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
-import useHelper from '../../../../utils/hooks/useHelper';
 import type { useCustomFieldDefinitionsQuery, useCustomFieldDefinitionsQuery$data } from './__generated__/useCustomFieldDefinitionsQuery.graphql';
 
 const customFieldDefinitionsQuery = graphql`
@@ -30,7 +29,6 @@ const customFieldDefinitionsQuery = graphql`
 
 export type CustomFieldDefinition = NonNullable<NonNullable<useCustomFieldDefinitionsQuery$data['customFieldDefinitions']>['edges']>[number]['node'];
 
-// The query throws server-side when the CUSTOM_FIELDS feature flag is disabled: callers must check it first.
 // Definitions attached to no entity type are of no use on knowledge, they are not kept.
 export const fetchCustomFieldDefinitions = async (): Promise<CustomFieldDefinition[]> => {
   const data = await fetchQuery<useCustomFieldDefinitionsQuery>(customFieldDefinitionsQuery, {}).toPromise();
@@ -41,14 +39,12 @@ export const fetchCustomFieldDefinitions = async (): Promise<CustomFieldDefiniti
 
 /**
  * All the custom field definitions attached to an entity type, for the screens acting on any entity type
- * (playbooks, background tasks). Empty when the CUSTOM_FIELDS feature flag is disabled.
+ * (playbooks, background tasks).
  * They are loaded once, when `enabled` (e.g. only once some elements are selected).
  */
 const useCustomFieldDefinitions = (enabled = true): CustomFieldDefinition[] => {
-  const { isFeatureEnable } = useHelper();
-  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
   const [definitions, setDefinitions] = useState<CustomFieldDefinition[] | null>(null);
-  const shouldLoad = isCustomFieldsEnabled && enabled && definitions === null;
+  const shouldLoad = enabled && definitions === null;
   useEffect(() => {
     if (!shouldLoad) return undefined;
     let isMounted = true;

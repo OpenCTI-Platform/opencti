@@ -6,7 +6,6 @@ import Tag from '../../../../components/common/tag/Tag';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { CustomFieldDef, CustomFieldStoredValue, getCustomFieldDisplayValue, getCustomFieldLabel } from '../../../../utils/customFields';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { CustomFieldsLoader } from './CustomFieldsInput';
 
 // Shared by the owning Details fragments so entity updates refresh the displayed values.
@@ -31,14 +30,11 @@ interface CustomFieldValuesDisplayProps {
 // Renders grid items inside the entity's details grid, without adding another container.
 const CustomFieldValuesDisplay: FunctionComponent<CustomFieldValuesDisplayProps> = ({ entityType, values }) => {
   const { t_i18n, fldt } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [definitions, setDefinitions] = useState<CustomFieldDef[]>([]);
-
-  if (!isFeatureEnable('CUSTOM_FIELDS')) return null;
 
   return (
     <>
-      {isFeatureEnable('CUSTOM_FIELDS') && values.length > 0 && (
+      {values.length > 0 && (
         <Suspense fallback={null}>
           <CustomFieldsLoader entityType={entityType} onLoaded={setDefinitions} />
         </Suspense>
