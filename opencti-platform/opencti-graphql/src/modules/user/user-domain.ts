@@ -1780,17 +1780,16 @@ const isAccountDisabled = (user: BasicStoreEntityUser) => {
 export const login = async (email: string, password: string) => {
   // Undefined when the local authentication lockout is disabled
   const lockout = await loadLocalAuthLockout(email);
-  // During a lock, the password is not even checked
-  await lockout?.assertNotLocked();
+  // The attempt is counted before the password is checked, and during a lock the password is not even checked
+  const failure = await lockout?.recordAttempt() ?? AuthenticationFailure();
   const user = await getUserByEmail(email);
   // With the lockout, an inactive or expired account is rejected without checking its password.
   // The failure is counted like a wrong password, so that the account cannot be told apart from an unknown email.
   const isPasswordChecked = !!user && !(lockout && isAccountDisabled(user));
   if (!user || !isPasswordChecked || !bcrypt.compareSync(password, user.password)) {
-    await lockout?.recordFailure();
-    throw AuthenticationFailure();
+    throw failure;
   }
-  await lockout?.clear();
+  // The caller clears the lockout once the login is fully accepted (IP whitelist, local auth enabled, API access)
   return user;
 };
 
@@ -1915,9 +1914,11 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     }
   }
   // Try local is activated
+  const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
+  // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
+  const isLocalAuthEnabled = isLocalAuthForcedEnabledFromEnv() || !!settings.local_auth?.enabled;
   let localError: unknown;
   if (!loggedUser) {
-    const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
     const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
       passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
         localError = err;
@@ -1927,10 +1928,10 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
       })({ body });
     });
-    // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
-    if (user && (isLocalAuthForcedEnabledFromEnv() || settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
+    if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
       await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
+      await clearLocalAuthLockout(input.email);
     }
   }
   if (loggedUser) {
@@ -1956,8 +1957,9 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   });
   // User cannot be authenticated in any providers
   logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
-  // A local lock is returned as is, so that the login form can show the remaining minutes
-  if (isLocalAuthLockedError(localError)) {
+  // A local lock is returned as is, so that the login form can show the remaining minutes.
+  // Only when the local auth is the only form login: otherwise the email can belong to another provider, never blocked by the local lock
+  if (isLocalAuthEnabled && formProviders.length === 0 && isLocalAuthLockedError(localError)) {
     throw localError;
   }
   throw AuthenticationFailure();
@@ -2187,6 +2189,7 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
     if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
       throw ForbiddenAccess('You are not allowed to use API basic auth');
     }
+    await clearLocalAuthLockout(basicAuth.username);
     return internalAuthenticateUser(context, req, user);
   }
   throw FunctionalError('Cannot identify user with basic auth');

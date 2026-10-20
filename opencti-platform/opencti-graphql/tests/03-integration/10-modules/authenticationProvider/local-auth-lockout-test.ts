@@ -4,6 +4,7 @@ import passport from 'passport';
 import type Express from 'express';
 import { ADMIN_API_TOKEN, ADMIN_USER, API_EMAIL, API_PASSWORD, testContext } from '../../../utils/testQuery';
 import * as conf from '../../../../src/config/conf';
+import * as cache from '../../../../src/database/cache';
 import { getClientBase, localAuthLockoutKeys } from '../../../../src/database/redis';
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { getSettingsFromDatabase } from '../../../../src/domain/settings';
@@ -48,11 +49,9 @@ const resetLockout = (email: string) => {
 };
 // Redis TTLs cannot be faked, so expirations are simulated by deleting the keys
 const expireLock = (email: string) => getClientBase().del(keysOf(email).lock);
-// The lock level expires with the failure counter: same window, counted from the first failure
-const expireWindow = (email: string) => {
-  const keys = keysOf(email);
-  return getClientBase().del(keys.failures, keys.level);
-};
+const expireWindow = (email: string) => getClientBase().del(keysOf(email).failures);
+// The lock level lives a full window after the last lock
+const expireLevel = (email: string) => getClientBase().del(keysOf(email).level);
 const lockRemainingMs = (email: string) => getClientBase().pttl(keysOf(email).lock);
 // Shortens a key TTL, so that a TTL reset to the full window can be told apart from the original one
 const SHORT_TTL_MS = 30000;
@@ -106,6 +105,16 @@ const buildSessionContext = () => ({
   user: undefined,
   user_inside_platform_organization: false,
 }) as AuthContext;
+// A full login through the login form: login() alone counts the attempt, only an accepted login clears the lockout
+const sessionLoginAs = (email: string, password: string) => sessionLogin(buildSessionContext(), { email, password });
+// Settings from the cache with the IP whitelist enabled, the test requests coming from another IP
+const enableIpWhitelist = () => {
+  const getEntityFromCache = cache.getEntityFromCache;
+  vi.spyOn(cache, 'getEntityFromCache').mockImplementation(async (context, user, type) => {
+    const entity = await getEntityFromCache(context, user, type);
+    return type === ENTITY_TYPE_SETTINGS ? { ...entity, platform_ip_whitelist_enabled: true, platform_ip_whitelist: ['10.10.10.10'] } : entity;
+  });
+};
 // endregion
 
 describe('Local authentication lockout', () => {
@@ -175,6 +184,14 @@ describe('Local authentication lockout', () => {
       await expectLocked(login(LOCKOUT_USER.email.toUpperCase(), WRONG_PASSWORD), 15);
     });
 
+    it('should check at most X passwords under concurrent attempts', async () => {
+      const compareSpy = vi.spyOn(bcrypt, 'compareSync');
+      const attempts = Array.from({ length: 20 }, () => login(LOCKOUT_USER.email, WRONG_PASSWORD).catch((e) => e));
+      const errors = await Promise.all(attempts);
+      expect(compareSpy).toHaveBeenCalledTimes(3);
+      expect(errors.filter((e) => e.extensions?.data?.remaining_minutes === 15)).toHaveLength(18);
+    });
+
     it('should lock only once under concurrent attempts', async () => {
       const attempts = Array.from({ length: 10 }, () => login(LOCKOUT_USER.email, WRONG_PASSWORD).catch((e) => e));
       const errors = await Promise.all(attempts);
@@ -204,24 +221,27 @@ describe('Local authentication lockout', () => {
       await expectTtlNotExtended(failures);
     });
 
-    it('should make the lock level expire with the window, even after a new lock', async () => {
-      const { failures, level } = keysOf(LOCKOUT_USER.email);
-      await failLogin(LOCKOUT_USER.email, 1);
-      await shortenTtl(failures);
-      await failLogin(LOCKOUT_USER.email, 1);
+    it('should keep the lock level a full window after the lock, even with a window shorter than the lock', async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_window: 1 });
+      const { failures, lock, level } = keysOf(LOCKOUT_USER.email);
+      await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
-      await expectTtlNotExtended(level);
-      // A new lock in the same window does not extend it either
+      // 15 min lock + 1 min window
+      const levelRemainingMs = await getClientBase().pttl(level);
+      expect(levelRemainingMs).toBeGreaterThan(await getClientBase().pttl(lock));
+      expect(levelRemainingMs).toBeGreaterThan(await getClientBase().pttl(failures));
+      // Both the lock and the window are over: the next failure still doubles the lock
       await expireLock(LOCKOUT_USER.email);
+      await expireWindow(LOCKOUT_USER.email);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 30);
-      await expectTtlNotExtended(level);
     });
 
-    it('should reset the counter and the lock level once the window has expired', async () => {
+    it('should reset the counter and the lock level once the window and the level have expired', async () => {
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
       await expireLock(LOCKOUT_USER.email);
       await expireWindow(LOCKOUT_USER.email);
+      await expireLevel(LOCKOUT_USER.email);
       // The next failures count from zero: no immediate lock
       await failLogin(LOCKOUT_USER.email, 2);
       // And the next lock is back to the first level
@@ -233,8 +253,9 @@ describe('Local authentication lockout', () => {
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
       await expireWindow(LOCKOUT_USER.email);
       await expectLocked(login(LOCKOUT_USER.email, LOCKOUT_USER.password), 15);
-      // Once the lock is over, the first failure counts as the first one
+      // Once the lock and the level are over, the first failure counts as the first one
       await expireLock(LOCKOUT_USER.email);
+      await expireLevel(LOCKOUT_USER.email);
       await expectBadCredentials(login(LOCKOUT_USER.email, WRONG_PASSWORD));
     });
   });
@@ -261,7 +282,7 @@ describe('Local authentication lockout', () => {
     it('should return the lock error through sessionLogin', async () => {
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
-      await expectLocked(sessionLogin(buildSessionContext(), { email: LOCKOUT_USER.email, password: LOCKOUT_USER.password }), 15);
+      await expectLocked(sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password), 15);
     });
   });
 
@@ -287,7 +308,7 @@ describe('Local authentication lockout', () => {
   describe('Successful login', () => {
     it('should reset the failure counter', async () => {
       await failLogin(LOCKOUT_USER.email, 2);
-      await login(LOCKOUT_USER.email, LOCKOUT_USER.password);
+      await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
     });
@@ -296,8 +317,27 @@ describe('Local authentication lockout', () => {
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
       await expireLock(LOCKOUT_USER.email);
-      await login(LOCKOUT_USER.email, LOCKOUT_USER.password);
+      await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
       await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+    });
+
+    it('should not reset anything when the password is right but the IP is not allowed', async () => {
+      await failLogin(LOCKOUT_USER.email, 1);
+      enableIpWhitelist();
+      await expect(sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password)).rejects.toThrow('Your IP address is not allowed to access this platform');
+      vi.restoreAllMocks();
+      // The rejected login counts as the second attempt
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+    });
+
+    it('should not reset anything when the password is right but the local auth is disabled', async () => {
+      await failLogin(LOCKOUT_USER.email, 1);
+      const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+      await updateLocalAuth(testContext, ADMIN_USER, settings.id, { enabled: false });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+      await expectBadCredentials(sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password));
+      // The rejected login counts as the second attempt
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
     });
   });
@@ -328,6 +368,14 @@ describe('Local authentication lockout', () => {
       await expectBadCredentials(basicAuth(WRONG_PASSWORD));
       await expectLocked(basicAuth(WRONG_PASSWORD), 15);
       await expectLocked(basicAuth(LOCKOUT_USER.password), 15);
+    });
+
+    it('should reset the failure counter on a successful Basic auth', async () => {
+      await failLogin(API_EMAIL, 2);
+      const user = await authenticateUserByBasicAuth(testContext, buildRequest(), { username: API_EMAIL, password: API_PASSWORD });
+      expect(user.id).toEqual(ADMIN_USER.id);
+      await failLogin(API_EMAIL, 2);
+      await expectLocked(login(API_EMAIL, WRONG_PASSWORD), 15);
     });
 
     it('should keep API tokens and open sessions working during a lock', async () => {
@@ -386,6 +434,15 @@ describe('Local authentication lockout', () => {
       expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).lock)).toEqual(0);
       const user = await login(LOCKOUT_USER.email, LOCKOUT_USER.password);
       expect(user.user_email).toEqual(LOCKOUT_USER.email);
+    });
+
+    it('should return the generic error instead of the local lock when another form provider exists', async () => {
+      // The fake LDAP rejects this email, as LDAP would reject a wrong password
+      for (let i = 0; i < 4; i += 1) {
+        await expectBadCredentials(sessionLoginAs(UNKNOWN_EMAIL, WRONG_PASSWORD));
+      }
+      // The local lock exists, it is just not shown
+      await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD), 15);
     });
   });
 });

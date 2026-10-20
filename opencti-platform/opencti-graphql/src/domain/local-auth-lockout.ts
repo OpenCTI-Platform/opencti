@@ -5,7 +5,7 @@
 import { isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import { getEntityFromCache } from '../database/cache';
-import { type LocalAuthLockoutTimings, redisClearLocalAuthLockout, redisGetLocalAuthLockRemaining, redisRecordLocalAuthFailure } from '../database/redis';
+import { type LocalAuthLockoutTimings, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt } from '../database/redis';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -60,24 +60,20 @@ export const loadLocalAuthLockout = async (email: string) => {
   // Unknown emails are counted too, so that a lock never reveals whether an account exists
   const emailHash = hashSHA256(normalizeEmail(email));
   return {
-    assertNotLocked: async () => {
-      const remainingMs = await redisGetLocalAuthLockRemaining(emailHash);
-      if (remainingMs > 0) {
+    // Counts the attempt as a failure before the password is checked, and throws the lock error during a lock.
+    // Returns the error to throw if the password is wrong: the lock error when this attempt locked the account
+    recordAttempt: async () => {
+      const { allowed, remainingMs } = await redisRecordLocalAuthAttempt(emailHash, timings);
+      if (!allowed) {
         throw LocalAuthLocked(remainingMs);
       }
-    },
-    // Throws the lock error when this failure locks the account
-    recordFailure: async () => {
-      const remainingMs = await redisRecordLocalAuthFailure(emailHash, timings);
-      if (remainingMs > 0) {
-        throw LocalAuthLocked(remainingMs);
-      }
+      return remainingMs > 0 ? LocalAuthLocked(remainingMs) : AuthenticationFailure();
     },
     clear: () => redisClearLocalAuthLockout(emailHash),
   };
 };
 
-// Any successful login, local or not, resets the lockout of the email
+// Called once a login is fully accepted (local, Basic auth or another form provider): resets the lockout of the email
 export const clearLocalAuthLockout = async (email: string) => {
   const lockout = await loadLocalAuthLockout(email);
   await lockout?.clear();
