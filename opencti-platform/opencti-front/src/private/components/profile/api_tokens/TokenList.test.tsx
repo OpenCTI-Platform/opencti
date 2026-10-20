@@ -5,7 +5,7 @@ import testRender, { createMockUserContext } from '../../../../utils/tests/test-
 import { APIACCESS_USETOKEN } from '../../../../utils/hooks/useGranted';
 import { TokenListBase } from './TokenList';
 import { TokenList_node$data } from '@components/profile/api_tokens/__generated__/TokenList_node.graphql';
-import { MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
 // Mock mutation
 vi.mock('../../../../relay/environment', async () => {
@@ -19,7 +19,6 @@ vi.mock('../../../../relay/environment', async () => {
     },
   };
 });
-import { commitMutation } from '../../../../relay/environment';
 
 describe('Component: TokenList', () => {
   const mockNode = {
