@@ -7,7 +7,14 @@ const xtmHubLogMutation = graphql`
   }
 `;
 
+const loggedOriginPairs = new Set<string>();
+
 export const logXtmHubIgnoredMessage = (receivedOrigin: string, expectedOrigin: string | null) => {
+  const key = `${receivedOrigin}|${expectedOrigin}`;
+  if (loggedOriginPairs.has(key)) {
+    return;
+  }
+  loggedOriginPairs.add(key);
   commitMutation({
     mutation: xtmHubLogMutation,
     variables: {
