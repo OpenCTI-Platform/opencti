@@ -7,12 +7,15 @@
  * So, while `simulateFailure` is set, the `triggerWorkflowEvent` mutation never reaches the backend
  * (no task runs, nothing can finish before the toolbar polls) and the toolbar queries report the
  * instance as failed. This drives the frontend into its error/retry UX deterministically.
- * There is no distinct "Retry" button - the real flow is a bypass-only "Clear" button (a real
- * mutation, valid with nothing pending) followed by re-triggering "SHARE TO ORG" for real.
+ * There is no distinct "Retry" button - the real flow is a bypass-only "Clear" button (so an admin
+ * clicks it; a real mutation, valid with nothing pending) followed by ManagerOrgC re-triggering
+ * "SHARE TO ORG" for real.
  */
 import { test } from '../fixtures/baseFixtures';
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import { advanceDraftToStatus, createThreatAdvisoryDraft, openDraft, USERS } from './threatAdvisoryDraftHelpers';
+
+const ADMIN = { email: 'admin@opencti.io', password: 'admin' };
 
 /** Reports every `workflowInstance` found in a toolbar response as failed on "SHARE TO ORG". */
 const injectPendingError = (value: unknown): void => {
@@ -53,6 +56,12 @@ test('Threat Advisory - org-sharing failure + retry', { tag: ['@ee', '@workflow'
       await route.fallback();
       return;
     }
+    if (postData.includes('clearWorkflowPendingState')) {
+      // The real Clear ends the simulated failure: every later toolbar query shows the real state.
+      simulateFailure = false;
+      await route.fallback();
+      return;
+    }
     if (postData.includes('triggerWorkflowEvent')) {
       triggered = true;
       await route.fulfill({ json: { data: { triggerWorkflowEvent: { success: true, reason: null, newState: null, executionStatus: 'pending', instance: null, entity: null } } } });
@@ -75,10 +84,14 @@ test('Threat Advisory - org-sharing failure + retry', { tag: ['@ee', '@workflow'
     await toolbar.assertStatus('ORGC MANAGER REVIEW');
   });
 
-  await test.step('Step 17 (source numbering, really step 2): clicking Clear then retriggering "SHARE TO ORG" succeeds', async () => {
-    simulateFailure = false;
-    triggered = false;
+  await test.step('Step 17 (source numbering, really step 2): an admin clears the failed transition, then ManagerOrgC retriggering "SHARE TO ORG" succeeds', async () => {
+    // "Clear" is bypass-only (`WorkflowTransitions.tsx`), ManagerOrgC does not see it.
+    await openDraft(page, draftId, ADMIN);
     await toolbar.getClearButton().click();
+    await toolbar.assertNoTransitionError();
+    // Opening the draft put the admin in its draft context, which sticks to the shared admin user.
+    await toolbar.exitDraftIfPresent();
+    await openDraft(page, draftId, USERS.managerOrgC);
     await toolbar.openTransition('SHARE TO ORG');
     await toolbar.fillWizard({ share: ['OrgB'] });
     await toolbar.assertStatus('READY FOR VALIDATION');

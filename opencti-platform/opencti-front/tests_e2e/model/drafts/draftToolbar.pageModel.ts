@@ -176,6 +176,10 @@ export default class DraftToolbarPageModel {
     await expect(this.getToolbar().getByTestId('workflow-transitions-error')).toBeVisible();
   }
 
+  async assertNoTransitionError() {
+    await expect(this.getToolbar().getByTestId('workflow-transitions-error')).toHaveCount(0);
+  }
+
   async assertTransitionPending() {
     await expect(this.getToolbar().getByTestId('workflow-transitions-pending')).toBeVisible();
   }
