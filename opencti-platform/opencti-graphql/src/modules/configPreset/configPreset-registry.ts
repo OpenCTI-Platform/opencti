@@ -6,6 +6,8 @@ import { brandingFamily } from './registry/branding-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
 import { hiddenEntityTypesFamily } from './registry/hiddenEntityTypes-configPreset-registry';
 
+export { BRANDING_FAMILY_ID } from './registry/branding-configPreset-registry';
+
 // In registry order, the categories of the spec table: Platform settings (platform, branding, messages), then Data model.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
@@ -21,7 +23,7 @@ export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, i
 
 export const configPresetItemBundleId = (item: ConfigPresetItemDefinition) => item.bundleId ?? item.id;
 
-// The type written in the item files: `<group id>.<category id>`
+// The type written in the item files and in dependencies.json: `<group id>.<category id>`
 export const configPresetFamilyType = (family: ConfigPresetFamilyDefinition) => `${family.group.id}.${family.id}`;
 
 export const exportConfigPresetItem = async (

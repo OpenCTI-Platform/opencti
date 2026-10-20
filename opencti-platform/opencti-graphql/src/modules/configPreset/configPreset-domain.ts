@@ -21,7 +21,7 @@ import { allFilesForPaths } from '../internal/document/document-domain';
 import { CONFIG_PRESET_STORAGE_PATH } from '../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../manager/telemetryManager';
-import { CONFIG_PRESET_FAMILIES, configPresetItemBundleId, configPresetItemFilePath, exportConfigPresetItem } from './configPreset-registry';
+import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemBundleId, configPresetItemFilePath, exportConfigPresetItem } from './configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from './configPreset-types';
 import { buildConfigPresetFileName, sanitizeBundleName } from './configPreset-utils';
 
@@ -32,6 +32,7 @@ const toExportableItem = (item: ConfigPresetItemDefinition): ConfigPresetExporta
   key: item.id,
   label: item.label,
   translatable: item.translatable,
+  dependsOn: (item.dependsOn ?? []).map(({ type, id }) => ({ type, key: id })),
   isDefault: item.isDefault ?? false,
 });
 
@@ -69,6 +70,7 @@ export const findConfigPresetExportableItems = async (
 };
 
 export const CONFIG_PRESET_METADATA_FILE = 'metadata.json';
+export const CONFIG_PRESET_DEPENDENCIES_FILE = 'dependencies.json';
 export const CONFIG_PRESET_EXPORT_RETENTION_MS = 60 * 60 * 1000;
 
 type SelectedConfigPresetFamily = ConfigPresetFamilyDefinition & { items: ConfigPresetItemDefinition[] };
@@ -115,6 +117,54 @@ export const resolveConfigPresetSelections = async (
     throw FunctionalError('Select at least one configuration item to export');
   }
   return resolved;
+};
+
+const referenceKey = (type: string, id: string) => `${type}/${id}`;
+
+// Adds, depth first, the items the selected ones depend on, whatever the selection excluded.
+// The visited set stops on cycles; a dependency the registry cannot export fails the export.
+export const addConfigPresetDependencies = async (
+  context: AuthContext,
+  user: AuthUser,
+  families: SelectedConfigPresetFamily[],
+): Promise<SelectedConfigPresetFamily[]> => {
+  const itemsByFamily = new Map(families.map((family) => [family.id, [...family.items]]));
+  const visited = new Set(families.flatMap((family) => family.items.map((item) => referenceKey(family.id, item.id))));
+  const pending = families.flatMap((family) => family.items.flatMap((item) => item.dependsOn ?? []));
+  while (pending.length > 0) {
+    const reference = pending.pop()!;
+    if (!visited.has(referenceKey(reference.type, reference.id))) {
+      visited.add(referenceKey(reference.type, reference.id));
+      const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === reference.type);
+      const [item] = family ? await family.resolveItems(context, user, [reference.id], []) : [];
+      if (!item) {
+        throw FunctionalError('A configuration preset dependency cannot be exported', { type: reference.type, item: reference.id });
+      }
+      itemsByFamily.set(reference.type, [...(itemsByFamily.get(reference.type) ?? []), item]);
+      pending.push(...(item.dependsOn ?? []));
+    }
+  }
+  return CONFIG_PRESET_FAMILIES.filter((family) => itemsByFamily.has(family.id)).map((family) => ({
+    ...family,
+    items: itemsByFamily.get(family.id)!,
+  }));
+};
+
+// For each exported item that has dependencies, under its type (`<group id>.<category id>`) and its bundle id:
+// the bundle id of each dependency and the path of its file from the zip root. Registry order, then item order.
+export const buildConfigPresetDependencies = (families: SelectedConfigPresetFamily[]) => {
+  const files = new Map(families.flatMap((family) => family.items.map((item) => [
+    referenceKey(family.id, item.id),
+    [configPresetItemBundleId(item), configPresetItemFilePath(family, item)] as const,
+  ])));
+  const dependencies: Record<string, Record<string, Record<string, string>>> = {};
+  families.forEach((family) => family.items.filter((item) => (item.dependsOn ?? []).length > 0).forEach((item) => {
+    const type = configPresetFamilyType(family);
+    // The closure exported every dependency
+    const itemDependencies = (item.dependsOn ?? []).map((reference) => files.get(referenceKey(reference.type, reference.id))!);
+    dependencies[type] = { ...dependencies[type], [configPresetItemBundleId(item)]: Object.fromEntries(itemDependencies) };
+  }));
+  return dependencies;
 };
 
 // Called by the garbage collection manager. A failed deletion does not stop the others: the next run retries it.
@@ -186,6 +236,7 @@ const writeConfigPresetZip = async (
       bundle_name: metadataBase.bundle_name,
     };
     archive.append(JSON.stringify(metadata, null, 2), { name: CONFIG_PRESET_METADATA_FILE });
+    archive.append(JSON.stringify(buildConfigPresetDependencies(families), null, 2), { name: CONFIG_PRESET_DEPENDENCIES_FILE });
     // Awaited together: when the output fails, the archive is no longer drained and finalize never resolves
     await Promise.all([archive.finalize(), written]);
     return {
@@ -216,7 +267,7 @@ export const configPresetExport = async (
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot export configuration presets in draft');
   }
-  const families = await resolveConfigPresetSelections(context, user, selections);
+  const families = await addConfigPresetDependencies(context, user, await resolveConfigPresetSelections(context, user, selections));
   const generatedAt = new Date();
   const fileName = buildConfigPresetFileName(generatedAt);
   // Each export in its own folder, like support packages

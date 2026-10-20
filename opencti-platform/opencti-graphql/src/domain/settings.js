@@ -553,9 +553,13 @@ export const getPlatformDefaultTheme = async (context, user) => {
   return settings.platform_theme ? findThemeById(context, user, settings.platform_theme) : undefined;
 };
 
-export const getPlatformConfigPresetConfiguration = async (context) => {
-  const settings = await getSettingsFromDatabase(context);
-  return pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS);
+// The default theme by standard id, built-in or custom (the name is only a hint for messages); null when none is set
+export const getPlatformConfigPresetConfiguration = async (context, user) => {
+  const [settings, theme] = await Promise.all([getSettingsFromDatabase(context), getPlatformDefaultTheme(context, user)]);
+  return {
+    ...pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS),
+    default_theme: theme ? { standard_id: theme.standard_id, name: theme.name } : null,
+  };
 };
 
 // The configuration of each message, by message id
