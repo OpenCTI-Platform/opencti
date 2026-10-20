@@ -3322,7 +3322,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
                 if not check_connector_buffering:
                     # Start running the connector
-                    message_callback()
+                    self._run_and_collect_errors(message_callback)
 
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
