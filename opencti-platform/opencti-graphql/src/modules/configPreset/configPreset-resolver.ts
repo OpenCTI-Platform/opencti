@@ -1,9 +1,10 @@
 import type { Resolvers, ResolversTypes } from '../../generated/graphql';
-import { configPresetExport, findConfigPresetExportableTypes } from './configPreset-domain';
+import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from './configPreset-domain';
 
 const configPresetResolvers: Resolvers = {
   Query: {
     configPresetExportableTypes: (_, __, context) => findConfigPresetExportableTypes(context, context.user!),
+    configPresetExportableItems: (_, args, context) => findConfigPresetExportableItems(context, context.user!, args),
   },
   Mutation: {
     configPresetExport: async (_, { selections, bundle_name }, context) => {

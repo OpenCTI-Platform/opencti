@@ -9202,6 +9202,7 @@ type Query {
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
   customFieldStixFilterKeys(entityType: String): [String!]
   configPresetExportableTypes: [ConfigPresetExportableType!]!
+  configPresetExportableItems(type: ID!, first: Int, after: ID, search: String, ids: [ID!], excludedIds: [ID!]): ConfigPresetExportableItemConnection!
 }
 
 type Subscription {
@@ -17718,6 +17719,16 @@ type ConfigPresetExportableItem {
   translatable: Boolean!
 }
 
+type ConfigPresetExportableItemEdge {
+  cursor: String!
+  node: ConfigPresetExportableItem!
+}
+
+type ConfigPresetExportableItemConnection {
+  pageInfo: PageInfo!
+  edges: [ConfigPresetExportableItemEdge!]!
+}
+
 type ConfigPresetExportableGroup {
   key: String!
   label: String!
@@ -17726,11 +17737,14 @@ type ConfigPresetExportableGroup {
 type ConfigPresetExportableType {
   key: String!
   label: String!
+  description: String!
   group: ConfigPresetExportableGroup!
   items: [ConfigPresetExportableItem!]!
+  itemsPageInfo: PageInfo!
 }
 
 input ConfigPresetSelectionInput {
   type: ID!
   items: [ID!]
+  excluded_items: [ID!]
 }

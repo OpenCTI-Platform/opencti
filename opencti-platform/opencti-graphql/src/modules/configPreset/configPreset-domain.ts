@@ -9,7 +9,13 @@ import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config
 import { BYPASS, isUserHasCapability } from '../../utils/access';
 import { getDraftContext } from '../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { ConfigPresetExportableType, ConfigPresetSelectionInput } from '../../generated/graphql';
+import type {
+  ConfigPresetExportableItem,
+  ConfigPresetExportableItemConnection,
+  ConfigPresetExportableType,
+  ConfigPresetSelectionInput,
+  QueryConfigPresetExportableItemsArgs,
+} from '../../generated/graphql';
 import { deleteFile, type LoadedFile, uploadToStorage } from '../../database/file-storage';
 import { allFilesForPaths } from '../internal/document/document-domain';
 import { CONFIG_PRESET_STORAGE_PATH } from '../internal/document/document-types';
@@ -19,16 +25,46 @@ import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetIte
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from './configPreset-types';
 import { buildConfigPresetFileName, sanitizeBundleName } from './configPreset-utils';
 
+// The dialog shows a type inline when its first page is its only one
+export const CONFIG_PRESET_FIRST_PAGE_SIZE = 10;
+
+const toExportableItem = (item: ConfigPresetItemDefinition): ConfigPresetExportableItem => ({
+  key: item.id,
+  label: item.label,
+  translatable: item.translatable,
+});
+
+const findConfigPresetFamily = (type: string) => {
+  const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === type);
+  if (!family) {
+    throw FunctionalError('Unknown configuration preset type', { type });
+  }
+  return family;
+};
+
 export const findConfigPresetExportableTypes = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetExportableType[]> => {
-  return Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
-    const items = await family.listItems(context, user);
+  const types = await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
+    const page = await family.listItems(context, user, { first: CONFIG_PRESET_FIRST_PAGE_SIZE });
     return {
       key: family.id,
       label: family.label,
+      description: family.description,
       group: { key: family.group.id, label: family.group.label },
-      items: items.map(({ id, label, translatable }) => ({ key: id, label, translatable })),
+      items: page.edges.map(({ node }) => toExportableItem(node)),
+      itemsPageInfo: page.pageInfo,
     };
   }));
+  // A category with nothing to export on this platform (no message set) is not shown
+  return types.filter((type) => type.itemsPageInfo.globalCount > 0);
+};
+
+export const findConfigPresetExportableItems = async (
+  context: AuthContext,
+  user: AuthUser,
+  { type, ...args }: QueryConfigPresetExportableItemsArgs,
+): Promise<ConfigPresetExportableItemConnection> => {
+  const page = await findConfigPresetFamily(type).listItems(context, user, args);
+  return { ...page, edges: page.edges.map(({ cursor, node }) => ({ cursor, node: toExportableItem(node) })) };
 };
 
 export const CONFIG_PRESET_METADATA_FILE = 'metadata.json';
@@ -37,15 +73,17 @@ export const CONFIG_PRESET_EXPORT_RETENTION_MS = 60 * 60 * 1000;
 type SelectedConfigPresetFamily = ConfigPresetFamilyDefinition & { items: ConfigPresetItemDefinition[] };
 
 // Keeps the registry order, merges duplicated types and rejects anything the registry does not know.
-// A selection without items (null) takes every item the family lists at export time; an empty list takes none.
+// A selection without items (null) takes every item the family lists at export time but its excluded_items;
+// an empty list takes none. Selections of the same type add up.
 export const resolveConfigPresetSelections = async (
   context: AuthContext,
   user: AuthUser,
   selections: ConfigPresetSelectionInput[],
 ): Promise<SelectedConfigPresetFamily[]> => {
-  selections.forEach(({ type }) => {
-    if (!CONFIG_PRESET_FAMILIES.some((family) => family.id === type)) {
-      throw FunctionalError('Unknown configuration preset type', { type });
+  selections.forEach(({ type, items, excluded_items }) => {
+    findConfigPresetFamily(type);
+    if (items && excluded_items && excluded_items.length > 0) {
+      throw FunctionalError('Excluded items require a selection of every item of the type', { type });
     }
   });
   const resolved: SelectedConfigPresetFamily[] = [];
@@ -53,16 +91,20 @@ export const resolveConfigPresetSelections = async (
     const family = CONFIG_PRESET_FAMILIES[i];
     const familySelections = selections.filter(({ type }) => type === family.id);
     if (familySelections.length > 0) {
-      const familyItems = await family.listItems(context, user);
-      const familyItemIds = new Set(familyItems.map((item) => item.id));
-      const requestedIds = new Set(familySelections.flatMap(({ items }) => items ?? []));
-      requestedIds.forEach((itemId) => {
-        if (!familyItemIds.has(itemId)) {
-          throw FunctionalError('Unknown configuration preset item', { type: family.id, item: itemId });
-        }
-      });
-      const selectAll = familySelections.some(({ items }) => !items);
-      const items = selectAll ? familyItems : familyItems.filter((item) => requestedIds.has(item.id));
+      const requestedIds = [...new Set(familySelections.flatMap(({ items }) => items ?? []))];
+      let items = requestedIds.length > 0 ? await family.resolveItems(context, user, requestedIds, []) : [];
+      const resolvedIds = new Set(items.map((item) => item.id));
+      const unknownId = requestedIds.find((itemId) => !resolvedIds.has(itemId));
+      if (unknownId) {
+        throw FunctionalError('Unknown configuration preset item', { type: family.id, item: unknownId });
+      }
+      const exclusions = familySelections.filter(({ items: selectedItems }) => !selectedItems).map(({ excluded_items }) => excluded_items ?? []);
+      if (exclusions.length > 0) {
+        // Excluded only when every selection of all the items excludes it and no list selects it
+        const [firstExclusion, ...otherExclusions] = exclusions;
+        const excludedIds = firstExclusion.filter((itemId) => otherExclusions.every((ids) => ids.includes(itemId)) && !requestedIds.includes(itemId));
+        items = await family.resolveItems(context, user, null, excludedIds);
+      }
       if (items.length > 0) {
         resolved.push({ ...family, items });
       }

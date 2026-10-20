@@ -5,7 +5,8 @@ import { platformFamily } from './registry/platform-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
 import { hiddenEntityTypesFamily } from './registry/hiddenEntityTypes-configPreset-registry';
 
-// Singleton categories: each one has one item with its own id. Each family is defined in its own file under registry/.
+// In registry order, the categories of the spec table: Platform settings (platform, messages), then Data model.
+// Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
   messagesFamily,

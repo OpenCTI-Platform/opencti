@@ -1,4 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicConnection } from '../../types/store';
 
 export type ConfigPresetConfiguration = Record<string, unknown>;
 
@@ -23,6 +24,16 @@ export interface ConfigPresetItemDefinition {
   exporter: (context: AuthContext, user: AuthUser) => Promise<ConfigPresetConfiguration>;
 }
 
+export interface ConfigPresetListItemsArgs {
+  first?: number | null;
+  after?: string | null;
+  search?: string | null;
+  // Only these items
+  ids?: string[] | null;
+  // Every item but these
+  excludedIds?: string[] | null;
+}
+
 // An export group of the spec table (Platform settings, Data model...): it groups categories in the export dialog
 interface ConfigPresetGroupDefinition {
   id: string;
@@ -35,10 +46,14 @@ interface ConfigPresetGroupDefinition {
 export interface ConfigPresetFamilyDefinition {
   id: string;
   label: string;
+  // What the category holds, a static string the UI translates
+  description: string;
   group: ConfigPresetGroupDefinition;
   // Folder of the family in the exported bundle: the group folder for a singleton category
   // (platform_settings, data_model), `<group folder>/<category folder>` for an entity category
   directory: string;
-  // Items exportable at call time: a static list, or entities the family reads
-  listItems: (context: AuthContext, user: AuthUser) => Promise<ConfigPresetItemDefinition[]>;
+  // A page of the exportable items, in a stable order; an entity family delegates to the listing of its domain
+  listItems: (context: AuthContext, user: AuthUser, args: ConfigPresetListItemsArgs) => Promise<BasicConnection<ConfigPresetItemDefinition>>;
+  // Every exportable item (ids null) or only the given ones, without the excluded ones: what the export writes
+  resolveItems: (context: AuthContext, user: AuthUser, ids: string[] | null, excludedIds: string[]) => Promise<ConfigPresetItemDefinition[]>;
 }
