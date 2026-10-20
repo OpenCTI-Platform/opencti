@@ -237,6 +237,7 @@ import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
+import { benchTimer } from '../utils/bench-timing';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from './markdown-embedded-images';
 import {
@@ -3516,6 +3517,8 @@ export const createRelationRaw = async (
   opts: CreateRelationRawOpts = {},
 ) => {
   let lock;
+  const bench = benchTimer('relation');
+  let benchLockStart = 0;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = rawInput;
 
@@ -3546,7 +3549,9 @@ export const createRelationRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, relationshipType) as BasicStoreEntityEntitySetting;
 
   // We need to check existing dependencies
+  bench.step('prepare');
   let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  bench.step('resolve_refs');
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
@@ -3603,9 +3608,13 @@ export const createRelationRaw = async (
   const participantIds = inputIds.filter((e) => !locks.includes(e));
   try {
     // Try to get the lock in redis
+    bench.step('checks');
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    bench.step('lock_wait');
+    benchLockStart = bench.now();
     // region check existing relationship
     const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
+    bench.step('existing_search');
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
       // We need to filter what we found with the user rights
@@ -3632,7 +3641,9 @@ export const createRelationRaw = async (
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
       resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
+    bench.step('defaults');
     await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
+    bench.step('validate');
 
     // endregion
     if (existingRelationship) {
@@ -3649,9 +3660,11 @@ export const createRelationRaw = async (
     }
     // Just build a standard relationship
     const dataRel = await buildRelationData(context, user, resolvedInput, opts);
+    bench.step('build');
     // Index the created element
     lock.signal.throwIfAborted();
     await indexCreatedElement(context, user, dataRel);
+    bench.step('index');
     // Push the input in the stream
     let event;
     // In case on embedded relationship creation, we need to dispatch
@@ -3696,6 +3709,7 @@ export const createRelationRaw = async (
     } else {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
+      bench.step('stream_event');
     }
     // - TRANSACTION END
     // region Security coverage hook
@@ -3726,7 +3740,12 @@ export const createRelationRaw = async (
     }
     throw err;
   } finally {
-    if (lock) await lock.unlock();
+    if (lock) {
+      await lock.unlock();
+      bench.step('unlock');
+      bench.since('lock_held', benchLockStart);
+    }
+    bench.total();
   }
 };
 export const createRelation = async (

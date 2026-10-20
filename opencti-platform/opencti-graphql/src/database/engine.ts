@@ -201,6 +201,7 @@ import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-map
 import { isEsScriptFilterEnabled } from './engine-config';
 import { AbortError } from 'node-fetch';
 import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { benchTimer } from '../utils/bench-timing';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -4729,7 +4730,9 @@ export const elIndexElements = async (
   validateElementsToIndex(context, user, elements);
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
+    const bench = benchTimer('index');
     const transformedElements = await prepareIndexing(context, user, elements);
+    bench.step('prepare');
     // 01. Bulk the indexing of row elements
     // split since there can be a lot of relationships for the same element
     const transformedElementsSplit = R.splitEvery(MAX_BULK_OPERATIONS, transformedElements);
@@ -4747,6 +4750,7 @@ export const elIndexElements = async (
         await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body });
       }
     }
+    bench.step('bulk_refresh');
     // 02. If relation, generate impacts for from and to sides
     const cache: Record<string, BasicStoreBase | null | undefined> = {};
     const impactedEntities = R.pipe(
@@ -4793,6 +4797,7 @@ export const elIndexElements = async (
       const params = buildDenormalizedRefsScriptParams(targetsElements, now());
       return { ...entity, id: entityId, data: { script: { source: EL_DENORMALIZED_REFS_SCRIPT_SOURCE, params } } };
     });
+    bench.step('build_impacts');
     // bulk update elements (denormalized relations)
     if (elementsToUpdate.length > 0) {
       const groupsOfElementsToUpdate = R.splitEvery(MAX_BULK_OPERATIONS, elementsToUpdate);
@@ -4809,6 +4814,7 @@ export const elIndexElements = async (
         }
       }
     }
+    bench.step('endpoints_refresh');
     return transformedElements.length;
   };
   return telemetry(context, user, `INSERT ${indexingType}`, {
