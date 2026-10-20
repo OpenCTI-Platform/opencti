@@ -171,10 +171,9 @@ export const loadConnectorHeartbeat = async (connectorId: string) => {
   }
 };
 
-// Built-in connectors do not send heartbeats: nothing is read for them
-const loadConnectorsHeartbeats = async (connectorsToRead: { internal_id: string; built_in?: boolean }[]) => {
+const loadConnectorsHeartbeats = async () => {
   try {
-    return await redisGetConnectorsHeartbeats(connectorsToRead.filter((conn) => !conn.built_in).map((conn) => conn.internal_id));
+    return await redisGetConnectorsHeartbeats();
   } catch (err) {
     logApp.warn('[OPENCTI-MODULE] Unable to read connectors heartbeats, connectors considered inactive', { cause: err });
     return new Map<string, string>();
@@ -187,7 +186,7 @@ export const refreshConnectorsLiveness = async <T extends { internal_id: string;
   if (cachedConnectors.length === 0) {
     return [];
   }
-  const heartbeats = await loadConnectorsHeartbeats(cachedConnectors);
+  const heartbeats = await loadConnectorsHeartbeats();
   return cachedConnectors.map((conn) => {
     // Built-in connectors do not send heartbeats
     const lastSeenAt = conn.built_in ? null : (heartbeats.get(conn.internal_id) ?? null);
@@ -217,9 +216,8 @@ export const connectors = async (context: AuthContext, user: AuthUser) => {
     findConnectors(context, user),
     builtInConnectorsRuntime(context, user),
   ]);
-  const allConnectors = [...storedConnectors, ...builtInConnectors];
-  const heartbeats = await loadConnectorsHeartbeats(allConnectors);
-  return allConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
+  const heartbeats = await loadConnectorsHeartbeats();
+  return [...storedConnectors, ...builtInConnectors].map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 
 // The connectors cache is only reloaded on connectors events, while liveness changes with the pings or their absence:
@@ -253,7 +251,7 @@ export const connectorManagers = (context: AuthContext, user: AuthUser) => {
 
 export const connectorsForManagers = async (context: AuthContext, user: AuthUser) => {
   const managedConnectors = await findManagedConnectors(context, user);
-  const heartbeats = await loadConnectorsHeartbeats(managedConnectors);
+  const heartbeats = await loadConnectorsHeartbeats();
   return managedConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 

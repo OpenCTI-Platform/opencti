@@ -25,10 +25,10 @@ import {
   computeIngestionHealthPatch,
   HealthTransition,
 } from '../modules/ingestionHealth/ingestionHealth-checks';
-import type { GlobalIngestionHealthContext } from '../modules/ingestionHealth/ingestionHealth-registry';
+import { type GlobalIngestionHealthContext, HEALTH_CHECK_REGISTRY, type RuntimeCheckDefinition, type RuntimeData } from '../modules/ingestionHealth/ingestionHealth-registry';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
-import { getRuntimeDataMany, type RuntimeData } from '../modules/ingestionHealth/ingestionHealthRuntimeData';
+import { IngestionHealthCheckKind } from '../generated/graphql';
 import { findRegularlyPingingConnectors, isConnectorStopped } from '../modules/connector/connector-domain';
 import { isSyncRunning } from '../domain/connector';
 import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
@@ -86,6 +86,21 @@ const writeIngestionHealth = async <T extends IngestionElement>(context: AuthCon
     // patchAttribute does not refresh the caches: notify every node, as registerConnector does
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElement, INGESTION_HEALTH_MANAGER_USER);
   }
+};
+
+// Reads the values of the runtime checks for a batch of ingestions: one getRuntimeData call per check, whatever the number of ingestions.
+// A read failure is not hidden: it rejects, so that an unreachable storage is never read as a missing value.
+const loadRuntimeData = async (ingestionIds: string[]): Promise<Map<string, RuntimeData>> => {
+  if (ingestionIds.length === 0) {
+    return new Map();
+  }
+  const runtimeChecks = Object.entries(HEALTH_CHECK_REGISTRY)
+    .filter((entry): entry is [string, RuntimeCheckDefinition<unknown>] => entry[1].kind === IngestionHealthCheckKind.Runtime);
+  const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => definition.getRuntimeData()));
+  return new Map(ingestionIds.map((ingestionId) => {
+    const runtimeData = Object.fromEntries(runtimeChecks.map(([code], index) => [code, valuesByCheck[index].get(ingestionId)]));
+    return [ingestionId, runtimeData as RuntimeData];
+  }));
 };
 
 // Stopped on purpose: nothing is evaluated (no checks, no runtime data read) and nothing is reported,
@@ -158,7 +173,7 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     // Active
     let runtimeDataByIngestion: Map<string, RuntimeData>;
     try {
-      runtimeDataByIngestion = await getRuntimeDataMany(activeElements.map((element) => element.internal_id));
+      runtimeDataByIngestion = await loadRuntimeData(activeElements.map((element) => element.internal_id));
     } catch (e) {
       logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', type: source.entityType });
       continue;

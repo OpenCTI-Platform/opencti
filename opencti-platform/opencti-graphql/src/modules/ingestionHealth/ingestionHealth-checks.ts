@@ -3,6 +3,7 @@ import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKi
 import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
 import {
   getHealthCheckDefinition,
+  HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_REGISTRY,
   type HealthCheckCode,
   type HealthCheckDefinition,
@@ -13,11 +14,26 @@ import {
 } from './ingestionHealth-registry';
 
 // region evaluation (pure, no I/O)
-const getFailure = (definition: HealthCheckDefinition, ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext): HealthCheckMetadata | null => {
+/**
+ * Runs one check against one ingestor, giving its getFailure what the kind of the check judges:
+ * the ingestor itself for a configuration check, the value read for this check for a runtime check.
+ *
+ * @param code the code of the check, under which its runtime value is found in context.runtimeData
+ * @param definition the check, whose isEnabled is already true for the ingestor
+ * @param ingestor the connector, feed or sync evaluated
+ * @param context the evaluation context, holding the runtime values of the ingestor
+ * @returns null when the check passes; the metadata of the failure when it fails, {} when there is nothing to tell
+ */
+const getHealthCheckFailure = (
+  code: HealthCheckCode,
+  definition: HealthCheckDefinition,
+  ingestor: HealthCheckIngestor,
+  context: SourceIngestionHealthContext,
+): HealthCheckMetadata | null => {
   if (definition.kind === IngestionHealthCheckKind.Runtime) {
-    // The value type depends on the runtime data of each check, which a loop over all the checks cannot express: it is checked where the check is declared
-    const getRuntimeFailure = definition.getFailure as (value: unknown, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
-    return getRuntimeFailure(context.runtimeData?.[definition.runtimeData], context);
+    // The value type depends on each check, which a loop over all the checks cannot express: it is checked where the check is declared
+    const runtimeData: Record<string, unknown> = context.runtimeData ?? {};
+    return definition.getFailure(runtimeData[code], context);
   }
   return definition.getFailure(ingestor, context);
 };
@@ -27,7 +43,7 @@ export const computeIngestionHealthChecks = (
   context: SourceIngestionHealthContext,
 ): StoredHealthCheck[] => {
   return (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
-    const metadata = definition.isEnabled(ingestor, context) ? getFailure(definition, ingestor, context) : null;
+    const metadata = definition.isEnabled(ingestor, context) ? getHealthCheckFailure(code, definition, ingestor, context) : null;
     return metadata ? [{ health_check_code: code, health_check_metadata: metadata }] : [];
   });
 };
@@ -50,7 +66,7 @@ export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, 
     return IngestionHealthStatus.Degraded;
   }
   // healthy needs a proof of life from the runtime data AND no check at all, otherwise the status stays unknown
-  if (checks.length === 0 && isHeartbeatAlive(runtimeData.heartbeat, evaluatedAt)) {
+  if (checks.length === 0 && isHeartbeatAlive(runtimeData[HEALTH_CHECK_HEARTBEAT_MISSING], evaluatedAt)) {
     return IngestionHealthStatus.Healthy;
   }
   return null;

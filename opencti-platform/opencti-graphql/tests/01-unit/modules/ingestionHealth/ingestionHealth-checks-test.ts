@@ -92,7 +92,7 @@ describe('computeIngestionHealthPatch', () => {
 });
 
 describe('computeIngestionHealthPatch with runtime data', () => {
-  const ALIVE = { ...CONTEXT, runtimeData: { heartbeat: EVALUATED_AT } };
+  const ALIVE = { ...CONTEXT, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } };
 
   it('should be healthy with no check and a heartbeat', () => {
     expect(computeIngestionHealthPatch({}, [], ALIVE)).toEqual({
@@ -119,7 +119,7 @@ describe('computeIngestionHealthPatch with runtime data', () => {
 
   it('should not be healthy on a stale heartbeat', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, 'ms').toISOString();
-    expect(computeIngestionHealthPatch({}, [], { ...CONTEXT, runtimeData: { heartbeat } })).toBeNull();
+    expect(computeIngestionHealthPatch({}, [], { ...CONTEXT, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat } })).toBeNull();
   });
 
   it('should keep since while the ingestion stays healthy', () => {
@@ -143,23 +143,23 @@ describe('heartbeat check', () => {
   });
 
   it('should not flag a heartbeat that is there', () => {
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { heartbeat: EVALUATED_AT }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT }, isExistingUser })).toEqual([]);
   });
 
   it('should not flag a heartbeat younger than the max age', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS - 1000, 'ms').toISOString();
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat }, isExistingUser })).toEqual([]);
   });
 
   it('should flag a heartbeat older than the max age as missing', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, 'ms').toISOString();
-    const runtimeData = { heartbeat };
+    const runtimeData = { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat };
     expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
   });
 
   it('should not flag a heartbeat in the future, clock skew between nodes', () => {
     const heartbeat = utcDate(EVALUATED_AT).add(10_000, 'ms').toISOString();
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat }, isExistingUser })).toEqual([]);
   });
 
   it('should not flag sources without heartbeat, such as feeds and syncs', () => {

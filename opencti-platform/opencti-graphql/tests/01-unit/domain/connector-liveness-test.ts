@@ -69,10 +69,6 @@ vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal)
   redisDeleteConnectorHeartbeat: vi.fn(),
 }));
 
-vi.mock('../../../src/modules/ingestionHealth/ingestionHealthMonitoring-redis', () => ({
-  redisSetRuntimeData: vi.fn(),
-}));
-
 vi.mock('../../../src/modules/connector/connector-built-in-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/modules/connector/connector-built-in-domain')>()),
   builtInConnectorsRuntime: vi.fn().mockResolvedValue([]),

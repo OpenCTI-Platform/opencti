@@ -1,9 +1,8 @@
-import { z } from 'zod';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity } from '../../generated/graphql';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../connector/connector-types';
 import { durationInMs } from '../../utils/format';
-import type { RuntimeDataStorageConfig } from './ingestionHealthRuntimeData-storage';
+import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
 
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
 export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
@@ -31,7 +30,7 @@ export interface GlobalIngestionHealthContext {
 // What the evaluation looks at, besides the configuration of the ingestion: whether a check applies, whether it fails, the status.
 // A new check needing a new fact adds a field here, not a parameter to every function.
 export interface SourceIngestionHealthContext extends GlobalIngestionHealthContext {
-  // Data reported by the sources, as stored: whether it is still fresh is judged here, not by the storage
+  // Values read by the runtime checks for this ingestion, by check code: whether they are still fresh is judged here, not when read
   runtimeData?: RuntimeData;
 }
 
@@ -52,47 +51,21 @@ interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
   getFailure: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
 }
 
-// A runtime check is judged from a value reported by the sources: the name of its entry in RUNTIME_DATA.
-// The value is undefined when the sources reported nothing.
+// A runtime check is judged from a value reported by the sources, read by its getRuntimeData.
+// getRuntimeData reads the values of every ingestion at once, by ingestion id: it is called once per source by the ingestion health manager.
+// It returns what was reported, as stored: what is stale is judged by getFailure. Absent ingestions are omitted.
+// The value given to getFailure is undefined when the sources reported nothing.
 // Its isEnabled must be false for a stopped ingestor: nothing is read for it, a missing value would be reported as a failure.
-type RuntimeCheckDefinition = {
-  [T in RuntimeDataType]: BaseHealthCheckDefinition & {
-    kind: IngestionHealthCheckKind.Runtime;
-    runtimeData: T;
-    getFailure: (value: RuntimeDataValue<T> | undefined, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
-  };
-}[RuntimeDataType];
-
-export type HealthCheckDefinition = ConfigurationCheckDefinition | RuntimeCheckDefinition;
-
-// region runtime data
-// The format of a value reported by the sources and where it is stored.
-// Values are stored as reported, what is stale or missing is up to the ingestion health manager.
-// Changing the storage of a runtime data is changing its `storage` line, see ingestionHealthRuntimeData-storage.
-interface RuntimeDataDefinition {
-  schema: z.ZodType;
-  storage: RuntimeDataStorageConfig;
+export interface RuntimeCheckDefinition<T> extends BaseHealthCheckDefinition {
+  kind: IngestionHealthCheckKind.Runtime;
+  getRuntimeData: () => Promise<Map<string, T>>;
+  getFailure: (value: T | undefined, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
 }
 
-export const RUNTIME_DATA = {
-  // Last time a connector pinged or registered (ISO date).
-  // Kept in the sorted set of the connector liveness: it has no expiration, the age of the value is judged by the manager.
-  heartbeat: {
-    schema: z.iso.datetime(),
-    storage: {
-      type: 'redis_sorted_set',
-      key: 'connector_heartbeats',
-      toScore: (iso: string) => new Date(iso).getTime(),
-      fromScore: (epochMs: number) => new Date(epochMs).toISOString(),
-    },
-  },
-} as const satisfies Record<string, RuntimeDataDefinition>;
+// The type of the value is inferred from getRuntimeData, so that getFailure is checked against it
+const defineRuntimeCheck = <T>(definition: RuntimeCheckDefinition<T>): RuntimeCheckDefinition<T> => definition;
 
-export type RuntimeDataType = keyof typeof RUNTIME_DATA;
-export type RuntimeDataValue<T extends RuntimeDataType> = z.infer<(typeof RUNTIME_DATA)[T]['schema']>;
-export type RuntimeData = { [T in RuntimeDataType]?: RuntimeDataValue<T> };
-export const RUNTIME_DATA_TYPES = Object.keys(RUNTIME_DATA) as RuntimeDataType[];
-// endregion
+export type HealthCheckDefinition = ConfigurationCheckDefinition | RuntimeCheckDefinition<any>;
 
 // Built-in connectors (feed twins) are not deployed: no process runs them
 const isDeployed = (ingestor: HealthCheckIngestor) => !ingestor.built_in;
@@ -129,16 +102,20 @@ export const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
     },
   },
   // A running process pings regularly: no heartbeat means it is down
-  [HEALTH_CHECK_HEARTBEAT_MISSING]: {
+  [HEALTH_CHECK_HEARTBEAT_MISSING]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'No heartbeat received',
     // Only the running connectors pinging continuously: the others would be missing their heartbeat between two runs
     isEnabled: (ingestor, { pingingConnectorsIds }) => isDeployed(ingestor) && pingingConnectorsIds.has(ingestor.internal_id),
-    runtimeData: 'heartbeat',
+    getRuntimeData: redisGetConnectorsHeartbeats,
     getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : {}),
-  },
-} as const satisfies Record<string, HealthCheckDefinition>;
+  }),
+};
+
+// The values read by the runtime checks for one ingestion, by check code, typed by the getRuntimeData of each check
+type RuntimeCheckCode = { [C in keyof typeof HEALTH_CHECKS]: (typeof HEALTH_CHECKS)[C] extends RuntimeCheckDefinition<any> ? C : never }[keyof typeof HEALTH_CHECKS];
+export type RuntimeData = { [C in RuntimeCheckCode]?: (typeof HEALTH_CHECKS)[C] extends RuntimeCheckDefinition<infer T> ? T : never };
 
 export type HealthCheckCode = keyof typeof HEALTH_CHECK_REGISTRY;
 
