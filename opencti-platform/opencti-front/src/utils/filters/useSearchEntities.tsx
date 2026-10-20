@@ -43,6 +43,7 @@ import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
 import { displayEntityTypeForTranslation } from '../String';
 import { useSearchEntitiesGroupsQuery$data } from './__generated__/useSearchEntitiesGroupsQuery.graphql';
+import { WORKFLOW_FILTER_KEYS } from './filterKeyGrouping';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -669,9 +670,7 @@ const useSearchEntities = ({
       'members_user', // for audit TODO register in audit (not for now)
       'members_group', // for audit TODO register in audit (not for now)
       'members_organization', // for audit TODO register in audit (not for now)
-      'workflow_user', // for workflow
-      'workflow_group', // for workflow
-      'workflow_organization', // for workflow
+      ...WORKFLOW_FILTER_KEYS, // for workflow
       'id', // regardingOf subfilter
       'connectedToId', // id of the listened entities in an instance trigger
       'sightedBy', // sighting relationship TODO remove because already in regardingOf, and migrate the key)

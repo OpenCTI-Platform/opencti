@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import type { WidgetColumn } from '../../../utils/widget/widget';
 import { customFieldDefinitionsToWidgetColumns, type CustomFieldWidgetDefinition } from '../../../utils/customFields';
 import useHelper from '../../../utils/hooks/useHelper';
+import useSchema from '../../../utils/hooks/useSchema';
 import { fetchQuery } from '../../../relay/environment';
 import type { useCustomFieldWidgetColumnsQuery } from './__generated__/useCustomFieldWidgetColumnsQuery.graphql';
 const customFieldWidgetColumnsQuery = graphql`
@@ -34,12 +35,14 @@ export interface UseCustomFieldWidgetColumnsResult {
  *
  * Returns an empty, non-loading result if the CUSTOM_FIELDS feature flag is disabled (the
  * underlying query field throws server-side in that case, so it must never be called then).
- * When `entityType` is provided, only the definitions applicable to that entity type (or with no
- * entity type restriction at all) are kept.
+ * Definitions attached to no entity type are never kept. When `entityType` is provided, only the
+ * definitions attached to that entity type are kept (or to stix-core-relationship for a relationship type).
  */
 const useCustomFieldWidgetColumns = (entityType?: string): UseCustomFieldWidgetColumnsResult => {
   const { isFeatureEnable } = useHelper();
   const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
+  const { isRelationship } = useSchema();
+  const isRelationshipType = !!entityType && isRelationship(entityType);
   const [definitions, setDefinitions] = useState<CustomFieldWidgetDefinition[]>([]);
   const [loading, setLoading] = useState(isCustomFieldsEnabled);
   useEffect(() => {
@@ -70,8 +73,8 @@ const useCustomFieldWidgetColumns = (entityType?: string): UseCustomFieldWidgetC
     };
   }, [isCustomFieldsEnabled]);
   const columns = useMemo(
-    () => customFieldDefinitionsToWidgetColumns(definitions, entityType),
-    [definitions, entityType],
+    () => customFieldDefinitionsToWidgetColumns(definitions, entityType, isRelationshipType),
+    [definitions, entityType, isRelationshipType],
   );
   return { columns, loading };
 };

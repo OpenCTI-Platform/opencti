@@ -1,11 +1,126 @@
 import * as R from 'ramda';
-import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from './custom-field-types';
+import { GRAPHQL_MAX_INT, GRAPHQL_MIN_INT } from 'graphql';
+import { GraphQLDateTime } from 'graphql-scalars';
+import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_NOW_TOKEN, type CustomFieldValue } from './custom-field-types';
 import { FunctionalError } from '../../config/errors';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitionsForEntityType, getCustomFieldSettingForEntityType, getCustomFieldValueField } from './custom-field-cache';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type CustomFieldValueAddInput, type EditInput, EditOperation } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { customFieldValues } from '../../schema/attribute-definition';
+import { now } from '../../utils/format';
+import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../utils/access';
+
+// Custom field values are typed `[Any]` in the API, so dates don't go through the GraphQL DateTime scalar.
+// Apply the same rule as standard date attributes: RFC 3339 date-time only, normalized to ISO UTC.
+export const normalizeCustomFieldDate = (value: unknown): string | undefined => {
+  try {
+    return (GraphQLDateTime.parseValue(value) as Date).toISOString();
+  } catch {
+    return undefined;
+  }
+};
+
+// int_value is a GraphQL Int (and an Elasticsearch integer): a 32-bit signed integer
+const isCustomFieldInteger = (value: unknown): value is number => Number.isInteger(value)
+  && (value as number) >= GRAPHQL_MIN_INT && (value as number) <= GRAPHQL_MAX_INT;
+
+// Normalize stored-format entries (edit path). Clients may send every value key with the unset ones as null
+// (e.g. entries read back from the API): they are dropped, so that the stored entries and the history
+// comparison only depend on the actual value. Invalid dates are left as is for validation to reject.
+export const normalizeCustomFieldValues = (values: CustomFieldValue[]): CustomFieldValue[] => values.map((value) => {
+  const entry = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null && v !== undefined)) as CustomFieldValue;
+  if (entry.date_value === undefined) {
+    return entry;
+  }
+  const normalizedDate = normalizeCustomFieldDate(entry.date_value);
+  return normalizedDate ? { ...entry, date_value: normalizedDate } : entry;
+});
+
+// A remove entry carrying select_values only removes these options of the multi_select
+export const isCustomFieldOptionsRemove = (input: EditInput) => input.operation === EditOperation.Remove
+  && (input.value ?? []).some((v: CustomFieldValue) => Array.isArray(v?.select_values) && v.select_values.length > 0);
+
+// Several custom field values inputs of a single edit (e.g. a background task replacing multi_select options
+// with a remove then an add) are applied in order on the current values, the result is a single replace.
+// add sets the field (multi_select options united), remove clears it (or removes the given options), replace sets all.
+export const foldCustomFieldValuesInputs = (currentValues: CustomFieldValue[], inputs: EditInput[]): CustomFieldValue[] => {
+  let values = currentValues;
+  for (let i = 0; i < inputs.length; i += 1) {
+    const { operation, value } = inputs[i];
+    const entries: CustomFieldValue[] = value ?? [];
+    if (operation === EditOperation.Add) {
+      const entryFieldIds = entries.map((e) => e.field_id);
+      const previousValues = values;
+      const addedValues = entries.map((entry) => {
+        const existing = previousValues.find((v) => v.field_id === entry.field_id);
+        return Array.isArray(existing?.select_values) && Array.isArray(entry.select_values)
+          ? { ...entry, select_values: R.uniq([...existing.select_values, ...entry.select_values]) }
+          : entry;
+      });
+      values = [...previousValues.filter((v) => !entryFieldIds.includes(v.field_id)), ...addedValues];
+    } else if (operation === EditOperation.Remove) {
+      values = values.flatMap((current) => {
+        const removed = entries.find((e) => e.field_id === current.field_id);
+        if (!removed) return [current];
+        if (Array.isArray(removed.select_values) && removed.select_values.length > 0 && Array.isArray(current.select_values)) {
+          const remaining = current.select_values.filter((option) => !removed.select_values?.includes(option));
+          return remaining.length > 0 ? [{ ...current, select_values: remaining }] : [];
+        }
+        return [];
+      });
+    } else {
+      values = entries;
+    }
+  }
+  return values;
+};
+
+// Merge of entities: each custom field is merged as the standard attribute it stands for. A single value
+// custom field keeps the target value, or else takes the value of the first source having one. A multi_select
+// custom field gets the union of the selected options. The result holds a single entry per custom field.
+export const mergeCustomFieldValues = (targetValues: CustomFieldValue[] | undefined, sourcesValues: (CustomFieldValue[] | undefined)[]): CustomFieldValue[] => {
+  const mergedByFieldId = new Map<string, CustomFieldValue>();
+  [targetValues, ...sourcesValues].forEach((values) => {
+    (values ?? []).forEach((value) => {
+      const existing = mergedByFieldId.get(value.field_id);
+      if (!existing) {
+        mergedByFieldId.set(value.field_id, value);
+      } else if (Array.isArray(existing.select_values) && Array.isArray(value.select_values)) {
+        mergedByFieldId.set(value.field_id, { ...existing, select_values: R.uniq([...existing.select_values, ...value.select_values]) });
+      }
+    });
+  });
+  return Array.from(mergedByFieldId.values());
+};
+
+// Edit path (stored format): the technical name is unique and immutable, so the server derives field_id
+// from field_name (or an alias) instead of trusting the client. A missing field_id is filled, an inconsistent
+// one is rejected, and an alias is replaced by the technical name. Unknown names are left for validation.
+export const resolveCustomFieldValuesIdentity = async (
+  context: AuthContext,
+  user: AuthUser,
+  values: CustomFieldValue[],
+  entityType: string,
+): Promise<CustomFieldValue[]> => {
+  const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
+  return values.map((value) => {
+    const definition = value.field_name
+      ? definitions.find((d) => d.name === value.field_name || d.aliases?.some((a) => a === value.field_name))
+      : definitions.find((d) => d.id === value.field_id);
+    if (!definition) {
+      // A name/id pair whose name does not resolve must not act on the id (e.g. remove by id)
+      if (value.field_id && value.field_name) {
+        throw FunctionalError('Custom field name not found for this entity type', { field_id: value.field_id, field_name: value.field_name });
+      }
+      return value;
+    }
+    if (value.field_id && value.field_name && value.field_id !== definition.id) {
+      throw FunctionalError('Custom field id does not match its name', { field_id: value.field_id, field_name: value.field_name });
+    }
+    return { ...value, field_id: definition.id, field_name: definition.name };
+  });
+};
 
 const verifyAddInputValueType = (
   customFieldValueAddInputValue: any[],
@@ -15,7 +130,9 @@ const verifyAddInputValueType = (
   // If not, drop
   switch (customFieldDefinition.field_type) {
     case 'integer':
-      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'number') {
+      // A decimal or out of range number (e.g. a connector score) is dropped like any mistyped value,
+      // instead of reaching validateIntegerField and failing the whole entity.
+      if (customFieldValueAddInputValue.length != 1 || !isCustomFieldInteger(customFieldValueAddInputValue[0])) {
         logApp.warn('Invalid value type for integer custom field', { field_name: customFieldDefinition.label });
         return false;
       }
@@ -34,7 +151,7 @@ const verifyAddInputValueType = (
       }
       break;
     case 'date':
-      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'string') {
+      if (customFieldValueAddInputValue.length != 1 || normalizeCustomFieldDate(customFieldValueAddInputValue[0]) === undefined) {
         logApp.warn('Invalid value type for date custom field', { field_name: customFieldDefinition.label });
         return false;
       }
@@ -57,7 +174,7 @@ const verifyAddInputValueType = (
   return true;
 };
 
-const extractCustomFieldValueFromAddInputValue = (
+export const extractCustomFieldValueFromAddInputValue = (
   customFieldValueAddInputValue: any[],
   customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
 ) => {
@@ -83,7 +200,7 @@ const extractCustomFieldValueFromAddInputValue = (
       customFieldValue.boolean_value = customFieldValueAddInputValue[0] as boolean;
       break;
     case 'date':
-      customFieldValue.date_value = customFieldValueAddInputValue[0] as string;
+      customFieldValue.date_value = normalizeCustomFieldDate(customFieldValueAddInputValue[0]);
       break;
     case 'select':
       customFieldValue.select_value = customFieldValueAddInputValue[0] as string;
@@ -131,15 +248,22 @@ export const getCustomFieldDefaultValueFromEntitySettings = (
     const defaultValue = customFieldEntitySettings?.default_value;
     const customFieldDefaultValue = { field_id: customFieldDefinition.id, field_name: customFieldDefinition.name };
     switch (customFieldDefinition.field_type) {
-      case 'integer':
-        return { ...customFieldDefaultValue, int_value: Number.parseInt(defaultValue) };
+      case 'integer': {
+        // Number() never truncates (unlike parseInt): an invalid integer default is ignored rather than stored
+        const trimmedDefault = defaultValue.trim();
+        const intValue = trimmedDefault === '' ? Number.NaN : Number(trimmedDefault);
+        return isCustomFieldInteger(intValue) ? { ...customFieldDefaultValue, int_value: intValue } : undefined;
+      }
       case 'markdown':
       case 'string':
         return { ...customFieldDefaultValue, string_value: defaultValue };
       case 'select':
         return { ...customFieldDefaultValue, select_value: defaultValue };
-      case 'date':
-        return { ...customFieldDefaultValue, date_value: defaultValue };
+      case 'date': {
+        // @now is resolved when the value is filled; an invalid default is ignored rather than failing indexing
+        const dateValue = defaultValue === CUSTOM_FIELD_NOW_TOKEN ? now() : normalizeCustomFieldDate(defaultValue);
+        return dateValue ? { ...customFieldDefaultValue, date_value: dateValue } : undefined;
+      }
       case 'multi_select':
         return { ...customFieldDefaultValue, select_values: [defaultValue] };
       case 'boolean':
@@ -197,12 +321,14 @@ export const extractStringifiedCustomFieldValueFromStoreEntity = async (
 /**
  * Validates an array of custom field values against the definitions for a given entity type.
  * Throws FunctionalError if any validation fails.
+ * checkMandatory: false skips the mandatory check (users allowed to bypass mandatory fields).
  */
 export const validateCustomFieldValues = async (
   context: AuthContext,
   user: AuthUser,
   customFieldValues: CustomFieldValue[],
   entityType: string,
+  opts: { checkMandatory?: boolean } = {},
 ): Promise<void> => {
   const values = customFieldValues ?? [];
   const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
@@ -234,11 +360,13 @@ export const validateCustomFieldValues = async (
 
   // Check mandatory fields are present.
   // Runs even when no values are provided, so an omitted mandatory field is rejected.
-  const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
-  for (const def of mandatoryDefs) {
-    const valueEntry = values.find((v) => v.field_name === def.name);
-    if (!valueEntry) {
-      throw FunctionalError('Mandatory custom field is missing', { field_name: def.name, label: def.label });
+  if (opts.checkMandatory !== false) {
+    const mandatoryDefs = definitions.filter((d) => getCustomFieldSettingForEntityType(d, entityType)?.mandatory);
+    for (const def of mandatoryDefs) {
+      const valueEntry = values.find((v) => v.field_name === def.name);
+      if (!valueEntry) {
+        throw FunctionalError('Mandatory custom field is missing', { field_name: def.name, label: def.label });
+      }
     }
   }
 };
@@ -254,9 +382,11 @@ export const validateCustomFieldValuesEditInput = async (
 ): Promise<void> => {
   const customFieldsDefinitionForEntityType = await getCustomFieldDefinitionsForEntityType(context, user, currentEntity.entity_type);
   const inputValues = customFieldValuesEditInput.value ?? [];
+  // Same bypass as mandatory standard attributes; type and range checks still apply
+  const checkMandatory = !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
   if (!customFieldValuesEditInput.operation || customFieldValuesEditInput.operation === EditOperation.Replace) {
-    await validateCustomFieldValues(context, user, inputValues, currentEntity.entity_type);
-  } else if (customFieldValuesEditInput.operation === EditOperation.Remove) {
+    await validateCustomFieldValues(context, user, inputValues, currentEntity.entity_type, { checkMandatory });
+  } else if (customFieldValuesEditInput.operation === EditOperation.Remove && checkMandatory) {
     for (let i = 0; i < inputValues.length; i++) {
       const inputValue = inputValues[i];
       if (inputValue.field_id && currentEntity.custom_field_values && currentEntity.custom_field_values.some((cf: any) => cf.field_id === inputValue.field_id)) {
@@ -279,7 +409,7 @@ export const validateCustomFieldValuesEditInput = async (
       return incoming;
     });
     const fullCustomFieldValues = [...preservedValues, ...mergedInputValues];
-    await validateCustomFieldValues(context, user, fullCustomFieldValues, currentEntity.entity_type);
+    await validateCustomFieldValues(context, user, fullCustomFieldValues, currentEntity.entity_type, { checkMandatory });
   }
 };
 
@@ -324,6 +454,9 @@ const validateIntegerField = (value: CustomFieldValue, definition: BasicStoreEnt
   if (!Number.isInteger(value.int_value)) {
     throw FunctionalError('int_value must be an integer', { field_name: value.field_name, value: value.int_value });
   }
+  if (!isCustomFieldInteger(value.int_value)) {
+    throw FunctionalError('int_value must be a 32-bit integer', { field_name: value.field_name, value: value.int_value, min: GRAPHQL_MIN_INT, max: GRAPHQL_MAX_INT });
+  }
   if (definition.min_value != null && value.int_value < definition.min_value) {
     throw FunctionalError('int_value is below minimum', { field_name: value.field_name, value: value.int_value, min: definition.min_value });
   }
@@ -356,9 +489,8 @@ const validateDateField = (value: CustomFieldValue): void => {
   if (value.date_value === undefined || value.date_value === null) {
     throw FunctionalError('date_value is required for date type custom field', { field_name: value.field_name });
   }
-  // Validate ISO date format
-  const date = new Date(value.date_value);
-  if (Number.isNaN(date.getTime())) {
+  // Validate ISO date format (same rule as standard date attributes)
+  if (normalizeCustomFieldDate(value.date_value) === undefined) {
     throw FunctionalError('date_value must be a valid ISO date string', { field_name: value.field_name, value: value.date_value });
   }
 };
