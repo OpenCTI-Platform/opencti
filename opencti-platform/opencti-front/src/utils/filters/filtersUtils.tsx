@@ -12,9 +12,12 @@ import { fetchQuery } from '../../relay/environment';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
+import { isCustomFieldAttribute } from '../customFields';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
+import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
+import { getVariableTokenLabel } from '../../components/dashboard/dashboardVariableTokenLabel';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -298,6 +301,23 @@ export const useStixFilters = (entityType?: string): string[] => {
 
 const getStringFilterKey = (key: string | string[]): string => {
   return Array.isArray(key) ? key[0] : key;
+};
+
+/**
+ * The filter keys displayed by a stix filters form: a stored filter on a custom field deleted since stays
+ * displayed, so that it can be removed on its own (the backend rejects saving it).
+ */
+export const getStixFiltersDisplayedKeys = (availableFilterKeys: string[], filters?: FilterGroup | null): string[] => {
+  if (!filters) return availableFilterKeys;
+  const unavailableCustomFieldKeys = new Set<string>();
+  mapFilterGroupTree(filters, (group) => {
+    (group.filters ?? []).forEach((filter) => {
+      const key = getStringFilterKey(filter.key);
+      if (isCustomFieldAttribute(key) && !availableFilterKeys.includes(key)) unavailableCustomFieldKeys.add(key);
+    });
+    return group;
+  });
+  return unavailableCustomFieldKeys.size > 0 ? [...availableFilterKeys, ...unavailableCustomFieldKeys] : availableFilterKeys;
 };
 
 export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
@@ -1260,6 +1280,9 @@ export const getSelectedOptions = (
   filtersRepresentativesMap: Map<string,
     FilterRepresentative>,
   t_i18n: (s: string) => string,
+  // Dashboard variables, only given in a dashboard: a `$var:` token is then shown under the variable name.
+  // Not given (anywhere else), a token-looking value is handled as any other value.
+  variables?: DashboardVariable[],
 ): FilterOptionValue[] => {
   // we try to get first the element from the search
   // and if we did not find we tried one from filterRepresentative
@@ -1267,10 +1290,20 @@ export const getSelectedOptions = (
   const mapFilterValues: FilterOptionValue[] = [];
   filterValues.forEach((value: string) => {
     const mapRepresentative = entitiesOptions.find((f) => f.value === value);
+    const tokenLabel = getVariableTokenLabel(value, variables, t_i18n);
     if (mapRepresentative) {
       mapFilterValues.push({
         ...mapRepresentative,
         group: capitalizeFirstLetter(t_i18n('selected')),
+      });
+    } else if (tokenLabel !== null) {
+      // The representatives query cannot resolve a token: never rely on its answer.
+      mapFilterValues.push({
+        value,
+        type: 'Variable',
+        parentTypes: [],
+        group: capitalizeFirstLetter(t_i18n('selected')),
+        label: tokenLabel.label,
       });
     } else if (value === SELF_ID) {
       mapFilterValues.push({

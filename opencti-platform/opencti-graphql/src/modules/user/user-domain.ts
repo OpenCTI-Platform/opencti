@@ -106,7 +106,7 @@ import { defaultMarkingDefinitionsFromGroups, findDefaultIngestionGroups, findGr
 import { addIndividual } from '../../domain/individual';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
-import { addFilter, extractFilterKeys } from '../../utils/filtering/filtering-utils';
+import { addFilter, booleanTrueFilter, extractFilterKeys } from '../../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../../utils/filtering/boolean-logic-engine';
 import { computeUserEffectiveConfidenceLevel } from '../../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../notifier/notifier-statics';
@@ -1042,12 +1042,7 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: Add
   }
   // if prevent_default_groups is not true, assign the default groups to the user
   if (newUser.prevent_default_groups !== true) {
-    const defaultAssignationFilter = {
-      mode: 'and',
-      filters: [{ key: 'default_assignation', values: [true] }],
-      filterGroups: [],
-    };
-    const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
+    const defaultGroups = await findGroups(context, user, { filters: booleanTrueFilter('default_assignation') });
     const relationDefaultGroups = defaultGroups.edges
       .filter((e) => !(newUser.groups ?? []).includes(e.node.internal_id)) // remove groups already in new user group input
       .map((e) => ({
@@ -2340,6 +2335,15 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged!, settings, { skipForcePasswordCheck: true });
   const numberOfKilledSessions = await killUserSessionsOverLimit(logged!.id, settings.platform_session_max_concurrent);
+  // Regenerate the session id before binding the identity, preventing session fixation.
+  // The referer is kept as the auth callback still reads it from the session as a redirect fallback
+  const { referer } = req.session!;
+  await new Promise<void>((resolve, reject) => {
+    req.session!.regenerate((err) => (err ? reject(err) : resolve()));
+  });
+  if (referer) {
+    req.session!.referer = referer;
+  }
   const withOrigin = userWithOrigin(req, logged!);
   // Build and save the session
   req.session!.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged!.password_valid_until ?? null };

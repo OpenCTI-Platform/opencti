@@ -8,7 +8,7 @@ import CompositeRegardingOfFilterEditor from './fields/CompositeRegardingOfFilte
 import { FilterEditorProvider, useFilterEditorContext } from './fields/FilterEditorContext';
 import FilterOperatorSelect from './fields/FilterOperatorSelect';
 import FilterValueInput from './fields/FilterValueInput';
-import { FILTER_VALUE_POPOVER_MIN_WIDTH } from './fields/filterFieldLayout';
+import { FILTER_VALUE_POPOVER_WIDTH } from './fields/filterFieldLayout';
 import QuickRelativeDateFiltersColumn from './QuickRelativeDateFiltersColumn';
 
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../utils/fdsLayer';
@@ -96,10 +96,12 @@ const FilterChipEditor: FunctionComponent<FilterChipEditorProps> = ({
   }
 
   return (
-    <div style={{ display: 'inline-flex' }}>
+    <div style={{ display: 'inline-flex', maxWidth: '100%' }}>
       <div
         style={{
-          minWidth: FILTER_VALUE_POPOVER_MIN_WIDTH,
+          width: FILTER_VALUE_POPOVER_WIDTH,
+          minWidth: 0,
+          boxSizing: 'border-box',
           padding: 8,
           display: 'flex',
           flexDirection: 'column',

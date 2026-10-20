@@ -1,6 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
+import { GraphQLError } from 'graphql';
 import Bluebird, { Promise as BluePromise } from 'bluebird';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -25,7 +26,7 @@ import {
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
-import { cleanupEntityWorkflow, initializeEntityWorkflow } from '../modules/workflow/domain/workflow-domain';
+import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -176,6 +177,7 @@ import {
   isOrganizationAllowed,
   isUserCanAccessStoreElement,
   isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
@@ -216,7 +218,17 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
-import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  confidence,
+  customFieldValues,
+  iAliasedIds,
+  iAttributes,
+  modified,
+  type RefAttribute,
+  updatedAt,
+} from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -283,7 +295,16 @@ import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
-import { transformCustomFieldValueAddInput, validateCustomFieldValues, validateCustomFieldValuesEditInput } from '../modules/customField/custom-field-validator';
+import {
+  foldCustomFieldValuesInputs,
+  isCustomFieldOptionsRemove,
+  mergeCustomFieldValues,
+  normalizeCustomFieldValues,
+  resolveCustomFieldValuesIdentity,
+  transformCustomFieldValueAddInput,
+  validateCustomFieldValues,
+  validateCustomFieldValuesEditInput,
+} from '../modules/customField/custom-field-validator';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -1416,7 +1437,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           // `field_id` is a stable per-entry identifier used by nested object attributes that don't
           // have a plain `id` (e.g. custom_field_values), allowing a precise removal that is recomputed
           // against the live value at apply time instead of a stale pre-computed snapshot.
-          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c)));
+          const isRemoved = (c: any) => toRemove.some((r) => (r.id !== undefined && r.id === c.id)
+            || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c));
+          const newValues = current.filter((c) => !isRemoved(c));
           patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
@@ -1876,7 +1899,13 @@ const mergeEntitiesRaw = async (
     const sourceFieldValue = (takenFrom as Record<string, any>)[targetFieldKey];
     const fieldValues = R.flatten((sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isObjectAttribute(targetFieldKey)) {
+    if (targetFieldKey === customFieldValues.name) {
+      // Custom fields are merged one by one as standard attributes, not appended as a list of objects
+      if (fieldValues.length > 0) {
+        const sourcesCustomFieldValues = (sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey]);
+        updateAttributes.push({ key: targetFieldKey, value: mergeCustomFieldValues(mergedEntityCurrentFieldValue, sourcesCustomFieldValues) });
+      }
+    } else if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
       const isObjectMultiple = isMultipleAttribute(targetType, targetFieldKey);
       if (isObjectMultiple) {
@@ -2521,7 +2550,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   initial: T,
   inputs: EditInput[],
   opts: UpdateAttributeMetaResolvedOpts = {},
-): Promise<{ element: T; event?: UpdateEvent | null; isCreation?: boolean }> => {
+): Promise<{ element: T; event?: UpdateEvent | null; isCreation?: boolean; workflowStatusChanged?: boolean }> => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -2959,7 +2988,8 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage as BasicStoreBase);
       }
       // endregion
-      return { element: updatedInstance as T, event, isCreation: false };
+      const workflowStatusChanged = updatedInputs.some((input) => input.key === X_WORKFLOW_ID);
+      return { element: updatedInstance as T, event, isCreation: false, workflowStatusChanged };
     }
     // Return updated element after waiting for it.
     return { element: updatedInstance as T, event: null, isCreation: false };
@@ -3012,7 +3042,10 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
+  // Set by the workflow projection so its own write is not synced back as an external write
+  workflowInternalWrite?: boolean;
+};
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -3029,22 +3062,36 @@ export const updateAttribute = async <T extends StoreObject>(
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
   // Validate custom field values against their definitions (mandatory / min-max / select options)
-  if (inputs.filter((input) => input.key === 'custom_field_values').length > 1) {
-    throw FunctionalError('Only one custom_field_values input is allowed', { id, type });
-  }
-  const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
-  if (customFieldValuesInput) {
+  let finalInputs = inputs;
+  const customFieldValuesInputs = inputs.filter((inputData) => inputData.key === customFieldValues.name);
+  if (customFieldValuesInputs.length > 0) {
     if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      const normalizedInputs: EditInput[] = [];
+      for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
+        const customFieldValuesInput = customFieldValuesInputs[i];
+        const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+        normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
+      }
+      // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
+      const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
+      const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
+      const customFieldValuesInput = isFolded
+        ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
+        : normalizedInputs[0];
       await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+      finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
     } else {
       throw FunctionalError('Custom fields feature is not enabled', { id, type });
     }
   }
   // Continue update
-  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, opts);
+  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, finalInputs, opts);
   if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
+  }
+  if (data.workflowStatusChanged && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    await syncWorkflowInstanceFromExternalWrite(context, user, data.element, (data.element as BasicStoreBase).x_opencti_workflow_id);
   }
   return data;
 };
@@ -3239,6 +3286,12 @@ const validateEntityAndRelationCreation = async (
     await validateInputCreation(context, user, type, input, entitySetting, {
       bypassMandatoryAttributes: opts.bypassMandatoryAttributes === true,
     });
+    // Custom field values are validated on the final values (default values included).
+    // Mandatory ones follow the same rules as mandatory standard attributes: bypassable.
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
+      await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
+    }
   }
 };
 
@@ -3434,6 +3487,71 @@ type CreateRelationRawOpts = UpdateEventOpts & {
   commitMessage?: string;
   restore?: boolean;
 };
+const checkRefRelationNotCyclic = async (
+  context: AuthContext,
+  user: AuthUser,
+  relationshipType: string,
+  from: any,
+  to: any,
+  fromRule?: string,
+) => {
+  const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
+  // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
+  // Checking the direction of the relation to allow relationships
+  const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
+  if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
+    throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
+  }
+};
+const replaceSingleRelationRef = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  from: any,
+  to: any,
+  key: string,
+  opts: CreateRelationRawOpts,
+) => {
+  const { relationship_type: relationshipType } = input;
+  const { locks = [], references, commitMessage, bypassValidation, publishStreamEvent } = opts;
+  // The update of the source rebuilds the ref with the default dates, so the dates of the input are set on it afterward
+  const dateFields = schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType) ? ['start_time', 'stop_time', 'created', 'modified'] : [];
+  const refDates = R.pick(dateFields.filter((field) => isNotEmptyField(input[field])), input);
+  if (utcDate(refDates.start_time ?? FROM_START_STR).isAfter(utcDate(refDates.stop_time ?? UNTIL_END_STR))) {
+    throw DatabaseError('You cant create a relation with a stop_time less than the start_time', { from: input.fromId, to: input.toId, type: relationshipType });
+  }
+  // The source stays locked until the dates are set on the ref created by its update
+  const participantIds = [from.internal_id].filter((id) => !locks.includes(id));
+  let lock;
+  try {
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    // A concurrent replacement may have set the same target while this one was waiting for the lock
+    const source = await storeLoadByIdWithRefs(context, user, from.internal_id) as Record<string, any>;
+    if (source?.[key]?.internal_id === to.internal_id) {
+      const element = await storeLoadByIdWithRefs(context, user, source[key].i_relation?.internal_id);
+      return { element, event: undefined, isCreation: false };
+    }
+    // The cyclic check reads the denormalized refs of the target, that the resolution of the input does not load
+    const target = await internalLoadById(context, user, to.internal_id);
+    await checkRefRelationNotCyclic(context, user, relationshipType, from, target);
+    const updateOpts = { locks: [...locks, ...participantIds], references, commitMessage, bypassValidation, publishStreamEvent };
+    const { event } = await updateAttribute(context, user, from.internal_id, from.entity_type, [{ key, value: [to.internal_id] }], updateOpts);
+    const updated = await storeLoadByIdWithRefs(context, user, from.internal_id) as Record<string, any>;
+    const relationId = updated?.[key]?.i_relation?.internal_id;
+    if (isNotEmptyField(refDates)) {
+      await patchAttribute(context, user, relationId, relationshipType, refDates);
+    }
+    const element = await storeLoadByIdWithRefs(context, user, relationId);
+    return { element, event, isCreation: false };
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
 export const createRelationRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -3454,7 +3572,6 @@ export const createRelationRaw = async (
   if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
     const rawInputCustomFieldValues = input.customFieldValues ?? [];
     const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
-    await validateCustomFieldValues(context, user, customFieldValuesFromInput, relationshipType);
     // Only keep empty custom fields values if it came from input
     if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
       (input as any).custom_field_values = customFieldValuesFromInput;
@@ -3504,12 +3621,21 @@ export const createRelationRaw = async (
     const errorData = { from: input.fromId, to: input.toId, relationshipType, doc_code: 'SELF_REFERENCING_RELATION' };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
-  // It's not possible to create a single ref relationship if one already exists
-  if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
-    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(resolvedInput.from.entity_type, relationshipType);
-    if (key && isNotEmptyField(resolvedInput.from[key])) {
-      const errorData = { from: input.fromId, to: input.toId, relationshipType };
-      throw UnsupportedError('Cant add another relation on single ref', errorData);
+  // A single ref already set keeps its target when the same one is added again, and is replaced by another one.
+  // Rules and restorations must never overwrite the current target, so they still fail.
+  if (isSingleRelationsRef(from.entity_type, relationshipType)) {
+    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, relationshipType);
+    const currentTarget = key ? from[key] : null;
+    if (key && isNotEmptyField(currentTarget)) {
+      if (fromRule || opts.restore) {
+        const errorData = { from: input.fromId, to: input.toId, relationshipType };
+        throw UnsupportedError('Cant add another relation on single ref', errorData);
+      }
+      if (currentTarget.internal_id !== to.internal_id) {
+        return replaceSingleRelationRef(context, user, input, from, to, key, opts);
+      }
+      const element = await storeLoadByIdWithRefs(context, user, currentTarget.i_relation?.internal_id);
+      return { element, event: undefined, isCreation: false };
     }
   }
 
@@ -3562,13 +3688,7 @@ export const createRelationRaw = async (
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
-      const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
-      // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
-      // Checking the direction of the relation to allow relationships
-      const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
-      if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
-        throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
-      }
+      await checkRefRelationNotCyclic(context, user, relationshipType, from, to, fromRule);
     }
     // Just build a standard relationship
     const dataRel = await buildRelationData(context, user, resolvedInput, opts);
@@ -3787,7 +3907,6 @@ const internalCreateEntityRaw = async (
   if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
     const rawInputCustomFieldValues = input.customFieldValues ?? [];
     const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
-    await validateCustomFieldValues(context, user, customFieldValuesFromInput, type);
     // Only keep empty custom fields values if it came from input
     if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
       (input as any).custom_field_values = customFieldValuesFromInput;
@@ -4136,8 +4255,13 @@ export const createEntity = async (
     if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
     }
-  } else if (data.event !== null && !opts.noEnrichOnUpdate) { // upsert
-    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+  } else { // upsert
+    if (data.event !== null && !opts.noEnrichOnUpdate) {
+      await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+    }
+    if (data.workflowStatusChanged && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      await syncWorkflowInstanceFromExternalWrite(context, user, data.element, data.element.x_opencti_workflow_id);
+    }
   }
   return isCompleteResult ? data : data.element;
 };
@@ -4259,6 +4383,10 @@ export const internalDeleteElementById = async <T extends StoreObject>(
       }
       const targetElement = { ...relationElement.to, i_relation: relationElement };
       const previous = await storeLoadByIdWithRefs(context, user, relationElement.fromId) as Record<string, any>;
+      if (!previous) {
+        // The source of the ref has been deleted in the meantime, along with its refs
+        throw AlreadyDeletedError({ id: relationElement.fromId });
+      }
       const instance = structuredClone(previous);
       const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationElement.entity_type);
       let inputs: EditInput[] = [];
@@ -4398,8 +4526,8 @@ export const deleteInferredRuleElement = async (
       const ruleOpts = { fromRule, fromRuleDeletion: true };
       await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, ruleOpts);
     }
-  } catch (err: any) {
-    if (err.name === ALREADY_DELETED_ERROR) {
+  } catch (err: unknown) {
+    if (err instanceof GraphQLError && err.extensions.code === ALREADY_DELETED_ERROR) {
       logApp.info(err);
     } else {
       logApp.error('Error handling inference', { cause: err });

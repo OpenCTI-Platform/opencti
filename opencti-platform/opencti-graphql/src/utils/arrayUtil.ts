@@ -1,3 +1,15 @@
+/**
+ * Coerces a value to an array: an array is returned as is, any other value is wrapped.
+ * `null` and `undefined` give an empty array. With `falsyAsEmpty`, so do `''`, `0` and `false`
+ * (e.g. xml2js parses an empty tag as `''`).
+ */
+export const asArray = (value: unknown, { falsyAsEmpty = false }: { falsyAsEmpty?: boolean } = {}): any[] => {
+  if (value === undefined || value === null || (falsyAsEmpty && !value)) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+};
+
 export const pushAll = <T>(target: T[], source: Iterable<T>): number => {
   // Guard against infinite loop when source === target by iterating over a shallow copy
   const itemsToAdd = source === target ? [...source] : source;

@@ -9,6 +9,7 @@ import ConfirmationDialog from './ConfirmationDialog';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useExternalTab from './useExternalTab';
+import { getXtmHubOrigin } from '../../../../utils/xtm-hub-client';
 import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
@@ -181,6 +182,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
   const { openTab, closeTab, focusTab } = useExternalTab({
     url: isRegistered ? unregistrationUrl : registrationUrl,
     tabName: isRegistered ? 'xtmhub-unregistration' : 'xtmhub-registration',
+    expectedOrigin: getXtmHubOrigin(registrationHubUrl),
     onMessage: handleTabMessage,
     onClosingTab: handleClosingTab,
   });
@@ -398,7 +400,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
           <Button variant="secondary" onClick={handleCancelAutoRegistration} color="primary">
             {t_i18n('Cancel')}
           </Button>
-          <Button onClick={handleConfirmAutoRegistration} color="primary" autoFocus>
+          <Button onClick={handleConfirmAutoRegistration} color="primary">
             {t_i18n('Continue')}
           </Button>
         </DialogActions>

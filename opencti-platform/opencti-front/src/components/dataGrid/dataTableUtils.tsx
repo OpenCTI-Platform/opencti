@@ -143,7 +143,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Allowed markings',
     isSortable: false,
     render: ({ allowed_markings }) => (
-      <ItemMarkings markingDefinitions={allowed_markings ?? []} limit={2} />
+      <ItemMarkings markingDefinitions={allowed_markings ?? []} limit={1} />
     ),
   },
   analyses: {

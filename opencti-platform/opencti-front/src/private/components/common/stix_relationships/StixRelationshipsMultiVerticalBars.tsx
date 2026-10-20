@@ -116,7 +116,7 @@ const StixRelationshipsMultiVerticalBars = ({
 }: StixRelationshipsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -138,8 +138,7 @@ const StixRelationshipsMultiVerticalBars = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >
