@@ -60,6 +60,7 @@ describe('projectWorkflowState', () => {
       'entity-1',
       'Incident',
       [{ key: 'x_opencti_workflow_id', value: ['status-progress-id'] }],
+      { workflowInternalWrite: true },
     );
   });
 
@@ -79,6 +80,7 @@ describe('projectWorkflowState', () => {
       'internal-id',
       'Incident',
       [{ key: 'x_opencti_workflow_id', value: ['status-id'] }],
+      { workflowInternalWrite: true },
     );
   });
 
@@ -98,6 +100,7 @@ describe('projectWorkflowState', () => {
       'external-id',
       'Incident',
       [{ key: 'x_opencti_workflow_id', value: ['status-id'] }],
+      { workflowInternalWrite: true },
     );
   });
 

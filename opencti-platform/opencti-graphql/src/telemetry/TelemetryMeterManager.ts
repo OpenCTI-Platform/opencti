@@ -249,6 +249,23 @@ export class TelemetryMeterManager {
 
   // endregion providers usage
 
+  // region Custom fields
+  // Number of custom field definitions created
+  customFieldCreatedCount = 0;
+
+  // Custom field definitions broken down by attached entity type
+  customFieldsByEntityType: DimensionalGaugeItem[] = [];
+
+  // Custom field definitions broken down by field type (integer, string, ...)
+  customFieldsByFieldType: DimensionalGaugeItem[] = [];
+
+  // Number of dashboards with at least one widget filtering on a custom field
+  dashboardsWithCustomFieldFilterCount = 0;
+
+  // Number of saved filters (lists) filtering on a custom field
+  savedFiltersWithCustomFieldCount = 0;
+  // endregion
+
   // region AI usage (backend-agnostic: no legacy/xtm_one dimension anywhere)
   // Number of chatbot messages sent (legacy Flowise and XTM One combined)
   chatbotMessageCount = 0;
@@ -623,6 +640,26 @@ export class TelemetryMeterManager {
     this.xtmAgentCallItems = items;
   }
 
+  setCustomFieldCreatedCount(n: number) {
+    this.customFieldCreatedCount = n;
+  }
+
+  setCustomFieldsByEntityType(items: DimensionalGaugeItem[]) {
+    this.customFieldsByEntityType = items;
+  }
+
+  setCustomFieldsByFieldType(items: DimensionalGaugeItem[]) {
+    this.customFieldsByFieldType = items;
+  }
+
+  setDashboardsWithCustomFieldFilterCount(n: number) {
+    this.dashboardsWithCustomFieldFilterCount = n;
+  }
+
+  setSavedFiltersWithCustomFieldCount(n: number) {
+    this.savedFiltersWithCustomFieldCount = n;
+  }
+
   setPlaybookAiAgentRunCount(n: number) {
     this.playbookAiAgentRunCount = n;
   }
@@ -893,6 +930,13 @@ export class TelemetryMeterManager {
     this.registerGauge('curation_policies_enabled_count', 'Number of enabled curation policies', 'curationPoliciesEnabledCount');
     this.registerGauge('knowledge_health_score', 'Latest Knowledge Health score (0 to 100)', 'knowledgeHealthScore');
     this.registerGauge('is_curation_enabled', 'Knowledge curation detectors are enabled', 'isCurationEnabled', { unit: 'boolean' });
+    // endregion
+    // region Custom fields
+    this.registerGauge('custom_field_created_count', 'Number of custom field definitions created', 'customFieldCreatedCount');
+    this.registerDimensionalGauge('custom_fields_by_entity_type', 'custom field definitions broken down by attached entity type', 'customFieldsByEntityType');
+    this.registerDimensionalGauge('custom_fields_by_field_type', 'custom field definitions broken down by field type', 'customFieldsByFieldType');
+    this.registerGauge('dashboards_with_custom_field_filter_count', 'Number of dashboards with at least one widget filtering on a custom field', 'dashboardsWithCustomFieldFilterCount');
+    this.registerGauge('saved_filters_with_custom_field_count', 'Number of saved filters filtering on a custom field', 'savedFiltersWithCustomFieldCount');
     // endregion
     this.registerDimensionalGauge('is_ai_enabled', 'Built-in LLM configuration state with provider type dimension', 'isAiEnabledItems', { unit: 'boolean' });
     this.registerGauge('is_xtm_one_configured', 'XTM One is configured (url and token)', 'isXtmOneConfigured', { unit: 'boolean' });

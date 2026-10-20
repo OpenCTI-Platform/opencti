@@ -128,6 +128,10 @@ export default defineConfig([
         name: 'fetch',
         message: "Import fetch from 'undici' instead of using the global one, so requests and dispatchers share the same undici copy.",
       }],
+      'no-restricted-syntax': ['error', {
+        selector: "CallExpression[callee.object.name=/^(res|response)$/][callee.property.name=/^(set|header)$/][arguments.length=1][arguments.0.type='ObjectExpression']",
+        message: 'Use res.set(field, value) instead: the object form iterates with for...in and would also set headers from polluted prototype properties.',
+      }],
     },
   },
 

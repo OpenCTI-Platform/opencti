@@ -22,7 +22,6 @@ describe('Component: RelativeDateInput', () => {
         valueOrder={0}
         dateInput={dateInput}
         setDateInput={setDateInput}
-        autoFocus
       />,
     );
 
@@ -100,5 +99,26 @@ describe('Component: RelativeDateInput', () => {
     await user.click(screen.getByRole('button', { name: /open date picker/i }));
 
     expect(screen.getByRole('grid')).toBeInTheDocument();
+  });
+
+  it('focuses the "From" field on open, so a value can be typed right after the operator', () => {
+    testRender(
+      <>
+        <RelativeDateInput filterKey="created_at" label="From" valueOrder={0} dateInput={['', '']} setDateInput={vi.fn()} />
+        <RelativeDateInput filterKey="created_at" label="To" valueOrder={1} dateInput={['', '']} setDateInput={vi.fn()} />
+      </>,
+    );
+
+    expect(screen.getByLabelText('From')).toHaveFocus();
+  });
+
+  it('keeps the focus on the field when it switches from free text to the native date field', () => {
+    const props = { filterKey: 'created_at', label: 'To', valueOrder: 1, setDateInput: vi.fn() };
+    const { rerender } = testRender(<RelativeDateInput {...props} dateInput={['', 'now-7d']} />);
+    expect(screen.getByLabelText('To')).not.toHaveFocus();
+
+    rerender(<RelativeDateInput {...props} dateInput={['', '2026-01-01T00:00:00.000Z']} />);
+
+    expect(screen.getByLabelText('To')).toHaveFocus();
   });
 });

@@ -234,6 +234,35 @@ describe('TaskManager sendResultToQueue tests', () => {
 describe('baseOperationBuilder', () => {
   const baseElement = { id: 'element-id', entity_type: 'Malware' };
 
+  // -- KNOWLEDGE_CHANGE on custom fields --
+
+  const customFieldDefinitions = [
+    { id: 'cf-score', name: 'x_opencti_cf_score', field_type: 'integer', entity_types: ['Malware'] },
+    { id: 'cf-note', name: 'x_opencti_cf_note', field_type: 'string', entity_types: ['stix-core-relationship'] },
+  ];
+
+  it('should build custom field values inputs for KNOWLEDGE_CHANGE on a custom field', () => {
+    const operations = [
+      { type: 'REPLACE', context: { field: 'x_opencti_cf_score', type: 'ATTRIBUTE', values: ['42'] } },
+      { type: 'ADD', context: { field: 'description', type: 'ATTRIBUTE', values: ['new description'] } },
+    ];
+
+    const result = baseOperationBuilder('KNOWLEDGE_CHANGE', operations, baseElement, customFieldDefinitions);
+
+    expect(result.opencti_field_patch).toEqual([
+      { key: 'custom_field_values', value: [{ field_name: 'x_opencti_cf_score', int_value: 42 }], operation: 'add' },
+      { key: 'description', value: ['new description'], operation: 'add' },
+    ]);
+  });
+
+  it('should skip a custom field not carried by the element type', () => {
+    const operations = [{ type: 'REMOVE', context: { field: 'x_opencti_cf_note', type: 'ATTRIBUTE', values: [] } }];
+
+    expect(baseOperationBuilder('KNOWLEDGE_CHANGE', operations, baseElement, customFieldDefinitions).opencti_field_patch).toEqual([]);
+    expect(baseOperationBuilder('KNOWLEDGE_CHANGE', operations, { id: 'rel-id', entity_type: 'targets' }, customFieldDefinitions).opencti_field_patch)
+      .toEqual([{ key: 'custom_field_values', value: [{ field_name: 'x_opencti_cf_note' }], operation: 'remove' }]);
+  });
+
   // -- KNOWLEDGE_CHANGE --
 
   it('should build patch operation for KNOWLEDGE_CHANGE with regular field', () => {

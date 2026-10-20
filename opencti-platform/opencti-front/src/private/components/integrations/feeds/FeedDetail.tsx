@@ -20,6 +20,7 @@ import IngestionCsvLogsTab from '@components/data/ingestionCsv/IngestionCsvLogsT
 import IngestionJsonLogsTab from '@components/data/ingestionJson/IngestionJsonLogsTab';
 import SyncLogsTab from '@components/data/sync/SyncLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
+import IngestionHealthChip, { type IngestionHealthData } from '@components/data/connectors/IngestionHealthChip';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -52,6 +53,14 @@ const feedDetailSyncQuery = graphql`
       ssl_verify
       synchronized
       queue_messages
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+        }
+      }
       user {
         id
         name
@@ -75,6 +84,14 @@ const feedDetailRssQuery = graphql`
       ssl_verify
       created_at
       updated_at
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+        }
+      }
       user {
         id
         name
@@ -102,6 +119,14 @@ const feedDetailTaxiiQuery = graphql`
       ssl_verify
       created_at
       updated_at
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+        }
+      }
       user {
         id
         name
@@ -120,6 +145,14 @@ const feedDetailTaxiiPushQuery = graphql`
       confidence_to_score
       created_at
       updated_at
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+        }
+      }
       user {
         id
         name
@@ -145,6 +178,14 @@ const feedDetailCsvQuery = graphql`
       ssl_verify
       created_at
       updated_at
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+        }
+      }
       user {
         id
         name
@@ -167,6 +208,14 @@ const feedDetailJsonQuery = graphql`
       ssl_verify
       created_at
       updated_at
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+        }
+      }
       user {
         id
         name
@@ -207,6 +256,7 @@ export interface FeedDetailNode {
   created_at?: string | null;
   updated_at?: string | null;
   user?: { readonly id: string; readonly name: string } | null;
+  ingestionHealth?: IngestionHealthData | null;
 }
 
 type FeedKind = Exclude<BuiltInIntegrationKind, 'form'>;
@@ -394,11 +444,12 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                   {node.name}
                 </span>
               </Tooltip>
-              <div style={{ display: 'inline-block', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexShrink: 0, gap: theme.spacing(1) }}>
                 <ItemBoolean
                   status={running}
                   label={running ? t_i18n('Active') : t_i18n('Inactive')}
                 />
+                <IngestionHealthChip ingestionHealth={node.ingestionHealth} />
               </div>
             </TitleMainEntity>
             {node.description && (

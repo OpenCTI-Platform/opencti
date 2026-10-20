@@ -65,7 +65,7 @@ import { REDACTED_USER } from '../../utils/access';
 import { getNotifiers } from '../notifier/notifier-domain';
 import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../../schema/internalRelationship';
 import { loadCreator } from '../../database/members';
-import { issueConnectorJWT } from '../../database/repository';
+import { issueConnectorJWT } from '../connector/connector-domain';
 
 const userResolvers: Resolvers = {
   Query: {

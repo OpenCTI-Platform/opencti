@@ -7,7 +7,7 @@ import path from 'path';
 import { computeDateFromEventId, truncate, utcDate } from './format';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
-import { creators as creatorsAttribute, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
+import { creators as creatorsAttribute, customFieldValues, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -427,6 +427,52 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
   return finalPatchInput;
 };
 
+// Custom field values have no id: their upsert operations are scoped to the fields they carry (field_id).
+// replace sets a field to exactly the given value, remove clears it (or only the given multi_select options),
+// add merges it (multi_select options united).
+// The bundle values of the other fields are upserted as usual, then the whole array is replaced.
+export const mergeCustomFieldValuesUpsert = (elementCurrentValue, updatePatchInput, upsertOperations) => {
+  if (updatePatchInput && updatePatchInput.operation !== UPDATE_OPERATION_ADD) {
+    return updatePatchInput;
+  }
+  const unionSelectValues = (existing, incoming) => (Array.isArray(existing?.select_values) && Array.isArray(incoming.select_values)
+    ? { ...incoming, select_values: R.uniq([...existing.select_values, ...incoming.select_values]) }
+    : incoming);
+  const valuesByFieldId = new Map((elementCurrentValue ?? []).map((v) => [v.field_id, v]));
+  const operatedFieldIds = new Set();
+  for (let i = 0; i < upsertOperations.length; i += 1) {
+    const { operation, value } = upsertOperations[i];
+    const entries = (value ?? []).filter((entry) => entry?.field_id);
+    for (let j = 0; j < entries.length; j += 1) {
+      const entry = entries[j];
+      operatedFieldIds.add(entry.field_id);
+      if (operation === 'remove') {
+        // A remove carrying select_values only removes these options of the multi_select
+        const existing = valuesByFieldId.get(entry.field_id);
+        const remainingOptions = Array.isArray(entry.select_values) && entry.select_values.length > 0 && Array.isArray(existing?.select_values)
+          ? existing.select_values.filter((option) => !entry.select_values.includes(option))
+          : [];
+        if (remainingOptions.length > 0) {
+          valuesByFieldId.set(entry.field_id, { ...existing, select_values: remainingOptions });
+        } else {
+          valuesByFieldId.delete(entry.field_id);
+        }
+      } else if (operation === 'replace') {
+        valuesByFieldId.set(entry.field_id, entry);
+      } else if (operation === 'add') {
+        valuesByFieldId.set(entry.field_id, unionSelectValues(valuesByFieldId.get(entry.field_id), entry));
+      }
+    }
+  }
+  // The upsert operations take precedence over the bundle values of the same field
+  const patchValues = (updatePatchInput?.value ?? []).filter((entry) => !operatedFieldIds.has(entry.field_id));
+  for (let i = 0; i < patchValues.length; i += 1) {
+    const entry = patchValues[i];
+    valuesByFieldId.set(entry.field_id, unionSelectValues(valuesByFieldId.get(entry.field_id), entry));
+  }
+  return { key: customFieldValues.name, operation: UPDATE_OPERATION_REPLACE, value: Array.from(valuesByFieldId.values()) };
+};
+
 /**
  * should return a merged inputs list with only one element per key
  *
@@ -456,6 +502,11 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
     const upsertOperationKey = upsertOperationsKeys[i];
     const elementCurrentValue = resolvedElement[upsertOperationKey];
     const upsertOperationValues = upsertOperationsByKeyMap.get(upsertOperationKey);
+    if (upsertOperationKey === customFieldValues.name) {
+      const mergedInput = mergeCustomFieldValuesUpsert(elementCurrentValue, updatePatchInputsMap.get(upsertOperationKey), upsertOperationValues);
+      updatePatchInputsMap.set(upsertOperationKey, mergedInput);
+      continue;
+    }
     let finalUpsertOperation;
     if (upsertOperationValues.length > 1) {
       finalUpsertOperation = mergeUpsertOperations(upsertOperationKey, elementCurrentValue, upsertOperationValues);
