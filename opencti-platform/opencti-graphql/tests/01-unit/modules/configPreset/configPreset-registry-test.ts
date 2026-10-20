@@ -69,7 +69,7 @@ describe('Config preset registry', () => {
       itemIds: (await family.resolveItems(context, user, null, [])).map((item) => item.id),
     })));
     expect(families).toEqual([
-      { id: 'platform', label: 'Platform configuration', description: 'Title, favicon, language', group: 'platformSettings', itemIds: ['platform'] },
+      { id: 'platform', label: 'Platform configuration', description: 'Title, favicon, default theme, language', group: 'platformSettings', itemIds: ['platform'] },
       // Whitemark first, then the themes by name, built-in ones included
       {
         id: 'branding',
@@ -126,19 +126,36 @@ describe('Config preset registry', () => {
   });
 
   describe('platform configuration', () => {
-    it('exports the allowlisted platform fields only', async () => {
-      expect(await exportConfigPresetItem(context, user, findFamily('platform'), await findItem('platform', 'platform'))).toEqual({
+    it('exports the allowlisted platform fields and the custom default theme it depends on', async () => {
+      const item = await findItem('platform', 'platform');
+      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.id }]);
+      expect(await exportConfigPresetItem(context, user, findFamily('platform'), item)).toEqual({
         openCTI_version: PLATFORM_VERSION,
         type: 'platformSettings.platform',
         id: 'platform',
-        configuration: { platform_title: 'My platform', platform_favicon: 'https://example.com/favicon.ico', platform_language: 'fr-fr' },
+        configuration: {
+          platform_title: 'My platform',
+          platform_favicon: 'https://example.com/favicon.ico',
+          platform_language: 'fr-fr',
+          default_theme: { standard_id: customTheme.standard_id, name: 'SOC night' },
+        },
       });
     });
 
-    it('exports missing fields as null, to keep a stable file shape', async () => {
-      vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_title: 'Only title' }] as never);
+    it('references a built-in default theme without depending on it', async () => {
+      withSettings({ platform_theme: builtInTheme.id });
       const item = await findItem('platform', 'platform');
-      expect(await item.exporter(context, user)).toEqual({ platform_title: 'Only title', platform_favicon: null, platform_language: null });
+      expect(item.dependsOn).toEqual([]);
+      expect((await item.exporter(context, user)).default_theme).toEqual({ standard_id: builtInTheme.standard_id, name: 'Filigran Dark' });
+    });
+
+    it('exports missing fields as null, no default theme included, to keep a stable file shape', async () => {
+      for (const platformTheme of [undefined, 'deleted-theme-id']) {
+        vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_title: 'Only title', platform_theme: platformTheme }] as never);
+        const item = await findItem('platform', 'platform');
+        expect(item.dependsOn).toEqual([]);
+        expect(await item.exporter(context, user)).toEqual({ platform_title: 'Only title', platform_favicon: null, platform_language: null, default_theme: null });
+      }
     });
   });
 
@@ -192,8 +209,9 @@ describe('Config preset registry', () => {
     const branding = findFamily('branding');
     const pageIds = async (args: Parameters<typeof branding.listItems>[2]) => (await branding.listItems(context, user, args)).edges.map(({ node }) => node.id);
 
-    it('exports whitemark', async () => {
+    it('exports whitemark without dependency', async () => {
       const item = await findItem('branding', 'whitemark');
+      expect(item.dependsOn).toBeUndefined();
       expect(await exportConfigPresetItem(context, user, branding, item)).toMatchObject({ type: 'platformSettings.branding', id: 'whitemark', configuration: { platform_whitemark: true } });
       withSettings({ platform_whitemark: undefined });
       expect(await item.exporter(context, user)).toEqual({ platform_whitemark: false });

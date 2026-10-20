@@ -13,6 +13,12 @@ export interface ConfigPresetItemFile {
   configuration: ConfigPresetConfiguration;
 }
 
+// An item of a type, by API ids
+export interface ConfigPresetItemReference {
+  type: string;
+  id: string;
+}
+
 export interface ConfigPresetItemDefinition {
   // API id: the category id for a singleton, the internal id for an entity
   id: string;
@@ -25,6 +31,8 @@ export interface ConfigPresetItemDefinition {
   fileName?: string;
   // The platform default (the default theme)
   isDefault?: boolean;
+  // Items exported with this one, whatever the selection
+  dependsOn?: ConfigPresetItemReference[];
   // Returns the allowlisted configuration of the item, never secrets
   exporter: (context: AuthContext, user: AuthUser) => Promise<ConfigPresetConfiguration>;
 }

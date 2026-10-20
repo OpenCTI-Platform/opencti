@@ -101,6 +101,7 @@ describe('Config preset bundle storage round trip', () => {
     const paths = directory.files.map((file: { path: string }) => file.path).sort();
     expect(paths).toEqual([
       'data_model/hidden_entity_types.json',
+      'dependencies.json',
       'metadata.json',
       'platform_settings/messages/banner.json',
       'platform_settings/messages/consent.json',

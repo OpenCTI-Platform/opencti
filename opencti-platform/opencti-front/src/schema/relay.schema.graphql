@@ -17713,10 +17713,16 @@ input CustomFieldDefinitionAddInput {
   select_options: [String!]
 }
 
+type ConfigPresetItemReference {
+  type: String!
+  key: String!
+}
+
 type ConfigPresetExportableItem {
   key: String!
   label: String!
   translatable: Boolean!
+  dependsOn: [ConfigPresetItemReference!]!
   isDefault: Boolean!
 }
 

@@ -1141,7 +1141,7 @@
   "Threat hunting": "ログソース",
   "Timestamp": "タイムスタンプ",
   "Title": "タイトル",
-  "Title, favicon, language": "タイトル、ファビコン、言語",
+  "Title, favicon, default theme, language": "タイトル、ファビコン、デフォルトテーマ、言語",
   "TLSH": "TLSH",
   "To": "宛先",
   "to": "から",

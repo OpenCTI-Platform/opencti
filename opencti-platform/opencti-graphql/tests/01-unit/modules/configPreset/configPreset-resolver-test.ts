@@ -51,16 +51,17 @@ const buildSchema = () => {
   return makeFeatureFlagDirectiveTransformer()(authDirectiveBuilder('auth').authDirectiveTransformer(schema));
 };
 
-const ITEM_FIELDS = 'key label translatable isDefault';
+const ITEM_FIELDS = 'key label translatable dependsOn { type key } isDefault';
 const QUERY = `{ configPresetExportableTypes { key label description group { key label } items { ${ITEM_FIELDS} } itemsPageInfo { hasNextPage globalCount } } }`;
 const bypassUser = { id: 'admin', capabilities: [{ name: 'BYPASS' }] };
 const settingsUser = { id: 'settings-admin', capabilities: [{ name: 'SETTINGS_SETPARAMETERS' }] };
 
-const staticItem = (key: string, label: string) => ({ key, label, translatable: true, isDefault: false });
+const staticItem = (key: string, label: string, dependsOn: unknown[] = []) => ({ key, label, translatable: true, dependsOn, isDefault: false });
 const themeItem = (theme: { id: string; name: string }, isDefault: boolean) => ({
   key: theme.id,
   label: theme.name,
   translatable: false,
+  dependsOn: [],
   isDefault,
 });
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
@@ -81,9 +82,10 @@ describe('Config preset exportable types query', () => {
       {
         key: 'platform',
         label: 'Platform configuration',
-        description: 'Title, favicon, language',
+        description: 'Title, favicon, default theme, language',
         group: platformSettings,
-        items: [staticItem('platform', 'Platform configuration')],
+        // The custom default theme is a dependency
+        items: [staticItem('platform', 'Platform configuration', [{ type: 'branding', key: customTheme.id }])],
         itemsPageInfo: onePage(1),
       },
       {
@@ -108,7 +110,7 @@ describe('Config preset exportable types query', () => {
 
   it('exposes no id on the catalog objects: a singleton category and its item share a key, and the Relay store would merge objects with the same id', () => {
     const schema = buildSchema();
-    ['ConfigPresetExportableType', 'ConfigPresetExportableItem', 'ConfigPresetExportableGroup'].forEach((typeName) => {
+    ['ConfigPresetExportableType', 'ConfigPresetExportableItem', 'ConfigPresetExportableGroup', 'ConfigPresetItemReference'].forEach((typeName) => {
       const fields = Object.keys((schema.getType(typeName) as GraphQLObjectType).getFields());
       expect(fields).toContain('key');
       expect(fields).not.toContain('id');
@@ -161,7 +163,7 @@ describe('Config preset exportable types query', () => {
       ['branding', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
     ]);
-    expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, isDefault: false }]);
+    expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
     listItems.mockRestore();
   });

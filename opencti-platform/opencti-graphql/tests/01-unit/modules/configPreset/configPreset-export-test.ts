@@ -27,7 +27,7 @@ vi.mock('../../../../src/manager/telemetryManager', async (importOriginal) => ({
   addConfigPresetExportCount: vi.fn(),
 }));
 
-import { topEntitiesList } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { uploadToStorage } from '../../../../src/database/file-storage';
 import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../src/listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../../src/manager/telemetryManager';
@@ -36,7 +36,14 @@ import '../../../../src/modules/attributes/internalObject-registrationAttributes
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
-import { configPresetExport, resolveConfigPresetSelections } from '../../../../src/modules/configPreset/configPreset-domain';
+import {
+  addConfigPresetDependencies,
+  buildConfigPresetDependencies,
+  configPresetExport,
+  resolveConfigPresetSelections,
+} from '../../../../src/modules/configPreset/configPreset-domain';
+import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
+import type { ConfigPresetItemDefinition } from '../../../../src/modules/configPreset/configPreset-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from './configPreset-themes-fixtures';
 
@@ -53,6 +60,7 @@ const ALL_CATEGORIES = [
 ];
 const ALL_FILES = [
   'data_model/hidden_entity_types.json',
+  'dependencies.json',
   'metadata.json',
   'platform_settings/messages/banner.json',
   'platform_settings/messages/consent.json',
@@ -82,6 +90,7 @@ const storedSettings = {
   platform_whitemark: true,
   enterprise_license: 'secret-license',
 };
+const withDefaultTheme = (themeId: string) => vi.mocked(topEntitiesList).mockResolvedValue([{ ...storedSettings, platform_theme: themeId }] as never);
 
 // The temporary zip paths, from the write streams the export opened
 const realCreateWriteStream = fs.createWriteStream;
@@ -158,7 +167,8 @@ describe('Config preset export', () => {
       openCTI_version: PLATFORM_VERSION,
       type: 'platformSettings.platform',
       id: 'platform',
-      configuration: { platform_title: 'My platform', platform_favicon: null, platform_language: 'en-us' },
+      // A built-in default theme is named, without dependency
+      configuration: { platform_title: 'My platform', platform_favicon: null, platform_language: 'en-us', default_theme: { standard_id: builtInTheme.standard_id, name: 'Filigran Dark' } },
     });
     expect(entries['platform_settings/messages/banner.json']).toEqual({
       openCTI_version: PLATFORM_VERSION,
@@ -171,6 +181,8 @@ describe('Config preset export', () => {
       id: 'hiddenEntityTypes',
       configuration: { hidden_entity_types: ['Channel'] },
     });
+    // No item has dependencies
+    expect(entries['dependencies.json']).toEqual({});
     expect(JSON.stringify(entries)).not.toContain('secret-license');
   });
 
@@ -181,7 +193,7 @@ describe('Config preset export', () => {
       { type: 'platform', items: ['platform'] },
     ]);
     const entries = await readZip(uploadedZip!);
-    expect(Object.keys(entries).sort()).toEqual(['metadata.json', 'platform_settings/messages/banner.json', 'platform_settings/platform.json']);
+    expect(Object.keys(entries).sort()).toEqual(['dependencies.json', 'metadata.json', 'platform_settings/messages/banner.json', 'platform_settings/platform.json']);
     expect(entries['metadata.json'].bundle_name).toBeNull();
     // Registry order, not selection order
     expect(publishedSummary()).toMatchObject({ entity_types: ['platform', 'messages'], counts: { platform: 1, messages: 1 }, items: { platform: ['platform'], messages: ['banner'] } });
@@ -190,7 +202,7 @@ describe('Config preset export', () => {
   it('keeps the exported items out of the metadata, for a partial selection too', async () => {
     await configPresetExport(context, bypassUser, [{ type: 'messages', items: ['login', 'noAccess'] }]);
     const entries = await readZip(uploadedZip!);
-    expect(Object.keys(entries).sort()).toEqual(['metadata.json', 'platform_settings/messages/login.json', 'platform_settings/messages/noAccess.json']);
+    expect(Object.keys(entries).sort()).toEqual(['dependencies.json', 'metadata.json', 'platform_settings/messages/login.json', 'platform_settings/messages/noAccess.json']);
     expect(entries['metadata.json']).toEqual({
       openCTI_version: PLATFORM_VERSION,
       generated_at: NOW.toISOString(),
@@ -334,17 +346,72 @@ describe('Config preset export', () => {
     expect(addConfigPresetExportCount).not.toHaveBeenCalled();
   });
 
-  it('exports a selected theme under its standard id, in the theme import format', async () => {
-    await configPresetExport(context, bypassUser, [{ type: 'branding', items: ['whitemark', builtInTheme.id] }]);
+  it('exports the platform configuration with the custom default theme it depends on, even when excluded from the branding', async () => {
+    withDefaultTheme(customTheme.id);
+    await configPresetExport(context, bypassUser, [{ type: 'platform' }, { type: 'branding', excluded_items: [customTheme.id, builtInTheme.id] }]);
     const entries = await readZip(uploadedZip!);
+    const customThemeFile = `platform_settings/branding/${customTheme.standard_id}.json`;
+    const otherThemeFile = `platform_settings/branding/${otherCustomTheme.standard_id}.json`;
+    expect(Object.keys(entries).sort()).toEqual([
+      'dependencies.json',
+      'metadata.json',
+      'platform_settings/branding/whitemark.json',
+      'platform_settings/platform.json',
+      customThemeFile,
+      otherThemeFile,
+    ].sort());
+    expect(entries['platform_settings/platform.json'].configuration.default_theme).toEqual({ standard_id: customTheme.standard_id, name: 'SOC night' });
+    expect(entries['platform_settings/branding/whitemark.json']).toMatchObject({ type: 'platformSettings.branding', id: 'whitemark', configuration: { platform_whitemark: true } });
+    expect(entries[customThemeFile]).toMatchObject({ type: 'platformSettings.branding', id: customTheme.standard_id });
+    expect(entries[customThemeFile].configuration).toMatchObject({ standard_id: customTheme.standard_id, name: 'SOC night' });
+    // Only the owners of dependencies, by item
+    expect(entries['dependencies.json']).toEqual({
+      'platformSettings.platform': { platform: { [customTheme.standard_id]: customThemeFile } },
+    });
+    expect(publishedSummary()).toMatchObject({
+      entity_types: ['platform', 'branding'],
+      // The forced dependency is counted as exported
+      counts: { platform: 1, branding: 3 },
+      items: { platform: ['platform'], branding: ['whitemark', otherCustomTheme.standard_id, customTheme.standard_id] },
+    });
+    // Internal ids never leave the platform
+    expect(JSON.stringify(entries)).not.toContain(customTheme.id);
+  });
+
+  it('exports a custom default theme with the platform configuration when no branding is selected, not with whitemark alone', async () => {
+    withDefaultTheme(customTheme.id);
+    await configPresetExport(context, bypassUser, [{ type: 'platform', items: ['platform'] }]);
+    expect(publishedSummary()).toMatchObject({
+      entity_types: ['platform', 'branding'],
+      counts: { platform: 1, branding: 1 },
+      items: { platform: ['platform'], branding: [customTheme.standard_id] },
+    });
+    await configPresetExport(context, bypassUser, [{ type: 'branding', items: ['whitemark'] }]);
+    const entries = await readZip(uploadedZip!);
+    expect(publishedSummary().items).toEqual({ branding: ['whitemark'] });
+    expect(entries['dependencies.json']).toEqual({});
+  });
+
+  it('exports a selected built-in theme, and references a built-in default theme without depending on it', async () => {
+    await configPresetExport(context, bypassUser, [{ type: 'platform' }, { type: 'branding', items: [builtInTheme.id] }]);
+    const entries = await readZip(uploadedZip!);
+    expect(entries['platform_settings/platform.json'].configuration.default_theme).toEqual({ standard_id: builtInTheme.standard_id, name: 'Filigran Dark' });
     const builtInThemeFile = entries[`platform_settings/branding/${builtInTheme.standard_id}.json`];
     expect(builtInThemeFile).toMatchObject({ type: 'platformSettings.branding', id: builtInTheme.standard_id, configuration: { standard_id: builtInTheme.standard_id, name: 'Filigran Dark' } });
     // Not part of the theme import format
     expect(builtInThemeFile.configuration).not.toHaveProperty('built_in');
-    expect(entries['platform_settings/branding/whitemark.json']).toMatchObject({ type: 'platformSettings.branding', id: 'whitemark', configuration: { platform_whitemark: true } });
-    // The bundle ids in the summary, never an internal id
-    expect(publishedSummary().items).toEqual({ branding: ['whitemark', builtInTheme.standard_id] });
-    expect(JSON.stringify(entries)).not.toContain(builtInTheme.id);
+    expect(entries['dependencies.json']).toEqual({});
+    // Without the theme selected, only the reference
+    await configPresetExport(context, bypassUser, [{ type: 'platform' }]);
+    expect(publishedSummary().items).toEqual({ platform: ['platform'] });
+  });
+
+  it('fails the export, before any write, when a dependency cannot be exported', async () => {
+    withDefaultTheme(customTheme.id);
+    // The default theme is found by id, but the theme listing no longer returns it
+    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
+    await expect(configPresetExport(context, bypassUser, [{ type: 'platform' }])).rejects.toThrow('A configuration preset dependency cannot be exported');
+    expectNothingWritten();
   });
 
   it('refuses a user without BYPASS', async () => {
@@ -424,5 +491,67 @@ describe('Config preset selections', () => {
       { type: 'platform', items: null },
       { type: 'platform', items: ['branding'] },
     ])).rejects.toThrow('Unknown configuration preset item');
+  });
+});
+
+describe('Config preset dependencies', () => {
+  const family = (id: string) => CONFIG_PRESET_FAMILIES.find((current) => current.id === id)!;
+  const item = (id: string, dependsOn: ConfigPresetItemDefinition['dependsOn']): ConfigPresetItemDefinition => ({
+    id,
+    label: id,
+    translatable: true,
+    dependsOn,
+    exporter: async () => ({}),
+  });
+  // Static items for the singleton families, with the given dependencies
+  const withItems = (items: ConfigPresetItemDefinition[]) => {
+    ['platform', 'messages', 'hiddenEntityTypes'].forEach((familyId) => {
+      vi.spyOn(family(familyId), 'resolveItems').mockImplementation(async (_ctx, _user, ids) => items.filter((current) => current.id === familyId && (!ids || ids.includes(current.id))));
+    });
+  };
+  const closureIds = async (selected: ConfigPresetItemDefinition[]) => {
+    const families = selected.map((current) => ({ ...family(current.id), items: [current] }));
+    return (await addConfigPresetDependencies(context, bypassUser, families)).map(({ id, items }) => [id, items.map(({ id: itemId }) => itemId)]);
+  };
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('adds a chain of dependencies depth first, in registry order', async () => {
+    const platform = item('platform', [{ type: 'messages', id: 'messages' }]);
+    const messages = item('messages', [{ type: 'hiddenEntityTypes', id: 'hiddenEntityTypes' }]);
+    withItems([platform, messages, item('hiddenEntityTypes', [])]);
+    expect(await closureIds([platform])).toEqual([['platform', ['platform']], ['messages', ['messages']], ['hiddenEntityTypes', ['hiddenEntityTypes']]]);
+  });
+
+  it('lists every owner of a transitive chain under its own type, with the bundle id and path of each dependency', async () => {
+    const platform = item('platform', [{ type: 'messages', id: 'messages' }]);
+    const messages = item('messages', [{ type: 'hiddenEntityTypes', id: 'hiddenEntityTypes' }]);
+    withItems([platform, messages, item('hiddenEntityTypes', [])]);
+    const families = await addConfigPresetDependencies(context, bypassUser, [{ ...family('platform'), items: [platform] }]);
+    const dependencies = buildConfigPresetDependencies(families);
+    expect(dependencies).toEqual({
+      'platformSettings.platform': { platform: { messages: 'platform_settings/messages/messages.json' } },
+      // The test items have no file name: `<id>.json`
+      'platformSettings.messages': { messages: { hiddenEntityTypes: 'data_model/hiddenEntityTypes.json' } },
+    });
+    // Registry order
+    expect(Object.keys(dependencies)).toEqual(['platformSettings.platform', 'platformSettings.messages']);
+  });
+
+  it('stops on a cycle', async () => {
+    const platform = item('platform', [{ type: 'messages', id: 'messages' }]);
+    const messages = item('messages', [{ type: 'platform', id: 'platform' }]);
+    withItems([platform, messages]);
+    expect(await closureIds([platform])).toEqual([['platform', ['platform']], ['messages', ['messages']]]);
+    expect(family('messages').resolveItems).toHaveBeenCalledTimes(1);
+    expect(family('platform').resolveItems).not.toHaveBeenCalled();
+  });
+
+  it('fails on a dependency of an unknown type or item', async () => {
+    withItems([]);
+    await expect(closureIds([item('platform', [{ type: 'dashboards', id: 'dashboard-id' }])])).rejects.toThrow('A configuration preset dependency cannot be exported');
+    await expect(closureIds([item('platform', [{ type: 'messages', id: 'messages' }])])).rejects.toThrow('A configuration preset dependency cannot be exported');
   });
 });

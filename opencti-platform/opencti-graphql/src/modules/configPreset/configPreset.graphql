@@ -1,11 +1,18 @@
 # The catalog objects are identified by a key, not an id: a singleton category and its only item share the same key, and the
 # front-end Relay store caches every object that has an id by that id alone, which would merge them into one record.
 
+# An item another item needs: it is exported with it, whatever the selection.
+type ConfigPresetItemReference {
+    type: String!
+    key: String!
+}
+
 type ConfigPresetExportableItem {
     key: String!
     label: String!
     # True when the label is a static string the UI translates, false when it is user data shown as is.
     translatable: Boolean!
+    dependsOn: [ConfigPresetItemReference!]!
     # The item is the platform default (the default theme).
     isDefault: Boolean!
 }
@@ -62,6 +69,6 @@ input ConfigPresetSelectionInput {
 }
 
 extend type Mutation {
-    # Builds the bundle of the selected items and returns the stored zip; bundle_name only goes into metadata.json.
+    # Builds the bundle of the selected items, and of the items they depend on, and returns the stored zip; bundle_name only goes into metadata.json.
     configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }
