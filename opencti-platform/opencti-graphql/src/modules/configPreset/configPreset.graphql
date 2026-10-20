@@ -6,6 +6,8 @@ type ConfigPresetExportableItem {
     label: String!
     # True when the label is a static string the UI translates, false when it is user data shown as is.
     translatable: Boolean!
+    # The item is the platform default (the default theme).
+    isDefault: Boolean!
 }
 
 type ConfigPresetExportableItemEdge {

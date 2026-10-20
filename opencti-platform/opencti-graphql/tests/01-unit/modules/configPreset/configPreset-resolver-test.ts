@@ -13,6 +13,8 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
+  pageEntitiesConnection: vi.fn(),
+  storeLoadById: vi.fn(),
 }));
 vi.mock('../../../../src/modules/configPreset/configPreset-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/configPreset/configPreset-domain')>()),
@@ -23,10 +25,11 @@ import { authDirectiveBuilder } from '../../../../src/graphql/authDirective';
 import { makeFeatureFlagDirectiveTransformer } from '../../../../src/graphql/featureFlagDirective';
 import configPresetResolvers from '../../../../src/modules/configPreset/configPreset-resolver';
 import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from '../../../../src/modules/configPreset/configPreset-domain';
-import { fullEntitiesList, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { buildPaginationFromEdges } from '../../../../src/database/utils';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
+import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from './configPreset-themes-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -48,20 +51,26 @@ const buildSchema = () => {
   return makeFeatureFlagDirectiveTransformer()(authDirectiveBuilder('auth').authDirectiveTransformer(schema));
 };
 
-const ITEM_FIELDS = 'key label translatable';
+const ITEM_FIELDS = 'key label translatable isDefault';
 const QUERY = `{ configPresetExportableTypes { key label description group { key label } items { ${ITEM_FIELDS} } itemsPageInfo { hasNextPage globalCount } } }`;
 const bypassUser = { id: 'admin', capabilities: [{ name: 'BYPASS' }] };
 const settingsUser = { id: 'settings-admin', capabilities: [{ name: 'SETTINGS_SETPARAMETERS' }] };
 
-const staticItem = (key: string, label: string) => ({ key, label, translatable: true });
+const staticItem = (key: string, label: string) => ({ key, label, translatable: true, isDefault: false });
+const themeItem = (theme: { id: string; name: string }, isDefault: boolean) => ({
+  key: theme.id,
+  label: theme.name,
+  translatable: false,
+  isDefault,
+});
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
 
 describe('Config preset exportable types query', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     flags.enabled = true;
-    vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id' }] as never);
-    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
+    vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id }] as never);
+    mockThemeLoaders();
   });
 
   it('returns the exportable types to a BYPASS user when the flag is enabled', async () => {
@@ -76,6 +85,15 @@ describe('Config preset exportable types query', () => {
         group: platformSettings,
         items: [staticItem('platform', 'Platform configuration')],
         itemsPageInfo: onePage(1),
+      },
+      {
+        key: 'branding',
+        label: 'Branding',
+        description: 'Themes, colors, logos',
+        group: platformSettings,
+        // Whitemark first, then every theme, built-in ones included
+        items: [staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false), themeItem(builtInTheme, false), themeItem(customTheme, true)],
+        itemsPageInfo: onePage(4),
       },
       {
         key: 'hiddenEntityTypes',
@@ -100,9 +118,9 @@ describe('Config preset exportable types query', () => {
   it('lists the messages set on the platform and hides the category when none is set', async () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'hiddenEntityTypes']);
+    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'hiddenEntityTypes']);
 
-    vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_login_message: 'Welcome' }] as never);
+    vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
     const messages = (result.data?.configPresetExportableTypes as { key: string }[]).find((type) => type.key === 'messages');
@@ -140,9 +158,10 @@ describe('Config preset exportable types query', () => {
     expect(listItems).toHaveBeenCalledWith(context, user, { first: 10 });
     expect(types.map(({ key, group }) => [key, group.key])).toEqual([
       ['platform', 'platformSettings'],
+      ['branding', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
     ]);
-    expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false }]);
+    expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, isDefault: false }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
     listItems.mockRestore();
   });
@@ -159,15 +178,8 @@ describe('Config preset exportable items query', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     flags.enabled = true;
-    vi.mocked(topEntitiesList).mockResolvedValue([{
-      id: 'settings-id',
-      platform_banner_text: 'Banner',
-      platform_banner_level: 'RED',
-      platform_login_message: 'Welcome',
-      platform_consent_message: 'Consent',
-      platform_no_access_message: 'No access',
-    }] as never);
-    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
+    vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: builtInTheme.id }] as never);
+    mockThemeLoaders();
   });
 
   const queryItems = (variables: Record<string, unknown>, user: unknown = bypassUser) => graphql({
@@ -177,30 +189,23 @@ describe('Config preset exportable items query', () => {
     contextValue: { user },
   });
 
-  it('lists and searches the items of a type', async () => {
-    const all = await queryItems({ type: 'messages' });
-    expect(all.errors).toBeUndefined();
-    const connection = all.data?.configPresetExportableItems as { pageInfo: { hasNextPage: boolean; globalCount: number }; edges: { node: unknown }[] };
-    expect(connection.edges.map(({ node }) => node)).toEqual([
-      staticItem('banner', 'Banner'),
-      staticItem('login', 'Login message'),
-      staticItem('consent', 'Consent message'),
-      staticItem('noAccess', 'No access message'),
-    ]);
-    expect(connection.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 4 });
-    const searched = await queryItems({ type: 'messages', search: 'consent' });
-    expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([staticItem('consent', 'Consent message')]);
-    const filtered = await queryItems({ type: 'messages', ids: ['login', 'noAccess'], excludedIds: ['noAccess'] });
-    expect((filtered.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([staticItem('login', 'Login message')]);
+  it('pages and searches the items of a type, whitemark first, built-in themes included', async () => {
+    const first = await queryItems({ type: 'branding', first: 2 });
+    expect(first.errors).toBeUndefined();
+    const connection = first.data?.configPresetExportableItems as { pageInfo: { hasNextPage: boolean; globalCount: number }; edges: { node: unknown }[] };
+    expect(connection.edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false)]);
+    expect(connection.pageInfo).toMatchObject({ hasNextPage: true, globalCount: 4 });
+    const searched = await queryItems({ type: 'branding', search: 'soc' });
+    expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([themeItem(customTheme, false)]);
   });
 
   it('passes the paging, search and id filters to the family', async () => {
     const context = { source: 'test' } as AuthContext;
     const user = bypassUser as unknown as AuthUser;
-    const messages = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'messages')!;
-    const listItems = vi.spyOn(messages, 'listItems');
-    const args = { first: 5, after: 'cursor', search: 'login', ids: ['login'], excludedIds: ['banner'] };
-    await findConfigPresetExportableItems(context, user, { type: 'messages', ...args });
+    const branding = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'branding')!;
+    const listItems = vi.spyOn(branding, 'listItems');
+    const args = { first: 5, after: 'cursor', search: 'soc', ids: [customTheme.id], excludedIds: [otherCustomTheme.id] };
+    await findConfigPresetExportableItems(context, user, { type: 'branding', ...args });
     expect(listItems).toHaveBeenCalledWith(context, user, args);
     listItems.mockRestore();
   });
@@ -211,14 +216,14 @@ describe('Config preset exportable items query', () => {
   });
 
   it('rejects a user without BYPASS', async () => {
-    const result = await queryItems({ type: 'messages' }, settingsUser);
+    const result = await queryItems({ type: 'branding' }, settingsUser);
     expect(result.errors?.[0].message).toBe('You are not allowed to do this.');
     expect(result.data).toBeNull();
   });
 
   it('rejects a BYPASS user when the flag is disabled', async () => {
     flags.enabled = false;
-    const result = await queryItems({ type: 'messages' });
+    const result = await queryItems({ type: 'branding' });
     expect(result.errors?.[0].message).toMatch(/Feature is disabled/i);
   });
 });
@@ -247,10 +252,10 @@ describe('Config preset export mutation', () => {
   });
 
   it('passes the excluded items of a selection of every item', async () => {
-    const source = 'mutation { configPresetExport(selections: [{ type: "messages", excluded_items: ["login"] }]) { id } }';
+    const source = 'mutation { configPresetExport(selections: [{ type: "branding", excluded_items: ["theme-id"] }]) { id } }';
     const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
-    expect(configPresetExport).toHaveBeenCalledWith(expect.anything(), bypassUser, [{ type: 'messages', excluded_items: ['login'] }], undefined);
+    expect(configPresetExport).toHaveBeenCalledWith(expect.anything(), bypassUser, [{ type: 'branding', excluded_items: ['theme-id'] }], undefined);
   });
 
   it('rejects a user without BYPASS', async () => {

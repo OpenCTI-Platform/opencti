@@ -2,13 +2,15 @@ import { PLATFORM_VERSION } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetItemFile } from './configPreset-types';
 import { platformFamily } from './registry/platform-configPreset-registry';
+import { brandingFamily } from './registry/branding-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
 import { hiddenEntityTypesFamily } from './registry/hiddenEntityTypes-configPreset-registry';
 
-// In registry order, the categories of the spec table: Platform settings (platform, messages), then Data model.
+// In registry order, the categories of the spec table: Platform settings (platform, branding, messages), then Data model.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
+  brandingFamily,
   messagesFamily,
   hiddenEntityTypesFamily,
 ];
@@ -16,6 +18,8 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
 export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, item: ConfigPresetItemDefinition) => {
   return `${family.directory}/${item.fileName ?? `${item.id}.json`}`;
 };
+
+export const configPresetItemBundleId = (item: ConfigPresetItemDefinition) => item.bundleId ?? item.id;
 
 // The type written in the item files: `<group id>.<category id>`
 export const configPresetFamilyType = (family: ConfigPresetFamilyDefinition) => `${family.group.id}.${family.id}`;
@@ -29,7 +33,8 @@ export const exportConfigPresetItem = async (
   return {
     openCTI_version: PLATFORM_VERSION,
     type: configPresetFamilyType(family),
-    id: item.id,
+    // The bundle id, never an internal id: the static item id, or the standard id of an entity
+    id: configPresetItemBundleId(item),
     configuration: await item.exporter(context, user),
   };
 };

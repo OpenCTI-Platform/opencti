@@ -2,7 +2,7 @@ import type { FileHandle } from 'fs/promises';
 import { z } from 'zod';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { type EditInput, FilterMode, FilterOperator, type QueryThemesArgs, type ThemeAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -21,6 +21,10 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findThemePaginated = async (context: AuthContext, user: AuthUser, args: QueryThemesArgs) => {
   return pageEntitiesConnection<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
+};
+
+export const findAllThemes = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityTheme> = {}) => {
+  return fullEntitiesList<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
 };
 
 /**
@@ -185,6 +189,14 @@ const themeImportSchema = z.object({
   theme_login_aside_gradient_end: z.string().nullable().optional().default(null),
   theme_login_aside_image: z.string().nullable().optional().default(null),
 });
+
+// A theme in the import format, so a configuration preset theme can be imported back, and its standard id to match it
+export const getThemeConfigPresetConfiguration = (theme: BasicStoreEntityTheme) => {
+  const fields = Object.keys(themeImportSchema.shape) as (keyof BasicStoreEntityTheme)[];
+  // A missing value is left out: the import format gives it its default
+  const presentFields = fields.filter((field) => (theme[field] ?? null) !== null);
+  return { standard_id: theme.standard_id, ...Object.fromEntries(presentFields.map((field) => [field, theme[field]])) };
+};
 
 export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);

@@ -535,7 +535,7 @@ export const getCriticalAlerts = async (context, user) => {
 
 // region config preset
 // Allowlists of the Settings fields a configuration preset carries. Anything not listed here
-// (credentials, license, providers, theme, branding) never leaves the platform through a preset.
+// (credentials, license, providers) never leaves the platform through a preset.
 export const CONFIG_PRESET_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
 // One configuration preset item per message
 export const CONFIG_PRESET_MESSAGES_FIELDS = {
@@ -547,6 +547,12 @@ export const CONFIG_PRESET_MESSAGES_FIELDS = {
 
 const pickConfigPresetFields = (settings, fields) => Object.fromEntries(fields.map((field) => [field, settings[field] ?? null]));
 
+// The default theme of the platform, undefined when none is set or it no longer exists
+export const getPlatformDefaultTheme = async (context, user) => {
+  const settings = await getSettingsFromDatabase(context);
+  return settings.platform_theme ? findThemeById(context, user, settings.platform_theme) : undefined;
+};
+
 export const getPlatformConfigPresetConfiguration = async (context) => {
   const settings = await getSettingsFromDatabase(context);
   return pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS);
@@ -556,5 +562,10 @@ export const getPlatformConfigPresetConfiguration = async (context) => {
 export const getMessagesConfigPresetConfigurations = async (context) => {
   const settings = await getSettingsFromDatabase(context);
   return Object.fromEntries(Object.entries(CONFIG_PRESET_MESSAGES_FIELDS).map(([id, fields]) => [id, pickConfigPresetFields(settings, fields)]));
+};
+
+export const getWhitemarkConfigPresetConfiguration = async (context) => {
+  const settings = await getSettingsFromDatabase(context);
+  return { platform_whitemark: settings.platform_whitemark ?? false };
 };
 // endregion
