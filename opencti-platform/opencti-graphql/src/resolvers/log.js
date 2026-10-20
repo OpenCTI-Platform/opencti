@@ -1,10 +1,12 @@
 import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, findById, findAuditById } from '../domain/log';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { logFrontend } from '../config/conf';
+import { logApp, logFrontend } from '../config/conf';
 import { loadCreator } from '../database/members';
 
-const MAX_FRONTEND_LOGS_PER_CALL = 100;
+// Same as maxExportBatchSize in opencti-front/src/utils/logs/loggerProvider.ts:
+// a larger batch was not sent by the frontend logger.
+const MAX_FRONTEND_LOGS_PER_CALL = 50;
 
 const FRONTEND_LOG_LEVELS = {
   DEBUG: 'debug',
@@ -45,7 +47,14 @@ const logResolvers = {
     frontendErrorLog: (_, { message, codeStack, componentStack }, __) => {
       logFrontend.error(message, { codeStack, componentStack });
     },
-    frontendLogsAdd: (_, { logs }, __) => {
+    frontendLogsAdd: (_, { logs }, context) => {
+      if (logs.length > MAX_FRONTEND_LOGS_PER_CALL) {
+        logApp.warn('[FRONTEND LOGS] Batch larger than the frontend logger sends, extra records dropped', {
+          received: logs.length,
+          max: MAX_FRONTEND_LOGS_PER_CALL,
+          user_id: context.user?.id,
+        });
+      }
       logs.slice(0, MAX_FRONTEND_LOGS_PER_CALL).forEach((log) => {
         const { timestamp, level, message, eventName, data, exception } = log;
         const logLevel = FRONTEND_LOG_LEVELS[level] ?? 'error';

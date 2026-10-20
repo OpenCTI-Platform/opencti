@@ -1,3 +1,5 @@
+import { createNoopMeter } from '@opentelemetry/api';
+import type { Attributes, MeterProvider } from '@opentelemetry/api';
 import { logs } from '@opentelemetry/api-logs';
 import { BatchLogRecordProcessor, ConsoleLogRecordExporter, LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { DedupLogRecordProcessor, RECORDS_SUPPRESSED_EVENT_NAME } from './DedupLogRecordProcessor';
@@ -6,12 +8,29 @@ import { GraphQLLogRecordExporter } from './GraphQLLogRecordExporter';
 import { SEVERITY_NUMBERS, logger } from './logger';
 
 let provider: LoggerProvider | undefined;
+let dropReported = false;
 
 const reportSuppressed = (suppressed: SuppressedRecords) => {
   logger.info('Duplicate log records suppressed', {
     eventName: RECORDS_SUPPRESSED_EVENT_NAME,
     data: { suppressed: { count: suppressed.count, event_name: suppressed.eventName, level: suppressed.level } },
   });
+};
+
+const dropAwareMeterProvider: MeterProvider = {
+  getMeter: () => Object.assign(createNoopMeter(), {
+    createCounter: () => ({
+      add: (_count: number, attributes?: Attributes) => {
+        if (dropReported || attributes?.['error.type'] !== 'queue_full') {
+          return;
+        }
+        dropReported = true;
+        setTimeout(() => {
+          logger.info('Log records dropped, queue full', { eventName: 'opencti.frontend.records_dropped' });
+        }, 5_000);
+      },
+    }),
+  }),
 };
 
 const buildShippingProcessor = (isDev: boolean) => {
@@ -24,6 +43,7 @@ const buildShippingProcessor = (isDev: boolean) => {
     scheduledDelayMillis: 5_000,
     maxExportBatchSize: 50,
     maxQueueSize: 500,
+    selfObsMeterProvider: dropAwareMeterProvider,
   });
 };
 
