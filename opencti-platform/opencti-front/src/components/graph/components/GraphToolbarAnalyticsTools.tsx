@@ -398,21 +398,21 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
         color="primary"
         onClick={() => setPathOpen(true)}
         title={t_i18n('Find path between the two selected entities')}
-        disabled={selectedNodes.length !== 2}
+        disabledReason={selectedNodes.length !== 2 ? t_i18n('Select exactly two entities first') : undefined}
       />
       <GraphToolbarItem
         Icon={<CompareArrowsOutlined />}
         color="primary"
         onClick={() => setSimilarOpen(true)}
         title={t_i18n('Expand by similarity')}
-        disabled={selectedNodes.length === 0}
+        disabledReason={selectedNodes.length === 0 ? t_i18n('Select entities first') : undefined}
       />
       <GraphToolbarItem
         Icon={<GridOnOutlined />}
         color="primary"
         onClick={() => setMatrixOpen(true)}
         title={t_i18n('Similarity matrix of the selected entities')}
-        disabled={selectedNodes.length < 2}
+        disabledReason={selectedNodes.length < 2 ? t_i18n('Select at least two entities to compare them') : undefined}
       />
 
       {pathOpen && from && to && (
