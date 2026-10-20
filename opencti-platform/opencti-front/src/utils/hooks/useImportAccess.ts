@@ -29,6 +29,10 @@ const useImportAccess = () => {
     || hasKnowledgeUpdateInDraftOnly
     || hasFormIntakeInDraftOnly;
 
+  // A form is submitted where the form capability is held: with it in main, the submission can stay in main (objects
+  // created on the fly then need Create / Update knowledge in main), whatever the user can do in draft.
+  const isForcedFormSubmissionToDraft = isForcedImportToDraft && !hasFormIntakeInMain;
+
   // Only access to Import Draft Tab: requires at minimum KNOWLEDGE_KNUPDATE (in main or draft)
   const hasKnowledgeUpdate = useGranted([KNOWLEDGE_KNUPDATE], false, {
     capabilitiesInDraft: [KNOWLEDGE_KNUPDATE],
@@ -47,6 +51,8 @@ const useImportAccess = () => {
 
   return {
     isForcedImportToDraft,
+    isForcedFormSubmissionToDraft,
+    hasKnowledgeUpdateInMain,
     hasOnlyAccessToImportDraftTab,
     hasOnlyAccessToFormImport,
     canOpenDraft,
