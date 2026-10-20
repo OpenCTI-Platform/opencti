@@ -26,8 +26,9 @@ import { capitalizeFirstLetter } from '../../../../../../../utils/String';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
 import PlaybookActionValueField from './PlaybookActionValueField';
-import { attributesMultiple, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
+import { isAttributeMultiple, isCustomFieldAttribute, isPlaybookUpdateActionValid, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
 import useActionFieldOptions from './useActionFieldOptions';
+import useCustomFieldDefinitions from '../../../../../common/custom_fields/useCustomFieldDefinitions';
 
 interface PlaybookFlowFieldActionsProps {
   operations?: string[];
@@ -43,15 +44,13 @@ const PlaybookFlowFieldActions = ({
     value: op,
   }));
 
-  const getActionFieldOptions = useActionFieldOptions();
+  const customFieldDefinitions = useCustomFieldDefinitions();
+  const getActionFieldOptions = useActionFieldOptions(customFieldDefinitions);
   const { values, setFieldValue } = useFormikContext<PlaybookUpdateActionsForm>();
   const actions = values.actions ?? [];
   const formActionsValues = values.actionsFormValues ?? [];
 
-  const actionsAreValid = actions.every((a) => {
-    if (a.attribute === 'x_opencti_detection') return true;
-    return a.op && a.attribute && a.value && a.value.length > 0;
-  });
+  const actionsAreValid = actions.every(isPlaybookUpdateActionValid);
 
   /**
    * Returns the label for a given option.
@@ -84,9 +83,14 @@ const PlaybookFlowFieldActions = ({
     const newAttribute = val?.value;
     const newAction: PlaybookUpdateAction = { op: currentOp };
     if (newAttribute) newAction.attribute = newAttribute;
+    // A custom field action always carries a value: empty to clear it, false for an untouched boolean
+    if (isCustomFieldAttribute(newAttribute)) {
+      const isBoolean = customFieldDefinitions.some((d) => d.name === newAttribute && d.field_type === 'boolean');
+      newAction.value = isBoolean && currentOp !== 'remove' ? [{ label: 'false', value: 'false', patch_value: 'false' }] : [];
+    }
     setFieldValue(`actions.${index}`, newAction);
     if (formActionsValues[index] !== undefined) {
-      const isMultiple = attributesMultiple.includes(newAttribute ?? '');
+      const isMultiple = isAttributeMultiple(newAttribute, customFieldDefinitions);
       setFieldValue(`actionsFormValues.${index}`, isMultiple ? [] : null);
     }
   };
@@ -151,6 +155,7 @@ const PlaybookFlowFieldActions = ({
                       <PlaybookActionValueField
                         action={action}
                         index={i}
+                        customFieldDefinitions={customFieldDefinitions}
                       />
                     </Grid>
 

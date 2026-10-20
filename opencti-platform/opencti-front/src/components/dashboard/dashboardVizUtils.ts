@@ -41,6 +41,7 @@ const fetchSavedFilterContent = async (filterId: string) => {
 };
 
 const NO_VARIABLE_VALUES: ReadonlyMap<string, string> = new Map();
+const NO_DATE_VARIABLE_IDS: ReadonlySet<string> = new Set();
 
 /**
  * Resolves widget data selections by cleaning filters based on the widget perspective,
@@ -53,12 +54,15 @@ export const resolveDataSelection = async ({
   perspective,
   host,
   variableValues = NO_VARIABLE_VALUES,
+  dateVariableIds = NO_DATE_VARIABLE_IDS,
 }: {
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
   dataSelection: WidgetDataSelection[];
   perspective: WidgetPerspective;
   host?: WidgetHost;
   variableValues?: ReadonlyMap<string, string>;
+  // The date variables, whose value is shifted by one day for the lte and gt operators, like a fixed date.
+  dateVariableIds?: ReadonlySet<string>;
 }) => {
   let isMissingSavedFilters = false;
   let hasUnresolvedVariables = false;
@@ -91,7 +95,7 @@ export const resolveDataSelection = async ({
       // An unresolved token is kept in place and the whole widget is blocked (fail closed):
       // the cleanup below would otherwise silently drop a filter it cannot read.
       let resolvedFilters = filters.map((f) => {
-        const { filters: withValues, unresolved } = resolveVariablesInFilterGroup(f, variableValues);
+        const { filters: withValues, unresolved } = resolveVariablesInFilterGroup(f, variableValues, { dateVariableIds });
         if (unresolved.length > 0) hasUnresolvedVariables = true;
         return withValues;
       });

@@ -233,8 +233,23 @@ input SecurityCoverageResultAddInput {
   add_related_entities: SecurityCoverageSelectedEntitiesInput
 }
 
+input SecurityCoverageResultEditInput {
+  name: String
+  description: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  external_uri: String
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [SecurityCoverageExpectation!]
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
+}
+
 type Mutation {
   securityCoverageResultAdd(input: SecurityCoverageResultAddInput!): SecurityCoverageResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageResultEdit(id: ID!, input: SecurityCoverageResultEditInput!): SecurityCoverageResult @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageResultDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])

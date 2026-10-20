@@ -800,6 +800,13 @@ replaces the popover under it. `TopBar.libraryOnly.test.ts` names `Popover` in
 `EXEMPTED` so that importing one directly stays a declared, dated exemption
 rather than a new arrival.
 
+**Second consumer, 2026-10-04:** the graph toolbar (`GraphToolbar.tsx`) folds its
+creation and removal tools into one button on a narrow graph and opens them in
+a MUI `Popover`. It needs `keepMounted`: the tools own their creation dialogs
+(the relationship drawn with the right button included), which must open while
+the popover is closed. A library popover will have to offer the same
+keep-mounted behaviour to replace it.
+
 **Not exempted, and now closed:** `Stack` and `Box` were still inside the NLQ
 toggle — MUI layout, not the control. Replaced by plain elements at the same
 geometry (4px caret margin and padding, unchanged 1px divider). The guard reads
@@ -2352,6 +2359,12 @@ the two MUI imports for the library group, delete both markers, and check that
 the three segments still read "All", "Enabled" and "Disabled" with their counts,
 36 px tall on the search field's centre line.
 
+**Also at.** `FilterValueVariableSwitch.tsx` (dashboard widget filters): the
+"Fixed value" / "Variable" switch of a date, numeric or free text value is
+specified with text segments. It uses the library group with two glyphs, each
+named by its `aria-label` and a library `Tooltip` (marked `FDS-WORKAROUND`).
+With a text item, drop the glyphs and the tooltips and show both words.
+
 ## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
 
 **Needed.** A row menu that ends with a Delete command shows that row in the
@@ -2613,13 +2626,14 @@ for the tooltip:
 - `DisabledReasonTooltip`, around the library `Button` of the Deploy
   actions in `AvailableIntegrationLine`, `IngestionCatalogConnectorHeader`
   and `IngestionCatalogCardDeployButton`.
-- `GraphToolbarItem`, around every graph toolbar tool. It still renders the
-  MUI `IconButton` and `Tooltip`; moving it to the library's would hit this
-  same gap, so the span stays either way.
+- `GraphToolbarItem`, around every disabled graph toolbar tool. It renders
+  the library `IconButton` and `Tooltip`, which hit this same gap, so the
+  span stays: it carries `role="button"`, `aria-disabled` and the disabled
+  reason.
 
-The span is a focusable element with no role, which
-`jsx-a11y/no-noninteractive-tabindex` flags and is disabled at both sites:
-the Tab stop lands on that span, not on the button.
+In `DisabledReasonTooltip` the span is a focusable element with no role,
+which `jsx-a11y/no-noninteractive-tabindex` flags and is disabled there. At
+both sites the Tab stop lands on that span, not on the button.
 
 **Ask.** A disabled mode of `Button` and `IconButton` that renders
 `aria-disabled` instead of `disabled`, keeps focus and pointer events, and
@@ -2627,16 +2641,63 @@ blocks activation in JavaScript, for example a `focusableWhenDisabled`
 prop. That would make the button itself the tooltip trigger.
 
 **Removal test.** At a pin with that mode: pass the disabled state through
-it on the three Deploy buttons and on `GraphToolbarItem` (moved to the
-library `IconButton` and `Tooltip`), delete both `<span>`s with their
-markers and eslint-disables, and check that the tooltip shows on hover and
+it on the three Deploy buttons and on `GraphToolbarItem`, delete both
+`<span>`s with their markers and eslint-disable, and check that the tooltip shows on hover and
 on keyboard focus, that the screen reader announces the button as
 disabled, and that a click or Enter does nothing. In the graph toolbar,
 also check that each tool keeps its size and alignment, which the span's
 `inline-flex` holds today.
 
+---
 
-## 69. No code editor, so a product writing Sigma or queries layers its own highlighter over a textarea
+## 69. `Chip` has no muted state that stays clickable, so a dashboard variable no widget uses is dimmed by hand
+
+**Where.** `DashboardVariableChip.tsx` (dashboard variables bar). A variable that
+no widget references must read as inactive (it still has to open its value
+input, so the user can change it) and explain itself in a `Tooltip`.
+
+**Gap.** The only muted state of `Chip` is `disabled`, which is non-interactive:
+the click that opens the value popover would be lost. There is no tone between
+`neutral` and `disabled`.
+
+**Workaround.** The chip is wrapped and the wrapper carries `opacity: 0.6`
+(`UNUSED_OPACITY`, marked `FDS-WORKAROUND`).
+
+**Ask.** A `muted` (or `tone="subtle"`) prop on `Chip` that lowers the label and
+fill contrast but keeps the chip a focusable, clickable `<button>`.
+
+**Removal test.** Replace the wrapper opacity by the prop: the chip of an unused
+variable must still open its popover on click and keep its hover tooltip.
+
+---
+
+## 70. `Menu` opens only from a trigger element, so a context menu at the pointer needs a hidden one
+
+**Needed.** The graphs open a context menu where the reader right-clicks an
+entity, a relationship or the empty canvas (and from the keyboard with
+Shift+F10 or the context-menu key), with the sections, submenus, shortcuts and
+disabled reasons of the toolbar's "More actions" menu.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0):
+`Menu` wraps the Radix dropdown menu and positions `MenuContent` against its
+`MenuTrigger` element only. The library has no context-menu component and no
+way to anchor a `Menu` at a point.
+
+**Workaround.** `GraphContextMenu.tsx` renders a controlled `Menu` whose
+`MenuTrigger` is a one-pixel, `aria-hidden`, non-focusable span placed at the
+pointer inside the graph container, under one `FDS-WORKAROUND #70` marker.
+`onCloseAutoFocus` gives the focus back to the element that had it, as the
+trigger cannot take it.
+
+**Ask.** A `ContextMenu` (the Radix context menu, with the `Menu` item
+components) or an `anchor` point on `Menu`, both opening from the keyboard.
+
+**Removal test.** At a pin with either: replace the hidden trigger by the
+library anchor, delete the marker, and check that a right click on a node of a
+report graph opens the menu at the pointer, that Shift+F10 opens it for the
+entity of the keyboard list, and that Escape gives the focus back.
+
+## 71. No code editor, so a product writing Sigma or queries layers its own highlighter over a textarea
 
 **Raised** by the Hunts screens (#18671): a hunt carries a Sigma rule (YAML) and
 native queries (KQL, SPL, EQL, ...) that analysts write and read back.
@@ -2660,7 +2721,7 @@ creation drawer and the Logic tab: the Sigma rule is highlighted, `Tab` indents,
 `Escape` then `Tab` reaches the next field.
 
 
-## 70. No inline alert or callout, so status banners stay on the MUI wrapper
+## 72. No inline alert or callout, so status banners stay on the MUI wrapper
 
 **Raised** by the Hunts screens (#18671): the hunt detail shows a banner when an
 agent or XTM Hub proposed the hunt, when the user works in a draft workspace, and
@@ -2691,7 +2752,7 @@ description is a paragraph, so the list of what a draft still needs is built fro
 phrasing content (`role="list"` / `role="listitem"` spans).
 
 
-## 71. `SelectContent` does not take its name from its trigger
+## 73. `SelectContent` does not take its name from its trigger
 
 **Raised** by `check-accessible-names.mjs` on the Hunts screens (#18671): four
 selects with a named `SelectTrigger` were flagged `listbox-unnamed`.
@@ -2711,7 +2772,7 @@ example `aria-labelledby` pointing at the trigger) when it has none of its own.
 `check-accessible-names.mjs` stays clean and a screen reader announces the
 listbox as "Period".
 
-## 72. No hero or first-use layout, so a first-use screen is assembled by hand
+## 74. No hero or first-use layout, so a first-use screen is assembled by hand
 
 **Raised** by the Hunts screens (#18671): Defense > Hunts opens on a first-use
 screen when the platform has no hunt yet (what a hunt does, then "Create a hunt",
@@ -2734,7 +2795,7 @@ longer imports `components/common/card/Card`.
 `HeroHeader` / `HeroBody` composition and no longer imports
 `components/common/card/Card`.
 
-## 73. No stepper, so a stepped creation form stays on the MUI `Stepper`
+## 75. No stepper, so a stepped creation form stays on the MUI `Stepper`
 
 **Raised** by the Hunts screens (#18671): the hunt creation drawer walks the
 analyst through four steps (what to hunt, context, execution, knowledge), each

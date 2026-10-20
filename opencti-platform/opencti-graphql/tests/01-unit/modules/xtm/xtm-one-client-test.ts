@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AxiosError, AxiosHeaders } from 'axios';
 import xtmOneClient from '../../../../src/modules/xtm/one/xtm-one-client';
 import { logApp } from '../../../../src/config/conf';
-import { getHttpClient } from '../../../../src/utils/http-client';
+import { getHttpClient, HttpClientError } from '../../../../src/utils/http-client';
 import type { AuthContext } from '../../../../src/types/user';
 
 vi.mock('../../../../src/config/conf', async (importOriginal) => {
@@ -42,10 +41,9 @@ describe('XTM One intent catalog', () => {
   });
 
   it('should never log the bearer token the request of an HTTP error carries', async () => {
-    const config = { headers: new AxiosHeaders({ Authorization: 'Bearer jwt-secret' }) };
-    const failure = new AxiosError('Request failed with status code 503', 'ERR_BAD_RESPONSE', config as never, {}, {
-      status: 503, statusText: 'Service Unavailable', headers: {}, config, data: { detail: 'catalog unavailable' },
-    } as never);
+    const failure = new HttpClientError('Request failed with status code 503', 'ERR_BAD_RESPONSE', {
+      status: 503, statusText: 'Service Unavailable', headers: {}, data: { detail: 'catalog unavailable' },
+    });
     vi.mocked(getHttpClient).mockReturnValue({ get: vi.fn().mockRejectedValue(failure) } as never);
     await xtmOneClient.listAgentsForIntent({ user: { id: 'user-1' } } as AuthContext, 'cti.hunt_hypothesis');
     expect(logApp.warn).toHaveBeenCalledWith('[XTM One] listAgentsForIntent failed', {

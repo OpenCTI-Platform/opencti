@@ -14,6 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { Field, useFormikContext } from 'formik';
+import { CustomFieldInput } from '../../../../../common/custom_fields/CustomFieldsInput';
+import type { CustomFieldDefinition } from '../../../../../common/custom_fields/useCustomFieldDefinitions';
+import type { CustomFieldValue } from '../../../../../../../utils/customFields';
 import SwitchField from '../../../../../../../components/fields/SwitchField';
 import { FieldOption } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
@@ -25,7 +28,7 @@ import ObjectMarkingField from '../../../../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../../../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../../../../common/form/OpenVocabField';
 import StatusField from '../../../../../common/form/StatusField';
-import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
+import { isCustomFieldAttribute, PlaybookUpdateAction, PlaybookUpdateActionsForm, toCustomFieldActionValue } from './playbookAction-types';
 import TextField from '../../../../../../../components/TextField';
 import useAttributes from '../../../../../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../../../../../components/i18n';
@@ -33,15 +36,17 @@ import { useFormatter } from '../../../../../../../components/i18n';
 interface PlaybookActionValueFieldProps {
   action: PlaybookUpdateAction;
   index: number;
+  customFieldDefinitions?: CustomFieldDefinition[];
 }
 
 const PlaybookActionValueField = ({
   action,
   index,
+  customFieldDefinitions = [],
 }: PlaybookActionValueFieldProps) => {
   const { t_i18n } = useFormatter();
   const { numberAttributes } = useAttributes();
-  const { setFieldValue } = useFormikContext<PlaybookUpdateActionsForm>();
+  const { values, setFieldValue } = useFormikContext<PlaybookUpdateActionsForm>();
 
   const disabled = isEmptyField(action.attribute);
   // Represents format of the value for backend manipulation.
@@ -49,6 +54,27 @@ const PlaybookActionValueField = ({
   // Represents format of the value for the frontend form.
   // /!\ It's relicate from old code and cannot be changed without breaking old playbooks.
   const formValueName = `actionsFormValues.${index}`;
+
+  if (isCustomFieldAttribute(action.attribute)) {
+    const definition = customFieldDefinitions.find((d) => d.name === action.attribute);
+    // Removing a single value clears it, only a multi_select takes the options to remove
+    if (!definition || (action.op === 'remove' && definition.field_type !== 'multi_select')) {
+      return null;
+    }
+    const formValue = values.actionsFormValues?.[index] as unknown as CustomFieldValue | null | undefined;
+    const isBoolean = definition.field_type === 'boolean';
+    return (
+      <CustomFieldInput
+        definition={definition}
+        mandatory={false}
+        value={formValue ?? (isBoolean ? false : '')}
+        onChange={(value) => {
+          setFieldValue(formValueName, value);
+          setFieldValue(valueName, toCustomFieldActionValue(value));
+        }}
+      />
+    );
+  }
 
   switch (action.attribute) {
     case 'objectMarking':

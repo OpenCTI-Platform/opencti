@@ -43,7 +43,7 @@ Exploring and modifying the structured Knowledge contained in a Report can be do
 
 ![Graph View of a Report](assets/report-graph-view.png)
 
-In Graph view, STIX SDO are displayed as graph nodes and relationships as graph links. Nodes are colored depending on their type. Direct relationship are displayed as plain link and inferred relationships in dotted link.
+In Graph view, STIX SDOs are displayed as graph nodes and relationships as graph links. Nodes are colored depending on their type and carry badges for their markings, a low confidence or an inference. Direct relationships are displayed as plain links, inferred relationships as dashed links and low-confidence relationships as dotted links. Hovering an element opens a card with its key facts, a right click opens the menu of its actions, the legend counts and filters the types drawn, and several deterministic layouts are available: see [Work with graphs](graphs.md).
 At the top right, you will find a series of icons. From there you can change the current type of view. Here you can also perform global action on the Knowledge of the Report. Let's highlight 2 of them:
 - Suggestions: This tool suggests you some logical relationships to add between your contained Object to give more consistency to your Knowledge.
 - Share with an Organization: if you have designated a main Organization in the platform settings, you can here share your Report and its content with users of another Organization.
@@ -66,7 +66,7 @@ The view can be filtered and displayed relationships too.
 
 ![Correlation view of a Report](assets/report-correlation-view.png)
 
-The correlation view is a great way to visualize and find other Reports related to your current subject of interest. This graph displays all Report related to the important nodes contained in your current Report, for example Objects like Malware or Intrusion sets.
+The correlation view is a great way to visualize and find other Reports related to your current subject of interest. This graph displays all Report related to the important nodes contained in your current Report, for example Objects like Malware or Intrusion sets. It offers the same navigation, legend, layouts and hover cards as the other graphs (see [Work with graphs](graphs.md)).
 
 #### Matrix view
 

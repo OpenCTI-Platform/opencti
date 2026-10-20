@@ -1811,6 +1811,7 @@ export enum BackgroundTaskActionType {
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
   RemoveAuthMembers = 'REMOVE_AUTH_MEMBERS',
+  RemoveCustomFieldValues = 'REMOVE_CUSTOM_FIELD_VALUES',
   RemoveFromDraft = 'REMOVE_FROM_DRAFT',
   RemoveGroups = 'REMOVE_GROUPS',
   RemoveOrganizations = 'REMOVE_ORGANIZATIONS',
@@ -4612,6 +4613,7 @@ export type Connector = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   has_newer_incompatible_version?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
+  ingestionHealth?: Maybe<IngestionHealth>;
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
   last_seen_at?: Maybe<Scalars['DateTime']['output']>;
@@ -15337,6 +15339,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   duplicateCsvMapper: CsvMapper;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ingestionHealth?: Maybe<IngestionHealth>;
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
@@ -15423,6 +15426,38 @@ export type IngestionHeader = {
   value: Scalars['String']['output'];
 };
 
+export type IngestionHealth = {
+  __typename?: 'IngestionHealth';
+  healthChecks: Array<IngestionHealthCheck>;
+  status: IngestionHealthStatus;
+  status_since: Scalars['DateTime']['output'];
+};
+
+export type IngestionHealthCheck = {
+  __typename?: 'IngestionHealthCheck';
+  health_check_code: Scalars['String']['output'];
+  health_check_kind: IngestionHealthCheckKind;
+  health_check_message?: Maybe<Scalars['String']['output']>;
+  health_check_severity: IngestionHealthCheckSeverity;
+};
+
+export enum IngestionHealthCheckKind {
+  Configuration = 'configuration',
+  Runtime = 'runtime'
+}
+
+export enum IngestionHealthCheckSeverity {
+  Advisory = 'advisory',
+  Blocking = 'blocking'
+}
+
+export enum IngestionHealthStatus {
+  Critical = 'critical',
+  Degraded = 'degraded',
+  Healthy = 'healthy',
+  Stopped = 'stopped'
+}
+
 export type IngestionJson = BasicObject & InternalObject & {
   __typename?: 'IngestionJson';
   authentication_type: IngestionAuthType;
@@ -15434,6 +15469,7 @@ export type IngestionJson = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   headers?: Maybe<Array<IngestionHeader>>;
   id: Scalars['ID']['output'];
+  ingestionHealth?: Maybe<IngestionHealth>;
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   jsonMapper: JsonMapper;
@@ -15554,6 +15590,7 @@ export type IngestionRss = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ingestionHealth?: Maybe<IngestionHealth>;
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
@@ -15637,6 +15674,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ingestionHealth?: Maybe<IngestionHealth>;
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
@@ -15688,6 +15726,7 @@ export type IngestionTaxiiCollection = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ingestionHealth?: Maybe<IngestionHealth>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -19053,6 +19092,7 @@ export type Mutation = {
   securityCoverageRelationDelete?: Maybe<SecurityCoverage>;
   securityCoverageResultAdd?: Maybe<SecurityCoverageResult>;
   securityCoverageResultDelete?: Maybe<Scalars['ID']['output']>;
+  securityCoverageResultEdit?: Maybe<SecurityCoverageResult>;
   securityCoverageResultRelationAdd?: Maybe<StixRefRelationship>;
   securityCoverageResultRelationDelete?: Maybe<SecurityCoverage>;
   securityPlatformAdd?: Maybe<SecurityPlatform>;
@@ -21310,6 +21350,12 @@ export type MutationSecurityCoverageResultAddArgs = {
 
 export type MutationSecurityCoverageResultDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSecurityCoverageResultEditArgs = {
+  id: Scalars['ID']['input'];
+  input: SecurityCoverageResultEditInput;
 };
 
 
@@ -32545,6 +32591,20 @@ export type SecurityCoverageResultEdge = {
   node: SecurityCoverageResult;
 };
 
+export type SecurityCoverageResultEditInput = {
+  add_related_entities?: InputMaybe<SecurityCoverageSelectedEntitiesInput>;
+  confidence?: InputMaybe<Scalars['Int']['input']>;
+  coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
+  coverage_valid_from?: InputMaybe<Scalars['DateTime']['input']>;
+  coverage_valid_to?: InputMaybe<Scalars['DateTime']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  external_uri?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
 export enum SecurityCoverageResultOrdering {
   Score = '_score',
   Confidence = 'confidence',
@@ -35994,6 +36054,7 @@ export type Synchronizer = {
   consumer_metrics?: Maybe<StreamCollectionConsumer>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
+  ingestionHealth?: Maybe<IngestionHealth>;
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   last_execution_status?: Maybe<Scalars['String']['output']>;
@@ -42885,6 +42946,11 @@ export type ResolversTypes = ResolversObject<{
   IngestionCsvOrdering: IngestionCsvOrdering;
   IngestionEntry: ResolverTypeWrapper<IngestionEntry>;
   IngestionHeader: ResolverTypeWrapper<IngestionHeader>;
+  IngestionHealth: ResolverTypeWrapper<IngestionHealth>;
+  IngestionHealthCheck: ResolverTypeWrapper<IngestionHealthCheck>;
+  IngestionHealthCheckKind: IngestionHealthCheckKind;
+  IngestionHealthCheckSeverity: IngestionHealthCheckSeverity;
+  IngestionHealthStatus: IngestionHealthStatus;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: ResolverTypeWrapper<IngestionJsonAddInputFromImport>;
@@ -43271,6 +43337,7 @@ export type ResolversTypes = ResolversObject<{
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: ResolverTypeWrapper<Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversTypes['SecurityCoverageResultEdge']> }>;
   SecurityCoverageResultEdge: ResolverTypeWrapper<Omit<SecurityCoverageResultEdge, 'node'> & { node: ResolversTypes['SecurityCoverageResult'] }>;
+  SecurityCoverageResultEditInput: SecurityCoverageResultEditInput;
   SecurityCoverageResultOrdering: SecurityCoverageResultOrdering;
   SecurityCoverageSelectedEntitiesInput: SecurityCoverageSelectedEntitiesInput;
   SecurityPlatform: ResolverTypeWrapper<BasicStoreEntitySecurityPlatform>;
@@ -44071,6 +44138,8 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionCsvEdge: Omit<IngestionCsvEdge, 'node'> & { node: ResolversParentTypes['IngestionCsv'] };
   IngestionEntry: IngestionEntry;
   IngestionHeader: IngestionHeader;
+  IngestionHealth: IngestionHealth;
+  IngestionHealthCheck: IngestionHealthCheck;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
@@ -44409,6 +44478,7 @@ export type ResolversParentTypes = ResolversObject<{
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversParentTypes['SecurityCoverageResultEdge']> };
   SecurityCoverageResultEdge: Omit<SecurityCoverageResultEdge, 'node'> & { node: ResolversParentTypes['SecurityCoverageResult'] };
+  SecurityCoverageResultEditInput: SecurityCoverageResultEditInput;
   SecurityCoverageSelectedEntitiesInput: SecurityCoverageSelectedEntitiesInput;
   SecurityPlatform: BasicStoreEntitySecurityPlatform;
   SecurityPlatformAddInput: SecurityPlatformAddInput;
@@ -46171,6 +46241,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   has_newer_incompatible_version?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionHealth?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   last_seen_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49825,6 +49896,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   duplicateCsvMapper?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionHealth?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49870,6 +49942,19 @@ export type IngestionHeaderResolvers<ContextType = any, ParentType extends Resol
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type IngestionHealthResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealth'] = ResolversParentTypes['IngestionHealth']> = ResolversObject<{
+  healthChecks?: Resolver<Array<ResolversTypes['IngestionHealthCheck']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  status_since?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type IngestionHealthCheckResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthCheck'] = ResolversParentTypes['IngestionHealthCheck']> = ResolversObject<{
+  health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
+  health_check_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  health_check_severity?: Resolver<ResolversTypes['IngestionHealthCheckSeverity'], ParentType, ContextType>;
+}>;
+
 export type IngestionJsonResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJson'] = ResolversParentTypes['IngestionJson']> = ResolversObject<{
   authentication_type?: Resolver<ResolversTypes['IngestionAuthType'], ParentType, ContextType>;
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -49880,6 +49965,7 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   headers?: Resolver<Maybe<Array<ResolversTypes['IngestionHeader']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionHealth?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jsonMapper?: Resolver<ResolversTypes['JsonMapper'], ParentType, ContextType>;
@@ -49957,6 +50043,7 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionHealth?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50008,6 +50095,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionHealth?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50036,6 +50124,7 @@ export type IngestionTaxiiCollectionResolvers<ContextType = any, ParentType exte
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionHealth?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -51599,6 +51688,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   securityCoverageRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   securityCoverageResultAdd?: Resolver<Maybe<ResolversTypes['SecurityCoverageResult']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultAddArgs, 'input'>>;
   securityCoverageResultDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultDeleteArgs, 'id'>>;
+  securityCoverageResultEdit?: Resolver<Maybe<ResolversTypes['SecurityCoverageResult']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultEditArgs, 'id' | 'input'>>;
   securityCoverageResultRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultRelationAddArgs, 'id' | 'input'>>;
   securityCoverageResultRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   securityPlatformAdd?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformAddArgs, 'input'>>;
@@ -55582,6 +55672,7 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   consumer_metrics?: Resolver<Maybe<ResolversTypes['StreamCollectionConsumer']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionHealth?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -57802,6 +57893,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionCsvEdge?: IngestionCsvEdgeResolvers<ContextType>;
   IngestionEntry?: IngestionEntryResolvers<ContextType>;
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
+  IngestionHealth?: IngestionHealthResolvers<ContextType>;
+  IngestionHealthCheck?: IngestionHealthCheckResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonAddInputFromImport?: IngestionJsonAddInputFromImportResolvers<ContextType>;
   IngestionJsonConnection?: IngestionJsonConnectionResolvers<ContextType>;

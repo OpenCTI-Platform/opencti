@@ -556,6 +556,18 @@ describe('resolvedDataSelection', () => {
       expect(regardingOfIds(selection.dynamicTo)).toEqual(['org-id']);
     });
 
+    it('shifts a date variable by one day for lte, like a fixed date, only when it is known as a date', async () => {
+      // January, in UTC: one calendar day later is the same instant in any common time zone (no daylight saving change).
+      const dataSelection = [{
+        filters: { mode: 'and', filters: [{ key: relationshipsAvailableFilterKey, values: [token], operator: 'lte', mode: 'or' }], filterGroups: [] },
+      }] as WidgetDataSelection[];
+      const variableValues = new Map([[VAR_A, '2024-01-15T00:00:00.000Z']]);
+      const asDate = await resolveDataSelection({ filterKeysSchema, perspective: 'relationships', dataSelection, variableValues, dateVariableIds: new Set([VAR_A]) });
+      expect(asDate.resolvedDataSelection[0].filters?.filters[0].values).toEqual(['2024-01-16T00:00:00.000Z']);
+      const notDate = await resolveDataSelection({ filterKeysSchema, perspective: 'relationships', dataSelection, variableValues });
+      expect(notDate.resolvedDataSelection[0].filters?.filters[0].values).toEqual(['2024-01-15T00:00:00.000Z']);
+    });
+
     it('flags unresolved variables instead of dropping the filter', async () => {
       const { hasUnresolvedVariables } = await resolveDataSelection({
         filterKeysSchema,

@@ -281,6 +281,10 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
       });
     }
   }
+  // custom fields of the stix-core-relationship and stix-sighting-relationship, already transformed and validated
+  if (!R.isNil(input.custom_field_values) && (isStixCoreRelationship(relationshipType) || isStixSightingRelationship(relationshipType))) {
+    data.custom_field_values = input.custom_field_values;
+  }
   // endregion
   // 04. Create the relation
   const fromRole = `${relationshipType}_from`;

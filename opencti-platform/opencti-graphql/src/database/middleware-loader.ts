@@ -50,6 +50,8 @@ export interface FiltersWithNested extends Filter {
     operator?: FilterOperator;
     mode?: FilterMode;
   }>;
+  // Match the documents having no nested element satisfying all the nested filters
+  negateNested?: boolean;
 }
 
 export interface FilterGroupWithNested extends FilterGroup {
