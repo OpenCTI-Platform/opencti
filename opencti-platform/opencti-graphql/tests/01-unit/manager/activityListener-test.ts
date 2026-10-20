@@ -104,6 +104,72 @@ describe('Activity listener - cleanInputData', () => {
     expect(cleaned.input[1]).toEqual({ key: 'name', value: ['normal'] });
   });
 
+  it('should not mutate the original data', () => {
+    const filterGroup = {
+      mode: 'and',
+      filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq' }],
+      filterGroups: [],
+    };
+    const args = { search: 'test', filters: filterGroup, sort: 1722530083665, password: 'supersecret' };
+    const patches = [{ key: 'password', value: ['supersecret'] }];
+    const contextData = { input: args, search: args.search, nested: { input: patches } };
+
+    const cleaned = cleanInputData(contextData);
+    expect(typeof cleaned.input.filters).toBe('string');
+    expect(cleaned.input.sort).toBeUndefined();
+    expect(cleaned.input.password).toBe(REDACTED_INFORMATION);
+    expect(cleaned.nested.input[0]).toEqual({ password: REDACTED_INFORMATION });
+    // Original data, like resolver args reused after the activity is published, must be left untouched
+    expect(contextData.input).toBe(args);
+    expect(args.filters).toBe(filterGroup);
+    expect(filterGroup.filters).toEqual([{ key: ['entity_type'], values: ['Malware'], operator: 'eq' }]);
+    expect(args.sort).toBe(1722530083665);
+    expect(args.password).toBe('supersecret');
+    expect(contextData.nested.input).toBe(patches);
+    expect(patches[0]).toEqual({ key: 'password', value: ['supersecret'] });
+  });
+
+  it('should redact sensitive fields before serializing filters', () => {
+    const contextData = {
+      operation: 'UserAdd',
+      input: {
+        filters: { name: 'user', password: 'supersecret', nested: { token: 'my-token' } },
+        dynamicFrom: { mode: 'and', filters: [], filterGroups: [], secret: 'my-secret' },
+        dynamicTo: { mode: 'and', filters: [], filterGroups: [] },
+      },
+    };
+
+    const cleaned = cleanInputData(contextData);
+    expect(JSON.parse(cleaned.input.filters)).toEqual({ name: 'user', password: REDACTED_INFORMATION, nested: { token: REDACTED_INFORMATION } });
+    expect(JSON.parse(cleaned.input.dynamicFrom)).toEqual({ mode: 'and', filters: [], filterGroups: [], secret: REDACTED_INFORMATION });
+    expect(cleaned.input.filters).not.toContain('supersecret');
+    expect(cleaned.input.filters).not.toContain('my-token');
+    expect(cleaned.input.dynamicFrom).not.toContain('my-secret');
+  });
+
+  it('should serialize nested filter groups only once', () => {
+    const filterGroup = {
+      mode: 'and',
+      filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq' }],
+      filterGroups: [{
+        mode: 'or',
+        filters: [{ key: ['name'], values: ['a', 'b'], operator: 'eq' }],
+        filterGroups: [],
+      }],
+    };
+    const cleaned = cleanInputData({ input: { filters: filterGroup } });
+    const parsed = JSON.parse(cleaned.input.filters);
+    expect(parsed).toEqual(filterGroup);
+    expect(Array.isArray(parsed.filters)).toBe(true);
+    expect(Array.isArray(parsed.filterGroups[0].filters)).toBe(true);
+  });
+
+  it('should drop filters that cannot be serialized', () => {
+    const cleaned = cleanInputData({ input: { filters: { mode: 'and', count: BigInt(1) }, first: 20 } });
+    expect(cleaned.input.filters).toBeUndefined();
+    expect(cleaned.input.first).toBe(20);
+  });
+
   it('should handle null, undefined, and non-object inputs gracefully', () => {
     expect(cleanInputData(null)).toBeNull();
     expect(cleanInputData(undefined)).toBeUndefined();
