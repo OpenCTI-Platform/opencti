@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_EDITOR } from '../../../utils/testQuery';
-import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
+import { connectorDelete, registerConnector } from '../../../../src/modules/connector/connector-domain';
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { resolveUserByIdFromCache } from '../../../../src/modules/user/user-domain';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';

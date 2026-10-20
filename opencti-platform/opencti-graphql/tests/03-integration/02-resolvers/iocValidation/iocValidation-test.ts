@@ -1,14 +1,14 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
-import * as rabbitmq from '../../../../src/database/rabbitmq';
+import * as rabbitmq from '../../../../src/modules/connector/connector-rabbitmq';
 import { worksForSource } from '../../../../src/domain/work';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
-import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
+import { connectorDelete, registerConnector } from '../../../../src/modules/connector/connector-domain';
 import { resetCacheForEntity } from '../../../../src/database/cache';
-import { redisSetConnectorHeartbeat } from '../../../../src/database/redis';
+import { redisSetConnectorHeartbeat } from '../../../../src/modules/connector/connector-redis';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';
 import { ConnectorType } from '../../../../src/generated/graphql';
 import {

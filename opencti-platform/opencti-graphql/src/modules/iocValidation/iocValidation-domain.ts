@@ -27,14 +27,14 @@ import {
   storeLoadById,
   storeLoadByIds,
 } from '../../database/middleware-loader';
-import { connectorsForEnrichment } from '../../database/repository';
-import { pushToConnector } from '../../database/rabbitmq';
+import { connectorsForEnrichment } from '../connector/connector-domain';
+import { pushToConnector } from '../connector/connector-rabbitmq';
 import { createWork, reportExpectation } from '../../domain/work';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isBypassUser, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { addIocValidationPlatformResultCount, addIocValidationRequestCreationCount } from '../../manager/telemetryManager';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
