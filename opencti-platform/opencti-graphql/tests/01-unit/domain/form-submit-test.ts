@@ -757,7 +757,8 @@ describe('formSubmit - access to the destination', () => {
       form_schema: JSON.stringify({ fields: [], mainEntityType: 'Malware', mainEntityLookup: true }),
     });
     const withPhase = JSON.stringify({ mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'M' }, refs: { killChainPhases: [{ existing: 'phase-1' }] } }] });
-    const submitWithPhase = (user: any) => formSubmit(mockContext, user, { formId: 'form-1', values: withPhase }, false);
+    // in a draft: a form-only user cannot create objects on the fly in the main destination
+    const submitWithPhase = (user: any) => formSubmit(mockContext, user, { formId: 'form-1', values: withPhase }, true);
     await expect(submitWithPhase({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }))
       .rejects.toThrow('You are not allowed to attach kill chain phases to the objects created in a form.');
     expect(workDomain.createWork).not.toHaveBeenCalled();
@@ -766,6 +767,38 @@ describe('formSubmit - access to the destination', () => {
     vi.mocked(internalLoadById).mockResolvedValue({ internal_id: 'phase-1', standard_id: 'kill-chain-phase--1', entity_type: 'Kill-Chain-Phase', kill_chain_name: 'mitre', phase_name: 'execution' } as any);
     const allowed = await submitWithPhase({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE', 'SETTINGS_SETKILLCHAINPHASES') });
     expect(allowed.success).toBe(true);
+  });
+
+  describe('objects created on the fly', () => {
+    const withPendingMalware = JSON.stringify({ mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'On the fly' } }] });
+    const submitPending = (user: any, isDraft: boolean) => formSubmit(mockContext, user, { formId: 'form-1', values: withPendingMalware }, isDraft);
+    const refusal = 'You are not allowed to create objects on the fly when the form is not submitted in a draft.';
+
+    beforeEach(() => {
+      mockStoreLoadById.mockResolvedValue({
+        ...mockForm,
+        form_schema: JSON.stringify({ fields: [], mainEntityType: 'Malware', mainEntityLookup: true }),
+      });
+      vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockReturnValue({ type: 'string' } as any);
+      vi.spyOn(schemaRelationsRefDefinition, 'getRelationRef').mockReturnValue(null);
+    });
+
+    it('should refuse them in the main destination to a user without Create / Update knowledge in the main scope', async () => {
+      await expect(submitPending({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }, false)).rejects.toThrow(refusal);
+      // Create / Update knowledge granted in the draft scope only does not open the main destination
+      const createInDraft = { ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE'), capabilitiesInDraft: caps('KNOWLEDGE_KNUPDATE') };
+      await expect(submitPending(createInDraft, false)).rejects.toThrow(refusal);
+      expect(workDomain.createWork).not.toHaveBeenCalled();
+      expect(rabbitmq.pushBundleToWorker).not.toHaveBeenCalled();
+    });
+
+    it('should accept them in a draft with the form capability', async () => {
+      await expect(submitPending({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }, true)).resolves.toMatchObject({ success: true });
+    });
+
+    it('should accept them in the main destination with Create / Update knowledge in the main scope', async () => {
+      await expect(submitPending({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE', 'KNOWLEDGE_KNUPDATE') }, false)).resolves.toMatchObject({ success: true });
+    });
   });
 
   it('should reject a main submission when the capability is only granted in draft', async () => {

@@ -26,6 +26,7 @@ import {
   countPendingKillChainPhases,
   countPendingLabels,
   getPendingMainEntityAuthor,
+  getPendingRoots,
   getPendingUploadCopies,
   readUploads,
   resolvePendingFieldRefs,
@@ -531,7 +532,11 @@ export const planSubmission = async (
   const isBypass = isUserHasCapability(user, BYPASS);
   validateFormSubmission(schema, values, isBypass);
   if (!isBypass) {
-    checkFormSubmissionAccess(user, finalIsDraft, { pendingLabels: countPendingLabels(values), pendingKillChainPhases: countPendingKillChainPhases(values) });
+    checkFormSubmissionAccess(user, finalIsDraft, {
+      pendingRoots: getPendingRoots(values).length,
+      pendingLabels: countPendingLabels(values),
+      pendingKillChainPhases: countPendingKillChainPhases(values),
+    });
   }
   validatePendingPayload(values, input.files?.length ?? 0);
   validatePendingRoots(schema, values);
