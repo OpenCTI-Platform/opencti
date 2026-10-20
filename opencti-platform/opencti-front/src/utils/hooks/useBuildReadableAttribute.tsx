@@ -43,14 +43,14 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
   if (attributeType === 'html' || attributeType === 'markdown') {
     const html = attributeType === 'markdown'
       ? marked.parse(value, {
-        async: false,
-        breaks: true,
-        walkTokens: (token) => {
-          if (token.type === 'text' && inTable) {
-            token.text = stringWithZeroWidthSpace(token.text);
-          }
-        },
-      })
+          async: false,
+          breaks: true,
+          walkTokens: (token) => {
+            if (token.type === 'text' && inTable) {
+              token.text = stringWithZeroWidthSpace(token.text);
+            }
+          },
+        })
       : value;
     // !! Don't remove the call to sanitize, it's important to secure the call to dangerouslySetInnerHTML !!
     // In tables, the only link wanted is the one to the entity page: other links
