@@ -1,7 +1,6 @@
-import { ReactNode, Suspense, useCallback, useState } from 'react';
+import { ReactNode, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Formik, FormikConfig, FormikErrors, FormikValues, useFormikContext, yupToFormErrors } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { buildCustomFieldsValidationSchema, buildCustomFieldValuesAddInput, CustomFieldDef, getCustomFieldsInitialValues } from '../../../../utils/customFields';
 import { CustomFieldsCreationContext } from './CustomFieldsFormik';
 import { CustomFieldsLoader } from './CustomFieldsInput';
@@ -18,21 +17,30 @@ const DynamicFields = ({ typeField, loaded, onLoaded, children }: {
   onLoaded: (loaded: LoadedDefinitions) => void;
   children: ReactNode;
 }) => {
-  const { values, setFieldValue } = useFormikContext<FormikValues>();
+  const { values, setFieldValue, submitCount, submitForm } = useFormikContext<FormikValues>();
   const entityType = String(values[typeField] ?? '');
-  const { isFeatureEnable } = useHelper();
-  const enabled = isFeatureEnable('CUSTOM_FIELDS');
   const loadDefinitions = useCallback((definitions: CustomFieldDef[]) => {
     setFieldValue('customFields', getCustomFieldsInitialValues(definitions, entityType), false);
     onLoaded({ entityType, definitions });
   }, [entityType, onLoaded, setFieldValue]);
+  // A submit blocked while the definitions load is replayed once they are loaded.
+  const submitCountAtSwitch = useRef(submitCount);
+  useEffect(() => {
+    submitCountAtSwitch.current = submitCount;
+  }, [entityType]);
+  useEffect(() => {
+    if (loaded.entityType === entityType && submitCount > submitCountAtSwitch.current) {
+      submitCountAtSwitch.current = submitCount;
+      submitForm();
+    }
+  }, [loaded.entityType]);
   return (
     <CustomFieldsCreationContext.Provider value={{
       entityType,
-      definitions: enabled && loaded.entityType === entityType ? loaded.definitions : [],
+      definitions: loaded.entityType === entityType ? loaded.definitions : [],
     }}
     >
-      {enabled && entityType && (
+      {entityType && (
         <Suspense fallback={null}>
           <CustomFieldsLoader key={entityType} entityType={entityType} onLoaded={loadDefinitions} />
         </Suspense>
@@ -48,9 +56,7 @@ const DynamicCustomFieldsFormik = <Values extends FormikValues>({
   typeField, enabled = true, initialValues, children, onSubmit, validate, ...props
 }: Props<Values>) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [loaded, setLoaded] = useState<LoadedDefinitions>({ entityType: '', definitions: [] });
-  const active = enabled && isFeatureEnable('CUSTOM_FIELDS');
   return (
     <Formik<Values>
       {...props}
@@ -58,7 +64,7 @@ const DynamicCustomFieldsFormik = <Values extends FormikValues>({
       validate={async (values) => {
         const errors = await validate?.(values) ?? {};
         const entityType = String(values[typeField] ?? '');
-        if (!active || !entityType) return errors;
+        if (!enabled || !entityType) return errors;
         // Do not submit defaults from the previous type while the next query is pending.
         if (loaded.entityType !== entityType) {
           return { ...errors, customFields: t_i18n('Loading') } as FormikErrors<Values>;
@@ -72,11 +78,11 @@ const DynamicCustomFieldsFormik = <Values extends FormikValues>({
         }
       }}
       onSubmit={({ customFields, ...values }, helpers) => {
-        const customFieldValues = active ? buildCustomFieldValuesAddInput(loaded.definitions, customFields) : [];
+        const customFieldValues = enabled ? buildCustomFieldValuesAddInput(loaded.definitions, customFields) : [];
         return onSubmit({ ...values, ...(customFieldValues.length ? { customFieldValues } : {}) } as unknown as Values, helpers);
       }}
     >
-      {(formik) => active ? (
+      {(formik) => enabled ? (
         <DynamicFields typeField={typeField} loaded={loaded} onLoaded={setLoaded}>
           {typeof children === 'function' ? children(formik) : children}
         </DynamicFields>

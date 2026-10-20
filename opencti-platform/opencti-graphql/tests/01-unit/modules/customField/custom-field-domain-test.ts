@@ -64,7 +64,6 @@ vi.mock('../../../../src/utils/access', async () => {
   const actual = await vi.importActual('../../../../src/utils/access') as object;
   return {
     ...actual,
-    enforceEnableFeatureFlag: vi.fn(),
     executionContext: vi.fn(() => ({ source: 'testing' })),
   };
 });
@@ -92,7 +91,7 @@ const seedCustomFieldDefinitions = (...definitions: BasicStoreEntityCustomFieldD
 
 beforeEach(() => {
   // resetAllMocks (not clearAllMocks) so a mockImplementation set by one test (e.g. making
-  // enforceEnableFeatureFlag throw) never leaks into the next test.
+  // checkEnterpriseEdition reject) never leaks into the next test.
   vi.resetAllMocks();
   seedCustomFieldDefinitions();
   vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
@@ -171,14 +170,6 @@ describe('customFieldDefinitionAdd', () => {
   it.each(['Hello', 'priority', 'x_Priority', 'x_prio-rity', 'x_'])('throws on the malformed alias %s', async (alias) => {
     await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, aliases: [alias] }))
       .rejects.toThrow('An alias must start with "x_" and contain only lowercase letters, numbers and underscores');
-    expect(Middleware.createEntity).not.toHaveBeenCalled();
-  });
-
-  it('throws when the feature flag is disabled', async () => {
-    vi.mocked(Access.enforceEnableFeatureFlag).mockImplementation(() => {
-      throw new Error('feature disabled');
-    });
-    await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput)).rejects.toThrow('feature disabled');
     expect(Middleware.createEntity).not.toHaveBeenCalled();
   });
 
