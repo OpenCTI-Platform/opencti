@@ -18,6 +18,8 @@ import {
 } from '../domain/workflow-domain';
 import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
 
+const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_external_kept']);
+
 const workflowResolvers = {
   Query: {
     workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
@@ -102,7 +104,8 @@ const workflowResolvers = {
     allowedTransitions: (instance: any) => instance.allowedTransitions,
     lastHistoryEntry: (instance: any) => {
       const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
-      return history.length > 0 ? history[history.length - 1] : null;
+      // External writes that left the state unchanged must not hide the last real transition.
+      return history.findLast((entry) => !NON_STATE_CHANGING_EVENTS.has(entry.event)) ?? null;
     },
     pendingStatus: (instance: any) => instance.pendingStatus ?? null,
     pendingError: (instance: any) => instance.pendingError ?? null,

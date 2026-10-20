@@ -1,14 +1,15 @@
 import mime from 'mime-types';
-import { invertObj, map } from 'ramda';
+import { invertObj, map, omit } from 'ramda';
 import { deleteElementById, mergeEntities, updateAttribute } from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { connectorsForExport } from './connector';
+import { connectorsForExport } from '../modules/connector/connector-domain';
 import { findById as findMarkingDefinitionById, markingDefinitionDeleteAndUpdateGroups } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork } from './work';
-import { pushToConnector, pushBundleToWorker } from '../database/rabbitmq';
+import { pushBundleToWorker } from '../database/rabbitmq';
+import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { isStixDomainObjectShareableContainer } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE, INPUT_GRANTED_REFS } from '../schema/general';
 import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
@@ -90,6 +91,9 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
     throw UnsupportedError('Invalid bundle', { cause: err });
   }
 };
+
+// Filters derived for the connector from the audited export parameters, kept out of the activity event.
+export const EXPORT_CONNECTOR_ONLY_FIELDS = Object.freeze(['main_filter', 'access_filter']);
 
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
   if (!exportContext || !exportContext?.entity_type) {
@@ -175,7 +179,7 @@ export const askListExport = async (context, user, exportContext, format, select
     event_access: 'extended',
     event_type: 'command',
     event_scope: 'export',
-    context_data: baseEvent,
+    context_data: { ...omit(EXPORT_CONNECTOR_ONLY_FIELDS, baseEvent), max_marking: contentMaxMarkings, selected_ids: selectedIds },
   });
   return worksForExport;
 };
@@ -235,7 +239,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
       return work;
     }, connectors),
   );
-  const contextData = completeContextDataForEntity(baseEvent, entity);
+  const contextData = completeContextDataForEntity({ ...omit(EXPORT_CONNECTOR_ONLY_FIELDS, baseEvent), max_marking: contentMaxMarkings }, entity);
   await publishUserAction({
     user,
     event_access: 'extended',

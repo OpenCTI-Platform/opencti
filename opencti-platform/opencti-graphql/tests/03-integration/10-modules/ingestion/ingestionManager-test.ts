@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, taxiiExecutor, type TaxiiResponseData } from '../../../../src/manager/ingestionManager';
+import { processCsvLines, processTaxiiResponse, taxiiExecutor } from '../../../../src/manager/ingestionManager';
+import { prepareTaxiiGetParam, type TaxiiResponseData } from '../../../../src/modules/ingestion/ingestion-taxii-utils';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ingestionTaxiiAdd, findTaxiiIngestionById, ingestionTaxiiDelete, patchTaxiiIngestion } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../../src/generated/graphql';
@@ -14,7 +15,7 @@ import { parseCsvMapper } from '../../../../src/modules/internal/csvMapper/csvMa
 import { readCsvFromFileStream } from '../../../utils/testQueryHelper';
 import * as ingestWorkMock from '../../../../src/manager/ingestionManager/ingestionManagerPushToQueue';
 import * as rabbitMock from '../../../../src/database/rabbitmq';
-import * as connectorMock from '../../../../src/domain/connector';
+import * as connectorMock from '../../../../src/modules/connector/connector-domain';
 
 describe('Verify taxii ingestion', () => {
   it('should create taxii ingestion with ssl_verify default (true)', async () => {

@@ -13,6 +13,9 @@ import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
 import { logApp } from '../../config/conf';
+import { WORKFLOW_CONTEXT_FILTER_KEYS } from '../../utils/filtering/filtering-constants';
+import { SYSTEM_USER } from '../../utils/access';
+import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 const filterModeValues = Object.values(FilterMode) as [string, ...string[]];
 const filterOperatorValues = Object.values(FilterOperator) as [string, ...string[]];
@@ -249,11 +252,11 @@ export const validateWorkflowDefinitionData = async (
 
     if (transition.conditions) {
       // Validate filters recursively
-      const validateFilterGroup = (group: any): void => {
+      const validateFilterGroup = async (group: any): Promise<void> => {
         if (!group.filters || !Array.isArray(group.filters)) {
           return;
         }
-        group.filters.forEach((filter: any) => {
+        for (const filter of group.filters) {
           if (!filter.key) {
             errors.push({ type: 'MISSING_FILTER_KEY', message: 'Filter key is required' });
           }
@@ -266,13 +269,26 @@ export const validateWorkflowDefinitionData = async (
           if (filter.mode && !filterModeValues.includes(filter.mode)) {
             errors.push({ type: 'INVALID_FILTER_MODE', message: `Invalid filter mode '${filter.mode}'` });
           }
-        });
+          if (filter.key) {
+            // Entity attribute filters are evaluated by the stix filtering engine: reject keys it cannot evaluate,
+            // otherwise the condition is silently considered as not matching at runtime.
+            if (!WORKFLOW_CONTEXT_FILTER_KEYS.includes(filter.key)) {
+              try {
+                await validateFilterGroupForStixMatch(context, SYSTEM_USER, { mode: FilterMode.And, filters: [{ ...filter, key: [filter.key] }], filterGroups: [] });
+              } catch (error: any) {
+                errors.push({ type: 'UNSUPPORTED_FILTER_KEY', message: `Unsupported filter key '${filter.key}': ${error.message}` });
+              }
+            }
+          }
+        }
         if (group.filterGroups && Array.isArray(group.filterGroups)) {
-          group.filterGroups.forEach(validateFilterGroup);
+          for (const subGroup of group.filterGroups) {
+            await validateFilterGroup(subGroup);
+          }
         }
       };
       if (transition.conditions.filters) {
-        validateFilterGroup(transition.conditions.filters);
+        await validateFilterGroup(transition.conditions.filters);
       }
     }
 

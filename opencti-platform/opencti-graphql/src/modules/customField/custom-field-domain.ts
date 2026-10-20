@@ -1,7 +1,7 @@
 import { countAllThings, type EntityOptions, type FilterGroupWithNested, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import {
   type BasicStoreEntityCustomFieldDefinition,
-  CUSTOM_FIELD_PREFIX,
+  CUSTOM_FIELD_TYPES,
   type CustomFieldType,
   ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
   type StoreEntityCustomFieldDefinition,
@@ -16,6 +16,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { addCustomFieldCreatedCount } from '../../manager/telemetryManager';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { enforceEnableFeatureFlag, executionContext, SYSTEM_USER } from '../../utils/access';
 import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
@@ -26,13 +27,6 @@ import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias,
  * enforced here again so the constraint cannot be bypassed via a direct GraphQL call).
  */
 const CUSTOM_FIELD_NAME_REGEX = /^x_opencti_cf_[a-z][a-z0-9_]*$/;
-
-/**
- * Check if a filter key corresponds to a custom field.
- */
-export const isCustomFieldKey = (key: string): boolean => {
-  return key.startsWith(CUSTOM_FIELD_PREFIX);
-};
 
 // ----- Domain CRUD operations -----
 
@@ -63,22 +57,6 @@ export const findCustomFieldStixFilterKeys = async (context: AuthContext, user: 
   });
 };
 
-export const findCustomFieldDefinitionByName = async (
-  context: AuthContext,
-  user: AuthUser,
-  name: string,
-): Promise<BasicStoreEntityCustomFieldDefinition | null> => {
-  const result = await findCustomFieldDefinitionsPaginated(context, user, {
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['name'], values: [name], operator: FilterOperator.Eq }],
-      filterGroups: [],
-    },
-    first: 1,
-  });
-  return result.edges.length > 0 ? result.edges[0].node : null;
-};
-
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   // Validate name starts with the required prefix and matches the allowed format
@@ -104,9 +82,8 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
     }
   }
   // Validate field_type is supported
-  const allowedTypes: CustomFieldType[] = ['integer', 'string', 'markdown', 'boolean', 'date', 'select', 'multi_select'];
-  if (!allowedTypes.includes(input.field_type as CustomFieldType)) {
-    throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: allowedTypes });
+  if (!CUSTOM_FIELD_TYPES.includes(input.field_type as CustomFieldType)) {
+    throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: CUSTOM_FIELD_TYPES });
   }
   // Validate integer bounds
   if (input.field_type === 'integer' && input.min_value != null && input.max_value != null && input.min_value > input.max_value) {
@@ -120,6 +97,7 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
   // multi_select is intrinsically multi-valued; force the multiple flag so the entity attribute is indexed as an array
   const multiple = input.field_type === 'multi_select' ? true : (input.multiple ?? false);
   const created = await createEntity(context, user, { ...input, multiple }, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+  addCustomFieldCreatedCount();
   await publishUserAction({
     user,
     event_type: 'mutation',

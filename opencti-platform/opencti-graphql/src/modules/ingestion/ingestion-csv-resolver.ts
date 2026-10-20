@@ -19,6 +19,7 @@ import { decryptIngestionCredential } from './ingestion-common';
 import { userAlreadyExists } from '../user/user-domain';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionCsv } from './ingestion-types';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
 
 const ingestionCsvResolvers: Resolvers = {
   Query: {
@@ -33,6 +34,7 @@ const ingestionCsvResolvers: Resolvers = {
     },
   },
   IngestionCsv: {
+    ...ingestionHealthFieldResolvers,
     authentication_value: async (ingestionCsv) => {
       const decrypted = await decryptIngestionCredential(ingestionCsv.authentication_value);
       return removeAuthenticationCredentials(ingestionCsv.authentication_type, decrypted);
