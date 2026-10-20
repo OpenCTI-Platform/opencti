@@ -1,5 +1,11 @@
 import { countAllThings, type EntityOptions, type FilterGroupWithNested, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldType, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type StoreEntityCustomFieldDefinition } from './custom-field-types';
+import {
+  type BasicStoreEntityCustomFieldDefinition,
+  CUSTOM_FIELD_TYPES,
+  type CustomFieldType,
+  ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
+  type StoreEntityCustomFieldDefinition,
+} from './custom-field-types';
 import { BackgroundTaskScope, type CustomFieldDefinitionAddInput, type EditInput, EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -10,6 +16,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { addCustomFieldCreatedCount } from '../../manager/telemetryManager';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { enforceEnableFeatureFlag, executionContext, SYSTEM_USER } from '../../utils/access';
 import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
@@ -75,9 +82,8 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
     }
   }
   // Validate field_type is supported
-  const allowedTypes: CustomFieldType[] = ['integer', 'string', 'markdown', 'boolean', 'date', 'select', 'multi_select'];
-  if (!allowedTypes.includes(input.field_type as CustomFieldType)) {
-    throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: allowedTypes });
+  if (!CUSTOM_FIELD_TYPES.includes(input.field_type as CustomFieldType)) {
+    throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: CUSTOM_FIELD_TYPES });
   }
   // Validate integer bounds
   if (input.field_type === 'integer' && input.min_value != null && input.max_value != null && input.min_value > input.max_value) {
@@ -91,6 +97,7 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
   // multi_select is intrinsically multi-valued; force the multiple flag so the entity attribute is indexed as an array
   const multiple = input.field_type === 'multi_select' ? true : (input.multiple ?? false);
   const created = await createEntity(context, user, { ...input, multiple }, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+  addCustomFieldCreatedCount();
   await publishUserAction({
     user,
     event_type: 'mutation',

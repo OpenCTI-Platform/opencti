@@ -16,6 +16,7 @@ import {
   authorizedMembersActivationDate,
   confidence,
   creators,
+  customFieldValues,
   files,
   lang,
   revoked,
@@ -64,6 +65,46 @@ describe('generateUpdatePatchMessage tests', () => {
     const resolvedMap = { 'bff2afb7-03d3-40ad-bdd0-d6977f045ddg': 'TLP:GREEN' };
     const message = generateMessageFromChanges(resolvedMap, changes);
     expect(message).toEqual('adds `secret-doc.pdf (TLP:GREEN)` in `Files`');
+  });
+  it('should generate message for custom field values as a replace of each field with its label', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_CONTAINER_REPORT + '--' + customFieldValues.name,
+        changes_removed: [{ raw: JSON.stringify({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_note', string_value: 'before' }) }],
+        changes_added: [{ raw: JSON.stringify({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_note', string_value: 'after' }) }],
+      },
+    ];
+    const message = generateMessageFromChanges({ 'cf-id-1': 'Analyst note' }, changes);
+    expect(message).toEqual('replaces `after` in `Analyst note`');
+  });
+  it('should generate message for custom field values with nothing for a removed value and the technical name if not resolved', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_CONTAINER_REPORT + '--' + customFieldValues.name,
+        changes_removed: [{ raw: JSON.stringify({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_note', string_value: 'before' }) }],
+        changes_added: [{ raw: JSON.stringify({ field_id: 'cf-id-2', field_name: 'x_opencti_cf_tags', select_values: ['a', 'b'] }) }],
+      },
+    ];
+    const message = generateMessageFromChanges({ 'cf-id-1': 'Analyst note' }, changes);
+    expect(message).toEqual('replaces `a, b` in `x_opencti_cf_tags` - `nothing` in `Analyst note`');
+  });
+  it('should generate message for custom field date values formatted as standard dates', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_CONTAINER_REPORT + '--' + customFieldValues.name,
+        changes_removed: [],
+        changes_added: [{ raw: JSON.stringify({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_due', date_value: '2026-10-12T15:26:00.081Z' }) }],
+      },
+    ];
+    const message = generateMessageFromChanges({ 'cf-id-1': 'Due date' }, changes, { ...DefaultFormating, tz: 'Europe/Paris' });
+    expect(message).toEqual('replaces `October 12 2026, 5:26:00 PM` in `Due date`');
+  });
+  it('should humanize custom field values with the label of the field', () => {
+    const value = { raw: JSON.stringify({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_due', date_value: '2026-10-12T15:26:00.081Z' }) };
+    expect(humanizeRawValue({ 'cf-id-1': 'Due date' }, customFieldValues as AttributeDefinition, value, DefaultFormating))
+      .toEqual('Due date: October 12 2026, 3:26:00 PM');
+    expect(humanizeRawValue({}, customFieldValues as AttributeDefinition, value, DefaultFormating))
+      .toEqual('x_opencti_cf_due: October 12 2026, 3:26:00 PM');
   });
   it('should generate message fail for unexisting attribute', () => {
     const changes: Change[] = [

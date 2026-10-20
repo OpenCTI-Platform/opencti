@@ -19,6 +19,7 @@ import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import {
   deserializeFilterGroupForFrontend,
+  getStixFiltersDisplayedKeys,
   isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
   streamOriginFilters,
@@ -262,7 +263,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
           <FilterIconButton
             filters={filters}
             helpers={helpers}
-            availableFilterKeys={stixFilters}
+            availableFilterKeys={getStixFiltersDisplayedKeys(stixFilters, filters)}
             redirection={true}
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
