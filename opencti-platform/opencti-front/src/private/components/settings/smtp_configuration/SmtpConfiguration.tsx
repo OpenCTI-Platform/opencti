@@ -81,12 +81,12 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
 
   const renderBoolean = (value: boolean | null | undefined) => (
     value === null || value === undefined
-      ? <ItemBoolean status={null} neutralLabel="-" />
+      ? '-'
       : <ItemBoolean status={!!value} label={value ? t_i18n('Yes') : t_i18n('No')} />
   );
 
   const renderText = (value: string | number | null | undefined) => (
-    <ItemBoolean status={null} neutralLabel={value !== null && value !== undefined && value !== '' ? String(value) : '-'} />
+    value !== null && value !== undefined && value !== '' ? String(value) : '-'
   );
 
   const handleFormCompleted = () => {
@@ -222,7 +222,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                   <TableRow>
                     <TableCell>{t_i18n('Password')}</TableCell>
                     <TableCell>
-                      <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
+                      {smtpConfiguration ? <ItemBoolean status={null} neutralLabel="••••••••" /> : '-'}
                     </TableCell>
                   </TableRow>
                 </>
@@ -236,7 +236,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                   <TableRow>
                     <TableCell>{t_i18n('OAuth client ID')}</TableCell>
                     <TableCell>
-                      <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
+                      {smtpConfiguration ? <ItemBoolean status={null} neutralLabel="••••••••" /> : '-'}
                     </TableCell>
                   </TableRow>
                   <TableRow>

@@ -237,6 +237,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             type="checkbox"
             name="use_ssl"
             label={t_i18n('Use SSL/TLS')}
+            containerstyle={{ marginTop: 20 }}
           />
           <Field
             component={SwitchField}
