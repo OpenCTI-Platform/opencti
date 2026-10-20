@@ -190,10 +190,10 @@ export const ValidationError = (message: string, field?: string | number, data?:
   ...(data ?? {}),
 });
 
-// The caller sent a filter key that the platform cannot use (unknown or malformed).
+// The caller sent an input that the platform cannot use (ex: unknown or malformed filter key).
 // It is a mistake of the client, already reported in the response: not a platform failure.
-export const FILTER_KEYS_ERROR = 'FILTER_KEYS_ERROR';
-export const FilterKeysError = (reason: string, data?: any) => error(FILTER_KEYS_ERROR, reason, {
+export const BAD_USER_INPUT_ERROR = 'BAD_USER_INPUT_ERROR';
+export const BadUserInputError = (reason: string, data?: any) => error(BAD_USER_INPUT_ERROR, reason, {
   http_status: 400,
   genre: CATEGORY_BUSINESS,
   ...data,
@@ -249,6 +249,6 @@ export const FUNCTIONAL_ERRORS = [
 
 // Errors caused by the input of the client, already returned to it: logged at info level
 export const CLIENT_INPUT_ERRORS = [
-  FILTER_KEYS_ERROR,
+  BAD_USER_INPUT_ERROR,
 ];
 // endregion

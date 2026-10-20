@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
-import { FILTER_KEYS_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
+import { BAD_USER_INPUT_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
 import { getUserIdByEmail, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
@@ -389,7 +389,7 @@ describe('Playbook resolver standard behavior', () => {
           variables: { id: playbookId, input: addNodeInput },
         },
         'Incorrect filter keys not existing in any schema definition',
-        FILTER_KEYS_ERROR,
+        BAD_USER_INPUT_ERROR,
       );
     });
 
@@ -515,7 +515,7 @@ describe('Playbook resolver standard behavior', () => {
           variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
         },
         'Incorrect filter keys not existing in any schema definition',
-        FILTER_KEYS_ERROR,
+        BAD_USER_INPUT_ERROR,
       );
     });
 
