@@ -14,6 +14,7 @@ import { useSettingsMessagesBannerHeight } from '../../settings/settings_message
 import { Theme } from '../../../../components/Theme';
 import { useTheme } from '@mui/styles';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
+import useVisibleEntries from './useVisibleEntries';
 
 const StyledDrawer = styled(Drawer)(() => ({
   '& .MuiDrawer-paper': {
@@ -37,6 +38,12 @@ export interface MenuEntry {
   label: string;
   icon?: ReactElement;
   isEE?: boolean;
+  /** Extra words matching this entry in the main search (aliases, CTI jargon...). */
+  keywords?: string[];
+  /** Entry hidden if the user has none of these capabilities. */
+  requiredCapabilities?: string[];
+  /** Entry hidden if this feature flag is off. */
+  featureFlag?: string;
 }
 
 const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
@@ -70,7 +77,8 @@ const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ child
   return content;
 };
 
-const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }) => {
+const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries: allEntries }) => {
+  const entries = useVisibleEntries(allEntries);
   const { t_i18n } = useFormatter();
   const location = useLocation();
   const { bannerSettings } = useAuth();

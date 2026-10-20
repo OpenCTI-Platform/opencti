@@ -87,14 +87,17 @@ const checkCapabilities = (capabilities: string[], userCapabilities: string[], m
   return matchAll ? capabilities.every(capabilityMatches) : capabilities.some(capabilityMatches);
 };
 
-const useGranted = (
+type GrantedOptions = {
+  capabilitiesInDraft?: string[];
+};
+
+// Pure version of `useGranted`, usable to check a list of items (hooks can't be called in a loop).
+export const isGrantedTo = (
+  me: ReturnType<typeof useAuth>['me'],
   capabilities: string[],
   matchAll = false,
-  options: {
-    capabilitiesInDraft?: string[];
-  } = {},
+  options: GrantedOptions = {},
 ): boolean => {
-  const { me } = useAuth();
   const { capabilitiesInDraft } = options;
 
   // Prevent use of the old SETTINGS capability for future uses
@@ -124,6 +127,15 @@ const useGranted = (
 
   // Access is granted if EITHER check passes
   return baseGranted || draftGranted || draftGrantedInDraftContext;
+};
+
+const useGranted = (
+  capabilities: string[],
+  matchAll = false,
+  options: GrantedOptions = {},
+): boolean => {
+  const { me } = useAuth();
+  return isGrantedTo(me, capabilities, matchAll, options);
 };
 
 export default useGranted;

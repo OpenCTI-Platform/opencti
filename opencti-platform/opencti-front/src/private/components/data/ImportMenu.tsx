@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
+import { menuEntries } from './ImportMenu.entries';
 
 const ImportMenu = () => {
   const { t_i18n } = useFormatter();
@@ -10,15 +11,11 @@ const ImportMenu = () => {
   return (
     <Tabs value={location.pathname} panels="external">
       <TabsList className="mb-6">
-        <TabsTrigger value="/dashboard/data/import/file" asChild>
-          <Link to="/dashboard/data/import/file">{t_i18n('Global files')}</Link>
-        </TabsTrigger>
-        <TabsTrigger value="/dashboard/data/import/draft" asChild>
-          <Link to="/dashboard/data/import/draft">{t_i18n('Drafts')}</Link>
-        </TabsTrigger>
-        <TabsTrigger value="/dashboard/data/import/workbench" asChild>
-          <Link to="/dashboard/data/import/workbench">{t_i18n('Analyst workbenches')}</Link>
-        </TabsTrigger>
+        {menuEntries.map(({ path, label }) => (
+          <TabsTrigger key={path} value={path} asChild>
+            <Link to={path}>{t_i18n(label)}</Link>
+          </TabsTrigger>
+        ))}
       </TabsList>
     </Tabs>
   );
