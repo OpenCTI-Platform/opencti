@@ -294,6 +294,7 @@ const SourcesLeaderboard = () => {
         return (
           <Tooltip>
             <TooltipTrigger asChild>
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
               <span tabIndex={0}>{costPerObject}</span>
             </TooltipTrigger>
             <TooltipContent>
