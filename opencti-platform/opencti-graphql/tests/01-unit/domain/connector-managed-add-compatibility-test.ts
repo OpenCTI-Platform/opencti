@@ -15,24 +15,23 @@ vi.mock('../../../src/database/redis', () => ({
   setEditContext: vi.fn(),
   delEditContext: vi.fn(),
   redisGetWork: vi.fn(),
+}));
+vi.mock('../../../src/modules/connector/connector-redis', () => ({
+  redisGetConnectorsHeartbeats: vi.fn(async () => new Map()),
   redisSetConnectorHealthMetrics: vi.fn(),
   redisGetConnectorHealthMetrics: vi.fn(),
   redisSetConnectorLogs: vi.fn(),
 }));
-vi.mock('../../../src/database/rabbitmq', () => ({
-  unregisterConnector: vi.fn(), registerConnectorQueues: vi.fn(),
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
+  connectorConfig: vi.fn(), unregisterConnector: vi.fn(), registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(), getConnectorQueueDetails: vi.fn(), unregisterExchanges: vi.fn(),
 }));
-vi.mock('../../../src/database/repository', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../src/database/repository')>();
-  return {
-    ...actual,
-    connector: vi.fn(),
-    connectors: vi.fn(),
-    connectorsFor: vi.fn(),
-    completeConnector: vi.fn(),
-  };
-});
+vi.mock('../../../src/modules/connector/connector-repository', () => ({
+  findConnectors: vi.fn(async () => []),
+}));
+vi.mock('../../../src/modules/connector/connector-built-in-domain', () => ({
+  builtInConnector: vi.fn(), builtInConnectorsRuntime: vi.fn(async () => []),
+}));
 vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn(), fullEntitiesList: vi.fn(), internalLoadById: vi.fn(), pageEntitiesConnection: vi.fn(),
 }));
@@ -80,10 +79,10 @@ vi.mock('../../../src/modules/catalog/catalog-repository', () => ({
 }));
 
 import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
-import { managedConnectorAdd } from '../../../src/domain/connector';
+import { managedConnectorAdd, managedConnectorEdit } from '../../../src/modules/connector/connector-domain';
 import { createEntity } from '../../../src/database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
-import { completeConnector, connectors } from '../../../src/database/repository';
+import { findConnectors } from '../../../src/modules/connector/connector-repository';
 import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
 import { computeConnectorTargetContract } from '../../../src/modules/catalog/catalog-domain';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
@@ -99,7 +98,7 @@ const input = {
   manager_contract_configuration: [],
 } as any;
 
-describe('connector.ts — managedConnectorAdd contract compatibility', () => {
+describe('connector-domain.ts — managedConnectorAdd contract compatibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -126,18 +125,96 @@ describe('connector.ts — managedConnectorAdd contract compatibility', () => {
   });
 });
 
-describe('connector.ts — managedConnectorAdd write boundary', () => {
+describe('connector-domain.ts — managedConnectorAdd input validation', () => {
+  const manager = { id: 'manager-1', public_key: 'manager-public-key' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(findLatestCompatibleCatalogContractByImageName).mockResolvedValue({ contract_id: 'test-1.0.0', manager_supported: true } as never);
+    vi.mocked(fullEntitiesList).mockResolvedValue([manager] as never);
+  });
+
+  it('should reject a connector when no connector manager is registered', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, input)).rejects.toThrow('There is no connector manager configured');
+  });
+
+  it('should reject a connector without a user responsible for data creation', async () => {
+    await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, user_id: 'u' })).rejects.toThrow('You have not chosen a user responsible for data creation');
+  });
+
+  it('should create the connector user on the fly when asked to', async () => {
+    vi.mocked(createOnTheFlyUser).mockResolvedValue({ id: 'created-user-id' } as never);
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, automatic_user: true, confidence_level: '80' }))
+      .rejects.toThrow('Connector user not found');
+    expect(createOnTheFlyUser).toHaveBeenCalledWith(fakeContext, fakeUser, { userName: 'user-connector', serviceAccount: true, confidenceLevel: 80 }, { beforeWrite: undefined });
+    expect(storeLoadById).toHaveBeenCalledWith(fakeContext, fakeUser, 'created-user-id', 'User');
+  });
+
+  it('should reject a connector whose user does not exist', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, input)).rejects.toThrow('Connector user not found');
+    expect(createOnTheFlyUser).not.toHaveBeenCalled();
+  });
+
+  it('should reject a name too short to be a container name', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'user-connector' } as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, name: 'a' })).rejects.toThrow('Invalid connector name');
+  });
+});
+
+describe('connector-domain.ts — managedConnectorEdit input validation', () => {
+  const editInput = {
+    id: 'connector-1',
+    name: 'my-connector',
+    title: 'My connector',
+    connector_user_id: 'user-connector',
+    manager_contract_configuration: [],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(fullEntitiesList).mockResolvedValue([{ id: 'manager-1', public_key: 'manager-public-key' }] as never);
+  });
+
+  it('should reject an unknown connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+
+    await expect(managedConnectorEdit(fakeContext, fakeUser, editInput)).rejects.toThrow('Connector not found');
+  });
+
+  it('should reject a connector that is not managed', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'connector-1', name: 'my-connector' } as never);
+
+    await expect(managedConnectorEdit(fakeContext, fakeUser, editInput)).rejects.toThrow('Target contract not found');
+  });
+
+  it('should reject the edition when no connector manager is registered', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'connector-1', name: 'my-connector', manager_contract: { connector_type: 'EXTERNAL_IMPORT' } } as never);
+    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
+
+    await expect(managedConnectorEdit(fakeContext, fakeUser, editInput)).rejects.toThrow('There is no connector manager configured');
+  });
+});
+
+describe('connector-domain.ts — managedConnectorAdd write boundary', () => {
   const automaticInput = { ...input, user_id: '[C] My connector', automatic_user: true, confidence_level: '50' };
 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(findLatestCompatibleCatalogContractByImageName).mockResolvedValue({ contract_id: 'test-1.0.0', manager_supported: true } as never);
     vi.mocked(fullEntitiesList).mockResolvedValue([{ id: 'manager-1', public_key: 'key' }] as never);
-    vi.mocked(connectors).mockResolvedValue([] as never);
+    vi.mocked(findConnectors).mockResolvedValue([] as never);
     vi.mocked(createOnTheFlyUser).mockResolvedValue({ id: 'service-account-1' } as never);
     vi.mocked(storeLoadById).mockResolvedValue({ id: 'service-account-1' } as never);
     vi.mocked(createEntity).mockResolvedValue({ id: 'connector-1', internal_id: 'connector-1', name: 'my-connector' } as never);
-    vi.mocked(completeConnector).mockImplementation((element) => element as never);
     vi.mocked(computeConnectorTargetContract).mockReturnValue([]);
   });
 
@@ -151,7 +228,7 @@ describe('connector.ts — managedConnectorAdd write boundary', () => {
   });
 
   it('should refuse a name collision before creating the service account', async () => {
-    vi.mocked(connectors).mockResolvedValue([{ id: 'connector-0', name: 'my-connector' }] as never);
+    vi.mocked(findConnectors).mockResolvedValue([{ id: 'connector-0', name: 'my-connector' }] as never);
     const beforeWrite = vi.fn();
 
     await expect(managedConnectorAdd(fakeContext, fakeUser, automaticInput, { beforeWrite })).rejects.toThrow('CONNECTOR_NAME_ALREADY_EXISTS');

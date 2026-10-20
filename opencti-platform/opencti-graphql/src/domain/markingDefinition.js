@@ -9,6 +9,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { groupAddRelation, groupEditField, groupMaxShareableMarkings } from './group';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import { booleanTrueFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -58,11 +59,7 @@ const notifyMembersOfNewMarking = async (context, user, newMarking) => {
 
 const updateGroupsAfterAddingMarking = async (context, markingCreated) => {
   // marking creation --> update the markings of the groups with auto_new_marking = true
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'auto_new_marking', values: [true] }],
-    filterGroups: [],
-  };
+  const filters = booleanTrueFilter('auto_new_marking');
   const groupsWithAutoNewMarking = await topEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters });
   if (groupsWithAutoNewMarking && groupsWithAutoNewMarking.length > 0) {
     const markingId = markingCreated.id;

@@ -89,6 +89,10 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     modeTree,
     withForces,
     zoom,
+    layoutMode,
+    layoutCentreId,
+    collapsedEntityTypes,
+    disabledRelationshipTypes,
   } = state;
 
   let stateForStorage: Partial<GraphState> = {
@@ -98,6 +102,10 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     mode3D,
     modeTree,
     withForces,
+    layoutMode: layoutMode ?? null,
+    layoutCentreId: layoutCentreId ?? null,
+    collapsedEntityTypes: collapsedEntityTypes ?? [],
+    disabledRelationshipTypes: disabledRelationshipTypes ?? [],
   };
   if (zoom) {
     stateForStorage = {
@@ -107,4 +115,28 @@ export const graphStateToLocalStorage = (state: GraphState) => {
   }
 
   return stateForStorage;
+};
+
+const asList = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value === 'string') return value ? value.split(',') : [];
+  return [];
+};
+
+/**
+ * The view parameters read back from the URL come as strings (arrays joined by commas, booleans
+ * as text): the graph-specific ones are turned back into their types here.
+ */
+export const normalizeGraphStateParams = (params: Record<string, unknown>): Partial<GraphState> => {
+  const normalized: Record<string, unknown> = { ...params };
+  ['collapsedEntityTypes', 'disabledRelationshipTypes'].forEach((key) => {
+    if (key in normalized) normalized[key] = asList(normalized[key]);
+  });
+  // The legend state is a preference of the user (graphLegendPreference), never one of a graph.
+  delete normalized.showLegend;
+  // The hidden entities have their own storage entry (graphHiddenNodes), never the URL.
+  delete normalized.hiddenNodeIds;
+  if ('layoutMode' in normalized && !['tiers', 'radial'].includes(String(normalized.layoutMode))) normalized.layoutMode = null;
+  if ('layoutCentreId' in normalized && !normalized.layoutCentreId) normalized.layoutCentreId = null;
+  return normalized as Partial<GraphState>;
 };

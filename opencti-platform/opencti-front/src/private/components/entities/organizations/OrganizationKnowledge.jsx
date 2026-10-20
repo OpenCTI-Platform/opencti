@@ -117,6 +117,9 @@ const OrganizationKnowledgeComponent = ({
               key={location.pathname}
               entityId={organization.id}
               relationshipTypes={['part-of', 'derived-from']}
+              // `role` is EntityStixCoreRelationships' own prop, the relationship
+              // role it filters on (toRole/fromRole), not an ARIA role.
+              // eslint-disable-next-line jsx-a11y/aria-role
               role="part-of_to"
               stixCoreObjectTypes={['Organization']}
               entityLink={link}

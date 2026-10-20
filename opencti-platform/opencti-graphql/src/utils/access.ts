@@ -15,10 +15,11 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalOb
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { isStixObject } from '../schema/stixCoreObject';
+import { isBasicObject, isStixObject } from '../schema/stixCoreObject';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import type { UpdateEvent } from '../types/event';
 import { fullEntitiesList, fullRelationsList, pageEntitiesConnection } from '../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -87,6 +88,7 @@ const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 const DATA_SANITY_MANAGER_USER_UUID = '4a25a566-017d-4455-811e-e8e1b3889390';
 const SOURCE_INTELLIGENCE_MANAGER_USER_UUID = '6d0d4a1e-3c2b-4f5e-9a8b-2c1d0e3f4a5b';
+const INGESTION_HEALTH_MANAGER_USER_UUID = 'c6efbb70-ae34-4677-8081-736578d87dab';
 
 export enum AccessOperation {
   EDIT = 'edit',
@@ -575,6 +577,31 @@ export const SOURCE_INTELLIGENCE_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const INGESTION_HEALTH_MANAGER_USER: AuthUser = {
+  entity_type: ENTITY_TYPE_USER,
+  id: INGESTION_HEALTH_MANAGER_USER_UUID,
+  internal_id: INGESTION_HEALTH_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'INGESTION HEALTH MANAGER',
+  user_email: 'INGESTION HEALTH MANAGER',
+  origin: { user_id: INGESTION_HEALTH_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_tokens: [],
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: { max_confidence: 100, overrides: [] },
+  user_confidence_level: { max_confidence: 100, overrides: [] },
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export const WORKFLOW_MANAGER_USER: AuthUser = {
   entity_type: 'User',
   id: WORKFLOW_MANAGER_USER_UUID,
@@ -653,6 +680,7 @@ export const INTERNAL_USERS = {
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
   [SOURCE_INTELLIGENCE_MANAGER_USER.id]: SOURCE_INTELLIGENCE_MANAGER_USER,
+  [INGESTION_HEALTH_MANAGER_USER.id]: INGESTION_HEALTH_MANAGER_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -668,6 +696,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
   [SOURCE_INTELLIGENCE_MANAGER_USER.id]: SOURCE_INTELLIGENCE_MANAGER_USER,
+  [INGESTION_HEALTH_MANAGER_USER.id]: INGESTION_HEALTH_MANAGER_USER,
 };
 
 export enum OTPValidationStatus {
@@ -852,7 +881,12 @@ export const isOrganizationAllowed = (context: AuthContext, element: BasicStoreC
   return isEntityOrganizationsAllowed(context, element.internal_id, elementOrganizations, user, hasPlatformOrg);
 };
 
-const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
+const isOrganizationUnrestrictedForEntityType = (entityType: string | undefined) => {
+  // The type can be missing or unknown for raw stix coming from outside the platform (ex: a location
+  // without x_opencti_location_type in a bundle returned by a connector): apply the organization check.
+  if (!entityType || !(isBasicObject(entityType) || isBasicRelationship(entityType))) {
+    return false;
+  }
   const types = [entityType, ...getParentTypes(entityType)];
   if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
     return true;

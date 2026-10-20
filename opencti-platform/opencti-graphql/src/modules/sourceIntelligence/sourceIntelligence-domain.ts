@@ -30,7 +30,7 @@ import {
   ENTITY_TYPE_INGESTION_TAXII,
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../ingestion/ingestion-types';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import type { BasicStoreEntityManagerConfiguration } from '../managerConfiguration/managerConfiguration-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
 import { getManagerConfigurationFromCache } from '../managerConfiguration/managerConfiguration-domain';

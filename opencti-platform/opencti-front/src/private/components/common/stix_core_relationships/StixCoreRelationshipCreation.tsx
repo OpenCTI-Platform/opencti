@@ -247,7 +247,7 @@ export const stixCoreRelationshipCreationMutation = graphql`
   }
 `;
 
-interface StixCoreRelationshipCreationFormInput {
+export interface StixCoreRelationshipCreationFormInput {
   confidence: string;
   fromId: string;
   toId: string;
@@ -261,7 +261,7 @@ interface StixCoreRelationshipCreationFormInput {
   customFieldValues?: CustomFieldValueAddInput[];
 }
 
-interface StixCoreRelationshipCreationAddInput {
+export interface StixCoreRelationshipCreationAddInput {
   confidence: number;
   fromId: string;
   toId: string;

@@ -1683,6 +1683,40 @@ class OpenCTIStix2:
             return None
 
     @staticmethod
+    def flatten_custom_field_values(entity: Dict) -> Dict:
+        """Flatten the custom field values of an OpenCTI entity, in place.
+
+        Each value of ``customFieldValues`` is set on the entity under its field
+        name (``x_opencti_cf_*``), then ``customFieldValues`` is removed.
+
+        :param entity: OpenCTI entity dictionary
+        :type entity: Dict
+        :return: the same entity, flattened
+        :rtype: Dict
+        """
+        if "customFieldValues" not in entity:
+            return entity
+        for custom_field_value in entity["customFieldValues"] or []:
+            field_name = custom_field_value.get("field_name")
+            value = None
+            for value_field in [
+                "select_values",
+                "int_value",
+                "string_value",
+                "boolean_value",
+                "date_value",
+                "select_value",
+            ]:
+                candidate = custom_field_value.get(value_field)
+                if candidate is not None:
+                    value = candidate
+                    break
+            if value is not None:
+                entity[field_name] = value
+        del entity["customFieldValues"]
+        return entity
+
+    @staticmethod
     def extract_custom_properties(stix_object: Dict) -> Optional[List[Dict]]:
         """Extract the x_ custom properties of a STIX object as custom field inputs.
 
@@ -2148,26 +2182,7 @@ class OpenCTIStix2:
                 entity["hashes"][hash_item["algorithm"]] = hash_item["hash"]
 
         # Flatten custom fields
-        if "customFieldValues" in entity:
-            custom_field_values = entity["customFieldValues"]
-            for custom_field_value in custom_field_values:
-                field_name = custom_field_value.get("field_name")
-                value = None
-                for value_field in [
-                    "select_values",
-                    "int_value",
-                    "string_value",
-                    "boolean_value",
-                    "date_value",
-                    "select_value",
-                ]:
-                    candidate = custom_field_value.get(value_field)
-                    if candidate is not None:
-                        value = candidate
-                        break
-                if value is not None:
-                    entity[field_name] = value
-            del entity["customFieldValues"]
+        self.flatten_custom_field_values(entity)
         # Final
         entity["x_opencti_id"] = entity["id"]
         if not no_custom_attributes:
@@ -3521,10 +3536,61 @@ class OpenCTIStix2:
             security_coverage_result_id = self.opencti.get_attribute_in_extension(
                 "security_coverage_result_id", item
             )
+            relationships_config = (
+                self.opencti.get_attribute_in_extension("relationships_config", item)
+                or {}
+            )
+            raw_coverages = relationships_config.get("coverage_information") or []
+            coverage_information = [
+                cov for cov in raw_coverages if "coverage_score" in cov
+            ]
             self.opencti.stix_core_relationship.create(
                 fromId=security_coverage_result_id,
                 toId=item["id"],
                 relationship_type="has-covered",
+                description=(
+                    self.opencti.stix2.convert_markdown(
+                        relationships_config["description"]
+                    )
+                    if "description" in relationships_config
+                    else None
+                ),
+                start_time=(
+                    relationships_config["start_time"]
+                    if "start_time" in relationships_config
+                    else None
+                ),
+                stop_time=(
+                    relationships_config["stop_time"]
+                    if "stop_time" in relationships_config
+                    else None
+                ),
+                coverage_information=coverage_information,
+                confidence=(
+                    relationships_config["confidence"]
+                    if "confidence" in relationships_config
+                    else None
+                ),
+                createdBy=(
+                    relationships_config["createdBy"]
+                    if "createdBy" in relationships_config
+                    else None
+                ),
+                objectMarking=(
+                    relationships_config["objectMarking"]
+                    if "objectMarking" in relationships_config
+                    else None
+                ),
+                objectLabel=(
+                    relationships_config["objectLabel"]
+                    if "objectLabel" in relationships_config
+                    else None
+                ),
+                externalReferences=(
+                    relationships_config["externalReferences"]
+                    if "externalReferences" in relationships_config
+                    else None
+                ),
             )
         elif operation == "enrichment":
             connector_ids = self.opencti.get_attribute_in_extension(

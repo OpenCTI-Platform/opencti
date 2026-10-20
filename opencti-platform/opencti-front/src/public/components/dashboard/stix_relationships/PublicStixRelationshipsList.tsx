@@ -48,6 +48,7 @@ const publicStixRelationshipsListQuery = graphql`
           }
           fromRole
           toRole
+          created
           created_at
           updated_at
           is_inferred
@@ -1371,6 +1372,26 @@ const publicStixRelationshipsListQuery = graphql`
                   definition_type
                   definition
                 }
+              }
+            }
+          }
+          to {
+            ... on BasicObject {
+              id
+              entity_type
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+            }
+            ... on StixObject {
+              representative {
+                main
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
               }
             }
           }

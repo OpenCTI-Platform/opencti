@@ -1,11 +1,15 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { logXtmHubIgnoredMessage } from '../../../../utils/xtmHubLog';
 
 interface UseExternalTabProps {
   url: string;
   tabName: string;
+  expectedOrigin: string | null;
   onMessage: (event: MessageEvent) => void;
   onClosingTab: () => void;
 }
+
+const CLOSING_TAB_ACTIONS = ['cancel', 'register', 'unregister'];
 
 interface UseExternalTabReturn {
   isTabOpen: boolean;
@@ -17,6 +21,7 @@ interface UseExternalTabReturn {
 const useExternalTab = ({
   url,
   tabName,
+  expectedOrigin,
   onMessage,
   onClosingTab,
 }: UseExternalTabProps): UseExternalTabReturn => {
@@ -44,13 +49,20 @@ const useExternalTab = ({
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.source === tabRef.current) {
-        const closingTabEvent = ['cancel', 'register', 'unregister'];
-        if (closingTabEvent.includes(event.data.action)) {
-          closeTab();
-        }
-        onMessage(event);
+      if (event.source !== tabRef.current) {
+        return;
       }
+      const isClosingTabAction = CLOSING_TAB_ACTIONS.includes(event.data?.action);
+      if (event.origin !== expectedOrigin) {
+        if (isClosingTabAction) {
+          logXtmHubIgnoredMessage(event.origin, expectedOrigin);
+        }
+        return;
+      }
+      if (isClosingTabAction) {
+        closeTab();
+      }
+      onMessage(event);
     };
     if (isTabOpen) {
       window.addEventListener('message', handleMessage);
@@ -68,7 +80,7 @@ const useExternalTab = ({
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('beforeunload', beforeUnloadHandler);
     };
-  }, [isTabOpen]);
+  }, [isTabOpen, expectedOrigin]);
 
   return {
     isTabOpen,

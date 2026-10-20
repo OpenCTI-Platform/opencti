@@ -1,7 +1,7 @@
 import type { Resolvers } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { loadCreator } from '../../database/members';
-import { connector as loadConnector } from '../../database/repository';
+import { connector as loadConnector } from '../connector/connector-domain';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { connectorIdFromIngestId } from '../../domain/connector';

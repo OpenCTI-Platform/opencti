@@ -25,14 +25,74 @@ export const normalizeCustomFieldDate = (value: unknown): string | undefined => 
 const isCustomFieldInteger = (value: unknown): value is number => Number.isInteger(value)
   && (value as number) >= GRAPHQL_MIN_INT && (value as number) <= GRAPHQL_MAX_INT;
 
-// Normalize the date values of stored-format entries (edit path); invalid dates are left as is for validation to reject.
-export const normalizeCustomFieldValuesDates = (values: CustomFieldValue[]): CustomFieldValue[] => values.map((value) => {
-  if (value.date_value === undefined || value.date_value === null) {
-    return value;
+// Normalize stored-format entries (edit path). Clients may send every value key with the unset ones as null
+// (e.g. entries read back from the API): they are dropped, so that the stored entries and the history
+// comparison only depend on the actual value. Invalid dates are left as is for validation to reject.
+export const normalizeCustomFieldValues = (values: CustomFieldValue[]): CustomFieldValue[] => values.map((value) => {
+  const entry = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null && v !== undefined)) as CustomFieldValue;
+  if (entry.date_value === undefined) {
+    return entry;
   }
-  const normalizedDate = normalizeCustomFieldDate(value.date_value);
-  return normalizedDate ? { ...value, date_value: normalizedDate } : value;
+  const normalizedDate = normalizeCustomFieldDate(entry.date_value);
+  return normalizedDate ? { ...entry, date_value: normalizedDate } : entry;
 });
+
+// A remove entry carrying select_values only removes these options of the multi_select
+export const isCustomFieldOptionsRemove = (input: EditInput) => input.operation === EditOperation.Remove
+  && (input.value ?? []).some((v: CustomFieldValue) => Array.isArray(v?.select_values) && v.select_values.length > 0);
+
+// Several custom field values inputs of a single edit (e.g. a background task replacing multi_select options
+// with a remove then an add) are applied in order on the current values, the result is a single replace.
+// add sets the field (multi_select options united), remove clears it (or removes the given options), replace sets all.
+export const foldCustomFieldValuesInputs = (currentValues: CustomFieldValue[], inputs: EditInput[]): CustomFieldValue[] => {
+  let values = currentValues;
+  for (let i = 0; i < inputs.length; i += 1) {
+    const { operation, value } = inputs[i];
+    const entries: CustomFieldValue[] = value ?? [];
+    if (operation === EditOperation.Add) {
+      const entryFieldIds = entries.map((e) => e.field_id);
+      const previousValues = values;
+      const addedValues = entries.map((entry) => {
+        const existing = previousValues.find((v) => v.field_id === entry.field_id);
+        return Array.isArray(existing?.select_values) && Array.isArray(entry.select_values)
+          ? { ...entry, select_values: R.uniq([...existing.select_values, ...entry.select_values]) }
+          : entry;
+      });
+      values = [...previousValues.filter((v) => !entryFieldIds.includes(v.field_id)), ...addedValues];
+    } else if (operation === EditOperation.Remove) {
+      values = values.flatMap((current) => {
+        const removed = entries.find((e) => e.field_id === current.field_id);
+        if (!removed) return [current];
+        if (Array.isArray(removed.select_values) && removed.select_values.length > 0 && Array.isArray(current.select_values)) {
+          const remaining = current.select_values.filter((option) => !removed.select_values?.includes(option));
+          return remaining.length > 0 ? [{ ...current, select_values: remaining }] : [];
+        }
+        return [];
+      });
+    } else {
+      values = entries;
+    }
+  }
+  return values;
+};
+
+// Merge of entities: each custom field is merged as the standard attribute it stands for. A single value
+// custom field keeps the target value, or else takes the value of the first source having one. A multi_select
+// custom field gets the union of the selected options. The result holds a single entry per custom field.
+export const mergeCustomFieldValues = (targetValues: CustomFieldValue[] | undefined, sourcesValues: (CustomFieldValue[] | undefined)[]): CustomFieldValue[] => {
+  const mergedByFieldId = new Map<string, CustomFieldValue>();
+  [targetValues, ...sourcesValues].forEach((values) => {
+    (values ?? []).forEach((value) => {
+      const existing = mergedByFieldId.get(value.field_id);
+      if (!existing) {
+        mergedByFieldId.set(value.field_id, value);
+      } else if (Array.isArray(existing.select_values) && Array.isArray(value.select_values)) {
+        mergedByFieldId.set(value.field_id, { ...existing, select_values: R.uniq([...existing.select_values, ...value.select_values]) });
+      }
+    });
+  });
+  return Array.from(mergedByFieldId.values());
+};
 
 // Edit path (stored format): the technical name is unique and immutable, so the server derives field_id
 // from field_name (or an alias) instead of trusting the client. A missing field_id is filled, an inconsistent
@@ -114,7 +174,7 @@ const verifyAddInputValueType = (
   return true;
 };
 
-const extractCustomFieldValueFromAddInputValue = (
+export const extractCustomFieldValueFromAddInputValue = (
   customFieldValueAddInputValue: any[],
   customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
 ) => {
@@ -301,7 +361,7 @@ export const validateCustomFieldValues = async (
   // Check mandatory fields are present.
   // Runs even when no values are provided, so an omitted mandatory field is rejected.
   if (opts.checkMandatory !== false) {
-    const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
+    const mandatoryDefs = definitions.filter((d) => getCustomFieldSettingForEntityType(d, entityType)?.mandatory);
     for (const def of mandatoryDefs) {
       const valueEntry = values.find((v) => v.field_name === def.name);
       if (!valueEntry) {

@@ -55,7 +55,8 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organ
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { computeCollectionGaps } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
 import { deletePir, pirAdd } from '../../../../src/modules/pir/pir-domain';
-import { connectorDelete, connectorIdFromIngestId, registerConnector } from '../../../../src/domain/connector';
+import { connectorIdFromIngestId } from '../../../../src/domain/connector';
+import { connectorDelete, registerConnector } from '../../../../src/modules/connector/connector-domain';
 import { ENTITY_TYPE_DECAY_RULE } from '../../../../src/modules/decayRule/decayRule-types';
 import { addIndicator } from '../../../../src/modules/indicator/indicator-domain';
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';

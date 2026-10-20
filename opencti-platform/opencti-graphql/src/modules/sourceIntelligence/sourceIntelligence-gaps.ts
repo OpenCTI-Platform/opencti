@@ -17,7 +17,7 @@ import { createHash } from 'node:crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import { fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';

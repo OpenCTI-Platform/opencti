@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import { createEntity, patchAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
@@ -32,7 +32,7 @@ import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { INGESTION_SETINGESTIONS, isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { managedConnectorAdd, managedConnectorEdit, updateConnectorRequestedStatus } from '../../domain/connector';
+import { managedConnectorAdd, managedConnectorEdit, updateConnectorRequestedStatus } from '../connector/connector-domain';
 import { addDecayRule, deleteDecayRule } from '../decayRule/decayRule-domain';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
 import { addExclusionListFile, deleteExclusionList } from '../exclusionList/exclusionList-domain';
