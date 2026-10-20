@@ -17,6 +17,7 @@ import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionRss } from './ingestion-types';
 import { findIngestionLogsForFeed } from './ingestion-common';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
 
 const ingestionRssResolvers: Resolvers = {
   Query: {
@@ -29,6 +30,7 @@ const ingestionRssResolvers: Resolvers = {
     },
   },
   IngestionRss: {
+    ...ingestionHealthFieldResolvers,
     defaultCreatedBy: (ingestionRss, _, context) => context.batch.idsBatchLoader.load({ id: ingestionRss.created_by_ref, type: ENTITY_TYPE_IDENTITY }),
     // eslint-disable-next-line max-len
     defaultMarkingDefinitions: (ingestionRss, _, context) => storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, context.user, ingestionRss.object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION),

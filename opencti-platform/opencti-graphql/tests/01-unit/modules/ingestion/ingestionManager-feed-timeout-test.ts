@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios';
 import TurndownService from 'turndown';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
@@ -48,21 +47,30 @@ vi.mock('../../../../src/modules/ingestion/ingestion-taxii-domain', () => ({
   patchTaxiiIngestion: patchTaxiiIngestionMock,
 }));
 
-vi.mock('../../../../src/modules/ingestion/ingestion-csv-domain', () => ({
+vi.mock('../../../../src/modules/ingestion/ingestion-csv-domain', async (importOriginal) => ({
+  resolveCsvMapperParsed: (await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-csv-domain')>()).resolveCsvMapperParsed,
   findAllCsvIngestion: findAllCsvIngestionMock,
   patchCsvIngestion: patchCsvIngestionMock,
   fetchCsvFromUrl: fetchCsvFromUrlMock,
 }));
 
-vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', () => ({
+vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', async (importOriginal) => ({
+  mergeIngestionJsonState: (await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-json-domain')>()).mergeIngestionJsonState,
   findAllJsonIngestion: findAllJsonIngestionMock,
   patchJsonIngestion: patchJsonIngestionMock,
   executeJsonQuery: executeJsonQueryMock,
 }));
 
-vi.mock('../../../../src/modules/ingestion/ingestion-common', () => ({
-  decryptIngestionCredential: decryptIngestionCredentialMock,
-}));
+vi.mock('../../../../src/modules/ingestion/ingestion-common', async (importOriginal) => {
+  const { emptyFilterGroup } = await import('../../../../src/utils/filtering/filtering-utils');
+  const actual = await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-common')>();
+  return {
+    // read from the mocked conf above
+    FEED_REQUEST_TIMEOUT: actual.FEED_REQUEST_TIMEOUT,
+    decryptIngestionCredential: decryptIngestionCredentialMock,
+    runningIngestionsFilters: () => emptyFilterGroup,
+  };
+});
 
 vi.mock('../../../../src/domain/connector', () => ({
   queueDetails: queueDetailsMock,
@@ -74,12 +82,13 @@ vi.mock('../../../../src/manager/ingestionManager/ingestionManagerPushToQueue', 
   updateBuiltInConnectorInfo: vi.fn(),
 }));
 
-vi.mock('../../../../src/utils/http-client', () => ({
-  OpenCTIHeaders: class OpenCTIHeaders {},
+vi.mock('../../../../src/utils/http-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/http-client')>()),
   getHttpClient: getHttpClientMock,
 }));
 
-const timeoutError = new AxiosError('timeout', 'ECONNABORTED');
+const { HttpClientError } = await import('../../../../src/utils/http-client');
+const timeoutError = new HttpClientError('timeout', 'ECONNABORTED');
 const validRss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>

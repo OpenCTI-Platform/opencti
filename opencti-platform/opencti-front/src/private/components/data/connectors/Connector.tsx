@@ -1,5 +1,6 @@
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import UpdateIcon from '@mui/icons-material/Update';
 import Alert from '@mui/material/Alert';
@@ -980,8 +981,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {managedConnectorDisplayName}
                 </span>
               </Tooltip>
-              <div style={{ display: 'flex', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexShrink: 0, gap: theme.spacing(1) }}>
                 <ConnectorStatusChip connector={connector} />
+                <IngestionHealthChip ingestionHealth={connector.ingestionHealth} />
               </div>
             </TitleMainEntity>
           </Box>
@@ -1080,6 +1082,14 @@ const Connector = createRefetchContainer(
         version
         connector_user_id
         is_managed
+        ingestionHealth {
+          status
+          status_since
+          healthChecks {
+            health_check_code
+            health_check_message
+          }
+        }
         manager_contract_configuration {
           key
           value

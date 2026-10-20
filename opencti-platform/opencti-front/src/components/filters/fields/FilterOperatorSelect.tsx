@@ -5,6 +5,8 @@ import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHe
 import { getAvailableOperatorForFilter, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { FilterDefinition } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../i18n';
+import { useOptionalDashboardVariableDefinitions } from '../../dashboard/DashboardVariablesContext';
+import { parseVariableToken } from '../../dashboard/dashboardVariablesResolution';
 import { useFilterEditorContext } from './FilterEditorContext';
 
 const OperatorKeyValues: {
@@ -66,6 +68,10 @@ const FilterOperatorSelect: FunctionComponent<FilterOperatorSelectProps> = ({
   const { helpers, entityTypes } = useFilterEditorContext();
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const finalFilterDefinition = useFilterDefinition(filterKey, entityTypes, subKey);
+  // In a dashboard, a date filter may hold a variable token: there is no stored date to shift on an operator change.
+  // The day shift of lte / gt is applied when the token is substituted, from the operator of the filter at that time
+  // (resolveVariablesInFilterGroup), so changing the operator of a token needs no stored shift.
+  const variables = useOptionalDashboardVariableDefinitions();
 
   const isStixFiltering = entityTypes?.includes('Stix-Filtering');
   const availableOperators = getAvailableOperatorForFilter(filterDefinition, subKey, { isStixFiltering });
@@ -76,7 +82,8 @@ const FilterOperatorSelect: FunctionComponent<FilterOperatorSelectProps> = ({
   const handleChangeOperator = (newOperator: string, fDef?: FilterDefinition) => {
     const filterType = fDef?.type;
     // for date check (date in days, operator) correspond to (timestamp in seconds, operator)
-    if (filterType === 'date' && filter && filter.values.length > 0) {
+    const isVariableValue = !!variables && parseVariableToken(filter?.values[0]) !== null;
+    if (filterType === 'date' && filter && filter.values.length > 0 && !isVariableValue) {
       const formerOperator = filter?.operator;
       const formerDate = filter.values[0]; // dates filters have a single value
       if (formerOperator && ['lte', 'gt'].includes(formerOperator) && ['lt', 'gte'].includes(newOperator)) {

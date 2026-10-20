@@ -7,6 +7,9 @@ import useSearchEntities from '../../../utils/filters/useSearchEntities';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import { FilterDefinition } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../i18n';
+import { useOptionalDashboardVariableDefinitions } from '../../dashboard/DashboardVariablesContext';
+import { getVariableOptions } from '../../dashboard/dashboardVariablesCompatibility';
+import { useIsSubTypeOf } from '../../dashboard/useIsSubTypeOf';
 import { useFilterEditorContext } from './FilterEditorContext';
 import { getEditedValues } from './filterEntityValueActions';
 
@@ -43,7 +46,8 @@ const isIdFilterDefinition = (
 /**
  * Server-side search behind the entity autocomplete: owns the search scope, the entity
  * cache, the typed input and the assembly of the option list (already selected values
- * first, then the search results, plus the contextual `SELF_ID` option).
+ * first, then the compatible dashboard variables, the contextual `SELF_ID` option and the
+ * search results).
  *
  * Extracted from the component so the option list can be tested and evolved without
  * touching the MUI Autocomplete kept for gap #155.
@@ -91,22 +95,31 @@ const useFilterEntityOptions = ({
   const shouldAddSelfId = isIdFilterDefinition(filterDefinition, subKey)
     && (shouldAddSelfIdInFintelTemplates || shouldAddSelfIdInCustomViews);
 
+  // Dashboard variables: only in a dashboard providing them (undefined anywhere else) and for widget filters.
+  const variables = useOptionalDashboardVariableDefinitions();
+  const isSubTypeOf = useIsSubTypeOf();
+  const valueFilterDefinition = useFilterDefinition(filterKey, entityTypes, subKey);
+  const variableOptions = variables && host?.kind === 'workspace'
+    ? getVariableOptions(variables, valueFilterDefinition, { isSubTypeOf })
+    : [];
+
   const entitiesOptionsFromSearch = getOptionsFromEntities(entities, searchScope, searchKey);
-  const allOptions = shouldAddSelfId
-    ? [
-        {
+  const allOptions: FilterOptionValue[] = [
+    ...variableOptions,
+    ...(shouldAddSelfId
+      ? [{
           value: SELF_ID,
           label: SELF_ID_VALUE,
           group: 'Instance',
           parentTypes: [],
           color: 'primary',
           type: 'Instance',
-        },
-        ...entitiesOptionsFromSearch,
-      ]
-    : entitiesOptionsFromSearch;
+        }]
+      : []),
+    ...entitiesOptionsFromSearch,
+  ];
 
-  const selectedOptions: FilterOptionValue[] = getSelectedOptions(allOptions, optionsValues, filtersRepresentativesMap, t_i18n);
+  const selectedOptions: FilterOptionValue[] = getSelectedOptions(allOptions, optionsValues, filtersRepresentativesMap, t_i18n, variables);
   const options = [...selectedOptions, ...allOptions.filter((option) => !optionsValues.includes(option.value))];
 
   const triggerSearch = (event: SyntheticEvent) => {

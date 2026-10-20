@@ -13,6 +13,8 @@ import { ErrorBoundary } from '../../Error';
 import { DraftEntitySelection } from '../DraftReviewEntityList';
 import { DraftReviewDiffPanelContentQuery } from './__generated__/DraftReviewDiffPanelContentQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from '../../../../utils/customFields';
 import { buildFieldLabelMap, parseUpdatesPatch, RenderChangeValuesFn } from './draftReviewDiffPanelUtils';
 import ContainerObjectsTab from './ContainerObjectsTab';
 import EntityRelationsTab from './EntityRelationsTab';
@@ -52,7 +54,15 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
     queryRef,
   );
 
+  const { schema: { filterKeysSchema } } = useAuth();
   const labelMap = buildFieldLabelMap(subTypeData.subType?.settings?.attributesDefinitions);
+  const changes = parseUpdatesPatch(entity.draft_updates_patch, entity.custom_field_values);
+  // Custom fields are not part of the attribute definitions: their label comes from the filter keys schema
+  changes.forEach(({ field }) => {
+    if (field && isCustomFieldAttribute(field)) {
+      labelMap[field] = getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, [entity.entity_type], field);
+    }
+  });
 
   const renderHeader = () => {
     const link = resolveLink(entity.entity_type);
@@ -152,8 +162,6 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
       </Box>
     );
   }
-
-  const changes = parseUpdatesPatch(entity.draft_updates_patch);
 
   const renderFieldsTab = () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

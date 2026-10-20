@@ -70,11 +70,15 @@ import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationP
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
+import { type BasicStoreEntityCustomFieldDefinition, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
+import { buildCustomFieldsTelemetryItems, isDashboardManifestUsingCustomField, isFilterGroupUsingCustomField } from '../modules/customField/custom-field-telemetry';
+import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { ENTITY_TYPE_HUNT, HUNT_STATUSES } from '../modules/hunt/hunt-types';
 import { HUNT_RUN_TRIGGERS, HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE, HUNT_VERDICT_TRUE_POSITIVE } from '../modules/hunt/huntRun/huntRun-types';
 import { listHuntConnectors } from '../modules/hunt/hunt-dispatch';
 import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
+import { booleanTrueFilter } from '../utils/filtering/filtering-utils';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -104,12 +108,6 @@ const KNOWLEDGE_OBJECT_TYPES = [
 // minimal so the collectors do not depend on each module's full store type.
 type DataShareLike = BasicStoreEntity & { stream_public?: boolean; enabled?: boolean };
 
-// Filter matching entities whose boolean attribute is true (ES count queries).
-const booleanTrueFilter = (key: string) => ({
-  mode: FilterMode.And,
-  filters: [{ key: [key], values: ['true'] }],
-  filterGroups: [],
-});
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', true);
@@ -157,6 +155,7 @@ export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
+export const TELEMETRY_GAUGE_CUSTOM_FIELD_CREATED = 'customFieldCreatedCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
@@ -303,6 +302,11 @@ export const addCustomViewCreatedCount = () => {
 export const addCustomViewEnabledCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
+};
+
+export const addCustomFieldCreatedCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_FIELD_CREATED, 1)
+    .catch((reason) => logApp.warn('Error adding custom field created count to telemetry', { reason }));
 };
 
 export const addSharedSavedFiltersPermissionChangesCount = () => {
@@ -621,10 +625,26 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
       context,
       TELEMETRY_MANAGER_USER,
       [ENTITY_TYPE_SAVED_FILTER],
-      { includeAuthorities: true, baseData: true, baseFields: ['creator_id', 'restricted_members'] },
+      { includeAuthorities: true, baseData: true, baseFields: ['creator_id', 'restricted_members', 'filters'] },
     );
     const sharedSavedFilters = savedFilters.filter((f) => isSavedFilterShared(f));
     manager.setSharedSavedFiltersCount(sharedSavedFilters.length);
+    // endregion
+
+    // region Custom fields
+    const customFieldDefinitions = await getEntitiesListFromCache<BasicStoreEntityCustomFieldDefinition>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+    const { byEntityType, byFieldType } = buildCustomFieldsTelemetryItems(customFieldDefinitions);
+    manager.setCustomFieldsByEntityType(byEntityType);
+    manager.setCustomFieldsByFieldType(byFieldType);
+    manager.setSavedFiltersWithCustomFieldCount(savedFilters.filter((f) => isFilterGroupUsingCustomField(f.filters)).length);
+    const dashboardFilter = { mode: FilterMode.And, filters: [{ key: ['type'], values: ['dashboard'] }], filterGroups: [] };
+    const dashboards = await fullEntitiesList<BasicStoreEntityWorkspace>(
+      context,
+      TELEMETRY_MANAGER_USER,
+      [ENTITY_TYPE_WORKSPACE],
+      { filters: dashboardFilter, baseData: true, baseFields: ['manifest'] },
+    );
+    manager.setDashboardsWithCustomFieldFilterCount(dashboards.filter((d) => isDashboardManifestUsingCustomField(d.manifest)).length);
     // endregion
 
     // region Knowledge graph scale
@@ -822,6 +842,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
     manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
+    const customFieldCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_FIELD_CREATED);
+    manager.setCustomFieldCreatedCount(customFieldCreatedCountInRedis);
     const sharedSavedFiltersPermissionChangesCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES);
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);

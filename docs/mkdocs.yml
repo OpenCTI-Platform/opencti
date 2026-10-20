@@ -72,6 +72,10 @@ plugins:
       on_undefined: strict
       on_error_fail: true
 
+# Images are stored once at the gh-pages root, shared by all docs versions
+hooks:
+  - hooks/shared_assets.py
+
 # Extensions
 markdown_extensions:
   - attr_list
@@ -188,6 +192,7 @@ nav:
         - Techniques: usage/exploring-techniques.md
         - Entities: usage/exploring-entities.md
         - Locations: usage/exploring-locations.md
+      - Work with graphs: usage/graphs.md
       - Pivot and investigate: usage/pivoting.md
     - Create knowledge:
       - Automated import:

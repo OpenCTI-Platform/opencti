@@ -6,6 +6,7 @@ import './garbageCollectionManager';
 import './hubRegistrationManager';
 import './huntManager';
 import './indicatorDecayManager';
+import './ingestionHealthManager';
 import './pirManager';
 import './platformUsageMetricsManager';
 import './retentionManager';

@@ -1,0 +1,136 @@
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import useExternalTab from './useExternalTab';
+import { logXtmHubIgnoredMessage } from '../../../../utils/xtmHubLog';
+
+vi.mock('../../../../utils/xtmHubLog', () => ({ logXtmHubIgnoredMessage: vi.fn() }));
+
+const HUB_ORIGIN = 'https://hub.filigran.io';
+
+const dispatchMessage = (source: unknown, origin: string, data: Record<string, unknown>) => {
+  const event = new MessageEvent('message', { data, origin });
+  Object.defineProperty(event, 'source', { value: source });
+  window.dispatchEvent(event);
+};
+
+const openHubTab = (onMessage: (event: MessageEvent) => void, onClosingTab = vi.fn()) => {
+  const tab = { closed: false, close: vi.fn(), focus: vi.fn() };
+  vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window);
+  const { result } = renderHook(() => useExternalTab({
+    url: `${HUB_ORIGIN}/app/redirect/register-opencti`,
+    tabName: 'xtmhub-registration',
+    expectedOrigin: HUB_ORIGIN,
+    onMessage,
+    onClosingTab,
+  }));
+  act(() => {
+    result.current.openTab();
+  });
+  return tab;
+};
+
+describe('Hook: useExternalTab', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('handles a message sent by the opened tab from the expected origin', () => {
+    const onMessage = vi.fn();
+    const tab = openHubTab(onMessage);
+
+    act(() => {
+      dispatchMessage(tab, HUB_ORIGIN, { action: 'cancel' });
+    });
+
+    expect(onMessage).toHaveBeenCalledOnce();
+    expect(tab.close).toHaveBeenCalledOnce();
+  });
+
+  it('logs and ignores a Hub action sent by the opened tab from another origin', () => {
+    const onMessage = vi.fn();
+    const tab = openHubTab(onMessage);
+
+    act(() => {
+      dispatchMessage(tab, 'https://other.example', { action: 'register', token: 'token' });
+    });
+
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(tab.close).not.toHaveBeenCalled();
+    expect(logXtmHubIgnoredMessage).toHaveBeenCalledExactlyOnceWith('https://other.example', HUB_ORIGIN);
+  });
+
+  it('keeps listening after a message from another origin and handles a later one from the expected origin', () => {
+    const onMessage = vi.fn();
+    const tab = openHubTab(onMessage);
+
+    act(() => {
+      dispatchMessage(tab, 'https://other.example', { action: 'register', token: 'token' });
+    });
+    act(() => {
+      dispatchMessage(tab, HUB_ORIGIN, { action: 'register', token: 'token' });
+    });
+
+    expect(onMessage).toHaveBeenCalledOnce();
+    expect(tab.close).toHaveBeenCalledOnce();
+  });
+
+  it('reports the tab as closed when the user closes it after a message from another origin', () => {
+    const onMessage = vi.fn();
+    const onClosingTab = vi.fn();
+    const tab = openHubTab(onMessage, onClosingTab);
+
+    act(() => {
+      dispatchMessage(tab, 'https://other.example', { action: 'register', token: 'token' });
+    });
+    tab.closed = true;
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(onClosingTab).toHaveBeenCalledOnce();
+  });
+
+  it('silently ignores an unknown message sent by the opened tab from another origin', () => {
+    const onMessage = vi.fn();
+    const tab = openHubTab(onMessage);
+
+    act(() => {
+      dispatchMessage(tab, 'https://sso.example', { type: 'analytics' });
+    });
+
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(tab.close).not.toHaveBeenCalled();
+    expect(logXtmHubIgnoredMessage).not.toHaveBeenCalled();
+  });
+
+  it('ignores a message from the expected origin sent by another window', () => {
+    const onMessage = vi.fn();
+    openHubTab(onMessage);
+
+    act(() => {
+      dispatchMessage({}, HUB_ORIGIN, { action: 'register', token: 'token' });
+    });
+
+    expect(onMessage).not.toHaveBeenCalled();
+  });
+
+  it('ignores a Hub action from another origin sent by another window', () => {
+    const onMessage = vi.fn();
+    const tab = openHubTab(onMessage);
+
+    act(() => {
+      dispatchMessage({}, 'https://other.example', { action: 'register', token: 'token' });
+    });
+
+    expect(onMessage).not.toHaveBeenCalled();
+    expect(tab.close).not.toHaveBeenCalled();
+    expect(logXtmHubIgnoredMessage).not.toHaveBeenCalled();
+  });
+});

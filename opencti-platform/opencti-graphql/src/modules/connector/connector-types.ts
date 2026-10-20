@@ -3,6 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { ConnectorContractConfiguration, ConnectorPriorityGroup } from '../../generated/graphql';
 import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-types';
 import type { CatalogContractEntityFields } from '../catalog/catalog-types';
+import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
 
 export interface ConnectorInfo {
   run_and_terminate: boolean;
@@ -15,8 +16,9 @@ export interface ConnectorInfo {
 
 type ConnectorManagerContract = CatalogContractEntityFields;
 
-export interface BasicStoreEntityConnector extends BasicStoreEntity {
+export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHealthFields {
   active: boolean;
+  built_in?: boolean;
   auto: boolean;
   auto_update: boolean;
   enrichment_resolution: string;
@@ -64,7 +66,12 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity {
 
 export interface StoreEntityConnector extends BasicStoreEntityConnector, StoreEntity {}
 
-// Connector of the connectors cache: without liveness, see refreshConnectorsLiveness
+// Connector of the connectors cache: without liveness, see refreshConnectorsLiveness.
+// The cache is only refreshed by a notify on the connector topics (or a cache reset), and some frequent writes skip it on purpose:
+// a notify reloads every connector on every node. These fields can therefore be stale here, read them from Elasticsearch:
+// - connector_state, connector_state_reset, connector_state_timestamp, connector_info and updated_at (pings, state resets, built-in runs);
+// - manager_contract and manager_contract_image (auto-upgrade of managed connectors).
+// Any new write of a field read from this cache must notify, as registerConnector does.
 export type CachedConnector = Omit<BasicStoreEntityConnector, 'active'>;
 
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
