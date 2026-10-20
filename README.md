@@ -12,14 +12,10 @@
   <a href="https://hub.docker.com/u/opencti" alt="Docker pulls"><img src="https://img.shields.io/docker/pulls/opencti/platform" /></a>
 </p>
 
-> **Note:** Building connectors, contributing to the platform, or running OpenCTI in
-> production? Join us on the
-> [Filigran Community Slack](https://community.filigran.io/?utm_medium=community&utm_source=github).
-> It's the best place to ask questions, talk through a PR before you open it, or compare notes on integrations.
-
-> **Note:** **Join us on Slack.** Our community conference for threat
-> intelligence and cyber defense practitioners. Talks, labs, workshops, and an
-> evening social. [Join us →](https://thread.filigran.io/?utm_medium=outbound&utm_source=github&utm_campaign=2026-10_EUROPE_THREAD)
+> **Note:** Building connectors, contributing to the platform, or running OpenCTI in production?
+>
+> Join us on the
+> [Community Slack](https://community.filigran.io/?utm_medium=community&utm_source=github) to ask questions, talk through a PR before you open it, or compare notes on integrations.
 
 ## Introduction
 
