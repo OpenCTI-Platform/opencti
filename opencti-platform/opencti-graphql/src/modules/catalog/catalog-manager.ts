@@ -26,6 +26,7 @@ let isSyncCompleteUntilRestart = false;
 
 export const catalogManagerHandler = async () => {
   if (isSyncCompleteUntilRestart) {
+    logApp.debug('[OPENCTI-MODULE] Embedded catalogs already synchronized, skipping catalog synchronization until restart', { module: 'catalog' });
     return;
   }
   const context = executionContext('catalog_manager');
