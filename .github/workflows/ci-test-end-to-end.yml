@@ -20,18 +20,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "e2e group0 tests"
-            grep_args: '--grep-invert "@group1|@groupff"'
+          - name: "e2e shard 1/4"
+            grep_args: '--grep-invert @groupff --shard=1/4'
             dev_features: '[]'
-            artifact_suffix: '-group0'
+            artifact_suffix: '-shard-1'
+          - name: "e2e shard 2/4"
+            grep_args: '--grep-invert @groupff --shard=2/4'
+            dev_features: '[]'
+            artifact_suffix: '-shard-2'
+          - name: "e2e shard 3/4"
+            grep_args: '--grep-invert @groupff --shard=3/4'
+            dev_features: '[]'
+            artifact_suffix: '-shard-3'
+          - name: "e2e shard 4/4"
+            grep_args: '--grep-invert @groupff --shard=4/4'
+            dev_features: '[]'
+            artifact_suffix: '-shard-4'
           - name: "e2e ff tests"
             grep_args: '--grep @groupff'
             dev_features: '["*"]'
             artifact_suffix: '-ff'
-          - name: "e2e group1 tests"
-            grep_args: '--grep @group1'
-            dev_features: '[]'
-            artifact_suffix: '-group1'
 
     steps:
       - name: OpenCTI checkout
