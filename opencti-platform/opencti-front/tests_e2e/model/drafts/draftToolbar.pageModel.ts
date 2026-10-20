@@ -75,7 +75,9 @@ export default class DraftToolbarPageModel {
 
   /** Same reload-and-retry treatment as `waitForTransitionTrigger`, for a dropdown menu item. */
   private async waitForMenuItem(eventName: string, nextStatusButton: Locator) {
-    const menuItem = this.page.getByRole('menuitem', { name: eventName, exact: true });
+    // A transition that needs input is labeled "<event> (+N action(s) required)" (`WorkflowTransitions.tsx`).
+    const escaped = eventName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const menuItem = this.page.getByRole('menuitem', { name: new RegExp(`^${escaped}( \\(\\+\\d+ actions? required\\))?$`) });
     await expect(async () => {
       if (!(await menuItem.isVisible())) {
         await this.page.keyboard.press('Escape').catch(() => {});
