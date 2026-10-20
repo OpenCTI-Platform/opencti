@@ -84,7 +84,7 @@ const SourcesNumber = ({ variant, height, dataSelection, parameters = {}, popove
       aggregation: selection.sort_mode === COUNT_MODE ? 'sum' : toAggregation(selection.sort_mode, 'avg'),
     };
   }, []);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<SourcesNumberQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<SourcesNumberQuery>({
     perspective: 'sources',
     dataSelection,
     host,
@@ -103,7 +103,7 @@ const SourcesNumber = ({ variant, height, dataSelection, parameters = {}, popove
     : t_i18n(NUMBER_TITLES[toAggregation(selection?.sort_mode, 'avg')], { values: { measure, days } }));
   return (
     <WidgetContainer padding="medium" height={height} title={title} variant={variant} action={popover} showPreviewTag={isPreviewMode}>
-      <SourcesWidgetRenderContent isMissingHostEntity={isMissingHostEntity} isMissingSavedFilters={isMissingSavedFilters} queryRef={queryRef} host={host}>
+      <SourcesWidgetRenderContent {...renderGuards} queryRef={queryRef} host={host}>
         <SourcesNumberComponent queryRef={queryRef!} selection={selection} label={title} />
       </SourcesWidgetRenderContent>
     </WidgetContainer>

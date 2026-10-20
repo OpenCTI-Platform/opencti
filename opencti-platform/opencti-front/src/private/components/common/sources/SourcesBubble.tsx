@@ -140,7 +140,7 @@ const SourcesBubble = ({ variant, height, dataSelection, parameters = {}, popove
       first: selection.number ?? DEFAULT_POINTS,
     };
   }, []);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<SourcesBubbleQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<SourcesBubbleQuery>({
     perspective: 'sources',
     dataSelection,
     host,
@@ -165,7 +165,7 @@ const SourcesBubble = ({ variant, height, dataSelection, parameters = {}, popove
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      <SourcesWidgetRenderContent isMissingHostEntity={isMissingHostEntity} isMissingSavedFilters={isMissingSavedFilters} queryRef={queryRef} host={host}>
+      <SourcesWidgetRenderContent {...renderGuards} queryRef={queryRef} host={host}>
         <SourcesBubbleComponent queryRef={queryRef!} xMetric={xMetric} yMetric={yMetric} onMounted={setChart} />
       </SourcesWidgetRenderContent>
     </WidgetContainer>

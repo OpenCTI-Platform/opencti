@@ -116,7 +116,7 @@ const SourcesDistribution = ({ widgetType, variant, height, dataSelection, param
       orderMode: selection.sort_mode === 'asc' ? 'asc' : 'desc',
     };
   }, [widgetType]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<SourcesDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<SourcesDistributionQuery>({
     perspective: 'sources',
     dataSelection,
     host,
@@ -138,7 +138,7 @@ const SourcesDistribution = ({ widgetType, variant, height, dataSelection, param
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      <SourcesWidgetRenderContent isMissingHostEntity={isMissingHostEntity} isMissingSavedFilters={isMissingSavedFilters} queryRef={queryRef} host={host}>
+      <SourcesWidgetRenderContent {...renderGuards} queryRef={queryRef} host={host}>
         <SourcesDistributionComponent queryRef={queryRef!} selection={selection} widgetType={widgetType} onMounted={setChart} />
       </SourcesWidgetRenderContent>
     </WidgetContainer>

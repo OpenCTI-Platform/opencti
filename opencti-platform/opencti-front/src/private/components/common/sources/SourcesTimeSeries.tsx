@@ -94,7 +94,7 @@ const SourcesTimeSeries = ({ variant, height, dataSelection, parameters = {}, po
       aggregation: toAggregation(selection.sort_mode, 'avg'),
     };
   }, []);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<SourcesTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<SourcesTimeSeriesQuery>({
     perspective: 'sources',
     dataSelection,
     host,
@@ -118,7 +118,7 @@ const SourcesTimeSeries = ({ variant, height, dataSelection, parameters = {}, po
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      <SourcesWidgetRenderContent isMissingHostEntity={isMissingHostEntity} isMissingSavedFilters={isMissingSavedFilters} queryRef={queryRef} host={host}>
+      <SourcesWidgetRenderContent {...renderGuards} queryRef={queryRef} host={host}>
         <SourcesTimeSeriesComponent queryRef={queryRef!} selection={selection} hasLegend={parameters.legend === true} onMounted={setChart} />
       </SourcesWidgetRenderContent>
     </WidgetContainer>

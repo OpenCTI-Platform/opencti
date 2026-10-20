@@ -1,11 +1,9 @@
 import React, { ReactNode } from 'react';
 import type { WidgetHost } from '../../../../utils/widget/widget';
 import useGranted, { INGESTION, MODULES } from '../../../../utils/hooks/useGranted';
-import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
+import WidgetRenderContent, { type WidgetRenderGuards } from '../../../../components/dashboard/WidgetRenderContent';
 
-interface SourcesWidgetRenderContentProps {
-  isMissingHostEntity: boolean;
-  isMissingSavedFilters: boolean;
+interface SourcesWidgetRenderContentProps extends WidgetRenderGuards {
   queryRef: unknown;
   host?: WidgetHost;
   children: ReactNode;
@@ -14,12 +12,11 @@ interface SourcesWidgetRenderContentProps {
 /**
  * Guard of the "Intelligence sources" widgets: source scorecards are readable with the connectors or ingestion capability.
  */
-const SourcesWidgetRenderContent = ({ isMissingHostEntity, isMissingSavedFilters, queryRef, host, children }: SourcesWidgetRenderContentProps) => {
+const SourcesWidgetRenderContent = ({ queryRef, host, children, ...renderGuards }: SourcesWidgetRenderContentProps) => {
   const isGranted = useGranted([MODULES, INGESTION]);
   return (
     <WidgetRenderContent
-      isMissingHostEntity={isMissingHostEntity}
-      isMissingSavedFilters={isMissingSavedFilters}
+      {...renderGuards}
       isGranted={isGranted}
       queryRef={queryRef}
       host={host}
