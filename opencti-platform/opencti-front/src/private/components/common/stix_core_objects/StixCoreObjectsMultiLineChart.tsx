@@ -121,7 +121,7 @@ const StixCoreObjectsMultiLineChart = ({
   host,
 }: StixCoreObjectsMultiLineChartProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiLineChartTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiLineChartTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -142,8 +142,7 @@ const StixCoreObjectsMultiLineChart = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

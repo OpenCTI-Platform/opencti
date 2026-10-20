@@ -800,6 +800,13 @@ replaces the popover under it. `TopBar.libraryOnly.test.ts` names `Popover` in
 `EXEMPTED` so that importing one directly stays a declared, dated exemption
 rather than a new arrival.
 
+**Second consumer, 2026-10-04:** the graph toolbar (`GraphToolbar.tsx`) folds its
+creation and removal tools into one button on a narrow graph and opens them in
+a MUI `Popover`. It needs `keepMounted`: the tools own their creation dialogs
+(the relationship drawn with the right button included), which must open while
+the popover is closed. A library popover will have to offer the same
+keep-mounted behaviour to replace it.
+
 **Not exempted, and now closed:** `Stack` and `Box` were still inside the NLQ
 toggle — MUI layout, not the control. Replaced by plain elements at the same
 geometry (4px caret margin and padding, unchanged 1px divider). The guard reads
@@ -2352,6 +2359,12 @@ the two MUI imports for the library group, delete both markers, and check that
 the three segments still read "All", "Enabled" and "Disabled" with their counts,
 36 px tall on the search field's centre line.
 
+**Also at.** `FilterValueVariableSwitch.tsx` (dashboard widget filters): the
+"Fixed value" / "Variable" switch of a date, numeric or free text value is
+specified with text segments. It uses the library group with two glyphs, each
+named by its `aria-label` and a library `Tooltip` (marked `FDS-WORKAROUND`).
+With a text item, drop the glyphs and the tooltips and show both words.
+
 ## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
 
 **Needed.** A row menu that ends with a Delete command shows that row in the
@@ -2541,3 +2554,145 @@ flip the filter mode; on a `dynamicRegardingOf` filter that has a dynamic
 filter, the relationship-type chip must stay, be non-deletable and show its
 tooltip; and the field must be 36px high empty and with chips. Then delete the
 `sx` padding override and the `fds:keep-mui` markers in the file.
+
+---
+
+## 67. `Button` and `IconButton` always paint a box, so a control whose content *is* the target stays a bare `<button>`
+
+**Needed.** Fixing the `jsx-a11y` click-handler violations (#16818) turned
+four clickable non-interactive elements into real buttons. In each, the
+control's content is the visual, and the button must add no box of its own:
+- `TruncatedRawValue` — a truncated raw value, clicking it opens the full
+  value: as pre-wrapped code (`code` variant), or as a single line cut with an
+  ellipsis in the History and Audit tables (`text` variant, a button only once
+  the value overflows).
+- `MarkdownDisplay` — a markdown image, clicking it opens the preview.
+- `SearchInput` — the caret half of the AI search split control: a narrow
+  zone sharing one pill with the MUI `ToggleButton` beside it (hover tint,
+  focus ring, divider), and opening the agent picker.
+- `FilterIconButtonGlobalMode` — the and/or between the filters and groups of
+  a filter line, drawn as the operator badge of the filter chips (monospace,
+  tinted, 4px radius); clicking it switches the mode.
+
+**Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
+`components/button/Button.mjs` and `components/icon-button/IconButton.mjs`):
+`Button` fixes its height per size (`h-6` / `h-9`) with horizontal padding,
+and every priority paints a fill or a border; `asChild` keeps those classes
+on the child. `IconButton` is a fixed square (24 or 36 px) with its own fill
+and focus ring. None has an unstyled variant.
+
+**Workaround.** FDS-WORKAROUND #67 at the four sites: a native
+`<button type="button">` reset to no border, padding or background, keeping
+the content's own layout (the and/or keeps the operator badge's own padding
+and tint). Each is a real, focusable, keyboard-operable
+control.
+
+**Ask.** A bare variant of `Button` (or a `ButtonBase` / `Pressable`
+primitive) that owns only the semantics and the focus ring: no height, no
+padding, no fill. That would cover content-as-control cases like these, and
+split controls built from two halves of one pill.
+
+**Removal test.** At a pin with that variant: replace the four
+`<button>`s, delete their reset styles and the markers, and check that the
+truncated code value keeps its whitespace and wrapping, the truncated text
+value its single line and ellipsis, the image keeps its size,
+the caret still reads as one pill with the AI toggle (idle, hover, focus),
+and the and/or still matches the filter chips' operator badge.
+
+## 68. A disabled `Button` or `IconButton` cannot trigger its own tooltip, so the reason it is disabled needs a focusable wrapper
+
+**Needed.** Two places explain a disabled control in its tooltip: the
+integration catalog says why Deploy is disabled (an incompatible platform
+version), and the graph toolbar names each tool, disabled ones included.
+The tooltip must reach mouse users on hover and keyboard users on focus,
+which is the WAI-ARIA APG pattern for this case ("Focusability of disabled
+controls"): a button marked `aria-disabled` that stays focusable and
+hoverable, and simply does nothing when activated.
+
+**Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
+`components/button/Button.mjs` and `components/icon-button/IconButton.mjs`).
+Without `asChild`, a disabled `Button` renders a native `disabled`
+attribute: no focus, no pointer events, so the tooltip trigger never
+fires. With `asChild`, it renders `aria-disabled` and stays focusable, but
+its `data-[disabled]:pointer-events-none` class still removes hover, so the
+tooltip only opens from the keyboard. `IconButton` passes `disabled`
+through to the native attribute, with `disabled:pointer-events-none`, and
+has no `aria-disabled` mode at all. No mode works as a tooltip trigger on
+its own.
+
+**Workaround.** FDS-WORKAROUND #68 at two sites, where the disabled
+button sits in a `<span tabIndex={0}>` that takes the hover and the focus
+for the tooltip:
+- `DisabledReasonTooltip`, around the library `Button` of the Deploy
+  actions in `AvailableIntegrationLine`, `IngestionCatalogConnectorHeader`
+  and `IngestionCatalogCardDeployButton`.
+- `GraphToolbarItem`, around every disabled graph toolbar tool. It renders
+  the library `IconButton` and `Tooltip`, which hit this same gap, so the
+  span stays: it carries `role="button"`, `aria-disabled` and the disabled
+  reason.
+
+In `DisabledReasonTooltip` the span is a focusable element with no role,
+which `jsx-a11y/no-noninteractive-tabindex` flags and is disabled there. At
+both sites the Tab stop lands on that span, not on the button.
+
+**Ask.** A disabled mode of `Button` and `IconButton` that renders
+`aria-disabled` instead of `disabled`, keeps focus and pointer events, and
+blocks activation in JavaScript, for example a `focusableWhenDisabled`
+prop. That would make the button itself the tooltip trigger.
+
+**Removal test.** At a pin with that mode: pass the disabled state through
+it on the three Deploy buttons and on `GraphToolbarItem`, delete both
+`<span>`s with their markers and eslint-disable, and check that the tooltip shows on hover and
+on keyboard focus, that the screen reader announces the button as
+disabled, and that a click or Enter does nothing. In the graph toolbar,
+also check that each tool keeps its size and alignment, which the span's
+`inline-flex` holds today.
+
+---
+
+## 69. `Chip` has no muted state that stays clickable, so a dashboard variable no widget uses is dimmed by hand
+
+**Where.** `DashboardVariableChip.tsx` (dashboard variables bar). A variable that
+no widget references must read as inactive (it still has to open its value
+input, so the user can change it) and explain itself in a `Tooltip`.
+
+**Gap.** The only muted state of `Chip` is `disabled`, which is non-interactive:
+the click that opens the value popover would be lost. There is no tone between
+`neutral` and `disabled`.
+
+**Workaround.** The chip is wrapped and the wrapper carries `opacity: 0.6`
+(`UNUSED_OPACITY`, marked `FDS-WORKAROUND`).
+
+**Ask.** A `muted` (or `tone="subtle"`) prop on `Chip` that lowers the label and
+fill contrast but keeps the chip a focusable, clickable `<button>`.
+
+**Removal test.** Replace the wrapper opacity by the prop: the chip of an unused
+variable must still open its popover on click and keep its hover tooltip.
+
+---
+
+## 70. `Menu` opens only from a trigger element, so a context menu at the pointer needs a hidden one
+
+**Needed.** The graphs open a context menu where the reader right-clicks an
+entity, a relationship or the empty canvas (and from the keyboard with
+Shift+F10 or the context-menu key), with the sections, submenus, shortcuts and
+disabled reasons of the toolbar's "More actions" menu.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0):
+`Menu` wraps the Radix dropdown menu and positions `MenuContent` against its
+`MenuTrigger` element only. The library has no context-menu component and no
+way to anchor a `Menu` at a point.
+
+**Workaround.** `GraphContextMenu.tsx` renders a controlled `Menu` whose
+`MenuTrigger` is a one-pixel, `aria-hidden`, non-focusable span placed at the
+pointer inside the graph container, under one `FDS-WORKAROUND #70` marker.
+`onCloseAutoFocus` gives the focus back to the element that had it, as the
+trigger cannot take it.
+
+**Ask.** A `ContextMenu` (the Radix context menu, with the `Menu` item
+components) or an `anchor` point on `Menu`, both opening from the keyboard.
+
+**Removal test.** At a pin with either: replace the hidden trigger by the
+library anchor, delete the marker, and check that a right click on a node of a
+report graph opens the menu at the pointer, that Shift+F10 opens it for the
+entity of the keyboard list, and that Escape gives the focus back.

@@ -139,6 +139,9 @@ export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
 export const WORKFLOW_USER_FILTER = 'workflow_user';
 export const WORKFLOW_GROUP_FILTER = 'workflow_group';
 export const WORKFLOW_ORGANIZATION_FILTER = 'workflow_organization';
+export const WORKFLOW_ROLE_FILTER = 'workflow_role';
+// workflow condition keys evaluated against the workflow context (triggering user, entity name), not by the stix filtering engine
+export const WORKFLOW_CONTEXT_FILTER_KEYS = [WORKFLOW_USER_FILTER, WORKFLOW_GROUP_FILTER, WORKFLOW_ORGANIZATION_FILTER, WORKFLOW_ROLE_FILTER, 'name'];
 
 const COMPLEX_CONVERSION_FILTER_KEYS = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)

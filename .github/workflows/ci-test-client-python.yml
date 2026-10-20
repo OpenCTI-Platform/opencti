@@ -14,7 +14,7 @@ on:
 
 jobs:
   ensure-formatting-pycti:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: pycti formatting check
     steps:
     - name: OpenCTI checkout
@@ -46,7 +46,7 @@ jobs:
         path: "client-python"
 
   client-python-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: pycti test - python ${{ matrix.python-version }}
     strategy:
       fail-fast: false

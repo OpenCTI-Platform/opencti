@@ -23,6 +23,8 @@ import * as R from 'ramda';
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import TaskScope from '../../../../components/TaskScope';
+import useCustomFieldDefinitions from '../../common/custom_fields/useCustomFieldDefinitions';
+import { isCustomFieldAttribute } from '../../../../utils/customFields';
 import TaskStatus from '../../../../components/TaskStatus';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import { useFormatter } from '../../../../components/i18n';
@@ -163,6 +165,10 @@ const TasksList = ({ data, options }) => {
   const [messages, setMessages] = useState([]);
   const [errors, setErrors] = useState([]);
   const { backgroundTasks } = useFragment(TasksListFragment, data);
+  // Custom fields are displayed with their label, the definitions are only loaded when a task edits one
+  const hasCustomFieldAction = (backgroundTasks?.edges ?? []).some(({ node }) => (node.actions ?? []).some((a) => isCustomFieldAttribute(a.context?.field)));
+  const customFieldDefinitions = useCustomFieldDefinitions(hasCustomFieldAction);
+  const fieldLabel = (field) => customFieldDefinitions.find((d) => d.name === field)?.label ?? t_i18n(field);
   const handleCloseMessages = () => {
     setDisplayMessages(false);
     setMessages([]);
@@ -344,7 +350,7 @@ const TasksList = ({ data, options }) => {
                                 {action.context && (
                                   <Tag
                                     label={[
-                                      action.context.field && `${t_i18n(action.context.field)}: `,
+                                      action.context.field && `${fieldLabel(action.context.field)}: `,
                                       truncate(R.join(', ', action.context.values || []), 80),
                                     ]
                                       .filter(Boolean)

@@ -334,6 +334,7 @@ input SecurityCoverageSelectedEntitiesInput {
   filters: String
   excluded_ids: [String!]
   search: String
+  relationships_config: StixCoreRelationshipAddInput
 }
 
 type Mutation {

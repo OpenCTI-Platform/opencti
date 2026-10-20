@@ -22,7 +22,7 @@ import { batchIsSubAttackPattern, batchCoursesOfAction, batchSubAttackPatterns }
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
-import { computeConnectorsUpdateStatus } from '../database/repository';
+import { computeConnectorsUpdateStatus } from '../modules/connector/connector-domain';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders

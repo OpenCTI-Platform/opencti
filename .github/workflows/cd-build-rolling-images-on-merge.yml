@@ -16,7 +16,7 @@ jobs:
   # -----------------------
   build-builder:
     name: Build builder image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/docker-build-builder
@@ -31,7 +31,7 @@ jobs:
 
   app-sbom:
     name: Build and generate app SBOM
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [build-builder]
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
@@ -147,7 +147,7 @@ jobs:
   # -----------------------
   build-platform:
     name: Build platform (${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -171,7 +171,7 @@ jobs:
   # -----------------------
   build-worker:
     name: Build worker (${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -195,7 +195,7 @@ jobs:
   # -----------------------
   build-tar-platform:
     name: Build platform tarball (standard)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/tar-platform
@@ -205,7 +205,7 @@ jobs:
 
   build-tar-platform-musl:
     name: Build platform tarball (musl)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/tar-platform-musl
@@ -218,7 +218,7 @@ jobs:
   # -----------------------
   generate-sbom-platform:
     name: Generate SBOM (platform ${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [build-platform]
     strategy:
       fail-fast: false
@@ -242,7 +242,7 @@ jobs:
 
   generate-sbom-worker:
     name: Generate SBOM (worker ${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [build-worker]
     strategy:
       fail-fast: false
@@ -269,7 +269,7 @@ jobs:
   # -----------------------
   merge-sbom:
     name: Merge SBOM (${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [app-sbom, generate-sbom-platform, generate-sbom-worker]
     strategy:
       fail-fast: false
@@ -347,7 +347,7 @@ jobs:
 
   upload-artifacts:
     name: Upload all artifacts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [merge-sbom, build-tar-platform-musl, build-tar-platform]
     steps:
       - name: Download all SBOM artifacts

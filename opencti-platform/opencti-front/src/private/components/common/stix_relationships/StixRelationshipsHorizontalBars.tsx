@@ -190,7 +190,7 @@ const StixRelationshipsHorizontalBars = ({
 }: StixRelationshipsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsHorizontalBarsDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -211,8 +211,7 @@ const StixRelationshipsHorizontalBars = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

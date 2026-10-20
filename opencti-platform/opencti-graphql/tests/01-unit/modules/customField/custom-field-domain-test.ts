@@ -6,6 +6,7 @@ import * as Redis from '../../../../src/database/redis';
 import * as UserActionListener from '../../../../src/listener/UserActionListener';
 import * as Access from '../../../../src/utils/access';
 import * as CacheModule from '../../../../src/database/cache';
+import * as TelemetryManager from '../../../../src/manager/telemetryManager';
 import { EditOperation, FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import {
   customFieldDefinitionAdd,
@@ -15,11 +16,9 @@ import {
   customFieldDefinitionRemoveEntityType,
   customFieldDefinitionUpdateEntityType,
   findById,
-  findCustomFieldDefinitionByName,
   findCustomFieldDefinitionsForEntityType,
   findCustomFieldDefinitionsPaginated,
   findCustomFieldStixFilterKeys,
-  isCustomFieldKey,
 } from '../../../../src/modules/customField/custom-field-domain';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../../src/modules/customField/custom-field-types';
 
@@ -46,6 +45,10 @@ vi.mock('../../../../src/database/redis', () => ({
 
 vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
+}));
+
+vi.mock('../../../../src/manager/telemetryManager', () => ({
+  addCustomFieldCreatedCount: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/cache', () => ({
@@ -93,16 +96,6 @@ beforeEach(() => {
   vi.mocked(Access.executionContext).mockReturnValue({ source: 'testing' } as any);
 });
 
-describe('isCustomFieldKey', () => {
-  it('returns true for keys prefixed with the custom field prefix', () => {
-    expect(isCustomFieldKey('x_opencti_cf_score')).toBe(true);
-  });
-
-  it('returns false for keys not prefixed with the custom field prefix', () => {
-    expect(isCustomFieldKey('name')).toBe(false);
-  });
-});
-
 describe('findById / findCustomFieldDefinitionsPaginated / findCustomFieldDefinitionsForEntityType', () => {
   it('findById delegates to storeLoadById with the CustomFieldDefinition type', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(makeDefinition() as any);
@@ -125,19 +118,6 @@ describe('findById / findCustomFieldDefinitionsPaginated / findCustomFieldDefini
         filterGroups: [],
       },
     });
-  });
-
-  it('findCustomFieldDefinitionByName returns the node when found', async () => {
-    const def = makeDefinition({ name: 'x_opencti_cf_field' });
-    vi.mocked(MiddlewareLoader.pageEntitiesConnection).mockResolvedValue({ edges: [{ node: def }], pageInfo: {} } as any);
-    const result = await findCustomFieldDefinitionByName(mockContext, mockUser, 'x_opencti_cf_field');
-    expect(result).toEqual(def);
-  });
-
-  it('findCustomFieldDefinitionByName returns null when not found', async () => {
-    vi.mocked(MiddlewareLoader.pageEntitiesConnection).mockResolvedValue({ edges: [], pageInfo: {} } as any);
-    const result = await findCustomFieldDefinitionByName(mockContext, mockUser, 'x_opencti_cf_unknown');
-    expect(result).toBeNull();
   });
 });
 
@@ -186,6 +166,7 @@ describe('customFieldDefinitionAdd', () => {
     await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, name: 'invalid_name' }))
       .rejects.toThrow('Technical name must start with "x_opencti_cf_"');
     expect(Middleware.createEntity).not.toHaveBeenCalled();
+    expect(TelemetryManager.addCustomFieldCreatedCount).not.toHaveBeenCalled();
   });
 
   it('throws when the technical name already exists', async () => {
@@ -243,6 +224,7 @@ describe('customFieldDefinitionAdd', () => {
       message: 'creates custom field definition `x_opencti_cf_tags`',
     }));
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), created, mockUser);
+    expect(TelemetryManager.addCustomFieldCreatedCount).toHaveBeenCalledTimes(1);
   });
 
   it('respects the provided multiple flag for a non-multi_select field type', async () => {

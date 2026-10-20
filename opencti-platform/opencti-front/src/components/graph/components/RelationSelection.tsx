@@ -1,7 +1,7 @@
 import { SimplePaletteColorOptions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, MutableRefObject, useCallback, useEffect, useRef } from 'react';
+import React, { FunctionComponent, MutableRefObject, useEffect, useRef } from 'react';
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import type { Theme } from '../../Theme';
 import { GraphLink, GraphNode } from '../graph.types';
@@ -26,28 +26,16 @@ interface RelationSelectionProps {
   graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
 }
 
-interface Coord {
-  x: number;
-  y: number;
-}
-
-interface ContextHandlerProps {
-  ctx?: CanvasRenderingContext2D | null;
-  coord?: Coord;
-  freeHand?: boolean;
-  freePathCoords?: Coord[];
-  selectedNodes?: Set<GraphNode>;
-  graphDataNodes?: GraphNode[];
-  canvas?: HTMLCanvasElement;
-  theme?: Theme;
-  setSelectedNodes?: (nodes: Set<GraphNode>) => void;
-  activated?: boolean;
-  storeFreeSelectionFunction?: (event: MouseEvent) => void;
-  graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
-}
+type LineContext = CanvasRenderingContext2D & { reset: () => void };
 
 const DISTANCE = 5;
 
+/**
+ * Right-button drag from one node to another: draws the gesture and selects its first and last
+ * nodes to create a relationship between them. The gesture outlives the renders of the graph
+ * (hover, cards, panels): its state and the latest props are kept in references, and the document
+ * listeners are registered once while the gesture is available.
+ */
 const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
   width,
   height,
@@ -59,146 +47,117 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const lineRef = useRef<HTMLCanvasElement>(null);
+  const gesture = useRef({ freeHand: false, selectedNodes: new Set<GraphNode>() });
+  const latest = useRef({ graphDataNodes, setSelectedNodes, theme });
+  latest.current = { graphDataNodes, setSelectedNodes, theme };
 
-  let currentContext = lineRef.current?.getContext('2d') as CanvasRenderingContext2D & { reset: () => void };
-
-  const contextHandler = useRef<ContextHandlerProps>({});
-
-  const reposition = (event: MouseEvent) => {
-    const { left, top } = lineRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
-    return { x: event.pageX - left, y: event.pageY - top };
-  };
-
-  let freeHand = false;
-  let coord = { x: 0, y: 0 };
-  let freePathCoords: number[][] = [];
-  const selectedNodes = new Set<GraphNode>();
-
-  const startFreeHand = (e: MouseEvent, mouseMoveFunction: (e: MouseEvent) => void) => {
-    currentContext.reset();
-    if ((e.target as HTMLDivElement)?.tagName !== 'CANVAS' || !currentContext) {
-      return;
-    }
-    if (e.button !== 2) {
-      document.removeEventListener('mousemove', mouseMoveFunction);
-      return;
-    }
-    e.stopPropagation();
-    e.preventDefault();
-    document.addEventListener('mousemove', mouseMoveFunction);
-    freeHand = true;
-    coord = reposition(e);
-    currentContext.moveTo(coord.x, coord.y);
-    currentContext.lineWidth = 1;
-    currentContext.setLineDash([1, 3]);
-    currentContext.lineCap = 'round';
-    currentContext.strokeStyle = (theme.palette.success as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
-    currentContext.beginPath();
-    selectedNodes.clear();
-  };
-
-  const stopFreeHand = (e: MouseEvent, mouseMoveFunction: (e: MouseEvent) => void) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if ((e.target as HTMLDivElement)?.tagName !== 'CANVAS' || !currentContext) {
-      return;
-    }
-    if (e.button !== 2) {
-      document.removeEventListener('mousemove', mouseMoveFunction);
-      return;
-    }
-    document.removeEventListener('mousemove', mouseMoveFunction);
-    freeHand = false;
-    currentContext.closePath();
-    freePathCoords = [];
-    currentContext.setLineDash([]);
-    currentContext.reset();
-    if (selectedNodes.size > 1) {
-      const firstNode = Array.from(selectedNodes).at(0);
-      const lastNode = Array.from(selectedNodes).at(-1);
-
-      if (!firstNode || !lastNode || !graph.current) {
-        return;
-      }
-      const firstNodeCoords: Coord = graph.current.graph2ScreenCoords(firstNode.x, firstNode.y);
-      const lastNodeCoords: Coord = graph.current.graph2ScreenCoords(lastNode.x, lastNode.y);
-
-      currentContext.beginPath();
-      currentContext.strokeStyle = (theme.palette.success as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
-      coord = reposition(e);
-      currentContext.moveTo(firstNodeCoords.x, firstNodeCoords.y);
-      currentContext.lineTo(lastNodeCoords.x, lastNodeCoords.y);
-      currentContext.stroke();
-      currentContext.closePath();
-
-      setSelectedNodes(new Set([firstNode, lastNode]));
-    }
-  };
-
-  const storeFreeSelection = (e: MouseEvent) => {
-    if (freeHand && activated && graph.current) {
-      coord = reposition(e);
-      currentContext.lineTo(coord.x, coord.y);
+  useEffect(() => {
+    if (!activated) return undefined;
+    const lineContext = () => lineRef.current?.getContext('2d') as LineContext | null | undefined;
+    const strokeColor = () => (latest.current.theme.palette.success as SimplePaletteColorOptions)?.main ?? latest.current.theme.palette.common.white;
+    // The canvas box and the pointer, both in viewport coordinates: a scrolled page offsets neither.
+    const reposition = (event: MouseEvent) => {
       const { left, top } = lineRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };
-      const coords: Coord = graph.current.screen2GraphCoords(e.pageX - left, e.pageY - top);
-      graphDataNodes?.forEach((g) => {
-        const a = g.x - coords.x;
-        const b = g.y - coords.y;
-        const c = Math.sqrt(a * a + b * b);
-        if (c < DISTANCE) {
-          selectedNodes.add(g);
+      return { x: event.clientX - left, y: event.clientY - top };
+    };
+    // The canvases of this graph, the drawing and its overlays, share the parent of this one.
+    const isGraphCanvas = (target: EventTarget | null) => target instanceof HTMLCanvasElement
+      && !!lineRef.current?.parentElement?.contains(target);
+
+    /** Adds the nodes under the pointer to the ones the drag passed over. */
+    const pickNodesAt = (coord: { x: number; y: number }) => {
+      if (!graph.current) return;
+      const coords = graph.current.screen2GraphCoords(coord.x, coord.y);
+      latest.current.graphDataNodes.forEach((node) => {
+        if (Math.hypot(node.x - coords.x, node.y - coords.y) < DISTANCE) {
+          gesture.current.selectedNodes.add(node);
         }
       });
-      freePathCoords.push([coords.x, coords.y]);
-      currentContext.stroke();
-    }
-  };
-
-  const storeFreeSelectionFunction = useCallback((event: MouseEvent) => {
-    storeFreeSelection(event);
-  }, [graph, activated, graphDataNodes]);
-  const stopFreeHandFunction = useCallback((event: MouseEvent) => {
-    stopFreeHand(event, storeFreeSelectionFunction);
-  }, [graph, activated, graphDataNodes]);
-  const startFreeHandFunction = useCallback((event: MouseEvent) => {
-    startFreeHand(event, storeFreeSelectionFunction);
-  }, [graph, activated, graphDataNodes]);
-
-  const contextEvent = useCallback((e: MouseEvent) => e.preventDefault(), []);
-  useEffect(() => {
-    if (lineRef.current) {
-      contextHandler.current = {
-        ctx: currentContext,
-        coord: { x: 0, y: 0 },
-        freeHand: false,
-        freePathCoords: [],
-        selectedNodes: new Set(),
-        graphDataNodes,
-        canvas: lineRef.current,
-        theme,
-        setSelectedNodes,
-        activated,
-        storeFreeSelectionFunction,
-        graph,
-      };
-      currentContext = lineRef.current?.getContext('2d') as CanvasRenderingContext2D & { reset: () => void };
-    }
-    if (activated) {
-      document.addEventListener('mousedown', startFreeHandFunction);
-      document.addEventListener('mouseup', stopFreeHandFunction);
-      document.addEventListener('contextmenu', contextEvent);
-    } else {
-      document.removeEventListener('mousedown', startFreeHandFunction);
-      document.removeEventListener('mouseup', stopFreeHandFunction);
-      document.removeEventListener('mousemove', storeFreeSelectionFunction);
-    }
-    return () => {
-      document.removeEventListener('mousedown', startFreeHandFunction);
-      document.removeEventListener('mouseup', stopFreeHandFunction);
-      document.removeEventListener('mousemove', storeFreeSelectionFunction);
-      document.removeEventListener('contextmenu', contextEvent);
     };
-  }, [activated, graphDataNodes, graph]);
+
+    const onMove = (event: MouseEvent) => {
+      const ctx = lineContext();
+      if (!gesture.current.freeHand || !graph.current || !ctx) return;
+      const coord = reposition(event);
+      ctx.lineTo(coord.x, coord.y);
+      pickNodesAt(coord);
+      ctx.stroke();
+    };
+
+    const onDown = (event: MouseEvent) => {
+      const ctx = lineContext();
+      ctx?.reset();
+      if (!isGraphCanvas(event.target) || !ctx) {
+        return;
+      }
+      if (event.button !== 2) {
+        document.removeEventListener('mousemove', onMove);
+        return;
+      }
+      event.stopPropagation();
+      event.preventDefault();
+      document.addEventListener('mousemove', onMove);
+      gesture.current.freeHand = true;
+      gesture.current.selectedNodes.clear();
+      const coord = reposition(event);
+      // The node under the press starts the relationship, however far the first move lands.
+      pickNodesAt(coord);
+      ctx.lineWidth = 1;
+      ctx.setLineDash([1, 3]);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = strokeColor();
+      ctx.beginPath();
+      ctx.moveTo(coord.x, coord.y);
+    };
+
+    // Only the release of a right-button drag in progress is this gesture's, wherever it happens;
+    // every other release on the page goes on untouched.
+    const onUp = (event: MouseEvent) => {
+      if (!gesture.current.freeHand || event.button !== 2) return;
+      event.stopPropagation();
+      event.preventDefault();
+      document.removeEventListener('mousemove', onMove);
+      // The node under the release ends the relationship, however far the last move landed.
+      pickNodesAt(reposition(event));
+      gesture.current.freeHand = false;
+      const ctx = lineContext();
+      if (!ctx) return;
+      ctx.closePath();
+      ctx.setLineDash([]);
+      ctx.reset();
+      const nodes = Array.from(gesture.current.selectedNodes);
+      const firstNode = nodes.at(0);
+      const lastNode = nodes.at(-1);
+      if (nodes.length < 2 || !firstNode || !lastNode || !graph.current) {
+        return;
+      }
+      const firstNodeCoords = graph.current.graph2ScreenCoords(firstNode.x, firstNode.y);
+      const lastNodeCoords = graph.current.graph2ScreenCoords(lastNode.x, lastNode.y);
+      ctx.beginPath();
+      ctx.strokeStyle = strokeColor();
+      ctx.moveTo(firstNodeCoords.x, firstNodeCoords.y);
+      ctx.lineTo(lastNodeCoords.x, lastNodeCoords.y);
+      ctx.stroke();
+      ctx.closePath();
+      latest.current.setSelectedNodes(new Set([firstNode, lastNode]));
+    };
+
+    // The right button drags over the graph only: the rest of the page keeps its context menu.
+    const onContextMenu = (event: MouseEvent) => {
+      if (isGraphCanvas(event.target)) event.preventDefault();
+    };
+
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('contextmenu', onContextMenu);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('contextmenu', onContextMenu);
+      gesture.current.freeHand = false;
+    };
+  }, [activated, graph]);
 
   return (
     <canvas

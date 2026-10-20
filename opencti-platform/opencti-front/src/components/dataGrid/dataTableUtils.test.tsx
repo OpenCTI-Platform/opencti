@@ -50,3 +50,22 @@ describe('dataTableUtils default columns — tooltip anchors', () => {
     expect(await screen.findByRole('tooltip')).toHaveTextContent('Debian 12');
   });
 });
+
+describe('dataTableUtils default columns, allowed markings', () => {
+  it('shows one marking chip and lists the others in the tooltip', async () => {
+    const { user } = renderColumn('allowed_markings', {
+      allowed_markings: [
+        { id: 'm1', definition: 'PAP:RED' },
+        { id: 'm2', definition: 'TLP:AMBER' },
+        { id: 'm3', definition: 'PAP:AMBER' },
+      ],
+    });
+    expect(screen.getByText('PAP:RED')).toBeInTheDocument();
+    expect(screen.queryByText('TLP:AMBER')).not.toBeInTheDocument();
+    expect(screen.queryByText('PAP:AMBER')).not.toBeInTheDocument();
+    await user.hover(screen.getByText('PAP:RED'));
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent('TLP:AMBER');
+    expect(tooltip).toHaveTextContent('PAP:AMBER');
+  });
+});
