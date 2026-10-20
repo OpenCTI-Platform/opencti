@@ -11,6 +11,10 @@ export default defineConfig({
     // files: per-file isolation spent most of the run re-importing them.
     // setup-vitest.ts resets modules, mocks and globals before each file.
     isolate: false,
+    // A worker now lives for the whole run. Without a cap of its own it
+    // inherits the main process heap limit (8 GB in CI) and V8 collects so
+    // lazily that four workers fill the runner. Live heap stays under 1 GB.
+    execArgv: ['--max-old-space-size=2048'],
     // UI tests driven through user-event run ~10x slower on the CI runner
     // (coverage, 4 shared vCPUs) than locally, and the 5 s default trips on a
     // few of them. 15 s still flags a real hang.
