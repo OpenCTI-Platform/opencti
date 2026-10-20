@@ -9,7 +9,16 @@ import { getClientBase, localAuthLockoutKeys } from '../../../../src/database/re
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { getSettingsFromDatabase } from '../../../../src/domain/settings';
 import { updateLocalAuth } from '../../../../src/domain/setting-auth';
-import { addUser, authenticateUserByBasicAuth, authenticateUserFromRequest, login, sessionLogin, userDelete, userEditField } from '../../../../src/modules/user/user-domain';
+import {
+  addUser,
+  authenticateUserByBasicAuth,
+  authenticateUserFromRequest,
+  login,
+  sessionAuthenticateUser,
+  sessionLogin,
+  userDelete,
+  userEditField,
+} from '../../../../src/modules/user/user-domain';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
 import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 import { hashSHA256 } from '../../../../src/utils/hash';
@@ -320,6 +329,23 @@ describe('Local authentication lockout', () => {
       await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+    });
+
+    it('should reset the lockout on an SSO login', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+      // OIDC, SAML, certificate and headers logins all end with a session login
+      await sessionAuthenticateUser(testContext, buildRequest(), { id: createdUserIds[0], internal_id: createdUserIds[0] }, 'oidc');
+      const user = await login(LOCKOUT_USER.email, LOCKOUT_USER.password);
+      expect(user.user_email).toEqual(LOCKOUT_USER.email);
+    });
+
+    it('should reset the lockout when an administrator sets the account back to Active', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+      await userEditField(testContext, ADMIN_USER, createdUserIds[0], [{ key: 'account_status', value: ['Active'] }]);
+      const user = await login(LOCKOUT_USER.email, LOCKOUT_USER.password);
+      expect(user.user_email).toEqual(LOCKOUT_USER.email);
     });
 
     it('should not reset anything when the password is right but the IP is not allowed', async () => {
