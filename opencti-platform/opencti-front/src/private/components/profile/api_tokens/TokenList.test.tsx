@@ -84,7 +84,7 @@ describe('Component: TokenList', () => {
     expect(within(dialog).getByText('Test Token 1')).toBeInTheDocument();
 
     // Confirm revocation
-    await user.click(screen.getByText('Revoke'));
+    await user.click(within(dialog).getByRole('button', { name: 'Revoke' }));
 
     expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
       variables: { id: 'token-1' },
