@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import { Field } from 'formik';
 import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
@@ -110,7 +110,11 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
       : []),
   ] : [];
   const [members, setMembers] = useState<OptionMember[]>(dynamicMembers);
+  // Only the latest search may update the options, older responses can resolve out of order
+  const lastSearchId = useRef(0);
   const searchMembers = (search: string) => {
+    lastSearchId.current += 1;
+    const searchId = lastSearchId.current;
     fetchQuery(objectMembersFieldSearchQuery, {
       search,
       first: 50,
@@ -118,6 +122,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
     })
       .toPromise()
       .then((data) => {
+        if (searchId !== lastSearchId.current) return;
         const NewMembers = (
           (data as ObjectMembersFieldSearchQuery$data)?.members?.edges ?? []
         ).map((n) => ({
@@ -125,7 +130,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
           value: n?.node.id,
           type: n?.node.entity_type,
         })).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
-        const templateValues = [...members, ...NewMembers];
+        const templateValues = [...dynamicMembers, ...NewMembers];
         // Keep only the unique list of options
         const uniqTemplates = templateValues.filter((item, index) => {
           return (
@@ -134,6 +139,13 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         });
         setMembers(uniqTemplates);
       });
+  };
+  // Backend results are already filtered by the search, only the static dynamic options need client filtering
+  const filterOptions = (options: OptionMember[], inputValue: string) => {
+    const needle = inputValue.trim().toLowerCase();
+    if (!needle) return options;
+    const dynamicValues = new Set(dynamicMembers.map((m) => m.value));
+    return options.filter((o) => !dynamicValues.has(o.value) || o.label.toLowerCase().includes(needle));
   };
   return (
     <div style={{ width: '100%' }}>
@@ -151,6 +163,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={members}
+        filterOptions={filterOptions}
         groupBy={(option: OptionMember) => option.type}
         onInputChange={(search: string, meta: ComboboxChangeMeta) => {
           if (meta.cause === 'type') searchMembers(search);

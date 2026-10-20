@@ -56,6 +56,9 @@ import { getBestBackgroundConnectorId, pushBundleToWorker } from '../database/ra
 import { updateProcessedTime } from '../domain/work';
 import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
+import { getCustomFieldDefinitions, isCustomFieldDefinitionOfEntityType } from '../modules/customField/custom-field-cache';
+import { buildCustomFieldTaskInputs } from '../modules/customField/custom-field-task';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
@@ -130,7 +133,7 @@ export const taskList = async (context, user, task, callback) => {
     includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
-  callback(elements);
+  await callback(elements);
 };
 
 const throwErrorInDraftContext = (context, user, actionType) => {
@@ -156,12 +159,20 @@ const isUnshareAction = (actionType) => {
   return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
 };
 
-export const baseOperationBuilder = (actionType, operations, element) => {
+export const baseOperationBuilder = (actionType, operations, element, customFieldDefinitions = []) => {
   const baseOperationObject = {};
   // Knowledge management
   if (actionType === 'KNOWLEDGE_CHANGE') {
     baseOperationObject.opencti_operation = 'patch';
-    baseOperationObject.opencti_field_patch = operations.map((action) => {
+    baseOperationObject.opencti_field_patch = operations.flatMap((action) => {
+      // Custom fields are edited through custom_field_values, only on the elements whose type carries them
+      if (action.context.field?.startsWith(CUSTOM_FIELD_PREFIX)) {
+        const definition = customFieldDefinitions.find((d) => d.name === action.context.field);
+        if (!definition || !isCustomFieldDefinitionOfEntityType(definition, element.entity_type)) {
+          return [];
+        }
+        return buildCustomFieldTaskInputs(definition, action.type, action.context.values ?? []);
+      }
       let attrKey = action.context.field;
       if (action.context.type === 'RELATION') {
         attrKey = schemaRelationsRefDefinition
@@ -223,6 +234,7 @@ export const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES) {
     baseOperationObject.opencti_operation = 'add_related_covered_entities';
     baseOperationObject.security_coverage_result_id = operations[0].id;
+    baseOperationObject.relationships_config = operations[0].relationships_config;
   }
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
@@ -286,7 +298,7 @@ export const sendResultToQueue = async (context, user, task, objects, opts = {})
   }
 };
 
-const buildBundleElement = (element, actionType, operations) => {
+const buildBundleElement = (element, actionType, operations, customFieldDefinitions = []) => {
   const baseObject = {
     id: element.standard_id,
     type: convertTypeToStixType(element.entity_type),
@@ -294,7 +306,7 @@ const buildBundleElement = (element, actionType, operations) => {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
         type: element.entity_type,
-        ...baseOperationBuilder(actionType, operations, element),
+        ...baseOperationBuilder(actionType, operations, element, customFieldDefinitions),
       },
     },
   };
@@ -311,21 +323,33 @@ const buildBundleElement = (element, actionType, operations) => {
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
   let totalProcessed = task.task_processed_number;
-  return async (elements) => {
+  const hasCustomFieldActions = operations.some((action) => action.context?.field?.startsWith(CUSTOM_FIELD_PREFIX));
+  const customFieldDefinitions = hasCustomFieldActions ? await getCustomFieldDefinitions(context, user) : [];
+  let hasQueuedWork = false;
+  const callback = async (elements) => {
     // Build limited stix object to limit memory footprint
     const objects = [];
     for (let index = 0; index < elements.length; index += 1) {
       await doYield();
       const e = elements[index];
-      const object = buildBundleElement(e, actionType, operations);
-      objects.push(object);
+      const object = buildBundleElement(e, actionType, operations, customFieldDefinitions);
+      // An element without any change to apply (e.g. its type does not carry the custom field) is skipped
+      const fieldPatch = object.extensions[STIX_EXT_OCTI].opencti_field_patch;
+      if (!Array.isArray(fieldPatch) || fieldPatch.length > 0) {
+        objects.push(object);
+      }
     }
     // Send actions to queue
-    await sendResultToQueue(context, user, task, objects);
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+      hasQueuedWork = true;
+    }
     // Update task
     totalProcessed += elements.length;
     await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
+  callback.hasQueuedWork = () => hasQueuedWork;
+  return callback;
 };
 
 export const buildContainersElementsBundle = async (context, user, containers, elements, withNeighbours, operationType) => {
@@ -615,7 +639,7 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   return standardOperationCallback(context, user, task, actionType, operations);
 };
 
-const workerTaskHandler = async (context, user, task, actionType, operations) => {
+export const workerTaskHandler = async (context, user, task, actionType, operations) => {
   // Generate the right callback
   const callback = await computeOperationCallback(context, user, task, actionType, operations);
   // Handle queries and list
@@ -633,6 +657,11 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   if (task.type === TASK_TYPE_RULE) {
     // Task rule is enlist step by step
     await taskRule(context, user, task, callback);
+  }
+  // Elements can have nothing to apply (e.g. a custom field their type does not carry): when the whole task sent
+  // nothing to the workers, its work is completed here, otherwise it would stay in progress
+  if (task.work_id && callback.hasQueuedWork?.() === false) {
+    await updateProcessedTime(context, user, task.work_id, 'No change to apply');
   }
   return updateTask(context, task.id, { completed: true });
 };

@@ -26,6 +26,8 @@ import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { toStixReportBundle } from './investigation-domain';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreator } from '../../database/members';
+import { workspaceVariableDelete, workspaceVariableUpsert } from './workspace-variables-domain';
+import { toGraphqlDashboardVariables } from './workspace-variables-utils';
 
 const workspaceResolvers: Resolvers = {
   Query: {
@@ -44,6 +46,7 @@ const workspaceResolvers: Resolvers = {
     toConfigurationExport: (workspace, _, context) => generateWorkspaceExportConfiguration(context, context.user, workspace),
     toWidgetExport: (workspace, { widgetId }, context) => generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
     isShared: (workspace, _, context) => isDashboardShared(context, workspace),
+    variables: (workspace) => toGraphqlDashboardVariables(workspace),
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {
@@ -75,6 +78,12 @@ const workspaceResolvers: Resolvers = {
     },
     workspaceWidgetConfigurationImport: (_, { id, input }, context) => {
       return workspaceImportWidgetConfiguration(context, context.user, id, input);
+    },
+    workspaceVariableUpsert: (_, { id, input }, context) => {
+      return workspaceVariableUpsert(context, context.user, id, input);
+    },
+    workspaceVariableDelete: (_, { id, variableId }, context) => {
+      return workspaceVariableDelete(context, context.user, id, variableId);
     },
   },
   Subscription: {

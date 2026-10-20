@@ -5,7 +5,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { THREAT_PULSE_FACTS_GRID_SX, THREAT_PULSE_FOOTER_SX } from './ThreatPulseCardSignal';
 
 // The layout of the published signal while the community data loads, so that the card does not jump when it arrives.
-// FDS-WORKAROUND #67: the library ships no Skeleton - see fds-migration/LIBRARY-FEEDBACK.md #67.
+// FDS-WORKAROUND #71: the library ships no Skeleton - see fds-migration/LIBRARY-FEEDBACK.md #71.
 const ThreatPulseCardSkeleton = () => {
   const { t_i18n } = useFormatter();
   return (

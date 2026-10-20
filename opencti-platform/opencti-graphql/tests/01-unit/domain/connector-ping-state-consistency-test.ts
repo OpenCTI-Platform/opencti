@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { pingConnector, resetStateConnector } from '../../../src/domain/connector';
+import { pingConnector, resetStateConnector } from '../../../src/modules/connector/connector-domain';
 import { patchAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
-import { registerConnectorQueues, purgeConnectorQueues } from '../../../src/database/rabbitmq';
+import { registerConnectorQueues, purgeConnectorQueues } from '../../../src/modules/connector/connector-rabbitmq';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
@@ -35,7 +35,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   pageEntitiesConnection: vi.fn(),
 }));
 
-vi.mock('../../../src/database/rabbitmq', () => ({
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(),
   getConnectorQueueDetails: vi.fn(),
@@ -44,8 +44,8 @@ vi.mock('../../../src/database/rabbitmq', () => ({
   connectorConfig: vi.fn().mockReturnValue({}),
 }));
 
-vi.mock('../../../src/database/redis', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../src/database/redis')>()),
+vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/connector/connector-redis')>()),
   redisSetConnectorHeartbeat: vi.fn(),
   redisGetConnectorHeartbeat: vi.fn().mockResolvedValue(null),
 }));
@@ -102,5 +102,36 @@ describe('pingConnector / resetStateConnector state consistency', () => {
 
     expect(result.connector_state).toBe('');
     expect(result.connector_state_reset).toBe(true);
+  });
+});
+
+describe('pingConnector', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // clearAllMocks keeps the queued once values, which the tests above can leave unconsumed
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(patchAttribute).mockReset();
+    vi.mocked(registerConnectorQueues).mockResolvedValue(undefined as never);
+  });
+
+  it('should reject a ping from an unknown connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce(undefined as never);
+
+    await expect(pingConnector(testContext, testUser, 'unknown-connector', 'state', undefined as never))
+      .rejects.toThrow('No connector found with the specified ID');
+    expect(registerConnectorQueues).not.toHaveBeenCalled();
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should only acknowledge a pending state reset instead of writing the pinged state', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ ...baseConnector, connector_state: '', connector_state_reset: true } as never);
+    vi.mocked(patchAttribute).mockResolvedValueOnce({
+      element: { ...baseConnector, connector_state: '', connector_state_reset: false },
+    } as never);
+
+    const result = await pingConnector(testContext, testUser, 'connector-1', 'state-before-reset', undefined as never);
+
+    expect(patchAttribute).toHaveBeenCalledWith(testContext, testUser, 'connector-1', 'Connector', { connector_state_reset: false });
+    expect(result.connector_state).toBe('');
   });
 });

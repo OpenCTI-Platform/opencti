@@ -1,9 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { connectorDelete, pingConnector, registerConnector, updateConnectorRequestedStatus } from '../../../src/domain/connector';
-import { connector, connectors, isConnectorActive } from '../../../src/database/repository';
+import {
+  connector,
+  connectorDelete,
+  connectors,
+  connectorsForCache,
+  isConnectorActive,
+  pingConnector,
+  refreshConnectorsLiveness,
+  registerConnector,
+  updateConnectorRequestedStatus,
+} from '../../../src/modules/connector/connector-domain';
+import { builtInConnectorsRuntime } from '../../../src/modules/connector/connector-built-in-domain';
 import { createEntity, internalDeleteElementById, patchAttribute, updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById, topEntitiesList } from '../../../src/database/middleware-loader';
-import { notify, redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat, redisGetConnectorsHeartbeats, redisSetConnectorHeartbeat } from '../../../src/database/redis';
+import { notify } from '../../../src/database/redis';
+import {
+  redisDeleteConnectorHeartbeat,
+  redisGetConnectorHeartbeat,
+  redisGetConnectorsHeartbeats,
+  redisSetConnectorHeartbeat,
+} from '../../../src/modules/connector/connector-redis';
 import { ConnectorType } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
@@ -31,7 +47,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   topEntitiesList: vi.fn(),
 }));
 
-vi.mock('../../../src/database/rabbitmq', () => ({
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(),
   getConnectorQueueDetails: vi.fn(),
@@ -43,14 +59,18 @@ vi.mock('../../../src/database/rabbitmq', () => ({
 vi.mock('../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/redis')>()),
   notify: vi.fn(),
+}));
+
+vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/connector/connector-redis')>()),
   redisSetConnectorHeartbeat: vi.fn(),
   redisGetConnectorHeartbeat: vi.fn(),
   redisGetConnectorsHeartbeats: vi.fn(),
   redisDeleteConnectorHeartbeat: vi.fn(),
 }));
 
-vi.mock('../../../src/connector/connector-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../src/connector/connector-domain')>()),
+vi.mock('../../../src/modules/connector/connector-built-in-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/connector/connector-built-in-domain')>()),
   builtInConnectorsRuntime: vi.fn().mockResolvedValue([]),
 }));
 
@@ -199,6 +219,60 @@ describe('built-in connectors liveness', () => {
 
     expect(result.last_seen_at).toBeNull();
     expect(result.active).toBe(false);
+  });
+});
+
+// OpenCTI-Platform/opencti#18853: the connectors cache holds a snapshot of `active`,
+// its consumers refresh it from the current heartbeats.
+describe('refreshConnectorsLiveness', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should recompute liveness from the current heartbeats, whatever the cached value', async () => {
+    const deadConnector = { ...baseConnector, id: 'dead', internal_id: 'dead', active: true, last_seen_at: minutesAgo(1) };
+    const backConnector = { ...baseConnector, id: 'back', internal_id: 'back', active: false, last_seen_at: null };
+    const recentHeartbeat = minutesAgo(0);
+    vi.mocked(redisGetConnectorsHeartbeats).mockResolvedValueOnce(new Map([['dead', minutesAgo(10)], ['back', recentHeartbeat]]));
+
+    const [dead, back] = await refreshConnectorsLiveness([deadConnector, backConnector]);
+
+    expect(dead.active).toBe(false);
+    expect(back.active).toBe(true);
+    expect(back.last_seen_at).toBe(recentHeartbeat);
+  });
+
+  it('should keep the active flag of built-in connectors, and ignore any heartbeat', async () => {
+    vi.mocked(redisGetConnectorsHeartbeats).mockResolvedValueOnce(new Map([['connector-1', minutesAgo(0)]]));
+
+    const [builtIn] = await refreshConnectorsLiveness([{ ...baseConnector, built_in: true, active: false }]);
+
+    expect(builtIn.active).toBe(false);
+    expect(builtIn.last_seen_at).toBeNull();
+  });
+
+  it('should not read heartbeats without connectors', async () => {
+    expect(await refreshConnectorsLiveness([])).toEqual([]);
+    expect(redisGetConnectorsHeartbeats).not.toHaveBeenCalled();
+  });
+});
+
+describe('connectorsForCache', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should hold no liveness, except the configured active flag of built-in connectors', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([{ ...baseConnector, active: true }] as never);
+    vi.mocked(builtInConnectorsRuntime).mockResolvedValueOnce([{ ...baseConnector, id: 'built-in', internal_id: 'built-in', built_in: true, active: true }] as never);
+
+    const [cached, builtIn] = await connectorsForCache(testContext, testUser);
+
+    expect(cached).not.toHaveProperty('active');
+    expect(cached).not.toHaveProperty('last_seen_at');
+    expect(cached.connector_scope).toEqual(['Report']);
+    expect(builtIn).toHaveProperty('active', true);
+    expect(redisGetConnectorsHeartbeats).not.toHaveBeenCalled();
   });
 });
 

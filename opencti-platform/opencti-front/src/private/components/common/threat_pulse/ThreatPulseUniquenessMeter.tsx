@@ -13,8 +13,8 @@ interface ThreatPulseUniquenessMeterProps {
 /**
  * The community uniqueness of an object on its 0-100 scale: 0 when the whole community holds it, 100 when fewer
  * platforms than the anonymity threshold do. A tick marks the score, so that 0 still reads as a position on the scale.
- * FDS-WORKAROUND #67: the library ProgressBar is a progressbar by contract and has no meter - see
- * fds-migration/LIBRARY-FEEDBACK.md #67.
+ * FDS-WORKAROUND #71: the library ProgressBar is a progressbar by contract and has no meter - see
+ * fds-migration/LIBRARY-FEEDBACK.md #71.
  */
 const ThreatPulseUniquenessMeter = ({ score, meaning }: ThreatPulseUniquenessMeterProps) => {
   const theme = useTheme();

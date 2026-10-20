@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { isFilterGroupNotEmptyShallow, mapFilterGroupTree, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 
@@ -33,13 +33,16 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   setFilterChipsParams,
   ...shared
 }) => {
-  const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
+  const latestQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     {
       filters: normalizeFilterGroupForBackend(filters),
       isMeValueForbidden: shared.searchContext?.elementType === 'Playbook-Stix-Component',
     },
   );
+
+  const filtersRepresentativesQueryRef = useDeferredValue(latestQueryRef);
+
   return (
     <>
       {filtersRepresentativesQueryRef && (
