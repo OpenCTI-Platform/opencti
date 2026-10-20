@@ -13,9 +13,9 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 22;
+testCreatedCounter['attack-pattern'] = 25;
 testCreatedCounter.campaign = 6;
-testCreatedCounter['case-incident'] = 9;
+testCreatedCounter['case-incident'] = 18;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
@@ -23,29 +23,32 @@ testCreatedCounter['course-of-action'] = 4;
 testCreatedCounter.credential = 1;
 testCreatedCounter['data-component'] = 2;
 testCreatedCounter['data-source'] = 2;
+testCreatedCounter.directory = 3; // created and deleted by stixRefRelationships-test
 testCreatedCounter['email-addr'] = 1;
 testCreatedCounter.event = 2;
 testCreatedCounter['external-reference'] = 17;
 testCreatedCounter.feedback = 2;
-testCreatedCounter.file = 10;
+testCreatedCounter.file = 11;
 testCreatedCounter.grouping = 2;
 testCreatedCounter.iccid = 4;
-testCreatedCounter.identity = 56;
+testCreatedCounter.identity = 58;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
 testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
+// Counts for:
+// - 2 created and deleted by enrichment-liveness-test
 // + 4 created by timeMachine-test
-testCreatedCounter['intrusion-set'] = 10;
+testCreatedCounter['intrusion-set'] = 12;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
 testCreatedCounter.language = 1;
-testCreatedCounter.location = 21;
+testCreatedCounter.location = 22;
 testCreatedCounter['mac-addr'] = 1;
 // + 1 created by timeMachine-test
-testCreatedCounter.malware = 64;
+testCreatedCounter.malware = 66;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
@@ -58,10 +61,10 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // + 2 created by timeMachine-test
-testCreatedCounter.relationship = 148;
+testCreatedCounter.relationship = 149;
 // + 1 created by timeMachine-test
-testCreatedCounter.report = 58;
-testCreatedCounter.sighting = 4;
+testCreatedCounter.report = 60;
+testCreatedCounter.sighting = 5;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
@@ -69,25 +72,27 @@ testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
-testCreatedCounter['security-coverage'] = 24;
-testCreatedCounter['security-coverage-result'] = 21;
+// Counts for:
+// - 2 created and deleted by enrichment-liveness-test
+testCreatedCounter['security-coverage'] = 27;
+testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
 // + 1 updated by timeMachine-test (marking added to a relationship)
-testUpdatedCounter.relationship = 9;
+testUpdatedCounter.relationship = 10;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
-testUpdatedCounter.malware = 20;
-testUpdatedCounter.file = 19;
+testUpdatedCounter.malware = 22;
+testUpdatedCounter.file = 27;
 // + 2 updated by timeMachine-test
 testUpdatedCounter['intrusion-set'] = 7;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
-testUpdatedCounter['case-incident'] = 13;
+testUpdatedCounter['case-incident'] = 18;
 testUpdatedCounter.feedback = 1;
-testUpdatedCounter.report = 20;
+testUpdatedCounter.report = 28;
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
@@ -116,6 +121,7 @@ testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
 testUpdatedCounter.imsi = 1;
 testUpdatedCounter['security-coverage'] = 1;
+testUpdatedCounter['security-coverage-result'] = 4;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 5;
@@ -124,37 +130,41 @@ testMergedCounter.report = 3;
 testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
+testMergedCounter['case-incident'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 17;
+testDeletedCounter['attack-pattern'] = 20;
 testDeletedCounter.campaign = 2;
-testDeletedCounter['case-incident'] = 9;
+testDeletedCounter['case-incident'] = 16;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
 testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;
 testDeletedCounter['data-source'] = 2;
+testDeletedCounter.directory = 3; // created and deleted by stixRefRelationships-test
 testDeletedCounter['email-addr'] = 1;
 testDeletedCounter.event = 2;
 testDeletedCounter['external-reference'] = 1;
 testDeletedCounter.feedback = 2;
-testDeletedCounter.file = 6;
+testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
-testDeletedCounter.identity = 39;
+testDeletedCounter.identity = 41;
 testDeletedCounter.incident = 6;
 testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
+// Counts for:
+// - 2 created and deleted by enrichment-liveness-test
 // + 4 deleted by timeMachine-test
-testDeletedCounter['intrusion-set'] = 9;
+testDeletedCounter['intrusion-set'] = 11;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
-testDeletedCounter.location = 16;
+testDeletedCounter.location = 17;
 testDeletedCounter['mac-addr'] = 1;
 // + 1 deleted by timeMachine-test
-testDeletedCounter.malware = 37;
+testDeletedCounter.malware = 39;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 13;
 testDeletedCounter.narrative = 1;
@@ -165,10 +175,10 @@ testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 // + 1 deleted by timeMachine-test
-testDeletedCounter.relationship = 5;
+testDeletedCounter.relationship = 6;
 // + 1 deleted by timeMachine-test
-testDeletedCounter.report = 49;
-testDeletedCounter.sighting = 1;
+testDeletedCounter.report = 51;
+testDeletedCounter.sighting = 2;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
@@ -178,8 +188,10 @@ testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
-testDeletedCounter['security-coverage'] = 22;
-testDeletedCounter['security-coverage-result'] = 19;
+// Counts for:
+// - 2 created and deleted by enrichment-liveness-test
+testDeletedCounter['security-coverage'] = 25;
+testDeletedCounter['security-coverage-result'] = 20;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);

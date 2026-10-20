@@ -66,6 +66,15 @@ plugins:
       enable_creation_date: true
       type: timeago
   - glightbox
+  - macros:
+      module_name: macros
+      render_by_default: false
+      on_undefined: strict
+      on_error_fail: true
+
+# Images are stored once at the gh-pages root, shared by all docs versions
+hooks:
+  - hooks/shared_assets.py
 
 # Extensions
 markdown_extensions:
@@ -106,6 +115,10 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.snippets:
       url_download: true
+
+draft_docs: |
+  feature-flags/
+  _*.md
 
 # Page tree
 nav:
@@ -179,6 +192,7 @@ nav:
         - Techniques: usage/exploring-techniques.md
         - Entities: usage/exploring-entities.md
         - Locations: usage/exploring-locations.md
+      - Work with graphs: usage/graphs.md
       - Pivot and investigate: usage/pivoting.md
       - Time machine and landscape changes: usage/time-machine.md
     - Create knowledge:

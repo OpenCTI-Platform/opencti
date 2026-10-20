@@ -14,7 +14,8 @@ const DisabledReasonTooltip = ({ reason, children }: DisabledReasonTooltipProps)
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        {/* A disabled button receives no pointer or focus events: the wrapper takes them */}
+        {/* FDS-WORKAROUND #68: a disabled library Button cannot trigger its own tooltip, so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span tabIndex={0} style={{ display: 'inline-flex' }}>{children}</span>
       </TooltipTrigger>
       <TooltipContent>{reason}</TooltipContent>

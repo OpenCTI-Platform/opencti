@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import axios, { type AxiosInstance } from 'axios';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { getHttpClient } from '../../../src/utils/http-client';
 
 // WEBHOOK_TIMEOUT is computed once at module import time from conf.get(...), so the override
 // must be in place before publisherManager.ts is imported (vi.mock is hoisted above imports).
@@ -14,19 +14,18 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
   };
 });
 
+const { mockedCall } = vi.hoisted(() => ({ mockedCall: vi.fn() }));
+vi.mock('../../../src/utils/http-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/utils/http-client')>()),
+  getHttpClient: vi.fn(() => ({ call: mockedCall })),
+}));
+
 // Import after the mock so the module picks up the overridden config value.
 const { handleWebhookNotification } = await import('../../../src/manager/publisherManager');
 
 describe('handleWebhookNotification webhook timeout configuration', () => {
-  const mockedAxiosInstance = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(axios, 'create').mockReturnValue(mockedAxiosInstance as unknown as AxiosInstance);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   it('should use the timeout configured via publisher_manager:webhook_timeout instead of the hardcoded default', async () => {
@@ -35,11 +34,11 @@ describe('handleWebhookNotification webhook timeout configuration', () => {
       verb: 'POST',
       template: '{}',
     });
-    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'success' });
+    mockedCall.mockResolvedValue({ status: 200, data: 'success' });
 
     await handleWebhookNotification(configurationString, {});
 
-    expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({ timeout: 9999 }));
+    expect(getHttpClient).toHaveBeenCalledWith(expect.objectContaining({ timeout: 9999 }));
   });
 
   it('hands the signal of its sending to the webhook call, so that aborting the sending cancels the call', async () => {

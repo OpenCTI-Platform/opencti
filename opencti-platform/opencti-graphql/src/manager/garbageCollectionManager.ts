@@ -1,12 +1,18 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { GARBAGE_COLLECTION_MANAGER_USER, executionContext } from '../utils/access';
+import { GARBAGE_COLLECTION_MANAGER_USER, executionContext, SYSTEM_USER } from '../utils/access';
 import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
 import { rawFetchStreamInfo, STREAM_FILE_DIRECTORY } from '../database/redis-stream';
 import { loadedFilesListing } from '../database/file-storage';
 import { deleteFileFromStorage } from '../database/raw-file-storage';
 import type { AuthContext } from '../types/user';
 import type { ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
+import { elDeleteElements, elDeleteInstances, elFindByIds } from '../database/engine';
+import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from '../database/utils';
+import { lockResources } from '../lock/master-lock';
+import { elUpdateRemovedFiles } from '../database/file-search';
+import type { BasicStoreBase } from '../types/store';
+import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
@@ -56,6 +62,35 @@ const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
   }
 };
 
+// Main entity also live (interrupted deletion, partial restore): only purge the trash copies, keep the live entity and its files
+export const purgeTrashIfMainEntityLive = async (context: AuthContext, deleteOperation: BasicStoreEntityDeleteOperation) => {
+  const { main_entity_id: mainEntityId, deleted_elements: deletedElements } = deleteOperation;
+  let lock;
+  try {
+    // Lock the entity too, so a concurrent deletion cannot replace its trash copy between the check and the purge
+    lock = await lockResources([deleteOperation.id, mainEntityId]);
+    const liveHits = await elFindByIds(context, SYSTEM_USER, [mainEntityId], { indices: READ_DATA_INDICES, baseData: true }) as BasicStoreBase[];
+    const mainEntityLive = liveHits.find((el) => el.internal_id === mainEntityId);
+    if (!mainEntityLive) {
+      return false;
+    }
+    const trashElements = await elFindByIds(context, SYSTEM_USER, deletedElements.map((el) => el.id), { indices: READ_INDEX_DELETED_OBJECTS }) as BasicStoreBase[];
+    logApp.warn('[OPENCTI-MODULE] Garbage collection: main entity is still live, only purging trash copies', {
+      manager: 'GARBAGE_MANAGER',
+      id: deleteOperation.id,
+      mainEntityId,
+      liveIndex: mainEntityLive._index,
+    });
+    // The interrupted deletion may have flagged the entity files as removed: make them searchable again, as restore does
+    await elUpdateRemovedFiles(mainEntityLive, false);
+    await elDeleteInstances(context, trashElements);
+    await elDeleteElements(context, GARBAGE_COLLECTION_MANAGER_USER, [deleteOperation]);
+    return true;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
+
 /**
  * Search for N (batch_size) older than DELETED_RETENTION_DAYS DeleteOperations
  * Completely delete these deleteOperations
@@ -68,7 +103,10 @@ export const garbageCollectionHandler = async () => {
   for (let i = 0; i < deleteOperationsToManage.length; i += 1) {
     try {
       const deleteOperation = deleteOperationsToManage[i];
-      await confirmDelete(context, GARBAGE_COLLECTION_MANAGER_USER, deleteOperation.id);
+      const isPurged = await purgeTrashIfMainEntityLive(context, deleteOperation);
+      if (!isPurged) {
+        await confirmDelete(context, GARBAGE_COLLECTION_MANAGER_USER, deleteOperation.id);
+      }
     } catch (e) {
       logApp.warn('[OPENCTI-MODULE] Garbage collection delete error', { cause: e, manager: 'GARBAGE_MANAGER', id: deleteOperationsToManage[i].id, errorCount });
       errorCount += 1;

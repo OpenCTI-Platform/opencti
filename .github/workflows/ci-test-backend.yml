@@ -23,7 +23,7 @@ on:
 jobs:
   run-opencti-integration-test:
     name: Integration tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
     - name: OpenCTI checkout
@@ -192,7 +192,7 @@ jobs:
 
   run-opencti-rules-test:
     name: Rules and Taxii tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
     - name: OpenCTI checkout
@@ -312,7 +312,7 @@ jobs:
 
   run-opencti-backend-unit-test:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
     - name: OpenCTI checkout

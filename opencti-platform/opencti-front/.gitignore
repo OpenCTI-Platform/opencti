@@ -1,4 +1,5 @@
 .eslintcache
+*.tsbuildinfo
 config/development.json
 dist/
 

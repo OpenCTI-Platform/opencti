@@ -48,6 +48,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from '../utils/access';
 import { safeRender } from '../utils/safeEjs';
 import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
+import { getCustomFieldAttributeDefinitions, moveCustomFieldValuesToInput } from '../modules/customField/custom-field-attributes';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { pushAll } from '../utils/arrayUtil';
 
@@ -419,6 +420,7 @@ const jsonMappingExecution = async (
         const representation = representationsArray[i];
         const { entity_type, path: base_path } = representation.target;
         const hashesNames = getHashesNames(entity_type);
+        const customFieldAttributes = await getCustomFieldAttributeDefinitions(context, user, entity_type, representation.attributes.map((a) => a.key));
         const baseData = JSONPath.JSONPath({ path: base_path, json: element, flatten: true });
         const baseDatas = (Array.isArray(baseData) ? baseData : [baseData]);
         for (let baseInfo = 0; baseInfo < baseDatas.length; baseInfo += 1) {
@@ -437,7 +439,7 @@ const jsonMappingExecution = async (
             }
             const refDef = schemaRelationsRefDefinition.getRelationRef(entity_type, attributeKey);
             if (attribute.mode === 'simple' || attribute.mode === 'complex') {
-              const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attributeKey);
+              const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attributeKey) ?? customFieldAttributes.get(attribute.key);
               if (attributeDef) {
                 if (hashesNames.includes(attribute.key)) {
                   const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
@@ -464,6 +466,7 @@ const jsonMappingExecution = async (
               throw UnsupportedError('Unknown schema for attribute:', { attribute });
             }
           }
+          await moveCustomFieldValuesToInput(context, user, input, customFieldAttributes, entity_type);
           // Take care of explicit relations cardinality
           if (input.__froms && input.__tos) {
             for (let fromIndex = 0; fromIndex < input.__froms.length; fromIndex += 1) {

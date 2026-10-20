@@ -120,6 +120,15 @@ import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
+import { CustomFieldInput } from '../common/custom_fields/CustomFieldsInput';
+import useCustomFieldDefinitions from '../common/custom_fields/useCustomFieldDefinitions';
+import {
+  customFieldValueToTaskValues,
+  getCustomFieldDefinitionsOfTypes,
+  getTaskTargetedTypes,
+  isCustomFieldAttribute,
+  taskValuesToCustomFieldValue,
+} from '../../../utils/customFields';
 
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 
@@ -649,7 +658,10 @@ class DataTableToolBar extends Component {
 
     actionsInputs[i] = R.assoc(key, value, currentActionInput);
     if (key === 'field') {
-      if (value === 'x_opencti_detection') {
+      const customFieldDefinition = (this.props.customFieldDefinitions ?? []).find((d) => d.name === value);
+      if (customFieldDefinition?.field_type === 'boolean' && actionsInputs[i]?.type !== 'REMOVE') {
+        actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
+      } else if (value === 'x_opencti_detection') {
         actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
       } else if (value === 'password_valid_until') {
         actionsInputs[i] = R.assoc('values', [new Date().toISOString()], actionsInputs[i] || {});
@@ -1002,7 +1014,7 @@ class DataTableToolBar extends Component {
     }
   }
 
-  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
+  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, customFieldDefinitionsOfTypes = []) {
     const { t, taskScope } = this.props;
     const { actionsInputs } = this.state;
 
@@ -1091,6 +1103,11 @@ class DataTableToolBar extends Component {
           },
         ] : []),
       ].filter(Boolean);
+      // As other attributes, a single value custom field is set by replace, a multi_select also accepts add
+      const customFieldOptions = customFieldDefinitionsOfTypes
+        .filter((d) => actionsInputs[i]?.type !== 'ADD' || d.field_type === 'multi_select')
+        .map((d) => ({ label: d.label, value: d.name }));
+      options = [...options, ...customFieldOptions];
     }
 
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
@@ -1556,6 +1573,29 @@ class DataTableToolBar extends Component {
 
     const selectedField = actionsInputs[i]?.field;
     const disabled = selectedField == null || selectedField === '';
+
+    if (isCustomFieldAttribute(selectedField)) {
+      const definition = (this.props.customFieldDefinitions ?? []).find((d) => d.name === selectedField);
+      // Removing a single value clears it, only a multi_select takes the options to remove
+      if (!definition || (actionsInputs[i]?.type === 'REMOVE' && definition.field_type !== 'multi_select')) {
+        return null;
+      }
+      return (
+        <CustomFieldInput
+          definition={definition}
+          mandatory={false}
+          value={taskValuesToCustomFieldValue(definition.field_type, actionsInputs[i]?.values)}
+          onChange={(value) => {
+            const values = customFieldValueToTaskValues(value);
+            this.setState(({ actionsInputs: currentInputs }) => {
+              const nextInputs = [...currentInputs];
+              nextInputs[i] = { ...nextInputs[i], values };
+              return { actionsInputs: nextInputs };
+            });
+          }}
+        />
+      );
+    }
 
     switch (selectedField) {
       case 'container-object':
@@ -2247,7 +2287,9 @@ class DataTableToolBar extends Component {
   areStepValid() {
     const { actionsInputs } = this.state;
     for (const n of actionsInputs) {
-      if (!n || !n.type || !n.field || !n.values || n.values.length === 0) {
+      // Removing a custom field without value clears it
+      const isCustomFieldClear = n?.type === 'REMOVE' && isCustomFieldAttribute(n.field) && Array.isArray(n.values);
+      if (!n || !n.type || !n.field || !n.values || (n.values.length === 0 && !isCustomFieldClear)) {
         return false;
       }
     }
@@ -2415,6 +2457,12 @@ class DataTableToolBar extends Component {
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
 
           const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
+          // Only the custom fields carried by every targeted type are offered
+          const customFieldDefinitionsOfTypes = getCustomFieldDefinitionsOfTypes(
+            this.props.customFieldDefinitions ?? [],
+            getTaskTargetedTypes(selectAll, selectedElementsList, entityTypeFilterValues, this.props.types),
+            (type) => schema.scrs.some((scr) => scr.label === type),
+          );
           const filterKeysMap = new Map();
           entityTypes.forEach((entityType) => {
             const currentMap = schema.filterKeysSchema.get(entityType);
@@ -2898,7 +2946,8 @@ class DataTableToolBar extends Component {
                               <FdsChip label={o.type} />
                             </TableCell>
                             <TableCell>
-                              {R.pathOr(t('N/A'), ['context', 'field'], o)}
+                              {(this.props.customFieldDefinitions ?? []).find((d) => d.name === o.context?.field)?.label
+                                ?? R.pathOr(t('N/A'), ['context', 'field'], o)}
                             </TableCell>
                             <TableCell>
                               {truncate(
@@ -2980,7 +3029,7 @@ class DataTableToolBar extends Component {
                           </Grid>
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
-                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
+                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, customFieldDefinitionsOfTypes)}
                             </FormControl>
                           </Grid>
                           <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
@@ -3560,6 +3609,7 @@ class DataTableToolBar extends Component {
 }
 
 DataTableToolBar.propTypes = {
+  customFieldDefinitions: PropTypes.array,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -3586,4 +3636,12 @@ DataTableToolBar.propTypes = {
   taskScope: PropTypes.string,
 };
 
-export default R.compose(inject18n, withTheme, withStyles(styles))(DataTableToolBar);
+const DataTableToolBarComponent = R.compose(inject18n, withTheme, withStyles(styles))(DataTableToolBar);
+
+// The update entities drawer offers the custom fields: their definitions are loaded once elements are selected
+const DataTableToolBarWithCustomFields = (props) => {
+  const customFieldDefinitions = useCustomFieldDefinitions(props.numberOfSelectedElements > 0);
+  return <DataTableToolBarComponent {...props} customFieldDefinitions={customFieldDefinitions} />;
+};
+
+export default DataTableToolBarWithCustomFields;

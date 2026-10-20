@@ -160,7 +160,7 @@ const StixCoreObjectsWordCloud = ({
   refreshRate = null,
 }: StixCoreObjectsWordCloudProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsWordCloudDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsWordCloudDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -179,8 +179,7 @@ const StixCoreObjectsWordCloud = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

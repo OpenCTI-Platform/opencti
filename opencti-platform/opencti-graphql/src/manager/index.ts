@@ -1,9 +1,11 @@
+import './connectorManager';
 import './dataSanityManager';
 import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';
 import './hubRegistrationManager';
 import './indicatorDecayManager';
+import './ingestionHealthManager';
 import './pirManager';
 import './platformUsageMetricsManager';
 import './retentionManager';
@@ -11,5 +13,4 @@ import './snapshotManager';
 import './telemetryManager';
 import './workflowStatusCleanupManager';
 import './xtmOneRegistrationManager';
-import './dataSanityManager';
 import '../modules/catalog/catalog-manager';
