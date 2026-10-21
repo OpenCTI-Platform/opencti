@@ -113,9 +113,11 @@ const ContentMappingReview = ({ containerId }: { containerId: string }) => {
   // Sources: the description and content of the container, and its attached files that can be read (#17785, #8909).
   const sources = useMemo<MappingSource[]>(() => [
     { id: MAIN_CONTENT_SOURCE, label: t_i18n('Description & main content'), kind: 'main' },
+    // A file still being uploaded comes without node: it is listed once stored.
     ...(container?.importFiles?.edges ?? []).flatMap((edge) => {
-      const kind = sourceKindOf(edge?.node.metaData?.mimetype);
-      return kind && edge ? [{ id: edge.node.id, label: edge.node.name, kind }] : [];
+      const file = edge?.node;
+      const kind = sourceKindOf(file?.metaData?.mimetype);
+      return file && kind ? [{ id: file.id, label: file.name, kind }] : [];
     }),
   ], [container?.importFiles]);
   const [sourceId, setSourceId] = useState(MAIN_CONTENT_SOURCE);
