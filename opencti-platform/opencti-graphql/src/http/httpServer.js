@@ -24,7 +24,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
-import { buildRateLimiterOptions } from './httpUtils';
+import { buildGraphqlUploadOptions, buildRateLimiterOptions, DEFAULT_MAX_UPLOAD_FILE_SIZE, DEFAULT_MAX_UPLOAD_FILES } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
@@ -152,6 +152,9 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
+  const uploadFileSizeLimit = nconf.get('app:max_upload_file_size') || DEFAULT_MAX_UPLOAD_FILE_SIZE;
+  const uploadMaxFiles = nconf.get('app:max_upload_files') || DEFAULT_MAX_UPLOAD_FILES;
+  const graphqlUpload = graphqlUploadExpress(buildGraphqlUploadOptions(uploadFileSizeLimit, uploadMaxFiles));
   // IP whitelist middleware — must be after session middleware to detect session-based auth
   app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
   app.use(`${basePath}/graphql`, graphqlMethodRestriction);
@@ -160,7 +163,7 @@ const createHttpServer = async () => {
     if (req.path.startsWith(`${basePath}/chatbot/`)) {
       return next();
     }
-    return graphqlUploadExpress()(req, res, next);
+    return graphqlUpload(req, res, next);
   });
   app.use(
     `${basePath}/graphql`,

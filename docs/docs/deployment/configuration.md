@@ -49,6 +49,8 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:health_access_key        | APP__HEALTH_ACCESS_KEY         | ChangeMe              | Access key for the `/health` endpoint. Must be changed - will not respond to default value. Access with `/health?health_access_key=ChangeMe`                                     |
 | app:liveness_port            | APP__LIVENESS_PORT             | null (disabled)       | Port for the [liveness probe](advanced/liveness-probe.md) HTTP server. Starts immediately on process launch, before platform initialization.                                     |
 | app:auth_payload_body_size   | APP__AUTH_PAYLOAD_BODY_SIZE    |                       | Maximum payload body size for SSO/SAML. Controls the Express body-parser `limit` setting (defaults to 100kb). See https://expressjs.com/en/resources/middleware/body-parser.html |
+| app:max_upload_file_size     | APP__MAX_UPLOAD_FILE_SIZE      | 1gb                   | Maximum size of a file uploaded to the platform (files, imports, artifacts...). Accepts a byte count or a unit suffix (`kb`, `mb`, `gb`). A larger file is rejected. Lower it if your platform does not ingest large artifacts (malware samples). |
+| app:max_upload_files         | APP__MAX_UPLOAD_FILES          | 20                    | Maximum number of files uploaded in a single request.                                                                                                                            |
 
 
 #### Network and security
