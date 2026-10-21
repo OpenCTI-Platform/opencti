@@ -251,3 +251,22 @@ describe('Hook: useImportAccess - isForcedFormSubmissionToDraft', () => {
     expect(hook.result.current.hasKnowledgeUpdateInMain).toBe(false);
   });
 });
+
+describe('Hook: useImportAccess - canSubmitForms', () => {
+  it.each([
+    ['a user who can only import in main', [KNOWLEDGE_KNASKIMPORT], [], false],
+    ['a user without capabilities', [], [], false],
+    ['a form-only user in main', [KNOWLEDGE_KNFORMINTAKE], [], true],
+    ['a form-only user in draft', [], [KNOWLEDGE_KNFORMINTAKE], true],
+    ['a user with Create / Update knowledge in main', [KNOWLEDGE_KNUPDATE], [], true],
+    ['a user with Create / Update knowledge in draft only', [], [KNOWLEDGE_KNUPDATE], true],
+    // formSubmit still lets Import knowledge granted in draft submit a form into a draft
+    ['a user who can only import in draft', [], [KNOWLEDGE_KNASKIMPORT], true],
+  ])('%s', (_name, capabilities, capabilitiesInDraft, expected) => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext(capabilities, capabilitiesInDraft) },
+    );
+    expect(hook.result.current.canSubmitForms).toBe(expected);
+  });
+});
