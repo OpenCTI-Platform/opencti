@@ -4319,6 +4319,7 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
       hasState: () => true,
       getTransitions: () => [{ event: 'reopen', to: 'draft', actionTypes: [] }],
     });
+    (projectWorkflowState as any).mockResolvedValue(undefined);
 
     await syncWrite('status-draft-id');
 
