@@ -19,6 +19,12 @@ describe('buildWorkflowTransitionAction', () => {
       },
     });
   });
+
+  it('should send a null event name when no event is selected, so the backend rejects the task', () => {
+    const action = buildWorkflowTransitionAction({ type: 'REPLACE', fieldType: 'ATTRIBUTE', values: [] });
+
+    expect(action.context.options).toEqual({ eventName: null });
+  });
 });
 
 describe('withWorkflowBypassOptions', () => {
