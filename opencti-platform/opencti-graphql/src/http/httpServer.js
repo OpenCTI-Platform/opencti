@@ -23,7 +23,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
-import { buildRateLimiterOptions } from './httpUtils';
+import { buildGraphqlUploadOptions, buildRateLimiterOptions, DEFAULT_MAX_UPLOAD_FILE_SIZE, DEFAULT_MAX_UPLOAD_FILES } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -133,7 +133,10 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
-  app.use(graphqlUploadExpress());
+  const uploadFileSizeLimit = nconf.get('app:max_upload_file_size') || DEFAULT_MAX_UPLOAD_FILE_SIZE;
+  const uploadMaxFiles = nconf.get('app:max_upload_files') || DEFAULT_MAX_UPLOAD_FILES;
+  const graphqlUpload = graphqlUploadExpress(buildGraphqlUploadOptions(uploadFileSizeLimit, uploadMaxFiles));
+  app.use(graphqlUpload);
   app.use(
     `${basePath}/graphql`,
     cors({ origin: basePath }),
