@@ -1,21 +1,17 @@
-import { Page } from '@playwright/test';
+import { Browser, Page, TestInfo } from '@playwright/test';
 import { expect } from '../fixtures/baseFixtures';
 import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
 import ImportFilesDialogPageModel from '../model/formIntake/importFilesDialog.pageModel';
 import FormIntakeFillPageModel from '../model/formIntake/formIntakeFill.pageModel';
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
+import { PERSONAS } from '../dataForTesting/threatAdvisory.data';
 
 /**
  * Shared helpers for the Threat Advisory rejection & org-sharing-retry specs, which fast-forward a
  * fresh draft to the status they assume instead of replaying `threatAdvisoryHappyFlow.spec.ts`.
  */
-export const USERS = {
-  analystOrgA: { email: 'analystorga@filigran.test', password: 'analystorga' },
-  managerOrgA: { email: 'managerorga@filigran.test', password: 'managerorga' },
-  analystOrgC: { email: 'analystorgc@filigran.test', password: 'analystorgc' },
-  managerOrgC: { email: 'managerorgc@filigran.test', password: 'managerorgc' },
-};
+export const USERS = PERSONAS;
 
 export type TestUser = typeof USERS[keyof typeof USERS];
 
@@ -53,10 +49,8 @@ export const openDraft = async (page: Page, draftId: string, user: TestUser, tab
   }).toPass({ timeout: 300000, intervals: [1000] });
 };
 
-/** Submits a fresh Threat Advisory form as AnalystOrgA (status NEW) and returns the draft id. */
-export const createThreatAdvisoryDraft = async (page: Page, reportName: string): Promise<string> => {
-  await page.goto('/');
-  await loginAs(page, USERS.analystOrgA);
+/** Submits the Threat Advisories form through the UI, in a page already logged in as a submitter, and returns the draft id. */
+export const submitThreatAdvisoryForm = async (page: Page, reportName: string): Promise<string> => {
   const importDialog = new ImportFilesDialogPageModel(page);
   const formFill = new FormIntakeFillPageModel(page, importDialog.getRoot());
   await importDialog.open();
@@ -67,6 +61,53 @@ export const createThreatAdvisoryDraft = async (page: Page, reportName: string):
   await formFill.selectAuthor('OrgA');
   await formFill.submit();
   return formFill.waitForDraftCreated();
+};
+
+/** Submits a fresh Threat Advisory form as AnalystOrgA (status NEW) and returns the draft id. */
+export const createThreatAdvisoryDraft = async (page: Page, reportName: string): Promise<string> => {
+  await page.goto('/');
+  await loginAs(page, USERS.analystOrgA);
+  return submitThreatAdvisoryForm(page, reportName);
+};
+
+/**
+ * Opens the draft page in a page that is already logged in, and waits for it to settle (toolbar,
+ * or the no-access page). Report is a Container-type entity, shown under the "Containers" tab.
+ */
+export const openDraftPage = async (page: Page, draftId: string, tab: 'containers' | 'overview' = 'containers') => {
+  const toolbar = new DraftToolbarPageModel(page);
+  await expect(async () => {
+    await gotoDraft(page, draftId, tab);
+    await expect(toolbar.getToolbar().or(toolbar.getNoAccessMessage())).toBeVisible({ timeout: 30000 });
+  }).toPass({ timeout: 180000, intervals: [1000] });
+};
+
+/**
+ * Runs `body` in a fresh browser context logged in as `user`: its own cookies, its own renderer, and
+ * no logout (a logout destroys the session the next step would otherwise have to rebuild). The test
+ * runner traces the context like any other; a screenshot of the persona is kept when `body` throws.
+ */
+export const asPersona = async <T>(browser: Browser, testInfo: TestInfo, user: TestUser, body: (page: Page) => Promise<T>): Promise<T> => {
+  const { baseURL, viewport } = testInfo.project.use;
+  const context = await browser.newContext({ baseURL, viewport, ignoreHTTPSErrors: true });
+  const page = await context.newPage();
+  const name = user.email.split('@')[0];
+  try {
+    await expect(async () => {
+      // Each attempt starts logged out, so the login form is shown whatever the previous attempt got done.
+      await context.clearCookies();
+      await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await new LoginFormPageModel(page).login(user.email, user.password);
+      // A previous run may have left this user stuck in a draft context.
+      await new DraftToolbarPageModel(page).exitDraftIfPresent();
+    }).toPass({ timeout: 180000, intervals: [1000] });
+    return await body(page);
+  } catch (error) {
+    await page.screenshot({ path: testInfo.outputPath(`${name}-failure.png`) }).catch(() => {});
+    throw error;
+  } finally {
+    await context.close();
+  }
 };
 
 export type DraftStatus = 'MO MANAGER REVIEW' | 'ORGC ANALYST REVIEW' | 'ORGC MANAGER REVIEW';
