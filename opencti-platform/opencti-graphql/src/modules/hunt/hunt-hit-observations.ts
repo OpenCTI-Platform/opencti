@@ -16,7 +16,7 @@ import { isDisclosableByHunt } from './hunt-iocs';
 import { withHuntLock } from './hunt-lock';
 import { findByIds } from './hunt-loaders';
 import { accumulatedHuntSightingAccess, sameIds } from './hunt-sightings';
-import { type BasicStoreEntityHunt, HUNT_TYPE_INDICATORS, RELATION_HUNT_SOURCES, RELATION_HUNT_TECHNIQUES } from './hunt-types';
+import { type BasicStoreEntityHunt, HUNT_INFRASTRUCTURE_KEY, HUNT_TYPE_INDICATORS, RELATION_HUNT_SOURCES, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { type BasicStoreEntityHuntRun, HUNT_IOC_VERDICT_SEEN, type HuntHit, type HuntIocResult } from './huntRun/huntRun-types';
 import { HUNT_CONFIG, huntRuleKey, huntSigmaRules } from './hunt-utils';
 
@@ -357,6 +357,6 @@ export const createHuntHitObservations = async (context: AuthContext, hunt: Basi
       }
     }
   };
-  await withHuntLock(`${OBSERVED_DATA_LOCK}_${run.security_platform_id ?? 'none'}`, observe);
+  await withHuntLock(`${OBSERVED_DATA_LOCK}_${run.security_platform_id ?? HUNT_INFRASTRUCTURE_KEY}`, observe);
   return { observedDataIds: Array.from(observedDataIds), observableIds: Array.from(evidenceIds) };
 };

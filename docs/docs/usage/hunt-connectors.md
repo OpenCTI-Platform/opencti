@@ -12,6 +12,11 @@ Hunt connectors execute hunts. They are connectors of type `INTERNAL_HUNT`, each
 | `google-secops` | Google SecOps | UDM search, YARA-L |
 | `opensearch` | OpenSearch (OCSF data) | PPL, Lucene |
 | `sentinelone` | SentinelOne Singularity | SentinelOne PowerQuery |
+| `censys` | Censys Platform (internet scanning service) | Internet fingerprints |
+| `silentpush` | Silent Push (internet scanning service) | Internet fingerprints |
+| `urlscan` | urlscan.io (internet scanning service) | Internet fingerprints |
+| `cymru-scout` | Team Cymru Scout (internet scanning service) | Internet fingerprints |
+| `shodan` | Shodan (internet scanning service) | Internet fingerprints |
 
 ## Before you start
 
@@ -388,6 +393,7 @@ A hunt run refused by the platform fails as **Access denied on** the platform, w
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/opensearch-ocsf-hunt/README.md).
 
+
 ### SentinelOne
 
 | | |
@@ -437,11 +443,240 @@ A hunt run refused by the platform fails as **Access denied on** the platform, w
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/sentinelone-hunt/README.md).
 
+## Internet scanning services
+
+An internet infrastructure hunt runs on the internet scanning services, not on your telemetry: each service has its own
+hunt connector, and every run goes to every connected one. These connectors register no security platform, look up no
+indicators and execute the `fingerprint` language only. The hunt carries a fingerprint document (YAML or JSON) on the
+platform of a service: the fingerprints of the adversary infrastructure, of the kinds `jarm`, `ja4x`, `ja4s`,
+`certificate_sha256`, `certificate_subject`, `certificate_issuer`, `http_title`, `http_body_sha256`, `http_server`,
+`banner_sha256` and `asn`, and optionally a raw query per service.
+
+```yaml
+fingerprints:
+  - kind: jarm
+    value: 07d14d16d21d21d07c42d41d00041d24a458a375eef0c576d23a7bab9a9fb1
+  - kind: certificate_subject
+    value: CN=Major Cobalt Strike, OU=AdvancedPenTesting, O=cobaltstrike
+queries:
+  urlscan: 'page.title:"Login" AND page.asn:AS20473'
+```
+
+A service receives the document written for its platform, or else the first document of the hunt: the fingerprints mean
+the same to every service, and each one searches the kinds it indexes. A run turns the hosts found within the run window
+into an infrastructure of the targeted threats, with its IPv4 addresses, domain names and certificates, each with a
+detection indicator. The connectors are in the
+[connectors repository](https://github.com/OpenCTI-Platform/connectors/pull/7993) (`internal-hunt/censys-hunt`,
+`internal-hunt/silentpush-hunt`, `internal-hunt/urlscan-hunt`, `internal-hunt/cymru-scout-hunt`,
+`internal-hunt/shodan-hunt`).
+
+### Censys
+
+| | |
+|---|---|
+| Credential | A Censys Platform personal access token of a user with the API Access role, and the organization ID of a paid organization. |
+| Console | Censys Platform, **Account > Personal Access Tokens**, and **Organization > Settings** for the organization ID. |
+| Network | `https://api.platform.censys.io` reachable from the connector. |
+
+Step by step:
+
+1. In the Censys Platform, make sure the user of the connector has the **API Access** role in a paid organization (free accounts cannot search through the API).
+2. Create a personal access token for that user and set it in `CENSYS_HUNT_TOKEN`.
+3. Copy the ID of the organization whose credits the searches use into `CENSYS_HUNT_ORGANIZATION_ID`.
+
+Least-privilege permissions:
+
+| Permission | Why |
+|---|---|
+| Personal access token of a user with the API Access role | Search the hosts and web properties of the global search (CenQL) on every fingerprint kind. |
+| Organization ID (paid plans) | The organization whose credits the searches use. |
+
+Copy-ready configuration (`.env` of the `docker-compose.yml`):
+
+```env
+OPENCTI_URL=https://opencti.example.com
+OPENCTI_TOKEN=ChangeMe
+CONNECTOR_ID=ChangeMe-UUIDv4
+CENSYS_HUNT_TOKEN=ChangeMe
+CENSYS_HUNT_ORGANIZATION_ID=ChangeMe
+```
+
+#### Quotas and limits
+
+| Limit | Value | Source |
+|---|---|---|
+| Credits | 1 credit per search, plus 1 per extra page of 100 hits | [Censys credits](https://docs.censys.com/docs/platform-credits-enterprise) |
+| Concurrent requests | 1 per organization on the Free and Starter plans, 25 on the Search and Core plans (HTTP 429 beyond) | [Censys API](https://docs.censys.com/reference/get-started) |
+| Request rate | 25 requests per second per IP address (HTTP 503 beyond) | [Censys API](https://docs.censys.com/reference/get-started) |
+
+`CONNECTOR_MAX_CONCURRENT_RUNS` defaults to 1; raise it only on a plan with concurrent requests to spare.
+
+Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/censys-hunt/README.md).
+
+### Silent Push
+
+| | |
+|---|---|
+| Credential | A Silent Push API key whose subscription includes the Explore web scan data API. |
+| Console | Silent Push, **Account > API key**. |
+| Network | `https://api.silentpush.com` reachable from the connector. |
+
+Step by step:
+
+1. Check with Silent Push that the subscription of the account includes the Explore web scan data API.
+2. Copy the API key of the account into `SILENTPUSH_HUNT_API_KEY`.
+
+Least-privilege permissions:
+
+| Permission | Why |
+|---|---|
+| API key with the Explore web scan data API | Search the web scans (SPQL) on JARM, certificate SHA-256, HTTP title, HTML body hash and `Server` header. |
+
+Copy-ready configuration (`.env` of the `docker-compose.yml`):
+
+```env
+OPENCTI_URL=https://opencti.example.com
+OPENCTI_TOKEN=ChangeMe
+CONNECTOR_ID=ChangeMe-UUIDv4
+SILENTPUSH_HUNT_API_KEY=ChangeMe
+```
+
+#### Quotas and limits
+
+| Limit | Value | Source |
+|---|---|---|
+| API calls | Counted against the subscription of the account; Silent Push emails the account when it reaches its daily limit. The limits are not published: ask Silent Push for those of your subscription | [Silent Push API](https://help.silentpush.com/docs/get-started-with-api) |
+| Concurrency and request rate | Not documented by the vendor | - |
+
+`CONNECTOR_MAX_CONCURRENT_RUNS` defaults to 2, a conservative value without a vendor limit.
+
+Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/silentpush-hunt/README.md).
+
+### urlscan.io {#urlscan}
+
+| | |
+|---|---|
+| Credential | A urlscan.io API key with search access. |
+| Console | urlscan.io, **Settings & API > API Keys**. |
+| Network | `https://urlscan.io` (or your on-premise instance) reachable from the connector. |
+
+Step by step:
+
+1. In urlscan.io, open **Settings & API** and create an API key.
+2. Check the search quotas of the key at `https://urlscan.io/user/quotas/`.
+3. Set the key in `URLSCAN_HUNT_API_KEY`.
+
+Least-privilege permissions:
+
+| Permission | Why |
+|---|---|
+| API key with search access | Search the scans of the run window on HTTP title, `Server` header, TLS issuer, body hash and ASN. |
+
+Copy-ready configuration (`.env` of the `docker-compose.yml`):
+
+```env
+OPENCTI_URL=https://opencti.example.com
+OPENCTI_TOKEN=ChangeMe
+CONNECTOR_ID=ChangeMe-UUIDv4
+URLSCAN_HUNT_API_KEY=ChangeMe
+```
+
+#### Quotas and limits
+
+| Limit | Value | Source |
+|---|---|---|
+| Searches | Limited per minute, per hour and per day depending on the plan (HTTP 429 beyond); only successful searches count | [urlscan.io API](https://urlscan.io/docs/api/) |
+| Results | Up to 10,000 results per search depending on the plan | [urlscan.io API](https://urlscan.io/docs/api/) |
+
+`CONNECTOR_MAX_CONCURRENT_RUNS` defaults to 2, within the per-minute search quotas of the plans.
+
+Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/urlscan-hunt/README.md).
+
+### Team Cymru Scout
+
+| | |
+|---|---|
+| Credential | A Team Cymru Scout API key with search queries left in its balance. |
+| Console | Scout, **API Keys**. |
+| Network | `https://scout.cymru.com` reachable from the connector. |
+
+Step by step:
+
+1. In Scout, create an API key and check its monthly query balance.
+2. Set the key in `CYMRU_SCOUT_HUNT_API_KEY`.
+
+Least-privilege permissions:
+
+| Permission | Why |
+|---|---|
+| API key with search queries | Search the IP addresses of the last 90 days on JARM, JA4X and X.509 certificates. |
+
+Copy-ready configuration (`.env` of the `docker-compose.yml`):
+
+```env
+OPENCTI_URL=https://opencti.example.com
+OPENCTI_TOKEN=ChangeMe
+CONNECTOR_ID=ChangeMe-UUIDv4
+CYMRU_SCOUT_HUNT_API_KEY=ChangeMe
+```
+
+#### Quotas and limits
+
+| Limit | Value | Source |
+|---|---|---|
+| Queries | Every search uses one query of the monthly balance of the account | [Scout API](https://scout.cymru.com/docs/scout/ultimate) |
+| Request rate | HTTP 429 beyond 1 request per second, beyond the concurrent request limit, or once the balance is spent | [Scout API](https://scout.cymru.com/docs/scout/ultimate) |
+| History | 90 days; a search returns at most 5,000 IP addresses | [Scout API](https://scout.cymru.com/docs/scout/ultimate) |
+
+`CONNECTOR_MAX_CONCURRENT_RUNS` defaults to 1, its requests paced to 1 per second.
+
+Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/cymru-scout-hunt/README.md).
+
+### Shodan
+
+| | |
+|---|---|
+| Credential | A Shodan API key of a plan with query credits. |
+| Console | Shodan, **Account** (`https://account.shodan.io/`). |
+| Network | `https://api.shodan.io` reachable from the connector. |
+
+Step by step:
+
+1. In your Shodan account, check that the plan has query credits left for the month.
+2. Copy the API key of the account into `SHODAN_HUNT_API_KEY`.
+
+Least-privilege permissions:
+
+| Permission | Why |
+|---|---|
+| API key of a plan with query credits | Search the banners on JARM, certificate fingerprint, subject and issuer, HTTP title and ASN. |
+
+Copy-ready configuration (`.env` of the `docker-compose.yml`):
+
+```env
+OPENCTI_URL=https://opencti.example.com
+OPENCTI_TOKEN=ChangeMe
+CONNECTOR_ID=ChangeMe-UUIDv4
+SHODAN_HUNT_API_KEY=ChangeMe
+```
+
+#### Quotas and limits
+
+| Limit | Value | Source |
+|---|---|---|
+| Query credits | 1 credit per search with a filter, plus 1 per page of 100 banners past the first | [Shodan credits](https://help.shodan.io/the-basics/credit-types-explained) |
+| Monthly credits | 100 (Membership), 10,000 (Freelancer), 200,000 (Small Business), unlimited (Corporate) | [Shodan pricing](https://developer.shodan.io/pricing) |
+| Request rate | 1 request per second on every plan | [Shodan pricing](https://developer.shodan.io/pricing) |
+
+`CONNECTOR_MAX_CONCURRENT_RUNS` defaults to 1, its requests paced to 1 per second.
+
+Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/shodan-hunt/README.md).
+
 ## Registration
 
 At startup a hunt connector registers its platform, the languages it executes and the **security platform** it executes against. The security platform is an Identity of type Security Platform (SIEM, EDR, XDR, SOAR, NDR, ISPM); it is created, with the declared type, when missing and once the registration is accepted. A registration never changes an existing security platform: its type and the rest are left to its editors. Hunts are scoped on security platforms, and the sightings OpenCTI keeps for the hunts are sighted on them.
 
-Several connectors can serve the same platform type for different security platforms, for instance one Splunk connector per Splunk deployment. A hunt connector that names no security platform is refused.
+Several connectors can serve the same platform type for different security platforms, for instance one Splunk connector per Splunk deployment. The connectors of the internet scanning services register no security platform.
 
 Registered hunt connectors, their platform and their health are displayed in **Defense > Hunts** when creating a hunt, and in the connectors list, where the connector type reads **Internal hunt**. The page of a hunt connector (**Data > Ingestion > Connectors**) is the page of any connector: its state, its works and its configuration.
 
@@ -483,7 +718,7 @@ OpenCTI only accepts the report of a run from the connector it was dispatched to
 The Python library `pycti` provides the helpers of the hunt connector contract:
 
 - `ConnectorType.INTERNAL_HUNT`, the connector type,
-- `helper.register_hunt_platform(platform, languages, security_platform_name, security_platform_type, supports_preview, max_concurrent_runs, supports_indicators, required_permissions, documentation_url)`, the registration: `required_permissions` lists the permissions the account needs on the platform (`name` and `purpose` each) and `documentation_url` its setup documentation, both shown in the setup checklist of Defense > Hunts. A security platform is one product: several connectors of the same kind can execute against it, a connector of another kind naming it is refused, even when both register at the same time. A connector registered again against another security platform no longer receives the runs created for the former one: they are cancelled, and its reports on them are refused,
+- `helper.register_hunt_platform(platform, languages, security_platform_name, security_platform_type, supports_preview, max_concurrent_runs, supports_indicators, required_permissions, documentation_url)`, the registration: `required_permissions` lists the permissions the account needs on the platform (`name` and `purpose` each) and `documentation_url` its setup documentation, both shown in the setup checklist of Defense > Hunts. A security platform is one product: several connectors of the same kind can execute against it, a connector of another kind naming it is refused, even when both register at the same time. A connector registered again against another security platform (or none) no longer receives the runs created for the former one: they are cancelled, and its reports on them are refused,
 - `helper.listen_hunt(callback)`, the consumption of the runs (the callback receives the run message),
 - `helper.report_hunt_run(run_id, status, ...)`, the run report, `hit_keys`, `first_hit_at`, `last_hit_at`, `rule_results`, `observations` and `queries_count` included. It carries the work the run was dispatched with (by default the work of the message being processed): OpenCTI accepts the report of a dispatched run only with it, so that hunt connectors sharing a user cannot report each other's runs,
 - `api.hunt` and `api.hunt_run`, the hunt and hunt run entities.

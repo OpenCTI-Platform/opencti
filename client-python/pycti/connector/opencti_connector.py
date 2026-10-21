@@ -18,7 +18,7 @@ class ConnectorType(Enum):
     - INTERNAL_ENRICHMENT: Enriches existing STIX2 data with additional information
     - INTERNAL_ANALYSIS: Analyzes files or STIX2 data and produces file output
     - INTERNAL_EXPORT_FILE: Exports STIX2 data to files in OpenCTI file system
-    - INTERNAL_HUNT: Executes hunt runs on a security platform
+    - INTERNAL_HUNT: Executes hunt runs on a security platform (or an internet scanning service)
     - STREAM: Reads the event stream and performs custom actions
 
     Scope definition varies by type:
@@ -26,7 +26,7 @@ class ConnectorType(Enum):
         - INTERNAL_IMPORT_FILE: MIME types to support (e.g., application/json)
         - INTERNAL_ENRICHMENT: Entity types to support (e.g., Report, Hash)
         - INTERNAL_EXPORT_FILE: MIME types to generate (e.g., application/pdf)
-        - INTERNAL_HUNT: The hunt platform slug (e.g., splunk, microsoft-sentinel)
+        - INTERNAL_HUNT: The hunt platform slug (e.g., splunk, censys)
     """
 
     EXTERNAL_IMPORT = "EXTERNAL_IMPORT"

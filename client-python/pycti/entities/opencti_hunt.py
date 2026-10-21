@@ -283,7 +283,7 @@ class Hunt:
         :type name: str
         :param description: (optional) description
         :param hypothesis: (optional) the falsifiable hypothesis
-        :param hunt_type: (optional) telemetry (default) or indicators
+        :param hunt_type: (optional) telemetry (default), infrastructure or indicators
         :param hunt_status: (optional) draft, active (default), paused or retired
         :param hunt_source_kind: (optional) analyst (default), agent or hub
         :param sigma_rule: (optional) the canonical Sigma rule (YAML)

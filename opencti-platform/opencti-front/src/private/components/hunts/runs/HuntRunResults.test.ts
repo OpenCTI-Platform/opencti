@@ -77,9 +77,9 @@ describe('huntRunKnowledge', () => {
       .toEqual({ produced: '2 sightings', reasons: [] });
   });
 
-  it('should give a detection rule hunt that sighted its techniques the observable reason only', () => {
-    expect(huntRunKnowledge({ ...completed, results_summary: { ...empty, sightings: 2, others: 2 } }, t))
-      .toEqual({ produced: '2 sightings, 2 other objects', reasons: [NO_OBSERVABLE] });
+  it('should give an infrastructure hunt the observable reason only, its runs sighting nothing', () => {
+    expect(huntRunKnowledge({ ...completed, hunt: { hunt_type: 'infrastructure' }, results_summary: { ...empty, others: 2 } }, t))
+      .toEqual({ produced: '2 other objects', reasons: [NO_OBSERVABLE] });
   });
 
   it('should give no reason for a run without hits, or of a hunt the user cannot read', () => {

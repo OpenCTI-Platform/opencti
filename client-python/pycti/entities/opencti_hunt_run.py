@@ -407,11 +407,11 @@ class HuntRun:
 
         :param connector_id: the connector id
         :type connector_id: str
-        :param platform: the platform slug (splunk, microsoft-sentinel, ...)
+        :param platform: the platform slug (splunk, microsoft-sentinel, ..., shodan)
         :type platform: str
         :param languages: the query languages the connector executes
         :type languages: list
-        :param security_platform_name: (optional) the Security Platform it executes against (created when missing)
+        :param security_platform_name: (optional) the Security Platform it executes against (created when missing, none for an internet scanning service)
         :param security_platform_type: (optional) SIEM (default), EDR, XDR, SOAR, NDR or ISPM
         :param supports_preview: (optional) whether translation previews are supported (default True)
         :param supports_indicators: (optional) whether the connector looks up the values of indicator hunts

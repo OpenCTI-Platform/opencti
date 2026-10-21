@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Field, FieldArray, useFormikContext } from 'formik';
+import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { IconButton, Text } from '@filigran/design-system';
@@ -13,9 +14,10 @@ import { HuntAIAction } from './HuntAIAssist';
 import {
   HUNT_DOCS,
   HUNT_FIRST_RULE,
+  HUNT_LANGUAGE_FINGERPRINT,
   HUNT_PLATFORM_DEFAULT_LANGUAGE,
-  HUNT_PLATFORMS,
   HUNT_QUERY_LANGUAGES,
+  huntNativeQueryPlatforms,
   huntPlatformLabel,
   huntQueryLanguageLabel,
   type HuntNativeQueryFormValue,
@@ -29,6 +31,8 @@ interface HuntNativeQueriesFieldProps {
   disabled?: boolean;
   /** The saved Sigma rules a native query can replace, offered from two rules */
   ruleOptions?: ReadonlyArray<{ value: string; label: string }>;
+  /** The fingerprint documents of an infrastructure hunt, written for the internet scanning services */
+  infrastructure?: boolean;
 }
 
 interface NativeQueriesValues {
@@ -37,18 +41,45 @@ interface NativeQueriesValues {
 
 const emptyRow = (): HuntNativeQueryFormValue => ({ platform: '', language: '', query: '', pipeline: '' });
 
+/** The rows of the field, each written for a platform its hunt type runs on: a row kept from another type is flagged, not saved */
+export const huntNativeQueriesSchema = (huntType: string | null | undefined, t_i18n: (message: string) => string) => {
+  const platforms = huntNativeQueryPlatforms(huntType);
+  return Yup.array().of(Yup.object().shape({
+    platform: Yup.string().required(t_i18n('This field is required')).test(
+      'hunt-platform',
+      huntType === 'infrastructure' ? t_i18n('Choose an internet scanning service') : t_i18n('Choose a security platform'),
+      (platform) => !platform || platforms.includes(platform),
+    ),
+    language: Yup.string().required(t_i18n('This field is required')),
+    query: Yup.string().trim().required(t_i18n('This field is required')),
+    pipeline: Yup.string().nullable(),
+  }));
+};
+
 /**
  * Per-platform native query overrides: when a row matches the platform of a hunt connector,
  * the connector executes this query verbatim instead of translating the Sigma rule.
  */
-const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = false, ruleOptions = [] }: HuntNativeQueriesFieldProps) => {
+const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = false, ruleOptions = [], infrastructure = false }: HuntNativeQueriesFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { values, setFieldValue } = useFormikContext<NativeQueriesValues>();
+  const { values, setFieldValue, setFieldTouched } = useFormikContext<NativeQueriesValues>();
   const rows = (values[name] ?? []) as HuntNativeQueryFormValue[];
+  const platforms = huntNativeQueryPlatforms(infrastructure ? 'infrastructure' : 'telemetry');
+  const languages: ReadonlyArray<string> = infrastructure ? [HUNT_LANGUAGE_FINGERPRINT] : HUNT_QUERY_LANGUAGES;
+  // The platform of a row kept from another hunt type is not in the list, so its field looks empty: the error shows at once
+  useEffect(() => {
+    rows.forEach((row, index) => {
+      if (row.platform && !platforms.includes(row.platform)) {
+        setFieldTouched(`${name}.${index}.platform`, true, true);
+      }
+    });
+  }, [infrastructure]);
   const helper = (
     <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-      {t_i18n('Native queries override the Sigma translation on their platform.')}
+      {infrastructure
+        ? t_i18n('Each internet scanning service runs the fingerprint document written for it, or else the first one.')
+        : t_i18n('Native queries override the Sigma translation on their platform.')}
     </Text>
   );
 
@@ -66,7 +97,7 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
               disabled={disabled}
               data-testid="hunt-native-query-add"
             >
-              {t_i18n('Add a native query')}
+              {infrastructure ? t_i18n('Add a fingerprint document') : t_i18n('Add a native query')}
             </Button>
           </div>
           {label && helper}
@@ -89,15 +120,18 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
                   disabled={disabled}
                   fullWidth
                   containerstyle={{ flex: 1 }}
-                  helpertext={<HuntHelp text={t_i18n('Its hunt connector runs this query instead of translating the Sigma rule')} href={HUNT_DOCS.createHunt} />}
+                  helpertext={infrastructure
+                    ? <HuntHelp text={t_i18n('The internet scanning service this document is written for')} href={`${HUNT_DOCS.connectors}#internet-scanning-services`} />
+                    : <HuntHelp text={t_i18n('Its hunt connector runs this query instead of translating the Sigma rule')} href={HUNT_DOCS.createHunt} />}
                   onChange={(_: string, platform: string) => {
-                    if (!row.language && HUNT_PLATFORM_DEFAULT_LANGUAGE[platform]) {
+                    // A language kept from another hunt type is not in the list either: the platform picks its own
+                    if ((!row.language || !languages.includes(row.language)) && HUNT_PLATFORM_DEFAULT_LANGUAGE[platform]) {
                       setFieldValue(`${name}.${index}.language`, HUNT_PLATFORM_DEFAULT_LANGUAGE[platform]);
                     }
                   }}
                 >
-                  {HUNT_PLATFORMS.map((platform) => (
-                    <SelectItem key={platform} value={platform}>{huntPlatformLabel(platform)}</SelectItem>
+                  {platforms.map((platform) => (
+                    <SelectItem key={platform} value={platform}>{huntPlatformLabel(platform, t_i18n)}</SelectItem>
                   ))}
                 </Field>
                 <Field
@@ -108,17 +142,19 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
                   disabled={disabled}
                   fullWidth
                   containerstyle={{ flex: 1 }}
-                  helpertext={t_i18n('The language of the query, SPL for Splunk or KQL for Microsoft Sentinel')}
+                  helpertext={infrastructure
+                    ? t_i18n('Internet fingerprints, the same for every service')
+                    : t_i18n('The language of the query, SPL for Splunk or KQL for Microsoft Sentinel')}
                 >
-                  {HUNT_QUERY_LANGUAGES.map((language) => (
-                    <SelectItem key={language} value={language}>{huntQueryLanguageLabel(language)}</SelectItem>
+                  {languages.map((language) => (
+                    <SelectItem key={language} value={language}>{huntQueryLanguageLabel(language, t_i18n)}</SelectItem>
                   ))}
                 </Field>
                 <div style={{ paddingTop: 22 }}>
                   <IconButton
                     priority="tertiary"
                     variant="destructive"
-                    aria-label={t_i18n('Remove this native query')}
+                    aria-label={infrastructure ? t_i18n('Remove this fingerprint document') : t_i18n('Remove this native query')}
                     icon={<DeleteOutlined fontSize="small" aria-hidden />}
                     disabled={disabled}
                     onClick={() => remove(index)}
@@ -154,24 +190,28 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
                   disabled={disabled}
                   minRows={4}
                   maxRows={16}
-                  helperText={t_i18n('Run as written within the time window of the run, for example index=edr CommandLine="* -enc *"')}
+                  helperText={infrastructure
+                    ? t_i18n('The fingerprints to look for and, optionally, a raw query per service, in YAML or JSON')
+                    : t_i18n('Run as written within the time window of the run, for example index=edr CommandLine="* -enc *"')}
                   labelAction={row.platform && row.language ? (
                     <HuntAIAction request={{ kind: 'native_queries', nativeQueryIndex: index }} disabled={disabled} testId={`hunt-native-query-${index}-generate`} />
                   ) : undefined}
                   testId={`hunt-native-query-${index}`}
                 />
               </div>
-              <div style={{ marginTop: theme.spacing(2) }}>
-                <Field
-                  component={TextField}
-                  variant="outlined"
-                  name={`${name}.${index}.pipeline`}
-                  label={t_i18n('pySigma pipeline (optional)')}
-                  helperText={t_i18n('With an empty query, the pipeline the Sigma rule is translated with, for example splunk_windows. Left empty, the default of the connector.')}
-                  disabled={disabled}
-                  fullWidth
-                />
-              </div>
+              {!infrastructure && (
+                <div style={{ marginTop: theme.spacing(2) }}>
+                  <Field
+                    component={TextField}
+                    variant="outlined"
+                    name={`${name}.${index}.pipeline`}
+                    label={t_i18n('pySigma pipeline (optional)')}
+                    helperText={t_i18n('With an empty query, the pipeline the Sigma rule is translated with, for example splunk_windows. Left empty, the default of the connector.')}
+                    disabled={disabled}
+                    fullWidth
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -590,8 +590,9 @@ const huntInputOfPlan = (
   name: spec.name,
   description: [spec.description, spec.rationale ? `Rationale: ${spec.rationale}` : ''].filter((part) => part.length > 0).join('\n\n'),
   hypothesis: spec.hypothesis,
-  hunt_type: HuntType.Telemetry,
-  hunt_scope: buildHuntScopeFilter(scopePlatformIds),
+  hunt_type: spec.hunt_type === HuntType.Infrastructure ? HuntType.Infrastructure : HuntType.Telemetry,
+  // An infrastructure hunt runs on the internet scanning services, never on a security platform
+  hunt_scope: spec.hunt_type === HuntType.Infrastructure ? '' : buildHuntScopeFilter(scopePlatformIds),
   // Validating the draft workspace creates the hunt; an analyst then activates it from its readiness checklist
   hunt_status: HuntStatus.Draft,
   hunt_source_kind: HuntSourceKind.Agent,

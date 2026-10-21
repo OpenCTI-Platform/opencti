@@ -73,8 +73,7 @@ const connector = (id: string, platform: string, securityPlatformId: string | nu
 
 const SPLUNK_PROD = connector('connector-splunk', 'splunk', 'platform-prod');
 const SENTINEL_LAB = connector('connector-sentinel', 'sentinel', 'platform-lab');
-// Registered before it named its security platform
-const UNBOUND = connector('connector-unbound', 'splunk', null);
+const CENSYS = connector('connector-censys', 'censys', null);
 
 // The registered hunt connectors, their last ping (updated_at here), and the active runs a cancellation reads
 const serving = (connectors: object[], runs: object[] = []) => {
@@ -113,11 +112,11 @@ describe('Hunt connectors and their security platforms', () => {
     vi.mocked(elCount).mockResolvedValue(0 as never);
   });
 
-  it('should list the connectors of the security platforms the user can read only', async () => {
-    serving([SPLUNK_PROD, SENTINEL_LAB, UNBOUND]);
+  it('should list the connectors of the internet scanning services and of the security platforms the user can read only', async () => {
+    serving([SPLUNK_PROD, SENTINEL_LAB, CENSYS]);
     vi.mocked(internalFindByIds).mockResolvedValue([{ internal_id: 'platform-lab' }] as never);
     const listed = await findHuntConnectors(testContext, ADMIN_USER);
-    expect(listed.map((view) => view.id)).toEqual(['connector-sentinel']);
+    expect(listed.map((view) => view.id)).toEqual(['connector-sentinel', 'connector-censys']);
     expect(vi.mocked(internalFindByIds).mock.calls[0][2]).toEqual(['platform-prod', 'platform-lab']);
   });
 
@@ -159,8 +158,8 @@ describe('Hunt connectors and their security platforms', () => {
     expect(addSecurityPlatform).toHaveBeenCalledWith(testContext, ADMIN_USER, { name: 'Prod SIEM', security_platform_type: 'SIEM' });
   });
 
-  it('should check and bind a connector under a lock per security platform, then under its dispatch lock', async () => {
-    serving([SPLUNK_PROD]);
+  it('should check and bind a connector under a lock per security platform, never an internet scanning service, and bind every connector under its dispatch lock', async () => {
+    serving([SPLUNK_PROD, CENSYS]);
     loadingRegistration(SPLUNK_PROD, { internal_id: 'platform-prod' });
     vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...SPLUNK_PROD, ...patch } }) as never);
     // The connectors read for the check and the binding both happen while the lock is held
@@ -173,14 +172,21 @@ describe('Hunt connectors and their security platforms', () => {
     await registering({ security_platform_name: 'Prod' });
     expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual([huntConnectorPlatformLockKey(PROD_STANDARD_ID), 'hunt_connector_dispatch_connector-splunk']);
     expect(heldDuring).toEqual([1, 1]);
+    vi.mocked(withHuntLock).mockClear();
+    loadingRegistration(CENSYS, null);
+    await registering({ connector_id: CENSYS.internal_id, platform: 'censys', languages: ['fingerprint'] });
+    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual(['hunt_connector_dispatch_connector-censys']);
+    expect(addSecurityPlatform).not.toHaveBeenCalled();
   });
 
-  it('should refuse a hunt connector that names no security platform', async () => {
-    serving([SPLUNK_PROD]);
-    loadingRegistration(SPLUNK_PROD, null);
-    await expect(registering({})).rejects.toThrow('A hunt connector must declare the security platform it executes against');
-    await expect(registering({ platform: 'internet', security_platform_name: 'Prod' })).rejects.toThrow('Hunt platform must be one of');
-    expect(patchAttribute).not.toHaveBeenCalled();
+  it('should register an internet scanning service without security platform, indicators nor another language than fingerprints', async () => {
+    serving([CENSYS]);
+    loadingRegistration(CENSYS, null);
+    vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...CENSYS, ...patch } }) as never);
+    await registering({ connector_id: CENSYS.internal_id, platform: 'censys', languages: ['fingerprint'], security_platform_name: 'Ignored', supports_indicators: true });
+    expect(addSecurityPlatform).not.toHaveBeenCalled();
+    expect(vi.mocked(patchAttribute).mock.calls[0][4]).toMatchObject({ hunt_platform: 'censys', hunt_security_platform_id: null, hunt_supports_indicators: false });
+    await expect(registering({ connector_id: CENSYS.internal_id, platform: 'censys', languages: ['cenql'] })).rejects.toThrow('runs the fingerprint language');
   });
 
   it('should read the binding again under the dispatch lock, so a connector registered meanwhile against another platform gets no run of the former', async () => {
@@ -288,6 +294,7 @@ describe('Hunt connectors and their security platforms', () => {
     expect(await dispatchHuntRun(testContext, run as BasicStoreEntityHuntRun, { internal_id: 'hunt-1' } as BasicStoreEntityHunt)).toBe(false);
     expect(patchAttribute).not.toHaveBeenCalled();
     expect(isHuntConnectorBoundToRun(SPLUNK_PROD as unknown as BasicStoreEntityConnector, { security_platform_id: 'platform-prod' })).toBe(true);
-    expect(isHuntConnectorBoundToRun(UNBOUND as unknown as BasicStoreEntityConnector, { security_platform_id: 'platform-prod' })).toBe(false);
+    expect(isHuntConnectorBoundToRun(CENSYS as unknown as BasicStoreEntityConnector, { security_platform_id: null })).toBe(true);
+    expect(isHuntConnectorBoundToRun(CENSYS as unknown as BasicStoreEntityConnector, { security_platform_id: 'platform-prod' })).toBe(false);
   });
 });

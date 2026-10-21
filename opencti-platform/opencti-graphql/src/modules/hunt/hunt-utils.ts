@@ -4,7 +4,16 @@ import { ValidationError } from '../../config/errors';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import { checkFiltersValidity, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { HUNT_INCIDENT_MODE_DRAFT, HUNT_INCIDENT_MODE_INCIDENT, HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, type HuntNativeQuery } from './hunt-types';
+import {
+  HUNT_INCIDENT_MODE_DRAFT,
+  HUNT_INCIDENT_MODE_INCIDENT,
+  HUNT_LANGUAGE_FINGERPRINT,
+  HUNT_PLATFORMS,
+  HUNT_SCHEDULE_STANDING,
+  HUNT_TYPE_INDICATORS,
+  HUNT_TYPE_INFRASTRUCTURE,
+  type HuntNativeQuery,
+} from './hunt-types';
 import type { HuntEvidence, HuntHit, HuntRuleResult } from './huntRun/huntRun-types';
 import { isCronSchedule } from './hunt-schedule';
 
@@ -108,9 +117,9 @@ export const storedSigmaRules = (hunt: Omit<HuntSigmaRulesLike, 'hunt_type'>): s
   return isFilledRule(hunt.sigma_rule) ? [hunt.sigma_rule] : [];
 };
 
-/** The Sigma rules a hunt runs: an indicator hunt runs none, whatever rule it still carries. */
+/** The Sigma rules a hunt runs: an indicator or internet infrastructure hunt runs none, whatever rule it still carries. */
 export const huntSigmaRules = (hunt: HuntSigmaRulesLike): string[] => {
-  if (hunt.hunt_type === HUNT_TYPE_INDICATORS) {
+  if (hunt.hunt_type === HUNT_TYPE_INDICATORS || hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
     return [];
   }
   return storedSigmaRules(hunt);
@@ -619,6 +628,22 @@ export const huntRuleNativeQuery = (queries: HuntNativeQuery[], platform: string
   const onPlatform = queries.filter((query) => query.platform === platform);
   const keyed = ruleKey ? onPlatform.find((query) => query.rule_key === ruleKey) : undefined;
   return keyed ?? (isFirstRule || !ruleKey ? onPlatform.find((query) => !query.rule_key) ?? null : null);
+};
+
+/**
+ * The fingerprint document an internet scanning service runs for an infrastructure hunt: the one written for its
+ * platform, else the first one under its platform, the fingerprints meaning the same to every service.
+ */
+export const huntInfrastructureNativeQuery = (queries: HuntNativeQuery[], platform: string | null): HuntNativeQuery | null => {
+  if (!platform) {
+    return null;
+  }
+  const fingerprints = queries.filter((query) => query.language.toLowerCase() === HUNT_LANGUAGE_FINGERPRINT);
+  const own = fingerprints.find((query) => query.platform === platform);
+  if (own) {
+    return own;
+  }
+  return fingerprints.length > 0 ? { ...fingerprints[0], platform } : null;
 };
 
 const FILTER_GROUP_SHAPE_ERROR = 'Filters must be a filter group (mode, filters, filterGroups)';
