@@ -1,22 +1,42 @@
+import { buildTransitionRuntimeParams, EMPTY_TRANSITION_INPUT_VALUES, hasTransitionComment, TransitionInputRequirements, TransitionInputValues } from './WorkflowTransitionInputs';
+
 export const WORKFLOW_STATUS_FIELD = 'x_opencti_workflow_id';
 // Toolbar-only field, sent to the backend as a replace of the workflow status with an event name
 export const WORKFLOW_TRANSITION_FIELD = 'x_opencti_workflow_id_transition';
 
+interface TransitionOption {
+  label: string;
+  value: string;
+  requirements?: TransitionInputRequirements;
+}
+
+// The comment and organizations collected for a mass transition, and whether they are complete
+export type MassTransitionInputs = Partial<TransitionInputValues> & { inputsValid?: boolean };
+
 interface WorkflowActionInput {
   type: string;
   fieldType?: string;
-  values: { label: string; value: string }[];
+  values: TransitionOption[];
+  options?: MassTransitionInputs;
 }
 
 interface MassTransition {
   event: string;
   toState: string;
   toStatus?: { template?: { name: string } | null } | null;
+  comment?: string | null;
+  requiresShareOrganizationInput?: boolean | null;
+  requiresUnshareOrganizationInput?: boolean | null;
 }
 
-export const buildTransitionOptions = (transitions: readonly MassTransition[]) => transitions.map((transition) => ({
+export const buildTransitionOptions = (transitions: readonly MassTransition[]): TransitionOption[] => transitions.map((transition) => ({
   label: `${transition.event} → ${transition.toStatus?.template?.name ?? transition.toState}`,
   value: transition.event,
+  requirements: {
+    commentMode: transition.comment,
+    requiresShareOrg: !!transition.requiresShareOrganizationInput,
+    requiresUnshareOrg: !!transition.requiresUnshareOrganizationInput,
+  },
 }));
 
 interface WorkflowStatus {
@@ -31,16 +51,30 @@ export const buildWorkflowStatusOptions = <T extends WorkflowStatus>(statuses: r
   status,
 }));
 
-export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => ({
-  type: input.type,
-  context: {
-    field: WORKFLOW_STATUS_FIELD,
-    type: input.fieldType,
-    values: [],
-    // Never undefined: a dropped key would turn the task into a plain replace that clears the status
-    options: { eventName: input.values[0]?.value ?? null },
-  },
-});
+const NO_REQUIREMENTS: TransitionInputRequirements = { requiresShareOrg: false, requiresUnshareOrg: false };
+
+export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => {
+  const requirements = input.values[0]?.requirements ?? NO_REQUIREMENTS;
+  const inputs = { ...EMPTY_TRANSITION_INPUT_VALUES, ...input.options };
+  const comment = hasTransitionComment(requirements.commentMode) ? inputs.comment.trim() : '';
+  return {
+    type: input.type,
+    context: {
+      field: WORKFLOW_STATUS_FIELD,
+      type: input.fieldType,
+      values: [],
+      options: {
+        // Never undefined: a dropped key would turn the task into a plain replace that clears the status
+        eventName: input.values[0]?.value ?? null,
+        ...(comment ? { comment } : {}),
+        ...buildTransitionRuntimeParams(requirements, inputs),
+      },
+    },
+  };
+};
+
+// A transition step is complete once its comment and organizations are
+export const isTransitionInputValid = (input: WorkflowActionInput) => input.options?.inputsValid === true;
 
 // For a bypass user, a status update goes through the workflow engine, with the transition actions by default
 export const withWorkflowBypassOptions = (options?: { applyTransitionActions?: boolean }) => ({
