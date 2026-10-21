@@ -532,3 +532,29 @@ export const getCriticalAlerts = async (context, user) => {
   // no alert
   return [];
 };
+
+// region config preset
+// Allowlists of the Settings fields a configuration preset carries. Anything not listed here
+// (credentials, license, providers, theme, branding) never leaves the platform through a preset.
+export const CONFIG_PRESET_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
+export const CONFIG_PRESET_MESSAGES_FIELDS = [
+  'platform_banner_text',
+  'platform_banner_level',
+  'platform_login_message',
+  'platform_consent_message',
+  'platform_consent_confirm_text',
+  'platform_no_access_message',
+];
+
+const pickConfigPresetFields = (settings, fields) => Object.fromEntries(fields.map((field) => [field, settings[field] ?? null]));
+
+export const getPlatformConfigPresetConfiguration = async (context) => {
+  const settings = await getSettingsFromDatabase(context);
+  return pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS);
+};
+
+export const getMessagesConfigPresetConfiguration = async (context) => {
+  const settings = await getSettingsFromDatabase(context);
+  return pickConfigPresetFields(settings, CONFIG_PRESET_MESSAGES_FIELDS);
+};
+// endregion

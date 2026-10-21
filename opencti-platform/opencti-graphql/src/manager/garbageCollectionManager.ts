@@ -1,5 +1,5 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
 import { GARBAGE_COLLECTION_MANAGER_USER, executionContext, SYSTEM_USER } from '../utils/access';
 import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
 import { rawFetchStreamInfo, STREAM_FILE_DIRECTORY } from '../database/redis-stream';
@@ -13,6 +13,7 @@ import { lockResources } from '../lock/master-lock';
 import { elUpdateRemovedFiles } from '../database/file-search';
 import type { BasicStoreBase } from '../types/store';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
+import { deleteExpiredConfigPresetExports } from '../modules/configPreset/configPreset-domain';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
@@ -115,6 +116,10 @@ export const garbageCollectionHandler = async () => {
   logApp.debug('[OPENCTI-MODULE] Garbage collection manager deletion process complete', { count: deleteOperationsToManage.length });
 
   await garbageCollectRedisStreamFiles(context);
+  // The configuration preset exports are only kept for a short time, they belong to no entity
+  if (isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)) {
+    await deleteExpiredConfigPresetExports(context, GARBAGE_COLLECTION_MANAGER_USER);
+  }
 };
 
 const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {
