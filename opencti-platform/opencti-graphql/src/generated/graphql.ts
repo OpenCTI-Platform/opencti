@@ -4582,6 +4582,32 @@ export type ConfidenceLevelOverrideInput = {
   max_confidence: Scalars['Int']['input'];
 };
 
+export type ConfigPresetExportableGroup = {
+  __typename?: 'ConfigPresetExportableGroup';
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
+
+export type ConfigPresetExportableItem = {
+  __typename?: 'ConfigPresetExportableItem';
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  translatable: Scalars['Boolean']['output'];
+};
+
+export type ConfigPresetExportableType = {
+  __typename?: 'ConfigPresetExportableType';
+  group: ConfigPresetExportableGroup;
+  items: Array<ConfigPresetExportableItem>;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
+
+export type ConfigPresetSelectionInput = {
+  items?: InputMaybe<Array<Scalars['ID']['input']>>;
+  type: Scalars['ID']['input'];
+};
+
 export type Connector = BasicObject & InternalObject & {
   __typename?: 'Connector';
   active?: Maybe<Scalars['Boolean']['output']>;
@@ -17460,6 +17486,7 @@ export type Mutation = {
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
   clearWorkflowPendingState: WorkflowInstance;
+  configPresetExport: File;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -17758,6 +17785,7 @@ export type Mutation = {
   securityCoverageRelationDelete?: Maybe<SecurityCoverage>;
   securityCoverageResultAdd?: Maybe<SecurityCoverageResult>;
   securityCoverageResultDelete?: Maybe<Scalars['ID']['output']>;
+  securityCoverageResultEdit?: Maybe<SecurityCoverageResult>;
   securityCoverageResultRelationAdd?: Maybe<StixRefRelationship>;
   securityCoverageResultRelationDelete?: Maybe<SecurityCoverage>;
   securityPlatformAdd?: Maybe<SecurityPlatform>;
@@ -18253,6 +18281,12 @@ export type MutationCityEditArgs = {
 
 export type MutationClearWorkflowPendingStateArgs = {
   entityId: Scalars['String']['input'];
+};
+
+
+export type MutationConfigPresetExportArgs = {
+  bundle_name?: InputMaybe<Scalars['String']['input']>;
+  selections: Array<ConfigPresetSelectionInput>;
 };
 
 
@@ -19902,6 +19936,12 @@ export type MutationSecurityCoverageResultAddArgs = {
 
 export type MutationSecurityCoverageResultDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSecurityCoverageResultEditArgs = {
+  id: Scalars['ID']['input'];
+  input: SecurityCoverageResultEditInput;
 };
 
 
@@ -24982,6 +25022,7 @@ export type Query = {
   channels?: Maybe<ChannelConnection>;
   cities?: Maybe<CityConnection>;
   city?: Maybe<City>;
+  configPresetExportableTypes: Array<ConfigPresetExportableType>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
   connectorManagers: Array<ConnectorManager>;
@@ -31056,6 +31097,20 @@ export type SecurityCoverageResultEdge = {
   __typename?: 'SecurityCoverageResultEdge';
   cursor: Scalars['String']['output'];
   node: SecurityCoverageResult;
+};
+
+export type SecurityCoverageResultEditInput = {
+  add_related_entities?: InputMaybe<SecurityCoverageSelectedEntitiesInput>;
+  confidence?: InputMaybe<Scalars['Int']['input']>;
+  coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
+  coverage_valid_from?: InputMaybe<Scalars['DateTime']['input']>;
+  coverage_valid_to?: InputMaybe<Scalars['DateTime']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  external_uri?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export enum SecurityCoverageResultOrdering {
@@ -40952,6 +41007,10 @@ export type ResolversTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
+  ConfigPresetExportableGroup: ResolverTypeWrapper<ConfigPresetExportableGroup>;
+  ConfigPresetExportableItem: ResolverTypeWrapper<ConfigPresetExportableItem>;
+  ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
+  ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
@@ -41691,6 +41750,7 @@ export type ResolversTypes = ResolversObject<{
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: ResolverTypeWrapper<Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversTypes['SecurityCoverageResultEdge']> }>;
   SecurityCoverageResultEdge: ResolverTypeWrapper<Omit<SecurityCoverageResultEdge, 'node'> & { node: ResolversTypes['SecurityCoverageResult'] }>;
+  SecurityCoverageResultEditInput: SecurityCoverageResultEditInput;
   SecurityCoverageResultOrdering: SecurityCoverageResultOrdering;
   SecurityCoverageSelectedEntitiesInput: SecurityCoverageSelectedEntitiesInput;
   SecurityPlatform: ResolverTypeWrapper<BasicStoreEntitySecurityPlatform>;
@@ -42136,6 +42196,10 @@ export type ResolversParentTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ConfidenceLevelOverride;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
+  ConfigPresetExportableGroup: ConfigPresetExportableGroup;
+  ConfigPresetExportableItem: ConfigPresetExportableItem;
+  ConfigPresetExportableType: ConfigPresetExportableType;
+  ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;
   ConnectorConfiguration: ConnectorConfiguration;
@@ -42769,6 +42833,7 @@ export type ResolversParentTypes = ResolversObject<{
   SecurityCoverageResultAddInput: SecurityCoverageResultAddInput;
   SecurityCoverageResultConnection: Omit<SecurityCoverageResultConnection, 'edges'> & { edges: Array<ResolversParentTypes['SecurityCoverageResultEdge']> };
   SecurityCoverageResultEdge: Omit<SecurityCoverageResultEdge, 'node'> & { node: ResolversParentTypes['SecurityCoverageResult'] };
+  SecurityCoverageResultEditInput: SecurityCoverageResultEditInput;
   SecurityCoverageSelectedEntitiesInput: SecurityCoverageSelectedEntitiesInput;
   SecurityPlatform: BasicStoreEntitySecurityPlatform;
   SecurityPlatformAddInput: SecurityPlatformAddInput;
@@ -44504,6 +44569,24 @@ export type ConfidenceLevelResolvers<ContextType = any, ParentType extends Resol
 export type ConfidenceLevelOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfidenceLevelOverride'] = ResolversParentTypes['ConfidenceLevelOverride']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableGroup'] = ResolversParentTypes['ConfigPresetExportableGroup']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItem'] = ResolversParentTypes['ConfigPresetExportableItem']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableType'] = ResolversParentTypes['ConfigPresetExportableType']> = ResolversObject<{
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
+  items?: Resolver<Array<ResolversTypes['ConfigPresetExportableItem']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type ConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connector'] = ResolversParentTypes['Connector']> = ResolversObject<{
@@ -49124,6 +49207,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   clearWorkflowPendingState?: Resolver<ResolversTypes['WorkflowInstance'], ParentType, ContextType, RequireFields<MutationClearWorkflowPendingStateArgs, 'entityId'>>;
+  configPresetExport?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetExportArgs, 'selections'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
@@ -49422,6 +49506,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   securityCoverageRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   securityCoverageResultAdd?: Resolver<Maybe<ResolversTypes['SecurityCoverageResult']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultAddArgs, 'input'>>;
   securityCoverageResultDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultDeleteArgs, 'id'>>;
+  securityCoverageResultEdit?: Resolver<Maybe<ResolversTypes['SecurityCoverageResult']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultEditArgs, 'id' | 'input'>>;
   securityCoverageResultRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultRelationAddArgs, 'id' | 'input'>>;
   securityCoverageResultRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageResultRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   securityPlatformAdd?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformAddArgs, 'input'>>;
@@ -51027,6 +51112,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   channels?: Resolver<Maybe<ResolversTypes['ChannelConnection']>, ParentType, ContextType, Partial<QueryChannelsArgs>>;
   cities?: Resolver<Maybe<ResolversTypes['CityConnection']>, ParentType, ContextType, Partial<QueryCitiesArgs>>;
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
+  configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
   connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
@@ -55355,6 +55441,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ComplexVariable?: ComplexVariableResolvers<ContextType>;
   ConfidenceLevel?: ConfidenceLevelResolvers<ContextType>;
   ConfidenceLevelOverride?: ConfidenceLevelOverrideResolvers<ContextType>;
+  ConfigPresetExportableGroup?: ConfigPresetExportableGroupResolvers<ContextType>;
+  ConfigPresetExportableItem?: ConfigPresetExportableItemResolvers<ContextType>;
+  ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
