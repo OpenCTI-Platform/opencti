@@ -980,6 +980,26 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data?.userAdd.name).toEqual('User');
     userInternalId = user.data?.userAdd.id;
   });
+  it('should read grantable groups of its administrated organizations', async () => {
+    const ME_ADMINISTRATED_ORGANIZATIONS_QUERY = gql`
+      query meAdministratedOrganizations {
+        me {
+          administrated_organizations {
+            id
+            grantable_groups {
+              id
+              name
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: ME_ADMINISTRATED_ORGANIZATIONS_QUERY, variables: {} });
+    const administratedOrganizations = queryResult.data?.me.administrated_organizations ?? [];
+    const testOrganization = administratedOrganizations.find((o: { id: string }) => o.id === testOrganizationId);
+    expect(testOrganization).toBeDefined();
+    expect(testOrganization.grantable_groups).toEqual([{ id: amberGroupId, name: AMBER_GROUP.name }]);
+  });
   it('should not create user in an organization the org admin does not administrate', async () => {
     const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
     const USER_TO_CREATE_WRONG_ORG = {
