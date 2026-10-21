@@ -1,6 +1,6 @@
 import * as htmlToImage from 'html-to-image';
 import fileDownload from 'js-file-download';
-import pdfMake from 'pdfmake';
+import pdfMake from 'pdfmake/build/pdfmake';
 import isSvg from 'is-svg';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
 

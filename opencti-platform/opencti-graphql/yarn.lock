@@ -6439,12 +6439,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:7.0.1":
-  version: 7.0.1
-  resolution: "ejs@npm:7.0.1"
+"ejs@npm:7.0.2":
+  version: 7.0.2
+  resolution: "ejs@npm:7.0.2"
   bin:
     ejs: bin/cli.js
-  checksum: 10c0/683485e8f4d1db361fe4c6b3906733555460eb7f858ad4ca7f7c0e0e7925d83e6b6e55edda9baf0701213c2e9a7e08e83c2ec116ba71a98affdf5638e8ba8067
+  checksum: 10c0/f5f8b44411766186e38aec59a4974612cc259121e58a6af40c04a5613218503a92386cedc9fe7faf474bf928596c4ede9b7ce98babcf08d6d2e55c7189617259
   languageName: node
   linkType: hard
 
@@ -9872,10 +9872,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:10.1.2":
-  version: 10.1.2
-  resolution: "nodemailer@npm:10.1.2"
-  checksum: 10c0/dde04b480febfa96f03ddcf67c8fb40495c0ad55040c627aae0df831429093f17e7ef6c2c8056190b3fda587eeb6e79dea15c704a90a852c39c25c13ba5acee5
+"nodemailer@npm:10.1.7":
+  version: 10.1.7
+  resolution: "nodemailer@npm:10.1.7"
+  checksum: 10c0/1bac1f2fb7a60ffa889973cfd1e71da2bdecacd82eb263a612a587a0c06cec43a9a7452fcbd830c39c3a047ef99eb101cb5cf2c6a0a9523624c38f1ae7f01bcb
   languageName: node
   linkType: hard
 
@@ -10184,9 +10184,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.37.0":
-  version: 7.37.0
-  resolution: "openai@npm:7.37.0"
+"openai@npm:7.38.0":
+  version: 7.38.0
+  resolution: "openai@npm:7.38.0"
   peerDependencies:
     "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
     "@smithy/hash-node": ">=4.3.0 <5"
@@ -10207,7 +10207,7 @@ __metadata:
       optional: true
     zod:
       optional: true
-  checksum: 10c0/a670ff8a4bc89adb6c499f25f5c9dfefbe3a7cc067238da5ef11b24d8dfca1ec3bcb5d94b660dbd76d141586ba1daf9dee9e693e1a6c15e4090942632891a200
+  checksum: 10c0/9a9a062b43b15dbcf53852de3201dbf8eb77ba28162f3b07586f92549f29eb63d56ffc18e5a3f3c6f262ab91bd1e49f31d4b432c521dfa278616dcfbc85ae126
   languageName: node
   linkType: hard
 
@@ -10330,7 +10330,7 @@ __metadata:
     cors: "npm:2.8.6"
     csv-parse: "npm:7.0.3"
     dataloader: "npm:2.2.3"
-    ejs: "npm:7.0.1"
+    ejs: "npm:7.0.2"
     esbuild: "npm:0.28.2"
     esbuild-plugin-copy: "npm:2.1.1"
     esbuild-plugin-import-glob: "npm:0.1.1"
@@ -10381,8 +10381,8 @@ __metadata:
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.0"
     node-gyp-build: "npm:4.8.4"
-    nodemailer: "npm:10.1.2"
-    openai: "npm:7.37.0"
+    nodemailer: "npm:10.1.7"
+    openai: "npm:7.38.0"
     openid-client: "npm:6.8.8"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
