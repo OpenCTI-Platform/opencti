@@ -29,15 +29,28 @@ export const loginAs = async (page: Page, user: TestUser) => {
   await toolbar.exitDraftIfPresent();
 };
 
-/** A goto can be aborted by a navigation the app starts itself (e.g. a reload after login): retry it. */
+/**
+ * A goto can be aborted by a navigation the app starts itself (e.g. a reload after login), or hang
+ * for minutes without ever committing under load: bound each attempt (a goto has no timeout of its
+ * own, so a retry loop around it could never fire) and retry it.
+ */
 export const gotoDraft = (page: Page, draftId: string, tab: 'containers' | 'overview' = 'containers') => expect(async () => {
-  await page.goto(`/dashboard/data/import/draft/${draftId}/${tab}`, { waitUntil: 'domcontentloaded' });
-}).toPass({ timeout: 60000, intervals: [1000] });
+  await page.goto(`/dashboard/data/import/draft/${draftId}/${tab}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+}).toPass({ timeout: 120000, intervals: [1000] });
 
-/** Report is a Container-type entity, shown under the "Containers" tab, not "Entities". */
+/**
+ * Logs in as `user` and opens the draft. Report is a Container-type entity, shown under the
+ * "Containers" tab, not "Entities". The whole sequence is redone when the draft page does not settle
+ * (toolbar, or the no-access page): under CI load the app can stay on a blank page or its spinner,
+ * and waiting longer on that page never helps.
+ */
 export const openDraft = async (page: Page, draftId: string, user: TestUser, tab: 'containers' | 'overview' = 'containers') => {
-  await loginAs(page, user);
-  await gotoDraft(page, draftId, tab);
+  const toolbar = new DraftToolbarPageModel(page);
+  await expect(async () => {
+    await loginAs(page, user);
+    await gotoDraft(page, draftId, tab);
+    await expect(toolbar.getToolbar().or(toolbar.getNoAccessMessage())).toBeVisible({ timeout: 30000 });
+  }).toPass({ timeout: 300000, intervals: [1000] });
 };
 
 /** Submits a fresh Threat Advisory form as AnalystOrgA (status NEW) and returns the draft id. */

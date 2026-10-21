@@ -28,7 +28,7 @@ export default class DraftToolbarPageModel {
     const noAccessMessage = this.getNoAccessMessage();
     await expect(async () => {
       if (!(await noAccessMessage.isVisible())) {
-        await this.page.reload({ waitUntil: 'domcontentloaded' });
+        await this.page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
       }
       await expect(noAccessMessage).toBeVisible({ timeout: 5000 });
     }).toPass({ timeout: 60000, intervals: [2000, 5000, 10000] });
@@ -66,7 +66,7 @@ export default class DraftToolbarPageModel {
     const nextStatusButton = actions.getByRole('button', { name: 'Next status' });
     await expect(async () => {
       if (!(await directButton.or(nextStatusButton).isVisible())) {
-        await this.page.reload({ waitUntil: 'domcontentloaded' });
+        await this.page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
       }
       await expect(directButton.or(nextStatusButton)).toBeVisible({ timeout: 5000 });
     }).toPass({ timeout: 60000, intervals: [2000, 5000, 10000] });
@@ -81,7 +81,7 @@ export default class DraftToolbarPageModel {
     await expect(async () => {
       if (!(await menuItem.isVisible())) {
         await this.page.keyboard.press('Escape').catch(() => {});
-        await this.page.reload({ waitUntil: 'domcontentloaded' });
+        await this.page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
         await nextStatusButton.click();
       }
       await expect(menuItem).toBeVisible({ timeout: 5000 });
