@@ -528,6 +528,7 @@
   "Infrastructure types": "Tipos de infraestructuras",
   "Ingestion health": "Estado de la ingesta",
   "Ingestion health manager": "Gestor del estado de la ingesta",
+  "Ingestion health settings": "Configuración del estado de la ingesta",
   "Ingestion running": "Ingestión en curso",
   "Ingestion state": "Estado de ingestión",
   "ingestion_health": "estado de la ingesta",

@@ -528,6 +528,7 @@
   "Infrastructure types": "基础设施类型",
   "Ingestion health": "数据摄取健康状态",
   "Ingestion health manager": "数据摄取健康管理器",
+  "Ingestion health settings": "数据摄取健康状态设置",
   "Ingestion running": "摄取正在运行",
   "Ingestion state": "摄取状态",
   "ingestion_health": "数据摄取健康状态",

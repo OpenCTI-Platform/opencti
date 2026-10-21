@@ -528,6 +528,7 @@
   "Infrastructure types": "인프라 유형",
   "Ingestion health": "수집 상태",
   "Ingestion health manager": "수집 상태 관리자",
+  "Ingestion health settings": "수집 상태 설정",
   "Ingestion running": "데이터 수집 실행 중",
   "Ingestion state": "수집 상태",
   "ingestion_health": "수집 상태",
