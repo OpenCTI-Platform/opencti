@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, getAuthUser, testContext, USER_EDITOR } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { findRefRelationshipsPaginated } from '../../../src/domain/stixRefRelationship';
-import type { AuthUser } from '../../../src/types/user';
+import { ADMIN_USER, getAuthUser, testContext, USER_EDITOR } from '../utils/testQuery';
+import { queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../utils/testQueryHelper';
+import { MARKING_TLP_RED } from '../../src/schema/identifier';
+import { findRefRelationshipsPaginated } from '../../src/domain/stixRefRelationship';
+import type { AuthUser } from '../../src/types/user';
 
 const CREATE_ORGANIZATION_QUERY = gql`
   mutation OrganizationAdd($input: OrganizationAddInput!) {
