@@ -404,7 +404,7 @@ const Workflow = ({
   const edgeActions = useMemo(() => ({ insertStatus: openInsertDrawer, deleteConnection }), [openInsertDrawer, deleteConnection]);
 
   const onConnect = useStatusConnection();
-  const onKeyDown = useDeleteKey();
+  useDeleteKey();
 
   // Hover highlight: the hovered node's neighbourhood stays lit and everything else dims. Nodes
   // and edges read it from HoverHighlightContext; the nodes/edges given to ReactFlow stay
@@ -421,7 +421,6 @@ const Workflow = ({
             nodes={nodes}
             edges={edges}
             onConnect={onConnect}
-            onKeyDown={onKeyDown}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
@@ -436,7 +435,7 @@ const Workflow = ({
             fitViewOptions={fitViewOptions}
             nodesDraggable={false}
             // React Flow's delete key removes elements raw, which can leave a transition without
-            // sources. useDeleteKey (onKeyDown) handles Backspace / Delete instead.
+            // sources. useDeleteKey handles Backspace / Delete instead.
             deleteKeyCode={null}
             zoomOnDoubleClick={false}
             proOptions={proOptions}
