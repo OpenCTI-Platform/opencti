@@ -4582,6 +4582,27 @@ export type ConfidenceLevelOverrideInput = {
   max_confidence: Scalars['Int']['input'];
 };
 
+export type ConfigPresetExportableGroup = {
+  __typename?: 'ConfigPresetExportableGroup';
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
+
+export type ConfigPresetExportableItem = {
+  __typename?: 'ConfigPresetExportableItem';
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  translatable: Scalars['Boolean']['output'];
+};
+
+export type ConfigPresetExportableType = {
+  __typename?: 'ConfigPresetExportableType';
+  group: ConfigPresetExportableGroup;
+  items: Array<ConfigPresetExportableItem>;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
+
 export type Connector = BasicObject & InternalObject & {
   __typename?: 'Connector';
   active?: Maybe<Scalars['Boolean']['output']>;
@@ -24989,6 +25010,7 @@ export type Query = {
   channels?: Maybe<ChannelConnection>;
   cities?: Maybe<CityConnection>;
   city?: Maybe<City>;
+  configPresetExportableTypes: Array<ConfigPresetExportableType>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
   connectorManagers: Array<ConnectorManager>;
@@ -40973,6 +40995,9 @@ export type ResolversTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
+  ConfigPresetExportableGroup: ResolverTypeWrapper<ConfigPresetExportableGroup>;
+  ConfigPresetExportableItem: ResolverTypeWrapper<ConfigPresetExportableItem>;
+  ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
@@ -42158,6 +42183,9 @@ export type ResolversParentTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ConfidenceLevelOverride;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
+  ConfigPresetExportableGroup: ConfigPresetExportableGroup;
+  ConfigPresetExportableItem: ConfigPresetExportableItem;
+  ConfigPresetExportableType: ConfigPresetExportableType;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;
   ConnectorConfiguration: ConnectorConfiguration;
@@ -44527,6 +44555,24 @@ export type ConfidenceLevelResolvers<ContextType = any, ParentType extends Resol
 export type ConfidenceLevelOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfidenceLevelOverride'] = ResolversParentTypes['ConfidenceLevelOverride']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableGroup'] = ResolversParentTypes['ConfigPresetExportableGroup']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItem'] = ResolversParentTypes['ConfigPresetExportableItem']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableType'] = ResolversParentTypes['ConfigPresetExportableType']> = ResolversObject<{
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
+  items?: Resolver<Array<ResolversTypes['ConfigPresetExportableItem']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type ConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connector'] = ResolversParentTypes['Connector']> = ResolversObject<{
@@ -51051,6 +51097,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   channels?: Resolver<Maybe<ResolversTypes['ChannelConnection']>, ParentType, ContextType, Partial<QueryChannelsArgs>>;
   cities?: Resolver<Maybe<ResolversTypes['CityConnection']>, ParentType, ContextType, Partial<QueryCitiesArgs>>;
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
+  configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
   connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
@@ -55379,6 +55426,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ComplexVariable?: ComplexVariableResolvers<ContextType>;
   ConfidenceLevel?: ConfidenceLevelResolvers<ContextType>;
   ConfidenceLevelOverride?: ConfidenceLevelOverrideResolvers<ContextType>;
+  ConfigPresetExportableGroup?: ConfigPresetExportableGroupResolvers<ContextType>;
+  ConfigPresetExportableItem?: ConfigPresetExportableItemResolvers<ContextType>;
+  ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;

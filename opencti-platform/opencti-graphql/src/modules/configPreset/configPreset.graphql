@@ -1,0 +1,26 @@
+# The catalog objects are identified by a key, not an id: a singleton category and its only item share the same key, and the
+# front-end Relay store caches every object that has an id by that id alone, which would merge them into one record.
+type ConfigPresetExportableItem {
+    key: String!
+    label: String!
+    # True when the label is a static string the UI translates, false when it is user data shown as is.
+    translatable: Boolean!
+}
+
+# An export group (Platform settings, Data model...): it groups types in the export dialog.
+type ConfigPresetExportableGroup {
+    key: String!
+    label: String!
+}
+
+# A category of configuration, in registry order. A singleton category has exactly one item, whose key is the key of the category.
+type ConfigPresetExportableType {
+    key: String!
+    label: String!
+    group: ConfigPresetExportableGroup!
+    items: [ConfigPresetExportableItem!]!
+}
+
+extend type Query {
+    configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+}

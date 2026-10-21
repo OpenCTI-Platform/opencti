@@ -9201,6 +9201,7 @@ type Query {
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
   customFieldStixFilterKeys(entityType: String): [String!]
+  configPresetExportableTypes: [ConfigPresetExportableType!]!
 }
 
 type Subscription {
@@ -17709,4 +17710,22 @@ input CustomFieldDefinitionAddInput {
   min_value: Int
   max_value: Int
   select_options: [String!]
+}
+
+type ConfigPresetExportableItem {
+  key: String!
+  label: String!
+  translatable: Boolean!
+}
+
+type ConfigPresetExportableGroup {
+  key: String!
+  label: String!
+}
+
+type ConfigPresetExportableType {
+  key: String!
+  label: String!
+  group: ConfigPresetExportableGroup!
+  items: [ConfigPresetExportableItem!]!
 }
