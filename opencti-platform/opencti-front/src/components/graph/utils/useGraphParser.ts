@@ -1,5 +1,7 @@
 import * as R from 'ramda';
+import { useContext } from 'react';
 import { dateFormat, jsDate } from '../../../utils/Time';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import { isNone, useFormatter } from '../../i18n';
 import { defaultDate, getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { OctiGraphPositions, GraphLink, GraphNode, LibGraphProps } from '../graph.types';
@@ -25,6 +27,7 @@ export interface ObjectToParse {
   }[];
   color?: string;
   numberOfConnectedElement?: number;
+  corroboration_count?: number | null;
   createdBy: {
     id: string;
     name: string;
@@ -96,6 +99,10 @@ export const NO_AUTHOR_ID = '0533fcc9-b9e8-4010-877c-174343cb24cd';
 
 const useGraphParser = () => {
   const { t_i18n } = useFormatter();
+  // A platform keeps the stored provenance when provenance is disabled: graphs only draw it while it is enabled
+  const { platformModuleHelpers } = useContext(UserContext);
+  const isProvenanceEnabled = platformModuleHelpers?.isProvenanceEnabled?.() ?? false;
+  const corroborationOf = (data: ObjectToParse) => (isProvenanceEnabled ? data.corroboration_count ?? undefined : undefined);
 
   const getRelationshipName = (data: ObjectToParse, forNode = false) => {
     const key = forNode ? data.relationship_type : data.entity_type;
@@ -223,6 +230,7 @@ const useGraphParser = () => {
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
+      corroborationCount: corroborationOf(data),
       confidence: data.confidence ?? null,
       raw: data,
     };
@@ -246,6 +254,7 @@ const useGraphParser = () => {
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
+      corroborationCount: corroborationOf(data),
       confidence: data.confidence ?? null,
       raw: data,
     };

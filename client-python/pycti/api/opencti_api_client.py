@@ -1292,6 +1292,25 @@ class OpenCTIApiClient:
             ][key]
         return None
 
+    @staticmethod
+    def get_provenance_extension(stix_object) -> Optional[Dict]:
+        """Get the OpenCTI provenance summary of a STIX object.
+
+        The platform exports provenance as a read-only summary: corroboration
+        count, assertion count and dates, single-sourced and conflict flags,
+        freshness flag and the number of sources per kind. Source identities
+        never leave the platform.
+
+        :param stix_object: the STIX object containing extensions
+        :type stix_object: dict
+        :return: the provenance summary if present, None otherwise
+        :rtype: Optional[Dict]
+        """
+        extensions = stix_object.get("extensions") or {}
+        return extensions.get(
+            "extension-definition--283daa2f-7739-5345-a110-19d73676f670"
+        )
+
 
 # Global cleanup functions for proxy certificates singleton
 def _cleanup_proxy_certificates():

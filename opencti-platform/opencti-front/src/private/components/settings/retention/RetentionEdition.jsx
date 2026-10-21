@@ -198,7 +198,14 @@ const RetentionEditionContainer = (props) => {
                 </Alert>
               )
             }
-            {retentionRule.scope === 'knowledge'
+            {retentionRule.scope === 'conflicts'
+              && (
+                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {t_i18n('Elements are kept: only the conflicting values that no source re-asserted during the retention period are purged.')}
+                </Alert>
+              )
+            }
+            {(retentionRule.scope === 'knowledge' || retentionRule.scope === 'conflicts')
               && (
                 <>
                   <Box

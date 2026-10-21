@@ -17,6 +17,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 import { emptyFilterGroup } from '../../utils/filtering/filtering-utils';
+import { buildStaleConflictsFilters, RETENTION_SCOPE_CONFLICTS } from '../provenance/provenance-retention';
+import { PROVENANCE_ENABLED } from '../provenance/provenance-config';
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
@@ -44,6 +46,15 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'timestamp' });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_ACTIVITY], first: 1 });
+    return result.pageInfo.globalCount;
+  } else if (scope === RETENTION_SCOPE_CONFLICTS) {
+    if (!PROVENANCE_ENABLED) {
+      return 0;
+    }
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters);
+    const conflictsFilters = buildStaleConflictsFilters(before.toISOString(), queryOptions.filters);
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, filters: conflictsFilters, first: 1 });
     return result.pageInfo.globalCount;
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });

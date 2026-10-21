@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ADMIN_USER } from '../../utils/testQuery';
-import { completeXTMHubDataForRegistration, type InputSettingsData } from '../../../src/utils/settings.helper';
+import { completeXTMHubDataForRegistration, type InputSettingsData, resolveAIEndpointType } from '../../../src/utils/settings.helper';
 
 describe('XTM Hub settings helper', () => {
   it('should complete XTM Data', () => {
@@ -67,5 +67,19 @@ describe('XTM Hub settings helper', () => {
 
     const data = completeXTMHubDataForRegistration(ADMIN_USER, mockInput);
     expect(data.length).toEqual(2);
+  });
+});
+
+describe('AI endpoint type', () => {
+  it('should recognize the Filigran domain and its subdomains only', () => {
+    expect(resolveAIEndpointType(undefined)).toEqual('');
+    expect(resolveAIEndpointType('')).toEqual('');
+    expect(resolveAIEndpointType('https://filigran.io/v1')).toEqual('Filigran');
+    expect(resolveAIEndpointType('https://ai.Filigran.io:8443/v1')).toEqual('Filigran');
+    expect(resolveAIEndpointType('ai.filigran.io/v1')).toEqual('Filigran');
+    expect(resolveAIEndpointType('https://filigran.io.example.com/v1')).toEqual('Custom');
+    expect(resolveAIEndpointType('https://example.com/filigran.io')).toEqual('Custom');
+    expect(resolveAIEndpointType('https://notfiligran.io')).toEqual('Custom');
+    expect(resolveAIEndpointType('http://[::1')).toEqual('Custom');
   });
 });

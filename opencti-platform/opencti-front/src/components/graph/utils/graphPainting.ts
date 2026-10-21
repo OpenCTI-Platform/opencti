@@ -139,6 +139,15 @@ const connectedCountLabel = (count: number | undefined): string | null => {
   return count > 99 ? '99+' : `${count}+`;
 };
 
+// Corroboration ring: invisible for single-sourced knowledge, thicker with every additional source
+const MAX_RING_SOURCES = 8;
+export const corroborationRingWidth = (corroborationCount: number | undefined) => {
+  if (!corroborationCount || corroborationCount < 2) {
+    return 0;
+  }
+  return 0.25 + 0.15 * (Math.min(corroborationCount, MAX_RING_SOURCES) - 1);
+};
+
 const paintHalo = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, color: string, alpha: number, width = HALO_WIDTH) => {
   const opacity = ctx.globalAlpha;
   ctx.beginPath();
@@ -276,6 +285,15 @@ export const paintGraphNode = (
   else if (visual.faded) alpha = palette.fadeAlpha;
   ctx.globalAlpha = alpha;
 
+  const corroborationWidth = corroborationRingWidth(node.corroborationCount);
+  if (corroborationWidth > 0 && !node.disabled) {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, radius + 1 + corroborationWidth / 2, 0, 2 * Math.PI);
+    ctx.lineWidth = corroborationWidth;
+    ctx.strokeStyle = palette.tones.success;
+    ctx.stroke();
+  }
+
   if (visual.selected || visual.preview || visual.onPath) {
     paintHalo(ctx, node, radius, palette.accent, visual.preview ? 1 : 0.8);
   } else if (visual.hovered) {
@@ -395,6 +413,12 @@ const endOf = (end: GraphLink['source']) => (typeof end === 'object' && end !== 
 /** The label drawn on a link: a link drawn towards a group, or a loop on it, says how many relationships it stands for. */
 export const graphLinkLabel = (link: Pick<GraphLink, 'label' | 'represents'>) => ((link.represents ?? 1) > 1 ? `${link.label} (${link.represents})` : link.label);
 
+/** The label drawn on a 2D link: a relationship asserted by several sources says how many, unless the link stands for several relationships. */
+export const corroboratedLinkLabel = (link: Pick<GraphLink, 'label' | 'represents' | 'corroborationCount'>) => {
+  const corroboration = link.corroborationCount ?? 0;
+  return (link.represents ?? 1) <= 1 && corroboration >= 2 ? `${link.label} (${corroboration})` : graphLinkLabel(link);
+};
+
 export const linkDash = (link: Pick<GraphLink, 'inferred' | 'isNestedInferred'>, confidence?: number | null): number[] => {
   if (link.inferred || link.isNestedInferred) return INFERRED_DASH;
   if (typeof confidence === 'number' && confidence < LOW_CONFIDENCE_THRESHOLD) return LOW_CONFIDENCE_DASH;
@@ -494,7 +518,7 @@ export const paintGraphLink = (ctx: CanvasRenderingContext2D, link: GraphLink, o
   if (visual.selected) priority = 3;
   else if (visual.onPath) priority = 2;
   else if (visual.hovered) priority = 1;
-  return { text: graphLinkLabel(link), ...middle, priority, emphasised: emphasis && !visual.faded, alternatives };
+  return { text: corroboratedLinkLabel(link), ...middle, priority, emphasised: emphasis && !visual.faded, alternatives };
 };
 
 const rotatedBox = (spot: { x: number; y: number; angle: number }, width: number, height: number): Box => {

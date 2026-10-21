@@ -9,7 +9,7 @@ export const entitiesCounter = {
   Country: 1,
   CourseOfAction: 1,
   Credential: 1,
-  DecayRule: 4,
+  DecayRule: 7, // 4 indicator decay rules, 3 knowledge decay rules (disabled)
   EntitySetting: 47,
   ExternalReference: 7,
   Group: TESTING_GROUPS.length + 3,
@@ -21,7 +21,7 @@ export const entitiesCounter = {
   Label: 13,
   Malware: 2,
   MalwareAnalysis: 1,
-  ManagerConfiguration: 1,
+  ManagerConfiguration: 2, // file index and provenance backfill managers
   MarkingDefinition: 11,
   Note: 1,
   Notifier: 2,

@@ -16,6 +16,8 @@ interface GraphElement {
   createdBy: { id: string; name: string };
   markedBy: { id: string; definition: string; x_opencti_color?: string | null }[];
   confidence?: number | null;
+  // Number of distinct sources asserting the element (provenance)
+  corroborationCount?: number;
   /**
    * The object received from the query, untouched: badge providers and quick actions read their
    * own fields from it (soft checks), whatever the graph itself uses.

@@ -1,5 +1,5 @@
-import { deepPurple, green, indigo, red } from '@mui/material/colors';
-import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import { amber, deepPurple, green, indigo, red, teal } from '@mui/material/colors';
+import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline, SourceBranchCheck, SourceBranchRemove } from 'mdi-material-ui';
 import React from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 
@@ -9,6 +9,9 @@ export const colors: Record<string, string> = {
   update: deepPurple[500],
   delete: red[500],
   multiple: indigo[500],
+  // Provenance trigger events
+  corroboration: teal[500],
+  conflict: amber[700],
 };
 
 export const getFirstOperation = ({ notification_content, notification_type }: Pick<AlertsLine_node$data, 'notification_content' | 'notification_type'>) => {
@@ -26,6 +29,10 @@ export const iconSelector = (operation: string) => {
       return <BellCogOutline style={{ color: colors[operation] }} />;
     case 'delete':
       return <BellRemoveOutline style={{ color: colors[operation] }} />;
+    case 'corroboration':
+      return <SourceBranchCheck style={{ color: colors[operation] }} />;
+    case 'conflict':
+      return <SourceBranchRemove style={{ color: colors[operation] }} />;
     case 'multiple':
       return (
         <FileTableBoxMultipleOutline style={{ color: colors[operation] }} />

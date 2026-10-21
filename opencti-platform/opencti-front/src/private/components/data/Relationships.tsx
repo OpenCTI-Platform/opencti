@@ -34,6 +34,10 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
     start_time
     stop_time
     description
+    corroboration_count
+    freshness_days
+    freshness_stale
+    has_conflicts
     fromRole
     toRole
     created_at
@@ -246,13 +250,27 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
   }
 `;
 
+// A platform keeps the stored provenance when provenance is disabled: the column only shows while it is enabled
+export const relationshipsDataColumns = (isRuntimeSort: boolean, withProvenance: boolean): DataTableProps['dataColumns'] => ({
+  fromType: withProvenance ? { percentWidth: 9 } : {},
+  fromName: withProvenance ? { percentWidth: 15 } : {},
+  relationship_type: {},
+  toType: withProvenance ? { percentWidth: 9 } : {},
+  toName: withProvenance ? { percentWidth: 15 } : {},
+  createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
+  creator: { percentWidth: 7, isSortable: isRuntimeSort },
+  ...(withProvenance ? { corroboration_count: { percentWidth: 11 } } : {}),
+  created_at: { percentWidth: withProvenance ? 10 : 12 },
+  objectMarking: withProvenance ? { percentWidth: 7, isSortable: isRuntimeSort } : { isSortable: isRuntimeSort },
+});
+
 const Relationships = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const theme = useTheme<Theme>();
   setTitle(t_i18n('Relationships | Data'));
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable, isProvenanceEnabled },
   } = useAuth();
 
   const initialValues = {
@@ -306,15 +324,7 @@ const Relationships = () => {
         return (<ItemIcon type={entity_type} />);
       },
     },
-    fromType: {},
-    fromName: {},
-    relationship_type: {},
-    toType: {},
-    toName: {},
-    createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
-    creator: { percentWidth: 7, isSortable: isRuntimeSort },
-    created_at: { percentWidth: 12 },
-    objectMarking: { isSortable: isRuntimeSort },
+    ...relationshipsDataColumns(isRuntimeSort, isProvenanceEnabled()),
   };
 
   const preloadedPaginationProps = {

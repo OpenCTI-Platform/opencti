@@ -21,6 +21,8 @@ import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
+import { buildStaleConflictsFilters, purgeOutdatedConflicts, RETENTION_SCOPE_CONFLICTS } from '../modules/provenance/provenance-retention';
+import { PROVENANCE_ENABLED } from '../modules/provenance/provenance-config';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -77,6 +79,12 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'timestamp' });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_ACTIVITY], first: RETENTION_BATCH_SIZE }) as any;
+  } else if (scope === RETENTION_SCOPE_CONFLICTS) {
+    // Elements holding at least one conflicting value not re-asserted since the retention date
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters);
+    const conflictsFilters = buildStaleConflictsFilters(before.toISOString(), queryOptions.filters);
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, filters: conflictsFilters, first: RETENTION_BATCH_SIZE }) as any;
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
@@ -91,6 +99,10 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
   const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope, active } = retentionRule;
   if (active === false) {
     logApp.info(`[OPENCTI] Retention manager skipping inactive rule "${name}"`);
+    return;
+  }
+  if (scope === RETENTION_SCOPE_CONFLICTS && !PROVENANCE_ENABLED) {
+    logApp.debug(`[OPENCTI] Retention manager skipping rule "${name}" while provenance is disabled`);
     return;
   }
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
@@ -108,6 +120,11 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
       const { node } = element;
       const { updated_at: up } = node;
       try {
+        if (scope === RETENTION_SCOPE_CONFLICTS) {
+          // The element is kept, only its outdated conflicting values are purged
+          await purgeOutdatedConflicts(context, node, before.toISOString());
+          return;
+        }
         const canElementBeDeleted = await canDeleteElement(context, RETENTION_MANAGER_USER, node);
         if (canElementBeDeleted) { // filter elements that can't be deleted (ex: user individuals)
           const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();

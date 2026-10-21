@@ -91,6 +91,7 @@ const investigationGraphObjectsFragment = graphql`
               is_inferred
               created_at
               numberOfConnectedElement
+              corroboration_count
               createdBy {
                 ... on Identity {
                   id
@@ -322,6 +323,7 @@ const investigationGraphObjectsFragment = graphql`
               start_time
               stop_time
               confidence
+              corroboration_count
               is_inferred
               created
               created_at

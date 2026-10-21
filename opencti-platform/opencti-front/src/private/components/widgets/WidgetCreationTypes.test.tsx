@@ -19,6 +19,8 @@ const ALL_VISUALIZATION_TYPES = [
   'heatmap',
   'tree',
   'map',
+  'provenance-freshness',
+  'provenance-single-sourced',
   'bookmark',
   'wordcloud',
 ];
@@ -42,6 +44,15 @@ describe('getVisualizationTypes', () => {
         fintelWidgets: [],
         fintelEditorValue: '',
       }).map(({ key }) => key)).toStrictEqual(['list']);
+    });
+  });
+
+  describe('when provenance is disabled on the platform', () => {
+    it('the provenance widgets are not offered', () => {
+      const keys = getVisualizationTypes({ kind: 'workspace' }, false).map(({ key }) => key);
+      expect(keys).not.toContain('provenance-freshness');
+      expect(keys).not.toContain('provenance-single-sourced');
+      expect(keys).toContain('list');
     });
   });
 

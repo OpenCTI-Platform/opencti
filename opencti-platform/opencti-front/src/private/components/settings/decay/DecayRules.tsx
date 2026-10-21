@@ -100,13 +100,19 @@ const DecayRules = () => {
     filters: emptyFilterGroup,
   };
 
-  const { viewStorage, paginationOptions } = usePaginationLocalStorage<DecayRulesLinesPaginationQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DecayRulesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
   const { filters } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext('DecayRule', filters);
+  const userFilters = useBuildEntityTypeBasedFilterContext('DecayRule', filters);
+  // Indicator decay rules only: knowledge decay rules are listed in their own tab
+  const contextFilters = {
+    mode: 'and',
+    filters: [{ key: 'target_scope', values: ['indicator'], operator: 'eq', mode: 'or' }],
+    filterGroups: [userFilters],
+  };
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -123,6 +129,7 @@ const DecayRules = () => {
     linesFragment: decayRulesLinesFragment,
     queryRef,
     nodePath: ['decayRules', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DecayRulesLinesPaginationQuery>;
 
   const dataColumns: DataTableProps['dataColumns'] = {

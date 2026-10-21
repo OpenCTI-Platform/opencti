@@ -9,6 +9,12 @@ import type { FilterGroup } from '../../generated/graphql';
 // Triggers
 export const ENTITY_TYPE_TRIGGER = 'Trigger';
 
+// Provenance trigger events: corroboration reached the threshold (distinct sources), conflict detected
+export const TRIGGER_EVENT_CORROBORATION = 'corroboration';
+export const TRIGGER_EVENT_CONFLICT = 'conflict';
+export const DEFAULT_CORROBORATION_THRESHOLD = 2;
+export const MAX_CORROBORATION_THRESHOLD = 200;
+
 export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   name: string;
   description: string;
@@ -21,6 +27,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   instance_trigger: boolean;
   filters: string;
   raw_filters: FilterGroup;
+  corroboration_threshold?: number;
 }
 
 export interface BasicStoreEntityLiveTrigger extends BasicStoreEntityTrigger {

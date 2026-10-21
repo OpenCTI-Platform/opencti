@@ -22,6 +22,7 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import Card from '../../../../components/common/card/Card';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 interface CaseRftProps {
   caseRftData: CaseUtils_case$key;
@@ -176,6 +177,12 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={caseRft.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} size={{ xs: width }}>
+                    <ProvenanceSourcesCard id={caseRft.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

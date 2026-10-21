@@ -5,19 +5,25 @@ import useConnectedDocumentModifier from 'src/utils/hooks/useConnectedDocumentMo
 import DecayRules from '@components/settings/decay/DecayRules';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import DecayExclusionRules from './DecayExclusionRules';
+import KnowledgeDecayRules from './KnowledgeDecayRules';
 import { useLocation } from 'react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { KNOWLEDGE_DECAY_RULE_TAB } from './decayRuleTabState';
 
 const DecayRuleTabs = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const location = useLocation();
+  const { isProvenanceEnabled } = useHelper();
+  const provenanceEnabled = isProvenanceEnabled();
   setTitle(t_i18n('Decay Rules | Customization | Settings'));
 
   const [currentTab, setCurrentTab] = useState('rules');
 
   useEffect(() => {
     if (location.state?.decayTab === 'decayExclusionRule') setCurrentTab('exclusions');
+    if (location.state?.decayTab === KNOWLEDGE_DECAY_RULE_TAB && provenanceEnabled) setCurrentTab('knowledge');
   }, []);
 
   return (
@@ -36,12 +42,18 @@ const DecayRuleTabs = () => {
             <TabsList className="mb-6">
               <TabsTrigger value="rules">{t_i18n('Decay rules')}</TabsTrigger>
               <TabsTrigger value="exclusions">{t_i18n('Decay exclusion rules')}</TabsTrigger>
+              {provenanceEnabled && <TabsTrigger value="knowledge">{t_i18n('Knowledge decay rules')}</TabsTrigger>}
             </TabsList>
           </div>
 
           <TabsContent value="rules">
             <DecayRules />
           </TabsContent>
+          {provenanceEnabled && (
+            <TabsContent value="knowledge">
+              {currentTab === 'knowledge' && <KnowledgeDecayRules />}
+            </TabsContent>
+          )}
           <TabsContent value="exclusions">
             <DecayExclusionRules />
           </TabsContent>

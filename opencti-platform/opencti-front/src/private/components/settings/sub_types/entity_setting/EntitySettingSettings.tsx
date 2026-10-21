@@ -4,10 +4,15 @@ import Card from '@common/card/Card';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EntitySettingsFragment_entitySetting$key } from './__generated__/EntitySettingsFragment_entitySetting.graphql';
+import { EntitySettingProvenanceRelationships_entitySetting$key } from './__generated__/EntitySettingProvenanceRelationships_entitySetting.graphql';
 import EntitySettingReferences from './EntitySettingReferences';
+import EntitySettingProvenance from './EntitySettingProvenance';
+import EntitySettingProvenanceRelationships from './EntitySettingProvenanceRelationships';
+import EntitySettingProcedures from './EntitySettingProcedures';
 import { entitySettingsFragment } from './EntitySettingsFragment';
 import EntitySettingVisibility from './EntitySettingVisibility';
 import { useFormatter } from '../../../../../components/i18n';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 export const entitySettingPatch = graphql`
   mutation EntitySettingSettingsPatchMutation(
@@ -22,10 +27,12 @@ export const entitySettingPatch = graphql`
 
 interface EntitySettingSettingsProps {
   entitySettingsData: EntitySettingsFragment_entitySetting$key;
+  provenanceRelationshipsData: EntitySettingProvenanceRelationships_entitySetting$key;
 }
 
-const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProps) => {
+const EntitySettingSettings = ({ entitySettingsData, provenanceRelationshipsData }: EntitySettingSettingsProps) => {
   const { t_i18n } = useFormatter();
+  const { isProvenanceEnabled } = useHelper();
 
   const entitySetting = useFragment(entitySettingsFragment, entitySettingsData);
   if (!entitySetting) {
@@ -34,7 +41,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
 
   const [commit] = useApiMutation(entitySettingPatch);
 
-  const handleSubmitField = (name: string, value: boolean) => {
+  const handleSubmitField = (name: string, value: boolean | string) => {
     commit({
       variables: {
         ids: [entitySetting.id],
@@ -42,6 +49,10 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
       },
     });
   };
+  // The available settings of a type do not depend on the platform: provenance disabled hides all its settings
+  const provenanceSettings: readonly string[] = isProvenanceEnabled() ? entitySetting.availableSettings : [];
+  // Relationships are tracked per relationship type: the list takes the width the procedures leave
+  const isTrackedPerRelationshipType = provenanceSettings.includes('provenance_relationship_types');
   return (
     <Grid container={true} spacing={2}>
       <Grid item xs={6}>
@@ -60,6 +71,31 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
           />
         </Card>
       </Grid>
+      {isTrackedPerRelationshipType && (
+        <Grid item xs={8}>
+          <EntitySettingProvenanceRelationships entitySettingData={provenanceRelationshipsData} />
+        </Grid>
+      )}
+      {!isTrackedPerRelationshipType && provenanceSettings.includes('provenance_tracking') && (
+        <Grid item xs={6}>
+          <Card title={t_i18n('Provenance')}>
+            <EntitySettingProvenance
+              entitySetting={entitySetting}
+              handleSubmitField={handleSubmitField}
+            />
+          </Card>
+        </Grid>
+      )}
+      {provenanceSettings.includes('procedures_preservation') && (
+        <Grid item xs={isTrackedPerRelationshipType ? 4 : 6}>
+          <Card title={t_i18n('Procedures')}>
+            <EntitySettingProcedures
+              entitySetting={entitySetting}
+              handleSubmitField={handleSubmitField}
+            />
+          </Card>
+        </Grid>
+      )}
     </Grid>
   );
 };

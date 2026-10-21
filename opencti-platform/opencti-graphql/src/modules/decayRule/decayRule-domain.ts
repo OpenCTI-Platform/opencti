@@ -1,10 +1,27 @@
 import moment, { type Moment } from 'moment/moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { DecayRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
+import type { DecayRuleAddInput, EditInput, KnowledgeDecayRuleAddInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { booleanTrueFilter } from '../../utils/filtering/filtering-utils';
-import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
+import {
+  ATTRIBUTE_FRESHNESS_CONFIGURED_AT,
+  type BasicStoreEntityDecayRule,
+  DECAY_RULE_SCOPE_INDICATOR,
+  ENTITY_TYPE_DECAY_RULE,
+  type StoreEntityDecayRule,
+} from './decayRule-types';
+import {
+  addKnowledgeDecayRule,
+  checkDecayRulePatch,
+  clearFreshnessFlagsOfRule,
+  initKnowledgeDecayRules,
+  isKnowledgeDecayRule,
+  KNOWLEDGE_PRIORITY_FIELDS,
+  knowledgeDecayRuleLockKey,
+} from './decayRule-knowledge';
+import { releaseFlagsTakenOverByRule } from '../provenance/provenance-freshness';
+import { lockResources } from '../../lock/master-lock';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -13,7 +30,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { FunctionalError } from '../../config/errors';
 import { deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../schema/general';
 import { notify } from '../../database/redis';
 import {
@@ -95,6 +112,7 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
     updated_at: now(),
     active: input.active || false,
     built_in: builtIn || false,
+    target_scope: DECAY_RULE_SCOPE_INDICATOR,
   };
 
   if (input.decay_points) {
@@ -116,29 +134,64 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   return created;
 };
 
+// A release that fails is completed by the next knowledge freshness run (see releaseOutdatedFreshnessFlags)
+const releaseFreshnessFlags = async (ruleId: string, release: () => Promise<unknown>) => {
+  try {
+    await release();
+  } catch (err) {
+    logApp.warn('[PROVENANCE] Knowledge freshness flags left to the next knowledge freshness run', { cause: err, rule_id: ruleId });
+  }
+};
+
+export const createKnowledgeDecayRule = async (context: AuthContext, user: AuthUser, input: KnowledgeDecayRuleAddInput) => {
+  const created = await addKnowledgeDecayRule(context, user, input);
+  await releaseFreshnessFlags(created.id, () => releaseFlagsTakenOverByRule(context, created));
+  return created;
+};
+
 export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   const finalInput = [...input];
-  const decayRule = await findById(context, user, id);
-  if (!decayRule) {
+  const storedRule = await findById(context, user, id);
+  if (!storedRule) {
     throw FunctionalError(`Decay rule ${id} cannot be found`);
   }
-  if (decayRule.built_in) {
-    throw FunctionalError(`Cannot update built-in decay rule ${id}`);
-  }
+  // The scope of a rule cannot be edited: the rule read before the lock tells whether the edition takes it
+  const lock = isKnowledgeDecayRule(storedRule) ? await lockResources([knowledgeDecayRuleLockKey(id)]) : undefined;
+  let element: StoreEntityDecayRule;
+  try {
+    // Validated against the rule the update modifies, never against a version a concurrent edition changed
+    const decayRule = lock ? await findById(context, user, id) : storedRule;
+    if (!decayRule) {
+      throw FunctionalError(`Decay rule ${id} cannot be found`);
+    }
+    const mustClearFreshnessFlags = checkDecayRulePatch(decayRule, finalInput);
+    if (mustClearFreshnessFlags) {
+      finalInput.push({ key: ATTRIBUTE_FRESHNESS_CONFIGURED_AT, value: [now()] });
+    }
 
-  const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
-  if (decayPointsInput) {
-    decayPointsInput.value.sort().reverse();
+    const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
+    if (decayPointsInput) {
+      decayPointsInput.value.sort().reverse();
 
-    // cannot use array.filter on a read-only array.
-    for (let i = decayPointsInput.value.length - 1; i >= 0; i -= 1) {
-      if (decayPointsInput.value[i] < 0) {
-        decayPointsInput.value.splice(i, 1);
+      // cannot use array.filter on a read-only array.
+      for (let i = decayPointsInput.value.length - 1; i >= 0; i -= 1) {
+        if (decayPointsInput.value[i] < 0) {
+          decayPointsInput.value.splice(i, 1);
+        }
       }
     }
-  }
 
-  const { element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput);
+    ({ element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput));
+    if (mustClearFreshnessFlags) {
+      // Knowledge flagged under the previous configuration is evaluated again by the freshness manager
+      await releaseFreshnessFlags(id, () => clearFreshnessFlagsOfRule(id));
+    }
+    if (isKnowledgeDecayRule(element) && finalInput.some((editInput) => KNOWLEDGE_PRIORITY_FIELDS.includes(editInput.key))) {
+      await releaseFreshnessFlags(id, () => releaseFlagsTakenOverByRule(context, element));
+    }
+  } finally {
+    await lock?.unlock();
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -158,7 +211,16 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
   if (decayRule.built_in) {
     throw FunctionalError(`Cannot delete built-in decay rule ${id}`);
   }
-  const deleted = await deleteElementById<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
+  const lock = isKnowledgeDecayRule(decayRule) ? await lockResources([knowledgeDecayRuleLockKey(id)]) : undefined;
+  let deleted: StoreEntityDecayRule;
+  try {
+    deleted = await deleteElementById<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
+    if (isKnowledgeDecayRule(decayRule)) {
+      await releaseFreshnessFlags(id, () => clearFreshnessFlagsOfRule(id));
+    }
+  } finally {
+    await lock?.unlock();
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -172,6 +234,9 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
 };
 
 export const countAppliedIndicators = async (context: AuthContext, user: AuthUser, decayRule: BasicStoreEntityDecayRule) => {
+  if (isKnowledgeDecayRule(decayRule)) {
+    return 0;
+  }
   return countAllThings(context, user, {
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
     filters: {
@@ -251,6 +316,10 @@ export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartI
 };
 
 export const getDecaySettingsChartData = async (context: AuthContext, user: AuthUser, decayRule: BasicStoreEntityDecayRule) => {
+  if (isKnowledgeDecayRule(decayRule)) {
+    // Knowledge decay rules have no score curve
+    return { live_score_serie: [] } as DecayChartData;
+  }
   const scoreListForChart = computeScoreList(100);
   const chartCurveData: ComputeDecayChartInput = {
     decayBaseScore: 100,
@@ -363,14 +432,16 @@ export const BUILT_IN_DECAY_RULES = [
 export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
   const args = { filters: booleanTrueFilter('built_in') };
   const currentBuiltInDecayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
-  if (currentBuiltInDecayRules.length === 0) {
-    // no built-in decay rule, we should create the default ones
+  if (!currentBuiltInDecayRules.some((rule) => !isKnowledgeDecayRule(rule))) {
+    // no built-in indicator decay rule, we should create the default ones
     const defaultDecayRules = [...BUILT_IN_DECAY_RULES];
     for (let index = 0; index < defaultDecayRules.length; index += 1) {
       const decayRule = defaultDecayRules[index];
       await addDecayRule(context, user, decayRule, true);
     }
   }
+  // Built-in knowledge decay rules are shipped disabled, created when missing
+  await initKnowledgeDecayRules(context, user);
 };
 
 // end region
@@ -379,7 +450,8 @@ export type ResolvedDecayRule = Record<string, any>;
 
 const getActiveDecayRules = async (context: AuthContext) => {
   const decayRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, SYSTEM_USER, ENTITY_TYPE_DECAY_RULE);
-  return decayRuleList.filter((rule) => rule.active);
+  // Knowledge decay rules never take part in the indicator score decay
+  return decayRuleList.filter((rule) => rule.active && !isKnowledgeDecayRule(rule));
 };
 
 export const checkDecayRules = async (context: AuthContext, user: AuthUser, resolvedIndicator: ResolvedDecayRule) => {

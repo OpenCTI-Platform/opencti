@@ -146,6 +146,10 @@ export const entitiesFragment = graphql`
     id
     entity_type
     created_at
+    corroboration_count
+    freshness_days
+    freshness_stale
+    has_conflicts
     draftVersion {
       draft_id
       draft_operation
