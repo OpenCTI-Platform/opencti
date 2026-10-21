@@ -95,8 +95,9 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.filterKey).toEqual('trigger_type');
     expect(filterDefinition?.type).toEqual('enum');
     expect(filterDefinition?.multiple).toEqual(false);
-    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(2);
+    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(3);
     expect((filterDefinition?.elementsForFilterValuesSearch ?? []).includes('digest')).toBeTruthy();
+    expect((filterDefinition?.elementsForFilterValuesSearch ?? []).includes('change_digest')).toBeTruthy();
   });
   it('should construct correct filter definition for short and text string attributes', () => {
     // 'name' attribute

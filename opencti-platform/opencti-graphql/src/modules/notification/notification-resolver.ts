@@ -15,7 +15,6 @@ import {
   notificationsFind,
   triggerActivityEdit,
   triggerDelete,
-  triggerEdit,
   triggerGet,
   triggersActivityFind,
   triggersFind,
@@ -25,6 +24,7 @@ import {
 } from './notification-domain';
 import { ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
 import { subscribeToUserEvents } from '../../graphql/subscriptionWrapper';
+import { triggerKnowledgeEdit } from '../timeMachine/timeMachine-triggers';
 
 const notificationResolvers: Resolvers = {
   Query: {
@@ -52,7 +52,7 @@ const notificationResolvers: Resolvers = {
   },
   Mutation: {
     // Knowledge trigger
-    triggerKnowledgeFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),
+    triggerKnowledgeFieldPatch: (_, { id, input }, context) => triggerKnowledgeEdit(context, context.user, id, input),
     triggerKnowledgeDelete: (_, { id }, context) => triggerDelete(context, context.user, id),
     triggerKnowledgeLiveAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Live),
     triggerKnowledgeDigestAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Digest),

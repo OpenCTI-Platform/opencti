@@ -11,6 +11,7 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
 import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
+import { SinceLastVisitRowBadge } from '@components/common/time_machine/SinceLastVisitBatch';
 
 const cellContainerStyle = (theme: Theme) => ({
   display: 'flex',
@@ -176,6 +177,7 @@ const DataTableLine = ({
 
   const linkStyle: CSSProperties = {
     display: 'flex',
+    position: 'relative',
     color: 'inherit',
     borderBottom: `1px solid ${theme.palette.divider}`,
     cursor: clickable ? 'pointer' : 'unset',
@@ -206,6 +208,7 @@ const DataTableLine = ({
           : (variant === DataTableVariant.widget ? handleNavigate : undefined)}
         data-testid={getMainRepresentative(data)}
       >
+        <SinceLastVisitRowBadge id={data.id} entityType={data.entity_type} />
         {(startsWithAction || startsWithIcon) && (
           <div
             key={`select_${data.id}`}

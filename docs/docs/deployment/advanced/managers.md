@@ -20,6 +20,12 @@ This manager keeps tracks of user/connector interactions on entities in the plat
 
 It is designed to help users audit and understand the evolution of their CTI data.
 
+## Knowledge snapshot manager
+
+This manager supports the [knowledge time machine](../../usage/time-machine.md). Once a week, it takes a compact snapshot of every entity changed since the previous snapshot, including the entities whose only change is a relationship created, updated or deleted: its attribute values and the identifiers of its relationships by type, as they were at the snapshot date. Rebuilding an entity at a past date then starts from the closest snapshot instead of replaying the whole history.
+
+The manager also deletes, at every hourly run, the snapshots older than the shortest active History retention rule. The "new since your last visit" markers are not handled here: the [retention manager](#retention-manager) expires them after one year and removes them when their user is deleted, so it must stay enabled for that cleanup to run.
+
 ## Activity manager
 
 The activity manager in OpenCTI is a component that monitors and logs the user actions in the platform such as login, settings update, and user activities if configured (read, update, etc.).
@@ -46,11 +52,15 @@ It allows the user to create and configure synchronizers which are processes tha
 
 The retention manager is a component that allows the user to define rules to help delete data in OpenCTI that is no longer relevant or useful. This helps to optimize the performance and storage of the OpenCTI platform and ensures the quality and accuracy of the data.
 
+It also expires the "new since your last visit" markers of the [knowledge time machine](../../usage/time-machine.md) after one year (`time_machine:visit_retention_days`) and removes the markers of deleted users. The knowledge snapshots themselves are deleted by the [knowledge snapshot manager](#knowledge-snapshot-manager).
+
 More information can be found [here](../../administration/retentions.md).
 
 ## Notification manager
 
 The notification manager is a component that allows the user to customize and receive alerts about events/changes in the platform.
+
+The [change digests](../../usage/time-machine.md#change-digests) of its digest schedule compute the landscape changes of each recipient apart from the schedule itself, two at a time, so a long computation never delays another digest. Each due digest is recorded in Redis until every notifier of its recipient received it: a busy platform or a restart delays it instead of dropping it, and the platform that takes over the notification manager sends it. Redis also keeps the end of the last period recorded per change digest: a delivery time that passed while no notification manager was running is recorded at the next pass, and its digest covers every change since the previous one (at most one week before its usual period). Each digest is computed under its own lock, so a handover of the notification manager between platforms never sends it twice. The publisher manager keeps a receipt per digest and notifier: 15 minutes after a digest is stored, a notifier without a receipt (the platform stopped while it was sending, or the notifier failed) gets the digest again, and only that notifier. While a notifier sends, its receipt is held by the sending platform and renewed; if the receipt cannot be kept, the sending is cancelled before another platform may take it over (a webhook call is cancelled; an email already handed to the mail server is still delivered and recorded, and a possible double delivery is reported in the logs). A digest that cannot be built or stored is tried again 5, 10, 20 and 40 minutes later; a digest makes five attempts at most, failed or stored, and one that still did not reach every notifier is reported in the logs; a digest still waiting a week after the end of its period is not sent any more.
 
 More information can be found [here](../../usage/notifications.md).
 

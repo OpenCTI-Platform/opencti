@@ -194,6 +194,7 @@ nav:
         - Locations: usage/exploring-locations.md
       - Work with graphs: usage/graphs.md
       - Pivot and investigate: usage/pivoting.md
+      - Time machine and landscape changes: usage/time-machine.md
     - Create knowledge:
       - Automated import:
         - Getting started: usage/import/getting-started.md

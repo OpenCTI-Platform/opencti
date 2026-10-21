@@ -18,6 +18,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { DIGEST_DELIVERY_CLAIM_MS } from './digest-delivery-timing';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -834,6 +835,149 @@ export const redisSetManagerEventState = async (managerName: string, event_state
 export const redisGetManagerEventState = async (managerName: string) => {
   const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
   return getClientBase().get(managerEventStateKey);
+};
+// endregion
+
+// region - change digest jobs
+// Scheduled change digests waiting to be computed, scored by the end of their period (or by their next attempt after
+// a failure). A job leaves the set only once it is done, so a restart or a busy platform delays a digest instead of
+// losing it.
+const CHANGE_DIGEST_JOBS_KEY = 'change_digest_jobs';
+const CHANGE_DIGEST_JOBS_CHUNK_SIZE = 500;
+// Failed attempts per job; the whole hash expires when no attempt has failed for this long
+const CHANGE_DIGEST_JOB_ATTEMPTS_KEY = 'change_digest_job_attempts';
+const CHANGE_DIGEST_JOB_ATTEMPTS_TTL_MS = 8 * 24 * 60 * 60 * 1000;
+export const redisAddChangeDigestJobs = async (jobs: Array<{ score: number; member: string }>) => {
+  for (let index = 0; index < jobs.length; index += CHANGE_DIGEST_JOBS_CHUNK_SIZE) {
+    const scoreMembers = jobs.slice(index, index + CHANGE_DIGEST_JOBS_CHUNK_SIZE).flatMap(({ score, member }) => [score, member]);
+    // NX: a job already waiting keeps its place
+    await getClientBase().zadd(CHANGE_DIGEST_JOBS_KEY, 'NX', ...scoreMembers);
+  }
+};
+// Removes the jobs scored strictly before `expiredBefore` and returns how many were removed
+export const redisExpireChangeDigestJobs = async (expiredBefore: number): Promise<number> => {
+  return getClientBase().zremrangebyscore(CHANGE_DIGEST_JOBS_KEY, '-inf', `(${expiredBefore}`);
+};
+// The `count` oldest jobs scored up to `dueAt`
+export const redisGetChangeDigestJobs = async (dueAt: number, count: number): Promise<string[]> => {
+  return getClientBase().zrangebyscore(CHANGE_DIGEST_JOBS_KEY, '-inf', dueAt, 'LIMIT', 0, count);
+};
+// True when the job is still scheduled and due at `dueAt`
+export const redisIsChangeDigestJobDue = async (member: string, dueAt: number): Promise<boolean> => {
+  const score = await getClientBase().zscore(CHANGE_DIGEST_JOBS_KEY, member);
+  return score !== null && Number(score) <= dueAt;
+};
+export const redisGetChangeDigestJobAttempts = async (member: string): Promise<number> => {
+  return Number((await getClientBase().hget(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, member)) ?? 0);
+};
+// Counts an attempt that did not end the job (it failed, or its digest is not delivered yet) and returns the number of
+// such attempts so far
+export const redisCountChangeDigestJobAttempt = async (member: string): Promise<number> => {
+  const attempts = await getClientBase().hincrby(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, member, 1);
+  await getClientBase().pexpire(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, CHANGE_DIGEST_JOB_ATTEMPTS_TTL_MS);
+  return attempts;
+};
+// Moves a job still scheduled to `retryAt`; XX: a job removed meanwhile is not scheduled again
+export const redisRescheduleChangeDigestJob = async (member: string, retryAt: number) => {
+  await getClientBase().zadd(CHANGE_DIGEST_JOBS_KEY, 'XX', retryAt, member);
+};
+export const redisRemoveChangeDigestJob = async (member: string) => {
+  await getClientBase().zrem(CHANGE_DIGEST_JOBS_KEY, member);
+  await getClientBase().hdel(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, member);
+};
+// End of the last period scheduled per change digest trigger (trigger id -> ISO date)
+const CHANGE_DIGEST_WATERMARKS_KEY = 'change_digest_watermarks';
+// The watermarks of the given triggers; the ones of the other triggers (deleted or no longer change digests) are removed
+export const redisGetChangeDigestWatermarks = async (triggerIds: string[]): Promise<Map<string, string>> => {
+  const stored = await getClientBase().hgetall(CHANGE_DIGEST_WATERMARKS_KEY);
+  const kept = new Set(triggerIds);
+  const stale = Object.keys(stored).filter((triggerId) => !kept.has(triggerId));
+  if (stale.length > 0) {
+    await getClientBase().hdel(CHANGE_DIGEST_WATERMARKS_KEY, ...stale);
+  }
+  return new Map(Object.entries(stored).filter(([triggerId]) => kept.has(triggerId)));
+};
+export const redisSetChangeDigestWatermarks = async (watermarks: Array<[string, string]>) => {
+  if (watermarks.length > 0) {
+    await getClientBase().hset(CHANGE_DIGEST_WATERMARKS_KEY, Object.fromEntries(watermarks));
+  }
+};
+// endregion
+
+// region - digest deliveries
+// Receipts of the digests that carry a delivery key (a change digest: one trigger, recipient and period), one per key
+// and notifier, scored by the end of their validity: claimed by one sender (its owner token) and renewed while the
+// notifier sends, then kept long enough to cover every retry of a change digest once the notifier succeeded. Only the
+// owner of a claim renews or releases it. Both keys share one hash slot for the scripts.
+const DIGEST_DELIVERY_RECEIPTS_KEY = '{digest_deliveries}:receipts';
+const DIGEST_DELIVERY_OWNERS_KEY = '{digest_deliveries}:owners';
+const DIGEST_DELIVERY_RETENTION_MS = 8 * 24 * 60 * 60 * 1000;
+// 1: claimed, 0: claimed by another owner, 2: already delivered
+const CLAIM_DIGEST_DELIVERY_SCRIPT = `
+local validUntil = redis.call('ZSCORE', KEYS[1], ARGV[1])
+if validUntil and tonumber(validUntil) > tonumber(ARGV[2]) then
+  if redis.call('HEXISTS', KEYS[2], ARGV[1]) == 1 then return 0 end
+  return 2
+end
+redis.call('ZADD', KEYS[1], ARGV[3], ARGV[1])
+redis.call('HSET', KEYS[2], ARGV[1], ARGV[4])
+return 1`;
+const RENEW_DIGEST_DELIVERY_SCRIPT = `
+if redis.call('HGET', KEYS[2], ARGV[1]) ~= ARGV[3] then return 0 end
+redis.call('ZADD', KEYS[1], ARGV[2], ARGV[1])
+return 1`;
+// Records the delivery whoever holds the claim, so that no later copy is sent: 1 when the claim was still owned,
+// 2 when it was lost but nobody else claimed or delivered the digest, 0 when another owner did
+const CONFIRM_DIGEST_DELIVERY_SCRIPT = `
+local owner = redis.call('HGET', KEYS[2], ARGV[1])
+local result = 1
+if owner ~= ARGV[3] then
+  local validUntil = redis.call('ZSCORE', KEYS[1], ARGV[1])
+  result = 2
+  if owner or (validUntil and tonumber(validUntil) > tonumber(ARGV[4])) then result = 0 end
+end
+redis.call('HDEL', KEYS[2], ARGV[1])
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[4])
+redis.call('ZADD', KEYS[1], ARGV[2], ARGV[1])
+return result`;
+const RELEASE_DIGEST_DELIVERY_SCRIPT = `
+if redis.call('HGET', KEYS[2], ARGV[1]) ~= ARGV[2] then return 0 end
+redis.call('HDEL', KEYS[2], ARGV[1])
+redis.call('ZREM', KEYS[1], ARGV[1])
+return 1`;
+const DIGEST_DELIVERIES_CONFIRMED_SCRIPT = `
+for index = 2, #ARGV do
+  local validUntil = redis.call('ZSCORE', KEYS[1], ARGV[index])
+  if not validUntil or tonumber(validUntil) <= tonumber(ARGV[1]) or redis.call('HEXISTS', KEYS[2], ARGV[index]) == 1 then return 0 end
+end
+return 1`;
+const evalDigestDelivery = async (script: string, ...args: Array<string | number>): Promise<number> => {
+  return await getClientBase().eval(script, 2, DIGEST_DELIVERY_RECEIPTS_KEY, DIGEST_DELIVERY_OWNERS_KEY, ...args) as number;
+};
+export type DigestDeliveryClaim = 'claimed' | 'claimed_by_another_owner' | 'delivered';
+export const redisClaimDigestDelivery = async (receipt: string, ownerToken: string): Promise<DigestDeliveryClaim> => {
+  const now = Date.now();
+  const result = await evalDigestDelivery(CLAIM_DIGEST_DELIVERY_SCRIPT, receipt, now, now + DIGEST_DELIVERY_CLAIM_MS, ownerToken);
+  if (result === 1) return 'claimed';
+  return result === 2 ? 'delivered' : 'claimed_by_another_owner';
+};
+// The renewal and the release return false when the claim is not owned by `ownerToken` any more
+export const redisRenewDigestDelivery = async (receipt: string, ownerToken: string): Promise<boolean> => {
+  return (await evalDigestDelivery(RENEW_DIGEST_DELIVERY_SCRIPT, receipt, Date.now() + DIGEST_DELIVERY_CLAIM_MS, ownerToken)) === 1;
+};
+export type DigestDeliveryConfirmation = 'confirmed' | 'claim_lost' | 'claim_taken';
+export const redisConfirmDigestDelivery = async (receipt: string, ownerToken: string): Promise<DigestDeliveryConfirmation> => {
+  const now = Date.now();
+  const result = await evalDigestDelivery(CONFIRM_DIGEST_DELIVERY_SCRIPT, receipt, now + DIGEST_DELIVERY_RETENTION_MS, ownerToken, now);
+  if (result === 1) return 'confirmed';
+  return result === 2 ? 'claim_lost' : 'claim_taken';
+};
+export const redisReleaseDigestDelivery = async (receipt: string, ownerToken: string): Promise<boolean> => {
+  return (await evalDigestDelivery(RELEASE_DIGEST_DELIVERY_SCRIPT, receipt, ownerToken)) === 1;
+};
+// True when every receipt is delivered: confirmed and still kept
+export const redisAreDigestDeliveriesConfirmed = async (receipts: string[]): Promise<boolean> => {
+  return (await evalDigestDelivery(DIGEST_DELIVERIES_CONFIRMED_SCRIPT, Date.now(), ...receipts)) === 1;
 };
 // endregion
 

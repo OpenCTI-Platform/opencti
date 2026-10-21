@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { BackupTableOutlined, AlarmOnOutlined, MoreVert } from '@mui/icons-material';
+import { BackupTableOutlined, AlarmOnOutlined, DifferenceOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -84,6 +84,7 @@ const triggerLineFragment = graphql`
     isDirectAdministrator
     currentUserAccessRight
     instance_trigger
+    scope_entity_types
   }
 `;
 
@@ -102,6 +103,12 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
     dayStartDate().toISOString(),
   ];
   const day = currentTime.length > 1 ? currentTime[0] : '1';
+  const triggerTypeLabels: Record<string, string> = {
+    live: t_i18n('Live trigger'),
+    digest: t_i18n('Regular digest'),
+    change_digest: t_i18n('Change digest'),
+  };
+  const triggerTypeLabel = triggerTypeLabels[data.trigger_type] ?? t_i18n('Regular digest');
   const time = currentTime.length > 1
     ? formatTimeForToday(currentTime[1])
     : formatTimeForToday(currentTime[0]);
@@ -118,11 +125,9 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
       )}
     >
       <ListItemIcon>
-        {data.trigger_type === 'live' ? (
-          <AlarmOnOutlined color="warning" />
-        ) : (
-          <BackupTableOutlined color="secondary" />
-        )}
+        {data.trigger_type === 'live' && <AlarmOnOutlined color="warning" />}
+        {data.trigger_type === 'digest' && <BackupTableOutlined color="secondary" />}
+        {data.trigger_type === 'change_digest' && <DifferenceOutlined color="primary" />}
       </ListItemIcon>
       <ListItemText
         primary={(
@@ -133,11 +138,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
             >
               <Tag
                 color={data.trigger_type === 'live' ? theme.palette.severity?.high : theme.palette.severity?.low}
-                label={
-                  data.trigger_type === 'live'
-                    ? t_i18n('Live trigger')
-                    : t_i18n('Regular digest')
-                }
+                label={triggerTypeLabel}
               />
             </div>
             <div
@@ -168,6 +169,13 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     label={t_i18n(n)}
                   />
                 ))}
+              {data.trigger_type === 'change_digest'
+                && (data.scope_entity_types ?? ['Stix-Domain-Object']).map((type) => (
+                  <Tag
+                    key={type}
+                    label={t_i18n(`entity_${type}`)}
+                  />
+                ))}
               {data.triggers
                 && data.triggers.map((n) => (
                   <Tag
@@ -193,7 +201,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                 ) : EMPTY_VALUE}
               </div>
             )}
-            {data.trigger_type === 'digest' && (
+            {(data.trigger_type === 'digest' || data.trigger_type === 'change_digest') && (
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.filters.width }}

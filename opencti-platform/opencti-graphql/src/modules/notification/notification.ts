@@ -47,6 +47,8 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'period', label: 'Digest period', type: 'string', format: 'enum', values: DIGEST_PERIOD_VALUES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'trigger_time', label: 'Trigger time', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'trigger_type', label: 'Trigger type', type: 'string', format: 'enum', values: TRIGGER_TYPE_VALUES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    // Entity types of the filter set of a change digest
+    { name: 'scope_entity_types', label: 'Change digest entity types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'instance_trigger', label: 'Instance trigger', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     authorizedMembers,
     authorizedAuthorities,

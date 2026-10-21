@@ -39,14 +39,16 @@ testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 8;
+// + 4 created by timeMachine-test
+testCreatedCounter['intrusion-set'] = 12;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 22;
 testCreatedCounter['mac-addr'] = 1;
-testCreatedCounter.malware = 65;
+// + 1 created by timeMachine-test
+testCreatedCounter.malware = 66;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
@@ -58,8 +60,10 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 147;
-testCreatedCounter.report = 59;
+// + 2 created by timeMachine-test
+testCreatedCounter.relationship = 149;
+// + 1 created by timeMachine-test
+testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 5;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -75,12 +79,14 @@ testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 9;
+// + 1 updated by timeMachine-test (marking added to a relationship)
+testUpdatedCounter.relationship = 10;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 22;
 testUpdatedCounter.file = 27;
-testUpdatedCounter['intrusion-set'] = 5;
+// + 2 updated by timeMachine-test
+testUpdatedCounter['intrusion-set'] = 7;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
@@ -150,13 +156,15 @@ testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 7;
+// + 4 deleted by timeMachine-test
+testDeletedCounter['intrusion-set'] = 11;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 17;
 testDeletedCounter['mac-addr'] = 1;
-testDeletedCounter.malware = 38;
+// + 1 deleted by timeMachine-test
+testDeletedCounter.malware = 39;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 13;
 testDeletedCounter.narrative = 1;
@@ -166,8 +174,10 @@ testDeletedCounter['observed-data'] = 2; // created and deleted by observedData-
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
-testDeletedCounter.relationship = 5;
-testDeletedCounter.report = 50;
+// + 1 deleted by timeMachine-test
+testDeletedCounter.relationship = 6;
+// + 1 deleted by timeMachine-test
+testDeletedCounter.report = 51;
 testDeletedCounter.sighting = 2;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;

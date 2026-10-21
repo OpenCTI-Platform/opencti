@@ -9,6 +9,7 @@ import './ingestionHealthManager';
 import './pirManager';
 import './platformUsageMetricsManager';
 import './retentionManager';
+import './snapshotManager';
 import './telemetryManager';
 import './workflowStatusCleanupManager';
 import './xtmOneRegistrationManager';

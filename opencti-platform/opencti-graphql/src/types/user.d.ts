@@ -64,6 +64,7 @@ interface AuthUser extends BasicStoreIdentifier {
   no_creators: boolean | null;
   user_confidence_level: ConfidenceLevel | null;
   personal_notifiers?: Array<string>;
+  language?: string;
   draft_context?: string | undefined;
   otp_activated?: boolean;
   password_valid_until?: Date | null;

@@ -75,6 +75,7 @@ yarn test:e2e     # E2E (Playwright)
 > - [Forms & Validation](frontend/patterns/forms-validation.md)
 > - [Styling](frontend/patterns/styling-mui.md)
 > - [Components](frontend/patterns/components.md)
+> - [Changes Tab Sections](frontend/patterns/changes-tab-sections.md)
 > - [Graph badges and node actions](frontend/patterns/graph-badges.md)
 
 ## Common Issues

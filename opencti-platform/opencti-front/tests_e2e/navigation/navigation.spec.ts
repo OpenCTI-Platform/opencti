@@ -1782,6 +1782,8 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Analyses', 'Notes');
   await leftBarPage.clickOnMenu('Analyses', 'External references');
   await leftBarPage.expectBreadcrumb('Analyses', 'External references');
+  await leftBarPage.clickOnMenu('Analyses', 'Landscape changes');
+  await leftBarPage.expectBreadcrumb('Analyses', 'Landscape changes');
 
   // Checking Cases menu
   await leftBarPage.clickOnMenu('Cases', 'Incident responses');

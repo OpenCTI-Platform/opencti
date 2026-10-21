@@ -60,7 +60,7 @@ Instance triggers offer a targeted approach to live monitoring by allowing users
 **Method 1:** Using the general trigger creation form
 
 
-1. Go on the "Alerts and triggers" window through the bell icon at the top right.
+1. Open the "Alerts and triggers" window with the bell icon at the top right.
 2. Navigate to the "Triggers" tab.
 3. Access the general trigger creation form.
 4. Toggle the switch "Instance trigger".
@@ -98,7 +98,7 @@ Digests provide an efficient way to streamline and organize your notifications. 
 
 ### Creating digests
 
-1. Go on the "Alerts and triggers" window through the bell icon at the top right.
+1. Open the "Alerts and triggers" window with the bell icon at the top right.
 2. Navigate to the "Triggers" tab.
 3. Create a new digest.
 4. Configure digest: Set the parameters, including triggers to be included and the frequency of notifications (daily, weekly, monthly).
@@ -118,6 +118,25 @@ The buffering configuration is enabled in the platform by default at one minute.
 - Reduced distractions: Receive notifications at a scheduled time, minimizing interruptions and allowing you to focus on critical tasks.
 
 Digests enhance your control over notification management, ensuring a more structured and convenient approach to staying informed about important events.
+
+### Change digests
+
+A change digest sends, at each period, what changed on a set of entities during that period: entities created or revoked, new, removed and revoked relationships, changed attributes, confidence and score shifts, plus a summary of the [landscape changes](time-machine.md#landscape-changes) (new techniques, malware, tools and infrastructure). Each changed entity becomes one line of the digest, the first line carries the overall summary: it also tells how many other changed entities are not listed, and flags a partial result when the set of entities exceeds the limits of a digest.
+
+1. Open the "Alerts and triggers" window with the bell icon at the top right.
+2. Navigate to the "Triggers" tab.
+3. Click **Create Change digest**.
+4. Define the set of entities: either a saved filter, or an entity type with optional filters. A saved filter is copied in the digest with the entity type of the list it was saved from (**Entity types of the scope**) or with the entity type you choose, so the digest keeps its scope when the saved filter changes, and its recipients do not need access to the saved filter. Saved filters of lists that are not about one entity type (relationships, for example) need an explicit entity type.
+5. Set the period (hour, day, week or month) and the delivery time.
+6. Choose the notifier(s): within the OpenCTI interface, via email, etc.
+
+The digest is computed for each recipient with their own rights, so nobody receives changes on knowledge they cannot access. A digest covers at most 500 entities of the set and lists the 50 most changed ones. When nothing changed during the period, no digest is sent. If the platform was stopped at the delivery time, the digest is sent when it starts again, within a week, and covers the changes since the previous digest.
+
+Each recipient receives the digest in the language of their profile. When the profile language follows the browser, the digest is written in the platform language, and in English when the platform language also follows the browser.
+
+!!! note "History retention"
+
+    Change digests are computed from the history of the knowledge. A History [retention rule](../administration/retentions.md) shorter than the digest period removes the changes the digest relies on.
 
 
 ## Notifiers
