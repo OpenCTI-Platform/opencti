@@ -195,12 +195,14 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             type="checkbox"
             name="smtp_enabled"
             label={t_i18n('Enable email sending')}
+            containerstyle={{ marginTop: 20 }}
           />
           <Field
             component={SwitchField}
             type="checkbox"
             name="use_db_config"
             label={t_i18n('Use this configuration instead of the platform config file')}
+            containerstyle={{ marginTop: 20 }}
           />
           {!values.use_db_config && (
             <Alert severity="info" variant="outlined" style={{ marginTop: 10, marginBottom: 10 }}>
@@ -244,6 +246,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             type="checkbox"
             name="reject_unauthorized"
             label={t_i18n('Reject unauthorized certificates')}
+            containerstyle={{ marginTop: 20 }}
           />
           <Field
             component={SelectFieldFds}
