@@ -13,12 +13,21 @@ interface ObservableValues {
   value: string;
 }
 
+export interface IndicatorRuleLogsource {
+  category?: string;
+  product?: string;
+  service?: string;
+}
+
 // Indicator Specific Properties
 export interface StixIndicatorExtension extends StixOpenctiExtension {
   detection: boolean;
   score: number;
   main_observable_type: string;
   observable_values: ObservableValues[];
+  rule_status?: string;
+  rule_level?: string;
+  rule_logsource?: IndicatorRuleLogsource;
 }
 // name, description, indicator_types, pattern, pattern_type, pattern_version, valid_from, valid_until, kill_chain_phases
 export interface StixIndicator extends StixDomainObject {
@@ -67,6 +76,9 @@ export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;
+  x_opencti_rule_status?: string;
+  x_opencti_rule_level?: string;
+  x_opencti_rule_logsource?: IndicatorRuleLogsource;
 }
 
 export interface StoreEntityIndicator extends StoreEntity {
@@ -84,6 +96,9 @@ export interface StoreEntityIndicator extends StoreEntity {
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;
+  x_opencti_rule_status?: string;
+  x_opencti_rule_level?: string;
+  x_opencti_rule_logsource?: IndicatorRuleLogsource;
 }
 
 // region Stix 2.0 type
@@ -101,5 +116,8 @@ export interface Stix2Indicator extends StixDomainObject2 {
   x_opencti_detection: boolean;
   x_opencti_main_observable_type: string;
   x_mitre_platforms: Array<string>;
+  x_opencti_rule_status?: string;
+  x_opencti_rule_level?: string;
+  x_opencti_rule_logsource?: IndicatorRuleLogsource;
 }
 // endregion

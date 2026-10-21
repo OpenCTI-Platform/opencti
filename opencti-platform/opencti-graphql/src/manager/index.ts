@@ -1,5 +1,6 @@
 import './connectorManager';
 import './dataSanityManager';
+import './defenseCoverageManager';
 import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';

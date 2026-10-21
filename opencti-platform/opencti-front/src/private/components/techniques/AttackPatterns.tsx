@@ -1,5 +1,10 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import { Link } from 'react-router';
+import { Stack } from '@mui/material';
+import { ViewGridOutline } from 'mdi-material-ui';
+import Button from '@common/button/Button';
+import { PATH_DEFENSE_MATRIX } from '@components/common/routes/paths';
 import { AttackPatternsLinesPaginationQuery, AttackPatternsLinesPaginationQuery$variables } from '@components/techniques/__generated__/AttackPatternsLinesPaginationQuery.graphql';
 import { AttackPatternsLines_data$data } from '@components/techniques/__generated__/AttackPatternsLines_data.graphql';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
@@ -164,9 +169,20 @@ const AttackPatterns = () => {
           lineFragment={attackPatternLineFragment}
           exportContext={{ entity_type: 'Attack-Pattern' }}
           createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <AttackPatternCreation paginationOptions={queryPaginationOptions} />
-            </Security>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Button
+                variant="secondary"
+                component={Link}
+                to={PATH_DEFENSE_MATRIX}
+                startIcon={<ViewGridOutline fontSize="small" />}
+                data-testid="attack-patterns-open-defense-matrix"
+              >
+                {t_i18n('Open in Defense matrix')}
+              </Button>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <AttackPatternCreation paginationOptions={queryPaginationOptions} />
+              </Security>
+            </Stack>
           )}
         />
       )}

@@ -13,33 +13,33 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 25;
+testCreatedCounter['attack-pattern'] = 26;
 testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 18;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
-testCreatedCounter['course-of-action'] = 4;
+testCreatedCounter['course-of-action'] = 5;
 testCreatedCounter.credential = 1;
-testCreatedCounter['data-component'] = 2;
+testCreatedCounter['data-component'] = 4;
 testCreatedCounter['data-source'] = 2;
 testCreatedCounter.directory = 3; // created and deleted by stixRefRelationships-test
 testCreatedCounter['email-addr'] = 1;
 testCreatedCounter.event = 2;
-testCreatedCounter['external-reference'] = 17;
+testCreatedCounter['external-reference'] = 18;
 testCreatedCounter.feedback = 2;
 testCreatedCounter.file = 11;
-testCreatedCounter.grouping = 2;
+testCreatedCounter.grouping = 3;
 testCreatedCounter.iccid = 4;
-testCreatedCounter.identity = 58;
+testCreatedCounter.identity = 59;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 57;
+testCreatedCounter.indicator = 58;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 8;
+testCreatedCounter['intrusion-set'] = 10;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -58,7 +58,7 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 147;
+testCreatedCounter.relationship = 154;
 testCreatedCounter.report = 59;
 testCreatedCounter.sighting = 5;
 testCreatedCounter.software = 2;
@@ -70,7 +70,7 @@ testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 27;
+testCreatedCounter['security-coverage'] = 28;
 testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
@@ -128,29 +128,29 @@ testMergedCounter['case-incident'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 20;
+testDeletedCounter['attack-pattern'] = 21;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 16;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
-testDeletedCounter['course-of-action'] = 2;
-testDeletedCounter['data-component'] = 2;
+testDeletedCounter['course-of-action'] = 3;
+testDeletedCounter['data-component'] = 4;
 testDeletedCounter['data-source'] = 2;
 testDeletedCounter.directory = 3; // created and deleted by stixRefRelationships-test
 testDeletedCounter['email-addr'] = 1;
 testDeletedCounter.event = 2;
-testDeletedCounter['external-reference'] = 1;
+testDeletedCounter['external-reference'] = 2;
 testDeletedCounter.feedback = 2;
 testDeletedCounter.file = 7;
-testDeletedCounter.grouping = 2;
-testDeletedCounter.identity = 41;
+testDeletedCounter.grouping = 3;
+testDeletedCounter.identity = 42;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 29;
+testDeletedCounter.indicator = 30;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 7;
+testDeletedCounter['intrusion-set'] = 9;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
@@ -180,7 +180,7 @@ testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 25;
+testDeletedCounter['security-coverage'] = 26;
 testDeletedCounter['security-coverage-result'] = 20;
 
 export const doTotal = (eventCounter: Record<string, number>) => {

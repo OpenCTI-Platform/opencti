@@ -12,6 +12,11 @@ export const PATH_DATA_SOURCE = (dataSourceId: string) => `${PATH_DATA_SOURCES}/
 export const PATH_COURSES_OF_ACTION = `${PATH_DASHBOARD}/techniques/courses_of_action`;
 export const PATH_COURSE_OF_ACTION = (courseOfActionId: string) => `${PATH_COURSES_OF_ACTION}/${courseOfActionId}`;
 
+// DEFENSE
+export const PATH_DEFENSE_MATRIX = `${PATH_DASHBOARD}/defense/matrix`;
+export const PATH_DEFENSE_COVERAGE = `${PATH_DEFENSE_MATRIX}/coverage`;
+export const PATH_DEFENSE_GAPS = `${PATH_DEFENSE_MATRIX}/gaps`;
+
 // ANALYSES
 export const PATH_GROUPINGS = `${PATH_DASHBOARD}/analyses/groupings`;
 export const PATH_GROUPING = (groupingId: string) => `${PATH_GROUPINGS}/${groupingId}`;

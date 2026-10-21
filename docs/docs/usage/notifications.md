@@ -47,7 +47,7 @@ In OpenCTI, triggers serve as personalized mechanisms for users to stay informed
 
 Leveraging the filters, users can meticulously **define the criteria that activate their triggers**. This level of granularity ensures that triggers are accurate, responding precisely to events that matter most. Users can tailor filters to consider various parameters such as object types, markings, sources, or other contextual details. They can also allow notifications for the assignment of a Task, a Case, etc.
 
-Beyond filters, a trigger can be configured to **respond to three event types**: creation, modification, and deletion.
+Beyond filters, a trigger can be configured to **respond to three event types**: creation, modification, and deletion. Triggers can also respond to the defense level changes of techniques computed by the [defense matrix](defense-matrix.md#notifications): **Defense level decreased** and **Defense level increased**.
 
 ![Trigger configuration](assets/trigger-configuration.png)
 

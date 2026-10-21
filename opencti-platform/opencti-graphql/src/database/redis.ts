@@ -835,6 +835,45 @@ export const redisGetManagerEventState = async (managerName: string) => {
   const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
   return getClientBase().get(managerEventStateKey);
 };
+// Atomic: a value written by another node between the read and the write is never overwritten unseen
+export const redisGetSetManagerEventState = async (managerName: string, event_state_id: string) => {
+  const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
+  return getClientBase().getset(managerEventStateKey, event_state_id);
+};
+// endregion
+
+// region - defense coverage pending validation tracking
+// One field per Security Coverage: concurrent API nodes queue and clear their entries without a read-modify-write
+const DEFENSE_PENDING_VALIDATION_TRACKING_KEY = 'defense_coverage_pending_validation_tracking';
+export const redisSetDefensePendingValidationTracking = async (securityCoverageId: string, pending: string) => {
+  await getClientBase().hset(DEFENSE_PENDING_VALIDATION_TRACKING_KEY, securityCoverageId, pending);
+};
+export const redisGetDefensePendingValidationTrackings = async (): Promise<Record<string, string>> => {
+  return getClientBase().hgetall(DEFENSE_PENDING_VALIDATION_TRACKING_KEY);
+};
+export const redisDeleteDefensePendingValidationTracking = async (securityCoverageId: string) => {
+  await getClientBase().hdel(DEFENSE_PENDING_VALIDATION_TRACKING_KEY, securityCoverageId);
+};
+// endregion
+
+// region - defense coverage pending level changes
+// One field per technique: a change queued again for the same technique replaces its field, so the queue never holds
+// more entries than techniques
+const DEFENSE_PENDING_LEVEL_CHANGES_KEY = 'defense_coverage_pending_level_changes';
+export const redisSetDefensePendingLevelChanges = async (changes: Record<string, string>) => {
+  if (Object.keys(changes).length === 0) return;
+  await getClientBase().hset(DEFENSE_PENDING_LEVEL_CHANGES_KEY, changes);
+};
+export const redisGetDefensePendingLevelChanges = async (ids?: string[]): Promise<Record<string, string>> => {
+  if (!ids) return getClientBase().hgetall(DEFENSE_PENDING_LEVEL_CHANGES_KEY);
+  if (ids.length === 0) return {};
+  const values = await getClientBase().hmget(DEFENSE_PENDING_LEVEL_CHANGES_KEY, ...ids);
+  return Object.fromEntries(ids.map((id, index) => [id, values[index]]).filter(([, value]) => value !== null)) as Record<string, string>;
+};
+export const redisDeleteDefensePendingLevelChanges = async (ids: string[]) => {
+  if (ids.length === 0) return;
+  await getClientBase().hdel(DEFENSE_PENDING_LEVEL_CHANGES_KEY, ...ids);
+};
 // endregion
 
 // region connector logs

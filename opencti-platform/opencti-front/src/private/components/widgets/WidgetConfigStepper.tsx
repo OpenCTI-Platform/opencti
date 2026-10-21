@@ -3,7 +3,7 @@ import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import React from 'react';
-import { getCurrentCategory } from '../../../utils/widget/widgetUtils';
+import { isWidgetWithoutDataSelection } from '../../../utils/widget/widgetUtils';
 import { useFormatter } from '../../../components/i18n';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 
@@ -12,9 +12,7 @@ const WidgetConfigStepper = () => {
   const { config, step, setStep, disabledSteps } = useWidgetConfigContext();
   const { type } = config.widget;
 
-  const isText = getCurrentCategory(type) === 'text';
-  const isAttribute = getCurrentCategory(type) === 'attribute';
-  const isCustomAttributes = getCurrentCategory(type) === 'custom-attributes';
+  const withoutDataSelection = isWidgetWithoutDataSelection(type);
 
   return (
     <Stepper nonLinear activeStep={step}>
@@ -30,8 +28,8 @@ const WidgetConfigStepper = () => {
       <Step>
         <StepButton
           onClick={() => setStep(1)}
-          disabled={step <= 1 || isText || isAttribute || isCustomAttributes || disabledSteps.includes(1)}
-          sx={{ opacity: isText || isAttribute || isCustomAttributes || disabledSteps.includes(1) ? 0.4 : 1 }}
+          disabled={step <= 1 || withoutDataSelection || disabledSteps.includes(1)}
+          sx={{ opacity: withoutDataSelection || disabledSteps.includes(1) ? 0.4 : 1 }}
         >
           <StepLabel>{t_i18n('Perspective')}</StepLabel>
         </StepButton>
@@ -39,8 +37,8 @@ const WidgetConfigStepper = () => {
       <Step>
         <StepButton
           onClick={() => setStep(2)}
-          disabled={step <= 2 || isText || isAttribute || isCustomAttributes || disabledSteps.includes(2)}
-          sx={{ opacity: isText || isAttribute || isCustomAttributes || disabledSteps.includes(2) ? 0.4 : 1 }}
+          disabled={step <= 2 || withoutDataSelection || disabledSteps.includes(2)}
+          sx={{ opacity: withoutDataSelection || disabledSteps.includes(2) ? 0.4 : 1 }}
         >
           <StepLabel>{t_i18n('Filters')}</StepLabel>
         </StepButton>

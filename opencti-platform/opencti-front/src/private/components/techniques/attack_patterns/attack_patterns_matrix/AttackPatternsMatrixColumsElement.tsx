@@ -13,6 +13,13 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import SecurityCoverageScores from '../../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 import { useFormatter } from '../../../../../components/i18n';
+import AttackPatternsMatrixDefenseMarkers, {
+  defenseCellLevel,
+  type DefenseMatrixMode,
+  defenseKeyboardProps,
+  getDefenseBoxStyles,
+  useDefenseCellLabel,
+} from './AttackPatternsMatrixDefense';
 
 interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
@@ -22,6 +29,7 @@ interface AttackPatternsMatrixColumnsElementProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
+  defense?: DefenseMatrixMode;
 }
 
 const AttackPatternsMatrixColumnsElement = ({
@@ -31,10 +39,53 @@ const AttackPatternsMatrixColumnsElement = ({
   isSecurityPlatform,
   isCoverage = false,
   coverageMap,
+  defense,
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
   const [isHovered, setIsHovered] = useState(false);
   const { t_i18n } = useFormatter();
+  const defenseCellLabel = useDefenseCellLabel();
+
+  if (defense) {
+    const { attack_pattern_id: attackPatternId } = attackPattern;
+    const level = defenseCellLevel(defense, attackPatternId);
+    const { border, backgroundColor, outline, outlineOffset } = getDefenseBoxStyles({ defense, attackPatternId, level, isHovered, theme });
+    return (
+      <Box
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={(e) => {
+          e.stopPropagation();
+          defense.onSelect(attackPatternId);
+        }}
+        {...defenseKeyboardProps(defense, attackPatternId)}
+        aria-label={defenseCellLabel(defense, attackPatternId, attackPattern.name)}
+        data-testid={`defense-cell-${attackPatternId}`}
+        data-defense-level={level}
+        sx={{
+          display: 'flex',
+          cursor: 'pointer',
+          border,
+          backgroundColor,
+          outline,
+          outlineOffset,
+          padding: 1.25,
+          justifyContent: 'space-between',
+          gap: 1,
+          alignItems: 'center',
+          whiteSpace: 'normal',
+          width: '100%',
+          position: 'relative',
+          '&:focus-visible': { outline: `2px solid ${theme.palette.primary.main}` },
+        }}
+      >
+        <Typography variant="body2" fontSize={10}>
+          {attackPattern.name}
+        </Typography>
+        <AttackPatternsMatrixDefenseMarkers defense={defense} attackPatternId={attackPatternId} />
+      </Box>
+    );
+  }
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;

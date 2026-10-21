@@ -61,6 +61,7 @@ export const RELATION_REPORTS_TO = 'reports-to'; // Extension (OpenCTI)
 export const RELATION_SUPPORTS = 'supports'; // Extension (OpenCTI)
 export const RELATION_SHOULD_COVER = 'should-cover'; // Extension (OpenCTI)
 export const RELATION_HAS_COVERED = 'has-covered'; // Extension (OpenCTI)
+export const RELATION_PROVIDES = 'provides'; // Extension (OpenCTI)
 
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
@@ -127,6 +128,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_SUPPORTS,
   RELATION_SHOULD_COVER,
   RELATION_HAS_COVERED,
+  RELATION_PROVIDES,
 ];
 
 schemaTypesDefinition.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);

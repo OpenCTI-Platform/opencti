@@ -21,7 +21,12 @@ const ALL_VISUALIZATION_TYPES = [
   'map',
   'bookmark',
   'wordcloud',
+  'defense-tactic-coverage',
+  'defense-top-gaps',
+  'defense-levels',
 ];
+
+const DEFENSE_VISUALIZATION_TYPES = ['defense-tactic-coverage', 'defense-top-gaps', 'defense-levels'];
 
 describe('getVisualizationTypes', () => {
   describe('when host is a workspace', () => {
@@ -30,6 +35,14 @@ describe('getVisualizationTypes', () => {
         kind: 'workspace',
       }).map(({ key }) => key)).toStrictEqual(
         ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'),
+      );
+    });
+
+    it('the defense visualization types are not available without the knowledge access', () => {
+      expect(getVisualizationTypes({
+        kind: 'workspace',
+      }, false).map(({ key }) => key)).toStrictEqual(
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes' && !DEFENSE_VISUALIZATION_TYPES.includes(v)),
       );
     });
   });
@@ -46,12 +59,12 @@ describe('getVisualizationTypes', () => {
   });
 
   describe('when host is a custom view', () => {
-    it('all visualization types but attribute are available (custom-attributes always included)', () => {
+    it('all visualization types but attribute and the platform-wide defense ones are available (custom-attributes always included)', () => {
       expect(getVisualizationTypes({
         kind: 'custom-view',
         customViewTargetEntityType: 'Malware',
       }).map(({ key }) => key)).toStrictEqual(
-        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute'),
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && !DEFENSE_VISUALIZATION_TYPES.includes(v)),
       );
     });
   });

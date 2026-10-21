@@ -13,6 +13,7 @@ import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError
 import { executionContext, SYSTEM_USER } from './utils/access';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from './modules/decayRule/decayRule-domain';
+import { initDefenseLogsourceMappings } from './modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
 import { initializeData, patchPlatformId } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
@@ -106,6 +107,7 @@ const platformInit = async (withMarkings = true) => {
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
+      await initDefenseLogsourceMappings(context, SYSTEM_USER);
     }
     await initExclusionListCache();
 
