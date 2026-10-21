@@ -4,7 +4,7 @@ import {
   buildHealthTransitionMessage,
   buildIngestionHealthContext,
   computeHealthTransition,
-  HEALTH_NOTIFICATION_DELAY_MS,
+  DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
   isRuntimeCheckEnabled,
@@ -492,8 +492,8 @@ describe('computeHealthTransition', () => {
   const SINCE = '2026-10-13T11:00:00.000Z';
   const OLD_EVENT = '2026-10-13T10:00:00.000Z';
   const at = (ms: number) => new Date(new Date(SINCE).getTime() + ms).toISOString();
-  const AFTER_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS);
-  const BEFORE_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS - 1);
+  const AFTER_DELAY = at(DEFAULT_HEALTH_NOTIFICATION_DELAY_MS);
+  const BEFORE_DELAY = at(DEFAULT_HEALTH_NOTIFICATION_DELAY_MS - 1);
   const { Critical, Degraded, Healthy, Unknown } = IngestionHealthStatus;
   // last_event_status absent: no event published yet
   const health = (status: IngestionHealthStatus, last_event_status?: IngestionHealthStatus, last_event_date = OLD_EVENT): StoredIngestionHealth => (
@@ -514,6 +514,17 @@ describe('computeHealthTransition', () => {
     });
 
     it.each(Object.values(IngestionHealthStatus))('should report %s exactly when the delay is elapsed', (status) => {
+      expect(computeHealthTransition(health(status, OLD_EVENT), AFTER_DELAY)).not.toBeNull();
+    });
+  });
+
+  describe('already notified', () => {
+    it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event is after its start', (status) => {
+      expect(computeHealthTransition(health(status, AFTER_DELAY), at(10 * DEFAULT_HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
+    });
+
+    it.each(Object.values(IngestionHealthStatus))('should report %s when the last event is at its start: strictly after is required', (status) => {
+      expect(computeHealthTransition(health(status, SINCE), AFTER_DELAY)).not.toBeNull();
       expect(computeHealthTransition(dueHealth(status), AFTER_DELAY)).not.toBeNull();
     });
   });
@@ -559,7 +570,7 @@ describe('computeHealthTransition', () => {
   // Replays periods as the ingestion health manager does, through computeIngestionHealthPatch. Returns the published events.
   describe('scenarios over periods', () => {
     const MINUTE = 60 * 1000;
-    const DELAY_MINUTES = HEALTH_NOTIFICATION_DELAY_MS / MINUTE;
+    const DELAY_MINUTES = DEFAULT_HEALTH_NOTIFICATION_DELAY_MS / MINUTE;
     const checksOf = (status: IngestionHealthStatus): StoredHealthCheck[] => {
       if (status === Critical) return [HEARTBEAT_MISSING];
       if (status === Degraded) return [USER_MISSING];

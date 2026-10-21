@@ -42,6 +42,8 @@ export interface HealthCheckIngestor {
 export interface GlobalIngestionHealthContext {
   // Connectors pinging continuously
   pingingConnectorsIds: Set<string>;
+  // ms a status must stay unchanged before it is notified, from the platform settings (default when absent)
+  notificationDelay?: number;
 }
 
 // The user an ingestor runs as, as needed by the checks
