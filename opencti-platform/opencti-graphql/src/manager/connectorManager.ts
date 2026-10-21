@@ -5,6 +5,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { now } from '../utils/format';
 import { deleteWorksRaw } from '../domain/work';
+import { buildEnrichmentCompletion, clearCompletedWorkTouchedElements } from '../database/work-touched-elements';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { AuthContext } from '../types/user';
 import type { Work } from '../types/work';
@@ -20,7 +21,11 @@ const CONNECTOR_MANAGER_KEY = conf.get('connector_manager:lock_key') || 'connect
 const CONNECTOR_WORK_RANGE = conf.get('connector_manager:works_day_range') || 7;
 const BATCH_SIZE = conf.get('connector_manager:batch_size') || 10000;
 
-const closeOldWorks = async (context: AuthContext, connector: BasicStoreEntityConnector) => {
+/**
+ * Force-complete the open works of a connector that are older than its current one,
+ * persisting the touched elements of enrichment works and clearing their Redis set.
+ */
+export const closeOldWorks = async (context: AuthContext, connector: BasicStoreEntityConnector) => {
   const status = await redisGetConnectorStatus(connector.internal_id);
   if (status) {
     const [,, timestamp] = status.split('_');
@@ -43,13 +48,15 @@ const closeOldWorks = async (context: AuthContext, connector: BasicStoreEntityCo
             const sourceScript = `ctx._source['status'] = "complete";
                 ctx._source['completed_time'] = params.completed_time;
                 ctx._source['completed_number'] = params.completed_number;`;
+            const touched = await buildEnrichmentCompletion(element);
             await elUpdate(context, element._index, element.internal_id, {
               script: {
-                source: sourceScript,
+                source: sourceScript + touched.source,
                 lang: 'painless',
-                params,
+                params: { ...params, ...touched.params },
               },
             });
+            await clearCompletedWorkTouchedElements(element);
             logApp.info('Work completed by force due to age', { workId: element.internal_id });
           }
         } catch (e) {
@@ -64,7 +71,7 @@ const closeOldWorks = async (context: AuthContext, connector: BasicStoreEntityCo
       types: ['Work'],
       orderBy: 'timestamp',
       baseData: true,
-      baseFields: ['internal_id', 'timestamp'],
+      baseFields: ['internal_id', 'timestamp', 'event_type'],
       maxSize: BATCH_SIZE,
       callback: queryCallback,
     });
