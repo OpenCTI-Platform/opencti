@@ -270,7 +270,7 @@ const GeoMap = ({
     <div style={{ width: '100%', height: '100%' }}>
       <Card padding="none" title={title}>
         {isWebGLUnavailable ? (
-          <div key="webgl-unavailable" style={{ height: '100%', minHeight: 300 }}>
+          <div key="webgl-unavailable" style={{ height: '100%', minHeight: 300, boxSizing: 'border-box', padding: theme.spacing(2) }}>
             <WidgetNoData message={t_i18n('This map cannot be displayed because your browser does not support WebGL2 or has it disabled.')} />
           </div>
         ) : (
