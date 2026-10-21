@@ -93,6 +93,8 @@ import {
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
   isOnlyOrgaAdmin,
+  isUserAccountActive,
+  isUserAccountExpired,
   isUserHasCapability,
   type ParticipantWithOrgIds,
   REDACTED_USER,
@@ -2460,13 +2462,9 @@ const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForceP
   if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
-  // Check account expiration date
-  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
-    throw AuthenticationFailure(ACCOUNT_STATUSES.Expired);
-  }
-  // Validate user's account status
-  if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {
-    throw AuthenticationFailure(ACCOUNT_STATUSES[user.account_status]);
+  // Validate user's account: an expiration date in the past is refused as expired, whatever its status
+  if (!isUserAccountActive(user)) {
+    throw AuthenticationFailure(isUserAccountExpired(user) ? ACCOUNT_STATUSES.Expired : ACCOUNT_STATUSES[user.account_status]);
   }
   // Require users with expired password validity to update their password before using the platform.
   // Skipped at session creation so the user can authenticate and be redirected to the change-password screen.

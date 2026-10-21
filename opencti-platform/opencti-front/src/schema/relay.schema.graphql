@@ -10942,6 +10942,7 @@ type IngestionHealthCheck {
 type IngestionHealthCheckSetting {
   health_check_code: String!
   health_check_label: String!
+  health_check_description: String
   health_check_kind: IngestionHealthCheckKind!
   enabled: Boolean!
 }

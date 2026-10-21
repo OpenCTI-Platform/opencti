@@ -183,6 +183,17 @@ export interface IngestionHealthAction extends BasicUserAction {
     id: string;
     entity_type: string;
     entity_name: string;
+    ingestion_health_changes: {
+      // The messages of the failing checks, absent when none fails
+      message?: string;
+      // The same messages, one by check: the critical ones apart from the others
+      critical_messages?: string[];
+      advisory_messages?: string[];
+      // Status reported by the previous health event, absent for the first one
+      previous_status?: string;
+      // Date the current status started
+      status_since: string;
+    };
   };
 }
 // endregion
