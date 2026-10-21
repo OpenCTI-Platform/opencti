@@ -37,7 +37,8 @@ export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => ({
     field: WORKFLOW_STATUS_FIELD,
     type: input.fieldType,
     values: [],
-    options: { eventName: input.values[0]?.value },
+    // Never undefined: a dropped key would turn the task into a plain replace that clears the status
+    options: { eventName: input.values[0]?.value ?? null },
   },
 });
 
