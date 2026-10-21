@@ -2,7 +2,6 @@ import { logApp } from '../../../config/conf';
 import { updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { FilterMode, StatusScope } from '../../../generated/graphql';
-import { X_CLOSING_REASON } from '../../../schema/identifier';
 import { ENTITY_TYPE_STATUS } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
@@ -88,8 +87,8 @@ export const projectWorkflowState = async (
       logApp.warn('[OPENCTI-MODULE] No Status mapped for workflow state, skipping projection', { entityType, scope, stateId });
     }
     // Not registered on non domain objects, nor at all while the workflow engine is off
-    if (closingReason !== undefined && schemaAttributesDefinition.getAttribute(entityType, X_CLOSING_REASON)) {
-      inputs.push({ key: X_CLOSING_REASON, value: [closingReason] });
+    if (closingReason !== undefined && schemaAttributesDefinition.getAttribute(entityType, 'x_opencti_closing_reason')) {
+      inputs.push({ key: 'x_opencti_closing_reason', value: [closingReason] });
     }
     if (inputs.length === 0) {
       return;
