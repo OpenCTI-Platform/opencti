@@ -5,6 +5,9 @@ import StixCoreObjectsCustomAttributes from '@components/common/stix_core_object
 import type { DashboardConfig } from './dashboard-types';
 import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
+import ThreatPulseTrending from '@components/common/threat_pulse/ThreatPulseTrending';
+import ThreatPulseBenchmark from '@components/common/threat_pulse/ThreatPulseBenchmark';
+import { pulsePeriodFromDateRange } from '@components/common/threat_pulse/threatPulseUtils';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -20,12 +23,29 @@ const DashboardRawViz = ({
   host,
 }: DashboardRawVizProps) => {
   const { startDate, endDate } = computeStartEndDates(config);
+  const pulsePeriod = pulsePeriodFromDateRange(startDate, endDate) ?? undefined;
 
   switch (widget.type) {
     case 'text':
       return (
         <WidgetText
           parameters={widget.parameters}
+          popover={popover}
+        />
+      );
+    case 'pulse-trending':
+      return (
+        <ThreatPulseTrending
+          title={widget.parameters?.title ?? undefined}
+          period={pulsePeriod}
+          popover={popover}
+        />
+      );
+    case 'pulse-benchmark':
+      return (
+        <ThreatPulseBenchmark
+          title={widget.parameters?.title ?? undefined}
+          period={pulsePeriod}
           popover={popover}
         />
       );

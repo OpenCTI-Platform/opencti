@@ -81,6 +81,12 @@ More information can be found:
 - [Decay rule configuration](../../administration/decay-rules.md).
 - [Indicator lifecycle](../../usage/indicators-lifecycle.md).
 
+## Threat Pulse manager
+
+The Threat Pulse manager runs every hour on platforms registered on XTM Hub. In preview, the default mode, it only downloads the daily community digest and matches it with the local objects, once a day: nothing about the platform leaves it. When the platform contributes, it also sends the activity of the last window as keyed hashes and counts, refreshes the network information of the objects in scope once a day and notifies the triggers listening to objects trending in the platform's sector. When Threat Pulse is turned off, it does nothing. Whatever the mode, and even once the platform is no longer registered, it first completes a removal of community data that failed earlier (after an unregistration, a purge or a lapsed contribution), so that nothing stale stays on the objects.
+
+More information can be found [here](../../usage/threat-pulse.md).
+
 ## Trash manager
 
 The trash manager is responsible to delete permanently elements stored in the [trash](../../usage/delete-restore.md) after a specified period of time (7 days by default).

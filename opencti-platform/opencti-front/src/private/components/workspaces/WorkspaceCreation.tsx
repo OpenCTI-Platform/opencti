@@ -26,7 +26,8 @@ import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreati
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 import useDashboardImport from '../../../components/dashboard/import-export/useDashboardImport';
 import DashboardHiddenImportInput from '../../../components/dashboard/import-export/DashboardHiddenImportInput';
-import { Tooltip } from '@mui/material';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import ThreatPulseDashboardTemplateButton from '../common/threat_pulse/ThreatPulseDashboardTemplateButton';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -127,18 +128,23 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   const createDashboardButton = (props: { onOpen: () => void }) => (
     <Security needs={[EXPLORE_EXUPDATE]}>
       <>
-        <Tooltip title={t_i18n('Import dashboard')}>
-          <IconButton
-            value="import"
-            size="default"
-            variant="secondary"
-            onClick={importHelpers.handleImport}
-            data-testid="ImportDashboard"
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span style={{ display: 'inline-flex' }}>
+              <IconButton
+                value="import"
+                size="default"
+                variant="secondary"
+                onClick={importHelpers.handleImport}
+                data-testid="ImportDashboard"
 
-            aria-label={t_i18n('Import dashboard')}
-          >
-            <FileUploadOutlined fontSize="small" color="primary" />
-          </IconButton>
+                aria-label={t_i18n('Import dashboard')}
+              >
+                <FileUploadOutlined fontSize="small" color="primary" />
+              </IconButton>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{t_i18n('Import dashboard')}</TooltipContent>
         </Tooltip>
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
           <Button
@@ -150,6 +156,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             {t_i18n('Import from Hub')}
           </Button>
         )}
+        <ThreatPulseDashboardTemplateButton />
         <CreateEntityControlledDial entityType="Dashboard" {...props} />
       </>
     </Security>

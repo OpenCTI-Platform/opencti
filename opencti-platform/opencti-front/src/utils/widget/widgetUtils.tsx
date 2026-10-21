@@ -12,8 +12,10 @@ import {
   Counter,
   FormatListNumberedRtl,
   Radar,
+  ScaleBalance,
   StarSettingsOutline,
   TagTextOutline,
+  TrendingUp,
   ViewListOutline,
 } from 'mdi-material-ui';
 import React from 'react';
@@ -217,24 +219,55 @@ const customAttributesVisualizationType = {
   isAudits: false,
 } as const;
 
+// Threat Pulse widgets read the community signal from XTM Hub, not the knowledge base: no perspective, no data selection.
+export const pulseVisualizationTypes = [
+  {
+    key: 'pulse-trending',
+    name: 'Trending in your sector',
+    dataSelectionLimit: undefined,
+    category: 'pulse',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'pulse-benchmark',
+    name: 'Sector benchmark',
+    dataSelectionLimit: undefined,
+    category: 'pulse',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+] as const;
+
 export type WidgetVisualizationTypes
   = (typeof widgetVisualizationTypes)[number]['key']
-    | typeof customAttributesVisualizationType['key'];
+    | typeof customAttributesVisualizationType['key']
+    | (typeof pulseVisualizationTypes)[number]['key'];
 
 export const RELATIONSHIP_WIDGETS_TYPES = ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'];
 
-export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
+const knowledgeWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
+
+export const workspacesWidgetVisualizationTypes = [
+  ...knowledgeWidgetVisualizationTypes,
+  ...pulseVisualizationTypes,
+];
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
 export const customViewsWidgetVisualizationTypes = [
   customAttributesVisualizationType,
-  ...workspacesWidgetVisualizationTypes,
+  ...knowledgeWidgetVisualizationTypes,
 ];
 
 const allVisualizationTypes = [
   ...widgetVisualizationTypes,
   customAttributesVisualizationType,
+  ...pulseVisualizationTypes,
 ];
 
 export const indexedVisualizationTypes = R.indexBy(R.prop('key'), allVisualizationTypes);
@@ -242,6 +275,11 @@ export const indexedVisualizationTypes = R.indexBy(R.prop('key'), allVisualizati
 export const getCurrentCategory = (type: string | null) => {
   if (!type) return 'none';
   return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.category ?? 'none';
+};
+
+// Widgets configured with parameters only: they skip the perspective and data selection steps.
+export const isParametersOnlyWidget = (type: string | null | undefined) => {
+  return type === 'text' || type === 'attribute' || type === 'custom-attributes' || getCurrentCategory(type ?? null) === 'pulse';
 };
 
 export const getCurrentAvailableParameters = (type: string | null): string[] => {
@@ -311,6 +349,10 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <StarSettingsOutline fontSize={fontSize} color="primary" />;
     case 'wordcloud':
       return <ViewQuiltOutlined fontSize={fontSize} color="primary" />;
+    case 'pulse-trending':
+      return <TrendingUp fontSize={fontSize} color="primary" />;
+    case 'pulse-benchmark':
+      return <ScaleBalance fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }
@@ -376,11 +418,14 @@ export const showEstimationWarningForUniqCount = (dataSelection: WidgetDataSelec
   ));
 };
 
+// Network first-seen date of the Threat Pulse scoped entities, for timelines of the community signal.
+export const PULSE_DATE_ATTRIBUTE = 'pulse_first_seen_network';
+
 export const checkIfDateAttributeValid = (dataSelection: WidgetDataSelection[]) => {
   const selectionsValid = dataSelection.map((selection) => {
     if (!selection.date_attribute) return true;
     if (selection.perspective === 'entities') {
-      return ['created_at', 'updated_at', 'created', 'modified', 'first_seen', 'last_seen'].includes(selection.date_attribute);
+      return ['created_at', 'updated_at', 'created', 'modified', 'first_seen', 'last_seen', PULSE_DATE_ATTRIBUTE].includes(selection.date_attribute);
     } else if (selection.perspective === 'relationships') {
       const selectedEntityType = getEntityTypeFromFilters(selection.filters);
       if (selectedEntityType === 'stix-sighting-relationship') {

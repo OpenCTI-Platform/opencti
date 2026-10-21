@@ -36,6 +36,7 @@ import ExperienceCard, { ExperienceHeadline } from './experience/ExperienceCard'
 import ExperienceDetailRow from './experience/ExperienceDetailRow';
 import ExperienceFeatureTile from './experience/ExperienceFeatureTile';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
+import ThreatPulseSettings from './experience/ThreatPulseSettings';
 import ConfigPresetExportFooter from './config_preset/ConfigPresetExportFooter';
 import useConfigPresetExportAccess from './config_preset/useConfigPresetExportAccess';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
@@ -386,6 +387,9 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         </Grid>
         <Grid item xs={6}>
           <XtmHubSettings />
+        </Grid>
+        <Grid item xs={12}>
+          <ThreatPulseSettings />
         </Grid>
 
         {isGrantedToSupport && (

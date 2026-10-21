@@ -5,6 +5,15 @@ import type { AuthContext, AuthUser } from '../types/user';
 
 const PIR_ORDERING_CRITERIA = ['pir_score', 'last_pir_score_date'];
 
+/** Builds the sort of a criteria whose module decides how it orders, e.g. reading a value only where its policy shows it. */
+export type SortingOverride = (context: AuthContext, user: AuthUser, orderMode: 'asc' | 'desc' | null) => Promise<Record<string, unknown>>;
+
+const SORTING_OVERRIDES = new Map<string, SortingOverride>();
+
+export const registerSortingOverride = (orderCriteria: string, override: SortingOverride) => {
+  SORTING_OVERRIDES.set(orderCriteria, override);
+};
+
 export const buildElasticSortingForAttributeCriteria = async (
   context: AuthContext,
   user: AuthUser,
@@ -12,6 +21,10 @@ export const buildElasticSortingForAttributeCriteria = async (
   orderMode: 'asc' | 'desc' | null,
   pirId?: string | null,
 ) => {
+  const override = SORTING_OVERRIDES.get(orderCriteria);
+  if (override) {
+    return override(context, user, orderMode);
+  }
   let definition;
   if (PIR_ORDERING_CRITERIA.includes(orderCriteria)) {
     // the pir id should be specified and the pir accessible

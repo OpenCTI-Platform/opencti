@@ -29,6 +29,7 @@ enum TriggerEventType {
     create
     update
     delete
+    pulse_trending
 }
 input TriggerLiveAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")

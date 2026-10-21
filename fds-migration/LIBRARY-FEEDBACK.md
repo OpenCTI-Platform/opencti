@@ -2696,3 +2696,39 @@ components) or an `anchor` point on `Menu`, both opening from the keyboard.
 library anchor, delete the marker, and check that a right click on a node of a
 report graph opens the menu at the pointer, that Shift+F10 opens it for the
 entity of the keyboard list, and that Escape gives the focus back.
+
+---
+
+## 71. No `Skeleton` and no `Meter`, so a card cannot hold its layout while it loads or show a score on a scale
+
+**Needed.** The Threat Pulse card of the entity overviews
+(`threat_pulse/ThreatPulseCard.tsx`) needs two things the library does not ship:
+
+- a **loading placeholder** shaped like the content it stands for (a headline
+  line, two chips, a chart block, a row of facts), so the overview grid keeps
+  its layout while the community data loads instead of jumping when it lands;
+- a **meter**: the community uniqueness of an object is a score from 0 to 100,
+  not the progress of a task. Its 0 (an object every platform holds) is a real
+  value that must stay visible on the scale.
+
+**Today.** Measured from the installed build (1.2.0): `dist/components` holds
+no skeleton of any kind. `ProgressBar` is the only linear scale, and it is a
+progress indicator by contract: it spreads the caller's props first and then
+sets `role="progressbar"` (`ProgressBar.js:74`), so a caller cannot state
+`role="meter"`, and at 0 it draws an empty track with nothing marking the value.
+
+**Workaround.** FDS-WORKAROUND #71 in `ThreatPulseCardSkeleton.tsx`: MUI
+`Skeleton` (not gated, no library counterpart), sized on the published layout of
+the card. In `ThreatPulseUniquenessMeter.tsx`: a `role="meter"` track with
+`aria-valuenow` / `aria-valuetext`, a fill and a position tick drawn with `sx`
+from the theme palette, the value repeated as text beside it.
+
+**Ask.** A `Skeleton` primitive (text line, rounded block, circle) drawn from
+the layer tokens, and either a `Meter` component or a `ProgressBar` variant
+that renders `role="meter"` with a visible marker at the value, 0 included.
+
+**Removal test.** At a pin shipping both: render the loading state of the
+Threat Pulse card with the library `Skeleton` and the uniqueness with the
+library meter, remove the MUI `Skeleton` import, the custom track and the
+markers, and confirm the meter still exposes `role="meter"` with the score as
+`aria-valuenow`, and shows a marker at 0.

@@ -50,3 +50,7 @@ Your OpenCTI product will regularly check if the connection with the XTM Hub is 
 
 - **Notification:**
     - The OpenCTI administrators will be informed if a connectivity check fails.
+
+## Threat Pulse
+
+Once the product is connected, the [Threat Pulse](../usage/threat-pulse.md) preview starts: the platform downloads the daily community digest of XTM Hub and matches it locally, without sending anything about its data. Administrators can contribute to unlock the full Threat Pulse experience, or turn Threat Pulse off, in the Threat Pulse card of the Filigran Experience page.

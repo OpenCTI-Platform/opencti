@@ -57,6 +57,12 @@ interface StixOpenctiExtension {
   granted_refs: Array<StixId>;
   granted_refs_ids: string[];
   pir_information: Array<PirInformation>;
+  pulse_prevalence?: string;
+  pulse_trend?: string;
+  pulse_sector_trend?: string;
+  pulse_first_seen_network?: StixDate;
+  pulse_community_uniqueness?: number;
+  pulse_preview?: boolean;
   stix_ids: Array<StixId>;
   type: string;
   created_at: StixDate;
