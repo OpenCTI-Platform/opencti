@@ -523,6 +523,30 @@ describe('computeHealthTransition', () => {
     });
   });
 
+  describe('configured delay', () => {
+    const MINUTE = 60 * 1000;
+
+    it('should report with a delay shorter than the default what the default still defers', () => {
+      const evaluatedAt = at(2 * MINUTE);
+      expect(computeHealthTransition(health(IngestionHealthStatus.Degraded), evaluatedAt)).toBeNull();
+      expect(computeHealthTransition(health(IngestionHealthStatus.Degraded), evaluatedAt, MINUTE)).toBe(HealthTransition.Degraded);
+    });
+
+    it('should defer with a delay longer than the default what the default reports', () => {
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), AFTER_DELAY)).toBe(HealthTransition.Critical);
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), AFTER_DELAY, 2 * DEFAULT_HEALTH_NOTIFICATION_DELAY_MS)).toBeNull();
+    });
+
+    it('should report at the start of the status with a delay of 0', () => {
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), SINCE, 0)).toBe(HealthTransition.Critical);
+    });
+
+    it('should apply the default delay when none is given', () => {
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), BEFORE_DELAY, undefined)).toBeNull();
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), AFTER_DELAY, undefined)).toBe(HealthTransition.Critical);
+    });
+  });
+
   describe('failure', () => {
     it.each([
       [Critical, HealthTransition.Critical],
