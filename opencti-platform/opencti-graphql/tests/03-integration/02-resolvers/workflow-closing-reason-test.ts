@@ -104,6 +104,16 @@ const FIELD_PATCH_MUTATION = gql`
   }
 `;
 
+const MERGE_MUTATION = gql`
+  mutation WorkflowClosingReasonMerge($id: ID!, $stixObjectsIds: [String]!) {
+    stixEdit(id: $id) {
+      merge(stixObjectsIds: $stixObjectsIds) {
+        id
+      }
+    }
+  }
+`;
+
 const trigger = async (entityId: string, eventName: string, closingReason?: string) => {
   const result = await queryAsUserWithSuccess(USER_EDITOR, { query: TRIGGER_MUTATION, variables: { entityId, eventName, closingReason } });
   return result.data.triggerWorkflowEvent;
@@ -197,6 +207,19 @@ describe('Workflow closing reason (Case-Incident)', () => {
       'Closing reason can only be changed through a workflow transition',
     );
     expect((await readCase(caseId)).x_opencti_closing_reason).toBe('duplicate');
+  });
+
+  it('should not copy the closing reason of a merged entity onto an open target', async () => {
+    const target = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_ADD_MUTATION, variables: { input: { name: `Closing reason merge target ${Date.now()}` } } });
+    const targetId = target.data.caseIncidentAdd.id;
+    const source = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_ADD_MUTATION, variables: { input: { name: `Closing reason merge source ${Date.now()}` } } });
+    const sourceId = source.data.caseIncidentAdd.id;
+    await trigger(sourceId, 'close', 'false-positive');
+    await queryAsAdminWithSuccess({ query: MERGE_MUTATION, variables: { id: targetId, stixObjectsIds: [sourceId] } });
+    const merged = await readCase(targetId);
+    expect(merged.workflowInstance.currentState).toBe('open');
+    expect(merged.x_opencti_closing_reason).toBeNull();
+    await queryAsAdmin({ query: CASE_INCIDENT_DELETE_MUTATION, variables: { id: targetId } });
   });
 
   it('should let a bypass user edit the closing reason directly', async () => {
