@@ -162,6 +162,7 @@ export const TELEMETRY_GAUGE_GRAPH_PATH_QUERY = 'graphPathQueryCount';
 export const TELEMETRY_GAUGE_GRAPH_SIMILARITY_QUERY = 'graphSimilarityQueryCount';
 export const TELEMETRY_GAUGE_GRAPH_ANALYTICS_PIVOT = 'graphAnalyticsPivotCount';
 export const TELEMETRY_GAUGE_GRAPH_CLUSTER_PROMOTION = 'graphClusterPromotionCount';
+export const TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT = 'configPresetExportCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -321,6 +322,11 @@ export const addSharedSavedFiltersPermissionChangesCount = () => {
 export const addWorkflowPublishCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_PUBLISH, 1)
     .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
+};
+
+export const addConfigPresetExportCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT, 1)
+    .catch((reason) => logApp.warn('Error adding config preset export count to telemetry', { reason }));
 };
 
 // All the counters below are fire-and-forget: they are called from feature
@@ -825,6 +831,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setGraphSimilarityQueryCount(await redisGetTelemetry(TELEMETRY_GAUGE_GRAPH_SIMILARITY_QUERY));
     manager.setGraphAnalyticsPivotCount(await redisGetTelemetry(TELEMETRY_GAUGE_GRAPH_ANALYTICS_PIVOT));
     manager.setGraphClusterPromotionCount(await redisGetTelemetry(TELEMETRY_GAUGE_GRAPH_CLUSTER_PROMOTION));
+    const configPresetExportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT);
+    manager.setConfigPresetExportCount(configPresetExportCountInRedis);
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
     manager.setChatbotMessageCount(chatbotMessageCountInRedis);
     const aiInsightItems: DimensionalGaugeItem[] = [];

@@ -28,6 +28,7 @@ import { REDACTED_INFORMATION } from '../database/utils';
 import type { ActivityStreamEvent } from '../types/event';
 import { EVENT_ACTIVITY_VERSION } from '../database/stream/stream-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { buildConfigPresetExportMessage } from '../modules/configPreset/configPreset-utils';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
@@ -210,9 +211,13 @@ const initActivityManager = () => {
           await activityLogger(action, message);
         }
         if (action.event_scope === 'export') {
-          const { format, entity_name } = action.context_data;
-          const message = `asks for \`${format}\` export in \`${entity_name}\``;
-          await activityLogger(action, message);
+          if ('format' in action.context_data) {
+            const { format, entity_name } = action.context_data;
+            const message = `asks for \`${format}\` export in \`${entity_name}\``;
+            await activityLogger(action, message);
+          } else {
+            await activityLogger(action, buildConfigPresetExportMessage(action.context_data));
+          }
         }
         if (action.event_scope === 'send') {
           const { entity_name, entity_type, input } = action.context_data;

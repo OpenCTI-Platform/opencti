@@ -179,3 +179,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of graph clusters promoted to a Grouping or a Campaign
 - The number of graph clusters
 - Whether the optional analytics process wrote results recently
+
+### Configuration presets
+
+- The number of configuration preset bundles exported

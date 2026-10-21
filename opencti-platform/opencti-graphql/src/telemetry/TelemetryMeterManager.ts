@@ -267,6 +267,8 @@ export class TelemetryMeterManager {
   isGraphAnalyticsProcessActive = 0;
   // endregion
 
+  configPresetExportCount = 0;
+
   // endregion providers usage
 
   // region Custom fields
@@ -624,6 +626,10 @@ export class TelemetryMeterManager {
     this.isGraphAnalyticsProcessActive = n;
   }
 
+  setConfigPresetExportCount(n: number) {
+    this.configPresetExportCount = n;
+  }
+
   setChatbotMessageCount(n: number) {
     this.chatbotMessageCount = n;
   }
@@ -859,6 +865,7 @@ export class TelemetryMeterManager {
     this.registerGauge('graph_cluster_promotion_count', 'Number of graph clusters promoted to a Grouping or a Campaign', 'graphClusterPromotionCount');
     this.registerGauge('graph_cluster_count', 'Number of graph clusters', 'graphClusterCount');
     this.registerGauge('is_graph_analytics_process_active', 'Whether the opencti-analytics process wrote results recently', 'isGraphAnalyticsProcessActive', { unit: 'boolean' });
+    this.registerGauge('config_preset_export_count', 'Number of configuration preset bundles exported', 'configPresetExportCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');
     this.registerDimensionalGauge('ai_insight_request_count', 'AI Insights requests broken down by cache state (hit, miss)', 'aiInsightRequestItems');
