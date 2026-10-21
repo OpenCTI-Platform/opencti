@@ -47,6 +47,12 @@ it('should search parsing correctly generated', () => {
   parsed = parse('~ ~1 apt~5 a~b');
   expect(parsed.queriesString).toBe('\\~* \\~1* apt\\~5* a\\~b*');
 
+  parsed = parse('lazarous~\tgroup');
+  expect(parsed.queriesString).toBe('lazarous~ group*');
+
+  parsed = parse('apt\n~1');
+  expect(parsed.queriesString).toBe('apt* \\~1*');
+
   // GENERIC TESTING
   parsed = parse('(Citation:');
   expect(parsed.queriesString).toBe('\\(Citation\\:*');

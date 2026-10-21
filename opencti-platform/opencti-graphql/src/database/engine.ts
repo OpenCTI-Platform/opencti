@@ -1957,7 +1957,7 @@ function processSearch(
 
   const partialSearch = remainingSearch.replace(/"/g, '')
     .trim()
-    .split(' ');
+    .split(/\s+/);
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
