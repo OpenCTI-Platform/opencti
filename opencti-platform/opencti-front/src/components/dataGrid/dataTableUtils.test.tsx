@@ -165,4 +165,15 @@ describe('dataTableUtils status columns', () => {
     await user.click(screen.getByText('Unknown'));
     expect(handleAddFilter).toHaveBeenCalledWith('x_opencti_workflow_id', null, 'eq', expect.objectContaining({ type: 'click' }));
   });
+
+  it('x_opencti_workflow_id column adds no filter when a workflow status is clicked', async () => {
+    const { user } = renderColumn('x_opencti_workflow_id', {
+      entity_type: 'Report',
+      status: legacyStatus,
+      workflowEnabled: true,
+      workflowInstance: { id: 'instance-1', currentStatus: workflowStatus },
+    }, { flag: true });
+    await user.click(screen.getByText('Workflow status'));
+    expect(handleAddFilter).not.toHaveBeenCalled();
+  });
 });
