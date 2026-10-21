@@ -1,7 +1,7 @@
 // Prototype of a batch write path for relationships, used by the benchmark scenarios only.
 // It writes new relationships one chunk at a time instead of one relationship at a time:
 // one search for every ref of the chunk, one lock for the chunk, one duplicate search, one elIndexElements call,
-// then one stream event per relationship, as today.
+// then the stream events of the chunk in one round trip, in order, as the platform would build them one by one.
 // Not handled: updates of existing relationships, the time-window duplicate check, per-item access,
 // confidence and consistency checks, container sharing tasks and the security coverage hook.
 import * as R from 'ramda';
@@ -11,11 +11,11 @@ import { elFindByIds, elIndexElements, isImpactedTypeAndSide, ROLE_FROM, ROLE_TO
 import { internalFindByIds } from '../../src/database/middleware-loader';
 import { buildRelationData } from '../../src/database/data-builder';
 import { lockResources } from '../../src/lock/master-lock';
-import { storeCreateRelationEvent } from '../../src/database/stream/stream-handler';
+import { storeCreateEvents } from '../../src/database/stream/stream-handler';
 import { getEntitySettingFromCache } from '../../src/modules/entitySetting/entitySetting-utils';
 import { inferIndexFromConceptType } from '../../src/database/utils';
 import { getInstanceIds } from '../../src/schema/identifier';
-import { mean, now, pool, round } from './bench-utils';
+import { mean, now, round } from './bench-utils';
 
 const SINGLE_REFS: Record<string, string> = { fromId: 'from', toId: 'to', createdBy: 'createdBy' };
 const MULTI_REFS: Record<string, string> = { objectMarking: 'objectMarking', objectLabel: 'objectLabel' };
@@ -104,9 +104,7 @@ const writeChunks = async (inputs: Record<string, any>[], type: string, chunkSiz
       if (!phases.indexed_docs) phases.indexed_docs = [];
       phases.indexed_docs.push(docs.length);
       t = now();
-      await pool(built, 16, async (b, i) => {
-        await storeCreateRelationEvent(testContext, ADMIN_USER, { ...resolved[i], ...b.element }, {});
-      });
+      await storeCreateEvents(testContext, ADMIN_USER, built.map((b, i) => ({ instance: { ...resolved[i], ...b.element } })));
       mark('stream_events', t);
     } finally {
       await lock.unlock();

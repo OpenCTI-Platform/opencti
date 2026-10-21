@@ -1,4 +1,4 @@
-// Identity index of the lock-free prototype: one document per identity key (standard id, STIX ids, alias ids,
+// Identity index of the lock-free write path: one document per identity key (standard id, STIX ids, alias ids,
 // hashes), whose _id is derived from the key and which names the object that owns the key.
 // Elasticsearch refuses a second `create` of the same _id, so claiming a key is atomic without a lock, and a
 // realtime get by _id sees a claim before any refresh. A deleted object keeps its keys as tombstones.

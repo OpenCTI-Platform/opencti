@@ -16,8 +16,15 @@ import { addLabel } from '../../../src/domain/label';
 import { benchParam, createOne, denormalizedCount, RUN_ID, writeResults } from '../bench-utils';
 import { batchWriteRelations } from '../batch-writer';
 import { deterministicId, registerExisting } from '../lockfree/identity';
-import { type Bundle, writeBundles, writeEntities, writeRelations } from '../lockfree/run';
-import type { EntityInput, RelationInput } from '../lockfree/writer';
+import { writeBundles, writeEntities, writeRelations } from '../lockfree/run';
+
+// Inputs as these scenarios build them, turned into the write path's createEntity / createRelation inputs
+type EntityInput = { type: string; name: string; [key: string]: any };
+type RelationInput = Record<string, any>;
+const toItems = (list: EntityInput[]) => list.map(({ type, ...input }) => ({ type, input }));
+const toRelations = (list: RelationInput[]) => list.map(({ source_ref, target_ref, source_type: _sourceType, target_type: _targetType, ...rest }) => ({
+  ...rest, fromId: source_ref, toId: target_ref,
+}));
 
 const N = benchParam('N', 8000);
 const CHUNK = benchParam('CHUNK', 500);
@@ -30,7 +37,7 @@ const idOf = (type: string, entityName: string) => deterministicId(sid(type, ent
 const range = (n: number) => [...Array(n).keys()];
 
 describe('Lock-free batch scenario', () => {
-  it('measures the lock-free prototype in chunks, with parallel writers', async () => {
+  it('measures the lock-free write path in chunks, with parallel writers', async () => {
     const results: Record<string, any> = { params: { n: N, chunk: CHUNK, settle_every_ms: SETTLE_MS, bundle: BUNDLE } };
     const chunks = (chunkSize: number, writers: number) => ({ chunkSize, concurrency: writers, settleEveryMs: SETTLE_MS });
 
@@ -47,7 +54,7 @@ describe('Lock-free batch scenario', () => {
     const sources = entities('src', ENTITY_TYPE_INTRUSION_SET);
     const targetSets = [0, 1].map((k) => entities(`dst${k}`, ENTITY_TYPE_MALWARE));
     const hubs = range(16).map((h) => ({ type: ENTITY_TYPE_MALWARE, name: name('hub', h), description: 'benchmark' }));
-    results.setup_entities = await writeEntities([...sources, ...targetSets.flat(), ...hubs], chunks(CHUNK, 4));
+    results.setup_entities = await writeEntities(toItems([...sources, ...targetSets.flat(), ...hubs]), chunks(CHUNK, 4));
     const sourceIds = sources.map((s) => idOf(s.type, s.name));
     const hubIndex = inferIndexFromConceptType(ENTITY_TYPE_MALWARE);
     let nextHub = 0;
@@ -79,17 +86,21 @@ describe('Lock-free batch scenario', () => {
     hubChecks.batch_hub_norefs = await denormalizedCount(h.id, hubIndex, RELATION_USES);
     for (const writers of [1, 4, 8]) {
       h = hubCase();
-      results[`lf_hub_norefs_x${writers}`] = await writeRelations(lf(h.hub, false), chunks(CHUNK, writers));
+      results[`lf_hub_norefs_x${writers}`] = await writeRelations(toRelations(lf(h.hub, false)), chunks(CHUNK, writers));
       hubChecks[`lf_hub_norefs_x${writers}`] = await denormalizedCount(h.id, hubIndex, RELATION_USES);
     }
     h = hubCase();
-    results.lf_hub_norefs_chunk100_x8 = await writeRelations(lf(h.hub, false), chunks(100, 8));
+    results.lf_hub_norefs_chunk100_x8 = await writeRelations(toRelations(lf(h.hub, false)), chunks(100, 8));
     hubChecks.lf_hub_norefs_chunk100_x8 = await denormalizedCount(h.id, hubIndex, RELATION_USES);
     h = hubCase();
-    results.lf_hub_norefs_chunk2000_x1 = await writeRelations(lf(h.hub, false), chunks(2000, 1));
+    results.lf_hub_norefs_chunk2000_x1 = await writeRelations(toRelations(lf(h.hub, false)), chunks(2000, 1));
     hubChecks.lf_hub_norefs_chunk2000_x1 = await denormalizedCount(h.id, hubIndex, RELATION_USES);
-    results.lf_spread_norefs_x1 = await writeRelations(lf(targetSets[0], false), chunks(CHUNK, 1));
-    results.lf_spread_norefs_x4 = await writeRelations(lf(targetSets[1], false), chunks(CHUNK, 4));
+    results.lf_spread_norefs_x1 = await writeRelations(toRelations(lf(targetSets[0], false)), chunks(CHUNK, 1));
+    results.lf_spread_norefs_x4 = await writeRelations(toRelations(lf(targetSets[1], false)), chunks(CHUNK, 4));
+    // The same spread shape with other pairs (source i to target i + 1), settled with 1 and 8 parallel bulks
+    const shifted = (targets: EntityInput[]) => targets.map((_, i) => targets[(i + 1) % targets.length]);
+    results.lf_spread_norefs_x4_settle1 = await writeRelations(toRelations(lf(shifted(targetSets[0]), false)), { ...chunks(CHUNK, 4), settleParallel: 1 });
+    results.lf_spread_norefs_x4_settle8 = await writeRelations(toRelations(lf(shifted(targetSets[1]), false)), { ...chunks(CHUNK, 4), settleParallel: 8 });
 
     // With refs: each relationship is 6 documents
     h = hubCase();
@@ -100,7 +111,7 @@ describe('Lock-free batch scenario', () => {
     hubChecks.batch_hub_refs_4writers = await denormalizedCount(h.id, hubIndex, RELATION_USES);
     for (const writers of [1, 4, 8]) {
       h = hubCase();
-      results[`lf_hub_refs_x${writers}`] = await writeRelations(lf(h.hub, true), chunks(CHUNK, writers));
+      results[`lf_hub_refs_x${writers}`] = await writeRelations(toRelations(lf(h.hub, true)), chunks(CHUNK, writers));
       hubChecks[`lf_hub_refs_x${writers}`] = await denormalizedCount(h.id, hubIndex, RELATION_USES);
     }
 
@@ -108,7 +119,7 @@ describe('Lock-free batch scenario', () => {
     for (const writers of [1, 4]) {
       h = hubCase();
       const hubTarget = h.hub;
-      const bundles: Bundle[] = range(N / (2 * BUNDLE)).map((b) => {
+      const bundles: { entities: EntityInput[]; relations: RelationInput[] }[] = range(N / (2 * BUNDLE)).map((b) => {
         const fresh = range(BUNDLE).map((i) => ({ type: ENTITY_TYPE_INTRUSION_SET, name: name(`bundle${writers}-${b}`, i), description: 'benchmark', ...lfRefs }));
         return {
           entities: fresh,
@@ -123,7 +134,7 @@ describe('Lock-free batch scenario', () => {
           })),
         };
       });
-      results[`lf_bundles_refs_x${writers}`] = await writeBundles(bundles, { chunkSize: 1, concurrency: writers, settleEveryMs: SETTLE_MS });
+      results[`lf_bundles_refs_x${writers}`] = await writeBundles(bundles.map((b) => ({ entities: toItems(b.entities), relations: toRelations(b.relations) })), { chunkSize: 1, concurrency: writers, settleEveryMs: SETTLE_MS });
       hubChecks[`lf_bundles_refs_x${writers}`] = await denormalizedCount(h.id, hubIndex, RELATION_USES);
     }
 

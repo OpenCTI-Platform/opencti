@@ -2,7 +2,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { ActivityStreamEvent, BaseEvent, StreamNotifEvent } from '../../../src/types/event';
 
 // Shared mocks referenced by the (per-scenario) module factories below.
-const mockClient = { xadd: vi.fn(), xinfo: vi.fn(), xrange: vi.fn() };
+const mockPipeline = { xadd: vi.fn(), exec: vi.fn() };
+const mockClient = { xadd: vi.fn(), xinfo: vi.fn(), xrange: vi.fn(), pipeline: () => mockPipeline };
 const mockRawUpload = vi.fn();
 const mockGetFileContent = vi.fn();
 const mockLogWarn = vi.fn();
@@ -287,5 +288,44 @@ describe('stream commands', () => {
       '1002-0',
     );
     expect(result).toEqual({ lastEventId: '1002-0' });
+  });
+});
+
+describe('rawPushManyToStream', () => {
+  let mod: RedisStreamModule;
+
+  beforeAll(async () => {
+    mod = await loadModule(50, 2000000);
+  });
+
+  afterEach(() => {
+    mockPipeline.xadd.mockReset();
+    mockPipeline.exec.mockReset();
+    mockRawUpload.mockReset();
+  });
+
+  it('sends every event in one pipeline, in order, offloading the large ones', async () => {
+    mockPipeline.exec.mockResolvedValue([[null, '1-0'], [null, '1-1'], [null, '1-2']]);
+    const first = { type: 'create', data: 'a' } as unknown as BaseEvent;
+    const large = { type: 'create', data: 'x'.repeat(200) } as unknown as BaseEvent;
+    const last = { type: 'update', data: 'b' } as unknown as BaseEvent;
+    await mod.rawPushManyToStream([first, large, last]);
+    expect(mockPipeline.exec).toHaveBeenCalledTimes(1);
+    expect(mockPipeline.xadd).toHaveBeenCalledTimes(3);
+    expect(mockPipeline.xadd.mock.calls[0]).toEqual(['stream.opencti', 'MAXLEN', '~', 2000000, '*', ...toStreamFields(first as any)]);
+    expect(mockPipeline.xadd.mock.calls[1].slice(0, 5)).toEqual(['stream.opencti', 'MAXLEN', '~', 2000000, '*']);
+    expect(mockPipeline.xadd.mock.calls[1][5]).toBe('event_file_id');
+    expect(mockRawUpload).toHaveBeenCalledTimes(1);
+    expect(mockPipeline.xadd.mock.calls[2]).toEqual(['stream.opencti', 'MAXLEN', '~', 2000000, '*', ...toStreamFields(last as any)]);
+  });
+
+  it('does nothing for no events', async () => {
+    await mod.rawPushManyToStream([]);
+    expect(mockPipeline.exec).not.toHaveBeenCalled();
+  });
+
+  it('fails when one of the XADD fails', async () => {
+    mockPipeline.exec.mockResolvedValue([[null, '1-0'], [new Error('OOM'), null]]);
+    await expect(mod.rawPushManyToStream([{ type: 'create' } as unknown as BaseEvent, { type: 'create' } as unknown as BaseEvent])).rejects.toThrow('OOM');
   });
 });

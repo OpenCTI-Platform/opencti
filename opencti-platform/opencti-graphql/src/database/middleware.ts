@@ -1072,12 +1072,15 @@ export const validateCreatedBy = async (context: AuthContext, user: AuthUser, cr
   }
 };
 
+// finder: how the referenced ids are looked up, by default a search filtered by the user's access. A write path
+// that does not refresh after each write passes one that also sees documents not yet searchable.
 export const inputResolveRefs = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
+  opts: { finder?: (ids: string[]) => Promise<BasicStoreObject[]> } = {},
 ): Promise<Record<string, any>> => {
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map<string, { id: string; destKey?: string; multiple?: boolean; vocab?: { field: any; data: string } }[]>();
@@ -1160,7 +1163,7 @@ export const inputResolveRefs = async (
     // TODO Improve type restriction from targeted ref inferred types
     // This information must be added in the model
     const idsToFetch = Array.from(fetchingIdsMap.keys());
-    const simpleResolutionsPromise = internalFindByIds(context, user, idsToFetch);
+    const simpleResolutionsPromise = opts.finder ? opts.finder(idsToFetch) : internalFindByIds(context, user, idsToFetch);
     let embeddedFromPromise;
     if (embeddedFromResolution) {
       fetchingIdsMap.set(embeddedFromResolution, [{ id: embeddedFromResolution, destKey: 'from', multiple: false }]);
@@ -1302,7 +1305,7 @@ const isRelationTargetGrants = (elementGrants: any[], relation: Record<string, a
   if (isUnrestricted) return false;
   return type === ACTION_TYPE_UNSHARE || !elementGrants.every((v) => ((relation.to as BasicStoreCommon)[RELATION_GRANTED_TO] ?? []).includes(v));
 };
-const createContainerSharingTask = (
+export const createContainerSharingTask = (
   context: AuthContext,
   type: string,
   element: Record<string, any>,
@@ -1372,7 +1375,7 @@ export const mergeInstanceWithInputs = (instance: Record<string, any>, inputs: E
   const updatedInstance = R.mergeRight(instance, data);
   return R.reject(R.equals(null))(updatedInstance);
 };
-const partialInstanceWithInputs = (instance: Record<string, any>, inputs: EditInput[]) => {
+export const partialInstanceWithInputs = (instance: Record<string, any>, inputs: EditInput[]) => {
   const inputData = updatedInputsToData(instance, inputs);
   return {
     _index: instance._index,
@@ -1535,7 +1538,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   return { key, value: finalVal, operation };
 };
-const mergeInstanceWithUpdateInputs = (base: Record<string, any>, inputs: EditInput[]) => {
+export const mergeInstanceWithUpdateInputs = (base: Record<string, any>, inputs: EditInput[]) => {
   const instance = structuredClone(base);
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(instance.entity_type), ...schemaRelationsRefDefinition.getInputNames(instance.entity_type)];
@@ -2255,7 +2258,7 @@ type UpdateAttribueRawOpts = {
   impactStandardId?: boolean;
   upsert?: boolean;
 };
-const updateAttributeRaw = async (
+export const updateAttributeRaw = async (
   context: AuthContext,
   user: AuthUser,
   instance: BasicStoreBase,
@@ -2525,7 +2528,7 @@ const updateAttributeRaw = async (
   };
 };
 
-const resolveRefsForInputs = async (
+export const resolveRefsForInputs = async (
   context: AuthContext,
   user: AuthUser,
   type: string,
@@ -3045,11 +3048,11 @@ const generateEnrichmentLoaders = (context: AuthContext, user: AuthUser, element
     bundleById: () => stixBundleByIdStringify(context, user, element.entity_type, element.internal_id),
   };
 };
-const triggerCreateEntityAutoEnrichment = async (context: AuthContext, user: AuthUser, element: BasicStoreBase) => {
+export const triggerCreateEntityAutoEnrichment = async (context: AuthContext, user: AuthUser, element: BasicStoreBase) => {
   const loaders = generateEnrichmentLoaders(context, user, element);
   await createEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: AuthUser, element: BasicStoreBase) => {
+export const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: AuthUser, element: BasicStoreBase) => {
   // If element really updated, try to enrich if needed
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
@@ -3280,7 +3283,7 @@ const upsertRelationRule = async (
 };
 // endregion
 
-const validateEntityAndRelationCreation = async (
+export const validateEntityAndRelationCreation = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
@@ -3307,7 +3310,7 @@ const validateEntityAndRelationCreation = async (
   }
 };
 
-const buildRelationDeduplicationFilters = (input: Record<string, any>) => {
+export const buildRelationDeduplicationFilters = (input: Record<string, any>) => {
   const filters = [];
   const { from, relationship_type: relationshipType, createdBy } = input;
   const deduplicationConfig = conf.get('relations_deduplication') ?? {
@@ -3499,7 +3502,7 @@ type CreateRelationRawOpts = UpdateEventOpts & {
   commitMessage?: string;
   restore?: boolean;
 };
-const checkRefRelationNotCyclic = async (
+export const checkRefRelationNotCyclic = async (
   context: AuthContext,
   user: AuthUser,
   relationshipType: string,
@@ -3895,7 +3898,7 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   bypassValidation?: boolean;
   bypassMandatoryAttributes?: boolean;
 };
-const cleanEntityForIdsCollision = (
+export const cleanEntityForIdsCollision = (
   input: Record<string, any>,
   type: string,
   target: Record<string, any>,

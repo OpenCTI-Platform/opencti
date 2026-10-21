@@ -64,6 +64,24 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
   }
 };
 
+const pushManyToStream = async <T extends BaseEvent> (context: AuthContext, user: AuthUser, events: T[], opts: EventOpts = {}) => {
+  if (events.length === 0 || getDraftContext(context, user) || !isStreamPublishable(opts)) {
+    return;
+  }
+  const eventsToPush = events.map((event) => ({ ...event, event_id: context.eventId }));
+  if (STREAM_FULL_DEBUG_ACTIVATED) {
+    logApp.info('Pushing events to stream', { events: eventsToPush });
+  }
+  const pushManyToStreamFn = async () => {
+    await streamClient.rawPushManyToStream(eventsToPush);
+  };
+  await telemetry(context, user, 'INSERT STREAM', {
+    [ATTR_DB_NAMESPACE]: 'stream_engine',
+    // Deprecated attribute to be removed when transition done
+    [SEMATTRS_DB_NAME]: 'stream_engine',
+  }, pushManyToStreamFn);
+};
+
 export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
   await pushToStream(context, user, event);
 };
@@ -139,6 +157,26 @@ export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUse
     return undefined;
   } catch (e) {
     throw DatabaseError('Error in store create entity event', { cause: e });
+  }
+};
+// Create events of objects written together, as storeCreateEntityEvent / storeCreateRelationEvent build them,
+// pushed in one round trip and in the order given. Relationships without a message get the generated one.
+export const storeCreateEvents = async (
+  context: AuthContext,
+  user: AuthUser,
+  items: { instance: StoreObject; message?: string }[],
+  opts: CreateEventOpts = {},
+) => {
+  try {
+    const exportable = items.filter(({ instance }) => isStixExportableInStreamData(instance));
+    const events = await Promise.all(exportable.map(async ({ instance, message }) => {
+      const workflowStatus = await resolveWorkflowStatusName(context, user, instance);
+      return buildCreateEvent(user, instance, message ?? generateCreateMessage(instance), workflowStatus);
+    }));
+    await pushManyToStream(context, user, events, opts);
+    return events;
+  } catch (e) {
+    throw DatabaseError('Error in store create events', { cause: e });
   }
 };
 export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {

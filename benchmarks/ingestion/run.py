@@ -80,21 +80,28 @@ SCENARIOS = {
         ),
         Scenario(
             "lockfree",
-            "Lock-free prototype (derived ids, no lock, no refresh, settled endpoints) vs today and batch",
+            "Lock-free write path (derived ids, no lock, no refresh, settled endpoints) vs today and batch",
             "vitest",
             {"n": 2000, "concurrency": 8, "chunk": 500, "settle_ms": 250},
             {"n": 200},
         ),
         Scenario(
             "lockfree-batch",
-            "Lock-free prototype in chunks: 1, 4 and 8 parallel writers, with and without refs, bundles, vs batch",
+            "Lock-free write path in chunks: 1, 4 and 8 parallel writers, with and without refs, bundles, vs batch",
+            "vitest",
+            {"n": 8000, "chunk": 500, "settle_ms": 250},
+            {"n": 2000},
+        ),
+        Scenario(
+            "lockfree-profile",
+            "CPU profile of lock-free chunks (relationships with and without refs, entities with refs)",
             "vitest",
             {"n": 8000, "chunk": 500, "settle_ms": 250},
             {"n": 2000},
         ),
         Scenario(
             "lockfree-behaviours",
-            "Lock-free prototype correctness: duplicates, aliases, races, out of order, merges, delete, rename",
+            "Lock-free write path parity with today and behaviours: duplicates, aliases, races, out of order, merges, delete, rename",
             "vitest",
             {"n": 50, "concurrency": 8, "settle_ms": 100},
             {"n": 20},
@@ -300,6 +307,7 @@ def run_one(scenario, args, stamp):
         env["BENCH_OUT"] = str(out_path)
         env["BENCH_PYTHON"] = args.python
         env["BENCH_WORKER_SCRIPT"] = str(TOOLS / "worker_path.py")
+        env["BENCH_PROFILE_DIR"] = str(RESULTS)
         for key, value in params.items():
             env[f"BENCH_{key.upper()}"] = str(value)
         code = run_vitest(f"{scenario.name}.scenario.ts", env, log_path)

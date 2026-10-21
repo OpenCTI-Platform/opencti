@@ -69,6 +69,7 @@ export interface SizedNotifEvent<T extends StreamNotifEvent> {
 export interface RawStreamClient {
   initializeStreams: () => Promise<void>;
   rawPushToStream: <T extends BaseEvent> (event: T) => Promise<void>;
+  rawPushManyToStream: <T extends BaseEvent> (events: T[]) => Promise<void>;
   rawFetchStreamInfo: (streamName?: string) => Promise<StreamInfo>;
   rawCreateStreamProcessor: <T extends BaseEvent> (
     provider: string,

@@ -61,9 +61,10 @@ Global options: `--prefix` (default `bench`, see [Isolation](#isolation)), `--es
 | `feed-shaped` | Data shaped like a connector feed: indicators with created-by, a marking and 3 labels, 12 `indicates` each to 40 shared attack patterns, and reports with 100 to 1,000 objects | 300 indicators, 3,600 relationships per case | ~4 min |
 | `worker-path` | What the worker does per message, through pycti over HTTP, with each GraphQL request timed | 500 objects per case | ~2 min |
 | `queue-loop` | The worker's RabbitMQ consumer loop alone, with a handler that sleeps a fixed time | 200 messages per case | ~1 min |
-| `lockfree` | Lock-free prototype against today's path and the batch prototype: entities and relationships with refs, one per call, 8 at a time and in chunks, on spread ends, a hub and a hub that already lists 20,000 relationships, and re-ingestion | 2,000 per case (500 on the big hub) | ~6 min |
-| `lockfree-batch` | Lock-free prototype in chunks against the batch prototype: hub and spread, with and without refs, 1, 4 and 8 parallel chunk writers, chunks of 100 to 2,000, and bundles carrying entities with their relationships; per-step timing of each chunk | 8,000 per case | ~2 min |
-| `lockfree-behaviours` | Correctness of the lock-free prototype: 42 checks over duplicates, alias matches and races, out-of-order arrival, merges, delete, rename, parity with today's documents | 50 per case | ~1 min |
+| `lockfree` | Lock-free write path against today's path and the batch prototype: entities and relationships with refs, one per call, 8 at a time and in chunks, on spread ends, a hub and a hub that already lists 20,000 relationships, and re-ingestion | 2,000 per case (500 on the big hub) | ~6 min |
+| `lockfree-batch` | Lock-free write path in chunks against the batch prototype: hub and spread, with and without refs, 1, 4 and 8 parallel chunk writers, chunks of 100 to 2,000, and bundles carrying entities with their relationships; per-step timing of each chunk | 8,000 per case | ~2 min |
+| `lockfree-profile` | CPU profile of lock-free chunks (relationships with and without refs, entities with refs), one `.cpuprofile` per case in `results/`; summarize with `tools/cpu_profile.py` | 8,000 per case | ~40 s |
+| `lockfree-behaviours` | Correctness of the lock-free path: parity with today's path (stored documents, meta relationships and stream events of the same steps written both ways) and 28 checks over concurrency, races, out-of-order arrival, deletes, renames, access, restarts, drafts, backfill | 50 per case | ~1.5 min |
 
 \* On a recent laptop, including the ~15 s platform start of each scenario.
 
@@ -121,9 +122,9 @@ whole time. The reference results below were measured that way.
 | `errors` | Failed calls, by error code. Every case is expected to have none |
 | `phases_ms` | Mean and p95 of each platform phase over the case (see the glossary) |
 | `per_chunk_mean_ms` | Batch prototype: mean time of each step per chunk |
-| `write_throughput_per_s` | Lock-free prototype: items divided by the time until every write call returned |
-| `settled_throughput_per_s` | Lock-free prototype: items divided by the time until the settler finished and the indices were refreshed, so every endpoint lists its relationships and searches see everything |
-| `writer`, `settler` | Lock-free prototype: what happened (created, merged, unchanged, optimistic retries, lost key races, re-pointed, reconciled...) |
+| `write_throughput_per_s` | Lock-free path: items divided by the time until every write call returned |
+| `settled_throughput_per_s` | Lock-free path: items divided by the time until the settler finished and the indices were refreshed, so every endpoint lists its relationships and searches see everything |
+| `writer`, `settler` | Lock-free path: what happened (created, merged, unchanged, optimistic retries, lost key races, re-pointed, reconciled...) |
 | `checks` | Correctness checks, see below |
 
 ### Phase glossary
@@ -172,26 +173,43 @@ It does not handle: updates of existing relationships, the ±30-day duplicate wi
 confidence and consistency checks, container sharing tasks, and the security-coverage hook. Treat its numbers
 as an upper bound for a real implementation with those added.
 
-### The lock-free prototype
+### The lock-free write path
 
-`tests/bench/lockfree/` replaces the Redis locks, the searches for existing copies and the forced refreshes by
-identity that Elasticsearch enforces itself:
+`tests/bench/lockfree/` writes entities and relationships without Redis locks, forced refreshes or searches for
+existing copies, with today's behaviour. It takes the same inputs as `createEntity` and `createRelation` and
+runs the platform's own code for every rule: input preparation (confidence, access, custom fields, restricted
+members), `inputResolveRefs` (given a finder that reads by id), defaults, validation, `buildEntityData` /
+`buildRelationData`, the multiple-match rules of `internalCreateEntityRaw` (merges with `mergeEntities`), the
+upsert rules (`buildUpdatePatchForUpsert`, `generateInputsForUpsert`, `updateAttributeRaw`, the ref handling and
+`i_attributes` of `updateAttributeMetaResolved`), stream events, enrichment and workflow triggers. Only the
+writes differ.
 
 | File | Role |
 |---|---|
-| `identity.ts` | Identity index (`lockfree_identities_<prefix>`): one document per identity key (standard id, STIX ids, alias ids, hashes, internal id), whose `_id` is UUIDv5 of the key and which names the owner. Claiming a key is a `create`, which Elasticsearch accepts once; looking one up is a realtime get, which needs no refresh. Deleted objects leave tombstones. |
-| `writer.ts` | Write path per chunk: resolve references and keys with two realtime multi-gets, `create` new objects without refresh (`internal_id` = UUIDv5 of the `standard_id`; relationships UUIDv5 of type, from id and to id), claim their keys, merge existing ones with `if_seq_no`, emit the stream events. An unknown end gets a provisional id derived from its STIX id. |
-| `settler.ts` | Work done after the write, grouped per endpoint, every `settle_ms`: merge duplicates found by lost key races, re-point relationships whose provisional end is now known, delete those whose end was deleted, update every endpoint's `rel_*` list once, fill the names of ends that were provisional. |
-| `store.ts` | Realtime reads, meta relationships with derived ids, merges with optimistic concurrency and update events in the platform's change format. |
-| `run.ts` | Runs a write with background settlers; delete and rename through the platform with their identity updates. |
+| `identity.ts` | Identity index (`lockfree_identities_<prefix>`): one document per identity key (internal and standard id, STIX ids, alias ids, hashes), with an `_id` derived from the key, naming the owner. Claiming a key is a `create`, which Elasticsearch accepts once; a lookup is a realtime get, which needs no refresh. Deleted objects leave tombstones. |
+| `load.ts` | Realtime reads in the platform's store shape (`elConvertHits`), refs resolved as `storeLoadByIdWithRefs` does, and the finder handed to `inputResolveRefs` (same contract as `internalFindByIds`, access filter included). |
+| `pairs.ts` | Relationship duplicates: one document per (type, from, to) lists the pair's relationships; candidates are matched with today's `buildRelationDeduplicationFilters` (window, per-type overrides, created-by), evaluated in memory. Entries of relationships deleted since (by today's path, from the interface) are dropped, so the relationship is created again, as today. |
+| `writer.ts` | Write path per chunk (steps timed as `lf_entity.*` / `lf_relation.*`): prepare and resolve as today, match, then create in bulk. New entities claim their keys before being created, so two writers never both create one object: the one that loses a key waits for the holder and merges into it. New relationships get an id from type, ends and time; a duplicate created at the same moment by another writer is caught when it is recorded in its pair. Relationships whose ends do not exist yet go to the pending store. Drafts, file uploads, explicit ref relationships and single-ref replacements go to today's path, unchanged. |
+| `upsert.ts` | Merges: today's rules on the object read by id, written back with `if_seq_no` and recomputed when someone wrote in between; meta relationships with ids derived from their ends; update events in today's format. |
+| `queue.ts` | Durable settler queue: Redis streams split by entity id, read through a consumer group; tasks are acknowledged once applied, and tasks a stopped settler left are taken over after `claimIdleMs`. |
+| `settler.ts` | Applies the queued work: one update per entity for its `rel_*` lists (one entry per relationship, as today, recorded per relationship so a redelivered task is not applied twice), today's `mergeEntities` for duplicates found after creation, merges of relationship duplicates, removal of relationships whose end was deleted, and the pending relationships whose ends now exist. |
+| `pending.ts` | Relationships waiting for an end, in their own index, invisible to reads; written through the normal path when the ends exist, refused when an end was deleted (as today), dropped after their time to live. |
+| `reconcile.ts` | Merges two entities found to be one, with today's `mergeEntities`, and moves the identity keys. |
+| `backfill.ts` | One-time backfill of the identity index and pair documents for data written before, run before lock-free writes are enabled; idempotent. A key still held by an object that no longer exists is given to the object that has it now. |
+| `run.ts` | Runs writes in chunks with background settlers (`writeEntities`, `writeRelations`, `writeBundles`); delete and rename through today's path with their identity updates; `waitForSearch` makes each write searchable when it returns, as today; `resetLockFreeState` drops the lock-free state of a wiped platform (`run.py init` calls it). |
 
-Documents are built with the platform's own `buildEntityData`, `buildRelationData` and `prepareIndexingElement`
-(exported for this purpose), so they are stored in the same shape as today; `lockfree-behaviours` checks it.
-The time range of a relationship is not part of its identity: copies widen it. Merge rules are simplified: a
-copy with a confidence at least as high replaces description and confidence, lists are unions, markings keep
-the highest per type. Not covered: the rest of `upsertElement`'s rules, access checks and organization
-sharing (it writes as admin), drafts, inferences, sightings, observables matched by hashes, and a durable
-settler queue (work is kept in memory).
+### Profiling
+
+`lockfree-profile` starts the V8 profiler (through `node:inspector`) only around the measured writes, in the
+process that does them, and saves `results/<case>.cpuprofile`. Open one in Chrome DevTools, or summarize it:
+
+```bash
+python tools/cpu_profile.py results/relations_refs.cpuprofile --top 25
+```
+
+It prints the CPU time on and off CPU (idle = waiting on Elasticsearch or Redis), self time by area (a
+platform file, a dependency, garbage collection) and by function, and the inclusive time of platform functions.
+The profiler's own output (`node inspector`) shows up in the profile and can be ignored.
 
 ### Correctness checks
 
@@ -199,18 +217,22 @@ Each scenario fails if its checks fail, so a fast but wrong result never reads a
 
 - **Denormalized counts.** Every hub lists all its relationships in `rel_<type>.internal_id`, whichever path
   wrote them.
-- **Bulk resolution.** For one input, the prototype's bulk resolution holds the same ids under every key as
+- **Bulk resolution.** For one input, the batch prototype's bulk resolution holds the same ids under every key as
   the platform's `inputResolveRefs`.
-- **Lock-free behaviours.** `lockfree-behaviours` runs 42 checks: derived ids; refs loaded back by the
-  platform; same stored fields as today's path for an entity, a relationship and its meta relationships;
-  today's path finding a lock-free relationship instead of creating a duplicate; the platform loading and
-  listing lock-free relationships; a hub written 8 at a time and by 4 settlers at once; the same relationship
-  or entity sent twice at the same moment; alias matches, in sequence and racing (with relationships sent to
-  the duplicate before it is merged); references by a STIX id that is not the standard id; relationships
-  before their ends, by standard id and by another STIX id; time ranges widening; merges by confidence, with
-  markings keeping the highest and update events emitted; delete refusing later references and removing
-  relationships the platform's delete did not see; re-creation after delete; rename; `indicates` leaving its
-  target's list alone.
+- **Lock-free behaviours.** `lockfree-behaviours` first runs the same steps through today's path (one by one)
+  and through the lock-free path (in chunks), in two worlds told apart by a name prefix: entities with every kind
+  of ref, aliases, observables, files merged by hashes, attack patterns with kill chain phases, relationships with
+  dates, sightings, copies with higher and lower confidence, new aliases, labels, a marking upgrade, an alias
+  match, two existing objects matched by one input, relationship copies inside and outside the duplicate window,
+  and a report with its objects. The stored documents, the meta relationships and the stream events must be the
+  same, ids replaced by names. Then 28 checks cover what parity cannot show: the same relationship or entity sent
+  twice at the same moment, an alias race (no duplicate visible, even before settling), relationships before
+  their ends (waiting invisibly, then written), pending expiry, deletes (later references refused, relationships
+  the platform's delete missed removed), re-creation of a deleted entity and of a relationship deleted by today's
+  path, rename, marking access and confidence capping as today, a
+  settler stopping mid-run (another one finishes its work), partitioned settlers, `waitForSearch` visibility,
+  drafts (today's path), backfill of existing data and of keys left by vanished objects, and platform reads of
+  lock-free objects. It runs on a freshly initialized platform, where only the backfill knows the markings.
 - **Refs.** In `feed-shaped`, a relationship loaded back has its created-by, marking and 3 labels, the
   indicator lists its 24 `indicates`, and the attack pattern lists none (that side is not impacted).
 
@@ -310,46 +332,67 @@ An earlier run on the same machine, with a connector backlog being drained in th
 4.6 ms for both loops. The difference between the two loops is a few milliseconds at most and moves between
 runs; run this scenario several times before drawing a conclusion from it.
 
-### Lock-free prototype (`lockfree`)
+### Lock-free write path (`lockfree`)
 
-2,000 items per case (500 on the big hub), every object with an author, a marking and 3 labels, on the same
-platform run as the today and batch rows. *Settled* = every endpoint lists its relationships and a refresh
-was done, so searches see everything.
+Final code, on a freshly initialized benchmark platform. 2,000 items per case (500 on the big hub), every object
+with an author, a marking and 3 labels. *Settled* = every endpoint lists its relationships and a refresh was
+done, so searches see everything.
 
 | Workload | Today | Batch prototype | Lock-free, written | Lock-free, settled |
 |---|---|---|---|---|
-| Entities, 1 at a time | 51/s | - | 225/s | 221/s |
-| Entities, 8 at a time | - | - | 776/s | 723/s |
-| Entities, chunks of 500 | - | - | 1,564/s | 1,399/s |
-| Relationships, spread, 1 at a time | 50/s | - | 287/s | 283/s |
-| Relationships, spread, 8 at a time | - | - | 906/s | 783/s |
-| Relationships, hub, 8 at a time | 41/s | - | 895/s | 845/s |
-| Relationships, hub, chunks of 500 | - | 997/s | 1,612/s | 1,147/s |
-| Relationships, hub listing 20,000, 8 at a time | 10.8/s | - | 719/s | 591/s |
-| Re-ingestion of the hub, changed, 8 at a time | 45/s | - | 701/s | 666/s |
-| Re-ingestion of the hub, unchanged, 8 at a time | - | - | 2,039/s | 1,995/s |
+| Entities, 1 at a time | 59/s | - | 152/s | 152/s |
+| Entities, 8 at a time | - | - | 572/s | 569/s |
+| Entities, chunks of 500 | - | - | 760/s | 753/s |
+| Relationships, spread, 1 at a time | 47/s | - | 170/s | 170/s |
+| Relationships, spread, 8 at a time | - | - | 576/s | 561/s |
+| Relationships, hub, 8 at a time | 41/s | - | 572/s | 563/s |
+| Relationships, hub, chunks of 500 | - | 1,337/s | 1,508/s | 1,361/s |
+| Relationships, hub listing 20,000, 8 at a time | 10.6/s | - | 448/s | 391/s |
+| Re-ingestion of the hub, changed, 8 at a time | 46/s | - | 483/s | 481/s |
+| Re-ingestion of the hub, unchanged, 8 at a time | - | - | 762/s | 761/s |
 
-`lockfree-behaviours`: 42 of 42 checks pass at 50 items per case; in the alias race, 49 of 50 pairs lost
-a key race and were reconciled, with 39 relationships re-pointed.
+Entities in chunks vary between runs (760 to 1,180/s across the last three); the other rows move by less than
+10%. `lockfree-behaviours`: parity on 22 objects, 98 meta relationships and 33 stream events, and 28 of 28
+checks; in the alias race, 49 of 50 pairs met at the same moment and were merged before either was visible twice.
 
 ### Lock-free in chunks (`lockfree-batch`)
 
-8,000 relationships per case, chunks of 500, on the same platform run as the batch prototype rows.
+Final code, freshly initialized benchmark platform, 8,000 relationships per case, chunks of 500. Settled
+throughput, written in brackets where it differs by more than 10%.
 
 | Case | Batch prototype | Lock-free, 1 writer | Lock-free, 4 writers | Lock-free, 8 writers |
 |---|---|---|---|---|
-| Hub, without refs | 2,152/s | 2,856/s (3,582 written) | 3,152/s (4,731 written) | 2,985/s (4,886 written) |
-| Hub, with refs | 936/s (889 with 4 writers) | 1,418/s | 1,759/s (2,091 written) | 1,695/s (2,237 written) |
-| Spread, without refs | - | 2,275/s (2,970 written) | 2,275/s (4,458 written) | - |
-| Bundles of 250 entities and their 250 relationships, with refs | - | 1,378/s | 1,866/s | - |
+| Hub, without refs | 2,890/s | 2,444/s | 3,385/s (4,120 written) | 3,672/s (4,665 written) |
+| Hub, with refs | 1,314/s (1,254 with 4 writers) | 1,247/s | 1,879/s (2,098 written) | 2,137/s (2,495 written) |
+| Spread, without refs | - | 1,858/s (2,346 written) | 2,575/s (3,535 written) | - |
+| Bundles of 250 entities and their 250 relationships, with refs | - | 1,044/s | 1,778/s | - |
 
-Settled throughput, with written throughput in brackets where they differ by more than 10%. During these
-cases the Node process ran at 100-170% CPU (`ps`, one event loop plus GC threads) and Elasticsearch at 17-35%
-of its 5 cores (`_nodes/stats`, `process.cpu.percent`): the writers share one Node process, which is the
-ceiling, so more writers in it add 30-50%. Per chunk without refs, the bulk create takes 24-44% of the time,
-stream events 18-36%, reference resolution 16-32%; with refs, the 5 ref relationships per relationship take
-about half. One settler falls behind above about 3,000/s: up to 1.7 s of endpoint updates remain after the
-last write.
+Settler bulks sent at once, on the spread case with 4 writers: 1 gives 2,388/s, 4 gives 2,575/s, 8 gives
+2,815/s; 4 is the default.
+
+### Optimization steps
+
+Each step was measured with the scenarios above; the progression on the hardest realistic case, relationships
+with refs all on one entity, settled:
+
+| Step | Change | Throughput |
+|---|---|---|
+| Today | One object per call, locks and forced refreshes, 8 writers | 41/s |
+| 1 | Batches of 500 (`batch-writer.ts`), still locked | 997/s |
+| 2 | Lock-free, one object per call, 8 writers | 845/s |
+| 3 | Lock-free in chunks of 500, 4 writers | 1,737/s |
+| 4 | Cheaper per-object work: `isNotEmptyField` fast path, one copy in `prepareRelation`, `doYield` only when due | 2,379/s |
+| 5 | Stream events of a chunk in one Redis round trip, stream size check without copy, TLP ids by lookup, faster id field filter | 2,328/s |
+| 6 | Settler: one read per round, relationships indexed by end, parallel update bulks | 3,133/s |
+| 7 | Today's behaviour in full: upsert rules, duplicate window, access checks, enrichment and workflow, durable settler queue, pending store, backfill; 8 writers | 2,137/s |
+
+Step 3 showed the limit had moved into the Node process (100-170% CPU while Elasticsearch used 17-35% of its
+cores); `lockfree-profile` and `tools/cpu_profile.py` found the hot spots fixed in steps 4 and 5. Step 5 raised
+written throughput (8 writers without refs: 8,182 to 11,768/s) while the settled rate waited for step 6.
+Steps 4 and 5 are platform changes that also speed up today's batch path (2,018 to 2,979/s without refs).
+Steps 2 to 6 skipped part of today's rules; step 7 runs all of them, through the platform's own functions, and
+gives up about a third of step 6 for it, mostly in the per-object work those rules do (the entity workflow
+lookup, the upsert patch, access filtering), which today's path pays too.
 
 ### What the numbers say
 
@@ -360,9 +403,11 @@ last write.
 - Relationships that share an entity are written one after another: 8 writers give no more throughput than 1.
 - Writing relationships in chunks was 24 to 52 times faster than one at a time in these runs, on spread, hub
   and feed-shaped data.
-- Without locks, forced refreshes and searches for existing copies, one object per call is 4 to 6 times faster,
-  concurrency scales again (8 writers on one hub: 21 times today), and a hub that already lists 20,000
-  relationships no longer slows writes down (55 times today).
+- Without locks, forced refreshes and searches for existing copies, and with today's rules in full, one object
+  per call is 2.5 to 3.5 times faster, concurrency scales again (8 writers on one hub: 14 times today), and a hub
+  that already lists 20,000 relationships no longer slows writes down (37 times today).
+- In chunks, relationships with refs on one entity reach about 2,100/s settled with 8 writers, 52 times today,
+  with the same stored documents, meta relationships and stream events as today's path.
 
 ## Limits
 
@@ -370,7 +415,8 @@ last write.
   replicas usually pays more for each refresh.
 - Stream consumers (rules engine, history, notifications) run in the benchmark platform, but their load is
   not representative of production.
-- Observables, external references, sightings and containers other than reports are not covered.
+- Throughput scenarios use intrusion sets, malware and `uses` relationships; observables, sightings, files,
+  attack patterns and reports are checked for parity in `lockfree-behaviours`, not timed.
 - The worker-path scenario times the client side only; its platform phases are not recorded.
 
 ## Adding a scenario
@@ -391,9 +437,10 @@ The scenarios are excluded from the platform's test suites: they only match `vit
 | `benchmarks/ingestion/tools/worker_path.py` | pycti client of the `worker-path` scenario |
 | `benchmarks/ingestion/tools/queue_loop.py` | The `queue-loop` scenario |
 | `benchmarks/ingestion/tools/data_shape.py` | The `data-shape` report |
+| `benchmarks/ingestion/tools/cpu_profile.py` | Summary of a `.cpuprofile`: CPU by area and by function, inclusive time of platform functions |
 | `opencti-platform/opencti-graphql/vitest.config.bench.ts` | Vitest configuration of the scenarios |
 | `opencti-platform/opencti-graphql/tests/bench/scenarios/` | The scenarios run inside the benchmark platform |
 | `opencti-platform/opencti-graphql/tests/bench/bench-utils.ts` | Measurement helpers |
 | `opencti-platform/opencti-graphql/tests/bench/batch-writer.ts` | The batch prototype |
-| `opencti-platform/opencti-graphql/tests/bench/lockfree/` | The lock-free prototype |
+| `opencti-platform/opencti-graphql/tests/bench/lockfree/` | The lock-free write path |
 | `opencti-platform/opencti-graphql/src/utils/bench-timing.ts` | Phase timers, off unless `OPENCTI_BENCH_TIMING=true` |

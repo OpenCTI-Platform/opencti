@@ -5008,7 +5008,7 @@ export const elUpdateEntityConnections = async (context: AuthContext, elements: 
   }
 };
 
-const elUpdateConnectionsOfElement = async (documentId: string, documentBody: any) => {
+export const elUpdateConnectionsOfElement = async (documentId: string, documentBody: any) => {
   const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
     + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
   return elRawUpdateByQuery({

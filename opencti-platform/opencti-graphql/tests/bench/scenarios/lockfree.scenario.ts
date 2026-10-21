@@ -1,4 +1,4 @@
-// Lock-free prototype, throughput: entities and relationships carrying refs (author, marking, three labels),
+// Lock-free write path, throughput: entities and relationships carrying refs (author, marking, three labels),
 // one per call as the worker sends them, concurrent, and in chunks, against today's path and the batch prototype
 // on the same platform and data. Also a hub that already lists 20,000 relationships, and re-ingestion.
 import { describe, expect, it } from 'vitest';
@@ -18,7 +18,14 @@ import { benchParam, createOne, denormalizedCount, measure, RUN_ID, writeResults
 import { batchWriteRelations } from '../batch-writer';
 import { deterministicId, registerExisting } from '../lockfree/identity';
 import { writeEntities, writeRelations } from '../lockfree/run';
-import type { EntityInput, RelationInput } from '../lockfree/writer';
+
+// Inputs as these scenarios build them, turned into the write path's createEntity / createRelation inputs
+type EntityInput = { type: string; name: string; [key: string]: any };
+type RelationInput = Record<string, any>;
+const toItems = (list: EntityInput[]) => list.map(({ type, ...input }) => ({ type, input }));
+const toRelations = (list: RelationInput[]) => list.map(({ source_ref, target_ref, source_type: _sourceType, target_type: _targetType, ...rest }) => ({
+  ...rest, fromId: source_ref, toId: target_ref,
+}));
 
 const N = benchParam('N', 2000);
 const CONCURRENCY = benchParam('CONCURRENCY', 8);
@@ -32,7 +39,7 @@ const idOf = (type: string, entityName: string) => deterministicId(sid(type, ent
 const range = (n: number) => [...Array(n).keys()];
 
 describe('Lock-free throughput scenario', () => {
-  it('measures the lock-free prototype against today and the batch prototype', async () => {
+  it('measures the lock-free write path against today and the batch prototype', async () => {
     const results: Record<string, any> = { params: { n: N, concurrency: CONCURRENCY, chunk: CHUNK, settle_every_ms: SETTLE_MS, big_hub: BIG_HUB } };
     const single = (concurrency: number) => ({ chunkSize: 1, concurrency, settleEveryMs: SETTLE_MS });
     const chunked = { chunkSize: CHUNK, concurrency: 1, settleEveryMs: SETTLE_MS };
@@ -51,15 +58,15 @@ describe('Lock-free throughput scenario', () => {
     results.today_entities_sequential = await measure(range(N), 1, async (i) => {
       await createEntity(testContext, ADMIN_USER, { name: name('today-entity', i), description: 'benchmark', ...todayRefs }, ENTITY_TYPE_INTRUSION_SET);
     });
-    results.lf_entities_single_sequential = await writeEntities(entities('lf-e1'), single(1));
-    results.lf_entities_single_concurrent = await writeEntities(entities('lf-e2'), single(CONCURRENCY));
-    results.lf_entities_batch = await writeEntities(entities('lf-e3'), chunked);
+    results.lf_entities_single_sequential = await writeEntities(toItems(entities('lf-e1')), single(1));
+    results.lf_entities_single_concurrent = await writeEntities(toItems(entities('lf-e2')), single(CONCURRENCY));
+    results.lf_entities_batch = await writeEntities(toItems(entities('lf-e3')), chunked);
 
     // Ends of the relationships, written lock-free (setup): sources, four target sets, hubs
     const sources = entities('src');
     const targetSets = [0, 1, 2, 3].map((k) => entities(`dst${k}`, ENTITY_TYPE_MALWARE));
     const hubs = range(8).map((h) => ({ type: ENTITY_TYPE_MALWARE, name: name('hub', h), description: 'benchmark', ...lfRefs }));
-    await writeEntities([...sources, ...targetSets.flat(), ...hubs], chunked);
+    await writeEntities(toItems([...sources, ...targetSets.flat(), ...hubs]), chunked);
     const sourceIds = sources.map((s) => idOf(s.type, s.name));
     const hubId = (h: number) => idOf(ENTITY_TYPE_MALWARE, hubs[h].name);
     const hubIndex = inferIndexFromConceptType(ENTITY_TYPE_MALWARE);
@@ -87,16 +94,16 @@ describe('Lock-free throughput scenario', () => {
     results.batch_hub = await batchWriteRelations(today(hubId(1)), RELATION_USES, CHUNK);
 
     // Lock-free
-    results.lf_spread_single_sequential = await writeRelations(lf(targetSets[1]), single(1));
-    results.lf_spread_single_concurrent = await writeRelations(lf(targetSets[2]), single(CONCURRENCY));
-    results.lf_hub_single_concurrent = await writeRelations(lf(hubs[2]), single(CONCURRENCY));
-    results.lf_hub_batch = await writeRelations(lf(hubs[3]), chunked);
-    results.lf_spread_batch = await writeRelations(lf(targetSets[3]), chunked);
+    results.lf_spread_single_sequential = await writeRelations(toRelations(lf(targetSets[1])), single(1));
+    results.lf_spread_single_concurrent = await writeRelations(toRelations(lf(targetSets[2])), single(CONCURRENCY));
+    results.lf_hub_single_concurrent = await writeRelations(toRelations(lf(hubs[2])), single(CONCURRENCY));
+    results.lf_hub_batch = await writeRelations(toRelations(lf(hubs[3])), chunked);
+    results.lf_spread_batch = await writeRelations(toRelations(lf(targetSets[3])), chunked);
 
     // Re-ingestion of the hub: unchanged, then changed (every write a merge, with an update event)
     results.today_hub_reingest_changed_concurrent = await measure(today(hubId(0), { description: 'changed' }), CONCURRENCY, create);
-    results.lf_hub_reingest_unchanged_concurrent = await writeRelations(lf(hubs[2]), single(CONCURRENCY));
-    results.lf_hub_reingest_changed_concurrent = await writeRelations(lf(hubs[2], { description: 'changed' }), single(CONCURRENCY));
+    results.lf_hub_reingest_unchanged_concurrent = await writeRelations(toRelations(lf(hubs[2])), single(CONCURRENCY));
+    results.lf_hub_reingest_changed_concurrent = await writeRelations(toRelations(lf(hubs[2], { description: 'changed' })), single(CONCURRENCY));
 
     // A hub that already lists 20,000 relationships: each list update rewrites the whole document
     const seed = async (h: number) => {
@@ -110,7 +117,7 @@ describe('Lock-free throughput scenario', () => {
     await seed(5);
     const bigN = Math.min(N, 500);
     results.today_big_hub_concurrent = await measure(today(hubId(4)).slice(0, bigN), CONCURRENCY, create);
-    results.lf_big_hub_single_concurrent = await writeRelations(lf(hubs[5]).slice(0, bigN), single(CONCURRENCY));
+    results.lf_big_hub_single_concurrent = await writeRelations(toRelations(lf(hubs[5]).slice(0, bigN)), single(CONCURRENCY));
 
     results.checks = {
       expected: N,

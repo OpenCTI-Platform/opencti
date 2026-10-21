@@ -69,8 +69,8 @@ export const isEventTooLarge = (eventStreamData: string[]) => {
   }
   return { isTooLarge: totalStreamEventSize > streamMaxEventSize, eventSize: totalStreamEventSize };
 };
-export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
-  const redisClient = getClientBase();
+// Stream fields of an event, offloaded to file storage when larger than the configured limit
+const prepareStreamEventData = async <T extends BaseEvent> (event: T) => {
   let eventStreamData = mapJSToStream(event);
   const { isTooLarge, eventSize } = redisStreamSelf.isEventTooLarge(eventStreamData);
   if (isTooLarge) {
@@ -88,11 +88,27 @@ export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
       eventType: event.type,
     });
   }
-  if (streamTrimming) {
-    await redisClient.xadd(LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventStreamData);
-  } else {
-    await redisClient.xadd(LIVE_STREAM_NAME, '*', ...eventStreamData);
+  return eventStreamData;
+};
+// XADD through the client's own command, so its key prefix applies to the stream name
+const xadd = (client: any, eventStreamData: string[]) => (streamTrimming
+  ? client.xadd(LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventStreamData)
+  : client.xadd(LIVE_STREAM_NAME, '*', ...eventStreamData));
+export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
+  const eventStreamData = await prepareStreamEventData(event);
+  await xadd(getClientBase(), eventStreamData);
+};
+// Several events in one round trip, in their order: one XADD each, sent as a single pipeline
+export const rawPushManyToStream = async <T extends BaseEvent> (events: T[]) => {
+  if (events.length === 0) return;
+  const pipeline = getClientBase().pipeline();
+  for (let index = 0; index < events.length; index += 1) {
+    const eventStreamData = await prepareStreamEventData(events[index]);
+    xadd(pipeline, eventStreamData);
   }
+  const results = await pipeline.exec();
+  const failed = (results ?? []).find(([error]) => error);
+  if (failed) throw failed[0];
 };
 // Count the stream events that have been offloaded to file storage (events too large for redis).
 // The listing is paginated so the count stays accurate beyond a single S3 page (default 1000 keys).
@@ -412,6 +428,7 @@ export const getStreamProductionRate = async (): Promise<number> => {
 export const rawRedisStreamClient: RawStreamClient = {
   initializeStreams: async () => {},
   rawPushToStream,
+  rawPushManyToStream,
   rawFetchStreamInfo,
   rawCreateStreamProcessor,
   rawFetchStreamEventsRangeFromEventId,

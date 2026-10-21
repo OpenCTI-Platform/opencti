@@ -1,350 +1,257 @@
-// Settler of the lock-free prototype: the work that today happens under the endpoint locks, done afterwards and
-// grouped per endpoint. Each flush:
-//   1. reconciles duplicates found by lost key races (merge the duplicate into the owner, re-point its keys and
-//      relationships, delete it);
-//   2. resolves provisional ends: an end that now exists under another id gets its relationships re-pointed,
-//      an end whose keys are tombstones gets its relationships deleted;
-//   3. appends relationship ends to the rel_* lists of every endpoint that exists, one update per endpoint, and
-//      fills the name and types of ends that were provisional.
-// Pending work lives in memory here; a real implementation would keep it in a durable queue partitioned by
-// endpoint id. Several settlers can run at the same time: updates are scripts with retry_on_conflict, merges use
-// if_seq_no.
+// Settler: applies the work the write path leaves for later, read from the durable queue (queue.ts).
+//  - endpoint tasks: add or remove ids in the rel_* lists of an entity, all tasks of one entity in one update;
+//    a task whose entity was deleted removes the relationship it came from;
+//  - reconcile tasks: two entities found to be one after both were created are merged with today's mergeEntities;
+//  - relation-reconcile tasks: two relationships of the same pair found to duplicate each other after both were
+//    created: the newer is merged into the older and deleted;
+//  - pending relationships (pending.ts) whose ends now exist are written through the normal path.
+// Tasks are acknowledged once applied; a settler that stops leaves its tasks to the next one.
 import * as R from 'ramda';
+import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { testContext } from '../../utils/testQuery';
-import {
-  buildDenormalizedRefsScriptParams,
-  EL_DENORMALIZED_REFS_SCRIPT_SOURCE,
-  elRawBulk,
-  elRawSearch,
-  elRefreshIndices,
-  isImpactedTypeAndSide,
-  ROLE_FROM,
-  ROLE_TO,
-} from '../../../src/database/engine';
-import { inferIndexFromConceptType, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../../src/database/utils';
-import { getParentTypes } from '../../../src/schema/schemaUtils';
-import { buildRefRelationKey, ID_INTERNAL, IDS_STIX } from '../../../src/schema/general';
-import { isStixRefRelationship } from '../../../src/schema/stixRefRelationship';
+import { EL_DENORMALIZED_REFS_SCRIPT_SOURCE, buildDenormalizedRefsScriptParams, elRawBulk } from '../../../src/database/engine';
+import { storeDeleteEvent } from '../../../src/database/stream/stream-handler';
+import { inferIndexFromConceptType } from '../../../src/database/utils';
+import { SYSTEM_USER } from '../../../src/utils/access';
+import { buildRefRelationKey, ID_INTERNAL } from '../../../src/schema/general';
+import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { now } from '../../../src/utils/format';
 import { benchTimer } from '../../../src/utils/bench-timing';
-import { deterministicId, identityKeys, lookupKeys, type Owner, setKeys } from './identity';
-import {
-  add,
-  buildMetaRelations,
-  bulkCreate,
-  bulkDelete,
-  type Counters,
-  fetchDocs,
-  type Incoming,
-  mergeInto,
-  newCounters,
-  prepareDocs,
-  REF_FIELDS,
-  relationKey,
-  resolveRefs,
-  standardIdWithoutTime,
-  storedShape,
-} from './store';
-import type { RelationInput } from './writer';
+import { pool } from '../bench-utils';
+import { getClientBase } from '../../../src/database/redis';
+import { REDIS_PREFIX } from '../../../src/config/conf';
+import { lookupKeys } from './identity';
+import { loadWithRefs, mgetRaw, toElements } from './load';
+import { processPending } from './pending';
+import { reconcileEntities } from './reconcile';
+import { pairKey, removeFromPair } from './pairs';
+import { ackTasks, type EndpointTask, PARTITIONS, type QueuedTask, readTasks, type ReconcileTask, type RelationReconcileTask } from './queue';
+import { add, type Counters, newCounters } from './store';
+import { deleteMetaRelations, upsertLockFree } from './upsert';
 
-interface EndpointWork {
-  index: string;
-  type: string;
-  byRelation: Map<string, { side: string; ids: Set<string> }>;
-}
-interface EndRef { internal_id: string; index: string; stix_ref?: string }
-
+const appliedKey = (t: EndpointTask) => `${t.op}|${t.endpoint}|${t.relation_type}|${t.relation ?? t.other}`;
+const APPLIED_TTL_SECONDS = 7 * 24 * 3600;
+// A task delivered again after it was applied (the settler stopped before acknowledging) is skipped.
+// Checked before applying, recorded after: a stop between the two can apply a task twice, never lose one.
+const appliedSetKey = (t: EndpointTask) => `${REDIS_PREFIX}lockfree:applied:${t.endpoint}`;
+const findApplied = async (tasks: EndpointTask[]) => {
+  const already = new Set<string>();
+  if (tasks.length === 0) return already;
+  const pipeline = getClientBase().pipeline();
+  tasks.forEach((t) => pipeline.call('SISMEMBER', appliedSetKey(t), appliedKey(t)));
+  const results = await pipeline.exec();
+  tasks.forEach((t, i) => {
+    if (Number(results?.[i]?.[1]) === 1) already.add(appliedKey(t));
+  });
+  return already;
+};
+const recordApplied = async (tasks: EndpointTask[]) => {
+  if (tasks.length === 0) return;
+  const pipeline = getClientBase().pipeline();
+  tasks.forEach((t) => {
+    pipeline.call('SADD', appliedSetKey(t), appliedKey(t));
+    pipeline.call('EXPIRE', appliedSetKey(t), APPLIED_TTL_SECONDS);
+  });
+  await pipeline.exec();
+};
 const REMOVE_SCRIPT = 'for (r in params.remove) { if (ctx._source[r.field] != null) { ctx._source[r.field].removeIf(x -> r.ids.contains(x)); } }';
-const NAMES_SCRIPT = 'for (c in ctx._source.connections) { if (params.ends.containsKey(c.internal_id)) { c.name = params.ends[c.internal_id].name; c.types = params.ends[c.internal_id].types; } }';
+
+export interface SettlerOptions {
+  partitions?: number[]; // queue partitions this settler owns (default: all)
+  consumer?: string; // consumer name in the group (a restarted settler can reuse its name or take a new one)
+  parallelBulks?: number; // update bulks sent at the same time
+  claimIdleMs?: number; // take over tasks another settler left pending for this long
+  pendingTtlMs?: number; // drop pending relationships waiting longer than this
+  resolveUser?: (userId: string) => Promise<AuthUser>; // to write pending relationships as the user who sent them
+  writePending?: (context: AuthContext, user: AuthUser, inputs: Record<string, any>[], counters: Counters) => Promise<void>;
+}
+
+// A relationship with its ends, for its stream event: the ends as stored, or rebuilt from their tombstone
+const withEnds = async (relation: any) => {
+  const full = await loadWithRefs(testContext, SYSTEM_USER, relation);
+  const owners = await lookupKeys([relation.fromId, relation.toId].filter(Boolean));
+  const stub = (id: string, role: string) => {
+    const connection = (relation.connections ?? []).find((c: any) => c.role.endsWith(role));
+    const owner = owners.get(id);
+    return { internal_id: id, id, entity_type: owner?.owner_type ?? connection?.types?.[0], standard_id: owner?.owner_standard_id, name: connection?.name };
+  };
+  return {
+    ...full,
+    from: full.from ?? stub(relation.fromId, '_from'),
+    to: full.to ?? stub(relation.toId, '_to'),
+    fromType: (full.from ?? stub(relation.fromId, '_from')).entity_type,
+    toType: (full.to ?? stub(relation.toId, '_to')).entity_type,
+  };
+};
 
 export class Settler {
   counters: Counters = newCounters();
 
-  private endpoints = new Map<string, EndpointWork>();
+  private partitions: number[];
 
-  // relationship id -> its ends, while one end is provisional or its endpoint updates are pending
-  private relations = new Map<string, { index: string; type: string; ends: EndRef[]; input?: RelationInput }>();
+  private consumer: string;
 
-  private reconciliations: { loser: Owner; winner: Owner }[] = [];
-
-  addEndpoint(endpoint: any, relationType: string, otherId: string, side: string) {
-    const entry = this.endpoints.get(endpoint.internal_id) ?? { index: endpoint._index, type: endpoint.entity_type, byRelation: new Map() };
-    const ref = entry.byRelation.get(relationType) ?? { side, ids: new Set<string>() };
-    ref.ids.add(otherId);
-    entry.byRelation.set(relationType, ref);
-    this.endpoints.set(endpoint.internal_id, entry);
+  constructor(private opts: SettlerOptions = {}) {
+    this.partitions = opts.partitions ?? [...Array(PARTITIONS).keys()];
+    this.consumer = opts.consumer ?? `settler-${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
-  addRelation(relation: any, from: any, to: any, input?: RelationInput) {
-    const type = relation.relationship_type;
-    if (isImpactedTypeAndSide(type, from.entity_type, to.entity_type, ROLE_FROM)) this.addEndpoint(from, type, to.internal_id, 'from');
-    if (isImpactedTypeAndSide(type, from.entity_type, to.entity_type, ROLE_TO)) this.addEndpoint(to, type, from.internal_id, 'to');
-    this.relations.set(relation.internal_id, {
-      index: relation._index,
-      type,
-      input,
-      ends: [
-        { internal_id: from.internal_id, index: from._index, stix_ref: from.i_provisional ? from.standard_id : undefined },
-        { internal_id: to.internal_id, index: to._index, stix_ref: to.i_provisional ? to.standard_id : undefined },
-      ],
-    });
-  }
-
-  reconcile(loser: Owner, winner: Owner) {
-    if (loser.owner_id !== winner.owner_id) this.reconciliations.push({ loser, winner });
-  }
-
-  get pending() {
-    return this.endpoints.size + [...this.relations.values()].filter((r) => r.ends.some((e) => e.stix_ref)).length + this.reconciliations.length;
-  }
-
-  async flush() {
+  // One round; returns how many tasks were applied
+  async flush(): Promise<number> {
     const bench = benchTimer('lf_settle');
     add(this.counters, 'flushes');
-    const reconciliations = R.uniqBy((r) => `${r.loser.owner_id}|${r.winner.owner_id}`, this.reconciliations.splice(0));
-    for (const r of reconciliations) await this.reconcileOne(r.loser, r.winner);
-    bench.step('reconcile');
-    await this.resolveEnds();
-    bench.step('resolve_ends');
-    await this.applyEndpoints();
-    bench.step('endpoints');
-    bench.total();
-  }
-
-  // Ends: existing ones settle, provisional ones known under another id are re-pointed, deleted ones are removed
-  private async resolveEnds() {
-    const ends = new Map<string, EndRef>();
-    this.relations.forEach((r) => r.ends.forEach((e) => ends.set(e.internal_id, e)));
-    this.endpoints.forEach((w, id) => {
-      if (!ends.has(id)) ends.set(id, { internal_id: id, index: w.index });
-    });
-    if (ends.size === 0) return;
-    const found = await fetchDocs([...ends.values()].map((e) => ({ index: e.index, id: e.internal_id })), { light: true });
-    const missing = [...ends.values()].filter((e) => !found.has(e.internal_id));
-    const owners = await lookupKeys(missing.flatMap((e) => [e.internal_id, ...(e.stix_ref ? [e.stix_ref] : [])]));
-    for (const end of missing) {
-      const byStix = end.stix_ref ? owners.get(end.stix_ref) : undefined;
-      const byId = owners.get(end.internal_id);
-      if (byStix?.state === 'live' && byStix.owner_id !== end.internal_id) {
-        const target = (await fetchDocs([{ index: byStix.owner_index, id: byStix.owner_id }], { light: true })).get(byStix.owner_id);
-        if (target) await this.repointRelationsOf(end.internal_id, target);
-      } else if (byStix?.state === 'deleted' || byId?.state === 'deleted') {
-        await this.deleteRelationsOf(end.internal_id);
-      }
+    const tasks = await readTasks(this.partitions, this.consumer, 20000, this.opts.claimIdleMs ?? 30000);
+    bench.step('read');
+    const reconcile = tasks.filter((t) => t.task.kind === 'reconcile');
+    const relationReconcile = tasks.filter((t) => t.task.kind === 'relation-reconcile');
+    const endpoint = tasks.filter((t) => t.task.kind === 'endpoint');
+    const done: QueuedTask[] = [];
+    for (const t of reconcile) {
+      await this.reconcileEntities(t.task as ReconcileTask);
+      done.push(t);
     }
-    // Ends that exist under their provisional id: fill the name and types they lacked
-    const body: any[] = [];
-    this.relations.forEach((r, relationId) => {
-      const provisional = r.ends.filter((e) => e.stix_ref);
-      if (provisional.length === 0 || !provisional.every((e) => found.has(e.internal_id))) return;
-      const params = { ends: Object.fromEntries(provisional.map((e) => {
-        const doc = found.get(e.internal_id);
-        return [e.internal_id, { name: doc.name, types: [doc.entity_type, ...getParentTypes(doc.entity_type)] }];
-      })) };
-      body.push({ update: { _index: r.index, _id: relationId, retry_on_conflict: 5 } }, { script: { source: NAMES_SCRIPT, params } });
-      r.ends.forEach((e) => {
-        e.stix_ref = undefined;
-      });
-      add(this.counters, 'names_filled');
-    });
-    await this.bulk(body);
+    for (const t of relationReconcile) {
+      await this.reconcileRelations(t.task as RelationReconcileTask);
+      done.push(t);
+    }
+    bench.step('reconcile');
+    done.push(...await this.applyEndpointTasks(endpoint));
+    bench.step('endpoints');
+    await ackTasks(done);
+    if (this.partitions.includes(0) && this.opts.writePending && this.opts.resolveUser) {
+      const outcome = await processPending(async (userId, inputs) => {
+        const user = await (this.opts.resolveUser as any)(userId);
+        await (this.opts.writePending as any)(testContext, user, inputs, this.counters);
+      }, { ttlMs: this.opts.pendingTtlMs ?? 24 * 3600 * 1000 });
+      add(this.counters, 'pending_resolved', outcome.resolved);
+      add(this.counters, 'pending_refused_deleted', outcome.refused_deleted);
+      add(this.counters, 'pending_expired', outcome.expired);
+    }
+    bench.step('pending');
+    bench.total();
+    return done.length;
   }
 
-  // One update per endpoint that exists, with every id collected for it since the last flush
-  private async applyEndpoints() {
-    if (this.endpoints.size === 0) return;
-    const found = await fetchDocs([...this.endpoints.entries()].map(([id, w]) => ({ index: w.index, id })), { light: true });
+  // All the tasks of one entity in one update; tasks of a deleted entity remove their relationship
+  private async applyEndpointTasks(queued: QueuedTask[]): Promise<QueuedTask[]> {
+    if (queued.length === 0) return [];
+    const byEndpoint = R.groupBy((t: QueuedTask) => (t.task as EndpointTask).endpoint, queued);
+    const refs = Object.values(byEndpoint).map((group) => ({ id: (group![0].task as EndpointTask).endpoint, index: (group![0].task as EndpointTask).index }));
+    const found = await mgetRaw(refs, { light: true });
+    // Exactly once: each (entity, relationship) pair is applied once, even when a task is delivered again
+    const alreadyApplied = await findApplied(queued.map((t) => t.task as EndpointTask).filter((t) => found.has(t.endpoint)));
     const body: any[] = [];
+    const applied: QueuedTask[] = [];
     const updatedAt = now();
-    [...this.endpoints.entries()].filter(([id]) => found.has(id)).forEach(([id, work]) => {
-      const targets = [...work.byRelation.entries()].map(([relation, ref]) => ({
-        relation,
-        field: ID_INTERNAL,
-        elements: [...ref.ids].map((otherId) => ({ id: otherId, side: ref.side, type: work.type })),
-      }));
-      const params = buildDenormalizedRefsScriptParams(targets, updatedAt);
-      // Distinct: a relationship merged or re-sent never lists the same end twice
-      params.distinct_refs = [...params.distinct_refs, ...params.appended_refs];
-      params.appended_refs = [];
-      body.push({ update: { _index: found.get(id)._index, _id: id, retry_on_conflict: 10 } }, { script: { source: EL_DENORMALIZED_REFS_SCRIPT_SOURCE, params } });
-      this.endpoints.delete(id);
+    const missing: QueuedTask[][] = [];
+    Object.entries(byEndpoint).forEach(([endpointId, group]) => {
+      const raw = found.get(endpointId);
+      if (!raw) {
+        missing.push(group ?? []);
+        return;
+      }
+      const tasks = (group ?? []).map((t) => t.task as EndpointTask).filter((t) => !alreadyApplied.has(appliedKey(t)));
+      const adds = tasks.filter((t) => t.op === 'add');
+      const removes = tasks.filter((t) => t.op === 'remove');
+      if (adds.length > 0) {
+        const byRelation = R.groupBy((t: EndpointTask) => t.relation_type, adds);
+        const targets = Object.entries(byRelation).map(([relation, list]) => ({
+          relation,
+          field: ID_INTERNAL,
+          elements: (list ?? []).map((t) => ({ id: t.other, side: t.side, type: t.type })),
+        }));
+        // As today: one entry per relationship (distinct only for unidirectional refs)
+        const params = buildDenormalizedRefsScriptParams(targets, updatedAt);
+        body.push({ update: { _index: raw._index, _id: endpointId, retry_on_conflict: 20 } }, { script: { source: EL_DENORMALIZED_REFS_SCRIPT_SOURCE, params } });
+      }
+      if (removes.length > 0) {
+        const remove = Object.entries(R.groupBy((t: EndpointTask) => t.relation_type, removes))
+          .map(([relation, list]) => ({ field: buildRefRelationKey(relation), ids: R.uniq((list ?? []).map((t) => t.other)) }));
+        body.push({ update: { _index: raw._index, _id: endpointId, retry_on_conflict: 20 } }, { script: { source: REMOVE_SCRIPT, params: { remove } } });
+      }
+      applied.push(...(group ?? []));
       add(this.counters, 'endpoint_updates');
     });
-    await this.bulk(body);
-    // Relationships whose ends are all settled are no longer tracked
-    this.relations.forEach((r, relationId) => {
-      if (r.ends.every((e) => !e.stix_ref && !this.endpoints.has(e.internal_id))) this.relations.delete(relationId);
-    });
-  }
-
-  private async bulk(body: any[]) {
-    for (const chunk of R.splitEvery(2000, body)) {
+    await pool(R.splitEvery(2000, body), this.opts.parallelBulks ?? 4, async (chunk) => {
       const response: any = await elRawBulk(testContext, { refresh: false, body: chunk });
-      const failed = response.items.find((i: any) => {
-        const item: any = Object.values(i)[0];
-        return item.status >= 300 && item.status !== 404;
-      });
+      const failed = response.items.find((i: any) => (Object.values(i)[0] as any).status >= 300 && (Object.values(i)[0] as any).status !== 404);
       if (failed) throw new Error(`Settle failed: ${JSON.stringify(failed)}`);
+    });
+    await recordApplied(applied.map((t) => t.task as EndpointTask));
+    // Entities that do not exist: deleted (their keys are tombstones) -> remove the relationships that point to them
+    if (missing.length > 0) {
+      const owners = await lookupKeys(missing.map((group) => (group[0].task as EndpointTask).endpoint));
+      for (const group of missing) {
+        const task = group[0].task as EndpointTask;
+        if (owners.get(task.endpoint)?.state === 'deleted') {
+          for (const t of group) {
+            const relation = (t.task as EndpointTask).relation;
+            if (relation) await this.deleteRelation(relation, (t.task as EndpointTask).relation_index ?? inferIndexFromConceptType(task.relation_type));
+          }
+          applied.push(...group);
+        } else {
+          add(this.counters, 'endpoint_waiting');
+        }
+      }
     }
+    return applied;
   }
 
-  // Relationships stored with a provisional end id, found through this settler's tracking
-  private trackedRelationsOf(endId: string) {
-    return [...this.relations.entries()].filter(([, r]) => r.ends.some((e) => e.internal_id === endId)).map(([id, r]) => ({ id, ...r }));
-  }
-
-  // Pending list updates naming an end that moved or was deleted: replace or drop the id before they are applied
-  private replacePendingId(oldId: string, newId?: string) {
-    this.endpoints.forEach((work) => work.byRelation.forEach((ref) => {
-      if (ref.ids.delete(oldId) && newId) ref.ids.add(newId);
-    }));
-  }
-
-  private async repointRelationsOf(oldEndId: string, target: any) {
-    this.replacePendingId(oldEndId, target.internal_id);
-    const tracked = this.trackedRelationsOf(oldEndId);
-    const docs = await fetchDocs(tracked.map((t) => ({ index: t.index, id: t.id })));
-    for (const t of tracked) {
-      const doc = docs.get(t.id);
-      if (doc) await this.repoint(doc, oldEndId, target);
-      this.relations.delete(t.id);
+  private async deleteRelation(id: string, index: string) {
+    const raw = (await mgetRaw([{ id, index }])).get(id);
+    if (!raw) return;
+    const [relation] = await toElements([raw]);
+    for (const ref of schemaRelationsRefDefinition.getRelationsRef(relation.entity_type)) {
+      const targets = [].concat(relation[ref.databaseName] ?? []);
+      await deleteMetaRelations(relation.internal_id, ref.databaseName, targets);
     }
-    this.endpoints.delete(oldEndId);
-  }
-
-  private async deleteRelationsOf(endId: string) {
-    this.replacePendingId(endId);
-    const tracked = this.trackedRelationsOf(endId);
-    const docs = await fetchDocs(tracked.map((t) => ({ index: t.index, id: t.id })));
-    for (const t of tracked) {
-      const doc = docs.get(t.id);
-      if (doc) await this.deleteRelation(doc);
-      this.relations.delete(t.id);
-    }
-    this.endpoints.delete(endId);
-  }
-
-  private metaIdsOf(relation: any) {
-    return REF_FIELDS.flatMap((ref) => (relation[buildRefRelationKey(ref.relation)] ?? []).map((targetId: string) => ({
-      index: inferIndexFromConceptType(ref.relation),
-      id: deterministicId(`${ref.relation}|${relation.internal_id}|${targetId}`),
-    })));
-  }
-
-  // Remove an id from the rel_<type> list of an endpoint (the other end of a moved or deleted relationship)
-  private async removeFromEndpoint(endpoint: { internal_id: string; index: string }, relationType: string, ids: string[]) {
-    await this.bulk([
-      { update: { _index: endpoint.index, _id: endpoint.internal_id, retry_on_conflict: 10 } },
-      { script: { source: REMOVE_SCRIPT, params: { remove: [{ field: buildRefRelationKey(relationType), ids }] } } },
-    ]);
-  }
-
-  private async deleteRelation(relation: any) {
-    const ends = relation.connections.map((c: any) => ({ internal_id: c.internal_id, index: inferIndexFromConceptType(c.types[0]) }));
-    await bulkDelete([{ index: relation._index, id: relation.internal_id }, ...this.metaIdsOf(relation)]);
-    for (const end of ends) {
-      const other = ends.find((e: any) => e.internal_id !== end.internal_id);
-      if (other) await this.removeFromEndpoint(end, relation.entity_type, [other.internal_id]);
-    }
+    await elRawBulk(testContext, { refresh: false, body: [{ delete: { _index: raw._index, _id: raw._id } }] });
+    const fromId = relation.fromId;
+    const toId = relation.toId;
+    await removeFromPair(pairKey(relation.entity_type, fromId, toId), relation.internal_id);
+    // The other end may list this end: remove it there
+    const ends = (relation.connections ?? []).map((c: any) => ({ id: c.internal_id, index: inferIndexFromConceptType(c.types[0]) }));
+    const body = ends.flatMap((end: any) => {
+      const other = ends.find((e: any) => e.id !== end.id);
+      if (!other) return [];
+      const remove = [{ field: buildRefRelationKey(relation.entity_type), ids: [other.id] }];
+      return [{ update: { _index: end.index, _id: end.id, retry_on_conflict: 20 } }, { script: { source: REMOVE_SCRIPT, params: { remove } } }];
+    });
+    if (body.length > 0) await elRawBulk(testContext, { refresh: false, body });
+    await storeDeleteEvent(testContext, SYSTEM_USER, await withEnds(relation));
     add(this.counters, 'relations_deleted_dangling');
   }
 
-  // Move a relationship from one end to another: the id follows the ends, so it is a new document. If one
-  // already exists (the same relationship sent with the other id), the moved copy merges into it.
-  private async repoint(relation: any, oldEndId: string, target: any) {
-    const connections = relation.connections.map((c: any) => (c.internal_id === oldEndId
-      ? { ...c, internal_id: target.internal_id, name: target.name, types: [target.entity_type, ...getParentTypes(target.entity_type)] }
-      : c));
-    const fromConn = connections.find((c: any) => c.role.endsWith('_from'));
-    const toConn = connections.find((c: any) => c.role.endsWith('_to'));
-    const type = relation.entity_type;
-    const newId = deterministicId(relationKey(type, fromConn.internal_id, toConn.internal_id));
-    const ends = await fetchDocs(connections.map((c: any) => ({ index: inferIndexFromConceptType(c.types[0]), id: c.internal_id })), { light: true });
-    const from = ends.get(fromConn.internal_id);
-    const to = ends.get(toConn.internal_id);
-    const standardId = from && to ? standardIdWithoutTime(type, from, to) : relation.standard_id;
-    const moved = {
-      ...storedShape(relation),
-      internal_id: newId,
-      standard_id: standardId,
-      [IDS_STIX]: R.uniq([...(relation[IDS_STIX] ?? []), relation.standard_id]).filter((s) => s !== standardId),
-      connections,
-    };
-    const [status] = await bulkCreate([{ ...moved, _index: relation._index }]);
-    const refIds = REF_FIELDS.flatMap((ref) => relation[buildRefRelationKey(ref.relation)] ?? []);
-    const refs = await resolveRefs(refIds);
-    if (status === 201) {
-      const source = { ...moved, id: newId, entity_type: type, base_type: 'RELATION', parent_types: getParentTypes(type), _index: relation._index };
-      const metas = REF_FIELDS.flatMap((ref) => {
-        const targets = (relation[buildRefRelationKey(ref.relation)] ?? []).map((id: string) => refs.get(id)).filter(Boolean);
-        return targets.length ? buildMetaRelations(source, ref.relation, targets) : [];
-      });
-      await bulkCreate(await prepareDocs(metas));
-    } else {
-      const incoming: Incoming = {
-        description: relation.description,
-        confidence: relation.confidence,
-        start_time: relation.start_time,
-        stop_time: relation.stop_time,
-        stix_ids: [relation.standard_id, ...(relation[IDS_STIX] ?? [])],
-        refs: Object.fromEntries(REF_FIELDS.map((ref) => {
-          const objects = (relation[buildRefRelationKey(ref.relation)] ?? []).map((id: string) => refs.get(id)).filter(Boolean);
-          return [ref.input, ref.multiple ? objects : objects[0]];
-        })),
-      };
-      await mergeInto(relation._index, newId, incoming, this.counters);
-    }
-    await bulkDelete([{ index: relation._index, id: relation.internal_id }, ...this.metaIdsOf(relation)]);
-    // Endpoint lists: the other end listed the old end, the new end must list the other end
-    const other = connections.find((c: any) => c.internal_id !== target.internal_id);
-    if (other && isImpactedTypeAndSide(type, from?.entity_type ?? fromConn.types[0], to?.entity_type ?? toConn.types[0], other.role.endsWith('_from') ? ROLE_FROM : ROLE_TO)) {
-      await this.removeFromEndpoint({ internal_id: other.internal_id, index: inferIndexFromConceptType(other.types[0]) }, type, [oldEndId]);
-      this.addEndpoint({ internal_id: other.internal_id, _index: inferIndexFromConceptType(other.types[0]), entity_type: other.types[0] }, type, target.internal_id, other.role.endsWith('_from') ? 'from' : 'to');
-    }
-    const targetSide = fromConn.internal_id === target.internal_id ? ROLE_FROM : ROLE_TO;
-    if (other && isImpactedTypeAndSide(type, from?.entity_type ?? fromConn.types[0], to?.entity_type ?? toConn.types[0], targetSide)) {
-      this.addEndpoint(target, type, other.internal_id, targetSide === ROLE_FROM ? 'from' : 'to');
-    }
-    add(this.counters, 'relations_repointed');
+  // Two entities found to be one after both were created: today's merge
+  private async reconcileEntities(task: ReconcileTask) {
+    add(this.counters, 'entities_reconciled', await reconcileEntities([task.loser], task.winner));
   }
 
-  // A duplicate entity found after both were created: merge it into the owner and remove it
-  private async reconcileOne(loser: Owner, winner: Owner) {
-    const docs = await fetchDocs([{ index: loser.owner_index, id: loser.owner_id }, { index: winner.owner_index, id: winner.owner_id }]);
-    const lost = docs.get(loser.owner_id);
-    const kept = docs.get(winner.owner_id);
-    if (!lost || !kept) return;
-    const refIds = REF_FIELDS.flatMap((ref) => lost[buildRefRelationKey(ref.relation)] ?? []);
-    const refs = await resolveRefs(refIds);
-    await mergeInto(kept._index, kept.internal_id, {
-      name: lost.name,
-      aliases: lost.aliases ?? lost.x_opencti_aliases ?? [],
-      stix_ids: [lost.standard_id, ...(lost[IDS_STIX] ?? [])],
-      description: lost.description,
-      confidence: lost.confidence,
-      refs: Object.fromEntries(REF_FIELDS.map((ref) => {
-        const objects = (lost[buildRefRelationKey(ref.relation)] ?? []).map((id: string) => refs.get(id)).filter(Boolean);
-        return [ref.input, ref.multiple ? objects : objects[0]];
-      })),
-    }, this.counters);
-    const keys = [...identityKeys(lost.entity_type, { ...lost, stix_id: lost.standard_id }), lost.internal_id];
-    await setKeys(keys.map((key) => ({ key, owner: R.omit(['key', 'state'], winner) })));
-    // Its relationships: the only search of the prototype, on a rare path, after a refresh
-    await elRefreshIndices(READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
-    const response: any = await elRawSearch(testContext, null as any, null, {
-      index: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-      size: 10000,
-      body: { query: { nested: { path: 'connections', query: { term: { 'connections.internal_id.keyword': lost.internal_id } } } } },
-    });
-    const hits = response.hits.hits.map((h: any) => ({ ...h._source, id: h._source.internal_id, _index: h._index, i_source_keys: Object.keys(h._source) }));
-    for (const relation of hits) {
-      const ownRef = isStixRefRelationship(relation.entity_type) && relation.connections.some((c: any) => c.internal_id === lost.internal_id && c.role.endsWith('_from'));
-      if (ownRef) await bulkDelete([{ index: relation._index, id: relation.internal_id }]);
-      else await this.repoint(relation, lost.internal_id, kept);
+  // Two relationships of a pair found to duplicate each other: merge the newer into the older, delete the newer
+  private async reconcileRelations(task: RelationReconcileTask) {
+    const raws = await mgetRaw([task.keep, task.drop]);
+    const dropRaw = raws.get(task.drop.id);
+    if (!dropRaw || !raws.get(task.keep.id)) return;
+    const [dropElement] = await toElements([dropRaw]);
+    const drop = await loadWithRefs(testContext, SYSTEM_USER, dropElement);
+    const patch: Record<string, any> = R.omit(['_index', '_id', 'id', 'internal_id', 'standard_id', 'i_raw', 'connections', 'from', 'to', 'fromId', 'toId'], drop);
+    await upsertLockFree(testContext, SYSTEM_USER, task.keep, drop.entity_type, patch, this.counters);
+    await this.deleteRelationKeepingEnds(drop, dropRaw._index);
+    await removeFromPair(task.pair, task.drop.id);
+    add(this.counters, 'relations_reconciled');
+  }
+
+  private async deleteRelationKeepingEnds(relation: any, index: string) {
+    for (const ref of schemaRelationsRefDefinition.getRelationsRef(relation.entity_type)) {
+      await deleteMetaRelations(relation.internal_id, ref.databaseName, [].concat(relation[ref.databaseName] ?? []).map((r: any) => r.internal_id ?? r));
     }
-    await bulkDelete([{ index: lost._index, id: lost.internal_id }]);
-    this.replacePendingId(lost.internal_id, kept.internal_id);
-    this.endpoints.delete(lost.internal_id);
-    add(this.counters, 'entities_reconciled');
+    await elRawBulk(testContext, { refresh: false, body: [{ delete: { _index: index, _id: relation.internal_id } }] });
+    await storeDeleteEvent(testContext, SYSTEM_USER, await withEnds(relation));
   }
 }
+
+export const settlerCounters = (settlers: Settler[]) => {
+  const out: Counters = {};
+  settlers.forEach((s) => Object.entries(s.counters).forEach(([k, v]) => add(out, k, v)));
+  return out;
+};
