@@ -16,7 +16,7 @@ import DraftOverviewPageModel from '../model/drafts/draftOverview.pageModel';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
 import { restoreAdminSession } from '../restoreAdminSession';
-import { gotoDraft } from './threatAdvisoryDraftHelpers';
+import { gotoDraft, openDraft as openDraftAs } from './threatAdvisoryDraftHelpers';
 
 const findLatestReportName = async (request: import('@playwright/test').APIRequestContext, namePrefix: string): Promise<string> => {
   const query = `
@@ -76,11 +76,7 @@ test.describe.serial('Threat Advisory happy flow', () => {
       await toolbar.exitDraftIfPresent();
     };
 
-    const openDraft = async (user: { email: string; password: string }) => {
-      await loginAs(user);
-      // Report is a Container-type entity, shown under the "Containers" tab, not "Entities".
-      await gotoDraft(page, draftId);
-    };
+    const openDraft = (user: { email: string; password: string }) => openDraftAs(page, draftId, user);
 
     await test.step('Step 1: AnalystOrgA submits the Threat Advisory form as a draft (status New)', async () => {
       await page.goto('/');

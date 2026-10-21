@@ -22,7 +22,7 @@ export default class TopMenuProfilePage {
     const loginPage = this.page.getByTestId('login-page');
     let attempt = 0;
     await expect(async () => {
-      if (attempt > 0) await this.page.reload({ waitUntil: 'domcontentloaded' });
+      if (attempt > 0) await this.page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
       attempt += 1;
       await expect(profileButton.or(loginPage)).toBeVisible({ timeout });
       if (await loginPage.isVisible()) return;
