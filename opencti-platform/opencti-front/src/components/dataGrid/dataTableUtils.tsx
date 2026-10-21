@@ -131,24 +131,26 @@ interface StatusCellProps {
     workflowEnabled?: boolean;
     workflowInstance?: { id?: string; currentStatus?: StatusValue } | null;
   };
-  onClick?: (event: React.MouseEvent) => void;
+  onStatusClick?: (statusId: string, event: React.MouseEvent) => void;
 }
 
 // Shared by the workflowInstance and x_opencti_workflow_id columns: rows whose list selects
 // workflowInstance show its status when the workflow UI is enabled for their type, others keep
 // the legacy status.
-const StatusCell = ({ data, onClick }: StatusCellProps) => {
+const StatusCell = ({ data, onStatusClick }: StatusCellProps) => {
   // Read settings directly: public dashboards render without an authenticated user context.
   const { settings } = useContext(UserContext);
   const { workflowInstance, status, workflowEnabled, entity_type: entityType } = data;
   // An 'initial-' id is a synthesized, not yet persisted instance: prefer the legacy status if any.
   const isNotPersisted = (workflowInstance?.id ?? '').startsWith('initial-');
   const isWorkflowUiEnabled = isWorkflowUiEnabledForType(entityType ?? '', (id) => !!settings && isFeatureEnable(settings, id));
-  if (workflowInstance && !(isNotPersisted && status) && isWorkflowUiEnabled) {
-    // No click-to-filter: onClick filters on the legacy status id, which a workflow status is not.
-    return <ItemStatus status={workflowInstance.currentStatus ?? null} disabled={!workflowInstance.currentStatus} />;
-  }
-  return <ItemStatus status={status} disabled={!workflowEnabled} onClick={onClick} />;
+  const isWorkflowStatus = !!workflowInstance && !(isNotPersisted && status) && isWorkflowUiEnabled;
+  // A workflow status is the Status that the backend projects onto x_opencti_workflow_id.
+  const shownStatus = isWorkflowStatus ? workflowInstance?.currentStatus ?? null : status;
+  const statusId = shownStatus?.id;
+  // Only a real status is clickable: "Disabled" and "Unknown" add no filter.
+  const onClick = onStatusClick && statusId ? (event: React.MouseEvent) => onStatusClick(statusId, event) : undefined;
+  return <ItemStatus status={shownStatus} disabled={isWorkflowStatus ? !shownStatus : !workflowEnabled} onClick={onClick} />;
 };
 
 const defaultColumns: DataTableProps['dataColumns'] = {
@@ -1605,7 +1607,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: (data, { storageHelpers: { handleAddFilter } }) => (
       <StatusCell
         data={data}
-        onClick={(event) => handleAddFilter('x_opencti_workflow_id', data.status?.id ?? null, 'eq', event)}
+        onStatusClick={(statusId, event) => handleAddFilter('x_opencti_workflow_id', statusId, 'eq', event)}
       />
     ),
   },

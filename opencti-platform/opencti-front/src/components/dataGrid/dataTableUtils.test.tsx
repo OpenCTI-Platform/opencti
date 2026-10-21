@@ -160,13 +160,23 @@ describe('dataTableUtils status columns', () => {
     expect(handleAddFilter).toHaveBeenCalledWith('x_opencti_workflow_id', 'status-1', 'eq', expect.objectContaining({ type: 'click' }));
   });
 
-  it('x_opencti_workflow_id column adds a "no status" filter when an empty status is clicked', async () => {
-    const { user } = renderColumn('x_opencti_workflow_id', { entity_type: 'Report', status: null, workflowEnabled: true });
-    await user.click(screen.getByText('Unknown'));
-    expect(handleAddFilter).toHaveBeenCalledWith('x_opencti_workflow_id', null, 'eq', expect.objectContaining({ type: 'click' }));
+  it('x_opencti_workflow_id column adds no filter when the Disabled tag is clicked', async () => {
+    const { user } = renderColumn('x_opencti_workflow_id', { entity_type: 'Report', status: null, workflowEnabled: false });
+    await user.click(screen.getByText('Disabled'));
+    expect(handleAddFilter).not.toHaveBeenCalled();
   });
 
-  it('x_opencti_workflow_id column adds no filter when a workflow status is clicked', async () => {
+  it('x_opencti_workflow_id column adds no filter when the list does not select the status id', async () => {
+    const { user } = renderColumn('x_opencti_workflow_id', {
+      entity_type: 'Report',
+      status: { template: legacyStatus.template },
+      workflowEnabled: true,
+    });
+    await user.click(screen.getByText('Legacy status'));
+    expect(handleAddFilter).not.toHaveBeenCalled();
+  });
+
+  it('x_opencti_workflow_id column adds a filter on the workflow status id when it is clicked', async () => {
     const { user } = renderColumn('x_opencti_workflow_id', {
       entity_type: 'Report',
       status: legacyStatus,
@@ -174,6 +184,6 @@ describe('dataTableUtils status columns', () => {
       workflowInstance: { id: 'instance-1', currentStatus: workflowStatus },
     }, { flag: true });
     await user.click(screen.getByText('Workflow status'));
-    expect(handleAddFilter).not.toHaveBeenCalled();
+    expect(handleAddFilter).toHaveBeenCalledWith('x_opencti_workflow_id', 'status-2', 'eq', expect.objectContaining({ type: 'click' }));
   });
 });
