@@ -164,7 +164,7 @@ The legend on the bottom left counts the entities of each type and the relations
 
 ![The legend minimised to its pill, with two type filters in use](assets/graph-legend-minimized.png)
 
-When the time range selector of the toolbar is open, the legend moves up so that the whole slider stays free; when the graph is too short to show the legend whole, it scrolls.
+When the time range selector of the toolbar is open, the legend moves up so that the whole slider stays free; when the graph is too short to show the whole legend, it scrolls.
 
 ## When nothing is drawn
 
