@@ -179,3 +179,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Workflows
 
 - The number of workflow definitions published
+
+### Configuration presets
+
+- The number of configuration preset bundles exported
