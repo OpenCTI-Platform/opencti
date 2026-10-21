@@ -23,6 +23,7 @@ import {
 import semver from 'semver';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import {
+  findCatalogByCatalogId,
   findCatalogContractsByImageName,
   findCatalogContractsBySlugs,
   findLatestCompatibleCatalogContractByImageName,
@@ -228,7 +229,19 @@ export const connectorManagers = (context: AuthContext, user: AuthUser) => {
 export const connectorsForManagers = async (context: AuthContext, user: AuthUser) => {
   const managedConnectors = await findManagedConnectors(context, user);
   const heartbeats = await loadConnectorsHeartbeats();
-  return managedConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
+  // Without contract snapshot there is no image to deploy, and its failing image would fail the whole list
+  const deployableConnectors = managedConnectors.filter((connector) => {
+    if (!connector.manager_contract) {
+      logApp.warn('[OPENCTI-MODULE] Managed connector without contract snapshot is not served to the manager', {
+        module: 'connector',
+        connectorId: connector.internal_id,
+        catalogId: connector.catalog_id,
+      });
+      return false;
+    }
+    return true;
+  });
+  return deployableConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 
 const NO_UPDATE_STATUS = {
@@ -448,10 +461,13 @@ export const computeManagerConnectorConfiguration = async (
 };
 
 export const computeManagerConnectorImage = async (connectorEntity: any) => {
-  if (!connectorEntity.manager_contract) {
-    return '';
-  }
   const managerContract = connectorEntity.manager_contract;
+  if (!managerContract) {
+    throw FunctionalError('Missing manager contract snapshot', {
+      connectorId: connectorEntity.id ?? connectorEntity.internal_id,
+      catalogId: connectorEntity.catalog_id,
+    });
+  }
   if (!managerContract.image || !managerContract.contract_version) {
     throw FunctionalError('Invalid manager contract snapshot', {
       connectorId: connectorEntity.id ?? connectorEntity.internal_id,
@@ -463,7 +479,7 @@ export const computeManagerConnectorImage = async (connectorEntity: any) => {
 };
 
 export const computeManagerContractHash = async (context: AuthContext, user: AuthUser, connectorEntity: any) => {
-  const image = await computeManagerConnectorImage(connectorEntity);
+  const image = connectorEntity.catalog_id ? await computeManagerConnectorImage(connectorEntity) : null;
   const configuration = await computeManagerConnectorConfiguration(context, user, connectorEntity, { withEncrypted: true });
   return shortHash({
     image,
@@ -641,11 +657,16 @@ export const managedConnectorAdd = async (
   input: AddManagedConnectorInput,
 ) => {
   await checkEnterpriseEdition(context);
+  // The connector stays bound to its catalog: auto-upgrades and contract snapshot are resolved from it
+  const catalog = await findCatalogByCatalogId(context, user, input.catalog_id);
+  if (isEmptyField(catalog)) {
+    throw FunctionalError('Catalog not found', { catalogId: input.catalog_id });
+  }
   // Get contract
-  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image);
+  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image, input.catalog_id);
   if (isEmptyField(targetContract)) {
     // Distinguish an unknown connector from a connector that the platform version cannot run
-    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image);
+    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image, input.catalog_id);
     if (imageContracts.length > 0) {
       throw FunctionalError('This connector is not compatible with the platform version', {
         image: input.manager_contract_image,

@@ -70,6 +70,11 @@ describe('repository manager contract helpers', () => {
     expect(image).toBe('opencti/connector-ipinfo:1.2.3');
   });
 
+  it('should throw FunctionalError when a managed connector has no contract snapshot', async () => {
+    const connector = { id: 'connector-1', internal_id: 'connector-1', catalog_id: 'ipinfo' };
+    await expect(computeManagerConnectorImage(connector as any)).rejects.toThrowError(FunctionalError('Missing manager contract snapshot').message);
+  });
+
   it('should throw FunctionalError on invalid contract snapshot', async () => {
     const connector = connectorWithContract();
     delete (connector.manager_contract as any).image;
