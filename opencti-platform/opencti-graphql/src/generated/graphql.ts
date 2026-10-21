@@ -10305,6 +10305,11 @@ export type GetMetrics = {
   total?: Maybe<Scalars['String']['output']>;
 };
 
+export type GlobalExportSelectionInput = {
+  entityType: Scalars['String']['input'];
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
 export type Group = BasicObject & InternalObject & {
   __typename?: 'Group';
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
@@ -17562,6 +17567,7 @@ export type Mutation = {
   formImport?: Maybe<Form>;
   formSubmit?: Maybe<FormSubmissionResponse>;
   frontendErrorLog?: Maybe<Scalars['Boolean']['output']>;
+  globalConfigurationExport: File;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   groupingAdd?: Maybe<Grouping>;
@@ -18829,6 +18835,13 @@ export type MutationFrontendErrorLogArgs = {
   codeStack?: InputMaybe<Scalars['String']['input']>;
   componentStack?: InputMaybe<Scalars['String']['input']>;
   message: Scalars['String']['input'];
+};
+
+
+export type MutationGlobalConfigurationExportArgs = {
+  bundleName?: InputMaybe<Scalars['String']['input']>;
+  entityTypes: Array<Scalars['String']['input']>;
+  selections?: InputMaybe<Array<GlobalExportSelectionInput>>;
 };
 
 
@@ -25082,6 +25095,7 @@ export type Query = {
   fintelDesign?: Maybe<FintelDesign>;
   fintelDesigns?: Maybe<FintelDesignConnection>;
   fintelTemplate?: Maybe<FintelTemplate>;
+  fintelTemplates?: Maybe<FintelTemplateConnection>;
   form?: Maybe<Form>;
   forms?: Maybe<FormConnection>;
   globalSearch?: Maybe<StixCoreObjectConnection>;
@@ -26272,6 +26286,16 @@ export type QueryFintelDesignsArgs = {
 
 export type QueryFintelTemplateArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryFintelTemplatesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<FintelTemplateOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -41234,6 +41258,7 @@ export type ResolversTypes = ResolversObject<{
   Format: Format;
   FormsOrdering: FormsOrdering;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
+  GlobalExportSelectionInput: GlobalExportSelectionInput;
   Group: ResolverTypeWrapper<BasicGroupEntity>;
   GroupAddInput: GroupAddInput;
   GroupConnection: ResolverTypeWrapper<Omit<GroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['GroupEdge']>>> }>;
@@ -42377,6 +42402,7 @@ export type ResolversParentTypes = ResolversObject<{
   FormSubmissionInput: FormSubmissionInput;
   FormSubmissionResponse: FormSubmissionResponse;
   GetMetrics: GetMetrics;
+  GlobalExportSelectionInput: GlobalExportSelectionInput;
   Group: BasicGroupEntity;
   GroupAddInput: GroupAddInput;
   GroupConnection: Omit<GroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['GroupEdge']>>> };
@@ -49249,6 +49275,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   formImport?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<MutationFormImportArgs, 'file'>>;
   formSubmit?: Resolver<Maybe<ResolversTypes['FormSubmissionResponse']>, ParentType, ContextType, RequireFields<MutationFormSubmitArgs, 'input' | 'isDraft'>>;
   frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
+  globalConfigurationExport?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationGlobalConfigurationExportArgs, 'entityTypes'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;
@@ -51143,6 +51170,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   fintelDesign?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<QueryFintelDesignArgs, 'id'>>;
   fintelDesigns?: Resolver<Maybe<ResolversTypes['FintelDesignConnection']>, ParentType, ContextType, Partial<QueryFintelDesignsArgs>>;
   fintelTemplate?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<QueryFintelTemplateArgs, 'id'>>;
+  fintelTemplates?: Resolver<Maybe<ResolversTypes['FintelTemplateConnection']>, ParentType, ContextType, Partial<QueryFintelTemplatesArgs>>;
   form?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<QueryFormArgs, 'id'>>;
   forms?: Resolver<Maybe<ResolversTypes['FormConnection']>, ParentType, ContextType, Partial<QueryFormsArgs>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
