@@ -42,6 +42,8 @@ export interface MenuEntry {
   keywords?: string[];
   /** Entry hidden if the user has none of these capabilities. */
   requiredCapabilities?: string[];
+  /** Also granted if the user has one of these capabilities in a draft (see `useGranted` options). */
+  capabilitiesInDraft?: string[];
   /** Entry hidden if this feature flag is off. */
   featureFlag?: string;
 }

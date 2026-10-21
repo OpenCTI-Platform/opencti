@@ -8,11 +8,11 @@ const pages = Array.from({ length: 5 }, (_, i) => ({ path: `/p${i}`, label: `Pag
 vi.mock('../nav/useNavSearch', () => ({ default: () => pages }));
 
 describe('NavigationSearchResults', () => {
-  it('shows 3 pages, then all of them after "Show more"', async () => {
+  it('shows 2 pages, then all of them after "Show more"', async () => {
     const { user } = testRender(<NavigationSearchResults keyword="page" />);
-    expect(screen.getAllByRole('link')).toHaveLength(3);
+    expect(screen.getAllByRole('link')).toHaveLength(2);
 
-    await user.click(screen.getByRole('button', { name: 'Show more (2)' }));
+    await user.click(screen.getByRole('button', { name: 'Show more (3)' }));
     expect(screen.getAllByRole('link')).toHaveLength(5);
     expect(screen.queryByRole('button', { name: /Show more/ })).toBeNull();
   });

@@ -34,11 +34,11 @@ vi.mock('../../../common/form/PasswordPolicies', () => ({
   default: () => <div>PasswordPolicies</div>,
 }));
 
-vi.mock('../../../../../utils/hooks/useGranted', () => ({
+// Keep the real capability constants: `*.entries.ts` files read them at import time.
+vi.mock('../../../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../utils/hooks/useGranted')>()),
   default: () => true,
   isBypassUser: () => true,
-  SETTINGS_SETACCESSES: 'SETTINGS_SETACCESSES',
-  KNOWLEDGE_KNUPDATE_KNORGARESTRICT: 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
 }));
 
 describe('UserEditionPassword', () => {
