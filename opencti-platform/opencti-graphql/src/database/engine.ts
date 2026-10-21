@@ -1640,9 +1640,12 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
+// Keep * as wildcard, fuzzy ~ is handled separately as it is only valid at the end of a term
 const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
-  return query.replace(/([/+|\-()^={}[\]:?!"\\])/g, '\\$1');
+  return query.replace(/([/+|\-()^~={}[\]:?!"\\])/g, '\\$1');
 };
+// Lucene fuzzy operator: a term ending with ~ and an optional edit distance of 0, 1 or 2 (lazarous~, lazarous~1)
+const LUCENE_FUZZY_TERM_REGEX = /^(.+?)(~[0-2]?)$/;
 export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
@@ -1958,9 +1961,17 @@ function processSearch(
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
-    const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(partialElement);
+    // Any other ~ (inside an url, invalid edit distance, ...) is escaped, as query_string would fail parsing it as fuzziness
+    const fuzzyMatch = partialElement.match(LUCENE_FUZZY_TERM_REGEX);
+    const term = fuzzyMatch ? fuzzyMatch[1] : partialElement;
+    const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(term);
     if (isNotEmptyField(cleanElement)) {
-      querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
+      if (fuzzyMatch) {
+        // No implicit wildcard for fuzzy terms: a trailing * would be parsed as a standalone match all term
+        querySearch.push(`${cleanElement}${fuzzyMatch[2]}`);
+      } else {
+        querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
+      }
     }
   }
   return {

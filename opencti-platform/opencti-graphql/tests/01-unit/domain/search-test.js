@@ -37,6 +37,16 @@ it('should search parsing correctly generated', () => {
   expect(parsed.queriesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
   expect(parsed.matchesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
 
+  parsed = parse('https://example.com/~user/page');
+  expect(parsed.queriesString).toBe('https\\:\\/\\/example.com\\/\\~user\\/page*');
+
+  // FUZZY TESTING
+  parsed = parse('lazarous~ apt~1 group');
+  expect(parsed.queriesString).toBe('lazarous~ apt~1 group*');
+
+  parsed = parse('~ ~1 apt~5 a~b');
+  expect(parsed.queriesString).toBe('\\~* \\~1* apt\\~5* a\\~b*');
+
   // GENERIC TESTING
   parsed = parse('(Citation:');
   expect(parsed.queriesString).toBe('\\(Citation\\:*');
