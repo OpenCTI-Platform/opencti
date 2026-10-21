@@ -18,6 +18,7 @@ const settingsIngestionHealthFragment = graphql`
       disabled_health_checks
       health_checks {
         health_check_code
+        health_check_label
         health_check_kind
         health_check_severity
         enabled
@@ -51,14 +52,6 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
   const [commitField] = useApiMutation(settingsIngestionHealthFieldPatch);
   const notificationDelay = ingestion_health_settings?.notification_delay ?? 0;
   const disabledHealthChecks = ingestion_health_settings?.disabled_health_checks ?? [];
-
-  // Readable name of each check of the registry; a check added later shows its code until it gets one
-  const checkLabels: Record<string, string> = {
-    USER_MISSING: t_i18n('Missing user'),
-    USER_NOT_SERVICE_ACCOUNT: t_i18n('User is not a service account'),
-    HEARTBEAT_MISSING: t_i18n('Missing heartbeat'),
-    FEED_AND_SYNC_EXECUTION_FAILED: t_i18n('Feed or sync execution failed'),
-  };
 
   const validation = Yup.object().shape({
     notification_delay: Yup.number()
@@ -131,7 +124,8 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
                 <Switch
                   checked={check.enabled}
                   onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
-                  label={checkLabels[check.health_check_code] ?? check.health_check_code}
+                  // Named by the backend registry, translated with the labels of the backend schema
+                  label={t_i18n(check.health_check_label)}
                 />
               </Box>
               <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>
