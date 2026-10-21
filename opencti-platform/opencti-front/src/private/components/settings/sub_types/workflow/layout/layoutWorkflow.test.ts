@@ -6,27 +6,29 @@ import type { Box, WorkflowFixture } from './layoutFixtures';
 
 const OPTIONS = { spacing: [50, 50] as [number, number] };
 
-const run = (fixture: WorkflowFixture) => {
+const run = (fixture: WorkflowFixture, initialStatusId?: string) => {
   const { nodes, edges } = buildElements(fixture);
-  const result = layoutWorkflow(nodes, edges, OPTIONS);
+  const result = layoutWorkflow(nodes, edges, { ...OPTIONS, initialStatusId });
   const boxes: Box[] = nodes.map((n) => ({ id: n.id, ...result.positions.get(n.id)!, w: n.width ?? 160, h: n.height ?? 50 }));
   return { nodes, edges, result, boxes };
 };
 
 const fixtures: WorkflowFixture[] = [...Object.values(SAMPLES), ...Array.from({ length: 300 }, (_, i) => randomWorkflow(i + 1))];
+// Each fixture again with its last status as the saved initial one, usually not a root.
+const cases = fixtures.flatMap((f): [WorkflowFixture, string | undefined][] => [[f, undefined], [f, f.statuses.at(-1)]]);
 
-describe('layoutWorkflow – invariants (4 samples + 300 random workflows)', () => {
+describe('layoutWorkflow – invariants (4 samples + 300 random workflows, from the default root and from the last status)', () => {
   it('positions every node and routes every edge', () => {
-    fixtures.forEach((fixture) => {
-      const { nodes, edges, result } = run(fixture);
+    cases.forEach(([fixture, initial]) => {
+      const { nodes, edges, result } = run(fixture, initial);
       nodes.forEach((n) => expect(result.positions.has(n.id)).toBe(true));
       edges.forEach((e) => expect(result.routes.get(e.id)?.length).toBeGreaterThanOrEqual(2));
     });
   });
 
   it('never overlaps nodes', () => {
-    fixtures.forEach((fixture) => {
-      const { boxes } = run(fixture);
+    cases.forEach(([fixture, initial]) => {
+      const { boxes } = run(fixture, initial);
       for (let i = 0; i < boxes.length; i += 1) {
         for (let j = i + 1; j < boxes.length; j += 1) expect(boxesOverlap(boxes[i], boxes[j])).toBe(false);
       }
@@ -34,14 +36,14 @@ describe('layoutWorkflow – invariants (4 samples + 300 random workflows)', () 
   });
 
   it('draws only horizontal and vertical segments', () => {
-    fixtures.forEach((fixture) => {
-      run(fixture).result.routes.forEach((points) => expect(isAxisAligned(points)).toBe(true));
+    cases.forEach(([fixture, initial]) => {
+      run(fixture, initial).result.routes.forEach((points) => expect(isAxisAligned(points)).toBe(true));
     });
   });
 
   it('never draws an edge through a node other than its endpoints', () => {
-    fixtures.forEach((fixture) => {
-      const { edges, result, boxes } = run(fixture);
+    cases.forEach(([fixture, initial]) => {
+      const { edges, result, boxes } = run(fixture, initial);
       edges.forEach((e) => {
         const points = result.routes.get(e.id)!;
         boxes.filter((b) => b.id !== e.source && b.id !== e.target).forEach((b) => {
@@ -52,8 +54,8 @@ describe('layoutWorkflow – invariants (4 samples + 300 random workflows)', () 
   });
 
   it('starts and ends edges on the outline of the transition hexagon', () => {
-    fixtures.forEach((fixture) => {
-      const { nodes, edges, result, boxes } = run(fixture);
+    cases.forEach(([fixture, initial]) => {
+      const { nodes, edges, result, boxes } = run(fixture, initial);
       const transitionIds = new Set(nodes.filter((n) => n.type === 'transition').map((n) => n.id));
       const transitions = new Map(boxes.filter((b) => transitionIds.has(b.id)).map((b) => [b.id, b]));
       edges.forEach((e) => {

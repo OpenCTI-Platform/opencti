@@ -32,6 +32,18 @@ describe('rankGraph – cycle breaking', () => {
     expect([...ranked.backwardTransitions]).toEqual(['t2']);
     expect(ranked.rank.get('A')).toBe(0);
   });
+
+  it('starts from the saved initial status, even when a status upstream of it has no incoming edge', () => {
+    // Saved NEW -> ANALYZED, then DRAFT added and connected DRAFT -> t -> NEW. NEW stays initial.
+    const graph = buildGraph(
+      [{ id: 'NEW', type: 'status' }, { id: 'ANALYZED', type: 'status' }, { id: 'DRAFT', type: 'status' }, { id: 'analyze', type: 'transition' }, { id: 't', type: 'transition' }],
+      [{ id: 'a1', source: 'NEW', target: 'analyze' }, { id: 'a2', source: 'analyze', target: 'ANALYZED' }, { id: 'd1', source: 'DRAFT', target: 't' }, { id: 'd2', source: 't', target: 'NEW' }],
+    );
+    expect(rankGraph(graph).rank.get('NEW')).toBe(2);
+    const ranked = rankGraph(graph, 'NEW');
+    expect(ranked.rank.get('NEW')).toBe(0);
+    expect([...ranked.backwardTransitions]).toEqual(['t']);
+  });
 });
 
 describe('rankGraph – ranks', () => {

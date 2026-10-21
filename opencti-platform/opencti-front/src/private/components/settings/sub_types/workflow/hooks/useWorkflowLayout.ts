@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { type Node, type Edge, useReactFlow, useNodesInitialized, useStore } from 'reactflow';
 import { layoutWorkflow } from '../layout/layoutWorkflow';
-import type { LayoutSpacing } from '../layout/types';
+import type { LayoutOptions } from '../layout/types';
 
-// The layout always runs top to bottom; only the gaps are configurable.
-export type LayoutOptions = LayoutSpacing;
+export type { LayoutOptions };
 
 // Positions every node and writes render-only hints: `data.layout` on nodes (backward flag,
 // lane side, rank) and `data.route` on edges (orthogonal waypoints). transformToWorkflowDefinition

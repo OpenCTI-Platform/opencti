@@ -14,9 +14,11 @@ export interface LayoutInputEdge {
   target: string;
 }
 
-export interface LayoutSpacing {
+export interface LayoutOptions {
   // [horizontal gap between nodes, vertical gap between rows], in pixels
   spacing: [number, number];
+  // Node id of the saved initial status: drawn on the top row when present.
+  initialStatusId?: string | null;
 }
 
 // Render hints written to `node.data.layout`. Never part of the saved workflow definition.

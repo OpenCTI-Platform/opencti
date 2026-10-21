@@ -33,10 +33,11 @@ export const buildGraph = (inputNodes: LayoutInputNode[], inputEdges: LayoutInpu
   return { nodes, list, edges, outE, inE, maxHeight };
 };
 
-// Phase 1: cycle breaking. DFS from the initial status (first status without incoming edge,
-// the same rule as transformToWorkflowDefinition), following outgoing edges in model order.
-// An edge reaching a node still on the DFS stack is a back edge.
-const findBackEdges = (graph: Graph): Set<string> => {
+// Phase 1: cycle breaking. DFS from the initial status (the saved one while it is on the canvas,
+// else the first status without incoming edge: the same rule as transformToWorkflowDefinition),
+// following outgoing edges in model order. An edge reaching a node still on the DFS stack is a
+// back edge, and so is every edge into the initial status, so that nothing is drawn above it.
+const findBackEdges = (graph: Graph, initialStatusId?: string | null): Set<string> => {
   const state = new Map<string, 'open' | 'done'>();
   const backEdges = new Set<string>();
   // Iterative so a long chain of statuses cannot overflow the call stack.
@@ -66,6 +67,11 @@ const findBackEdges = (graph: Graph): Set<string> => {
     if (!state.has(n.id)) dfs(n.id);
   };
   const statuses = graph.list.filter((n) => n.type === WorkflowNodeType.status);
+  const initial = initialStatusId ? graph.nodes.get(initialStatusId) : undefined;
+  if (initial) {
+    graph.inE.get(initial.id)!.forEach((e) => backEdges.add(e.id));
+    visit(initial);
+  }
   statuses.filter((n) => graph.inE.get(n.id)!.length === 0).forEach(visit);
   statuses.forEach(visit);
   graph.list.forEach(visit);
@@ -74,8 +80,8 @@ const findBackEdges = (graph: Graph): Set<string> => {
 
 // Phase 2: longest-path ranks on the forward graph. Statuses take even rows, transitions and
 // placeholders odd rows. Edges spanning several rows get one dummy per crossed row.
-export const rankGraph = (graph: Graph): RankedGraph => {
-  const backEdges = findBackEdges(graph);
+export const rankGraph = (graph: Graph, initialStatusId?: string | null): RankedGraph => {
+  const backEdges = findBackEdges(graph, initialStatusId);
   // A transition goes into a side lane only when every outgoing edge closes a cycle. One that
   // also leads forward stays in the flow; its backward edges get edge lanes.
   const backwardTransitions = new Set(graph.list
