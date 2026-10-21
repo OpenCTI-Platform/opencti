@@ -171,6 +171,10 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 
 - The number of workflow definitions published
 
+### Configuration presets
+
+- The number of configuration preset bundles exported
+
 ### Knowledge curation
 
 - Whether the knowledge curation detectors are enabled
