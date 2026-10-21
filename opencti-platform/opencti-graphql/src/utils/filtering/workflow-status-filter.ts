@@ -1,7 +1,7 @@
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../modules/workflow/types/workflow-types';
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { AuthContext } from '../../types/user';
 import { bypassDraftContext } from '../draftContext';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from './filtering-constants';
 
@@ -11,7 +11,7 @@ const WORKFLOW_INSTANCE_PAGE_SIZE = 5000;
 // WorkflowInstance.currentState lives outside the tracked entity, so a workflow status filter
 // cannot be applied natively: it is rewritten into an id filter on the matching entities.
 // The caller's query must already be scoped to the tracked entity type.
-export const resolveWorkflowStatusFilter = async (context: AuthContext, _user: AuthUser, args: any): Promise<any> => {
+export const resolveWorkflowStatusFilter = async (context: AuthContext, args: any): Promise<any> => {
   const { filters } = args;
   if (!filters) return args;
 
