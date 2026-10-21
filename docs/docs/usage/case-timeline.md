@@ -1,0 +1,251 @@
+# Incident and case timeline
+
+## Overview
+
+Every Incident, Incident Response, Request for Information and Request for Takedown has a timeline that tells the story of the case in time. OpenCTI assembles it automatically from the knowledge the container holds, keeps it current as the case evolves, and lets analysts add milestones, pin, hide and annotate events. The timeline is deterministic: it is computed from the platform data only, without any AI, and is available in the Community Edition.
+
+The timeline answers questions that lists cannot: when did the adversary act, when was the activity first detected, when did the response start, when was the threat contained, and how long did it take to close the case.
+
+## Where to find it
+
+- **Timeline tab**: on the Incident, Incident Response, Request for Information and Request for Takedown pages, after the Content tab.
+- **Overview strip**: a compact view on the overview of the same pages, with the headline dates of the case and an **Open the timeline** link. It is a widget of the overview layout, which administrators can move, resize or hide (see [Overview layout](#overview-layout)).
+- **Widget**: the **Incident and case timeline** visualization in custom dashboards and custom views (see [Dashboards and custom views](#dashboards-and-custom-views)).
+
+![Timeline tab of an incident response: headline dates, toolbar and the events of the case in their lanes](assets/case-timeline-lanes-populated.png)
+
+## What the timeline shows
+
+### Lanes
+
+Events are organized in lanes, from the adversary to the response:
+
+| Lane | Content |
+|:-----|:--------|
+| Adversary | Techniques used (in kill chain order), first and last seen of malware, tools, infrastructures, threats and incidents, observation windows of observed data, sightings that are not from a security platform |
+| Detection | Sightings from security platforms, security coverage results, hunt runs, indicator deployments, detection milestones |
+| Response | Opening of the case, tasks created, due and completed, workflow status transitions, closure of the incidents an incident response contains, assignments, notes, opinions, investigation steps |
+| Evidence | Indicators validity windows, reports and external references published, files uploaded, investigation findings about elements outside the case |
+| Knowledge | Objects added to the case, relationships created, merges |
+| Custom | Analyst milestones that do not belong to another lane |
+
+### Derived events
+
+Derived events are computed from the knowledge of the case by a set of derivation rules. They never modify the knowledge: the only data written are the timeline events, the timeline settings and the headline dates of the container.
+
+| Source | Events |
+|:-------|:-------|
+| Attack patterns in the case | One event per technique, with the exact window of its `uses` and `targets` relationships when they have a start time (from the first start to the last stop, open-ended while one of them has no stop time), otherwise placed in kill chain order with an approximate precision |
+| Observed data | Observation window (First observed to Last observed) |
+| Sightings | Sighting window (First seen to Last seen, or the creation date of a sighting without First seen, approximate); sightings from a security platform land in the detection lane, the others in the adversary lane |
+| Incidents, infrastructures, malware, tools, intrusion sets, threat actors, campaigns | First seen and last seen. Except for incidents, these dates are global: they tell when the entity was seen anywhere, not in this incident, so the window is drawn lighter as context (see the legend under the lanes; the list view and the event drawer say so under its title and its time) and never sets the first adversary activity |
+| Indicators | Validity window, titled **Indicator validity:** followed by the name of the indicator, from Valid from to Valid until, or to the revocation of an indicator revoked before its Valid until (the decay point that revoked it, or its last update); open-ended while the indicator is valid with an empty Valid until or the never-expires date |
+| Reports and external references | Publication (the Publication date of a report, or its creation date when it has none, approximate; the creation date of an external reference) |
+| Files of the container | Upload |
+| Case | Opening (creation date of the case) |
+| Tasks | Creation date, Due date and first completion (the moment the task reached the last status of its workflow, read from its history), kept when the task is reopened (the completion of a task that completes the containment records the containment, see below) |
+| History of the container | Workflow status transitions, assignees and participants added, objects added, merges |
+| Incidents contained in an incident response | **Incident closed**, in the response lane: the latest moment the incident reached the last status of its workflow, read from its history (its last update, approximate, when the history does not tell), as long as it stays closed. The incident is often closed (contained, eradicated, recovered) while its incident response stays open for the post-incident work |
+| Relationships between objects of the case | Creation |
+
+The following sources come from other modules. Their rules are part of the timeline, but they produce no event until the module they read is installed on the platform:
+
+| Source | Events | Status |
+|:-------|:-------|:-------|
+| Security coverage results (OpenAEV) | Coverage results of the container, in the detection lane | Active |
+| Hunt runs | Runs of the hunts linked to the case, in the detection lane | Inactive: activates when the Hunts module is installed |
+| Indicator deployments | Deployments of the indicators of the case on security platforms, in the detection lane | Inactive: activates when the Indicator deployments module is installed |
+| Case Autopilot investigation runs | One **Investigation step** per run (from its start to its completion, still open while it runs) and one per goal plan action the run reached or that found something, with its step state (an action with a source still querying stays open), in the response lane; findings about elements outside the case appear in the evidence lane with an approximate precision | Inactive: activates when the Case Autopilot module is installed |
+
+While a module is not installed, the events it would produce are shown as inactive in the **Events** filter of the toolbar and in the timeline settings, with the module that activates them, and they cannot be picked. The timeline settings list them after the other events.
+
+### Precision
+
+Each event carries a precision: **Exact**, **Hour**, **Day** or **Approximate**. Approximate events (for example techniques without dated relationships) are drawn with a dashed outline and flagged in the list view.
+
+A window that has started without a known end (a technique used by a relationship without a stop time, a hunt or investigation run still running, a deployment still active, an indicator valid without an end date) is drawn up to the right edge of the lanes, lighter and with a dashed outline, and reads **Since <start>, still open**. It is kept in every later time window of the list, the summary and the exports.
+
+## Headline dates
+
+The timeline computes the headline dates of each case, displayed on the overview strip and at the top of the Timeline tab:
+
+| Headline date | Definition |
+|:-------|:-----------|
+| First adversary activity | First activity of this incident on the adversary lane: a dated `uses` or `targets` relationship of a technique, a sighting, observed data, the first seen of the incident or a contained incident, an adversary milestone. The global first and last seen of malware, tools, infrastructures and threats, and the techniques placed in kill chain order, never count |
+| First detection | First event of the detection lane (security platform sightings, coverage results, hunts, deployments, detection milestones) |
+| First response | First thing the team did: opening of the case, a task created or completed, a status change, an assignment, a note, an opinion or a response milestone. The due date of a task is a plan and never counts, nor does the closure of an incident the incident response contains |
+| Containment | First **Containment** milestone. On an Incident Response, a Request for Information or a Request for Takedown, also the completion of a task that completes the containment. An Incident holds no task: a **Containment** milestone, added with **Add an event**, is its only way to record the containment |
+| Eradication | First **Eradication** milestone, added with **Add an event** (hidden by default) |
+| Recovery | First **Recovery** milestone, added with **Add an event** (hidden by default) |
+| Notification | First **Notification** milestone, added with **Add an event** (hidden by default) |
+| Closure | Last transition to the final workflow status, while the case stays closed |
+
+An event dated in the future, such as a milestone planned ahead, never sets a headline date: it counts once its date has passed and the timeline is computed again.
+
+### Headline dates of a type
+
+Each type shows a choice of these dates. Administrators choose them in **Settings > Customization > Entity types**, on the **Timeline** tab of Incident, Incident Response, Request for Information or Request for Takedown: one switch per date, in the order the timelines show them. First adversary activity, First detection, First response, Containment and Closure are shown by default; Eradication, Recovery and Notification are hidden by default. At least one date stays shown, and a change applies at once to every timeline of the type.
+
+![Timeline tab of the customization of incident responses](assets/case-timeline-headline-dates-customization.png)
+
+The headline dates of the type are the ones the timeline shows at its top and on the overview strip, the dashed lines of the lanes and the dashboard widget, the dates of the exports (SVG, PNG, PDF), the date filters of the lists of the type, and the changes the **Headline date changed** trigger notifies. Every headline date is still computed and stored, so that switching a date on shows it at once, and the API returns them all. The **Timeline settings** drawer of a case lists the headline dates of its type, with a link to the **Timeline** tab for the users who can customize the types.
+
+### Containment from a task
+
+On the cases (Incident Response, Request for Information, Request for Takedown), when a task reaches the last status of its workflow, its edition form and its **Details** card offer the switch **This task completes the containment**. Once it is on, the completion of the task records the containment of the case: the first such completion, or the first **Containment** milestone if it is earlier, sets the **Containment** headline date. The switch stays visible while it is on, also if the task is reopened, and travels with the task in its STIX representation (timeline extension). The task edition form also edits the labels of the task.
+
+The `containment` label is kept as the legacy route: a completed task labelled `containment` (in any case) still records the containment, so that the tasks marked before the switch existed keep their meaning.
+
+![Headline dates of an incident response once the containment is recorded](assets/case-timeline-anchors-containment.png)
+
+The overview of incidents and cases shows the same headline dates with a miniature of the lanes:
+
+![Timeline strip on the overview of an incident response](assets/case-timeline-overview-strip.png)
+
+The strip counts and draws the events the timeline settings show. It groups them like the last grouping you picked on the Timeline tab of the case, or, until you pick one, from the length of the incident: by hour up to two days, by day up to two months, by week beyond. A case without any event yet invites to add a milestone; when the lanes switched off and the events hidden in the timeline settings leave out every event of the case, the strip says so and offers **Timeline settings**, which opens the Timeline tab with its settings drawer, and **Add a milestone** when the settings show the lane and the event of a new milestone (Response and Milestone).
+
+![Timeline strip of a case whose events are all hidden by the timeline settings](assets/case-timeline-overview-widget-hidden.png)
+
+Hidden events never move a headline date. Every reader of the case sees the same headline dates, so they are computed only from the events every reader can see: an event marked more strictly than the case, or about an element marked more strictly, restricted to authorized members or shared with fewer organizations than the case, never moves a headline date. Click a headline date to center the timeline on it.
+
+The headline dates are stored on the container in the `x_opencti_timeline_anchors` attribute, with two technical dates: `computed_at` (last generation of the timeline from the knowledge; a milestone, a pin or a hidden event recomputes the headline dates without moving it, and the nightly consistency pass regenerates the timelines whose `computed_at` is older than `timeline_manager:consistency_max_age_days`) and `changed_at` (last change of one of the dates). They can be used to filter and sort the lists of incidents and cases (for example "Containment" before a date; the lists offer the filters of the headline dates of the type, the API filters and sorts on every headline date), and `changed_at` lets integrations fetch only the containers whose headline dates changed since their last synchronization. OpenCTI does not aggregate them into metrics.
+
+## Overview layout
+
+On the overview of incidents and cases, the strip is the **Timeline** widget of the overview layout, a card like the other widgets of the overview. By default it takes half of the row, right after **Basic information**, next to **Tasks** on cases and **Latest created relationships** on incidents. **Most recent history** takes a whole row further down, so every row of the overview stays full:
+
+![Timeline widget on the overview of an incident response, next to Tasks](assets/case-timeline-overview-widget.png)
+
+Administrators arrange it like the other widgets in **Settings > Customization > Entity types**, on the **Overview layout** tab of Incident, Incident Response, Request for Information or Request for Takedown:
+
+- drag the **Timeline** row to move the strip among the other widgets;
+- switch on **Full width** to give it the whole row;
+- switch off **Displayed** to remove it from the overview, and switch it on again to bring it back at its default width, half of the row.
+
+![Overview layout of incident responses: the Timeline row after Basic information, Most recent history hidden](assets/case-timeline-overview-layout.png)
+
+An overview layout customized before the timeline existed shows the strip right after **Basic information**, on half of the row, until an administrator moves, resizes or hides it. If a widget further down is then alone on its row, switch on **Full width** for it; the preview of the **Overview layout** tab shows the result.
+
+The Timeline tab is the timeline of the case. The **Timeline** mode of the **Knowledge** tab is a different view: it places the relationships of the knowledge graph of the case on a time axis, and stays available unchanged next to the graph, correlation and matrix modes.
+
+See [Overview layout customization](../administration/entities.md#overview-layout-customization) for the other widgets of the overview.
+
+## Working with the timeline
+
+### First use
+
+When the case holds no dated knowledge yet, the Timeline tab explains what fills it (the knowledge of the case and its history, and the events you add) and offers **Add an event**, a link to this documentation and **Regenerate the timeline**. When filters hide every event, the tab says so and offers **Clear filters**.
+
+![Timeline tab of an incident without dated knowledge yet](assets/case-timeline-first-use-empty.png)
+
+When the events cannot be loaded, the tab says so, suggests checking the connection, and offers **Retry**; the headline dates and the toolbar stay available.
+
+![Timeline tab when its events cannot be loaded](assets/case-timeline-error-state.png)
+
+### Views and navigation
+
+![Toolbar of the Timeline tab: view switch, zoom, grouping and search, then the actions; the filters on the second row](assets/case-timeline-toolbar.png)
+
+- **Lanes** and **List**: the view switch is always visible at the start of the toolbar; the primary action **Add an event** closes it on the right, after **Refresh**, **Export the timeline** and **More actions**. The list view is a vertical, accessible list of events.
+- **Zoom window**: Fit, Day, Week, Month, Quarter or Year; the period currently displayed is shown next to the zoom controls. Once you pan or zoom in the lanes, the zoom window reads **Custom window**: pick **Fit** (or any window) in it to come back. In the lanes view, use `+` and `-` to zoom, the left and right arrows to pan and `0` to fit. **Fit** frames the events of the incident and its headline dates, so that a few long bars never shrink the incident to a sliver: a window longer than the incident (an indicator valid for a year) starts in view and runs off the edge, and the global first and last seen of an entity, kept for context, run across the view. On long incidents, nearby events are grouped into a numbered circle: click it (or press `Enter` on it) to list its events with their time, title and event type, then pick one to open its details, or pick **Zoom on these events** at the end of the list. On the Overview strip and in the dashboard widget, the same list opens the Timeline tab on the event picked.
+- **Group events by**: hour, day or week.
+- **Search** and filters: lanes and events (pick the ones to show, for example Sighting or Containment; every lane and every event is shown when none is picked, and the field counts the ones picked: **Events (2)**), event source (**All sources**, derived from the knowledge or analyst milestones), **Pinned only** and **Show hidden events**.
+- The current view (filters, zoom, grouping, mode) is kept in the URL, so that a view can be shared with a link.
+- The zoom window, the grouping and the view (lanes or list) you pick are also remembered for each timeline in your browser, like the views of the lists: the timeline opens again as you left it. A timeline you open for the first time shows the lanes of the whole timeline (**Fit**), grouped by day. A shared link opens as it was sent, whatever you saved; what it does not name comes from your own choices, and opening it does not change them.
+- The latest 500 events matching the filters are loaded first and displayed in chronological order; **Show earlier events** loads the previous ones. A link to an older event loads the earlier events until it is reached.
+- In the list view, use the up and down arrows to move between events, `Enter` to open an event, `P` to pin and `H` to hide it.
+
+![Filters of the timeline: the lanes list open next to the events and event source filters](assets/case-timeline-filters.png)
+
+![List view of the timeline, events grouped by day](assets/case-timeline-list-populated.png)
+
+### Live updates
+
+The timeline listens to the changes of the case. When events are added or updated while you are looking at it, a **New updates** badge appears in the toolbar: click **Refresh** to load them. The platform regenerates the timeline of a case a few seconds after any change of the case or of its objects. A nightly consistency pass also regenerates the timelines of the cases changed since the previous pass, and of those not regenerated for 30 days. After an upgrade, the first pass runs as soon as the platform starts and computes the timelines of the existing incidents and cases progressively, in the background. Users who can update the case can also use **Regenerate the timeline**.
+
+### Event details
+
+Click an event to open its details. The header shows the title of the event and what happened (Sighting, Containment, ...), with **Edit** (milestones) and **Pin**; centering the timeline on the event, hiding it and deleting a milestone (with a confirmation) are under **More actions**. The details list the time and precision, the lane, the source, the author, the confidence, the element the event comes from (open it to pivot) and the markings. An event without annotation offers **Add an annotation**.
+
+The source of a derived event names the attributes its dates were taken from and the entity they belong to, for example "Taken from the Valid from and Valid until of the indicator jiaw.shop" or "Taken from the Due date of the task Block the domain"; a technique without a dated relationship says "Placed by kill chain order: this technique has no dated relationship". The tooltip of an event in the lanes shows the same sentence. The table of the [derived events](#derived-events) lists the attributes each event is read from.
+
+![Details of a timeline event: header actions and metadata grid](assets/case-timeline-drawer-event.png)
+
+Events that come from an investigation step show its state with the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached). Hunt runs and indicator deployments appear on the timeline once their modules are installed on the platform (see [Derived events](#derived-events)); their verdicts and deployment states are shown with the labels of the feature they come from, and a state the platform does not know is never displayed as a raw value.
+
+### Pin, hide and annotate
+
+- **Pin** keeps an event highlighted and available through the **Pinned only** filter.
+- **Hide** removes an event from the default view (use **Show hidden events** to see it again: hidden events are drawn lighter, hidden windows also hatched, and the legend under the lanes and their tooltip name them). Hidden events never move a headline date.
+- **Annotate** adds the analyst context of an event.
+
+Derived events follow the knowledge of the case: they can be pinned, hidden and annotated, but not edited or deleted. Pins, hidden flags and annotations survive every regeneration.
+
+### Milestones
+
+Use **Add an event** to record a milestone, what the knowledge cannot tell: "containment", "regulator notified", "recovery completed". A milestone has a title, a time, an optional end time, a precision, an event, a lane, a description and markings, and can be pinned at creation. The **Event** list starts with the milestones (Milestone, Containment, Eradication, Recovery, Notification), followed by every other event of the timeline, so that something the knowledge of the case does not hold yet (a sighting, a technique) can be recorded by hand. A **Containment** milestone sets the **Containment** headline date. A new event starts as a **Milestone** of the **Response** lane, and picking **Containment**, **Eradication**, **Recovery** or **Notification** selects the **Response** lane, even if another lane was picked before; the lane can still be changed afterwards.
+
+Milestones can be edited and deleted by the users who can update the case.
+
+![Form of a new timeline milestone](assets/case-timeline-form-milestone.png)
+
+### Timeline settings
+
+**Timeline settings** (under **More actions** in the toolbar of the tab, next to **Regenerate the timeline**) opens a drawer with the settings of the case timeline: enabled lanes and events hidden by default. These settings decide what the timeline contains and apply to every user of the case timeline; how each reader views it (zoom, grouping, lanes or list) is theirs, remembered in their browser (see [Views and navigation](#views-and-navigation)). The drawer also lists the headline dates of the type of the case, which are chosen in its customization (see [Headline dates of a type](#headline-dates-of-a-type)).
+
+![Timeline settings drawer of a case](assets/case-timeline-settings-drawer.png)
+
+## Exports
+
+- From the toolbar of the Timeline tab, **Export the timeline** downloads the current view as **CSV**, **PDF**, **SVG** or **PNG**.
+
+    ![Export menu of the Timeline tab](assets/case-timeline-toolbar-export-menu.png)
+
+- From the export menu of the container, the **Incident and case timeline** export generates the timeline as PDF, CSV, PNG or SVG and stores it in the **exported files** of the entity, next to the other exports (see [Manual export](export.md)).
+
+The CSV contains one line per event with its time, end time, lane, event (Sighting, Containment, ...), precision, title, element, source and annotation. The PDF is laid out on A4 landscape pages: the name and the type of the case and the timeline drawing, scaled to fit the first page whole, then the headline dates (**Not reached** for a date the case has not reached) and the list of events on the following pages. The headline dates of an export are computed from the exported events only, so an event left out by a filter or a marking ceiling never shows through a headline date.
+
+In the drawing (SVG, PNG and PDF), each lane grows to give overlapping windows and close events their own row, events too close to be told apart are grouped into a numbered circle whose tooltip lists them, and the labels of the headline dates are staggered so that two dates of the same day stay readable. The axis is graduated in UTC on round dates (whole hours, midnights, Mondays or first days of the month, depending on the span), and its labels never write over each other.
+
+What an export contains and how it is marked:
+
+- An export only contains the events the exporting user can see, and leaves out the events marked above the user's max shareable markings, like every export of the platform.
+- In the export menu of the container, the **Content max marking definitions** field sets a ceiling: the events marked above it, and the events about an element or dated by a source (such as a relationship) marked above it, are left out of the file.
+- A file stored in the entity is never marked less strictly than what it contains: when the selected file markings are weaker than the markings of the exported events or of the elements and sources they refer to, the platform raises them (highest marking per marking type) and the confirmation message names the markings added. The platform computes the markings of the stored file again when it saves it, from the same events as its content.
+- A file stored in the entity can be opened by every user who can read the entity and the markings of the file, not only by the user who exported it. It therefore leaves out the events about elements restricted to some authorized members, or shared with fewer organizations than the entity, even when the exporting user can see them. A downloaded export keeps them, since it only reaches the user who downloads it.
+
+## Dashboards and custom views
+
+The **Incident and case timeline** visualization is available in the widget catalog (see [Widget creation](widgets.md)):
+
+- in custom dashboards, select the incident or case, the lanes to display (all when none is selected) and the time window; the events are grouped from the length of that window (by hour up to two days, by day up to two months, by week beyond);
+- in the custom views of incidents and cases, the widget shows the timeline of the displayed entity.
+
+![Timeline widget of an incident response in a custom dashboard](assets/case-timeline-widget-populated.png)
+
+Incident and case timelines are not available in public dashboards.
+
+## Notifications
+
+Two event types are available in live triggers and digests (see [Notifications and alerting](notifications.md)):
+
+- **Headline date changed**: a headline date of an incident or case moved, for example when the containment is recorded or the case is closed. A date the type does not show (see [Headline dates of a type](#headline-dates-of-a-type)) is not notified.
+- **Timeline milestone added**: an analyst or an integration added a milestone.
+
+The trigger filters apply to the incident or case, and only users who can access it (and the milestone) are notified.
+
+## Access and security
+
+- Timeline events inherit the markings and authorized members of the container, and the markings of the element they come from or point to (a milestone linked to a marked element carries its markings). Users only see the events of the elements they can access, in the timeline, the widget and the exports.
+- Some derived events also carry data of other elements: a technique is dated by its `uses` and `targets` relationships, a hunt run shown on its hunt tells about the run, and a finding of an investigation is dated and named by its run. Such an event carries their markings too, and users only see it when they can access each of these elements as well. The headline dates and the timeline exchanged with the container only use events that every reader of the container can see.
+- Reading the timeline requires access to the container. Adding milestones, pinning, hiding, annotating, changing the settings and regenerating require the capability to update knowledge and edit access to the container; milestones can only be edited or deleted by these users, and never inside a draft.
+
+## Exchange and API
+
+- **STIX**: the analyst contributions (milestones, pins, hidden flags, annotations) travel with the container in the `extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb` extension. Derived events are not exported: the receiving platform computes them from its own knowledge, and imports the contributions idempotently. The pins, hidden flags and annotations of a derived event travel when the event comes from the knowledge alone (an element, its dates and relationships, a task); those of events that come from the history of the platform (status transitions, assignments, objects added), from files, or from hunt and investigation runs stay on the platform, because the receiving platform has no such history, file or run to attach them to. An imported pin, hidden flag or annotation applies to a derived event only when the importing user could set it on the platform: he reads the event, its element and every element whose data it carries, and its confidence is within his confidence level; one whose event the receiving platform has not computed yet waits for it and is checked when the event is computed. A milestone imported again keeps its element and its author when the imported version names none the importing user can resolve. In a bundle, the elements, authors and markings the contributions name are imported before the container; an element that refers back to the container (a note about the case) is imported after it, and the container is then imported again so that its milestones attach that element. An annotation or ordering hint removed from a derived event is named in the `cleared_fields` of its contribution, so that the receiving platform removes it too; a field the contribution does not carry leaves the receiving event unchanged. The contributions on derived events left out by the limits of the case keep travelling until the events are back.
+- **GraphQL API**: the queries `containerTimeline` (by event time), `containerTimelineBounds` (first start and latest start or end of every event matching the same filters, also the ones not loaded yet, and `frame_start` / `frame_end`, the span **Fit** frames: the starts of the events without the global first and last seen of entities), `containerTimelineSummary`, `containerTimelineExport` (with the `contentMaxMarkings` ceiling), `containerTimelineExportFile` (the content of a stored export together with the markings the file must carry), `timelineEvent`, `timelineAnchors` and `timelineRules` (the derivation rules, the events (`kind`) they produce, whether they are active on the platform, and for the rules reading another module its name, `required_module`, and why they are inactive, `inactive_reason`); the mutations `timelineEventAdd` (with an `external_id` idempotency key), `timelineEventEdit`, `timelineEventDelete`, `timelineEventPin`, `timelineEventHide`, `timelineSettingsUpdate`, `timelineRegenerate`, `timelineImport` (imports the analyst contributions of a timeline STIX extension into a container, idempotently, never declassifying them) and `timelineViewed` (usage count of the Timeline tab, no data change); the subscription `containerTimelineUpdated`; and the `timeline_headline_dates` field of the entity settings of the four types, set with `entitySettingsFieldPatch`.
+- **Python client (pycti)**: `OpenCTIApiClient.timeline_event` with `create`, `update`, `delete`, `list`, `read`, `pin`, `hide`, `anchors`, `regenerate` and `import_extension` (calls `timelineImport` with a timeline STIX extension), so that connectors and incident importers can push milestones and contributions.
+
+## Large cases
+
+To protect the platform, the timeline of a case is built from a bounded number of objects, related elements and history entries, and keeps a bounded number of events. When a case reaches these limits, the Timeline tab displays a message and the derived events are kept by lane (adversary, detection, response, evidence, knowledge) then by time; analyst milestones are always kept. A case holds at most 1,000 analyst milestones by default: beyond it, adding a milestone is refused and imported milestones are skipped (updates of existing milestones always apply). The limits and the timeline manager can be tuned in the [configuration](../deployment/configuration.md) (`timeline_manager` section).

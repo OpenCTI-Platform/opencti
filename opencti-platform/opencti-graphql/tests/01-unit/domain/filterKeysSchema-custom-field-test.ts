@@ -10,6 +10,8 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/c
 describe('Filter keys schema for custom fields', () => {
   it('should keep all the entity types of a custom field attached to several types, as a standard attribute', async () => {
     vi.spyOn(cacheModule, 'getEntityFromCache').mockResolvedValue({} as any);
+    // No entity setting customizes the headline dates of a timeline type.
+    vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([]);
     const definition = { name: 'x_opencti_cf_note', label: 'Note', field_type: 'string', entity_types: [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER_CASE_INCIDENT] };
     vi.spyOn(customFieldCache, 'getCustomFieldDefinitionsForEntityType')
       .mockImplementation(async (_, __, entityType) => (definition.entity_types.includes(entityType) ? [definition] : []) as any);

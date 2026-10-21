@@ -108,6 +108,52 @@ export const htmlToPdf = (
 
   return generatePdf(pdfMakeObject, false);
 };
+
+const TIMELINE_PDF_PAGE_MARGINS: [number, number] = [24, 24];
+// Height kept on the first page for the title and the subtitle written above the drawing
+const TIMELINE_PDF_TITLE_HEIGHT = 72;
+
+const fitTimelineDrawings = (node: unknown, fit: [number, number]): unknown => {
+  if (Array.isArray(node)) return node.map((child) => fitTimelineDrawings(child, fit));
+  if (!node || typeof node !== 'object') return node;
+  const record = node as Record<string, unknown>;
+  if (typeof record.svg === 'string') return { ...record, fit };
+  return Object.fromEntries(Object.entries(record).map(([key, value]) => [key, fitTimelineDrawings(value, fit)]));
+};
+
+/**
+ * Definition of the PDF of a timeline: an A4 landscape page with the drawing scaled to fit it whole, then the headline
+ * dates and the events on the following pages (the HTML marks where they start with the `pdf-pagebreak-before` class).
+ */
+export const buildTimelinePdfDefinition = (content: string): TDocumentDefinitions => {
+  const { pageWidth, pageHeight } = resolvePdfPageGeometry('A4', 'landscape');
+  const [marginX, marginY] = TIMELINE_PDF_PAGE_MARGINS;
+  const htmlData = setTableFullWidth(removeUnnecessaryHtml(content), pageWidth - 2 * marginX);
+  const selectedFont = detectLanguage(htmlData);
+  const pdfMakeObject = htmlToPdfmake(htmlData, {
+    imagesByReference: true,
+    ignoreStyles: ['font-family'],
+    defaultStyles: {
+      th: { bold: true, fillColor: '', font: selectedFont },
+      td: { font: selectedFont },
+    },
+  }) as unknown as TDocumentDefinitions;
+  const fit: [number, number] = [pageWidth - 2 * marginX, pageHeight - 2 * marginY - TIMELINE_PDF_TITLE_HEIGHT];
+  return {
+    ...pdfMakeObject,
+    pageSize: 'A4',
+    pageOrientation: 'landscape',
+    pageMargins: TIMELINE_PDF_PAGE_MARGINS,
+    content: fitTimelineDrawings(pdfMakeObject.content, fit) as Content,
+    images: normalizePdfMakeImageReferences(pdfMakeObject.images, resolvedEntityBaseUrl),
+    defaultStyle: { ...(pdfMakeObject.defaultStyle ?? {}), font: selectedFont },
+    pageBreakBefore: pdfPageBreaks,
+  };
+};
+
+/** PDF of a timeline, from the HTML export rendered by the server. */
+export const timelineHtmlToPdf = (content: string) => generatePdf(buildTimelinePdfDefinition(content), false);
+
 /**
  * Part to handle the embedded images of a file
  */

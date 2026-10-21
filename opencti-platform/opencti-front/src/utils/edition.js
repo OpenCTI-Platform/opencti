@@ -47,6 +47,12 @@ export const convertParticipants = (element) => (element?.objectParticipant ?? [
   value: n.id,
 }));
 
+export const convertLabels = (element) => (element?.objectLabel ?? []).map((n) => ({
+  label: n.value,
+  value: n.id,
+  color: n.color,
+}));
+
 export const convertOrganizations = (element) => (element?.objectOrganization?.edges ?? []).map((n) => ({
   label: n.node.name,
   value: n.node.id,
@@ -117,6 +123,12 @@ export const instanceEventTypesOptions = [
   { value: 'delete', label: 'Deletion' },
 ];
 
+// Incident and case timeline events: offered by the trigger forms, never selected by default
+export const timelineEventTypesOptions = [
+  { value: 'timeline_anchor_changed', label: 'Headline date changed' },
+  { value: 'timeline_milestone_added', label: 'Timeline milestone added' },
+];
+
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
-  return filterEventTypesOptions.find((o) => o.value === event_type);
+  return [...filterEventTypesOptions, ...timelineEventTypesOptions].find((o) => o.value === event_type);
 });

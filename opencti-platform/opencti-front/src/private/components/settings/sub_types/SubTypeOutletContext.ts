@@ -6,6 +6,7 @@ export const SUBTYPE_TAB_ATTRIBUTES = 'attributes';
 export const SUBTYPE_TAB_TEMPLATES = 'templates';
 export const SUBTYPE_TAB_OVERVIEW_LAYOUT = 'overview-layout';
 export const SUBTYPE_TAB_CUSTOM_VIEWS = 'custom-views';
+export const SUBTYPE_TAB_TIMELINE = 'timeline';
 
 // List of tabs ordered as they are displayed in the UI
 export const SUBTYPE_TABS = [
@@ -14,6 +15,7 @@ export const SUBTYPE_TABS = [
   SUBTYPE_TAB_TEMPLATES,
   SUBTYPE_TAB_OVERVIEW_LAYOUT,
   SUBTYPE_TAB_CUSTOM_VIEWS,
+  SUBTYPE_TAB_TIMELINE,
 ] as const;
 
 export type SubTypeTabs = Record<typeof SUBTYPE_TABS[number], boolean>;

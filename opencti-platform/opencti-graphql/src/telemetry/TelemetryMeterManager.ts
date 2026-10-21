@@ -247,6 +247,18 @@ export class TelemetryMeterManager {
 
   workflowPublishCount = 0;
 
+  // Number of incident and case timeline events derived from the knowledge
+  timelineDerivedEventCount = 0;
+
+  // Number of analyst milestones (manual events) added to incident and case timelines
+  timelineManualEventCount = 0;
+
+  // Number of incident and case timeline exports (CSV, SVG, HTML for PDF)
+  timelineExportCount = 0;
+
+  // Number of incident and case timelines opened
+  timelineViewCount = 0;
+
   configPresetExportCount = 0;
 
   // endregion providers usage
@@ -582,6 +594,22 @@ export class TelemetryMeterManager {
     this.workflowPublishCount = n;
   }
 
+  setTimelineDerivedEventCount(n: number) {
+    this.timelineDerivedEventCount = n;
+  }
+
+  setTimelineManualEventCount(n: number) {
+    this.timelineManualEventCount = n;
+  }
+
+  setTimelineExportCount(n: number) {
+    this.timelineExportCount = n;
+  }
+
+  setTimelineViewCount(n: number) {
+    this.timelineViewCount = n;
+  }
+
   setConfigPresetExportCount(n: number) {
     this.configPresetExportCount = n;
   }
@@ -815,6 +843,10 @@ export class TelemetryMeterManager {
     this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
     this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
+    this.registerGauge('timeline_derived_event_count', 'Number of incident and case timeline events derived from the knowledge', 'timelineDerivedEventCount');
+    this.registerGauge('timeline_manual_event_count', 'Number of analyst milestones added to incident and case timelines', 'timelineManualEventCount');
+    this.registerGauge('timeline_export_count', 'Number of incident and case timeline exports', 'timelineExportCount');
+    this.registerGauge('timeline_view_count', 'Number of incident and case timelines opened', 'timelineViewCount');
     this.registerGauge('config_preset_export_count', 'Number of configuration preset bundles exported', 'configPresetExportCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');

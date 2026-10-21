@@ -35,6 +35,9 @@ import type { MandatoryType } from '../../schema/attribute-definition';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
+import { ATTRIBUTE_TIMELINE_HEADLINE_DATES } from '../timeline/timeline-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
@@ -88,6 +91,8 @@ export const defaultScale = JSON.stringify({
 });
 
 const templateObjectSettings = ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'templates', 'workflow_id'];
+// The types carrying a timeline choose its headline dates
+const timelineObjectSettings = [...templateObjectSettings, ATTRIBUTE_TIMELINE_HEADLINE_DATES];
 
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
@@ -103,13 +108,15 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_CAMPAIGN]: templateObjectSettings,
   [ENTITY_TYPE_MALWARE]: templateObjectSettings,
   [ENTITY_TYPE_VULNERABILITY]: templateObjectSettings,
-  [ENTITY_TYPE_INCIDENT]: templateObjectSettings,
+  [ENTITY_TYPE_INCIDENT]: timelineObjectSettings,
+  [ENTITY_TYPE_CONTAINER_CASE_INCIDENT]: timelineObjectSettings,
+  [ENTITY_TYPE_CONTAINER_CASE_RFT]: timelineObjectSettings,
   // enforce_reference not available on specific entities
   [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
-  [ENTITY_TYPE_CONTAINER_CASE_RFI]: [...templateObjectSettings, 'request_access_workflow'],
+  [ENTITY_TYPE_CONTAINER_CASE_RFI]: [...timelineObjectSettings, 'request_access_workflow'],
   [ENTITY_TYPE_DRAFT_WORKSPACE]: ['attributes_configuration', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
 };
 
@@ -246,4 +253,22 @@ export const fillDefaultCustomFieldValues = async (context: AuthContext, user: A
     }
   }
   return input;
+};
+
+// -- OVERVIEW LAYOUT --
+
+// A layout saved before a widget joined the default layout of its type does not list that widget: it is inserted
+// right after the widget preceding it in the default layout, or first when it is the first default widget.
+// A widget hidden by an administrator stays listed (with a width of 0), so it is never inserted again.
+export const mergeOverviewLayoutCustomization = <T extends { key: string }>(storedLayout: T[], defaultLayout: T[]): T[] => {
+  const merged = [...storedLayout];
+  defaultLayout.forEach((widget, defaultIndex) => {
+    if (merged.some(({ key }) => key === widget.key)) {
+      return;
+    }
+    // The default widgets are merged in order, so the preceding one is already in the merged layout
+    const precedingIndex = defaultIndex === 0 ? -1 : merged.findIndex(({ key }) => key === defaultLayout[defaultIndex - 1].key);
+    merged.splice(precedingIndex + 1, 0, widget);
+  });
+  return merged;
 };

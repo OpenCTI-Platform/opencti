@@ -59,6 +59,7 @@ import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils'
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-cache';
 import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
+import { loadTimelineHeadlineDatesByType, restrictTimelineAnchorFilterKeys } from '../modules/timeline/timeline-headline-dates';
 
 export type FilterDefinition = {
   filterKey: string;
@@ -572,6 +573,8 @@ export const generateFilterKeysSchema = async () => {
     handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition);
     filterKeysSchema.set(type, filterDefinitionsMap);
   }
+  // The timeline anchor filters of each type follow its headline dates
+  restrictTimelineAnchorFilterKeys(filterKeysSchema, await loadTimelineHeadlineDatesByType(context));
   // B. add special types
   // connectedToId special key (for instance triggers)
   filterKeysSchema.set('Instance', new Map([[CONNECTED_TO_INSTANCE_FILTER, {

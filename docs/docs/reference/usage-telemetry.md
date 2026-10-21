@@ -121,6 +121,10 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of indexed files
 - Whether the platform is registered on XTM Hub
 - The number of OpenAEV connectors linked to OpenCTI
+- The number of incident and case timeline events derived from the knowledge
+- The number of analyst milestones added to incident and case timelines (from the interface, the API or a STIX import)
+- The number of incident and case timeline exports
+- The number of times the Timeline tab of an incident or case is opened
 
 ### Email and notifications
 

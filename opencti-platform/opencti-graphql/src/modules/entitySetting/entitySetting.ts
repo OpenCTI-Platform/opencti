@@ -5,6 +5,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEntitySettingToStix from './entitySetting-converter';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { validateEntitySettingCreation, validateEntitySettingUpdate } from './entitySetting-validators';
+import { ATTRIBUTE_TIMELINE_HEADLINE_DATES, TIMELINE_ANCHOR_KEYS } from '../timeline/timeline-types';
 
 const TARGET_TYPE = 'target_type';
 
@@ -112,6 +113,8 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
     { name: 'workflow_configuration', label: 'Workflow activated', type: 'boolean', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'sync_workflow_status_by_name', label: 'Sync workflow statuses by name', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'request_access_workflow', label: 'Request access workflow', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // Unset until customized: the timeline types then show their default headline dates
+    { name: ATTRIBUTE_TIMELINE_HEADLINE_DATES, label: 'Timeline headline dates', type: 'string', format: 'enum', values: [...TIMELINE_ANCHOR_KEYS], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   ],
   relations: [],
   validators: {

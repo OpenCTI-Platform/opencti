@@ -28,12 +28,13 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft, Sti
   overviewLayoutCustomization: [
     { key: 'details', width: 6, label: 'Entity details' },
     { key: 'basicInformation', width: 6, label: 'Basic information' },
+    { key: 'timeline', width: 6, label: 'Timeline' },
     { key: 'task', width: 6, label: 'Tasks' },
     { key: 'originOfTheCase', width: 6, label: 'Origin of the case' },
     { key: 'observables', width: 6, label: 'Observables' },
     { key: 'relatedEntities', width: 6, label: 'Related entities' },
     { key: 'externalReferences', width: 6, label: 'External references' },
-    { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
+    { key: 'mostRecentHistory', width: 12, label: 'Most recent history' },
     { key: 'notes', width: 12, label: 'Notes about this entity' },
   ],
   attributes: [

@@ -62,6 +62,7 @@ from .entities.opencti_task import Task
 from .entities.opencti_threat_actor import ThreatActor
 from .entities.opencti_threat_actor_group import ThreatActorGroup
 from .entities.opencti_threat_actor_individual import ThreatActorIndividual
+from .entities.opencti_timeline_event import TimelineEvent
 from .entities.opencti_tool import Tool
 from .entities.opencti_user import User
 from .entities.opencti_vocabulary import Vocabulary
@@ -94,6 +95,7 @@ from .utils.opencti_stix2 import (
     STIX_EXT_MITRE,
     STIX_EXT_OCTI,
     STIX_EXT_OCTI_SCO,
+    STIX_EXT_OCTI_TIMELINE,
     OpenCTIStix2,
 )
 from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
@@ -116,6 +118,7 @@ __all__ = [
     "CaseRft",
     "Channel",
     "Task",
+    "TimelineEvent",
     "ConnectorType",
     "CourseOfAction",
     "DataComponent",
@@ -196,6 +199,7 @@ __all__ = [
     "CustomObservableMediaContent",
     "STIX_EXT_MITRE",
     "STIX_EXT_OCTI_SCO",
+    "STIX_EXT_OCTI_TIMELINE",
     "STIX_EXT_OCTI",
     "Capability",
     "Role",

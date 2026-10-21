@@ -91,6 +91,10 @@ interface WidgetParameters {
   legend?: boolean | null;
   distributed?: boolean | null;
   content?: string | null;
+  // Incident and case timeline widget
+  container_id?: string | null;
+  timeline_lanes?: readonly string[] | null;
+  timeline_window?: string | null;
 }
 
 interface WidgetLayout {

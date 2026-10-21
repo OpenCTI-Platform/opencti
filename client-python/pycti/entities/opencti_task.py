@@ -5,6 +5,8 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import STIX_EXT_OCTI_TIMELINE
+
 
 class Task:
     """Main Task class for OpenCTI
@@ -134,6 +136,7 @@ class Task:
             name
             description
             due_date
+            completes_containment
             objects {
                 edges {
                     node {
@@ -513,6 +516,8 @@ class Task:
         :type description: str
         :param due_date: the due date of the Task
         :type due_date: str
+        :param completes_containment: (optional) whether the completion of the Task records the containment in the timeline of the case
+        :type completes_containment: bool
         :param createdBy: the creator of the Task
         :type createdBy: str
         :param update: (optional) whether to update if exists (default: False)
@@ -531,6 +536,7 @@ class Task:
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         due_date = kwargs.get("due_date", None)
+        completes_containment = kwargs.get("completes_containment", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
@@ -567,6 +573,7 @@ class Task:
                         "name": name,
                         "description": description,
                         "due_date": due_date,
+                        "completes_containment": completes_containment,
                         "objects": objects,
                         "createdBy": created_by,
                         "objectLabel": object_label,
@@ -763,6 +770,10 @@ class Task:
                         "opencti_upsert_operations", stix_object
                     )
                 )
+            # Like the other timeline fields, carried by the timeline extension
+            timeline_extension = (stix_object.get("extensions") or {}).get(
+                STIX_EXT_OCTI_TIMELINE
+            ) or {}
             return self.create(
                 custom_properties=extras.get("custom_properties", None),
                 stix_id=stix_object["id"],
@@ -786,6 +797,7 @@ class Task:
                     else None
                 ),
                 due_date=stix_object["due_date"] if "due_date" in stix_object else None,
+                completes_containment=timeline_extension.get("completes_containment"),
                 objectOrganization=(
                     stix_object["x_opencti_granted_refs"]
                     if "x_opencti_granted_refs" in stix_object

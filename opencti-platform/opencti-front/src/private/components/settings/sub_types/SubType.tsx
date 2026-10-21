@@ -84,6 +84,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
     templates: isFINTELTemplatesEnabled,
     'overview-layout': isCustomOverviewLayoutEnabled,
     'custom-views': isCustomViewsEnabled,
+    timeline: !!subType.settings?.availableSettings.includes('timeline_headline_dates'),
   };
 
   return (

@@ -1,6 +1,7 @@
 import type { Resolvers } from '../../generated/graphql';
 import { findById, findTaskPaginated, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
 import { loadParticipants } from '../../database/members';
+import { isInFinalWorkflowStatus } from '../timeline/timeline-loader';
 
 const taskResolvers: Resolvers = {
   Query: {
@@ -12,6 +13,7 @@ const taskResolvers: Resolvers = {
   },
   Task: {
     objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
+    workflow_completed: (task, _, context) => isInFinalWorkflowStatus(context, task),
   },
   Mutation: {
     taskAdd: (_, { input }, context) => taskAdd(context, context.user, input),

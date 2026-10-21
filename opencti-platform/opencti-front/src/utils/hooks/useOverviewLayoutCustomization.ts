@@ -6,6 +6,9 @@ import { EntitySettingsFragment_entitySetting$key } from '@components/settings/s
 
 type OverviewWidgetLayout = { key: string; width: number; label: string };
 
+// A widget hidden in the overview layout customization keeps its place in the layout with this width
+export const HIDDEN_OVERVIEW_WIDGET_WIDTH = 0;
+
 const useOverviewLayoutCustomization: (entityType: string) => OverviewWidgetLayout[] = (entityType) => {
   const { entitySettings } = useAuth();
   const entitySettingsData = entitySettings?.edges?.map((setting) => (
@@ -19,7 +22,8 @@ const useOverviewLayoutCustomization: (entityType: string) => OverviewWidgetLayo
     const overviewLayoutCustomizations = overviewLayoutCustomizationEntries
       ? new Map(overviewLayoutCustomizationEntries.map(([key, values]) => [key, values]))
       : new Map();
-    return overviewLayoutCustomizations.get(entityType) ?? [];
+    const layout: OverviewWidgetLayout[] = overviewLayoutCustomizations.get(entityType) ?? [];
+    return layout.filter(({ width }) => width !== HIDDEN_OVERVIEW_WIDGET_WIDTH);
   }, [entitySettingsData, entityType]);
 
   return overviewLayoutCustomization;
