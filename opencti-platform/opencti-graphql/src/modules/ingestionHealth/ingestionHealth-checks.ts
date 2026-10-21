@@ -209,7 +209,7 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined, e
     }
     return [{
       health_check_code: check.health_check_code,
-      health_check_message: definition.message(check.health_check_metadata ?? {}, entityType),
+      health_check_message: definition.message?.(check.health_check_metadata ?? {}, entityType) ?? definition.label,
       health_check_kind: definition.kind,
       health_check_severity: definition.severity,
     }];
