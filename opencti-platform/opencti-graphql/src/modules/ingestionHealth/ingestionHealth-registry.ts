@@ -71,6 +71,8 @@ export interface SourceIngestionHealthContext extends GlobalIngestionHealthConte
 export type HealthCheckMetadata = Record<string, unknown>;
 
 interface BaseHealthCheckDefinition {
+  // Name of the check, the same for every occurrence: shown in the platform settings, translated by the front (lang/back)
+  label: string;
   severity: IngestionHealthCheckSeverity;
   // Computed when read, never stored: the entity type of the ingestor adapts it to the kind of ingestion
   message: (metadata: HealthCheckMetadata, entityType: string) => string;
@@ -178,6 +180,7 @@ export const HEALTH_CHECK_REGISTRY = {
   // Advisory: a configuration check degrades the health, only a blocking runtime check makes it critical (see computeHealthStatus)
   [HEALTH_CHECK_USER_MISSING]: {
     kind: IngestionHealthCheckKind.Configuration,
+    label: 'User is missing',
     severity: IngestionHealthCheckSeverity.Advisory,
     message: () => 'User is missing',
     // A required user, or an optional one that was set: it must exist
@@ -187,6 +190,7 @@ export const HEALTH_CHECK_REGISTRY = {
   // An ingestion should not depend on a person: a regular user leaving or changing rights breaks it
   [HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT]: {
     kind: IngestionHealthCheckKind.Configuration,
+    label: 'User is not a service account',
     severity: IngestionHealthCheckSeverity.Advisory,
     message: () => 'User is not a service account',
     // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
@@ -196,6 +200,7 @@ export const HEALTH_CHECK_REGISTRY = {
   // A running process pings regularly: no heartbeat means it is down
   [HEALTH_CHECK_HEARTBEAT_MISSING]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
+    label: 'No heartbeat received',
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'No heartbeat received',
     // Only the running connectors pinging continuously: the others would be missing their heartbeat between two runs
@@ -207,6 +212,7 @@ export const HEALTH_CHECK_REGISTRY = {
   // nothing is ingested until it succeeds again. Known from the feed or sync itself, the next success clears it
   [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
+    label: 'Feed or sync execution failed',
     severity: IngestionHealthCheckSeverity.Blocking,
     message: (metadata, entityType) => {
       const failure = describeFeedAndSyncExecutionFailure(metadata);
