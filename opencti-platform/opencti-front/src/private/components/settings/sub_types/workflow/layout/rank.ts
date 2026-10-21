@@ -33,10 +33,10 @@ export const buildGraph = (inputNodes: LayoutInputNode[], inputEdges: LayoutInpu
   return { nodes, list, edges, outE, inE, maxHeight };
 };
 
-// Phase 1: cycle breaking. DFS from the initial status (the saved one while it is on the canvas,
-// else the first status without incoming edge: the same rule as transformToWorkflowDefinition),
-// following outgoing edges in model order. An edge reaching a node still on the DFS stack is a
-// back edge, and so is every edge into the initial status, so that nothing is drawn above it.
+// Phase 1: cycle breaking. DFS from the initial status (given by the editor, see getInitialState;
+// else the statuses without incoming edge), following outgoing edges in model order. An edge
+// reaching a node still on the DFS stack is a back edge, and so is every edge into the initial
+// status, so that nothing is drawn above it.
 const findBackEdges = (graph: Graph, initialStatusId?: string | null): Set<string> => {
   const state = new Map<string, 'open' | 'done'>();
   const backEdges = new Set<string>();

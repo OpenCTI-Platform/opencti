@@ -40,17 +40,31 @@ describe('Workflow utils', () => {
     const transition = (id: string): Node => ({ id, type: WorkflowNodeType.transition, data: { event: id }, position: { x: 0, y: 0 } });
     const link = (source: string, target: string): Edge => ({ id: `e-${source}->${target}`, source, target, type: WorkflowNodeType.transition });
     const definition = { ...mockWorkflowDefinition, initialState: 'NEW' } as SubTypeWorkflowQuery$data['workflowDefinition'];
-    // NEW -submit-> IN_REVIEW, IN_REVIEW -reject-> NEW, and approve -> ANALYZED deleted: ANALYZED has no incoming edge.
+    // NEW -submit-> IN_REVIEW, IN_REVIEW -reject-> NEW, IN_REVIEW -approve-> ANALYZED: every status has an incoming edge.
     const nodes = [status('NEW'), status('IN_REVIEW'), status('ANALYZED'), transition('submit'), transition('reject'), transition('approve')];
-    const edges = [link('NEW', 'submit'), link('submit', 'IN_REVIEW'), link('IN_REVIEW', 'reject'), link('reject', 'NEW'), link('IN_REVIEW', 'approve')];
+    const edges = [link('NEW', 'submit'), link('submit', 'IN_REVIEW'), link('IN_REVIEW', 'reject'), link('reject', 'NEW'), link('IN_REVIEW', 'approve'), link('approve', 'ANALYZED')];
 
-    it('keeps the saved initial state while that status is still on the canvas', () => {
+    it('keeps the saved initial state while no status is a root', () => {
       expect(transformToWorkflowDefinition(nodes, edges, definition).initialState).toBe('NEW');
+    });
+
+    it('takes the only root, as the backend requires (ROOT_STATE_MISMATCH)', () => {
+      // approve -> ANALYZED deleted: ANALYZED is the only status without an incoming edge.
+      expect(transformToWorkflowDefinition(nodes, edges.filter((e) => e.target !== 'ANALYZED'), definition).initialState).toBe('ANALYZED');
+      // DRAFT connected in front of NEW in a graph where NEW was the root.
+      const front = [status('DRAFT'), transition('start'), status('NEW'), transition('analyze'), status('ANALYZED')];
+      const frontEdges = [link('DRAFT', 'start'), link('start', 'NEW'), link('NEW', 'analyze'), link('analyze', 'ANALYZED')];
+      expect(transformToWorkflowDefinition(front, frontEdges, definition).initialState).toBe('DRAFT');
+    });
+
+    it('keeps the saved initial state when it is one of several roots', () => {
+      const twoRoots = [status('DRAFT'), status('NEW'), transition('analyze'), status('ANALYZED')];
+      expect(transformToWorkflowDefinition(twoRoots, [link('NEW', 'analyze'), link('analyze', 'ANALYZED')], definition).initialState).toBe('NEW');
     });
 
     it('falls back to the first status without an incoming edge once the saved one is gone', () => {
       const withoutNew = nodes.filter((n) => n.id !== 'NEW');
-      const result = transformToWorkflowDefinition(withoutNew, edges.filter((e) => e.source !== 'NEW' && e.target !== 'NEW'), definition);
+      const result = transformToWorkflowDefinition(withoutNew, edges.filter((e) => e.source !== 'NEW' && e.target !== 'NEW' && e.target !== 'ANALYZED'), definition);
       // IN_REVIEW still has an incoming edge (from submit); ANALYZED is the first status without one.
       expect(result.initialState).toBe('ANALYZED');
     });

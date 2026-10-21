@@ -115,15 +115,18 @@ const formatActions = (actions: Action[] = []) => {
 // Use the wildcard '*' instead — the backend treats it as a neutral initial state and
 // skips state-existence checks for it. This also keeps this function's output aligned
 // between handleReset and the autosave effect, preventing a spurious follow-up mutation.
-// Keep the saved initial state while its status is still on the canvas: deleting an unrelated
-// connection must not move it to whichever status is left without an incoming edge. Only when
-// that status is gone does the first status without an incoming edge take over.
+// The backend requires the initial state to be the only status without an incoming edge
+// (ROOT_STATE_MISMATCH), so that status is the initial one. The saved initial state is kept only
+// where the backend does not decide: no root (every status is reached by a loop), or several roots
+// (MULTIPLE_ROOT_STATES) when it is one of them. Otherwise the first root takes over.
 const getInitialState = (nodes: Node[], edges: Edge[], savedInitialState: string | null | undefined) => {
   const statusNodes = nodes.filter((node) => node.type === WorkflowNodeType.status);
   if (statusNodes.length === 0) return '*';
-  if (savedInitialState && statusNodes.some((n) => n.data.statusTemplate?.id === savedInitialState)) return savedInitialState;
-  const rootStatusNode = statusNodes.find(({ id }) => !edges.find((e) => e.target === id));
-  return rootStatusNode?.data.statusTemplate.id || savedInitialState;
+  const roots: string[] = statusNodes.filter(({ id }) => !edges.some((e) => e.target === id)).map((n) => n.data.statusTemplate.id);
+  if (roots.length === 1) return roots[0];
+  const candidates = roots.length ? roots : statusNodes.map((n) => n.data.statusTemplate?.id);
+  if (savedInitialState && candidates.includes(savedInitialState)) return savedInitialState;
+  return roots[0] || savedInitialState;
 };
 
 const transformToWorkflowDefinition = (
