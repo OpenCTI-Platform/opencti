@@ -54,12 +54,10 @@ const graphContainerCorrelationObjectsFragment = graphql`
           node {
             ... on BasicObject {
               id
-              standard_id
               entity_type
               parent_types
             }
             ... on StixCoreObject {
-              is_inferred
               created_at
               createdBy {
                 ... on Identity {
@@ -82,7 +80,6 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     name
                     published
                     confidence
-                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -110,7 +107,6 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     name
                     context
                     confidence
-                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -137,7 +133,6 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     id
                     name
                     confidence
-                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -161,7 +156,6 @@ const graphContainerCorrelationObjectsFragment = graphql`
             }
             ... on StixDomainObject {
               created
-              confidence
             }
             ... on AttackPattern {
               name
@@ -253,7 +247,6 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     name
                     published
                     confidence
-                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -281,7 +274,6 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     name
                     context
                     confidence
-                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -308,7 +300,6 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     id
                     name
                     confidence
-                    is_inferred
                     entity_type
                     parent_types
                     created_at

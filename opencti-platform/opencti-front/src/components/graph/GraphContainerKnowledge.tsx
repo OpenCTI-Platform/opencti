@@ -98,12 +98,10 @@ const graphContainerKnowledgeObjectsFragment = graphql`
           node {
             ... on BasicObject {
               id
-              standard_id
               entity_type
               parent_types
             }
             ... on StixCoreObject {
-              is_inferred
               created_at
               createdBy {
                 ... on Identity {
@@ -121,8 +119,8 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               }
             }
             ... on StixDomainObject {
+              is_inferred
               created
-              confidence
             }
             ... on AttackPattern {
               name
@@ -299,7 +297,6 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -315,7 +312,6 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -353,7 +349,6 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -369,7 +364,6 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -402,7 +396,6 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -418,7 +411,6 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
