@@ -8,7 +8,7 @@ const message = '[MIGRATION] Stop the automatic escalation of the manual runs of
 /**
  * Runs started by hand no longer open an incident draft by themselves above the escalation threshold: it becomes the
  * per-hunt option escalate_manual_runs, off by default, and the incident is offered when a true positive verdict is set.
- * Scheduled, standing, PIR and playbook runs keep escalating automatically.
+ * Scheduled, standing, PIR, playbook and emulation runs keep escalating automatically.
  */
 export const up = async (next: (error?: Error) => void) => {
   const startTime = Date.now();

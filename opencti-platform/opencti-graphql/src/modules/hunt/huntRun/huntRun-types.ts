@@ -29,6 +29,7 @@ export const HUNT_RUN_TRIGGER_SCHEDULE = 'schedule';
 export const HUNT_RUN_TRIGGER_STANDING = 'standing';
 export const HUNT_RUN_TRIGGER_PIR = 'pir';
 export const HUNT_RUN_TRIGGER_PLAYBOOK = 'playbook';
+export const HUNT_RUN_TRIGGER_EMULATION = 'emulation';
 export const HUNT_RUN_TRIGGER_PREVIEW = 'preview';
 export const HUNT_RUN_TRIGGER_RETRY = 'retry';
 export const HUNT_RUN_TRIGGERS = [
@@ -37,11 +38,12 @@ export const HUNT_RUN_TRIGGERS = [
   HUNT_RUN_TRIGGER_STANDING,
   HUNT_RUN_TRIGGER_PIR,
   HUNT_RUN_TRIGGER_PLAYBOOK,
+  HUNT_RUN_TRIGGER_EMULATION,
   HUNT_RUN_TRIGGER_PREVIEW,
   HUNT_RUN_TRIGGER_RETRY,
 ];
 // Triggers started without a human action, counted as autonomous runs.
-export const HUNT_RUN_AUTONOMOUS_TRIGGERS = [HUNT_RUN_TRIGGER_SCHEDULE, HUNT_RUN_TRIGGER_STANDING, HUNT_RUN_TRIGGER_PIR, HUNT_RUN_TRIGGER_PLAYBOOK];
+export const HUNT_RUN_AUTONOMOUS_TRIGGERS = [HUNT_RUN_TRIGGER_SCHEDULE, HUNT_RUN_TRIGGER_STANDING, HUNT_RUN_TRIGGER_PIR, HUNT_RUN_TRIGGER_PLAYBOOK, HUNT_RUN_TRIGGER_EMULATION];
 // Recurring runs of a hunt: each one searches from where the previous completed run of the hunt on the same security
 // platform ended (minus the lookback overlap), never more than the time window of the hunt
 export const HUNT_RUN_INCREMENTAL_TRIGGERS = [HUNT_RUN_TRIGGER_SCHEDULE, HUNT_RUN_TRIGGER_STANDING, HUNT_RUN_TRIGGER_PIR];
@@ -205,6 +207,9 @@ interface HuntRunAttributes {
   // The STIX id of the incident: the incident of a validated draft has another internal id in the knowledge graph
   incident_stix_id?: string | null;
   draft_id?: string | null;
+  aev_inject_id?: string | null;
+  security_coverage_id?: string | null;
+  technique_id?: string | null;
   triggered_by?: string | null;
   attempt: number;
   // The run this one retries (attempt - 1), set on every retry

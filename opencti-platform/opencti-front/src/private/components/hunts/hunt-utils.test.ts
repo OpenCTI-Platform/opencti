@@ -40,6 +40,7 @@ import {
   huntRunTriggerLabel,
   huntRunUnresolvedTechniquesSentence,
   huntStatusTransitions,
+  huntTechniqueValidationSeverity,
   huntVerdictSeverity,
   huntVerdictSourceLabel,
   huntWidgetValueLabel,
@@ -561,6 +562,7 @@ describe('Hunt utils', () => {
     expect(huntRunStatusLabel('cancelled')).toEqual('Cancelled');
     expect(huntRunStatusSeverity('failed')).toEqual('high');
     expect(huntRunStatusSeverity('timeout')).toEqual('high');
+    expect(huntTechniqueValidationSeverity('not_detected')).toEqual('high');
     expect(huntVerdictSeverity('true_positive')).toEqual('critical');
     expect(huntRunTriggerLabel('schedule')).toEqual('Scheduled');
     expect(huntRunTriggerLabel('standing')).toEqual('Standing hunt');

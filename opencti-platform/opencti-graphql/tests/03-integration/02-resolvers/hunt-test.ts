@@ -5,7 +5,10 @@ import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR, USER
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 import * as huntStats from '../../../src/modules/hunt/hunt-stats';
-import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
+import { createRelation, deleteElementById, patchAttribute } from '../../../src/database/middleware';
+import { addSecurityCoverage, listSecurityCoverageResults, securityCoverageDelete } from '../../../src/modules/securityCoverage/securityCoverage-domain';
+import { RELATION_HAS_COVERED } from '../../../src/schema/stixCoreRelationship';
+import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { fullEntitiesList, fullRelationsList, internalLoadById } from '../../../src/database/middleware-loader';
 import { FilterMode } from '../../../src/generated/graphql';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
@@ -200,6 +203,11 @@ const HUNT_STATISTICS = gql`
 const HUNT_PACK_EXPORT = gql`
   query HuntPackExport($ids: [ID!]!) { huntPackExport(ids: $ids) }
 `;
+const HUNT_VALIDATE_EMULATION = gql`
+  mutation HuntValidateFromEmulation($input: HuntValidateFromEmulationInput!) {
+    huntValidateFromEmulation(input: $input) { hunts_count runs { id hunt_run_trigger aev_inject_id technique_id } }
+  }
+`;
 const HUNT_DELETE = gql`
   mutation HuntDelete($id: ID!) { huntDelete(id: $id) }
 `;
@@ -221,6 +229,7 @@ describe('Hunt resolvers', () => {
   let huntId: string;
   let firstRunId: string;
   let secondRunId: string;
+  let emulationRunId: string;
   let observedDataId: string;
   let creationPreviewId: string;
   const draftIds: string[] = [];
@@ -991,6 +1000,118 @@ describe('Hunt resolvers', () => {
     await expect(importHuntPack(testContext, editor, toUpload(editorPack))).rejects.toThrow('Restricted entity already exists');
     const editorNotWritten = await queryAsAdmin({ query: HUNT_READ, variables: { id: atomicHuntId } });
     expect(editorNotWritten.data?.hunt).toBeNull();
+  });
+
+  it('should validate hunts from an OpenAEV emulation, idempotently per inject', async () => {
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue(undefined);
+    const input = {
+      technique_id: TECHNIQUE_MITRE_ID,
+      security_platform_name: SECURITY_PLATFORM_NAME,
+      inject_id: 'hunt-test-inject',
+      window_start: new Date(Date.now() - 3600 * 1000).toISOString(),
+      window_end: new Date().toISOString(),
+    };
+    // Two deliveries of the same inject at once (OpenAEV retries) start one run, not two
+    const [first, concurrent] = await Promise.all([
+      queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } }),
+      queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } }),
+    ]);
+    const validation = first.data?.huntValidateFromEmulation;
+    expect(validation.hunts_count).toEqual(1);
+    expect(validation.runs).toHaveLength(1);
+    expect(validation.runs[0]).toMatchObject({ hunt_run_trigger: 'emulation', aev_inject_id: 'hunt-test-inject', technique_id: techniqueId });
+    expect(concurrent.data?.huntValidateFromEmulation.runs.map((run: { id: string }) => run.id)).toEqual([validation.runs[0].id]);
+    emulationRunId = validation.runs[0].id;
+    const second = await queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input } });
+    expect(second.data?.huntValidateFromEmulation.runs.map((run: { id: string }) => run.id)).toEqual([validation.runs[0].id]);
+    const invalidWindow = await queryAsAdmin({ query: HUNT_VALIDATE_EMULATION, variables: { input: { ...input, window_start: input.window_end } } });
+    expect(invalidWindow.errors?.[0].message).toContain('The emulation window is invalid');
+    // A coverage that cannot be found is refused: its runs would validate nothing it ever receives
+    const unknownCoverage = await queryAsAdmin({
+      query: HUNT_VALIDATE_EMULATION,
+      variables: { input: { ...input, inject_id: 'hunt-test-unknown-coverage-inject', security_coverage_id: 'security-coverage--00000000-0000-4000-8000-000000000000' } },
+    });
+    expect(unknownCoverage.errors?.[0].message).toContain('The security coverage of the emulation cannot be found');
+  });
+
+  it('should compute the validation of each technique over all its emulation runs', async () => {
+    const query = gql`query HuntTechniqueValidations($id: String!) { hunt(id: $id) { techniqueValidations { technique_id status emulation_runs_count detected_runs_count } } }`;
+    const pending = await queryAsAdminWithSuccess({ query, variables: { id: huntId } });
+    expect(pending.data?.hunt.techniqueValidations).toEqual([
+      { technique_id: techniqueId, status: 'in_progress', emulation_runs_count: 1, detected_runs_count: 0 },
+    ]);
+    const runTechnique = await queryAsAdminWithSuccess({
+      query: gql`query HuntRunTechnique($id: String!) { huntRun(id: $id) { technique_id technique { id x_mitre_id } } }`,
+      variables: { id: emulationRunId },
+    });
+    expect(runTechnique.data?.huntRun).toEqual({ technique_id: techniqueId, technique: { id: techniqueId, x_mitre_id: TECHNIQUE_MITRE_ID } });
+    await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: emulationRunId, input: { status: 'completed', hits_count: 2 } } });
+    const validated = await queryAsAdminWithSuccess({ query, variables: { id: huntId } });
+    expect(validated.data?.hunt.techniqueValidations).toEqual([
+      { technique_id: techniqueId, status: 'validated', emulation_runs_count: 1, detected_runs_count: 1 },
+    ]);
+  });
+
+  it('should write the hunt efficacy of an emulation on each security coverage from its own runs only', async () => {
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue(undefined);
+    const coverages: BasicStoreEntity[] = [];
+    const coveredRelationIds: string[] = [];
+    const huntDetected = async (relationId: string) => {
+      const relation = await internalLoadById<BasicStoreEntity & { coverage_information?: { coverage_name: string; coverage_score: number }[] }>(
+        testContext,
+        ADMIN_USER,
+        relationId,
+        { type: RELATION_HAS_COVERED },
+      );
+      return relation.coverage_information?.find((information) => information.coverage_name === 'hunt_detected')?.coverage_score;
+    };
+    // A security coverage is identified by the object it covers: two coverages cover two objects
+    const otherCovered = await addIntrusionSet(testContext, ADMIN_USER, { name: 'Hunt test second covered intrusion set' });
+    const coveredIds = [intrusionSetStandardId, otherCovered.standard_id];
+    try {
+      for (let index = 0; index < coveredIds.length; index += 1) {
+        const coverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+          name: `Hunt test coverage ${index}`,
+          objectCovered: coveredIds[index],
+          auto_enrichment_disable: true,
+          external_uri: `http://openaev.local/hunt-test/scenarios/${index}`,
+        });
+        coverages.push(coverage);
+        const [result] = await listSecurityCoverageResults(testContext, ADMIN_USER, coverage);
+        const relation = await createRelation(testContext, ADMIN_USER, {
+          relationship_type: RELATION_HAS_COVERED,
+          fromId: result.id,
+          toId: techniqueId,
+          coverage_information: [{ coverage_name: 'detection', coverage_score: 50 }],
+        });
+        coveredRelationIds.push(relation.id);
+      }
+      // The same inject validated for two security coverages: each one gets its own run
+      const input = {
+        technique_id: TECHNIQUE_MITRE_ID,
+        security_platform_name: SECURITY_PLATFORM_NAME,
+        inject_id: 'hunt-test-coverage-inject',
+        window_start: new Date(Date.now() - 3600 * 1000).toISOString(),
+        window_end: new Date().toISOString(),
+      };
+      const runIds: string[] = [];
+      for (let index = 0; index < coverages.length; index += 1) {
+        const validation = await queryAsAdminWithSuccess({ query: HUNT_VALIDATE_EMULATION, variables: { input: { ...input, security_coverage_id: coverages[index].id } } });
+        expect(validation.data?.huntValidateFromEmulation.runs).toHaveLength(1);
+        runIds.push(validation.data?.huntValidateFromEmulation.runs[0].id);
+      }
+      expect(new Set(runIds).size).toEqual(2);
+      // Hits on the run of the first coverage only
+      await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: runIds[0], input: { status: 'completed', hits_count: 2 } } });
+      await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: runIds[1], input: { status: 'completed', hits_count: 0 } } });
+      expect(await huntDetected(coveredRelationIds[0])).toEqual(100);
+      expect(await huntDetected(coveredRelationIds[1])).toEqual(0);
+    } finally {
+      for (let index = 0; index < coverages.length; index += 1) {
+        await securityCoverageDelete(testContext, ADMIN_USER, coverages[index].standard_id);
+      }
+      await deleteElementById(testContext, ADMIN_USER, otherCovered.id, ENTITY_TYPE_INTRUSION_SET);
+    }
   });
 
   it('should target only the security platforms the user starting a run can read, and restrict each run like its platform', async () => {

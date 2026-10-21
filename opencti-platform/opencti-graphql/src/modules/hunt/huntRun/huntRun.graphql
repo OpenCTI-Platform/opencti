@@ -13,6 +13,7 @@ enum HuntRunTrigger {
   standing
   pir
   playbook
+  emulation
   preview
   retry
 }
@@ -213,6 +214,10 @@ type HuntRun implements BasicObject & InternalObject {
   "STIX id of the incident of the run: it still finds the incident once its draft is validated"
   incident_stix_id: String
   draft_id: String
+  aev_inject_id: String
+  security_coverage_id: String
+  technique_id: String
+  technique: AttackPattern
   triggered_by: String
   triggeredBy: Creator
   attempt: Int!

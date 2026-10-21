@@ -10,7 +10,7 @@ export const HUNT_TYPES = ['indicators', 'telemetry'] as const;
 export const HUNT_STATUSES = ['draft', 'active', 'paused', 'retired'] as const;
 export const HUNT_SOURCE_KINDS = ['analyst', 'agent', 'hub'] as const;
 export const HUNT_RUN_STATUSES = ['queued', 'running', 'completed', 'failed', 'timeout', 'cancelled'] as const;
-export const HUNT_RUN_TRIGGERS = ['manual', 'schedule', 'standing', 'pir', 'playbook', 'preview', 'retry'] as const;
+export const HUNT_RUN_TRIGGERS = ['manual', 'schedule', 'standing', 'pir', 'playbook', 'emulation', 'preview', 'retry'] as const;
 export const HUNT_RUN_VERDICTS = ['pending', 'true_positive', 'benign', 'inconclusive'] as const;
 export const HUNT_ANALYST_VERDICTS = ['true_positive', 'benign', 'inconclusive'] as const;
 
@@ -447,6 +447,7 @@ export const huntRunTriggerLabel = (trigger?: string | null) => {
     case 'standing': return 'Standing hunt';
     case 'pir': return 'PIR activation';
     case 'playbook': return 'Playbook';
+    case 'emulation': return 'Emulation';
     case 'preview': return 'Preview';
     case 'retry': return 'Retry';
     default: return 'Unknown';
@@ -1312,4 +1313,27 @@ const HUNTABLE_ENTITY_PATHS: RegExp[] = [
  * Malware, Tool, Report, Indicator, Observable, Grouping, Incident, Case-Incident and PIR.
  */
 export const isHuntableEntityPath = (pathname: string) => HUNTABLE_ENTITY_PATHS.some((pattern) => pattern.test(pathname));
+// endregion
+
+// region coverage
+// Computed by the platform over every emulation run of the hunt (Hunt.techniqueValidations)
+export type HuntTechniqueValidationStatus = 'validated' | 'not_detected' | 'in_progress' | 'not_validated';
+
+export const huntTechniqueValidationLabel = (status: HuntTechniqueValidationStatus) => {
+  switch (status) {
+    case 'validated': return 'Detection proven';
+    case 'not_detected': return 'Not detected';
+    case 'in_progress': return 'Validation in progress';
+    default: return 'Not validated';
+  }
+};
+
+export const huntTechniqueValidationSeverity = (status: HuntTechniqueValidationStatus): ChipSeverity => {
+  switch (status) {
+    case 'validated': return 'low';
+    case 'not_detected': return 'high';
+    case 'in_progress': return 'info';
+    default: return 'neutral';
+  }
+};
 // endregion
