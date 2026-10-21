@@ -252,6 +252,15 @@ describe('Workflow bypass', () => {
     expect(await setWorkflowStatus(context, user, entity.id, target.id, false)).toMatchObject({ success: true });
   });
 
+  it.each([true, false])('does nothing when the entity is already in the target status (applyTransitionActions: %s)', async (applyTransitionActions) => {
+    expect(await setWorkflowStatus(context, user, entity.id, legacy.id, applyTransitionActions, 'note'))
+      .toMatchObject({ success: true, executionStatus: 'completed', newState: 'open', unchanged: true });
+    expect(ActionRegistry.log).not.toHaveBeenCalled();
+    expect(addNotification).not.toHaveBeenCalled();
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+    expect(instance.history).toBe('[]');
+  });
+
   it('allows static organizations without runtime input', async () => {
     definition.states[1].onEnter.push({ type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] } });
     expect(await setWorkflowStatus(context, user, entity.id, target.id, true)).toMatchObject({ success: true, executionStatus: 'pending' });
@@ -535,9 +544,12 @@ describe('Workflow bypass', () => {
       expect(result).toMatchObject({ success: false, reason: expect.stringContaining('pending') });
       expect(JSON.parse(instance.pendingTransition).event).toBe(firstEvent);
     } else {
+      // The completed event already reached the bypass target, so the bypass changes nothing
+      const isNoOpBypass = mutation === 'bypass';
+      if (isNoOpBypass) expect(result).toMatchObject({ success: true, unchanged: true });
       expect(JSON.parse(instance.history).map((entry: any) => entry.event)).toEqual([
         ...(executionStatus === 'completed' ? [firstEvent] : []),
-        mutation === 'event' ? 'close' : mutation === 'bypass' ? 'event_bypass' : 'admin_clear_pending_state',
+        ...(isNoOpBypass ? [] : [mutation === 'event' ? 'close' : 'admin_clear_pending_state']),
       ]);
     }
     if (first === 'callback') {

@@ -1746,6 +1746,10 @@ const executeWorkflowBypass = async (
   if (existingInstance?.pendingStatus === 'pending' || existingInstance?.pendingStatus === 'error') {
     return { success: false, reason: 'A workflow transition is pending or failed. Clear the pending state before bypassing.' };
   }
+  // Already in the target status: nothing to run nor to record, so a playbook or a mass update cannot replay the actions
+  if (currentState === targetStatus.template_id) {
+    return { success: true, executionStatus: 'completed', newState: currentState, unchanged: true, entity };
+  }
   if (applyTransitionActions) {
     const missingInput = getMissingOrganizationInput(getWorkflowBypassRequirements(definitionData, currentState, targetStatus.template_id), runtimeParams);
     if (missingInput) {
@@ -1849,7 +1853,7 @@ export const setWorkflowStatus = async (
   } finally {
     await lock.unlock();
   }
-  if (result.success && result.executionStatus === 'completed' && comment?.trim()) {
+  if (result.success && result.executionStatus === 'completed' && !result.unchanged && comment?.trim()) {
     await notifyWorkflowTransitionComment(bypassDraftContext(context), result.entity, 'event_bypass', comment.trim(), user.id);
   }
   return result.success ? { ...result, instance: await getWorkflowInstance(context, user, entityId) } : result;
