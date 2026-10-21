@@ -127,7 +127,7 @@ Every tooltip names the action, and its keyboard shortcut when it has one; a dis
 
 ## Navigate
 
-Fitting keeps every entity clear of the legend, the details panel and the toolbar. A graph opened for the first time is fitted again once its layout settles, unless you zoomed or moved it meanwhile; afterwards it opens as you left it. In full screen, the toolbar and every dialog stay available; press `Esc` or **Full screen** again to leave.
+Fit the whole graph and Fit the selection displays your data on the visible areas of your screen. A graph opened for the first time is fitted again once its layout settles, unless you zoomed or moved it meanwhile; afterwards it opens as you left it. In full screen, the toolbar and every dialog stay available; press `Esc` or **Full screen** again to leave.
 
 ## Focus and hover cards
 
