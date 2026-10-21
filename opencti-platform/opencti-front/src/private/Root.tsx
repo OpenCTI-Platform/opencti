@@ -235,6 +235,10 @@ const meUserFragment = graphql`
       id
       name
       authorized_authorities
+      grantable_groups {
+        id
+        name
+      }
     }
     objectOrganization {
       edges {
