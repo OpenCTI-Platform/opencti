@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import { AutoSizer, ColumnSizer, InfiniteLoader, Grid, WindowScroller } from 'react-virtualized';
+import { ColumnSizer, InfiniteLoader, Grid } from 'react-virtualized';
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 import inject18n from '../i18n';
 
 const numberOfCardsPerLine = 4;
@@ -25,9 +26,8 @@ class ListCardsContent extends Component {
     this._loadMoreRows = this._loadMoreRows.bind(this);
     this._onSectionRendered = this._onSectionRendered.bind(this);
     this._cellRenderer = this._cellRenderer.bind(this);
-    this._setRef = this._setRef.bind(this);
     this._resetLoadingCardCount = this._resetLoadingCardCount.bind(this);
-    this.gridRef = React.createRef();
+    this.gridRef = null;
     this.state = {
       loadingCardCount: 0,
       computedScrollElement: null,
@@ -37,9 +37,6 @@ class ListCardsContent extends Component {
 
   componentDidMount() {
     this.updateScrollElement();
-    if (this._windowScroller) {
-      this._windowScroller.updatePosition();
-    }
   }
 
   updateScrollElement() {
@@ -67,13 +64,8 @@ class ListCardsContent extends Component {
       !R.equals(prevProps.dataList, this.props.dataList)
       || !R.equals(prevProps.bookmarkList, this.props.bookmarkList)
     ) {
-      this.gridRef.forceUpdate();
+      this.gridRef?.forceUpdate();
     }
-  }
-
-  _setRef(windowScroller) {
-    // noinspection JSUnusedGlobalSymbols
-    this._windowScroller = windowScroller;
   }
 
   _resetLoadingCardCount() {
@@ -193,63 +185,53 @@ class ListCardsContent extends Component {
     const scrollElement = this.state.computedScrollElement || window;
     return (
       <div ref={this.containerRef}>
-        <WindowScroller
+        <div
           key={scrollElement === window ? 'window' : 'element'}
-          ref={this._setRef}
-          scrollElement={scrollElement}
+          className={styles.windowScrollerWrapper}
         >
-          {({ height, isScrolling, onChildScroll, scrollTop }) => (
-            <div className={styles.windowScrollerWrapper}>
-              <InfiniteLoader
-                isRowLoaded={this._isCellLoaded}
-                loadMoreRows={this._loadMoreRows}
-                rowCount={globalCount}
-              >
-                {({ onRowsRendered, registerChild }) => {
-                  this._onRowsRendered = onRowsRendered;
-                  return (
-                    <AutoSizer disableHeight>
-                      {({ width }) => (
-                        <ColumnSizer
-                          columnCount={numberOfCardsPerLine}
-                          width={width}
-                        >
-                          {({ adjustedWidth, getColumnWidth }) => {
-                            const columnWidth = getColumnWidth();
-                            return (
-                              <Grid
-                                ref={(ref) => {
-                                  this.gridRef = ref;
-                                  registerChild(ref);
-                                }}
-                                autoHeight={true}
-                                height={height || 0}
-                                onRowsRendered={onRowsRendered}
-                                isScrolling={isScrolling}
-                                onScroll={onChildScroll}
-                                columnWidth={columnWidth}
-                                columnCount={numberOfCardsPerLine}
-                                rowHeight={rowHeight || 195}
-                                overscanColumnCount={numberOfCardsPerLine}
-                                overscanRowCount={2}
-                                rowCount={rowCount}
-                                cellRenderer={this._cellRenderer}
-                                onSectionRendered={this._onSectionRendered}
-                                scrollToIndex={-1}
-                                scrollTop={scrollTop}
-                                width={adjustedWidth}
-                              />
-                            );
-                          }}
-                        </ColumnSizer>
-                      )}
-                    </AutoSizer>
-                  );
-                }}
-              </InfiniteLoader>
-            </div>
-          )}
-        </WindowScroller>
+          <InfiniteLoader
+            isRowLoaded={this._isCellLoaded}
+            loadMoreRows={this._loadMoreRows}
+            rowCount={globalCount}
+          >
+            {({ onRowsRendered, registerChild }) => {
+              this._onRowsRendered = onRowsRendered;
+              return (
+                <AutoSizer
+                  renderProp={({ width }) => (width ? (
+                    <ColumnSizer
+                      columnCount={numberOfCardsPerLine}
+                      width={width}
+                    >
+                      {({ adjustedWidth, getColumnWidth }) => {
+                        const columnWidth = getColumnWidth();
+                        return (
+                          <Grid
+                            ref={(ref) => {
+                              this.gridRef = ref;
+                              registerChild(ref);
+                            }}
+                            scrollElement={scrollElement === window ? 'window' : scrollElement}
+                            onRowsRendered={onRowsRendered}
+                            columnWidth={columnWidth}
+                            columnCount={numberOfCardsPerLine}
+                            rowHeight={rowHeight || 195}
+                            overscanColumnCount={numberOfCardsPerLine}
+                            overscanRowCount={2}
+                            rowCount={rowCount}
+                            cellRenderer={this._cellRenderer}
+                            onSectionRendered={this._onSectionRendered}
+                            width={adjustedWidth}
+                          />
+                        );
+                      }}
+                    </ColumnSizer>
+                  ) : null)}
+                />
+              );
+            }}
+          </InfiniteLoader>
+        </div>
       </div>
     );
   }

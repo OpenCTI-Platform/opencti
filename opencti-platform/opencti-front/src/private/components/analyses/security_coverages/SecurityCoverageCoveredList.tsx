@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
-import { AutoSizer, List, ListRowProps } from 'react-virtualized';
+import { List, RowRendererParams } from 'react-virtualized';
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 
 const DEFAULT_ROW_HEIGHT = 57;
 const DEFAULT_MAX_VISIBLE_ROWS = 10;
@@ -21,16 +22,17 @@ const SecurityCoverageCoveredList = <T,>({
 }: SecurityCoverageCoveredListProps<T>) => {
   const rowCount = entities.length;
   const height = Math.min(rowCount, maxVisibleRows) * rowHeight;
-  const virtualizedRowRenderer = ({ index, key, style: rowStyle }: ListRowProps) => (
+  const virtualizedRowRenderer = ({ index, key, style: rowStyle }: RowRendererParams) => (
     <div key={key} style={rowStyle}>
       {rowRenderer(entities[index])}
     </div>
   );
   return (
     <div style={{ height, width: '100%', ...style }}>
-      <AutoSizer disableHeight>
-        {({ width }) => (
+      <AutoSizer
+        renderProp={({ width }) => (width ? (
           <List
+            role="grid"
             width={width}
             height={height}
             rowCount={rowCount}
@@ -38,8 +40,8 @@ const SecurityCoverageCoveredList = <T,>({
             rowRenderer={virtualizedRowRenderer}
             overscanRowCount={5}
           />
-        )}
-      </AutoSizer>
+        ) : null)}
+      />
     </div>
   );
 };

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import { AutoSizer, InfiniteLoader, List, WindowScroller } from 'react-virtualized';
+import { InfiniteLoader, List } from 'react-virtualized';
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 import inject18n from '../i18n';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { isEmptyField } from '../../utils/utils';
@@ -20,9 +21,8 @@ class ListLinesContent extends Component {
     this._isRowLoaded = this._isRowLoaded.bind(this);
     this._loadMoreRows = this._loadMoreRows.bind(this);
     this._rowRenderer = this._rowRenderer.bind(this);
-    this._setRef = this._setRef.bind(this);
     this._resetLoadingRowCount = this._resetLoadingRowCount.bind(this);
-    this.listRef = React.createRef();
+    this.listRef = null;
     this.state = {
       loadingRowCount: 0,
       computedScrollElement: null,
@@ -32,9 +32,6 @@ class ListLinesContent extends Component {
 
   componentDidMount() {
     this.updateScrollElement();
-    if (this._windowScroller) {
-      this._windowScroller.updatePosition();
-    }
   }
 
   updateScrollElement() {
@@ -77,16 +74,8 @@ class ListLinesContent extends Component {
       selection = true;
     }
     if (diff || selection) {
-      this.listRef.forceUpdateGrid();
-      if (this._windowScroller) {
-        this._windowScroller.updatePosition();
-      }
+      this.listRef?.forceUpdateGrid();
     }
-  }
-
-  _setRef(windowScroller) {
-    // noinspection JSUnusedGlobalSymbols
-    this._windowScroller = windowScroller;
   }
 
   _resetLoadingRowCount() {
@@ -292,46 +281,37 @@ class ListLinesContent extends Component {
         }}
         ref={this.containerRef}
       >
-        <WindowScroller
+        <div
           key={scrollElement === window ? 'window' : 'element'}
-          ref={this._setRef}
-          scrollElement={scrollElement}
+          className={classes.windowScrollerWrapper}
         >
-          {({ height, isScrolling, onChildScroll, scrollTop }) => (
-            <div className={classes.windowScrollerWrapper}>
-              <InfiniteLoader
-                isRowLoaded={this._isRowLoaded}
-                loadMoreRows={this._loadMoreRows}
-                rowCount={globalCount}
-              >
-                {({ onRowsRendered, registerChild }) => (
-                  <AutoSizer disableHeight>
-                    {({ width }) => (
-                      <List
-                        ref={(ref) => {
-                          this.listRef = ref;
-                          registerChild(ref);
-                        }}
-                        autoHeight={true}
-                        height={height || 0}
-                        onRowsRendered={onRowsRendered}
-                        isScrolling={isScrolling}
-                        onScroll={onChildScroll}
-                        overscanRowCount={nbOfRowsToLoad}
-                        rowCount={rowCount}
-                        rowHeight={50}
-                        rowRenderer={this._rowRenderer.bind(this)}
-                        scrollToIndex={-1}
-                        scrollTop={scrollTop}
-                        width={width}
-                      />
-                    )}
-                  </AutoSizer>
-                )}
-              </InfiniteLoader>
-            </div>
-          )}
-        </WindowScroller>
+          <InfiniteLoader
+            isRowLoaded={this._isRowLoaded}
+            loadMoreRows={this._loadMoreRows}
+            rowCount={globalCount}
+          >
+            {({ onRowsRendered, registerChild }) => (
+              <AutoSizer
+                renderProp={({ width }) => (width ? (
+                  <List
+                    ref={(ref) => {
+                      this.listRef = ref;
+                      registerChild(ref);
+                    }}
+                    role="grid"
+                    scrollElement={scrollElement === window ? 'window' : scrollElement}
+                    onRowsRendered={onRowsRendered}
+                    overscanRowCount={nbOfRowsToLoad}
+                    rowCount={rowCount}
+                    rowHeight={50}
+                    rowRenderer={this._rowRenderer.bind(this)}
+                    width={width}
+                  />
+                ) : null)}
+              />
+            )}
+          </InfiniteLoader>
+        </div>
       </div>
     );
   }
