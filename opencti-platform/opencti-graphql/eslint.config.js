@@ -118,6 +118,10 @@ export default defineConfig([
 
       'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
       '@typescript-eslint/no-floating-promises': 'error',
+      'no-restricted-syntax': ['error', {
+        selector: "CallExpression[callee.object.name=/^(res|response)$/][callee.property.name=/^(set|header)$/][arguments.length=1][arguments.0.type='ObjectExpression']",
+        message: 'Use res.set(field, value) instead: the object form iterates with for...in and would also set headers from polluted prototype properties.',
+      }],
     },
   },
 
