@@ -7,7 +7,7 @@ OpenCTI draws knowledge as graphs in several places: the **Graph** and **Correla
 A graph shows what a list cannot: who is connected to what, through which relationships, and how strongly. The graph is built to answer those questions quickly:
 
 - every node says what it is (icon and colour of its type), what it carries (markings, a low confidence, an inference) and how certain its relationships are;
-- focusing on an entity fades everything else, so its neighbourhood reads at a glance;
+- focusing on an entity fades everything else, so you can see what an entity is connected to at a glance;
 - deterministic layouts arrange the same graph the same way every time, from the threat to its victims;
 - every element can be acted on from where it is drawn.
 
