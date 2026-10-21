@@ -82,6 +82,24 @@ export interface UserExportAction extends BasicUserAction {
   context_data: UserExportActionContextData;
 }
 
+// The export of a configuration preset: a file of the platform, linked to no entity
+export interface ConfigPresetExportSummary {
+  entity_types: string[];
+  counts: Record<string, number>;
+  items: Record<string, string[]>;
+}
+export interface UserConfigPresetExportActionContextData {
+  path: string;
+  file_name: string;
+  // The context data of the activity log is mapped field by field: what is not a known field goes in the free-form input
+  input: ConfigPresetExportSummary;
+}
+export interface UserConfigPresetExportAction extends BasicUserAction {
+  event_type: 'command';
+  event_scope: 'export';
+  context_data: UserConfigPresetExportActionContextData;
+}
+
 export interface UserSendActionContextData extends ElementContextData {
   input: unknown;
 }
@@ -169,7 +187,8 @@ export interface UserForgotPasswordAction extends BasicUserAction {
 // endregion
 
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction
-  | UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
+  | UserLogoutAction | UserExportAction | UserConfigPresetExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction
+  | DisseminateAction | UserForgotPasswordAction;
 
 export interface ActionListener {
   id: string;
