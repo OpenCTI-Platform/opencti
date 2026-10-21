@@ -1925,6 +1925,12 @@ type ProcessSearchArgs = {
   useWildcardPrefix?: boolean;
   historyFiltering?: boolean;
 };
+type SearchConnectionsRestrictions = {
+  // Connected elements the user cannot access, the search must not match on them
+  restrictedConnectionIds?: string[];
+  // Too many restricted connected elements to exclude them one by one, connections are not searched
+  withoutConnectionsSearch?: boolean;
+};
 
 // Hard cap user-provided search input to limit normalization + query parsing cost
 const MAX_SEARCH_LENGTH = 512;
@@ -1968,7 +1974,20 @@ function processSearch(
     querySearch,
   };
 }
-export const elGenerateFullTextSearchShould = (search: string, args: ProcessSearchArgs = {}) => {
+// Relationships denormalize the name and id of their connected elements, without their access rights.
+// The connected elements the user cannot access must be excluded, or searching their name would reveal them.
+const buildConnectionsSearchShould = (connectionsQuery: unknown, args: SearchConnectionsRestrictions) => {
+  if (args.withoutConnectionsSearch) {
+    return [];
+  }
+  const restrictedConnectionIds = args.restrictedConnectionIds ?? [];
+  const bool: { must: unknown[]; must_not?: unknown[] } = { must: [connectionsQuery] };
+  if (restrictedConnectionIds.length > 0) {
+    bool.must_not = [{ terms: { 'connections.internal_id.keyword': restrictedConnectionIds } }];
+  }
+  return [{ nested: { path: 'connections', query: { bool } } }];
+};
+export const elGenerateFullTextSearchShould = (search: string, args: ProcessSearchArgs & SearchConnectionsRestrictions = {}) => {
   const { exactSearch, querySearch } = processSearch(search, args);
   // Return the elastic search engine expected bool should terms
   // Build the search for all exact match (between double quotes)
@@ -2056,25 +2075,14 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
           fields: BASE_SEARCH_ATTRIBUTES,
         },
       },
-      {
-        nested: {
-          path: 'connections',
-          query: {
-            bool: {
-              must: [
-                {
-                  multi_match: {
-                    type: 'phrase',
-                    query: ex,
-                    lenient: true,
-                    fields: BASE_SEARCH_CONNECTIONS,
-                  },
-                },
-              ],
-            },
-          },
+      ...buildConnectionsSearchShould({
+        multi_match: {
+          type: 'phrase',
+          query: ex,
+          lenient: true,
+          fields: BASE_SEARCH_CONNECTIONS,
         },
-      },
+      }, args),
     ]).flat());
     if (searchPhrase) {
       pushAll(shouldSearch, [
@@ -2093,24 +2101,13 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
             fields: BASE_SEARCH_ATTRIBUTES,
           },
         },
-        {
-          nested: {
-            path: 'connections',
-            query: {
-              bool: {
-                must: [
-                  {
-                    query_string: {
-                      query: searchPhrase,
-                      analyze_wildcard: true,
-                      fields: BASE_SEARCH_CONNECTIONS,
-                    },
-                  },
-                ],
-              },
-            },
+        ...buildConnectionsSearchShould({
+          query_string: {
+            query: searchPhrase,
+            analyze_wildcard: true,
+            fields: BASE_SEARCH_CONNECTIONS,
           },
-        },
+        }, args),
       ]);
     }
   }
@@ -2848,6 +2845,48 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
     getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
   },
 };
+// Above this number of restricted elements matching the search, connections are not searched at all
+const MAX_SEARCH_RESTRICTED_CONNECTIONS = ES_MAX_PAGINATION;
+const isSearchingRelationships = (types: string[] | null | undefined) => {
+  return isEmptyField(types) || R.flatten(types as string[]).some((type) => isBasicRelationship(type));
+};
+// Resolve the elements matching the search that the user cannot access.
+// Relationships connected to them must not be found by searching their name or id.
+const elResolveSearchConnectionsRestrictions = async (
+  context: AuthContext,
+  user: AuthUser,
+  search: string,
+  restrictions: { must: any[]; must_not: any[] },
+  opts: ProcessSearchArgs & BuildDraftFilterOpts,
+): Promise<SearchConnectionsRestrictions> => {
+  if (restrictions.must.length === 0 && restrictions.must_not.length === 0) {
+    return {};
+  }
+  const body = {
+    query: {
+      bool: {
+        must: [
+          { bool: { should: elGenerateFullTextSearchShould(search, opts), minimum_should_match: 1 } },
+          ...buildDraftFilter(context, user, opts),
+        ],
+        // Everything the access restrictions of the user would filter out
+        must_not: [{ bool: { must: restrictions.must, must_not: restrictions.must_not } }],
+      },
+    },
+  };
+  const query = {
+    index: getIndicesToQuery(context, user, READ_DATA_INDICES),
+    size: MAX_SEARCH_RESTRICTED_CONNECTIONS,
+    track_total_hits: true,
+    _source: ['internal_id'],
+    body,
+  };
+  const { hits: { hits, total: { value: total } } } = await elRawSearch(context, user, 'Restricted connections', query);
+  if (total > hits.length) {
+    return { withoutConnectionsSearch: true };
+  }
+  return { restrictedConnectionIds: hits.map((hit: { _source: { internal_id: string } }) => hit._source.internal_id) };
+};
 type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   ids?: string[];
   after?: string | null;
@@ -2950,7 +2989,10 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
   let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
-    const shouldSearch = elGenerateFullTextSearchShould(search, options);
+    const connectionsRestrictions = !historyFiltering && isSearchingRelationships(types)
+      ? await elResolveSearchConnectionsRestrictions(context, user, search, markingRestrictions, options)
+      : {};
+    const shouldSearch = elGenerateFullTextSearchShould(search, { ...options, ...connectionsRestrictions });
     const bool = {
       bool: {
         should: shouldSearch,
@@ -3800,7 +3842,8 @@ export const elAttributeValues = async (
   const markingRestrictions = await buildDataRestrictions(context, user);
   const must = [];
   if (isNotEmptyField(search) && (search as string).length > 0) {
-    const shouldSearch = elGenerateFullTextSearchShould(search as string);
+    const connectionsRestrictions = await elResolveSearchConnectionsRestrictions(context, user, search as string, markingRestrictions, {});
+    const shouldSearch = elGenerateFullTextSearchShould(search as string, connectionsRestrictions);
     const bool = {
       bool: {
         should: shouldSearch,

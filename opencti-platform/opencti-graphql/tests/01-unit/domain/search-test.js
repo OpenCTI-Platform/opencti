@@ -120,6 +120,21 @@ it('should generate search clauses for both activity and history fields in histo
   expect(nestedHistoryQueryString).toBeDefined();
 });
 
+it('should exclude restricted connections from the connections search', () => {
+  const connectionsSearches = (shouldSearch) => shouldSearch.filter((e) => e?.nested?.path === 'connections');
+  const unrestricted = connectionsSearches(elGenerateFullTextSearchShould('"exact" partial'));
+  expect(unrestricted.length).toBe(2);
+  unrestricted.forEach((e) => expect(e.nested.query.bool.must_not).toBeUndefined());
+
+  const restricted = connectionsSearches(elGenerateFullTextSearchShould('"exact" partial', { restrictedConnectionIds: ['ID1', 'ID2'] }));
+  expect(restricted.length).toBe(2);
+  restricted.forEach((e) => expect(e.nested.query.bool.must_not).toEqual([{ terms: { 'connections.internal_id.keyword': ['ID1', 'ID2'] } }]));
+
+  const withoutConnections = elGenerateFullTextSearchShould('"exact" partial', { withoutConnectionsSearch: true });
+  expect(connectionsSearches(withoutConnections).length).toBe(0);
+  expect(withoutConnections.length).toBe(3);
+});
+
 it('should bound overlong search input instead of processing it in full', () => {
   const MAX_SEARCH_LENGTH = 512;
   const marker = 'shouldBeTruncatedAway';
