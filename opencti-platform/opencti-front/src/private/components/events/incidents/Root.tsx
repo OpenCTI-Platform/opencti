@@ -8,6 +8,9 @@ import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import RunCaseAutopilotAskAI from '@components/investigation_runs/RunCaseAutopilotAskAI';
+import InvestigationRunsTab from '@components/investigation_runs/InvestigationRunsTab';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import Incident from './Incident';
@@ -108,6 +111,8 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
   const basePath = PATH_INCIDENT(incidentId);
   const link = `${basePath}/knowledge`;
   const isOverview = isPathOverview(location.pathname, basePath);
+  const isAutopilot = location.pathname.startsWith(`${basePath}/autopilot`);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const paddingRightValue = () => {
     if (location.pathname.includes(`${basePath}/knowledge`)) return 200;
     if (location.pathname.includes(`${basePath}/content`)) return 350;
@@ -191,6 +196,7 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
                     stixCoreObject={incident}
                   />
                 ),
+                ...(isEnterpriseEdition ? { autopilot: <InvestigationRunsTab entityId={incident.id} entityType="Incident" /> } : {}),
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={incident}
@@ -210,8 +216,9 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
                   />
                 ),
               }}
-              extraActions={isOverview && (
+              extraActions={(isOverview || isAutopilot) && (
                 <>
+                  <RunCaseAutopilotAskAI subjectId={incident.id} subjectType="Incident" basePath={basePath} />
                   <AIInsights id={incident.id} />
                   <StixCoreObjectSecurityCoverage id={incident.id} coverage={incident.securityCoverage} />
                 </>

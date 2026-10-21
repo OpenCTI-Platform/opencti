@@ -52,6 +52,7 @@ import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observ
 import { PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT } from './components/ai-agent-component';
 import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from './components/ai-agent-send-component';
 import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
+import { PLAYBOOK_INVESTIGATION_COMPONENT } from './components/investigation-component';
 import { buildPlaybookEventContext, extractBundleBaseElement } from './playbook-utils';
 
 // region built in playbook components
@@ -626,4 +627,5 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT.id]: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT,
   [PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.id]: PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT,
   [PLAYBOOK_AI_AGENT_SEND_COMPONENT.id]: PLAYBOOK_AI_AGENT_SEND_COMPONENT,
+  [PLAYBOOK_INVESTIGATION_COMPONENT.id]: PLAYBOOK_INVESTIGATION_COMPONENT,
 };

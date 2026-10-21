@@ -40,7 +40,7 @@ const useFileFromTemplate = () => {
   const { buildDonutOutcome } = useDonutOutcome();
   const { buildListOutcome } = useBuildListOutcome();
   const { buildAttributesOutcome } = useBuildAttributesOutcome();
-  const { buildFiltersForTemplateWidgets } = useBuildFiltersForTemplateWidgets();
+  const { buildFiltersForTemplateWidgets, buildNotAllowedMarkingIds } = useBuildFiltersForTemplateWidgets();
 
   type Template = EngineFintelTemplateQuery$data['fintelTemplate'];
 
@@ -58,6 +58,7 @@ const useFileFromTemplate = () => {
           containerId,
           widget.dataSelection[0],
           includeMetadata ? { includeMetadata: true } : undefined,
+          buildNotAllowedMarkingIds(maxContentMarkings),
         );
 
         return attributesOutcomes.flatMap((outcome) => {

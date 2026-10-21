@@ -28,6 +28,8 @@ describe('workspace duplication', () => {
     vi.spyOn(engine, 'elFindByIds').mockResolvedValue([]);
     vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue(undefined as any);
     vi.spyOn(redis, 'notify').mockResolvedValue({ id: 'duplicated-id' } as any);
+    // No Case Autopilot run holds the investigation graph: none is withheld from its readers.
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([]);
   });
 
   it('creates an investigation with the expected attributes', async () => {
@@ -167,6 +169,8 @@ describe('workspace field patch audit', () => {
   });
 
   it('never publishes the manifest in the audit event of a field patch', async () => {
+    // No Case Autopilot run holds the investigation graph: none is withheld from its readers.
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([]);
     const editSpy = vi.spyOn(internalObject, 'editInternalObject').mockResolvedValue({ id: 'workspace-id' } as any);
     await workspaceEditField(context, user, 'workspace-id', [{ key: 'name', value: ['New name'] }]);
     const opts = editSpy.mock.calls[0][5];

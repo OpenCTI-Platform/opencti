@@ -284,6 +284,21 @@ export class TelemetryMeterManager {
   // Number of playbook AI agent component runs
   playbookAiAgentRunCount = 0;
 
+  // Case Autopilot investigation runs started, broken down by trigger (manual | playbook | case_rfi_creation)
+  investigationRunItems: DimensionalGaugeItem[] = [];
+
+  // Case Autopilot investigation runs ended, broken down by outcome (completed | failed | cancelled)
+  investigationRunOutcomeItems: DimensionalGaugeItem[] = [];
+
+  // Analyst decisions on Case Autopilot results, broken down by item (hypothesis | recommendation) and decision (accepted | rejected)
+  investigationFeedbackItems: DimensionalGaugeItem[] = [];
+
+  // Number of enrichment jobs dispatched by Case Autopilot runs
+  investigationEnrichmentJobCount = 0;
+
+  // Number of Case Autopilot investigation policies
+  investigationPoliciesCount = 0;
+
   // Built-in LLM configuration state, with the provider type as dimension
   isAiEnabledItems: DimensionalGaugeItem[] = [];
 
@@ -626,6 +641,26 @@ export class TelemetryMeterManager {
     this.playbookAiAgentRunCount = n;
   }
 
+  setInvestigationRunItems(items: DimensionalGaugeItem[]) {
+    this.investigationRunItems = items;
+  }
+
+  setInvestigationRunOutcomeItems(items: DimensionalGaugeItem[]) {
+    this.investigationRunOutcomeItems = items;
+  }
+
+  setInvestigationFeedbackItems(items: DimensionalGaugeItem[]) {
+    this.investigationFeedbackItems = items;
+  }
+
+  setInvestigationEnrichmentJobCount(n: number) {
+    this.investigationEnrichmentJobCount = n;
+  }
+
+  setInvestigationPoliciesCount(n: number) {
+    this.investigationPoliciesCount = n;
+  }
+
   setIsAiEnabledItems(items: DimensionalGaugeItem[]) {
     this.isAiEnabledItems = items;
   }
@@ -822,6 +857,11 @@ export class TelemetryMeterManager {
     this.registerDimensionalGauge('ask_ai_query_count', 'Ask AI queries broken down by feature', 'askAiQueryItems');
     this.registerDimensionalGauge('xtm_agent_call_count', 'Direct XTM One agent calls broken down by channel (direct, direct_files)', 'xtmAgentCallItems');
     this.registerGauge('playbook_ai_agent_run_count', 'Number of playbook AI agent component runs', 'playbookAiAgentRunCount');
+    this.registerDimensionalGauge('investigation_run_count', 'Case Autopilot investigation runs started broken down by trigger', 'investigationRunItems');
+    this.registerDimensionalGauge('investigation_run_outcome_count', 'Case Autopilot investigation runs ended broken down by outcome', 'investigationRunOutcomeItems');
+    this.registerDimensionalGauge('investigation_feedback_count', 'Analyst decisions on Case Autopilot results broken down by item and decision', 'investigationFeedbackItems');
+    this.registerGauge('investigation_enrichment_job_count', 'Number of enrichment jobs dispatched by Case Autopilot runs', 'investigationEnrichmentJobCount');
+    this.registerGauge('investigation_policies_count', 'Number of Case Autopilot investigation policies', 'investigationPoliciesCount');
     // region Custom fields
     this.registerGauge('custom_field_created_count', 'Number of custom field definitions created', 'customFieldCreatedCount');
     this.registerDimensionalGauge('custom_fields_by_entity_type', 'custom field definitions broken down by attached entity type', 'customFieldsByEntityType');

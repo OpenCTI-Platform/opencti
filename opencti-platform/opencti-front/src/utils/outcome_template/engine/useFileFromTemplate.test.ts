@@ -24,6 +24,9 @@ describe('Hook: useFileFromTemplate', () => {
       buildFiltersForTemplateWidgets() {
         return undefined;
       },
+      buildNotAllowedMarkingIds(maxContentMarkingsIds: string[]) {
+        return maxContentMarkingsIds.includes('tlp-amber') ? ['tlp-red'] : ['tlp-amber', 'tlp-red'];
+      },
     }));
     vi.spyOn(env.MESSAGING$, 'notifyError').mockImplementation(notifyErrorMock);
   });
@@ -72,8 +75,10 @@ describe('Hook: useFileFromTemplate', () => {
       });
     });
 
-    const content = await buildFileFromTemplate('aaaID', [], 'testTemplate');
+    const content = await buildFileFromTemplate('aaaID', ['tlp-amber'], 'testTemplate');
     expect(content).toEqual('Hello, I am container Super report of type Report');
+    // the attribute widget receives the markings above the limits of the export
+    expect(buildAttributesOutcomeMock).toHaveBeenLastCalledWith('aaaID', expect.anything(), undefined, ['tlp-red']);
   });
 
   it('should replace attribute lists with corresponding data', async () => {
