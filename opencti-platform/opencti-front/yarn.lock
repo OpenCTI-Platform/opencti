@@ -2335,14 +2335,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/ciphers@npm:^1.0.0":
+"@noble/ciphers@npm:^1.3.0":
   version: 1.3.0
   resolution: "@noble/ciphers@npm:1.3.0"
   checksum: 10c0/3ba6da645ce45e2f35e3b2e5c87ceba86b21dfa62b9466ede9edfb397f8116dae284f06652c0cd81d99445a2262b606632e868103d54ecc99fd946ae1af8cd37
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:^1.6.0":
+"@noble/hashes@npm:^1.8.0":
   version: 1.8.0
   resolution: "@noble/hashes@npm:1.8.0"
   checksum: 10c0/06a0b52c81a6fa7f04d67762e08b2c476a00285858150caeaaff4037356dd5e119f45b2a530f638b77a5eeca013168ec1b655db41bae3236cb2e9d511484fc77
@@ -6039,15 +6039,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserify-zlib@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "browserify-zlib@npm:0.2.0"
-  dependencies:
-    pako: "npm:~1.0.5"
-  checksum: 10c0/9ab10b6dc732c6c5ec8ebcbe5cb7fe1467f97402c9b2140113f47b5f187b9438f93a8e065d8baf8b929323c18324fbf1105af479ee86d9d36cab7d7ef3424ad9
-  languageName: node
-  linkType: hard
-
 "browserslist@npm:^4.24.0":
   version: 4.29.3
   resolution: "browserslist@npm:4.29.3"
@@ -8248,7 +8239,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fflate@npm:^0.8.2":
+"fflate@npm:^0.8.2, fflate@npm:^0.8.3":
   version: 0.8.3
   resolution: "fflate@npm:0.8.3"
   checksum: 10c0/eab181ca37f5348ae76d4b6f840e0026e30220e33153289ac942222d8b9638237d486507dbcc09878d724095bd354993a2ee48bbee99c8f2c6440d4448719aa7
@@ -9993,13 +9984,6 @@ __metadata:
   version: 0.4.12
   resolution: "js-file-download@npm:0.4.12"
   checksum: 10c0/3caec1491fa744214409e0bcb1fb18d76e3d56715c477ee033cb7d8becb5cf777803409dc1995c913bf1a2270dac98d78f07d83bba319b8e800bc7bf2a7266a7
-  languageName: node
-  linkType: hard
-
-"js-md5@npm:^0.8.3":
-  version: 0.8.3
-  resolution: "js-md5@npm:0.8.3"
-  checksum: 10c0/f7e41e95f8e5eb5eeb43085bec3832ae3dfe0020c42fcca5a4efe571213391a9e9594db31bd34624b7280af4f1f12c751b6a50074a15346ecf40a0d54115d77f
   languageName: node
   linkType: hard
 
@@ -12304,7 +12288,7 @@ __metadata:
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.31.0"
     monocart-reporter: "npm:2.14.1"
-    pdfmake: "npm:0.3.11"
+    pdfmake: "npm:0.3.12"
     pmtiles: "npm:4.5.0"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
@@ -12630,13 +12614,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pako@npm:~1.0.5":
-  version: 1.0.11
-  resolution: "pako@npm:1.0.11"
-  checksum: 10c0/86dd99d8b34c3930345b8bbeb5e1cd8a05f608eeb40967b293f72fe469d0e9c88b783a8777e4cc7dc7c91ce54c5e93d88ff4b4f060e6ff18408fd21030d9ffbe
-  languageName: node
-  linkType: hard
-
 "parent-module@npm:^1.0.0":
   version: 1.0.1
   resolution: "parent-module@npm:1.0.1"
@@ -12781,28 +12758,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfkit@npm:^0.19.1":
-  version: 0.19.1
-  resolution: "pdfkit@npm:0.19.1"
+"pdfkit@npm:^0.20.2":
+  version: 0.20.2
+  resolution: "pdfkit@npm:0.20.2"
   dependencies:
-    "@noble/ciphers": "npm:^1.0.0"
-    "@noble/hashes": "npm:^1.6.0"
+    "@noble/ciphers": "npm:^1.3.0"
+    "@noble/hashes": "npm:^1.8.0"
+    fflate: "npm:^0.8.3"
     fontkit: "npm:^2.0.4"
-    js-md5: "npm:^0.8.3"
     linebreak: "npm:^1.1.0"
-    png-js: "npm:^1.1.0"
-  checksum: 10c0/1483b07842f5ca184e8834cbf6bb9cb1eeef3664505aa9a47488181db134fe3f97ebef395144e9f60a92a752afc5e4251fce118a79c414beea50d5d2a604346a
+    png-js: "npm:^2.0.0"
+  checksum: 10c0/4607b8056acbb12a33530e096bd9c40a4c6561e7c9be836f009ae5fdce0d4bbb8989d77d9fbcc33e60bb6b62297820568963e5d85e94f9ed4132af9f5518fa93
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.3.11":
-  version: 0.3.11
-  resolution: "pdfmake@npm:0.3.11"
+"pdfmake@npm:0.3.12":
+  version: 0.3.12
+  resolution: "pdfmake@npm:0.3.12"
   dependencies:
     linebreak: "npm:^1.1.0"
-    pdfkit: "npm:^0.19.1"
+    pdfkit: "npm:^0.20.2"
     xmldoc: "npm:^2.0.3"
-  checksum: 10c0/ecea71cdc143036af23ad3aff4dafcf260345b5a001763901574160316439ab09ee54516034a37edfcd3fd99112578838593a82a760b970eaf4cb81d41b2cdd1
+  checksum: 10c0/a7ef340b3f3ec12c0ee27dcc7d6903f70cb83afa69c706713c068faeb425cfa0276f14ffd828b3444d4ca2f7e5379e874516716ec47f70730b28e35371583e5c
   languageName: node
   linkType: hard
 
@@ -12856,12 +12833,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"png-js@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "png-js@npm:1.1.0"
+"png-js@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "png-js@npm:2.0.0"
   dependencies:
-    browserify-zlib: "npm:^0.2.0"
-  checksum: 10c0/61e275cb424b914fbc01c2a1b0096857f214c5fee45054c713dec1ad320760f4dd61f28bb0b3b0c139bd8c49def8891b02ca4018238e7b5f14bb671cd1ca7874
+    fflate: "npm:^0.8.2"
+  checksum: 10c0/69f44790c64b99ca7f44280ed13643e7700bc91406842a096471951227e7dfb52e21924dc3691bf65877c0411d8ced63bebaba1d2da17bf45fefed92a229f1a6
   languageName: node
   linkType: hard
 
