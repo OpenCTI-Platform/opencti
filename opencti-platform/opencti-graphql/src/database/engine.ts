@@ -691,6 +691,17 @@ export const elRawGet = async (args: { id: string; index: string }) => {
   };
   return retryElOperations(rawGetOperation);
 };
+export const elRawMget = async (args: any) => {
+  const rawMgetOperation = async () => {
+    if (engine instanceof ElkClient) {
+      const r = await engine.mget(args);
+      return oebp(r);
+    }
+    const r_1 = await engine.mget(args);
+    return oebp(r_1);
+  };
+  return retryElOperations(rawMgetOperation);
+};
 export const elRawIndex = async (args: any) => {
   const rawIndexOperation = async () => {
     if (engine instanceof ElkClient) {
@@ -4723,7 +4734,7 @@ const prepareRelation = (thing: Record<string, any>) => {
 const prepareEntity = (thing: Record<string, any>) => {
   return R.pipe(R.dissoc(INTERNAL_TO_FIELD), R.dissoc(INTERNAL_FROM_FIELD))(thing);
 };
-const prepareIndexingElement = async (thing: Record<string, any>) => {
+export const prepareIndexingElement = async (thing: Record<string, any>) => {
   if (thing.base_type === BASE_TYPE_RELATION) {
     const relation = prepareRelation(thing as StoreRelation);
     return prepareElementForIndexing(relation);

@@ -79,6 +79,27 @@ SCENARIOS = {
             {"n": 30},
         ),
         Scenario(
+            "lockfree",
+            "Lock-free prototype (derived ids, no lock, no refresh, settled endpoints) vs today and batch",
+            "vitest",
+            {"n": 2000, "concurrency": 8, "chunk": 500, "settle_ms": 250},
+            {"n": 200},
+        ),
+        Scenario(
+            "lockfree-batch",
+            "Lock-free prototype in chunks: 1, 4 and 8 parallel writers, with and without refs, bundles, vs batch",
+            "vitest",
+            {"n": 8000, "chunk": 500, "settle_ms": 250},
+            {"n": 2000},
+        ),
+        Scenario(
+            "lockfree-behaviours",
+            "Lock-free prototype correctness: duplicates, aliases, races, out of order, merges, delete, rename",
+            "vitest",
+            {"n": 50, "concurrency": 8, "settle_ms": 100},
+            {"n": 20},
+        ),
+        Scenario(
             "worker-path",
             "pycti importing one-object bundles over HTTP, timed per GraphQL operation",
             "vitest",
@@ -363,11 +384,24 @@ def print_table(header, rows):
 
 def print_summary(payload, phases=False):
     results = payload.get("results", {})
-    rows, loop_rows = [], []
+    rows, loop_rows, settled_rows = [], [], []
     for name, value in results.items():
         if not isinstance(value, dict):
             continue
-        if "loop_overhead_ms" in value:
+        if "settled_throughput_per_s" in value:
+            settled_rows.append(
+                [
+                    name,
+                    fmt(value["count"]),
+                    f"chunk {value['chunk_size']} x{value['concurrency']}",
+                    fmt(value["write_throughput_per_s"]),
+                    fmt(value["settled_throughput_per_s"]),
+                    fmt(value["settle_after_write_ms"], " ms"),
+                    fmt(value["created"]),
+                    fmt(value["merged"]),
+                ]
+            )
+        elif "loop_overhead_ms" in value:
             loop_rows.append(
                 [
                     name,
@@ -415,6 +449,20 @@ def print_summary(payload, phases=False):
     if rows:
         print_table(
             ["case", "items", "shape", "per second", "mean", "p95", "errors"], rows
+        )
+    if settled_rows:
+        print_table(
+            [
+                "case",
+                "items",
+                "shape",
+                "written/s",
+                "settled/s",
+                "settle after",
+                "created",
+                "merged",
+            ],
+            settled_rows,
         )
     if loop_rows:
         print_table(
