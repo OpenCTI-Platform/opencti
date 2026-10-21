@@ -1857,8 +1857,11 @@ export type BackgroundTaskContextOptions = {
 
 export type BackgroundTaskContextOptionsInput = {
   applyTransitionActions?: InputMaybe<Scalars['Boolean']['input']>;
+  comment?: InputMaybe<Scalars['String']['input']>;
   eventName?: InputMaybe<Scalars['String']['input']>;
   includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
+  shareOrganizationIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  unshareOrganizationIds?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export enum BackgroundTaskContextType {

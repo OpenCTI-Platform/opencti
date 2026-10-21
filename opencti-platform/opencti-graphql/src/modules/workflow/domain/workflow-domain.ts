@@ -1381,8 +1381,8 @@ const keepCommonTransitions = (transitionLists: AllowedTransition[][]): AllowedT
  * Transitions that every targeted entity can take, for a mass transition. A selection is checked
  * entity by entity, conditions included. A filter (select all) is checked from the statuses found
  * under it: entities without status are in the initial state, and conditions are only checked when
- * the transition runs. A mass transition carries no comment nor organizations, so transitions that
- * require them are left out.
+ * the transition runs. A transition that needs a comment or organizations gets them from the mass
+ * update, the same for every entity.
  */
 export const getMassWorkflowTransitions = async (
   context: AuthContext,
@@ -1399,7 +1399,7 @@ export const getMassWorkflowTransitions = async (
     const transitionLists = await BluePromise.map(target.entityIds, (entityId) => {
       return getAllowedTransitions(context, user, entityId, { entitySetting, definitionData, statuses });
     }, { concurrency: ES_MAX_CONCURRENCY });
-    return keepCommonTransitions(transitionLists).filter((transition) => !getMissingTransitionInput(user, transition));
+    return keepCommonTransitions(transitionLists);
   }
   let filters = target.filters ? JSON.parse(target.filters) : undefined;
   if (target.excludedIds && target.excludedIds.length > 0) {
@@ -1418,7 +1418,7 @@ export const getMassWorkflowTransitions = async (
   }));
   return keepCommonTransitions([...states].map((state) => {
     return definition.getTransitions(state).map((transition) => toAllowedTransition(transition, statuses, StatusScope.Global));
-  })).filter((transition) => !getMissingTransitionInput(user, transition));
+  }));
 };
 
 /**

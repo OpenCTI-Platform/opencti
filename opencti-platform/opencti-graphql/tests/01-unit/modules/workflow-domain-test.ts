@@ -3558,19 +3558,17 @@ describe('getMassWorkflowTransitions', () => {
     expect(result).toEqual([expect.objectContaining({ event: 'start', toState: 'analyse', toStatus: statuses[1] })]);
   });
 
-  it.each([
-    { comment: 'required' },
-    { requiresShareOrganizationInput: true },
-    { requiresUnshareOrganizationInput: true },
-  ])('should leave out a transition that needs inputs a mass transition cannot give: %o', async (requirement) => {
-    transitionsByState.new.push({ event: 'approve', to: 'analyse', actionTypes: [], conditions: [], ...requirement });
+  it('should tell which inputs a transition needs, for the mass update to collect them', async () => {
+    transitionsByState.new.push({ event: 'approve', to: 'analyse', actionTypes: [], conditions: [], comment: 'required', requiresShareOrganizationInput: true });
     (elAggregationCount as any).mockResolvedValue([{ label: 'status-new', value: 2, count: 2 }]);
     try {
       const selection = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
       const selectAll = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { filters: null });
 
-      expect(selection.map((transition) => transition.event)).toEqual(['start']);
-      expect(selectAll.map((transition) => transition.event)).toEqual(['start']);
+      for (const transitions of [selection, selectAll]) {
+        expect(transitions.find((transition) => transition.event === 'approve'))
+          .toMatchObject({ comment: 'required', requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false });
+      }
     } finally {
       transitionsByState.new.pop();
     }

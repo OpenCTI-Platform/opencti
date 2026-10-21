@@ -672,9 +672,14 @@ export const workflowBypassOperationCallback = (context, user, task, operations)
 };
 
 export const workflowTransitionOperationCallback = (context, user, task, operations) => {
-  const { eventName } = operations[0].context.options;
+  const { eventName, comment, shareOrganizationIds, unshareOrganizationIds } = operations[0].context.options;
+  // Same inputs for every element, as the single-entity transition wizard sends them
+  const runtimeParams = {
+    ...(shareOrganizationIds ? { shareOrganizationIds } : {}),
+    ...(unshareOrganizationIds ? { unshareOrganizationIds } : {}),
+  };
   return workflowOperationCallback(context, user, task, (element) => {
-    return triggerWorkflowEvent(context, user, element.internal_id, eventName);
+    return triggerWorkflowEvent(context, user, element.internal_id, eventName, comment?.trim() || undefined, runtimeParams);
   });
 };
 

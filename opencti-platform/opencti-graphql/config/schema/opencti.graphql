@@ -1136,6 +1136,9 @@ input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
   applyTransitionActions: Boolean
   eventName: String
+  comment: String
+  shareOrganizationIds: [String!]
+  unshareOrganizationIds: [String!]
 }
 
 input BackgroundTaskContextInput {
