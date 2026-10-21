@@ -1920,7 +1920,7 @@ const applyExternalStatusWrite = async (
     return;
   }
   // Actions never run on this path, so only BYPASS, or an allowed transition with nothing to run
-  // or ask (no action, no required comment, no onExit/onEnter), may move the state.
+  // or ask (no action, no required comment or closing reason, no onExit/onEnter), may move the state.
   if (!isBypassUser(user)) {
     const transition = (await getAllowedTransitions(context, user, entity.internal_id, {
       entity, entitySetting, definitionData, instanceEntity, statuses: [],
@@ -1932,8 +1932,8 @@ const applyExternalStatusWrite = async (
     const states = definitionData.states ?? [];
     const hasStateActions = (states.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []).length > 0
       || (states.find((state) => state.statusId === stateId)?.onEnter ?? []).length > 0;
-    if (transition.actions.length > 0 || transition.comment === 'required' || hasStateActions) {
-      await recordKeptExternalWrite(context, user, instanceEntity, newStatusId, 'transition_has_actions', `x_opencti_workflow_id was set to Status "${newStatusId}", but the transition to "${stateId}" has actions or requires a comment: trigger it from the workflow instead`);
+    if (transition.actions.length > 0 || transition.comment === 'required' || transition.closingReason === 'required' || hasStateActions) {
+      await recordKeptExternalWrite(context, user, instanceEntity, newStatusId, 'transition_has_actions', `x_opencti_workflow_id was set to Status "${newStatusId}", but the transition to "${stateId}" has actions or requires a comment or a closing reason: trigger it from the workflow instead`);
       return;
     }
   }
@@ -1952,6 +1952,9 @@ const applyExternalStatusWrite = async (
     ...(failedTransition ? [{ key: 'pendingStatus', value: [null] }, { key: 'pendingTransition', value: [null] }] : []),
     { key: 'pendingError', value: [null] },
   ]);
+  if (clearsClosingReason(definitionData.transitions, instanceEntity.currentState, stateId)) {
+    await projectWorkflowState(context, WORKFLOW_MANAGER_USER, entity, stateId, resolveProjectionScope(instanceEntity.scope), null);
+  }
 };
 
 // Best effort, without the lock: keeps read-repair from silently reverting a write the sync could not apply.
