@@ -65,6 +65,7 @@ export const up = async (next: (error?: Error) => void) => {
           logMigration.error(`${message} > connector ${connector.id} missing contract ${connector.manager_contract_image} in catalog ${catalog.catalog_id}`);
         } else {
           patch.manager_contract = mapContractEntityFieldsToEmbeddedConnectorManagerContract(contract);
+          logMigration.info(`${message} > connector ${connector.id} contract snapshot ${contract.contract_id} taken from catalog ${catalog.catalog_id}`);
         }
       } else {
         logMigration.info(`${message} > connector ${connector.id} catalog ${catalogId} not found, fallback to the embedded catalog`);
@@ -92,6 +93,7 @@ export const up = async (next: (error?: Error) => void) => {
             contractContentHash,
             logoUri: result.logoUri,
           });
+          logMigration.info(`${message} > connector ${connector.id} contract snapshot ${patch.manager_contract.contract_id} taken from the embedded catalog ${filigranCatalog.id}`);
           // Bind the connector to the catalog its contract comes from, for the auto-upgrades
           if (catalogId !== filigranCatalog.id) {
             patch.catalog_id = filigranCatalog.id;
