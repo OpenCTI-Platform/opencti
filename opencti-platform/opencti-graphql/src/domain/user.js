@@ -1955,6 +1955,15 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   validateUser(logged, settings);
   const withOrigin = userWithOrigin(req, logged);
   const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
+  // Regenerate the session id before binding the identity, preventing session fixation.
+  // The referer is kept as the auth callback still reads it from the session as a redirect fallback
+  const { referer } = req.session;
+  await new Promise((resolve, reject) => {
+    req.session.regenerate((err) => (err ? reject(err) : resolve()));
+  });
+  if (referer) {
+    req.session.referer = referer;
+  }
   // Build and save the session
   req.session.user = { id: user.id, session_creation: now(), otp_validated: false };
   req.session.session_provider = provider;

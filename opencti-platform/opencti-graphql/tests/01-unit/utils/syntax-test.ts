@@ -1,5 +1,15 @@
-import { describe, expect, it } from 'vitest';
-import { systemChecker, domainChecker, hostnameChecker, emailChecker, ipv6Checker, macAddrChecker, ipv4Checker, cpeChecker } from '../../../src/utils/syntax';
+import { afterEach, describe, expect, it } from 'vitest';
+import {
+  systemChecker,
+  domainChecker,
+  hostnameChecker,
+  emailChecker,
+  ipv6Checker,
+  macAddrChecker,
+  ipv4Checker,
+  cpeChecker,
+  extractObservablesFromIndicatorPattern,
+} from '../../../src/utils/syntax';
 
 describe('Regex Pattern Tests', () => {
   it('should match a valid system pattern', () => {
@@ -104,5 +114,25 @@ describe('Regex Pattern Tests', () => {
     expect('cpe:/a:example:ie').toMatch(cpeChecker);
     expect('cpe:/a:example:internet_explorer:8.0.6001:beta').toMatch(cpeChecker);
     expect('invalid_cpe').not.toMatch(cpeChecker);
+  });
+});
+
+describe('extractObservablesFromIndicatorPattern - prototype pollution', () => {
+  afterEach(() => {
+    delete (Object.prototype as Record<string, unknown>).polluted;
+  });
+
+  it('should still unflatten nested pattern keys', () => {
+    const observables = extractObservablesFromIndicatorPattern("[file:hashes.'SHA-256' = 'abc123']");
+    expect(observables).toEqual([{ type: 'StixFile', hashes: { 'SHA-256': 'abc123' } }]);
+  });
+
+  it.each([
+    "[file:hashes.'__proto__'.polluted = 'yes']",
+    "[file:hashes.constructor.prototype.polluted = 'yes']",
+  ])('should not pollute the object prototype from pattern %s', (pattern) => {
+    const observables = extractObservablesFromIndicatorPattern(pattern);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(observables).toEqual([{ type: 'StixFile' }]);
   });
 });
