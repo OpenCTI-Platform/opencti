@@ -210,13 +210,12 @@ describe('migration 1792531384498 leftover managed connectors contract snapshot'
   it('should only patch upgrade strategy when the contract snapshot already exists', async () => {
     mockFullEntitiesList.mockResolvedValue([{
       id: 'connector-4',
-      catalog_id: 'ipinfo',
-      manager_contract_image: 'opencti/connector-ipinfo',
-      manager_contract: { contract_id: 'ipinfo-1.2.3' },
+      catalog_id: 'custom-catalog',
+      manager_contract_image: 'acme/connector-custom',
+      manager_contract: { catalog_id: 'custom-catalog', contract_id: 'custom-1.0.0' },
       manager_upgrade_strategy: undefined,
     }]);
     await runUp();
-    expect(mockFindCatalogByCatalogId).not.toHaveBeenCalled();
     expect(mockPatchAttribute).toHaveBeenCalledWith(
       { source: 'migration' },
       { id: 'system-user' },
@@ -226,17 +225,61 @@ describe('migration 1792531384498 leftover managed connectors contract snapshot'
     );
   });
 
-  it('should not patch connectors that already have manager contract and strategy', async () => {
+  it('should not patch connectors bound to a known catalog that already have manager contract and strategy', async () => {
+    mockFullEntitiesList.mockResolvedValue([
+      { id: 'connector-5', catalog_id: 'custom-catalog', manager_contract: { catalog_id: 'custom-catalog' }, manager_upgrade_strategy: 'latest' },
+      // The embedded catalog is known even when not synchronized in ES yet
+      { id: 'connector-10', catalog_id: 'filigran-catalog', manager_contract: { catalog_id: 'filigran-catalog' }, manager_upgrade_strategy: 'latest' },
+    ]);
+    await runUp();
+    expect(mockPatchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should bind a connector with a contract snapshot and an unknown catalog to the catalog of its contract', async () => {
     mockFullEntitiesList.mockResolvedValue([{
-      id: 'connector-5',
-      catalog_id: 'ipinfo',
-      manager_contract_image: 'opencti/connector-ipinfo',
-      manager_contract: { contract_id: 'ipinfo-1.2.3' },
+      id: 'connector-11',
+      catalog_id: 'custom',
+      manager_contract_image: 'acme/connector-custom',
+      manager_contract: { catalog_id: 'custom-catalog', contract_id: 'custom-1.0.0' },
       manager_upgrade_strategy: 'latest',
     }]);
     await runUp();
-    expect(mockFindCatalogByCatalogId).not.toHaveBeenCalled();
-    expect(mockPatchAttribute).not.toHaveBeenCalled();
+    expect(mockFindLatestCompatibleCatalogContractByImageName).not.toHaveBeenCalled();
+    expect(mockPatchAttribute).toHaveBeenCalledWith(
+      { source: 'migration' },
+      { id: 'system-user' },
+      'connector-11',
+      'Connector',
+      { catalog_id: 'custom-catalog' },
+    );
+  });
+
+  it('should bind a connector with a contract snapshot without catalog and an unknown catalog to the embedded catalog', async () => {
+    mockFullEntitiesList.mockResolvedValue([{
+      id: 'connector-12',
+      catalog_id: 'ipinfo',
+      manager_contract_image: 'opencti/connector-ipinfo',
+      manager_contract: { contract_id: 'ipinfo-1.2.3' },
+      manager_upgrade_strategy: undefined,
+    }]);
+    await runUp();
+    expect(mockPatchAttribute).toHaveBeenCalledWith(
+      { source: 'migration' },
+      { id: 'system-user' },
+      'connector-12',
+      'Connector',
+      { catalog_id: 'filigran-catalog', manager_upgrade_strategy: 'latest' },
+    );
+  });
+
+  it('should look for each catalog in ES only once', async () => {
+    mockFullEntitiesList.mockResolvedValue([
+      { id: 'connector-13', catalog_id: 'ipinfo', manager_contract: { catalog_id: 'filigran-catalog' }, manager_upgrade_strategy: 'latest' },
+      { id: 'connector-14', catalog_id: 'ipinfo', manager_contract: { catalog_id: 'filigran-catalog' }, manager_upgrade_strategy: 'latest' },
+    ]);
+    await runUp();
+    expect(mockFindCatalogByCatalogId).toHaveBeenCalledTimes(1);
+    expect(mockPatchAttribute).toHaveBeenCalledTimes(2);
   });
 
   it('should still patch upgrade strategy when the contract is found in no catalog', async () => {
@@ -256,7 +299,6 @@ describe('migration 1792531384498 leftover managed connectors contract snapshot'
   it('should log an error and still patch upgrade strategy when the connector has no contract image', async () => {
     mockFullEntitiesList.mockResolvedValue([{ id: 'connector-8', catalog_id: 'custom-catalog' }]);
     await runUp();
-    expect(mockFindCatalogByCatalogId).not.toHaveBeenCalled();
     expect(logMigration.error).toHaveBeenCalledWith(expect.stringContaining('connector connector-8 has neither a contract snapshot nor a contract image'));
     expect(mockPatchAttribute).toHaveBeenCalledWith({ source: 'migration' }, { id: 'system-user' }, 'connector-8', 'Connector', { manager_upgrade_strategy: 'latest' });
   });

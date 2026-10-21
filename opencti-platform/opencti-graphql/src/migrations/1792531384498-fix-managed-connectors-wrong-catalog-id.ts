@@ -7,7 +7,7 @@ import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { patchAttribute } from '../database/middleware';
 import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import openCtiManifest from '../__generated__/opencti-manifest.json';
-import type { CatalogContract, CatalogDefinition } from '../modules/catalog/catalog-types';
+import type { BasicStoreEntityCatalog, CatalogContract, CatalogDefinition } from '../modules/catalog/catalog-types';
 import { mapContractDtoV0ToContractEntityFields, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../modules/catalog/catalog-domain';
 import { findCatalogByCatalogId, findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 import { listCatalogContractLogos, storeCatalogContractLogo } from '../modules/catalog/catalog-logo-storage';
@@ -16,9 +16,9 @@ import { mapCatalogContractDtoToCatalogContractSyncSource } from '../modules/cat
 
 const message = '[MIGRATION] managed connectors leftover contract snapshot';
 
-// The 1789637887081 migration only handled the connectors bound to the embedded catalog id: the ones bound to another
-// catalog, or to a wrong catalog id (managedConnectorAdd used to accept any value, e.g. the connector slug),
-// have no contract snapshot (no image for the manager) and no upgrade strategy.
+// The 1789637887081 migration only handled the connectors bound to the embedded catalog id. managedConnectorAdd used to
+// accept any catalog id (e.g. the connector slug): the connectors created that way before it have no contract snapshot
+// (no image for the manager) and no upgrade strategy, and all of them are left out of the auto-upgrades.
 export const up = async (next: (error?: Error) => void) => {
   const start = new Date().getTime();
   logMigration.info(`${message} > started`);
@@ -31,8 +31,7 @@ export const up = async (next: (error?: Error) => void) => {
     filters: { mode: FilterMode.And, filters: [{ key: ['catalog_id'], values: [], operator: FilterOperator.NotNil }], filterGroups: [] },
   };
   const managedConnectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR], managedConnectorsArgs);
-  const connectorsToFix = managedConnectors.filter((connector) => !connector.manager_contract || !connector.manager_upgrade_strategy);
-  logMigration.info(`${message} > ${connectorsToFix.length} managed connector(s) to evaluate`);
+  logMigration.info(`${message} > ${managedConnectors.length} managed connector(s) to evaluate`);
 
   // Read the contracts from the embedded catalog file
   const contractsByImage: Record<string, CatalogContract> = {};
@@ -40,15 +39,26 @@ export const up = async (next: (error?: Error) => void) => {
     contractsByImage[contract.container_image] = contract;
   });
 
+  const catalogsById = new Map<string, BasicStoreEntityCatalog | undefined>();
+  const findCatalog = async (catalogId: string) => {
+    if (!catalogsById.has(catalogId)) {
+      catalogsById.set(catalogId, await findCatalogByCatalogId(context, SYSTEM_USER, catalogId));
+    }
+    return catalogsById.get(catalogId);
+  };
+
   let storedLogos: Set<string> | undefined;
-  for (let i = 0; i < connectorsToFix.length; i += 1) {
-    const connector = connectorsToFix[i];
-    logMigration.info(`${message} > processing connector ${connector.id} (${i + 1}/${connectorsToFix.length})`);
+  for (let i = 0; i < managedConnectors.length; i += 1) {
+    const connector = managedConnectors[i];
+    const catalogId = connector.catalog_id as string;
+    logMigration.info(`${message} > processing connector ${connector.id} (${i + 1}/${managedConnectors.length})`);
+    const catalog = await findCatalog(catalogId);
+    // The embedded catalog is not in ES when upgrading from a version without catalog synchronization
+    const isKnownCatalog = !!catalog || catalogId === filigranCatalog.id;
     const patch: Pick<BasicStoreEntityConnector, 'catalog_id' | 'manager_contract' | 'manager_upgrade_strategy'> = {};
     if (!connector.manager_contract && !connector.manager_contract_image) {
       logMigration.error(`${message} > connector ${connector.id} has neither a contract snapshot nor a contract image`);
     } else if (!connector.manager_contract && connector.manager_contract_image) {
-      const catalog = await findCatalogByCatalogId(context, SYSTEM_USER, connector.catalog_id as string);
       if (catalog) {
         const contract = await findLatestCompatibleCatalogContractByImageName(context, SYSTEM_USER, connector.manager_contract_image, catalog.catalog_id);
         if (!contract) {
@@ -57,7 +67,7 @@ export const up = async (next: (error?: Error) => void) => {
           patch.manager_contract = mapContractEntityFieldsToEmbeddedConnectorManagerContract(contract);
         }
       } else {
-        logMigration.info(`${message} > connector ${connector.id} catalog ${connector.catalog_id} not found, fallback to the embedded catalog`);
+        logMigration.info(`${message} > connector ${connector.id} catalog ${catalogId} not found, fallback to the embedded catalog`);
         const contractDto = contractsByImage[connector.manager_contract_image];
         if (!contractDto) {
           logMigration.error(`${message} > connector ${connector.id} missing contract ${connector.manager_contract_image} in the embedded catalog`);
@@ -83,10 +93,17 @@ export const up = async (next: (error?: Error) => void) => {
             logoUri: result.logoUri,
           });
           // Bind the connector to the catalog its contract comes from, for the auto-upgrades
-          if (connector.catalog_id !== filigranCatalog.id) {
+          if (catalogId !== filigranCatalog.id) {
             patch.catalog_id = filigranCatalog.id;
           }
         }
+      }
+    } else if (!isKnownCatalog) {
+      // Created with a wrong catalog id but a contract snapshot: bind it to the catalog of its contract
+      const contractCatalogId = connector.manager_contract?.catalog_id ?? filigranCatalog.id;
+      logMigration.info(`${message} > connector ${connector.id} catalog ${catalogId} not found, bound to catalog ${contractCatalogId}`);
+      if (contractCatalogId !== catalogId) {
+        patch.catalog_id = contractCatalogId;
       }
     }
     if (!connector.manager_upgrade_strategy) {
