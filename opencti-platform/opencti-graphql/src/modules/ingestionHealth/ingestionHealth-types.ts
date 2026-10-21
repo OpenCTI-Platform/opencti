@@ -29,6 +29,8 @@ export interface StoredIngestionHealth {
 export interface IngestionHealthSettings {
   // ms a status must stay unchanged before it is notified
   notification_delay?: number;
+  // Checks never evaluated on the platform: a check absent from the list is enabled, so is a check added later
+  disabled_health_checks?: HealthCheckCode[];
 }
 
 // ingestion_health is absent until the manager first evaluates the ingestion, and removed (null in a patch) when it is stopped

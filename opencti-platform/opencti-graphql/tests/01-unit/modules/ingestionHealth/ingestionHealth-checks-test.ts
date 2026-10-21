@@ -414,6 +414,37 @@ describe('computeIngestionHealthChecks', () => {
   });
 });
 
+describe('disabled health checks', () => {
+  // A pinging connector without user nor heartbeat: fails USER_MISSING and HEARTBEAT_MISSING
+  const FAILING = { ...CONNECTOR, connector_user_id: null };
+  const contextWith = (disabledHealthChecks?: HealthCheckCode[]) => ({ ...CONTEXT, ...PINGING, user: undefined, disabledHealthChecks });
+
+  it('should evaluate every check when none is disabled', () => {
+    expect(computeIngestionHealthChecks(FAILING, contextWith())).toEqual([USER_MISSING, HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(FAILING, contextWith([]))).toEqual([USER_MISSING, HEARTBEAT_MISSING]);
+  });
+
+  it('should not report a disabled check, even when it fails', () => {
+    expect(computeIngestionHealthChecks(FAILING, contextWith([HEALTH_CHECK_HEARTBEAT_MISSING]))).toEqual([USER_MISSING]);
+  });
+
+  it('should keep reporting the checks still enabled', () => {
+    expect(computeIngestionHealthChecks(FAILING, contextWith([HEALTH_CHECK_USER_MISSING]))).toEqual([HEARTBEAT_MISSING]);
+  });
+
+  it('should report nothing when every failing check is disabled', () => {
+    expect(computeIngestionHealthChecks(FAILING, contextWith([HEALTH_CHECK_USER_MISSING, HEALTH_CHECK_HEARTBEAT_MISSING]))).toEqual([]);
+  });
+
+  it('should drop a failure stored before its check was disabled: the status is computed again without it', () => {
+    const current = { ingestion_health: { status: IngestionHealthStatus.Critical, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING, HEARTBEAT_MISSING] } };
+    const context = contextWith([HEALTH_CHECK_HEARTBEAT_MISSING]);
+    const patch = computeIngestionHealthPatch(current, computeIngestionHealthChecks(FAILING, context), context);
+    expect(patch?.ingestion_health?.health_checks).toEqual([USER_MISSING]);
+    expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+});
+
 describe('user not service account check', () => {
   const REGULAR_USER = { internal: false, user_service_account: false };
   const INTERNAL_USER = { internal: true, user_service_account: false };

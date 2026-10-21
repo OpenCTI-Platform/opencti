@@ -2,6 +2,8 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import Box from '@mui/material/Box';
+import { Chip, Switch } from '@filigran/design-system';
 import Card from '../../../../components/common/card/Card';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,6 +15,13 @@ const settingsIngestionHealthFragment = graphql`
     id
     ingestion_health_settings {
       notification_delay
+      disabled_health_checks
+      health_checks {
+        health_check_code
+        health_check_kind
+        health_check_severity
+        enabled
+      }
     }
   }
 `;
@@ -40,6 +49,16 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
   const { t_i18n } = useFormatter();
   const { id, ingestion_health_settings } = useFragment(settingsIngestionHealthFragment, settings);
   const [commitField] = useApiMutation(settingsIngestionHealthFieldPatch);
+  const notificationDelay = ingestion_health_settings?.notification_delay ?? 0;
+  const disabledHealthChecks = ingestion_health_settings?.disabled_health_checks ?? [];
+
+  // Readable name of each check of the registry; a check added later shows its code until it gets one
+  const checkLabels: Record<string, string> = {
+    USER_MISSING: t_i18n('Missing user'),
+    USER_NOT_SERVICE_ACCOUNT: t_i18n('User is not a service account'),
+    HEARTBEAT_MISSING: t_i18n('Missing heartbeat'),
+    FEED_AND_SYNC_EXECUTION_FAILED: t_i18n('Feed or sync execution failed'),
+  };
 
   const validation = Yup.object().shape({
     notification_delay: Yup.number()
@@ -50,16 +69,28 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
       .required(t_i18n('This field is required')),
   });
 
-  const handleSubmitDelay = (name: string, value: string) => {
-    validation.validateAt(name, { [name]: value }).then(() => {
-      commitField({
-        variables: {
-          id,
-          // The whole object is sent: the backend replaces it
-          input: { key: 'ingestion_health_settings', value: { notification_delay: Number(value) * MINUTE_MS } },
+  // The whole object is sent: the backend replaces it
+  const commitSettings = (changes: { notification_delay?: number; disabled_health_checks?: readonly string[] }) => {
+    commitField({
+      variables: {
+        id,
+        input: {
+          key: 'ingestion_health_settings',
+          value: { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks, ...changes },
         },
-      });
-    }).catch(() => false);
+      },
+    });
+  };
+
+  const handleSubmitDelay = (name: string, value: string) => {
+    validation.validateAt(name, { [name]: value })
+      .then(() => commitSettings({ notification_delay: Number(value) * MINUTE_MS }))
+      .catch(() => false);
+  };
+
+  const handleToggleCheck = (code: string, enabled: boolean) => {
+    const others = disabledHealthChecks.filter((disabledCode) => disabledCode !== code);
+    commitSettings({ disabled_health_checks: enabled ? others : [...others, code] });
   };
 
   return (
@@ -67,7 +98,7 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
       <Formik
         onSubmit={() => {}}
         enableReinitialize={true}
-        initialValues={{ notification_delay: Math.round((ingestion_health_settings?.notification_delay ?? 0) / MINUTE_MS) }}
+        initialValues={{ notification_delay: Math.round(notificationDelay / MINUTE_MS) }}
         validationSchema={validation}
       >
         {() => (
@@ -85,6 +116,35 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
           </Form>
         )}
       </Formik>
+      <Box component="h4" sx={{ marginTop: 3, marginBottom: 1 }}>{t_i18n('Health checks')}</Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        {(ingestion_health_settings?.health_checks ?? []).map((check) => {
+          // A failing blocking check makes the ingestion critical, an advisory one degraded: same chips as the health status
+          const isBlocking = check.health_check_severity === 'blocking';
+          return (
+            <Box
+              key={check.health_check_code}
+              data-testid={`settings-ingestion-health-check-${check.health_check_code}`}
+              sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+            >
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Switch
+                  checked={check.enabled}
+                  onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
+                  label={checkLabels[check.health_check_code] ?? check.health_check_code}
+                />
+              </Box>
+              <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>
+                {check.health_check_kind === 'runtime' ? t_i18n('Runtime') : t_i18n('Configuration')}
+              </Box>
+              <Chip
+                label={isBlocking ? t_i18n('Critical') : t_i18n('Degraded')}
+                severity={isBlocking ? 'critical' : 'high'}
+              />
+            </Box>
+          );
+        })}
+      </Box>
     </Card>
   );
 };
