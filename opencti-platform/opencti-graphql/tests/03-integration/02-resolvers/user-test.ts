@@ -861,6 +861,18 @@ describe('User has no settings capability and is organization admin query behavi
     }
   `;
 
+  const GROUPS_QUERY = gql`
+    query OrganizationAdminGroups {
+      groups {
+        edges {
+          node {
+            id
+          }
+        }
+      }
+    }
+  `;
+
   const ORGANIZATION_DELETE_QUERY = gql`
         mutation UserOrganizationDeleteMutation(
             $id: ID!
@@ -940,6 +952,10 @@ describe('User has no settings capability and is organization admin query behavi
     const { capabilities } = editorUserQueryResult.data.user;
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
+  it('should list no group when its administrated organizations have no grantable group', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    expect(queryResult.data?.groups.edges).toEqual([]);
+  });
   it('should user created', async () => {
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     organizationsIds.push(testOrganizationId);
@@ -976,25 +992,10 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data.userAdd.name).toEqual('User');
     userInternalId = user.data.userAdd.id;
   });
-  it('should read grantable groups of its administrated organizations', async () => {
-    const ME_ADMINISTRATED_ORGANIZATIONS_QUERY = gql`
-      query meAdministratedOrganizations {
-        me {
-          administrated_organizations {
-            id
-            grantable_groups {
-              id
-              name
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: ME_ADMINISTRATED_ORGANIZATIONS_QUERY, variables: {} });
-    const administratedOrganizations = queryResult.data?.me.administrated_organizations ?? [];
-    const testOrganization = administratedOrganizations.find((o: { id: string }) => o.id === testOrganizationId);
-    expect(testOrganization).toBeDefined();
-    expect(testOrganization.grantable_groups).toEqual([{ id: amberGroupId, name: AMBER_GROUP.name }]);
+  it('should list only the grantable groups of its administrated organizations', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    const groupsIds = queryResult.data?.groups.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(groupsIds).toEqual([amberGroupId]);
   });
   it('should not create user in an organization the org admin does not administrate', async () => {
     const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
