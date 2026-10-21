@@ -10865,6 +10865,7 @@ type IngestionHealthCheck {
 
 type IngestionHealthCheckSetting {
   health_check_code: String!
+  health_check_label: String!
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
   enabled: Boolean!
