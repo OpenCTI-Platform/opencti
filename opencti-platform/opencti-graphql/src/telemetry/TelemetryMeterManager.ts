@@ -271,6 +271,8 @@ export class TelemetryMeterManager {
 
   workflowPublishCount = 0;
 
+  configPresetExportCount = 0;
+
   // endregion providers usage
 
   // region Custom fields
@@ -636,6 +638,10 @@ export class TelemetryMeterManager {
     this.workflowPublishCount = n;
   }
 
+  setConfigPresetExportCount(n: number) {
+    this.configPresetExportCount = n;
+  }
+
   setChatbotMessageCount(n: number) {
     this.chatbotMessageCount = n;
   }
@@ -873,6 +879,7 @@ export class TelemetryMeterManager {
     this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
     this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
+    this.registerGauge('config_preset_export_count', 'Number of configuration preset bundles exported', 'configPresetExportCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');
     this.registerDimensionalGauge('ai_insight_request_count', 'AI Insights requests broken down by cache state (hit, miss)', 'aiInsightRequestItems');

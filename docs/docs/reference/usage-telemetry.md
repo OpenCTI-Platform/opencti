@@ -183,3 +183,7 @@ No source name, cost amount, score or recommendation content is ever collected, 
 ### Workflows
 
 - The number of workflow definitions published
+
+### Configuration presets
+
+- The number of configuration preset bundles exported

@@ -156,6 +156,7 @@ export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_CUSTOM_FIELD_CREATED = 'customFieldCreatedCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+export const TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT = 'configPresetExportCount';
 // Source Intelligence counters
 export const TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_APPLIED = 'sourceRecommendationAppliedCount';
 export const TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_AUTONOMOUS = 'sourceRecommendationAutonomousCount';
@@ -328,6 +329,11 @@ export const addSharedSavedFiltersPermissionChangesCount = () => {
 export const addWorkflowPublishCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_PUBLISH, 1)
     .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
+};
+
+export const addConfigPresetExportCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT, 1)
+    .catch((reason) => logApp.warn('Error adding config preset export count to telemetry', { reason }));
 };
 
 // All the counters below are fire-and-forget: they are called from feature
@@ -837,6 +843,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
     manager.setWorkflowPublishCount(workflowPublishCountInRedis);
+    const configPresetExportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT);
+    manager.setConfigPresetExportCount(configPresetExportCountInRedis);
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
     manager.setChatbotMessageCount(chatbotMessageCountInRedis);
     const aiInsightItems: DimensionalGaugeItem[] = [];

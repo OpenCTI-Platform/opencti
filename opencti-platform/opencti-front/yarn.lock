@@ -1068,20 +1068,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/rich-text-editor@npm:1.2.2":
-  version: 1.2.2
-  resolution: "@filigran/rich-text-editor@npm:1.2.2"
+"@filigran/rich-text-editor@npm:2.0.1":
+  version: 2.0.1
+  resolution: "@filigran/rich-text-editor@npm:2.0.1"
   dependencies:
     "@tiptap/core": "npm:3.30.5"
     "@tiptap/pm": "npm:3.30.5"
     "@tiptap/react": "npm:3.30.5"
   peerDependencies:
     "@mui/icons-material": ">=5"
-    "@mui/material": ">=5"
+    "@mui/material": ">=5.14.0"
     react: ">=18"
     react-color: ">=2"
     react-dom: ">=18"
-  checksum: 10c0/55cfca181ace6345d1e83814130c1e9956bbd4fe2bae70f3501f5dc5fa7e522f12ec1019ee6a204c4aecd2fbb9be844df41ded2298287a091be2891d92f5954c
+  checksum: 10c0/38207b6ed0a73962c6f9b7843bba63d6c3d7f17f7b757dc6f9a2b1e2cc1d0bec7513b2414547b28c62f61bc21f24670c7267b3de4c6e252a5db389eadf1dd423
   languageName: node
   linkType: hard
 
@@ -8952,9 +8952,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:6.4.0":
-  version: 6.4.0
-  resolution: "graphql-ws@npm:6.4.0"
+"graphql-ws@npm:6.4.1":
+  version: 6.4.1
+  resolution: "graphql-ws@npm:6.4.1"
   peerDependencies:
     "@fastify/websocket": ^10 || ^11
     crossws: ~0.3 || ~0.4
@@ -8967,7 +8967,7 @@ __metadata:
       optional: true
     ws:
       optional: true
-  checksum: 10c0/6e16a403310b10019530bfe34b1a01c862ca168cb52a68d9a47e10fa53894a785f9bfd3e71d1bb35d472adcac28e4d3a703ab9ad1133823fb9e06e922ff8aecd
+  checksum: 10c0/bb424b3ad7b94e90e29740b0a11e2f25a631c83eccb01a78dc83a0506407d242448ae23db087554c337a190cb64c3e9277a4458db4bfdd6d038742e1f03f6048
   languageName: node
   linkType: hard
 
@@ -12214,7 +12214,7 @@ __metadata:
     "@filigran/chatbot": "npm:3.14.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
     "@filigran/design-system": "npm:1.2.0"
-    "@filigran/rich-text-editor": "npm:1.2.2"
+    "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
     "@fontsource/roboto": "npm:5.3.0"
@@ -12283,7 +12283,7 @@ __metadata:
     formik-mui-lab: "npm:1.0.0"
     globals: "npm:17.13.0"
     graphiql: "npm:5.4.0"
-    graphql-ws: "npm:6.4.0"
+    graphql-ws: "npm:6.4.1"
     html-react-parser: "npm:6.1.8"
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.36"

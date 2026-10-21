@@ -4660,6 +4660,32 @@ export type ConfidenceLevelOverrideInput = {
   max_confidence: Scalars['Int']['input'];
 };
 
+export type ConfigPresetExportableGroup = {
+  __typename?: 'ConfigPresetExportableGroup';
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
+
+export type ConfigPresetExportableItem = {
+  __typename?: 'ConfigPresetExportableItem';
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  translatable: Scalars['Boolean']['output'];
+};
+
+export type ConfigPresetExportableType = {
+  __typename?: 'ConfigPresetExportableType';
+  group: ConfigPresetExportableGroup;
+  items: Array<ConfigPresetExportableItem>;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
+
+export type ConfigPresetSelectionInput = {
+  items?: InputMaybe<Array<Scalars['ID']['input']>>;
+  type: Scalars['ID']['input'];
+};
+
 export type Connector = BasicObject & InternalObject & {
   __typename?: 'Connector';
   active?: Maybe<Scalars['Boolean']['output']>;
@@ -17549,6 +17575,7 @@ export type Mutation = {
   cityEdit?: Maybe<CityEditMutations>;
   clearWorkflowPendingState: WorkflowInstance;
   collectionGapDeployConnector?: Maybe<SourceRecommendation>;
+  configPresetExport: File;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -18363,6 +18390,12 @@ export type MutationCollectionGapDeployConnectorArgs = {
   configuration?: InputMaybe<Array<ContractConfigInput>>;
   id: Scalars['ID']['input'];
   slug: Scalars['String']['input'];
+};
+
+
+export type MutationConfigPresetExportArgs = {
+  bundle_name?: InputMaybe<Scalars['String']['input']>;
+  selections: Array<ConfigPresetSelectionInput>;
 };
 
 
@@ -25132,6 +25165,7 @@ export type Query = {
   cities?: Maybe<CityConnection>;
   city?: Maybe<City>;
   collectionGaps?: Maybe<CollectionGapConnection>;
+  configPresetExportableTypes: Array<ConfigPresetExportableType>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
   connectorManagers: Array<ConnectorManager>;
@@ -41716,6 +41750,10 @@ export type ResolversTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
+  ConfigPresetExportableGroup: ResolverTypeWrapper<ConfigPresetExportableGroup>;
+  ConfigPresetExportableItem: ResolverTypeWrapper<ConfigPresetExportableItem>;
+  ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
+  ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
@@ -42946,6 +42984,10 @@ export type ResolversParentTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ConfidenceLevelOverride;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
+  ConfigPresetExportableGroup: ConfigPresetExportableGroup;
+  ConfigPresetExportableItem: ConfigPresetExportableItem;
+  ConfigPresetExportableType: ConfigPresetExportableType;
+  ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;
   ConnectorConfiguration: ConnectorConfiguration;
@@ -45413,6 +45455,24 @@ export type ConfidenceLevelResolvers<ContextType = any, ParentType extends Resol
 export type ConfidenceLevelOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfidenceLevelOverride'] = ResolversParentTypes['ConfidenceLevelOverride']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableGroup'] = ResolversParentTypes['ConfigPresetExportableGroup']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItem'] = ResolversParentTypes['ConfigPresetExportableItem']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableType'] = ResolversParentTypes['ConfigPresetExportableType']> = ResolversObject<{
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
+  items?: Resolver<Array<ResolversTypes['ConfigPresetExportableItem']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type ConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connector'] = ResolversParentTypes['Connector']> = ResolversObject<{
@@ -50043,6 +50103,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   clearWorkflowPendingState?: Resolver<ResolversTypes['WorkflowInstance'], ParentType, ContextType, RequireFields<MutationClearWorkflowPendingStateArgs, 'entityId'>>;
   collectionGapDeployConnector?: Resolver<Maybe<ResolversTypes['SourceRecommendation']>, ParentType, ContextType, RequireFields<MutationCollectionGapDeployConnectorArgs, 'id' | 'slug'>>;
+  configPresetExport?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetExportArgs, 'selections'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
@@ -51955,6 +52016,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   cities?: Resolver<Maybe<ResolversTypes['CityConnection']>, ParentType, ContextType, Partial<QueryCitiesArgs>>;
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
   collectionGaps?: Resolver<Maybe<ResolversTypes['CollectionGapConnection']>, ParentType, ContextType, Partial<QueryCollectionGapsArgs>>;
+  configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
   connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
@@ -56597,6 +56659,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ComplexVariable?: ComplexVariableResolvers<ContextType>;
   ConfidenceLevel?: ConfidenceLevelResolvers<ContextType>;
   ConfidenceLevelOverride?: ConfidenceLevelOverrideResolvers<ContextType>;
+  ConfigPresetExportableGroup?: ConfigPresetExportableGroupResolvers<ContextType>;
+  ConfigPresetExportableItem?: ConfigPresetExportableItemResolvers<ContextType>;
+  ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
