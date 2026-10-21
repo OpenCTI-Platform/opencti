@@ -75,7 +75,8 @@ interface BaseHealthCheckDefinition {
   label: string;
   severity: IngestionHealthCheckSeverity;
   // Computed when read, never stored: the entity type of the ingestor adapts it to the kind of ingestion
-  message: (metadata: HealthCheckMetadata, entityType: string) => string;
+  // Absent when the failure needs nothing more than the name of the check: the label is the message
+  message?: (metadata: HealthCheckMetadata, entityType: string) => string;
 }
 
 // getFailure returns null when the check passes, and the metadata of the failure when it fails ({} when there is nothing to tell)
@@ -181,7 +182,6 @@ export const HEALTH_CHECK_REGISTRY = {
     kind: IngestionHealthCheckKind.Configuration,
     label: 'User is missing',
     severity: IngestionHealthCheckSeverity.Blocking,
-    message: () => 'User is missing',
     // A required user, or an optional one that was set: it must exist
     isEnabled: (ingestor) => isUserRequired(ingestor) || !!getIngestorUserId(ingestor),
     getFailure: (_, { user }) => (user ? null : {}),
@@ -191,7 +191,6 @@ export const HEALTH_CHECK_REGISTRY = {
     kind: IngestionHealthCheckKind.Configuration,
     label: 'User is not a service account',
     severity: IngestionHealthCheckSeverity.Advisory,
-    message: () => 'User is not a service account',
     // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
     isEnabled: (_, { user }) => !!user && !user.internal,
     getFailure: (_, { user }) => (user?.user_service_account ? null : {}),
@@ -201,7 +200,6 @@ export const HEALTH_CHECK_REGISTRY = {
     kind: IngestionHealthCheckKind.Runtime,
     label: 'No heartbeat received',
     severity: IngestionHealthCheckSeverity.Blocking,
-    message: () => 'No heartbeat received',
     // Only the running connectors pinging continuously: the others would be missing their heartbeat between two runs
     isEnabled: (ingestor, { pingingConnectorsIds }) => pingingConnectorsIds.has(ingestor.internal_id),
     getRuntimeData: redisGetConnectorsHeartbeats,
