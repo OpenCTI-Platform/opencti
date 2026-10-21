@@ -5,6 +5,7 @@ import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';
 import './hubRegistrationManager';
 import './indicatorDecayManager';
+import './indicatorDeploymentManager';
 import './ingestionHealthManager';
 import './pirManager';
 import './platformUsageMetricsManager';

@@ -124,6 +124,7 @@ import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
+import { convertDeployedOnToStixExtension } from '../modules/indicatorDeployment/indicatorDeployment-converter';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
 import { flattenCustomFieldValuesForStix } from '../modules/customField/custom-field-stix-utils';
@@ -1300,6 +1301,7 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         target_ref_pir_refs: resolvedTo[RELATION_IN_PIR] ?? [],
         kill_chain_phases: buildKillChainPhases(instance),
         coverage: instance.coverage,
+        ...convertDeployedOnToStixExtension(instance),
       }),
     },
   };

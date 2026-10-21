@@ -21,9 +21,10 @@ export const createInternalObject = async <T extends StoreEntity>(
   opts: {
     auditLogEnabled?: boolean;
     auditLogContextSanitizer?: (input: Record<string, unknown>) => Record<string, unknown>;
+    grantedRefsFromInput?: boolean;
   } = {},
 ): Promise<T> => {
-  const { element, isCreation } = await createEntity(context, user, input, entityType, { complete: true });
+  const { element, isCreation } = await createEntity(context, user, input, entityType, { complete: true, grantedRefsFromInput: opts.grantedRefsFromInput });
   const { auditLogEnabled = true } = opts;
   if (isCreation && auditLogEnabled) {
     const sanitizedContextInput = opts?.auditLogContextSanitizer?.(input) ?? input;

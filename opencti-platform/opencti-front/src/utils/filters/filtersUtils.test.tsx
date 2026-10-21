@@ -2488,6 +2488,15 @@ describe('isFilterGroupNotEmpty', () => {
       filterGroups: [{ mode: 'and', filters: [{ key: 'name', values: ['a'] }], filterGroups: [] }],
     })).toBe(true);
   });
+  it('should include the dissemination assurance filter keys used by triggers', () => {
+    const { hook } = testRenderHook(
+      () => useStixFilters(),
+      { userContext: createMockUserContext({ settings: { platform_feature_flags: [] } }) },
+    );
+    expect(hook.result.current).toContain('deployment_status');
+    expect(hook.result.current).toContain('validation_status');
+    expect(hook.result.current).toContain('deployment_platforms_count');
+  });
 });
 
 describe('getSelectedOptions with dashboard variable tokens', () => {

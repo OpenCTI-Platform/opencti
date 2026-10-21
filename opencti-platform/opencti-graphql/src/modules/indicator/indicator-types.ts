@@ -19,6 +19,7 @@ export interface StixIndicatorExtension extends StixOpenctiExtension {
   score: number;
   main_observable_type: string;
   observable_values: ObservableValues[];
+  deployment_platforms_count?: number;
 }
 // name, description, indicator_types, pattern, pattern_type, pattern_version, valid_from, valid_until, kill_chain_phases
 export interface StixIndicator extends StixDomainObject {
@@ -67,6 +68,7 @@ export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;
+  deployment_platforms_count?: number;
 }
 
 export interface StoreEntityIndicator extends StoreEntity {
@@ -84,6 +86,7 @@ export interface StoreEntityIndicator extends StoreEntity {
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;
+  deployment_platforms_count?: number;
 }
 
 // region Stix 2.0 type
