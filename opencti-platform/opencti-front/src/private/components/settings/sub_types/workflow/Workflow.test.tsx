@@ -34,6 +34,8 @@ const mockFitView = vi.fn();
 const mockGetNode = vi.fn();
 let mockSetNodes = vi.fn();
 let mockSetEdges = vi.fn();
+const mockOnNodesChange = vi.fn();
+const mockOnEdgesChange = vi.fn();
 let mockNodes: unknown[] = [];
 let mockEdges: unknown[] = [];
 
@@ -54,7 +56,7 @@ vi.mock('reactflow', async () => {
         }
         mockSetNodes(mockNodes);
       };
-      return [mockNodes, setNodes, vi.fn()];
+      return [mockNodes, setNodes, mockOnNodesChange];
     },
     useEdgesState: () => {
       const setEdges = (newEdges: unknown[] | ((prev: unknown[]) => unknown[])) => {
@@ -65,7 +67,7 @@ vi.mock('reactflow', async () => {
         }
         mockSetEdges(mockEdges);
       };
-      return [mockEdges, setEdges, vi.fn()];
+      return [mockEdges, setEdges, mockOnEdgesChange];
     },
   };
 });
@@ -437,6 +439,16 @@ describe('Workflow Component', () => {
       const reactFlow = container.querySelector('.react-flow');
 
       expect(reactFlow).toBeInTheDocument();
+    });
+
+    it("turns off React Flow's own delete key (useDeleteKey handles Backspace and Delete)", () => {
+      mockNodes = [{ ...(mockNodes[0] as object), selected: true }];
+      mockEdges = [{ id: 'edge-1', source: 'node-1', target: 'node-1', selected: true }];
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+      fireEvent.keyDown(document.body, { key: 'Backspace', code: 'Backspace' });
+      fireEvent.keyDown(document.body, { key: 'Delete', code: 'Delete' });
+      const removals = [...mockOnNodesChange.mock.calls, ...mockOnEdgesChange.mock.calls].flatMap(([changes]) => changes).filter((c) => c.type === 'remove');
+      expect(removals).toEqual([]);
     });
 
     it('should call fitView with correct options', () => {

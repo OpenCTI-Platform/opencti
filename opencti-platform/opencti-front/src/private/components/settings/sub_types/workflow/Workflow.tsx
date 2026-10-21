@@ -22,6 +22,7 @@ import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
 import { getHoverHighlight, HoverHighlightContext } from './hoverHighlight';
 import useDeleteConnection from './hooks/useDeleteConnection';
+import useDeleteKey from './hooks/useDeleteKey';
 import { WorkflowEdgeActionsContext, type EdgeRef } from './EdgeTypes/WorkflowEdgeActionsContext';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
@@ -402,6 +403,7 @@ const Workflow = ({
   const edgeActions = useMemo(() => ({ insertStatus: openInsertDrawer, deleteConnection }), [openInsertDrawer, deleteConnection]);
 
   const onConnect = useStatusConnection();
+  const onKeyDown = useDeleteKey();
 
   // Hover highlight: the hovered node's neighbourhood stays lit and everything else dims. Nodes
   // and edges read it from HoverHighlightContext; the nodes/edges given to ReactFlow stay
@@ -418,6 +420,7 @@ const Workflow = ({
             nodes={nodes}
             edges={edges}
             onConnect={onConnect}
+            onKeyDown={onKeyDown}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
@@ -431,6 +434,9 @@ const Workflow = ({
             minZoom={0.2}
             fitViewOptions={fitViewOptions}
             nodesDraggable={false}
+            // React Flow's delete key removes elements raw, which can leave a transition without
+            // sources. useDeleteKey (onKeyDown) handles Backspace / Delete instead.
+            deleteKeyCode={null}
             zoomOnDoubleClick={false}
             proOptions={proOptions}
           >
