@@ -22,7 +22,7 @@ describe('StixCoreObjectEnrichmentWorkTouchedElements', () => {
   it('shows the count of a completed work and lists the elements on demand', () => {
     testRender(
       <StixCoreObjectEnrichmentWorkTouchedElements
-        work={{ status: 'complete', touchedElements: [element('1', 'APT1'), element('2', 'APT2'), element('3', 'APT3')], touchedElementsTruncated: false }}
+        work={{ status: 'complete', touchedElements: [element('1', 'APT1'), element('2', 'APT2'), element('3', 'APT3')] }}
         first={100}
       />,
     );
@@ -33,24 +33,14 @@ describe('StixCoreObjectEnrichmentWorkTouchedElements', () => {
     expect(screen.getByText('APT3')).toBeTruthy();
   });
 
-  it('marks the count as partial when the list is truncated or reaches the limit', () => {
+  it('marks the count as partial when the list reaches the limit', () => {
     testRender(
       <StixCoreObjectEnrichmentWorkTouchedElements
-        work={{ status: 'complete', touchedElements: [element('1', 'APT1'), element('2', 'APT2')], touchedElementsTruncated: false }}
+        work={{ status: 'complete', touchedElements: [element('1', 'APT1'), element('2', 'APT2')] }}
         first={2}
       />,
     );
     expect(screen.getByText('2+')).toBeTruthy();
-  });
-
-  it('marks the count as partial when the platform truncated the list', () => {
-    testRender(
-      <StixCoreObjectEnrichmentWorkTouchedElements
-        work={{ status: 'complete', touchedElements: [element('1', 'APT1')], touchedElementsTruncated: true }}
-        first={100}
-      />,
-    );
-    expect(screen.getByText('1+')).toBeTruthy();
   });
 
   it('links relationships with their relationship label and skips rows without an id', () => {
@@ -80,7 +70,7 @@ describe('StixCoreObjectEnrichmentWorkTouchedElements', () => {
   it('renders nothing when the touched elements were never recorded', () => {
     testRender(
       <StixCoreObjectEnrichmentWorkTouchedElements
-        work={{ status: 'complete', touchedElements: null, touchedElementsTruncated: false }}
+        work={{ status: 'complete', touchedElements: null }}
         first={100}
       />,
     );
@@ -90,7 +80,7 @@ describe('StixCoreObjectEnrichmentWorkTouchedElements', () => {
   it('shows a zero count without an expander when the enrichment touched nothing', () => {
     testRender(
       <StixCoreObjectEnrichmentWorkTouchedElements
-        work={{ status: 'complete', touchedElements: [], touchedElementsTruncated: false }}
+        work={{ status: 'complete', touchedElements: [] }}
         first={100}
       />,
     );

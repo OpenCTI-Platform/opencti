@@ -30,7 +30,6 @@ interface IdentifiedTouchedElement extends TouchedElement {
 interface TouchedWork {
   status: string;
   touchedElements?: ReadonlyArray<TouchedElement | null> | null;
-  touchedElementsTruncated?: boolean | null;
 }
 
 interface StixCoreObjectEnrichmentWorkTouchedElementsProps {
@@ -68,8 +67,8 @@ const StixCoreObjectEnrichmentWorkTouchedElements = ({
   }
 
   const touched = work.touchedElements.filter((e): e is IdentifiedTouchedElement => !!e?.id);
-  // The list is capped by `first` and by the platform: say so instead of showing a wrong total
-  const count = `${touched.length}${touched.length >= first || work.touchedElementsTruncated ? '+' : ''}`;
+  // The list is capped by `first`: say so instead of showing a wrong total
+  const count = `${touched.length}${touched.length >= first ? '+' : ''}`;
 
   if (touched.length === 0) {
     return (

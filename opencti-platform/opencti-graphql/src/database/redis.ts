@@ -526,15 +526,12 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 
 export const WORK_TOUCHED_TTL = 7 * 24 * 60 * 60; // 7 days backstop, refreshed on each write
 export const WORK_TOUCHED_CAP = 1000; // safety net, enrichments touch far fewer elements
-const WORK_COMPLETION_HOOKS_FLAG_TTL = 86400; // 1 day
 
 // Touched elements of enrichment works: ids of elements created or updated while
-// processing the work. Separate keys (not fields of the work hash) so that writing
-// them can never recreate an orphaned work hash. All operations are single-key (cluster safe).
+// processing the work. A separate key (not a field of the work hash) so that writing
+// it can never recreate an orphaned work hash. All operations are single-key (cluster safe).
 // work_touched:${workId} => Redis key of the set holding the ids touched by a work.
-// work_touched_truncated:${workId} => Redis key of the flag set once an id was refused because the touched set of a work was full.
 const workTouchedKey = (workId: string) => `work_touched:${workId}`;
-const workTouchedTruncatedKey = (workId: string) => `work_touched_truncated:${workId}`;
 
 // Cap check, add and TTL refresh in one atomic round-trip on a single key (cluster safe).
 // KEYS[1] touched set, ARGV[1] element id, ARGV[2] cap, ARGV[3] ttl. Returns 0 when refused by the cap.
@@ -549,7 +546,7 @@ const WORK_TOUCHED_ADD_SCRIPT = `
 /**
  * Record an element id as touched by a work. The cap check, the add and the TTL refresh run
  * atomically in one Lua script, so the cap is exact even under concurrent writers.
- * @param cap maximum number of ids kept per work, beyond it the work is flagged as truncated
+ * @param cap maximum number of ids kept per work, beyond it new ids are dropped
  * @returns false when the id was refused by the cap
  */
 export const redisAddWorkTouchedElement = async (
@@ -557,43 +554,23 @@ export const redisAddWorkTouchedElement = async (
   elementId: string,
   cap = WORK_TOUCHED_CAP,
 ): Promise<boolean> => {
-  const client = getClientBase();
-  const added = await client.eval(WORK_TOUCHED_ADD_SCRIPT, 1, workTouchedKey(workId), elementId, cap, WORK_TOUCHED_TTL);
-  if (added === 0) {
-    // The flag lives in another key, so it is set in its own call to stay single-key per command
-    await client.set(workTouchedTruncatedKey(workId), '1', 'EX', WORK_TOUCHED_TTL);
-    return false;
-  }
-  return true;
+  const added = await getClientBase().eval(WORK_TOUCHED_ADD_SCRIPT, 1, workTouchedKey(workId), elementId, cap, WORK_TOUCHED_TTL);
+  return added !== 0;
 };
 
 /**
- * Read the ids touched by a work and whether the collection was truncated by the cap.
+ * Read the ids touched by a work.
  */
 export const redisGetWorkTouchedElements = async (workId: string) => {
-  const client = getClientBase();
-  const [touched, truncated] = await Promise.all([
-    client.smembers(workTouchedKey(workId)),
-    client.get(workTouchedTruncatedKey(workId)),
-  ]);
-  return { touched_ids: touched, touched_ids_truncated: truncated === '1' };
+  const touched = await getClientBase().smembers(workTouchedKey(workId));
+  return { touched_ids: touched };
 };
 
 /**
- * Delete the touched ids (and truncation flag) of the given works.
+ * Delete the touched ids of the given works.
  */
 export const redisDeleteWorkTouchedElements = async (workIds: Array<string>) => {
-  const keys = workIds.flatMap((id) => [workTouchedKey(id), workTouchedTruncatedKey(id)]);
-  await Promise.all(keys.map((key) => getClientBase().del(key)));
-};
-
-/**
- * Atomically claim the right to run the completion hooks of a work (SET NX).
- * @returns true for the first caller only, false for every later one
- */
-export const redisAcquireWorkCompletionHooksFlag = async (workId: string): Promise<boolean> => {
-  const result = await getClientBase().set(`work_completion_hooks:${workId}`, '1', 'EX', WORK_COMPLETION_HOOKS_FLAG_TTL, 'NX');
-  return result === 'OK';
+  await Promise.all(workIds.map((id) => getClientBase().del(workTouchedKey(id))));
 };
 
 /**
@@ -605,7 +582,7 @@ export const redisGetWorkEventType = async (workId: string): Promise<string | nu
 };
 
 /**
- * Delete the work hashes together with their touched elements keys.
+ * Delete the work hashes together with their touched elements sets.
  */
 export const redisDeleteWorks = async (internalIds: Array<string>) => {
   await redisDeleteWorkTouchedElements(internalIds);

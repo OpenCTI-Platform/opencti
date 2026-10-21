@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { connectorDelete, registerConnector } from '../../../src/domain/connector';
@@ -9,7 +9,6 @@ import { deleteElementById, patchAttribute } from '../../../src/database/middlew
 import { redisGetWorkTouchedElements, redisUpdateWorkFigures } from '../../../src/database/redis';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { closeOldWorks } from '../../../src/manager/connectorManager';
-import { registerWorkCompletionHook, unregisterWorkCompletionHook } from '../../../src/domain/work-completion';
 import { addDraftWorkspace, deleteDraftWorkspace } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
@@ -45,13 +44,6 @@ afterAll(async () => {
 });
 
 /**
- * Waits for the given duration, to let non awaited completion hooks run.
- */
-const sleep = (ms: number) => new Promise((resolve) => {
-  setTimeout(resolve, ms);
-});
-
-/**
  * Creates a work and fails the test when the work cannot be created.
  */
 const startWork = async (connectorEntity: any, name: string, sourceId: string, options: Record<string, unknown> = {}) => {
@@ -64,10 +56,6 @@ const startWork = async (connectorEntity: any, name: string, sourceId: string, o
 };
 
 describe('Work completion with touched elements', () => {
-  afterEach(() => {
-    unregisterWorkCompletionHook('test-completion-hook');
-  });
-
   /**
    * Starts a work, performs one creation and one update under it, and declares one expectation.
    */
@@ -89,7 +77,7 @@ describe('Work completion with touched elements', () => {
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect(completed.status).toEqual('complete');
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id].sort());
-    expect(completed.touched_ids_truncated).toBe(false);
+    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
   });
 
   it('should persist touched ids when the connector completes the work', async () => {
@@ -99,12 +87,12 @@ describe('Work completion with touched elements', () => {
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect(completed.status).toEqual('complete');
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id].sort());
+    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
   });
 
   it('should keep the ids when completion is processed a second time', async () => {
     const { work, target, created } = await runEnrichment(enrichment);
     await reportExpectation(testContext, ADMIN_USER, work.id);
-    await vi.waitFor(async () => expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]));
     await updateProcessedTime(testContext, ADMIN_USER, work.id, 'late connector message');
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id].sort());
@@ -113,14 +101,13 @@ describe('Work completion with touched elements', () => {
   it('should add the ids written after an early completion when the work completes again', async () => {
     const { work, target, created } = await runEnrichment(enrichment);
     await reportExpectation(testContext, ADMIN_USER, work.id);
-    // Wait for the completion dispatch to delete the Redis set, so the late write rebuilds it
-    await vi.waitFor(async () => expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]));
+    // The first completion deleted the Redis set, so the late write rebuilds it
+    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
     const late = await addIntrusionSet({ ...testContext, workId: work.id }, ADMIN_USER, { name: `Completion late ${Date.now()}` });
     intrusionSetIds.push(late.id);
     await updateProcessedTime(testContext, ADMIN_USER, work.id, 'late connector message');
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id, late.id].sort());
-    expect(completed.touched_ids_truncated).toBe(false);
   });
 
   it('should persist touched ids when an old work is force-closed', async () => {
@@ -131,34 +118,15 @@ describe('Work completion with touched elements', () => {
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect(completed.status).toEqual('complete');
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id].sort());
+    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
   });
 
-  it('should run a registered hook exactly once even when two paths complete the work', async () => {
-    const handler = vi.fn(async (..._args: any[]) => {});
-    registerWorkCompletionHook({ id: 'test-completion-hook', eventTypes: ['INTERNAL_ENRICHMENT'], handler });
-    const { work, created } = await runEnrichment(enrichment);
-    await redisUpdateWorkFigures(work.id);
-    await Promise.all([
-      updateProcessedTime(testContext, ADMIN_USER, work.id, 'done'),
-      updateProcessedTime(testContext, ADMIN_USER, work.id, 'done again'),
-    ]);
-    await vi.waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
-    await sleep(500);
-    expect(handler).toHaveBeenCalledTimes(1);
-    expect(handler.mock.calls[0][1]).toMatchObject({ id: work.id });
-    expect(handler.mock.calls[0][1].touched_ids).toContain(created.id);
-  });
-
-  it('should neither record ids nor run enrichment hooks for a non enrichment work', async () => {
-    const handler = vi.fn(async () => {});
-    registerWorkCompletionHook({ id: 'test-completion-hook', eventTypes: ['INTERNAL_ENRICHMENT'], handler });
+  it('should not record ids for a non enrichment work', async () => {
     const { work } = await runEnrichment(importConnector);
     await reportExpectation(testContext, ADMIN_USER, work.id);
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect(completed.status).toEqual('complete');
     expect(completed.touched_ids).toBeUndefined();
-    await sleep(500);
-    expect(handler).not.toHaveBeenCalled();
   });
 
   it('should record ids of an enrichment run inside a draft', async () => {
@@ -184,7 +152,6 @@ const JOBS_QUERY = `
     stixCoreObject(id: $id) {
       jobs(first: 20) {
         id
-        touchedElementsTruncated
         touchedElements { ... on BasicObject { id entity_type } }
       }
     }
@@ -206,7 +173,6 @@ describe('Work touched elements in GraphQL', () => {
     const asAdmin = await queryAsAdminWithSuccess({ query: JOBS_QUERY, variables: { id: target.id } });
     const adminJob = asAdmin.data?.stixCoreObject.jobs.find((j: any) => j.id === work.id);
     expect(adminJob.touchedElements.map((e: any) => e.id).sort()).toEqual([visible.id, hidden.id].sort());
-    expect(adminJob.touchedElementsTruncated).toBe(false);
 
     const asEditor = await queryAsUserWithSuccess(USER_EDITOR, { query: JOBS_QUERY, variables: { id: target.id } });
     const editorJob = asEditor.data?.stixCoreObject.jobs.find((j: any) => j.id === work.id);

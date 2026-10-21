@@ -39226,7 +39226,6 @@ export type Work = {
   status: State;
   timestamp: Scalars['DateTime']['output'];
   touchedElements?: Maybe<Array<Maybe<StixObjectOrStixRelationship>>>;
-  touchedElementsTruncated?: Maybe<Scalars['Boolean']['output']>;
   tracking?: Maybe<WorkTracking>;
   user?: Maybe<Creator>;
 };
@@ -54822,7 +54821,6 @@ export type WorkResolvers<ContextType = any, ParentType extends ResolversParentT
   status?: Resolver<ResolversTypes['State'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   touchedElements?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixObjectOrStixRelationship']>>>, ParentType, ContextType, RequireFields<WorkTouchedElementsArgs, 'first'>>;
-  touchedElementsTruncated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   tracking?: Resolver<Maybe<ResolversTypes['WorkTracking']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
 }>;

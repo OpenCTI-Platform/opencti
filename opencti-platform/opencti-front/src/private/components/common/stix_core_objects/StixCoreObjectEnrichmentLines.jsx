@@ -311,7 +311,6 @@ const StixCoreObjectEnrichmentLinesFragment = createRefetchContainer(
             message
           }
           status
-          touchedElementsTruncated
           # first must match TOUCHED_ELEMENTS_PAGE_SIZE (GraphQL literals cannot reference JS constants)
           touchedElements(first: 100) {
             ... on BasicObject {

@@ -805,7 +805,6 @@ type Work {
   tracking: WorkTracking
   draft_context: String
   touchedElements(first: Int = 100): [StixObjectOrStixRelationship]
-  touchedElementsTruncated: Boolean
 }
 
 type WorkEdge {

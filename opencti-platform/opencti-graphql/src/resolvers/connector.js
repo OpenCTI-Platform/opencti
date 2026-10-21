@@ -152,7 +152,6 @@ const connectorResolvers = {
     user: (work, _, context) => loadCreator(context, context.user, work.user_id),
     tracking: (work) => computeWorkStatus(work),
     touchedElements: (work, { first }, context) => workTouchedElements(context, context.user, work.touched_ids, first),
-    touchedElementsTruncated: (work) => work.touched_ids_truncated ?? false,
   },
   Synchronizer: {
     user: (sync, _, context) => loadCreator(context, context.user, sync.user_id),

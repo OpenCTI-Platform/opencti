@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   getClientBase,
-  redisAcquireWorkCompletionHooksFlag,
   redisAddWorkTouchedElement,
   redisDeleteWorks,
   redisGetWork,
@@ -39,7 +38,6 @@ describe('Redis work touched elements', () => {
     await redisAddWorkTouchedElement(workId, 'b');
     const touched = await redisGetWorkTouchedElements(workId);
     expect(touched.touched_ids.sort()).toEqual(['a', 'b']);
-    expect(touched.touched_ids_truncated).toBe(false);
     await redisDeleteWorks([workId]);
   });
 
@@ -52,29 +50,21 @@ describe('Redis work touched elements', () => {
     await redisDeleteWorks([workId]);
   });
 
-  it('should refuse ids beyond the cap and flag the work as truncated', async () => {
+  it('should refuse ids beyond the cap', async () => {
     const workId = newWorkId();
     expect(await redisAddWorkTouchedElement(workId, 'a', 2)).toBe(true);
     expect(await redisAddWorkTouchedElement(workId, 'b', 2)).toBe(true);
     expect(await redisAddWorkTouchedElement(workId, 'c', 2)).toBe(false);
     const touched = await redisGetWorkTouchedElements(workId);
     expect(touched.touched_ids.sort()).toEqual(['a', 'b']);
-    expect(touched.touched_ids_truncated).toBe(true);
     await redisDeleteWorks([workId]);
   });
 
-  it('should delete touched keys with the work', async () => {
+  it('should delete the touched set with the work', async () => {
     const workId = newWorkId();
     await redisInitializeWork(workId, false, 'INTERNAL_ENRICHMENT');
     await redisAddWorkTouchedElement(workId, 'a');
     await redisDeleteWorks([workId]);
-    expect(await redisGetWorkTouchedElements(workId)).toEqual({ touched_ids: [], touched_ids_truncated: false });
-  });
-
-  it('should grant the completion hooks flag only once', async () => {
-    const workId = newWorkId();
-    expect(await redisAcquireWorkCompletionHooksFlag(workId)).toBe(true);
-    expect(await redisAcquireWorkCompletionHooksFlag(workId)).toBe(false);
-    await getClientBase().del(`work_completion_hooks:${workId}`);
+    expect(await redisGetWorkTouchedElements(workId)).toEqual({ touched_ids: [] });
   });
 });

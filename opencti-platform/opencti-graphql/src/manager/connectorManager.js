@@ -9,8 +9,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { now } from '../utils/format';
 import { deleteWorksRaw } from '../domain/work';
-import { buildTouchedIdsCompletion } from '../database/work-touched-elements';
-import { dispatchWorkCompletion } from '../domain/work-completion';
+import { buildTouchedIdsCompletion, clearCompletedWorkTouchedElements } from '../database/work-touched-elements';
 
 // Manage work created by connectors
 // Update status to complete when needed
@@ -23,7 +22,7 @@ let running = false;
 
 /**
  * Force-complete the open works of a connector that are older than its current one,
- * persisting the touched elements of enrichment works and dispatching the completion hooks.
+ * persisting the touched elements of enrichment works and clearing their Redis set.
  */
 export const closeOldWorks = async (context, connector) => {
   // Get current status from Redis
@@ -59,7 +58,7 @@ export const closeOldWorks = async (context, connector) => {
                 params: { ...params, ...touched.params },
               },
             });
-            dispatchWorkCompletion(element.internal_id, element.event_type);
+            await clearCompletedWorkTouchedElements(element);
             logApp.info('Work completed by force due to age', { workId: element.internal_id });
           }
         } catch (e) {

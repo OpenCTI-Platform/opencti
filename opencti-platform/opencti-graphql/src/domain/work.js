@@ -26,8 +26,7 @@ import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { addIngestionObjectsProcessedCount } from '../manager/telemetryManager';
-import { buildTouchedIdsCompletion } from '../database/work-touched-elements';
-import { dispatchWorkCompletion } from './work-completion';
+import { buildTouchedIdsCompletion, clearCompletedWorkTouchedElements } from '../database/work-touched-elements';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -350,7 +349,7 @@ const countIngestionObjectsProcessed = (work, objectsCount) => {
 
 /**
  * Called by worker when an expectation is processed. Completes the work when all expectations are done,
- * persisting the touched elements of an enrichment work and dispatching the completion hooks.
+ * persisting the touched elements of an enrichment work and clearing their Redis set.
  */
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
@@ -401,7 +400,7 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       // If work is associated to a task, we also need to update work to completed on the task
       if (isComplete) {
         await updateWorkTaskToComplete(context, user, currentWork);
-        dispatchWorkCompletion(workId, currentWork.event_type);
+        await clearCompletedWorkTouchedElements(currentWork);
       }
       logApp.info('Work completed via expectation reporting', { workId, hasError: !!errorData });
     } else {
@@ -489,7 +488,7 @@ export const updateReceivedTime = async (context, user, workId, message) => {
 
 /**
  * Called by connector when it has finished processing a work. Completes the work when all expectations are done,
- * persisting the touched elements of an enrichment work and dispatching the completion hooks.
+ * persisting the touched elements of an enrichment work and clearing their Redis set.
  */
 export const updateProcessedTime = async (context, user, workId, message, inError = false) => {
   const currentWork = await loadWorkById(context, user, workId);
@@ -528,7 +527,7 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
   // Update elastic
   await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
   if (isComplete) {
-    dispatchWorkCompletion(workId, currentWork.event_type);
+    await clearCompletedWorkTouchedElements(currentWork);
   }
   return workId;
 };

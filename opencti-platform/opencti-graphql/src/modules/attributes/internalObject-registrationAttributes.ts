@@ -401,7 +401,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'completed_number', label: 'Completed number', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'is_multipart', label: 'Indicates whether multiple calls to add_expectations are expected for this work', type: 'boolean', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'touched_ids', label: 'Touched elements', type: 'string', format: 'id', entityTypes: [], editDefault: false, mandatoryType: 'no', multiple: true, upsert: false, isFilterable: false },
-    { name: 'touched_ids_truncated', label: 'Touched elements truncated', type: 'boolean', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     {
       name: 'messages',
       label: 'Messages',

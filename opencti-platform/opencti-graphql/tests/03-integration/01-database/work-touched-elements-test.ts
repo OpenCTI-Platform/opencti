@@ -90,7 +90,7 @@ describe('Work touched elements tracking', () => {
   it('should not record anything for a non enrichment work', async () => {
     const work = await startWork(importConnector, 'source');
     await newIntrusionSet({ ...testContext, workId: work.id }, 'Touched by import');
-    expect(await redisGetWorkTouchedElements(work.id)).toEqual({ touched_ids: [], touched_ids_truncated: false });
+    expect(await redisGetWorkTouchedElements(work.id)).toEqual({ touched_ids: [] });
   });
 
   it('should keep concurrent works separate', async () => {
