@@ -1,5 +1,4 @@
 import type { Node, Edge } from 'reactflow';
-import type { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
@@ -114,7 +113,7 @@ const formatActions = (actions: Action[] = []) => {
 const transformToWorkflowDefinition = (
   nodes: Node[],
   edges: Edge[],
-  workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'],
+  workflowDefinition: { readonly id?: string; readonly name?: string; readonly initialState?: string | null } | null | undefined,
 ) => {
   // 1. Extract States
   const states = nodes.flatMap(({ type, data: { onEnter = [], onExit = [], statusTemplate } }) => {

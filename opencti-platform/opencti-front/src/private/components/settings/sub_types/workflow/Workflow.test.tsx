@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
 import Workflow from './Workflow';
+import useWorkflowLayout from './hooks/useWorkflowLayout';
 import { WorkflowNodeType } from './utils';
 import ThemeDark from '../../../../../components/ThemeDark';
 import type { PreloadedQuery } from 'react-relay';
@@ -363,6 +364,26 @@ describe('Workflow Component', () => {
 
       expect(mockSetNodes).toHaveBeenCalledWith([]);
       expect(mockSetEdges).toHaveBeenCalledWith([]);
+    });
+
+    it('keeps the initial state it last saved, not the one fetched with the page', () => {
+      const status = (id: string) => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name: id, color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } });
+      const lastSaved = () => JSON.parse(mockSaveWorkflowDefinition.mock.calls.at(-1)![0].variables.definition).initialState;
+      const lastLayoutOptions = () => vi.mocked(useWorkflowLayout).mock.calls.at(-1)![0];
+      const workflow = () => <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />;
+      mockEdges = [];
+      mockNodes = [status('S'), status('R')];
+      const { rerender } = renderWithTheme(workflow());
+      expect(lastSaved()).toBe('S');
+      // Delete S: R becomes the initial state.
+      mockNodes = [status('R')];
+      rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
+      expect(lastSaved()).toBe('R');
+      // Add S back: R stays initial, and the layout draws R on top.
+      mockNodes = [status('S'), status('R')];
+      rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
+      expect(lastSaved()).toBe('R');
+      expect(lastLayoutOptions()).toEqual(expect.objectContaining({ initialStatusId: 'R' }));
     });
   });
 

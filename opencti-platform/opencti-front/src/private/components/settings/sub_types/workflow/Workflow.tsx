@@ -168,7 +168,10 @@ const Workflow = ({
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
 
-  const layoutOptions: LayoutOptions = { spacing: [50, 50] };
+  // The initial state last sent by the autosave. The mutation does not return it, so
+  // workflowDefinition.initialState keeps the value fetched with the page.
+  const initialStateRef = useRef(workflowDefinition?.initialState);
+  const layoutOptions: LayoutOptions = { spacing: [50, 50], initialStatusId: initialStateRef.current };
 
   // 3. Sync layout and recenter graph
   useWorkflowLayout(layoutOptions);
@@ -211,6 +214,7 @@ const Workflow = ({
     }
     setNodes(initialNodes);
     setEdges(initialEdges);
+    initialStateRef.current = workflowDefinition?.initialState;
     previousSchemaRef.current = JSON.stringify(
       transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
     );
@@ -233,7 +237,8 @@ const Workflow = ({
   }, []);
 
   useEffect(() => {
-    const finalSchema = transformToWorkflowDefinition(nodes, edges, workflowDefinition);
+    const finalSchema = transformToWorkflowDefinition(nodes, edges, { ...workflowDefinition, initialState: initialStateRef.current });
+    initialStateRef.current = finalSchema.initialState;
     const schemaString = JSON.stringify(finalSchema);
 
     // Only save if schema has actually changed
