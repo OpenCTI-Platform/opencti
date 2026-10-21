@@ -1,7 +1,11 @@
 import { expect, it } from 'vitest';
-import { buildLocalMustFilter, elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine';
+import '../../../src/modules/index';
+import { buildLocalMustFilter, elGenerateFullTextSearchShould, isSearchingRelationships, specialElasticCharsEscape } from '../../../src/database/engine';
 import { isNotEmptyField } from '../../../src/database/utils';
 import { adaptFilterToIdsFilterKey } from '../../../src/utils/filtering/filtering-completeSpecialFilterKeys';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { RELATION_RELATED_TO } from '../../../src/schema/stixCoreRelationship';
 
 const parse = (search) => {
   const shouldSearch = elGenerateFullTextSearchShould(search);
@@ -133,6 +137,17 @@ it('should exclude restricted connections from the connections search', () => {
   const withoutConnections = elGenerateFullTextSearchShould('"exact" partial', { withoutConnectionsSearch: true });
   expect(connectionsSearches(withoutConnections).length).toBe(0);
   expect(withoutConnections.length).toBe(3);
+});
+
+it('should resolve connections restrictions unless only objects are searched', () => {
+  expect(isSearchingRelationships(null)).toBe(true);
+  expect(isSearchingRelationships([])).toBe(true);
+  expect(isSearchingRelationships([RELATION_RELATED_TO])).toBe(true);
+  expect(isSearchingRelationships([ABSTRACT_STIX_META_RELATIONSHIP])).toBe(true);
+  expect(isSearchingRelationships([ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP])).toBe(true);
+  expect(isSearchingRelationships([ENTITY_TYPE_IDENTITY_ORGANIZATION, RELATION_RELATED_TO])).toBe(true);
+  expect(isSearchingRelationships([ENTITY_TYPE_IDENTITY_ORGANIZATION])).toBe(false);
+  expect(isSearchingRelationships([ABSTRACT_STIX_CORE_OBJECT])).toBe(false);
 });
 
 it('should bound overlong search input instead of processing it in full', () => {
