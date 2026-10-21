@@ -612,6 +612,10 @@ export const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 // (use isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) to check activation)
 export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 
+// Configuration presets: export of platform configuration bundles (use isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)
+// to check activation)
+export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
