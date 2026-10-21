@@ -124,17 +124,19 @@ it('should generate search clauses for both activity and history fields in histo
   expect(nestedHistoryQueryString).toBeDefined();
 });
 
-it('should exclude restricted connections from the connections search', () => {
+it('should only search the allowed connections', () => {
   const connectionsSearches = (shouldSearch) => shouldSearch.filter((e) => e?.nested?.path === 'connections');
   const unrestricted = connectionsSearches(elGenerateFullTextSearchShould('"exact" partial'));
-  expect(unrestricted.length).toBe(2);
-  unrestricted.forEach((e) => expect(e.nested.query.bool.must_not).toBeUndefined());
+  expect(unrestricted.length).toBe(1);
+  expect(unrestricted[0].nested.query.bool.should.length).toBe(2);
+  expect(unrestricted[0].nested.query.bool.filter).toBeUndefined();
 
-  const restricted = connectionsSearches(elGenerateFullTextSearchShould('"exact" partial', { restrictedConnectionIds: ['ID1', 'ID2'] }));
-  expect(restricted.length).toBe(2);
-  restricted.forEach((e) => expect(e.nested.query.bool.must_not).toEqual([{ terms: { 'connections.internal_id.keyword': ['ID1', 'ID2'] } }]));
+  const restricted = connectionsSearches(elGenerateFullTextSearchShould('"exact" partial', { allowedConnectionIds: ['ID1', 'ID2'] }));
+  expect(restricted.length).toBe(1);
+  expect(restricted[0].nested.query.bool.should.length).toBe(2);
+  expect(restricted[0].nested.query.bool.filter).toEqual([{ terms: { 'connections.internal_id.keyword': ['ID1', 'ID2'] } }]);
 
-  const withoutConnections = elGenerateFullTextSearchShould('"exact" partial', { withoutConnectionsSearch: true });
+  const withoutConnections = elGenerateFullTextSearchShould('"exact" partial', { allowedConnectionIds: [] });
   expect(connectionsSearches(withoutConnections).length).toBe(0);
   expect(withoutConnections.length).toBe(3);
 });

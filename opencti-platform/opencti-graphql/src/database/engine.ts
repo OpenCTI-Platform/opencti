@@ -1926,10 +1926,8 @@ type ProcessSearchArgs = {
   historyFiltering?: boolean;
 };
 type SearchConnectionsRestrictions = {
-  // Connected elements the user cannot access, the search must not match on them
-  restrictedConnectionIds?: string[];
-  // Too many restricted connected elements to exclude them one by one, connections are not searched
-  withoutConnectionsSearch?: boolean;
+  // When defined, the search can only match on these connected elements, verified as accessible to the user
+  allowedConnectionIds?: string[];
 };
 
 // Hard cap user-provided search input to limit normalization + query parsing cost
@@ -1976,14 +1974,14 @@ function processSearch(
 }
 // Relationships denormalize the name and id of their connected elements, without their access rights.
 // The connected elements the user cannot access must be excluded, or searching their name would reveal them.
-const buildConnectionsSearchShould = (connectionsQuery: unknown, args: SearchConnectionsRestrictions) => {
-  if (args.withoutConnectionsSearch) {
+const buildConnectionsSearchShould = (connectionsQueries: unknown[], args: SearchConnectionsRestrictions) => {
+  const { allowedConnectionIds } = args;
+  if (connectionsQueries.length === 0 || (allowedConnectionIds && allowedConnectionIds.length === 0)) {
     return [];
   }
-  const restrictedConnectionIds = args.restrictedConnectionIds ?? [];
-  const bool: { must: unknown[]; must_not?: unknown[] } = { must: [connectionsQuery] };
-  if (restrictedConnectionIds.length > 0) {
-    bool.must_not = [{ terms: { 'connections.internal_id.keyword': restrictedConnectionIds } }];
+  const bool: { should: unknown[]; minimum_should_match: number; filter?: unknown[] } = { should: connectionsQueries, minimum_should_match: 1 };
+  if (allowedConnectionIds) {
+    bool.filter = [{ terms: { 'connections.internal_id.keyword': allowedConnectionIds } }];
   }
   return [{ nested: { path: 'connections', query: { bool } } }];
 };
@@ -2103,7 +2101,6 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
           fields: BASE_SEARCH_ATTRIBUTES,
         },
       },
-      ...buildConnectionsSearchShould(buildConnectionsExactQuery(ex), args),
     ]).flat());
     if (searchPhrase) {
       pushAll(shouldSearch, [
@@ -2122,9 +2119,9 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
             fields: BASE_SEARCH_ATTRIBUTES,
           },
         },
-        ...buildConnectionsSearchShould(buildConnectionsPhraseQuery(searchPhrase), args),
       ]);
     }
+    pushAll(shouldSearch, buildConnectionsSearchShould(elGenerateConnectionsSearchQueries(search, args), args));
   }
   return shouldSearch;
 };
@@ -2861,23 +2858,22 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
   },
 };
 // Connections matching the search are checked by batches.
-// Above these numbers of connections to check or of restricted ones, connections are not searched at all.
+// Above this number of connections to check, connections are not searched at all.
 const SEARCH_CONNECTIONS_BATCH_SIZE = ES_MAX_PAGINATION;
 const MAX_SEARCH_CONNECTIONS = SEARCH_CONNECTIONS_BATCH_SIZE * 4;
-const MAX_SEARCH_RESTRICTED_CONNECTIONS = ES_MAX_PAGINATION;
 export const isSearchingRelationships = (types: string[] | null | undefined) => {
   // Only a search restricted to objects is sure to never return relationships
   return isEmptyField(types) || !R.flatten(types as string[]).every((type) => isBasicObject(type));
 };
-// Resolve the connected elements matching the search that the user cannot access.
-// Relationships connected to them must not be found by searching their name or id.
+// Resolve the connected elements matching the search that the user can access.
+// Relationships must not be found by searching the name or id of any other connected element.
 const elResolveSearchConnectionsRestrictions = async (
   context: AuthContext,
   user: AuthUser,
   search: string,
   restrictions: { must: any[]; must_not: any[] },
   relationshipsFilters: any[],
-  opts: ProcessSearchArgs & BuildDraftFilterOpts,
+  opts: ProcessSearchArgs & BuildDraftFilterOpts & { withDraft?: boolean },
 ): Promise<SearchConnectionsRestrictions> => {
   if (restrictions.must.length === 0 && restrictions.must_not.length === 0) {
     return {};
@@ -2886,7 +2882,11 @@ const elResolveSearchConnectionsRestrictions = async (
   if (connectionsQueries.length === 0) {
     return {};
   }
-  const draftMust = buildDraftFilter(context, user, opts);
+  // Same live / draft scope as the search to secure
+  const { withDraft = true } = opts;
+  const draftMust = withDraft ? buildDraftFilter(context, user, opts) : [];
+  const relationshipsIndices = withDraft ? getIndicesToQuery(context, user, READ_RELATIONSHIPS_INDICES) : READ_RELATIONSHIPS_INDICES;
+  const dataIndices = withDraft ? getIndicesToQuery(context, user, READ_DATA_INDICES) : READ_DATA_INDICES;
   const connectionsMatch = { bool: { should: connectionsQueries, minimum_should_match: 1 } };
   // Only consider the relationships the search could return
   const relationshipsQuery = {
@@ -2895,9 +2895,14 @@ const elResolveSearchConnectionsRestrictions = async (
       must_not: restrictions.must_not,
     },
   };
+  // A partial result could miss connections, nothing can be allowed from it
+  const rawSearchComplete = async (query: any) => {
+    const data = await elRawSearch(context, user, 'Search connections', query);
+    return data.timed_out ? null : data;
+  };
   const aggregateMatchingConnections = async (aggs: any) => {
-    const data = await elRawSearch(context, user, 'Search connections', {
-      index: getIndicesToQuery(context, user, READ_RELATIONSHIPS_INDICES),
+    const data = await rawSearchComplete({
+      index: relationshipsIndices,
       size: 0,
       track_total_hits: false,
       body: {
@@ -2905,31 +2910,28 @@ const elResolveSearchConnectionsRestrictions = async (
         aggs: { connections: { nested: { path: 'connections' }, aggs: { matching: { filter: connectionsMatch, aggs } } } },
       },
     });
-    return data.aggregations.connections.matching;
+    return data?.aggregations.connections.matching;
   };
   const field = 'connections.internal_id.keyword';
-  const { count } = await aggregateMatchingConnections({ count: { cardinality: { field, precision_threshold: 40000 } } });
-  if (count.value === 0) {
-    return {};
-  }
-  if (count.value > MAX_SEARCH_CONNECTIONS) {
-    return { withoutConnectionsSearch: true };
+  const counting = await aggregateMatchingConnections({ count: { cardinality: { field, precision_threshold: 40000 } } });
+  if (!counting || counting.count.value === 0 || counting.count.value > MAX_SEARCH_CONNECTIONS) {
+    return { allowedConnectionIds: [] };
   }
   // Cardinality is approximate, keep room in each partition
-  const numPartitions = Math.ceil((count.value * 2) / SEARCH_CONNECTIONS_BATCH_SIZE);
-  const restrictedConnectionIds: string[] = [];
+  const numPartitions = Math.ceil((counting.count.value * 2) / SEARCH_CONNECTIONS_BATCH_SIZE);
+  const allowedConnectionIds: string[] = [];
   for (let partition = 0; partition < numPartitions; partition += 1) {
-    const { ids } = await aggregateMatchingConnections({
+    const partitioning = await aggregateMatchingConnections({
       ids: { terms: { field, size: SEARCH_CONNECTIONS_BATCH_SIZE, include: { partition, num_partitions: numPartitions } } },
     });
-    if (ids.sum_other_doc_count > 0) {
-      return { withoutConnectionsSearch: true };
+    if (!partitioning || partitioning.ids.sum_other_doc_count > 0) {
+      return { allowedConnectionIds: [] };
     }
-    const connectionIds: string[] = ids.buckets.map((bucket: { key: string }) => bucket.key);
+    const connectionIds: string[] = partitioning.ids.buckets.map((bucket: { key: string }) => bucket.key);
     if (connectionIds.length > 0) {
-      // Keep the ones outside the access restrictions of the user
-      const accessibleData = await elRawSearch(context, user, 'Search connections', {
-        index: getIndicesToQuery(context, user, READ_DATA_INDICES),
+      // Keep the ones inside the access restrictions of the user
+      const accessibleData = await rawSearchComplete({
+        index: dataIndices,
         size: 0,
         track_total_hits: false,
         body: {
@@ -2942,14 +2944,13 @@ const elResolveSearchConnectionsRestrictions = async (
           aggs: { ids: { terms: { field: 'internal_id.keyword', size: connectionIds.length } } },
         },
       });
-      const accessibleIds = new Set(accessibleData.aggregations.ids.buckets.map((bucket: { key: string }) => bucket.key));
-      pushAll(restrictedConnectionIds, connectionIds.filter((id) => !accessibleIds.has(id)));
-      if (restrictedConnectionIds.length > MAX_SEARCH_RESTRICTED_CONNECTIONS) {
-        return { withoutConnectionsSearch: true };
+      if (!accessibleData) {
+        return { allowedConnectionIds: [] };
       }
+      pushAll(allowedConnectionIds, accessibleData.aggregations.ids.buckets.map((bucket: { key: string }) => bucket.key));
     }
   }
-  return { restrictedConnectionIds };
+  return { allowedConnectionIds };
 };
 type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   ids?: string[];
@@ -3906,7 +3907,7 @@ export const elAttributeValues = async (
   const markingRestrictions = await buildDataRestrictions(context, user);
   const must = [];
   if (isNotEmptyField(search) && (search as string).length > 0) {
-    const connectionsRestrictions = await elResolveSearchConnectionsRestrictions(context, user, search as string, markingRestrictions, [], {});
+    const connectionsRestrictions = await elResolveSearchConnectionsRestrictions(context, user, search as string, markingRestrictions, [], { withDraft: false });
     const shouldSearch = elGenerateFullTextSearchShould(search as string, connectionsRestrictions);
     const bool = {
       bool: {
