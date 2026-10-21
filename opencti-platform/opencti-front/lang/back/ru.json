@@ -488,6 +488,7 @@
   "Hunt analyst feedback": "Отзыв аналитика об охоте",
   "Hunt benign patterns": "Безопасные шаблоны охоты",
   "Hunt concurrent runs": "Одновременные запуски охоты",
+  "Hunt connection test": "Проверка подключения охоты",
   "Hunt connector setup": "Настройка коннектора охоты",
   "Hunt escalation threshold": "Порог эскалации охоты",
   "Hunt expected observables": "Ожидаемые наблюдаемые объекты охоты",

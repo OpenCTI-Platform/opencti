@@ -488,6 +488,7 @@
   "Hunt analyst feedback": "헌트에 대한 분석가 피드백",
   "Hunt benign patterns": "헌트 정상 패턴",
   "Hunt concurrent runs": "헌트 동시 실행",
+  "Hunt connection test": "헌트 연결 테스트",
   "Hunt connector setup": "헌트 커넥터 설정",
   "Hunt escalation threshold": "헌트 에스컬레이션 임계값",
   "Hunt expected observables": "헌트 예상 관측 가능 항목",

@@ -53,6 +53,7 @@ const CONNECTOR_DEFINITION: ModuleDefinition<StoreEntityConnector, any> = {
     { name: 'hunt_supports_indicators', label: 'Hunt indicator lookups', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // Declared by the connector: the permissions it needs on its platform and where they are documented
     { name: 'hunt_setup', label: 'Hunt connector setup', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'hunt_connection_check', label: 'Hunt connection test', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'hunt_max_concurrent_runs', label: 'Hunt concurrent runs', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // endregion
     // region composer

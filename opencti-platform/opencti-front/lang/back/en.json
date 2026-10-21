@@ -488,6 +488,7 @@
   "Hunt analyst feedback": "Hunt analyst feedback",
   "Hunt benign patterns": "Hunt benign patterns",
   "Hunt concurrent runs": "Hunt concurrent runs",
+  "Hunt connection test": "Hunt connection test",
   "Hunt connector setup": "Hunt connector setup",
   "Hunt escalation threshold": "Hunt escalation threshold",
   "Hunt expected observables": "Hunt expected observables",

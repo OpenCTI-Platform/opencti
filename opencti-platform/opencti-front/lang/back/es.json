@@ -488,6 +488,7 @@
   "Hunt analyst feedback": "Comentarios del analista sobre la búsqueda",
   "Hunt benign patterns": "Patrones benignos de la caza",
   "Hunt concurrent runs": "Ejecuciones simultáneas de caza",
+  "Hunt connection test": "Prueba de conexión de búsqueda",
   "Hunt connector setup": "Configuración del conector de búsqueda",
   "Hunt escalation threshold": "Umbral de escalado de la caza",
   "Hunt expected observables": "Observables esperados de la caza",
