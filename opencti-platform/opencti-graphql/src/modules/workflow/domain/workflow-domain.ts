@@ -1358,10 +1358,11 @@ const canReachClosingTransition = (transitions: ClosingReasonTransition[], state
   return false;
 };
 
-// A held closing reason is cleared when the entity moves to a state from which it can be closed again (e.g. reopen,
+// The closing reason is cleared when the entity moves to a state from which it can be closed again (e.g. reopen,
 // or a bypass out of a dead end), and kept when it moves to a state that cannot be closed again (e.g. archive).
-const clearsClosingReason = (transitions: ClosingReasonTransition[] | undefined, entity: { x_opencti_closing_reason?: string }, fromState: string, toState: string) => {
-  return fromState !== toState && !!entity.x_opencti_closing_reason && canReachClosingTransition(transitions ?? [], toState);
+// It does not look at the stored reason: the entity may be read before the lock, and clearing an empty one changes nothing.
+const clearsClosingReason = (transitions: ClosingReasonTransition[] | undefined, fromState: string, toState: string) => {
+  return fromState !== toState && canReachClosingTransition(transitions ?? [], toState);
 };
 
 const resolveTransitionClosingReason = (
@@ -1449,7 +1450,7 @@ export const triggerWorkflowEvent = async (
       const fromStates = Array.isArray(t.from) ? t.from : [t.from];
       return fromStates.includes(currentStateId) && t.event === eventName;
     });
-    const clears = !!targetTransition?.to && clearsClosingReason(definitionData.transitions, entity, currentStateId, targetTransition.to);
+    const clears = !!targetTransition?.to && clearsClosingReason(definitionData.transitions, currentStateId, targetTransition.to);
     const resolvedClosingReason = resolveTransitionClosingReason(user, targetTransition?.closingReason, closingReason, clears);
     if ('error' in resolvedClosingReason) {
       return { success: false, reason: resolvedClosingReason.error };
@@ -1714,7 +1715,7 @@ const executeWorkflowBypass = async (
     triggeredAt: new Date().toISOString(),
     runtimeParams,
     ...(normalizedComment ? { comment: normalizedComment } : {}),
-    ...(clearsClosingReason(definitionData.transitions, entity, instanceEntity.currentState, targetStatus.template_id) ? { closingReason: null } : {}),
+    ...(clearsClosingReason(definitionData.transitions, instanceEntity.currentState, targetStatus.template_id) ? { closingReason: null } : {}),
     asyncActions: [],
     syncActions: applyTransitionActions ? [
       ...(definitionData.states?.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []),
