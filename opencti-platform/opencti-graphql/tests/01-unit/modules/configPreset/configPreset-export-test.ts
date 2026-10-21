@@ -1,0 +1,356 @@
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { Writable } from 'node:stream';
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
+// @ts-expect-error unzipper ships no type declarations
+import unzipper from 'unzipper';
+
+vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
+  topEntitiesList: vi.fn(),
+  fullEntitiesList: vi.fn(),
+}));
+vi.mock('../../../../src/database/file-storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/file-storage')>()),
+  uploadToStorage: vi.fn(),
+}));
+vi.mock('../../../../src/listener/UserActionListener', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/listener/UserActionListener')>()),
+  publishUserAction: vi.fn(),
+}));
+vi.mock('../../../../src/manager/telemetryManager', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/manager/telemetryManager')>()),
+  addConfigPresetExportCount: vi.fn(),
+}));
+
+import { fullEntitiesList, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { uploadToStorage } from '../../../../src/database/file-storage';
+import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../src/listener/UserActionListener';
+import { addConfigPresetExportCount } from '../../../../src/manager/telemetryManager';
+import { PLATFORM_VERSION } from '../../../../src/config/conf';
+import '../../../../src/modules/attributes/internalObject-registrationAttributes';
+import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
+import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
+import { configPresetExport, resolveConfigPresetSelections } from '../../../../src/modules/configPreset/configPreset-domain';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
+
+const context = { source: 'test' } as AuthContext;
+const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;
+const bypassUser = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
+const settingsUser = { id: 'settings-id', capabilities: [{ name: 'SETTINGS_SETPARAMETERS' }, { name: 'KNOWLEDGE' }] } as AuthUser;
+
+const ALL_CATEGORIES = [
+  { type: 'platform', items: ['platform'] },
+  { type: 'messages', items: ['messages'] },
+  { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'] },
+];
+const ALL_FILES = ['data_model/hidden_entity_types.json', 'metadata.json', 'platform_settings/messages.json', 'platform_settings/platform.json'];
+const ALL_ITEMS = { platform: ['platform'], messages: ['messages'], hiddenEntityTypes: ['hiddenEntityTypes'] };
+const ONE_PER_CATEGORY = { platform: 1, messages: 1, hiddenEntityTypes: 1 };
+const NOW = new Date('2026-10-14T09:05:07.123Z');
+const EXPECTED_FILE_NAME = `opencti-config-20261014-090507-${PLATFORM_VERSION}.zip`;
+const EXPORT_FOLDER = /^config_preset\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const TMP_ZIP_MARKER = 'opencti-config-preset-';
+
+const storedSettings = {
+  id: 'settings-id',
+  platform_title: 'My platform',
+  platform_favicon: null,
+  platform_language: 'en-us',
+  platform_banner_text: 'Banner',
+  platform_banner_level: 'GREEN',
+  platform_login_message: 'Hello',
+  platform_consent_message: null,
+  platform_consent_confirm_text: null,
+  platform_theme: 'theme-id',
+  enterprise_license: 'secret-license',
+};
+
+// The temporary zip paths, from the write streams the export opened
+const realCreateWriteStream = fs.createWriteStream;
+let createWriteStreamSpy: MockInstance<typeof fs.createWriteStream>;
+const tmpZipPaths = () => createWriteStreamSpy.mock.calls.map(([p]) => String(p)).filter((p) => p.includes(TMP_ZIP_MARKER));
+
+// Reads the uploaded stream like the storage would, and keeps the zip to inspect it
+let uploadedZip: Buffer | undefined;
+let tmpFileModeDuringUpload: number | undefined;
+const mockUploadReadingTheZip = () => {
+  vi.mocked(uploadToStorage).mockImplementation(async (_ctx, _user, filePath, fileUpload) => {
+    const [tmpZipPath] = tmpZipPaths();
+    tmpFileModeDuringUpload = fs.existsSync(tmpZipPath) ? fs.statSync(tmpZipPath).mode & 0o777 : undefined;
+    const chunks: Buffer[] = [];
+    for await (const chunk of fileUpload.createReadStream()) {
+      chunks.push(chunk as Buffer);
+    }
+    uploadedZip = Buffer.concat(chunks);
+    const id = `${filePath}/${fileUpload.filename}`;
+    return { upload: { id, name: fileUpload.filename } as never, untouched: false };
+  });
+};
+
+const readZip = async (zip: Buffer) => {
+  const directory = await unzipper.Open.buffer(zip);
+  const entries: Record<string, any> = {};
+  for (let i = 0; i < directory.files.length; i += 1) {
+    const file: { path: string; buffer: () => Promise<Buffer> } = directory.files[i];
+    entries[file.path] = JSON.parse((await file.buffer()).toString('utf8'));
+  }
+  return entries;
+};
+
+// What the last export reported to the activity log
+const publishedSummary = () => (vi.mocked(publishUserAction).mock.calls.at(-1)![0].context_data as UserConfigPresetExportActionContextData).input;
+
+const expectNothingWritten = () => {
+  expect(tmpZipPaths()).toEqual([]);
+  expect(uploadToStorage).not.toHaveBeenCalled();
+  expect(publishUserAction).not.toHaveBeenCalled();
+};
+
+describe('Config preset export', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+    createWriteStreamSpy = vi.spyOn(fs, 'createWriteStream');
+    uploadedZip = undefined;
+    tmpFileModeDuringUpload = undefined;
+    vi.mocked(topEntitiesList).mockResolvedValue([storedSettings] as never);
+    vi.mocked(fullEntitiesList).mockResolvedValue([{ target_type: 'Channel', platform_hidden_type: true }] as never);
+    mockUploadReadingTheZip();
+  });
+
+  afterEach(() => {
+    const paths = tmpZipPaths();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    paths.forEach((p) => fs.rmSync(p, { force: true }));
+  });
+
+  it('builds a zip with one JSON file per selected item and its metadata', async () => {
+    await configPresetExport(context, bypassUser, ALL_CATEGORIES, '  My\u0007 bundle / v1 ');
+    const entries = await readZip(uploadedZip!);
+    expect(Object.keys(entries).sort()).toEqual(ALL_FILES);
+    // Only what the bundle needs to be identified, the content is the files
+    expect(entries['metadata.json']).toEqual({
+      openCTI_version: PLATFORM_VERSION,
+      generated_at: NOW.toISOString(),
+      bundle_name: 'My bundle v1',
+    });
+    expect(entries['platform_settings/platform.json']).toEqual({
+      openCTI_version: PLATFORM_VERSION,
+      type: 'platformSettings.platform',
+      id: 'platform',
+      configuration: { platform_title: 'My platform', platform_favicon: null, platform_language: 'en-us' },
+    });
+    expect(entries['data_model/hidden_entity_types.json'].configuration).toEqual({ hidden_entity_types: ['Channel'] });
+    const serialized = JSON.stringify(entries);
+    expect(serialized).not.toMatch(/theme|branding|secret-license/i);
+  });
+
+  it('only writes the selected items and merges duplicated selections', async () => {
+    await configPresetExport(context, bypassUser, [
+      { type: 'messages', items: ['messages'] },
+      { type: 'messages', items: ['messages'] },
+      { type: 'platform', items: ['platform'] },
+    ]);
+    const entries = await readZip(uploadedZip!);
+    expect(Object.keys(entries).sort()).toEqual(['metadata.json', 'platform_settings/messages.json', 'platform_settings/platform.json']);
+    expect(entries['metadata.json'].bundle_name).toBeNull();
+    // Registry order, not selection order
+    expect(publishedSummary()).toMatchObject({ entity_types: ['platform', 'messages'], counts: { platform: 1, messages: 1 }, items: { platform: ['platform'], messages: ['messages'] } });
+  });
+
+  it('keeps the exported items out of the metadata, for a partial selection too', async () => {
+    await configPresetExport(context, bypassUser, [{ type: 'messages', items: ['messages'] }]);
+    const entries = await readZip(uploadedZip!);
+    expect(Object.keys(entries).sort()).toEqual(['metadata.json', 'platform_settings/messages.json']);
+    expect(entries['metadata.json']).toEqual({
+      openCTI_version: PLATFORM_VERSION,
+      generated_at: NOW.toISOString(),
+      bundle_name: null,
+    });
+    expect(publishedSummary()).toMatchObject({ entity_types: ['messages'], counts: { messages: 1 }, items: { messages: ['messages'] } });
+  });
+
+  it('exports every item of the type when items is omitted', async () => {
+    await configPresetExport(context, bypassUser, [{ type: 'platform' }, { type: 'messages' }, { type: 'hiddenEntityTypes' }]);
+    const entries = await readZip(uploadedZip!);
+    expect(Object.keys(entries).sort()).toEqual(ALL_FILES);
+    expect(publishedSummary().items).toEqual(ALL_ITEMS);
+  });
+
+  it('stores each export in its own random folder under config_preset, with a dated and versioned name', async () => {
+    const first = await configPresetExport(context, bypassUser, ALL_CATEGORIES);
+    const second = await configPresetExport(context, bypassUser, ALL_CATEGORIES);
+    const firstFolder = path.posix.dirname(first.id);
+    const secondFolder = path.posix.dirname(second.id);
+    expect(firstFolder).toMatch(EXPORT_FOLDER);
+    expect(secondFolder).toMatch(EXPORT_FOLDER);
+    // Same second, same name, no collision
+    expect(secondFolder).not.toBe(firstFolder);
+    expect(path.posix.basename(first.id)).toBe(EXPECTED_FILE_NAME);
+    expect(path.posix.basename(second.id)).toBe(EXPECTED_FILE_NAME);
+    expect(uploadToStorage).toHaveBeenNthCalledWith(
+      1,
+      context,
+      bypassUser,
+      firstFolder,
+      expect.objectContaining({ filename: EXPECTED_FILE_NAME }),
+      expect.objectContaining({ noTriggerImport: true }),
+    );
+  });
+
+  it('publishes an export command user action and counts the export in telemetry', async () => {
+    const file = await configPresetExport(context, bypassUser, ALL_CATEGORIES);
+    expect(publishUserAction).toHaveBeenCalledTimes(1);
+    const action = vi.mocked(publishUserAction).mock.calls[0][0];
+    expect(action).toMatchObject({ user: bypassUser, event_type: 'command', event_scope: 'export', event_access: 'administration' });
+    // The activity log maps the context data field by field: the summary is in the free-form input
+    expect(action.context_data).toEqual({
+      path: path.posix.dirname(file.id),
+      file_name: EXPECTED_FILE_NAME,
+      input: {
+        entity_types: ['platform', 'messages', 'hiddenEntityTypes'],
+        counts: ONE_PER_CATEGORY,
+        items: ALL_ITEMS,
+      },
+    });
+    expect(addConfigPresetExportCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('only publishes context data fields that the activity index maps', async () => {
+    // The mapping of the context data is strict: an unknown field makes the indexing of the event fail
+    await configPresetExport(context, bypassUser, ALL_CATEGORIES);
+    const contextData = vi.mocked(publishUserAction).mock.calls[0][0].context_data as object;
+    const contextDataAttribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_ACTIVITY, 'context_data') as ObjectAttribute;
+    const mappedFields = contextDataAttribute.mappings.map(({ name }) => name);
+    expect(mappedFields).toContain('input');
+    Object.keys(contextData).forEach((field) => expect(mappedFields).toContain(field));
+  });
+
+  it('writes the temporary zip readable by its owner only and removes it once uploaded', async () => {
+    await configPresetExport(context, bypassUser, ALL_CATEGORIES);
+    expect(createWriteStreamSpy).toHaveBeenCalledWith(expect.stringContaining(TMP_ZIP_MARKER), { mode: 0o600 });
+    expect(tmpFileModeDuringUpload).toBe(0o600);
+    expect(tmpZipPaths()).toHaveLength(1);
+    expect(fs.existsSync(tmpZipPaths()[0])).toBe(false);
+  });
+
+  it('removes the temporary zip and stores nothing when an exporter fails', async () => {
+    vi.mocked(topEntitiesList).mockRejectedValue(new Error('engine down'));
+    await expect(configPresetExport(context, bypassUser, ALL_CATEGORIES)).rejects.toThrow('engine down');
+    expect(fs.existsSync(tmpZipPaths()[0])).toBe(false);
+    expect(uploadToStorage).not.toHaveBeenCalled();
+    expect(publishUserAction).not.toHaveBeenCalled();
+    expect(addConfigPresetExportCount).not.toHaveBeenCalled();
+  });
+
+  it('removes the temporary zip when the upload fails', async () => {
+    vi.mocked(uploadToStorage).mockRejectedValue(new Error('storage down'));
+    await expect(configPresetExport(context, bypassUser, ALL_CATEGORIES)).rejects.toThrow('storage down');
+    expect(fs.existsSync(tmpZipPaths()[0])).toBe(false);
+    expect(publishUserAction).not.toHaveBeenCalled();
+  });
+
+  it('reports an output stream error raised while items are exported, without an unhandled rejection', async () => {
+    const unhandledRejection = vi.fn();
+    process.on('unhandledRejection', unhandledRejection);
+    try {
+      // The temporary file cannot be opened, and the exporters answer only after the stream failed,
+      // with an incompressible content larger than the stream buffers so that the archive cannot be drained
+      const largeSettings = { ...storedSettings, platform_title: crypto.randomBytes(3 * 1024 * 1024).toString('base64') };
+      const missingFolder = path.join(os.tmpdir(), `${TMP_ZIP_MARKER}missing-${process.pid}-${Date.now()}`);
+      createWriteStreamSpy.mockImplementation(((p: fs.PathLike, options?: Parameters<typeof fs.createWriteStream>[1]) => {
+        const target = String(p).includes(TMP_ZIP_MARKER) ? path.join(missingFolder, path.basename(String(p))) : p;
+        return realCreateWriteStream(target, options);
+      }) as typeof fs.createWriteStream);
+      vi.mocked(topEntitiesList).mockImplementation(() => new Promise((resolve) => {
+        setTimeout(() => resolve([largeSettings] as never), 50);
+      }));
+      await expect(configPresetExport(context, bypassUser, ALL_CATEGORIES)).rejects.toThrow(/ENOENT/);
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+      expect(unhandledRejection).not.toHaveBeenCalled();
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+      // The export stops at the first item that ends after the stream error: the next ones are not read
+      expect(topEntitiesList).toHaveBeenCalledTimes(1);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandledRejection);
+    }
+  });
+
+  it('does not hang when the output fails while the archive is written, and removes the temporary zip', async () => {
+    // Incompressible content larger than the stream buffers: once the output fails, the archive is no longer drained
+    const largeSettings = { ...storedSettings, platform_title: crypto.randomBytes(4 * 1024 * 1024).toString('base64') };
+    vi.mocked(topEntitiesList).mockResolvedValue([largeSettings] as never);
+    createWriteStreamSpy.mockImplementation(((p: fs.PathLike, options?: Parameters<typeof fs.createWriteStream>[1]) => {
+      if (!String(p).includes(TMP_ZIP_MARKER)) {
+        return realCreateWriteStream(p, options);
+      }
+      return new Writable({
+        write(_chunk, _encoding, callback) {
+          callback(Object.assign(new Error('ENOSPC: no space left on device'), { code: 'ENOSPC' }));
+        },
+      }) as unknown as fs.WriteStream;
+    }) as typeof fs.createWriteStream);
+    const removeSpy = vi.spyOn(fs.promises, 'rm');
+    await expect(configPresetExport(context, bypassUser, ALL_CATEGORIES)).rejects.toThrow(/ENOSPC/);
+    expect(removeSpy).toHaveBeenCalledWith(expect.stringContaining(TMP_ZIP_MARKER), { force: true });
+    expect(uploadToStorage).not.toHaveBeenCalled();
+    expect(publishUserAction).not.toHaveBeenCalled();
+    expect(addConfigPresetExportCount).not.toHaveBeenCalled();
+  });
+
+  it('refuses a user without BYPASS', async () => {
+    await expect(configPresetExport(context, settingsUser, ALL_CATEGORIES)).rejects.toThrow('You are not allowed to do this.');
+    expectNothingWritten();
+  });
+
+  it('refuses an export in a draft, before any write', async () => {
+    await expect(configPresetExport(draftContext, bypassUser, ALL_CATEGORIES)).rejects.toThrow('Cannot export configuration presets in draft');
+    expectNothingWritten();
+  });
+});
+
+describe('Config preset selections', () => {
+  const resolveIds = async (selections: Parameters<typeof resolveConfigPresetSelections>[2]) => {
+    const families = await resolveConfigPresetSelections(context, bypassUser, selections);
+    return families.map((family) => [family.id, family.items.map((item) => item.id)]);
+  };
+
+  it('rejects unknown types, unknown items and empty selections', async () => {
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'theme', items: ['platform'] }])).rejects.toThrow('Unknown configuration preset type');
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'theme' }])).rejects.toThrow('Unknown configuration preset type');
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'platform', items: ['branding'] }])).rejects.toThrow('Unknown configuration preset item');
+    await expect(resolveConfigPresetSelections(context, bypassUser, [])).rejects.toThrow('Select at least one configuration item to export');
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'platform', items: [] }])).rejects.toThrow('Select at least one configuration item to export');
+  });
+
+  it('keeps the registry order of the explicitly selected types and items', async () => {
+    expect(await resolveIds([{ type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'] }, { type: 'platform', items: ['platform'] }])).toEqual([
+      ['platform', ['platform']],
+      ['hiddenEntityTypes', ['hiddenEntityTypes']],
+    ]);
+  });
+
+  it('takes every item of the type when items is null or omitted', async () => {
+    const all = [['messages', ['messages']]];
+    expect(await resolveIds([{ type: 'messages', items: null }])).toEqual(all);
+    expect(await resolveIds([{ type: 'messages' }])).toEqual(all);
+    expect(await resolveIds([{ type: 'messages', items: [] }, { type: 'messages', items: null }])).toEqual(all);
+  });
+
+  it('still rejects an unknown item merged with a null selection', async () => {
+    await expect(resolveConfigPresetSelections(context, bypassUser, [
+      { type: 'platform', items: null },
+      { type: 'platform', items: ['branding'] },
+    ])).rejects.toThrow('Unknown configuration preset item');
+  });
+});
