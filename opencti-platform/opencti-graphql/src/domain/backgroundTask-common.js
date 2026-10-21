@@ -35,6 +35,7 @@ import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
 import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
 import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
+import { COMMENT_MAX_LENGTH } from '../modules/workflow/types/workflow-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -112,6 +113,9 @@ const checkWorkflowActionsValidity = (context, user, actions) => {
   }
   if (actions.some((a) => isWorkflowBypassAction(a) && (a.context.values?.length !== 1 || !isNotEmptyField(a.context.values[0])))) {
     throw FunctionalError('A workflow status action requires exactly one target status');
+  }
+  if (actions.some((a) => isWorkflowTransitionAction(a) && (a.context.options.comment?.trim().length ?? 0) > COMMENT_MAX_LENGTH)) {
+    throw FunctionalError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
   }
 };
 

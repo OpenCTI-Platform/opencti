@@ -172,6 +172,12 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('A workflow status action requires exactly one target status');
     });
 
+    it('should throw an error if the comment of a workflow transition action is too long', async () => {
+      const longCommentAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: 'approve', comment: 'a'.repeat(1001) } } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([longCommentAction]), scope, type))
+        .rejects.toThrowError('Comment exceeds maximum allowed length of 1000 characters.');
+    });
+
     it('should throw an error if a workflow transition action has an empty event name', async () => {
       const emptyTransitionAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: null } } };
       await expect(checkActionValidity(testContext, userUpdate, buildInput([emptyTransitionAction]), scope, type))
