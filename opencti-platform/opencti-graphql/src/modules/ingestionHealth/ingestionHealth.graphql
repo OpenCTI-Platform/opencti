@@ -22,10 +22,22 @@ type IngestionHealthCheck {
   health_check_severity: IngestionHealthCheckSeverity!
 }
 
+# A check of the registry, with whether it is evaluated on the platform
+type IngestionHealthCheckSetting {
+  health_check_code: String!
+  health_check_kind: IngestionHealthCheckKind!
+  health_check_severity: IngestionHealthCheckSeverity!
+  enabled: Boolean!
+}
+
 # Platform settings of the ingestion health, see Settings.ingestion_health_settings
 type IngestionHealthSettings {
   # ms a status must stay unchanged before it is notified
   notification_delay: Int!
+  # Codes of the checks never evaluated on the platform
+  disabled_health_checks: [String!]!
+  # Every check of the registry, enabled or not
+  health_checks: [IngestionHealthCheckSetting!]!
 }
 
 type IngestionHealth {

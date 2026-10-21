@@ -44,6 +44,8 @@ export interface GlobalIngestionHealthContext {
   pingingConnectorsIds: Set<string>;
   // ms a status must stay unchanged before it is notified, from the platform settings (default when absent)
   notificationDelay?: number;
+  // Checks disabled in the platform settings: neither read nor evaluated
+  disabledHealthChecks?: HealthCheckCode[];
 }
 
 // The user an ingestor runs as, as needed by the checks
@@ -218,3 +220,5 @@ export const HEALTH_CHECK_REGISTRY = {
     getFailure: (details) => ({ ...details }),
   }),
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
+
+export const isHealthCheckCode = (code: unknown): code is HealthCheckCode => typeof code === 'string' && Object.hasOwn(HEALTH_CHECK_REGISTRY, code);
