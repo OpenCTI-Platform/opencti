@@ -19,7 +19,7 @@ describe('resolveWorkflowStatusFilter', () => {
   it('returns args unchanged when there are no filters at all', async () => {
     const args = {};
 
-    const result = await resolveWorkflowStatusFilter(mockContext, mockUser, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
 
     expect(result).toBe(args);
     expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
@@ -30,7 +30,7 @@ describe('resolveWorkflowStatusFilter', () => {
       filters: { mode: 'and', filters: [{ key: 'name', values: ['foo'], operator: 'eq', mode: 'or' }], filterGroups: [] },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, mockUser, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
 
     expect(result).toBe(args);
     expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
@@ -49,7 +49,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, mockUser, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
 
     expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledWith(
       mockContext,
@@ -79,7 +79,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, mockUser, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
 
     expect(result.filters.filters).toEqual([
       expect.objectContaining({ key: ['id'], values: ['<no-match>'] }),
@@ -99,7 +99,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, mockUser, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
 
     expect(result.filters.filters).toEqual([
       expect.objectContaining({ key: 'name' }),
@@ -107,7 +107,7 @@ describe('resolveWorkflowStatusFilter', () => {
     ]);
   });
 
-  it('keeps every matching entity when matches span more than one page', async () => {
+  it('does not cap the resolved id list', async () => {
     const instances = Array.from({ length: 5001 }, (_, i) => ({ entity_id: `entity-${i}` }));
     (middlewareLoader.fullEntitiesList as any).mockResolvedValue(instances);
     const args = {
@@ -118,7 +118,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, mockUser, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
 
     expect(result.filters.filters[0].values).toHaveLength(5001);
   });
