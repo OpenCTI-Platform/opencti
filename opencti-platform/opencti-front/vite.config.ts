@@ -73,6 +73,10 @@ export default defineConfig(({ mode, command }) => {
     resolve: {
       tsconfigPaths: true,
       extensions: ['.tsx', '.jsx', '.ts', '.js', '.json'],
+      alias: [
+        { find: /^pdfjs-dist$/, replacement: 'pdfjs-dist/legacy/build/pdf.mjs' },
+        { find: /^pdfjs-dist\/web\/pdf_viewer\.mjs$/, replacement: 'pdfjs-dist/legacy/web/pdf_viewer.mjs' },
+      ],
     },
 
     plugins: [
