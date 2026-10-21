@@ -19,16 +19,16 @@ const InvestigationEnrichmentDrawerTabs = ({
 
   const doneSize = [...works.done.values()].flat().length;
   const ongoingSize = [...works.ongoing.values()].flat().length;
+  const toreviewSize = [...works.toreview.values()].flat().length;
 
   return (
     <Tabs value={current}>
       <TabsList>
         <TabsTrigger
-          disabled
-          value="to-review"
+          value="toreview"
           onClick={() => onChange('toreview')}
         >
-          {t_i18n('To review')} (0)
+          {t_i18n('To review')} ({toreviewSize})
         </TabsTrigger>
         <TabsTrigger
           value="ongoing"

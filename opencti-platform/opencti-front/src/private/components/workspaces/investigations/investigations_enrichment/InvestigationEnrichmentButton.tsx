@@ -1,11 +1,10 @@
+import { Badge, BadgeProps } from '@filigran/design-system';
 import { CloudRefreshOutline } from 'mdi-material-ui';
 import GraphToolbarItem from '../../../../../components/graph/components/GraphToolbarItem';
 import { useFormatter } from '../../../../../components/i18n';
 import { Investigation, InvestigationWorkSorted } from './investigation-enrichment.types';
 import useInvestigationEnrichmentRights from './useInvestigationEnrichmentRights';
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
-import { PropsWithChildren } from 'react';
-import { Badge } from '@filigran/design-system';
 
 interface InvestigationEnrichmentButtonProps {
   onClick: () => void;
@@ -32,22 +31,31 @@ const InvestigationEnrichmentButton = ({
   const hasWorks = nbWorks > 0;
   const disabled = !hasWorks && !(hasSelection && canLaunch);
 
-  const BadgeWrapper = ({ children }: PropsWithChildren) => {
-    if (haveWorksInErrors || works.ongoing.size > 0) {
-      return (
-        <Badge
-          className="mt-2 mr-2"
-          accessibleText={false}
-          tone={haveWorksInErrors ? 'error' : 'brand'}
-        >{children}
-        </Badge>
-      );
-    }
-    return <>{children}</>;
-  };
+  const ongoingSize = [...works.ongoing.values()].flat().length;
+  const toreviewSize = [...works.toreview.values()].flat().length;
+
+  const hasOngoing = ongoingSize > 0;
+  const hasToReview = toreviewSize > 0;
+  const showBadge = hasOngoing || hasToReview || haveWorksInErrors;
+
+  let badgeColor: BadgeProps['tone'] = 'error';
+  if (hasOngoing) badgeColor = 'brand';
+  if (hasToReview) badgeColor = 'success';
+
+  let badgeContent: BadgeProps['content'] = undefined;
+  if (hasOngoing) badgeContent = ongoingSize;
+  if (hasToReview) badgeContent = toreviewSize;
+
+  console.log(works.toreview);
 
   return (
-    <BadgeWrapper>
+    <Badge
+      content={badgeContent}
+      circularAnchor
+      tone={badgeColor}
+      accessibleText={false}
+      invisible={!showBadge}
+    >
       <GraphToolbarItem
         color="primary"
         title={t_i18n('Enrichment')}
@@ -55,7 +63,7 @@ const InvestigationEnrichmentButton = ({
         disabled={disabled}
         onClick={onClick}
       />
-    </BadgeWrapper>
+    </Badge>
   );
 };
 

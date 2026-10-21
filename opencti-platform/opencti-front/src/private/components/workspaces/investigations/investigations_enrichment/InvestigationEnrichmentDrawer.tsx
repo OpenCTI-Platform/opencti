@@ -11,24 +11,20 @@ import useInvestigationEnrichmentRights from './useInvestigationEnrichmentRights
 interface InvestigationEnrichmentDrawerProps {
   open: boolean;
   onClose: () => void;
-  onLaunchCompleted: () => void;
   investigation: Investigation;
   works: InvestigationWorkSorted;
-  onWorkDeleted: () => void;
-  onEnrichment: () => void;
+  askRefresh: () => void;
 }
 
 const InvestigationEnrichmentDrawer = ({
   open,
   onClose,
-  onLaunchCompleted,
   investigation,
   works,
-  onWorkDeleted,
-  onEnrichment,
+  askRefresh,
 }: InvestigationEnrichmentDrawerProps) => {
   const { t_i18n } = useFormatter();
-  const [tab, setTab] = useState<TabList>('done');
+  const [tab, setTab] = useState<TabList>('toreview');
   const { canLaunch } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
 
   const { graphState } = useGraphContext();
@@ -44,7 +40,7 @@ const InvestigationEnrichmentDrawer = ({
       <>
         {hasSelection && canLaunch && (
           <InvestigationEnrichmentLaunch
-            onCompleted={onLaunchCompleted}
+            onCompleted={askRefresh}
             investigationId={investigation.id}
           />
         )}
@@ -59,9 +55,12 @@ const InvestigationEnrichmentDrawer = ({
           works={works[tab]}
           worksType={tab}
           investigation={investigation}
-          onWorkDeleted={onWorkDeleted}
+          onWorkDeleted={askRefresh}
+          onDimiss={askRefresh}
+          onReview={console.log}
+          onAddAll={console.log}
           onEnrichment={() => {
-            onEnrichment();
+            askRefresh();
             setTab('ongoing');
           }}
         />

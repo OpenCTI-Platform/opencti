@@ -24,15 +24,16 @@ const investigationQuery = graphql`
             id
             status
             event_source_id
+            investigation_status
             eventSource {
-              ...on StixObject {
+              ...on StixCoreObject {
                 id
                 entity_type
                 representative {
                   main
                 }
               }
-              ...on StixRelationship {
+              ...on StixCoreRelationship {
                 id
                 entity_type
                 representative {
@@ -54,6 +55,20 @@ const investigationQuery = graphql`
               name
               active
               connector_type
+            }
+            touchedElements {
+              ...on StixCoreObject {
+                id
+                entity_type
+              }
+              ...on StixCoreRelationship {
+                id
+                entity_type
+                fromId
+                fromType
+                toId
+                toType
+              }
             }
           }
         }
@@ -82,7 +97,9 @@ const InvestigationEnrichmentToolComponent = ({
     investigation?.enrichmentWorks?.edges?.forEach((work) => {
       if (work?.node) {
         if ((work.node.errors ?? []).length > 0) worksInError = true;
-        if (work.node.status === 'complete' || work.node.status === 'timeout') {
+        if (work.node.investigation_status === 'TO_REVIEW') {
+          addInEnrichmentMap(toreview, work.node);
+        } else if (work.node.status === 'complete' || work.node.status === 'timeout') {
           addInEnrichmentMap(done, work.node);
         } else {
           addInEnrichmentMap(ongoing, work.node);
@@ -115,9 +132,7 @@ const InvestigationEnrichmentToolComponent = ({
         investigation={investigation}
         works={works}
         onClose={() => setOpenEnrichment(false)}
-        onLaunchCompleted={onRefresh}
-        onWorkDeleted={onRefresh}
-        onEnrichment={onRefresh}
+        askRefresh={onRefresh}
       />
     </>
   );

@@ -10,6 +10,7 @@ import { getMainRepresentative } from '../../../../../utils/defaultRepresentativ
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { InvestigationEnrichmentWorkListAskEnrichment } from './__generated__/InvestigationEnrichmentWorkListAskEnrichment.graphql';
 import { ChevronRight } from '@mui/icons-material';
+import { InvestigationEnrichmentWorkListDismissReview } from './__generated__/InvestigationEnrichmentWorkListDismissReview.graphql';
 
 const askEnrichMutation = graphql`
   mutation InvestigationEnrichmentWorkListAskEnrichment($id: ID!, $connectorId: ID!, $investigationId: ID) {
@@ -21,12 +22,24 @@ const askEnrichMutation = graphql`
   }
 `;
 
+const dismissReviewMutation = graphql`
+  mutation InvestigationEnrichmentWorkListDismissReview($workId: ID!, $status: WorkInvestigationStatus!) {
+    workInvestigationStatusEdit(id: $workId, status: $status) {
+      id
+      investigation_status
+    }
+  }
+`;
+
 interface InvestigationEnrichmentWorkListProps {
   investigation: Investigation;
   works: Map<string, InvestigationEnrichmentWork[]>;
   worksType: 'ongoing' | 'done' | 'toreview';
   onWorkDeleted: () => void;
   onEnrichment: () => void;
+  onDimiss: () => void;
+  onReview: (workId: string) => void;
+  onAddAll: (workId: string) => void;
 }
 
 const InvestigationEnrichmentWorkList = ({
@@ -35,15 +48,27 @@ const InvestigationEnrichmentWorkList = ({
   worksType,
   onWorkDeleted,
   onEnrichment,
+  onDimiss,
+  onReview,
+  onAddAll,
 }: InvestigationEnrichmentWorkListProps) => {
   const { t_i18n } = useFormatter();
-  const [commitEnrichment] = useApiMutation<InvestigationEnrichmentWorkListAskEnrichment>(askEnrichMutation);
   const { canRefresh } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
+
+  const [commitEnrichment] = useApiMutation<InvestigationEnrichmentWorkListAskEnrichment>(askEnrichMutation);
+  const [commitDismiss] = useApiMutation<InvestigationEnrichmentWorkListDismissReview>(dismissReviewMutation);
 
   const askEnrichment = (entityId: string, connectorId: string) => {
     commitEnrichment({
       variables: { id: entityId, connectorId, investigationId: investigation.id },
       onCompleted: () => onEnrichment(),
+    });
+  };
+
+  const dismissReview = (workId: string) => {
+    commitDismiss({
+      variables: { workId: workId, status: 'DONE' },
+      onCompleted: () => onDimiss(),
     });
   };
 
@@ -113,6 +138,9 @@ const InvestigationEnrichmentWorkList = ({
                 onRefresh={(connector) => askEnrichment(entityId, connector.id)}
                 canRefresh={canRefresh}
                 onWorkDeleted={onWorkDeleted}
+                onReviewDismiss={worksType === 'toreview' ? dismissReview : undefined}
+                onReview={worksType === 'toreview' ? onReview : undefined}
+                onReviewAddAll={worksType === 'toreview' ? onAddAll : undefined}
               />
             </AccordionDetails>
           </Accordion>
