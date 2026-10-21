@@ -79,12 +79,10 @@ const expandRelationshipsQuery = graphql`
           from {
             ... on BasicObject {
               id
-              standard_id
               entity_type
               parent_types
             }
             ... on StixCoreObject {
-              is_inferred
               created_at
               updated_at
               numberOfConnectedElement
@@ -105,7 +103,6 @@ const expandRelationshipsQuery = graphql`
             }
             ... on StixDomainObject {
               created
-              confidence
             }
             ... on AttackPattern {
               name
@@ -282,7 +279,6 @@ const expandRelationshipsQuery = graphql`
               from {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -298,7 +294,6 @@ const expandRelationshipsQuery = graphql`
               to {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -331,12 +326,10 @@ const expandRelationshipsQuery = graphql`
           to {
             ... on BasicObject {
               id
-              standard_id
               entity_type
               parent_types
             }
             ... on StixCoreObject {
-              is_inferred
               created_at
               updated_at
               numberOfConnectedElement
@@ -357,7 +350,6 @@ const expandRelationshipsQuery = graphql`
             }
             ... on StixDomainObject {
               created
-              confidence
             }
             ... on AttackPattern {
               name
@@ -502,7 +494,6 @@ const expandRelationshipsQuery = graphql`
               from {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -518,7 +509,6 @@ const expandRelationshipsQuery = graphql`
               to {
                 ... on BasicObject {
                   id
-                  standard_id
                   entity_type
                   parent_types
                 }
@@ -669,7 +659,7 @@ const GraphToolbarExpandTools = ({
         color="primary"
         onClick={() => setRollBackOpen(true)}
         title={t_i18n('Restore the state of the graphic before the last expansion')}
-        disabledReason={containsExpandOp() ? undefined : t_i18n('No expansion to roll back yet')}
+        disabled={!containsExpandOp()}
       />
 
       <InvestigationRollBackExpandDialog
@@ -682,8 +672,8 @@ const GraphToolbarExpandTools = ({
         Icon={<OpenWithOutlined />}
         color="primary"
         onClick={() => setIsExpandOpen(true)}
-        title={t_i18n('Expand the selected entities')}
-        disabledReason={selectedNodes.length === 0 ? t_i18n('Select entities first') : undefined}
+        title={t_i18n('Expand')}
+        disabled={selectedNodes.length === 0}
       />
 
       <Dialog
