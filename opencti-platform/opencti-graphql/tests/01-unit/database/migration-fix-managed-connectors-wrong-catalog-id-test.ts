@@ -25,7 +25,7 @@ const {
 }));
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
-  const actual = await importOriginal<any>();
+  const actual = await importOriginal<typeof import('../../../src/config/conf')>();
   return {
     ...actual,
     default: {
