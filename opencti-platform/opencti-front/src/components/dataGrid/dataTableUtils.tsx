@@ -122,7 +122,7 @@ export const renderObservableValue = (observable: any, theme: Theme) => {
   }
 };
 
-type StatusValue = { template?: { name: string; color: string } | null } | null;
+type StatusValue = { id?: string; template?: { name: string; color: string } | null } | null;
 
 interface StatusCellProps {
   data: {
@@ -131,7 +131,7 @@ interface StatusCellProps {
     workflowEnabled?: boolean;
     workflowInstance?: { id?: string; currentStatus?: StatusValue } | null;
   };
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent) => void;
 }
 
 // Shared by the workflowInstance and x_opencti_workflow_id columns: rows whose list selects
@@ -145,6 +145,7 @@ const StatusCell = ({ data, onClick }: StatusCellProps) => {
   const isNotPersisted = (workflowInstance?.id ?? '').startsWith('initial-');
   const isWorkflowUiEnabled = isWorkflowUiEnabledForType(entityType ?? '', (id) => !!settings && isFeatureEnable(settings, id));
   if (workflowInstance && !(isNotPersisted && status) && isWorkflowUiEnabled) {
+    // No click-to-filter: onClick filters on the legacy status id, which a workflow status is not.
     return <ItemStatus status={workflowInstance.currentStatus ?? null} disabled={!workflowInstance.currentStatus} />;
   }
   return <ItemStatus status={status} disabled={!workflowEnabled} onClick={onClick} />;
@@ -1602,7 +1603,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: true,
     render: (data, { storageHelpers: { handleAddFilter } }) => (
-      <StatusCell data={data} onClick={handleAddFilter} />
+      <StatusCell
+        data={data}
+        onClick={(event) => handleAddFilter('x_opencti_workflow_id', data.status?.id ?? null, 'eq', event)}
+      />
     ),
   },
   x_opencti_aliases: {
