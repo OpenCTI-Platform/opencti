@@ -1523,6 +1523,58 @@ describe('Service account User coverage', async () => {
   });
 });
 
+describe('Service account conversion with password policy', () => {
+  let settings: BasicStoreSettings;
+  let serviceAccountId: string;
+  const resetPolicy = {
+    enabled: true,
+    password_policy_max_length: 0,
+    password_policy_min_length: 0,
+    password_policy_min_lowercase: 0,
+    password_policy_min_numbers: 0,
+    password_policy_min_symbols: 0,
+    password_policy_min_uppercase: 0,
+    password_policy_min_words: 0,
+    password_policy_validity_days: 0,
+  };
+
+  beforeAll(async () => {
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    const serviceAccount = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'Service account with policy', user_service_account: true, groups: [], objectOrganization: [] } },
+    });
+    serviceAccountId = serviceAccount.data.userAdd.id;
+    // Password policy set after the service account creation
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      ...resetPolicy,
+      password_policy_min_length: 12,
+      password_policy_min_uppercase: 4,
+      password_policy_min_symbols: 2,
+      password_policy_min_words: 3,
+      password_policy_validity_days: 20,
+    });
+  });
+
+  afterAll(async () => {
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, resetPolicy);
+    await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: serviceAccountId } });
+  });
+
+  it('should turn service account into user with a password matching the policy', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: { id: serviceAccountId, input: { key: 'user_service_account', value: [false] } },
+    });
+    expect(queryResult.data.userEdit.fieldPatch.user_service_account).toEqual(false);
+    const convertedUser: any = await storeLoadById(testContext, ADMIN_USER, serviceAccountId, ENTITY_TYPE_USER);
+    expect(convertedUser.password).toBeDefined();
+    // Password validity policy must apply to the generated password
+    expect(convertedUser.password_valid_until).toBeTruthy();
+    expect(new Date(convertedUser.password_valid_until).getTime()).toBeGreaterThan(DateTime.now().plus({ days: 19 }).toMillis());
+  });
+});
+
 describe('User API Token Mutation', () => {
   const USER_TOKEN_ADD_MUTATION = gql`
     mutation UserTokenAdd($input: UserTokenAddInput!) {
