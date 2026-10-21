@@ -12,13 +12,23 @@ export default class TopMenuProfilePage {
     return this.page.getByRole('menuitem', { name: 'Logout' });
   }
 
-  async logout(timeout?: number) {
+  /**
+   * Logs out and waits for the login page. The whole sequence is retried, with a reload between
+   * attempts: a page with in-flight requests can miss the redirect to the login page once its
+   * session is gone, and would otherwise wait on it until the test timeout.
+   */
+  async logout(timeout = 30000) {
     const profileButton = this.getMenuProfile();
     const loginPage = this.page.getByTestId('login-page');
-    await expect(profileButton.or(loginPage)).toBeVisible({ timeout });
-    if (await loginPage.isVisible()) return;
-    await profileButton.click({ timeout });
-    await this.getLogoutButton().click({ timeout });
-    await expect(loginPage).toBeVisible({ timeout });
+    let attempt = 0;
+    await expect(async () => {
+      if (attempt > 0) await this.page.reload({ waitUntil: 'domcontentloaded' });
+      attempt += 1;
+      await expect(profileButton.or(loginPage)).toBeVisible({ timeout });
+      if (await loginPage.isVisible()) return;
+      await profileButton.click({ timeout });
+      await this.getLogoutButton().click({ timeout });
+      await expect(loginPage).toBeVisible({ timeout });
+    }).toPass({ timeout: timeout * 6, intervals: [1000] });
   }
 }

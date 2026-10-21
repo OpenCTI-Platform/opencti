@@ -89,15 +89,23 @@ export default class DraftToolbarPageModel {
     return menuItem;
   }
 
-  /** Clicks a transition by its exact event name. Handles both UI variants - see `waitForTransitionTrigger`. */
+  /**
+   * Clicks a transition by its exact event name. Handles both UI variants - see `waitForTransitionTrigger`.
+   * The whole lookup is redone when a click fails: its target can vanish between the check and the
+   * click (re-render, or a blank page after a reload under load), and an unbounded click would then
+   * wait on it until the test timeout instead of reloading.
+   */
   async openTransition(eventName: string) {
-    const { directButton, nextStatusButton } = await this.waitForTransitionTrigger(eventName);
-    if (await directButton.count() > 0) {
-      return directButton.click();
-    }
-    await nextStatusButton.click();
-    const menuItem = await this.waitForMenuItem(eventName, nextStatusButton);
-    return menuItem.click();
+    await expect(async () => {
+      const { directButton, nextStatusButton } = await this.waitForTransitionTrigger(eventName);
+      if (await directButton.count() > 0) {
+        await directButton.click({ timeout: 10000 });
+        return;
+      }
+      await nextStatusButton.click({ timeout: 10000 });
+      const menuItem = await this.waitForMenuItem(eventName, nextStatusButton);
+      await menuItem.click({ timeout: 10000 });
+    }).toPass({ timeout: 180000, intervals: [1000, 5000] });
   }
 
   /**
