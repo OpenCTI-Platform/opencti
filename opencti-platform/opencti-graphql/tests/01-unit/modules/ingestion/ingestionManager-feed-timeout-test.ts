@@ -40,11 +40,13 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => {
 vi.mock('../../../../src/modules/ingestion/ingestion-rss-domain', () => ({
   findAllRssIngestion: findAllRssIngestionMock,
   patchRssIngestion: patchRssIngestionMock,
+  ingestionEditField: vi.fn(),
 }));
 
 vi.mock('../../../../src/modules/ingestion/ingestion-taxii-domain', () => ({
   findAllTaxiiIngestion: findAllTaxiiIngestionMock,
   patchTaxiiIngestion: patchTaxiiIngestionMock,
+  ingestionTaxiiEditField: vi.fn(),
 }));
 
 vi.mock('../../../../src/modules/ingestion/ingestion-csv-domain', async (importOriginal) => ({
@@ -52,6 +54,7 @@ vi.mock('../../../../src/modules/ingestion/ingestion-csv-domain', async (importO
   findAllCsvIngestion: findAllCsvIngestionMock,
   patchCsvIngestion: patchCsvIngestionMock,
   fetchCsvFromUrl: fetchCsvFromUrlMock,
+  ingestionCsvEditField: vi.fn(),
 }));
 
 vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', async (importOriginal) => ({
@@ -59,6 +62,7 @@ vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', async (import
   findAllJsonIngestion: findAllJsonIngestionMock,
   patchJsonIngestion: patchJsonIngestionMock,
   executeJsonQuery: executeJsonQueryMock,
+  ingestionJsonEditField: vi.fn(),
 }));
 
 vi.mock('../../../../src/modules/ingestion/ingestion-common', async (importOriginal) => {

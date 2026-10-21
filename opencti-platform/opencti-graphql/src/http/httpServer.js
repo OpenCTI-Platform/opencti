@@ -35,8 +35,9 @@ import {
   isClientRequestError,
   logMalformedRequest,
   normalizeUploadError,
+  refuseWebSocketOperation,
 } from './httpUtils';
-import { checkDraftInContext } from './httpServer-draft';
+import { checkDraftInContext, enterRequestDraft, settleRequestDraft } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -131,6 +132,7 @@ const createHttpServer = async () => {
   const serverCleanup = useServer({
     schema,
     context: extractWsSessionContext,
+    onSubscribe: (_ctx, _id, payload) => refuseWebSocketOperation(payload),
   }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
@@ -189,11 +191,12 @@ const createHttpServer = async () => {
     `${basePath}/graphql`,
     cors({ origin: basePath }),
     json(),
-    expressMiddleware(apolloServer, {
+    settleRequestDraft(expressMiddleware(apolloServer, {
       app,
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
         const executeContext = await createAuthenticatedContext(req, res, 'api');
+        await enterRequestDraft(executeContext, res);
         // When context is related to a work, we need to check work status
         if (executeContext.workId) {
           const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
@@ -204,7 +207,7 @@ const createHttpServer = async () => {
         await checkDraftInContext(executeContext);
         return executeContext;
       },
-    }),
+    })),
   );
   const { sseMiddleware } = await createApp(app, schema);
   return { httpServer, sseMiddleware };

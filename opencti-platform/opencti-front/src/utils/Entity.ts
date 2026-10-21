@@ -149,6 +149,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/observations/observables';
     case 'Pir':
       return '/dashboard/pirs';
+    case 'Source':
+      return '/dashboard/integrations/sources/source';
     case 'EmailTemplate':
       return '/dashboard/settings/accesses/email_templates';
     case 'SSH-Key':
