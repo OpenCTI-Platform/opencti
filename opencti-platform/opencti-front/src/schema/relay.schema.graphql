@@ -10892,8 +10892,17 @@ type IngestionHealthCheck {
   health_check_severity: IngestionHealthCheckSeverity!
 }
 
+type IngestionHealthCheckSetting {
+  health_check_code: String!
+  health_check_kind: IngestionHealthCheckKind!
+  health_check_severity: IngestionHealthCheckSeverity!
+  enabled: Boolean!
+}
+
 type IngestionHealthSettings {
   notification_delay: Int!
+  disabled_health_checks: [String!]!
+  health_checks: [IngestionHealthCheckSetting!]!
 }
 
 type IngestionHealth {

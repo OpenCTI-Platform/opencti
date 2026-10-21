@@ -14201,6 +14201,14 @@ export enum IngestionHealthCheckKind {
   Runtime = 'runtime'
 }
 
+export type IngestionHealthCheckSetting = {
+  __typename?: 'IngestionHealthCheckSetting';
+  enabled: Scalars['Boolean']['output'];
+  health_check_code: Scalars['String']['output'];
+  health_check_kind: IngestionHealthCheckKind;
+  health_check_severity: IngestionHealthCheckSeverity;
+};
+
 export enum IngestionHealthCheckSeverity {
   Advisory = 'advisory',
   Blocking = 'blocking'
@@ -14208,6 +14216,8 @@ export enum IngestionHealthCheckSeverity {
 
 export type IngestionHealthSettings = {
   __typename?: 'IngestionHealthSettings';
+  disabled_health_checks: Array<Scalars['String']['output']>;
+  health_checks: Array<IngestionHealthCheckSetting>;
   notification_delay: Scalars['Int']['output'];
 };
 
@@ -41441,6 +41451,7 @@ export type ResolversTypes = ResolversObject<{
   IngestionHealth: ResolverTypeWrapper<IngestionHealth>;
   IngestionHealthCheck: ResolverTypeWrapper<IngestionHealthCheck>;
   IngestionHealthCheckKind: IngestionHealthCheckKind;
+  IngestionHealthCheckSetting: ResolverTypeWrapper<IngestionHealthCheckSetting>;
   IngestionHealthCheckSeverity: IngestionHealthCheckSeverity;
   IngestionHealthSettings: ResolverTypeWrapper<IngestionHealthSettings>;
   IngestionHealthStatus: IngestionHealthStatus;
@@ -42581,6 +42592,7 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionHeader: IngestionHeader;
   IngestionHealth: IngestionHealth;
   IngestionHealthCheck: IngestionHealthCheck;
+  IngestionHealthCheckSetting: IngestionHealthCheckSetting;
   IngestionHealthSettings: IngestionHealthSettings;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
@@ -47905,7 +47917,16 @@ export type IngestionHealthCheckResolvers<ContextType = any, ParentType extends 
   health_check_severity?: Resolver<ResolversTypes['IngestionHealthCheckSeverity'], ParentType, ContextType>;
 }>;
 
+export type IngestionHealthCheckSettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthCheckSetting'] = ResolversParentTypes['IngestionHealthCheckSetting']> = ResolversObject<{
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
+  health_check_severity?: Resolver<ResolversTypes['IngestionHealthCheckSeverity'], ParentType, ContextType>;
+}>;
+
 export type IngestionHealthSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthSettings'] = ResolversParentTypes['IngestionHealthSettings']> = ResolversObject<{
+  disabled_health_checks?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  health_checks?: Resolver<Array<ResolversTypes['IngestionHealthCheckSetting']>, ParentType, ContextType>;
   notification_delay?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
@@ -55787,6 +55808,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
   IngestionHealth?: IngestionHealthResolvers<ContextType>;
   IngestionHealthCheck?: IngestionHealthCheckResolvers<ContextType>;
+  IngestionHealthCheckSetting?: IngestionHealthCheckSettingResolvers<ContextType>;
   IngestionHealthSettings?: IngestionHealthSettingsResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonAddInputFromImport?: IngestionJsonAddInputFromImportResolvers<ContextType>;

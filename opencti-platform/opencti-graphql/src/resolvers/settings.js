@@ -28,7 +28,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
 import { findById } from '../modules/organization/organization-domain';
 import { READ_DATA_INDICES } from '../database/utils';
-import { resolveIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-settings';
+import { toGraphqlIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-settings';
 import { internalFindByIds } from '../database/middleware-loader';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
@@ -77,7 +77,7 @@ const settingsResolvers = {
     platform_date_format: (settings) => settings.platform_date_format ?? DateFormat.Auto,
     platform_time_format: (settings) => settings.platform_time_format ?? TimeFormat.Auto,
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
-    ingestion_health_settings: (settings) => resolveIngestionHealthSettings(settings),
+    ingestion_health_settings: (settings) => toGraphqlIngestionHealthSettings(settings),
     platform_notifier_auto_trigger_assignee: (settings) => settings.platform_notifier_auto_trigger_assignee ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
     platform_https_enabled: () => !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),

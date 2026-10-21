@@ -66,6 +66,10 @@ export const computeIngestionHealthChecks = (
   context: SourceIngestionHealthContext,
 ): StoredHealthCheck[] => {
   return (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
+    // Disabled on the platform: never evaluated, a failure stored before is dropped at this period
+    if (context.disabledHealthChecks?.includes(code)) {
+      return [];
+    }
     const metadata = definition.isEnabled(ingestor, context) ? getHealthCheckFailure(code, definition, ingestor, context) : null;
     return metadata ? [{ health_check_code: code, health_check_metadata: metadata }] : [];
   });

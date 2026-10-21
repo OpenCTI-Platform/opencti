@@ -246,6 +246,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
       featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
       mappings: [
         { name: 'notification_delay', label: 'Notification delay (in minute)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+        { name: 'disabled_health_checks', label: 'Disabled health checks', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
       ],
     },
   ],
