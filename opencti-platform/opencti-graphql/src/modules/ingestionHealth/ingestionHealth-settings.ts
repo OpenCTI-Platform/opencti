@@ -22,6 +22,7 @@ export const toGraphqlIngestionHealthSettings = (settings: { ingestion_health_se
     ...resolved,
     health_checks: (Object.keys(HEALTH_CHECK_REGISTRY) as HealthCheckCode[]).map((code) => ({
       health_check_code: code,
+      health_check_label: HEALTH_CHECK_REGISTRY[code].label,
       health_check_kind: HEALTH_CHECK_REGISTRY[code].kind,
       health_check_severity: HEALTH_CHECK_REGISTRY[code].severity,
       enabled: !resolved.disabled_health_checks.includes(code),

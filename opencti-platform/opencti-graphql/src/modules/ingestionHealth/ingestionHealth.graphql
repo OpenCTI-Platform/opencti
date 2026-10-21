@@ -25,6 +25,8 @@ type IngestionHealthCheck {
 # A check of the registry, with whether it is evaluated on the platform
 type IngestionHealthCheckSetting {
   health_check_code: String!
+  # Name of the check, in English: translated by the front
+  health_check_label: String!
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
   enabled: Boolean!
