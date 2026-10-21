@@ -150,10 +150,12 @@ describe('Relationships search with restricted connections', () => {
     ['observable value', () => RESTRICTED_REGISTRY_KEY, () => restrictedRegistryKeyId],
   ])('should not find the relationship by the %s of a connection the user cannot access', async (_, getSearch, getSourceId) => {
     const variables = { search: getSearch() };
+    // Other data can match too, as an id is searched by its fragments
+    const relationshipId = relationshipIdsBySource[getSourceId()];
     const adminResult = await queryAsAdminWithSuccess({ query: LIST_RELATIONSHIPS_QUERY, variables });
-    expect(relationshipIds(adminResult)).toEqual([relationshipIdsBySource[getSourceId()]]);
+    expect(relationshipIds(adminResult)).toContain(relationshipId);
     const userResult = await queryAsUserWithSuccess(USER_EDITOR, { query: LIST_RELATIONSHIPS_QUERY, variables });
-    expect(relationshipIds(userResult)).toEqual([]);
+    expect(relationshipIds(userResult)).not.toContain(relationshipId);
   });
 
   it('should not find a ref relationship by the name of a connection the user cannot access', async () => {
