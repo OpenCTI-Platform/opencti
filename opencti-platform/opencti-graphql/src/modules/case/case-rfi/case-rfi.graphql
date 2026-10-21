@@ -172,6 +172,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String @ff(flags: ["CONTENT_MAPPING_V2"], softFail: true)
   tasks: TaskConnection!
   # Request For Information
   information_types: [String!]

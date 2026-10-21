@@ -129,6 +129,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     description: String
     content: String
     content_mapping: String
+    content_mapping_review: String @ff(flags: ["CONTENT_MAPPING_V2"], softFail: true)
     context: String!
     x_opencti_aliases: [String]
     # Technical

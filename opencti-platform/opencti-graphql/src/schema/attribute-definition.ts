@@ -6,7 +6,7 @@ import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
-import { CUSTOM_FIELDS_FEATURE_FLAG, TEST_MODE } from '../config/conf';
+import { CONTENT_MAPPING_V2_FEATURE_FLAG, CUSTOM_FIELDS_FEATURE_FLAG, TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
@@ -691,6 +691,21 @@ export const identityClass: TextAttribute = {
   multiple: false,
   upsert: false,
   isFilterable: false,
+};
+
+// Review state of the content mapping (ignored values, source of each mapped value), base64 JSON next to
+// content_mapping: technical, not exported to STIX, so that content_mapping keeps its format.
+export const contentMappingReview: TextAttribute = {
+  name: 'content_mapping_review',
+  label: 'Content mapping review',
+  type: 'string',
+  format: 'text',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: true,
+  isFilterable: false,
+  featureFlag: CONTENT_MAPPING_V2_FEATURE_FLAG,
 };
 
 export const customFieldValues: NestedObjectAttribute = {

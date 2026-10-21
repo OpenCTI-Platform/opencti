@@ -3351,6 +3351,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String
   report_types: [String]
   x_opencti_reliability: String
   published: DateTime
@@ -9349,6 +9350,13 @@ type MappingAnalysis {
   analysisStatus: State
   analysisDate: DateTime
   mappedEntities: [MappedEntity!]
+  unresolvedEntities: [UnresolvedMappedEntity!]
+}
+
+type UnresolvedMappedEntity {
+  matchedString: String!
+  standardId: String!
+  entityType: String!
 }
 
 input MappedEntityInput {
@@ -11198,6 +11206,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String
   context: String!
   x_opencti_aliases: [String]
   creators: [Creator!]
@@ -12299,6 +12308,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String
   tasks: TaskConnection!
 }
 
@@ -12434,6 +12444,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String
   tasks: TaskConnection!
   rating: Int
   response_types: [String!]
@@ -12582,6 +12593,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String
   tasks: TaskConnection!
   information_types: [String!]
   severity: String
@@ -12727,6 +12739,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String
   tasks: TaskConnection!
   takedown_types: [String!]
   severity: String
@@ -12869,6 +12882,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String
   tasks: TaskConnection!
   rating: Int
 }

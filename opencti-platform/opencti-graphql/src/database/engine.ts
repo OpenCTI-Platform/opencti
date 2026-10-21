@@ -1870,6 +1870,7 @@ const BASE_SEARCH_ATTRIBUTES = [
   'objective',
   'content',
   'content_mapping',
+  'content_mapping_review',
   'explanation',
   'opinion',
   'x_mitre_id',

@@ -2567,6 +2567,7 @@ export type Case = {
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  content_mapping_review?: Maybe<Scalars['String']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -2835,6 +2836,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  content_mapping_review?: Maybe<Scalars['String']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -3165,6 +3167,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  content_mapping_review?: Maybe<Scalars['String']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -3496,6 +3499,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  content_mapping_review?: Maybe<Scalars['String']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -9686,6 +9690,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  content_mapping_review?: Maybe<Scalars['String']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -10422,6 +10427,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  content_mapping_review?: Maybe<Scalars['String']['output']>;
   context: Scalars['String']['output'];
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
@@ -16835,6 +16841,7 @@ export type MappingAnalysis = {
   analysisStatus?: Maybe<State>;
   analysisType: Scalars['String']['output'];
   mappedEntities?: Maybe<Array<MappedEntity>>;
+  unresolvedEntities?: Maybe<Array<UnresolvedMappedEntity>>;
 };
 
 export type MappingAnalysisInput = {
@@ -29090,6 +29097,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   containersNumber?: Maybe<Number>;
   content?: Maybe<Scalars['String']['output']>;
   content_mapping?: Maybe<Scalars['String']['output']>;
+  content_mapping_review?: Maybe<Scalars['String']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -37227,6 +37235,13 @@ export enum UnknownStixCoreObjectsOrdering {
   Value = 'value'
 }
 
+export type UnresolvedMappedEntity = {
+  __typename?: 'UnresolvedMappedEntity';
+  entityType: Scalars['String']['output'];
+  matchedString: Scalars['String']['output'];
+  standardId: Scalars['String']['output'];
+};
+
 export type UpdateConnectorManagerStatusInput = {
   id: Scalars['ID']['input'];
 };
@@ -41902,6 +41917,7 @@ export type ResolversTypes = ResolversObject<{
   TypeAttribute: ResolverTypeWrapper<TypeAttribute>;
   UnitSystem: UnitSystem;
   UnknownStixCoreObjectsOrdering: UnknownStixCoreObjectsOrdering;
+  UnresolvedMappedEntity: ResolverTypeWrapper<UnresolvedMappedEntity>;
   UpdateConnectorManagerStatusInput: UpdateConnectorManagerStatusInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   Url: ResolverTypeWrapper<Omit<Url, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -42939,6 +42955,7 @@ export type ResolversParentTypes = ResolversObject<{
   TriggerEdge: Omit<TriggerEdge, 'node'> & { node: ResolversParentTypes['Trigger'] };
   TriggerLiveAddInput: TriggerLiveAddInput;
   TypeAttribute: TypeAttribute;
+  UnresolvedMappedEntity: UnresolvedMappedEntity;
   UpdateConnectorManagerStatusInput: UpdateConnectorManagerStatusInput;
   Upload: Scalars['Upload']['output'];
   Url: Omit<Url, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -43922,6 +43939,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping_review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44002,6 +44020,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping_review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44088,6 +44107,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping_review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -44175,6 +44195,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping_review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -46359,6 +46380,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping_review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -46667,6 +46689,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping_review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   context?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -48770,6 +48793,7 @@ export type MappingAnalysisResolvers<ContextType = any, ParentType extends Resol
   analysisStatus?: Resolver<Maybe<ResolversTypes['State']>, ParentType, ContextType>;
   analysisType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mappedEntities?: Resolver<Maybe<Array<ResolversTypes['MappedEntity']>>, ParentType, ContextType>;
+  unresolvedEntities?: Resolver<Maybe<Array<ResolversTypes['UnresolvedMappedEntity']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -51586,6 +51610,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
   content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping_review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -54246,6 +54271,12 @@ export type TypeAttributeResolvers<ContextType = any, ParentType extends Resolve
   upsert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
+export type UnresolvedMappedEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['UnresolvedMappedEntity'] = ResolversParentTypes['UnresolvedMappedEntity']> = ResolversObject<{
+  entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  matchedString?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standardId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
   name: 'Upload';
 }
@@ -55948,6 +55979,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TriggerConnection?: TriggerConnectionResolvers<ContextType>;
   TriggerEdge?: TriggerEdgeResolvers<ContextType>;
   TypeAttribute?: TypeAttributeResolvers<ContextType>;
+  UnresolvedMappedEntity?: UnresolvedMappedEntityResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   Url?: UrlResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

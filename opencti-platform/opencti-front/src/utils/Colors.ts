@@ -248,6 +248,11 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   Capability: 'restricted',
 };
 
+// Family of an entity type (observables, techniques…), as used for its color.
+export const entityTypeFamily = (type: string | null | undefined): keyof typeof COLOR_FAMILIES | null => (
+  type ? ENTITY_TYPE_TO_FAMILY[type] ?? null : null
+);
+
 export const itemColor = (
   type: string | null | undefined,
   reversed: boolean = false,

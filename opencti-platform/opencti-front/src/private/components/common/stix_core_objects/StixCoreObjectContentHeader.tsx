@@ -6,6 +6,8 @@ import { ButtonGroup, ButtonGroupItem } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useSplatLessBasePath from '../../../../utils/hooks/useSplatLessBasePath';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { CONTENT_MAPPING_V2_FEATURE_FLAG } from '../content_mapping/contentMappingFeatureFlag';
 
 interface StixCoreObjectContentHeaderProps {
   currentMode?: string;
@@ -27,6 +29,9 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const basePath = useSplatLessBasePath();
+  const { isFeatureEnable } = useHelper();
+  // Content mapping v2 works in Drafts (#17792).
+  const isMappingV2 = isFeatureEnable(CONTENT_MAPPING_V2_FEATURE_FLAG);
 
   return (
     <div style={{
@@ -76,7 +81,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
               value="mapping"
               aria-label={t_i18n('Content mapping view')}
               icon={<DifferenceOutlined sx={GLYPH} />}
-              disabled={disableMapping || !!draftContext}
+              disabled={disableMapping || (!!draftContext && !isMappingV2)}
             >
               <Link to={`${basePath}/mapping`} />
             </ButtonGroupItem>

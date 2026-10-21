@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, Suspense, useState } from 'react';
 import StixCoreObjectContentHeader from '@components/common/stix_core_objects/StixCoreObjectContentHeader';
 import { Route, Routes, useLocation } from 'react-router';
 import StixCoreObjectContent from '@components/common/stix_core_objects/StixCoreObjectContent';
@@ -8,6 +8,9 @@ import { ContainerMappingContentQuery$data } from '@components/common/containers
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useHelper from '../../../../utils/hooks/useHelper';
+import ContentMappingReview from '../content_mapping/ContentMappingReview';
+import { CONTENT_MAPPING_V2_FEATURE_FLAG } from '../content_mapping/contentMappingFeatureFlag';
 
 interface StixCoreObjectContentRootProps {
   stixCoreObject: { id: string } & StixCoreObjectContent_stixCoreObject$key;
@@ -22,6 +25,8 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
   const [isMappingHeaderDisabled, setMappingHeaderDisabled] = useState<boolean>(false);
   const [isEditorHeaderDisabled, setEditorHeaderDisabled] = useState<boolean>(!isContainer);
   const { pathname } = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isMappingV2 = isFeatureEnable(CONTENT_MAPPING_V2_FEATURE_FLAG);
 
   const getCurrentMode = (currentPathname: string) => {
     if (currentPathname.endsWith('/mapping')) return 'mapping';
@@ -36,13 +41,18 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
       <StixCoreObjectContentHeader
         currentMode={currentMode}
         modes={modes}
-        disableMapping={isMappingHeaderDisabled}
+        // v2 maps attached files too, PDF included: the file shown in the content view does not matter (#8909).
+        disableMapping={isMappingHeaderDisabled && !isMappingV2}
         disableEditor={isEditorHeaderDisabled}
       />
       <Routes>
         <Route
           path="/mapping"
-          element={(
+          element={isMappingV2 ? (
+            <Suspense fallback={<Loader variant={LoaderVariant.inElement} withTopMargin={true} />}>
+              <ContentMappingReview containerId={stixCoreObject.id} />
+            </Suspense>
+          ) : (
             <QueryRenderer
               query={containerContentQuery}
               variables={{ id: stixCoreObject.id }}

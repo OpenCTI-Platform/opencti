@@ -612,6 +612,10 @@ export const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 // (use isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) to check activation)
 export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 
+// Content mapping v2: unified review view, one-click mapping, review state, Drafts and attached files
+// (use isFeatureEnabled(CONTENT_MAPPING_V2_FEATURE_FLAG) to check activation)
+export const CONTENT_MAPPING_V2_FEATURE_FLAG = 'CONTENT_MAPPING_V2';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;

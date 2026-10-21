@@ -168,6 +168,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String @ff(flags: ["CONTENT_MAPPING_V2"], softFail: true)
   tasks: TaskConnection!
   # Incident Response
   rating: Int

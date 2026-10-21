@@ -167,6 +167,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String @ff(flags: ["CONTENT_MAPPING_V2"], softFail: true)
   tasks: TaskConnection!
   # Feedback
   rating: Int

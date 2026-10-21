@@ -3,6 +3,7 @@ import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
+import { contentMappingReview } from '../../schema/attribute-definition';
 import convertCaseToStix from './case-converter';
 import { ENTITY_TYPE_CONTAINER_CASE, type StixCase, type StoreEntityCase } from './case-types';
 import { ENTITY_TYPE_CASE_TEMPLATE } from './case-template/case-template-types';
@@ -29,6 +30,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'content_mapping', label: 'Content mapping', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    contentMappingReview,
     { name: 'caseTemplate', label: 'Case template', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_CASE_TEMPLATE], mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],

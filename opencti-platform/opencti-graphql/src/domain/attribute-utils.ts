@@ -61,6 +61,7 @@ export const INTERNAL_ATTRIBUTES = [
   'toType',
   'i_inference_weight',
   'content_mapping',
+  'content_mapping_review',
   'caseTemplate',
   'default_dashboard',
   'default_hidden_types',

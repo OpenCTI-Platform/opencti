@@ -4071,6 +4071,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   description: String
   content: String
   content_mapping: String
+  content_mapping_review: String @ff(flags: ["CONTENT_MAPPING_V2"], softFail: true)
   report_types: [String]
   x_opencti_reliability: String
   published: DateTime
@@ -15334,6 +15335,14 @@ type MappingAnalysis {
   analysisStatus: State
   analysisDate: DateTime
   mappedEntities: [MappedEntity!]
+  unresolvedEntities: [UnresolvedMappedEntity!] @ff(flags: ["CONTENT_MAPPING_V2"], softFail: true, defaultValue: "[]")
+}
+
+# A suggested object that does not exist in the platform yet
+type UnresolvedMappedEntity {
+  matchedString: String!
+  standardId: String!
+  entityType: String!
 }
 
 input MappedEntityInput {

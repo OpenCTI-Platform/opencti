@@ -21,7 +21,8 @@ import {
 import { findStixCoreRelationshipsPaginated } from './stixCoreRelationship';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { storeUpdateEvent } from '../database/stream/stream-handler';
-import conf, { BUS_TOPICS, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, CONTENT_MAPPING_V2_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
+import { convertStixToInternalTypes, isStixId } from '../schema/schemaUtils';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
@@ -588,7 +589,8 @@ export const CONTENT_TYPE_FIELDS = 'fields';
 export const CONTENT_TYPE_FILE = 'file';
 
 export const askElementAnalysisForConnector = async (context, user, analyzedId, contentSource, contentType, connectorId) => {
-  if (getDraftContext(context, user)) {
+  // Content mapping v2 makes the mapping review available in Drafts (junior -> senior validation).
+  if (getDraftContext(context, user) && !isFeatureEnabled(CONTENT_MAPPING_V2_FEATURE_FLAG)) {
     throw UnsupportedError('Cannot ask for analysis in draft');
   }
   logApp.debug(`[JOBS] ask analysis for content type ${contentType} and content source ${contentSource}`);
@@ -750,6 +752,17 @@ export const analysisClear = async (context, user, entityId, contentSource, cont
   return true;
 };
 
+// Suggestions of objects that do not exist yet (e.g. observables detected in the text): their deterministic
+// STIX id gives their type, so that the review can offer to create them instead of dropping them.
+export const buildUnresolvedMappedEntities = (analysisContent, entitiesResolved) => {
+  return Object.entries(analysisContent)
+    .filter(([, id]) => isNotEmptyField(id) && !entitiesResolved[id] && isStixId(id))
+    .map(([matchedString, id]) => {
+      const types = convertStixToInternalTypes(id.split('--')[0]);
+      return { matchedString, standardId: id, entityType: Array.isArray(types) ? types[0] : types };
+    });
+};
+
 export const stixCoreAnalysis = async (context, user, entityId, contentSource, contentType) => {
   const entity = await internalLoadById(context, user, entityId);
   if (!entity) {
@@ -793,7 +806,9 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     .map((d) => analysisDataConverted(d))
     .filter((e) => e.matchedEntity);
 
-  return { analysisType, mappedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
+  const unresolvedEntities = buildUnresolvedMappedEntities(analysisParsedContent, entitiesResolved);
+
+  return { analysisType, mappedEntities, unresolvedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
 };
 
 export const executeRemoveAuthMembers = async (context, user, element) => {
