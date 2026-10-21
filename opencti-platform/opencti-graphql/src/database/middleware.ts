@@ -1899,7 +1899,8 @@ const mergeEntitiesRaw = async (
   const updateAttributes: EditInput[] = [];
   // 1. Update all possible attributes
   const attributes = schemaAttributesDefinition.getAttributeNames(targetType);
-  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
+  // The closing reason follows the target's own workflow state: never take it from a source
+  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX) && s !== X_CLOSING_REASON);
   for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
     const targetFieldKey = targetFields[fieldIndex];
     const mergedEntityCurrentFieldValue = (targetEntity as Record<string, any>)[targetFieldKey];
