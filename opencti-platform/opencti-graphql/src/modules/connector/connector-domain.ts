@@ -68,7 +68,13 @@ import { createOnTheFlyUser } from '../../modules/user/user-domain';
 import { filter, includes, map, pipe } from 'ramda';
 import { BACKGROUND_TASK_QUEUES, connectorConfig, getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector } from './connector-rabbitmq';
 import { sinceNowInMinutes } from '../../utils/format';
-import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../../schema/general';
+import {
+  CONNECTOR_INTERNAL_ANALYSIS,
+  CONNECTOR_INTERNAL_ENRICHMENT,
+  CONNECTOR_INTERNAL_HUNT,
+  CONNECTOR_INTERNAL_IMPORT_FILE,
+  CONNECTOR_INTERNAL_NOTIFICATION,
+} from '../../schema/general';
 import { isNotEmptyField } from '../../database/utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../notifier/notifier-statics';
 import { builtInConnector, builtInConnectorsRuntime } from './connector-built-in-domain';
@@ -147,7 +153,7 @@ export const loadConnectorHeartbeat = async (connectorId: string) => {
   }
 };
 
-const loadConnectorsHeartbeats = async () => {
+export const loadConnectorsHeartbeats = async () => {
   try {
     return await redisGetConnectorsHeartbeats();
   } catch (err) {
@@ -830,6 +836,12 @@ export const connectorDelete = async (context: AuthContext, user: AuthUser, conn
   } catch (err) {
     // Best effort: the connector is already deleted, an orphan heartbeat is never read
     logApp.warn('[OPENCTI-MODULE] Unable to delete connector heartbeat', { cause: err, connectorId });
+  }
+  if (element.connector_type === CONNECTOR_INTERNAL_HUNT) {
+    // Its runs end with it: a connector registered again under the same id inherits none of them. Loaded on use, the
+    // hunt module depends on the connector domain
+    const { cancelDeletedHuntConnectorRuns } = await import('../hunt/huntRun/huntRun-domain');
+    await cancelDeletedHuntConnectorRuns(context, element.internal_id);
   }
   await publishUserAction({
     user,

@@ -60,6 +60,7 @@ export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
 export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
 export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
+export const KNOWLEDGE_KNHUNT = 'KNOWLEDGE_KNHUNT';
 export const KNOWLEDGE_KNSHAREFILTERS = 'KNOWLEDGE_KNSHAREFILTERS';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
@@ -87,6 +88,7 @@ export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 const DATA_SANITY_MANAGER_USER_UUID = '4a25a566-017d-4455-811e-e8e1b3889390';
+export const HUNT_MANAGER_USER_UUID = 'a922ccf4-436b-40d2-b2d4-d2936433dc2c';
 const INGESTION_HEALTH_MANAGER_USER_UUID = 'c6efbb70-ae34-4677-8081-736578d87dab';
 
 export enum AccessOperation {
@@ -551,6 +553,31 @@ export const DATA_SANITY_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const HUNT_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: HUNT_MANAGER_USER_UUID,
+  internal_id: HUNT_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'HUNT MANAGER',
+  user_email: 'HUNT MANAGER',
+  origin: { user_id: HUNT_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_tokens: [],
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: { max_confidence: 100, overrides: [] },
+  user_confidence_level: { max_confidence: 100, overrides: [] },
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export const INGESTION_HEALTH_MANAGER_USER: AuthUser = {
   entity_type: ENTITY_TYPE_USER,
   id: INGESTION_HEALTH_MANAGER_USER_UUID,
@@ -653,6 +680,7 @@ export const INTERNAL_USERS = {
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
+  [HUNT_MANAGER_USER.id]: HUNT_MANAGER_USER,
   [INGESTION_HEALTH_MANAGER_USER.id]: INGESTION_HEALTH_MANAGER_USER,
 };
 
@@ -668,6 +696,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
+  [HUNT_MANAGER_USER.id]: HUNT_MANAGER_USER,
   [INGESTION_HEALTH_MANAGER_USER.id]: INGESTION_HEALTH_MANAGER_USER,
 };
 

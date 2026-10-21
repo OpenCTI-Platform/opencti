@@ -168,6 +168,9 @@ const graphContainerKnowledgeObjectsFragment = graphql`
             ... on SecurityPlatform {
               name
             }
+            ... on Hunt {
+              name
+            }
             ... on Sector {
               name
             }

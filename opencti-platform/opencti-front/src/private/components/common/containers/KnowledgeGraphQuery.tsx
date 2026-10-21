@@ -79,6 +79,9 @@ export const knowledgeGraphStixCoreObjectQuery = graphql`
             ... on SecurityPlatform {
                 name
             }
+            ... on Hunt {
+                name
+            }
             ... on SecurityCoverage {
                 name
             }

@@ -330,6 +330,30 @@ export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefi
   });
 };
 
+const entityTypeFilterValues = (filters: FilterGroup | null | undefined): string[] => {
+  const entityTypeFilter = filters?.filters.find((f) => f.key === 'entity_type');
+  return (entityTypeFilter?.values ?? []).map((v) => (typeof v === 'string' ? v : (v?.value ?? v?.id)));
+};
+
+// Internal objects the entity widgets of the dashboards count, chart and list when their type is selected
+export const WIDGET_INTERNAL_ENTITY_TYPES = ['Hunt-Run', 'Hunt-Hit-Record'];
+
+/**
+ * The internal types selected in the entity type filter of a widget: the widget offers their filter keys.
+ */
+export const widgetInternalEntityTypes = (filters: FilterGroup | null | undefined): string[] => {
+  const values = entityTypeFilterValues(filters);
+  return WIDGET_INTERNAL_ENTITY_TYPES.filter((type) => values.includes(type));
+};
+
+/**
+ * True when the entity type filter of a widget selects hunt runs only.
+ */
+export const isHuntRunFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
+  const values = entityTypeFilterValues(filters);
+  return values.length > 0 && values.every((value) => value === 'Hunt-Run');
+};
+
 /**
  * Shallow, structure-only check: true as soon as the group has *any* child filter or child
  * group, regardless of whether that child is itself complete/usable (e.g. a value-less filter,

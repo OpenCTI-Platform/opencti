@@ -78,8 +78,10 @@ import { getEntitySettingFromCache } from '../modules/entitySetting/entitySettin
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
-import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filtering/filtering-utils';
-import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import { addFilter, emptyFilterGroup, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
+import { ENTITY_TYPE_HUNT_RUN, HUNT_RUN_MODE_PREVIEW } from '../modules/hunt/huntRun/huntRun-types';
+import { ENTITY_TYPE_HUNT_HIT_RECORD } from '../modules/hunt/huntHitRecord/huntHitRecord-types';
+import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF, TYPE_FILTER } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { connectorsForAnalysis } from '../modules/connector/connector-domain';
@@ -140,6 +142,23 @@ const extractStixCoreObjectTypesFromArgs = (args) => {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
   return types;
+};
+
+// Hunt runs and the records of their hits are internal objects the dashboards count and chart like entities when a
+// widget filters on their type; translation previews are not runs and stay out
+const WIDGET_INTERNAL_TYPES = [ENTITY_TYPE_HUNT_RUN, ENTITY_TYPE_HUNT_HIT_RECORD];
+export const extractWidgetTypesFromArgs = (args, types = extractStixCoreObjectTypesFromArgs(args)) => {
+  const internalTypes = args.filters
+    ? R.uniq(extractFilterGroupValues(args.filters, TYPE_FILTER).filter((type) => WIDGET_INTERNAL_TYPES.includes(type)))
+    : [];
+  if (internalTypes.length === 0) {
+    return { types, args };
+  }
+  if (!internalTypes.includes(ENTITY_TYPE_HUNT_RUN)) {
+    return { types: [...types, ...internalTypes], args };
+  }
+  const filters = addFilter(args.filters, 'hunt_run_mode', HUNT_RUN_MODE_PREVIEW, 'not_eq');
+  return { types: [...types, ...internalTypes], args: { ...args, filters } };
 };
 
 export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
@@ -441,8 +460,8 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
 
 // region stats
 export const stixCoreObjectsTimeSeries = (context, user, args) => {
-  const types = extractStixCoreObjectTypesFromArgs(args);
-  return timeSeriesEntities(context, user, types, args);
+  const { types, args: widgetArgs } = extractWidgetTypesFromArgs(args);
+  return timeSeriesEntities(context, user, types, widgetArgs);
 };
 
 export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
@@ -453,27 +472,29 @@ export const stixCoreObjectsTimeSeriesByAuthor = (context, user, args) => {
 
 export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
   return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter) => {
-    const types = extractStixCoreObjectTypesFromArgs(timeSeriesParameter);
-    return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
+    const parameterTypes = extractStixCoreObjectTypesFromArgs(timeSeriesParameter);
+    const { types, args: widgetArgs } = extractWidgetTypesFromArgs({ ...args, ...timeSeriesParameter }, parameterTypes);
+    return { data: timeSeriesEntities(context, user, types, widgetArgs) };
   }));
 };
 
 export const stixCoreObjectsNumber = (context, user, args) => {
-  const types = extractStixCoreObjectTypesFromArgs(args);
+  const { types, args: widgetArgs } = extractWidgetTypesFromArgs(args);
   return {
-    count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...args, types }),
-    total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...R.dissoc('endDate', args), types }),
+    count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...widgetArgs, types }),
+    total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...R.dissoc('endDate', widgetArgs), types }),
   };
 };
 
 export const stixCoreObjectsMultiNumber = (context, user, args) => {
   return Promise.all(args.numberParameters.map((numberParameter) => {
-    const types = extractStixCoreObjectTypesFromArgs(numberParameter);
+    const parameterTypes = extractStixCoreObjectTypesFromArgs(numberParameter);
+    const { types, args: widgetArgs } = extractWidgetTypesFromArgs({ ...args, ...numberParameter }, parameterTypes);
     return {
       count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
-        : READ_ENTITIES_INDICES, { ...args, ...numberParameter, types }),
+        : READ_ENTITIES_INDICES, { ...widgetArgs, types }),
       total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
-        : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter, types })),
+        : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...widgetArgs, types })),
     };
   }));
 };
@@ -485,8 +506,8 @@ export const stixCoreObjectsConnectedNumber = async (context, user, stixCoreObje
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {
-  const { types } = args;
-  return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], args);
+  const { types, args: widgetArgs } = extractWidgetTypesFromArgs(args, args.types ?? [ABSTRACT_STIX_CORE_OBJECT]);
+  return distributionEntities(context, user, types, widgetArgs);
 };
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {

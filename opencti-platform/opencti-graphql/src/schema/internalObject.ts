@@ -18,6 +18,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../modules/customView/customView-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../modules/workflow/types/workflow-types';
 import { ENTITY_TYPE_USER } from '../modules/user/user-types';
+import { ENTITY_TYPE_HUNT_RUN } from '../modules/hunt/huntRun/huntRun-types';
 
 // Re-exported for backward compatibility (used by migrations)
 export { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
@@ -71,6 +72,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_CUSTOM_VIEW,
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
+  ENTITY_TYPE_HUNT_RUN,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,

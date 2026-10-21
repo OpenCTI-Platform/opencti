@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { Field } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import ComboboxField from '../../../../components/ComboboxField';
@@ -21,20 +21,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface ObservableTypesFieldProps {
   name: string;
   label: string;
+  helperText?: ReactNode;
+  placeholder?: string;
   multiple?: boolean;
   onChange?: (name: string, value: string | string[]) => void;
   style?: Record<string, string | number>;
   disabled?: boolean;
   required?: boolean;
+  /** A secondary action at the end of the label row */
+  labelAction?: ReactNode;
 }
 const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   name,
   label,
+  helperText,
+  placeholder,
   multiple,
   onChange,
   style,
   disabled,
   required = false,
+  labelAction,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -50,7 +57,10 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
       multiple={multiple || false}
       disabled={disabled}
       label={label}
+      helperText={helperText}
+      placeholder={placeholder}
       required={required}
+      labelAction={labelAction}
       options={allObservableTypes}
       getOptionLabel={(option: string) => t_i18n(`entity_${option}`)}
       onChange={typeof onChange === 'function' ? onChange : null}

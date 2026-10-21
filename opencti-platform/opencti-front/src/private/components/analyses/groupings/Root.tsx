@@ -9,6 +9,7 @@ import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDom
 import GroupingDeletion from '@components/analyses/groupings/GroupingDeletion';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import AIInsights from '@components/common/ai/AIInsights';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
 import GroupingKnowledge from './GroupingKnowledge';
@@ -196,6 +197,7 @@ const RootGrouping = () => {
                     }}
                     extraActions={!isKnowledgeOrContent && (
                       <>
+                        <HuntThisMenu entity={grouping} />
                         <AIInsights id={grouping.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={grouping.id} coverage={grouping.securityCoverage} />
                       </>

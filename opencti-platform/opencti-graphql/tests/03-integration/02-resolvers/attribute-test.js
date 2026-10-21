@@ -78,8 +78,9 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Cyber Observable Object
     queryResult = await queryAsAdmin({ query: SCHEMA_ATTRIBUTES_QUERY, variables: { elementType: ENTITY_EMAIL_ADDR } });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(22);
+    expect(attributes.length).toEqual(24);
     expect(attributes.map((node) => node.value).includes('x_opencti_description')).toBeTruthy(); // Inherit attribute
+    expect(attributes.map((node) => node.value).includes('x_opencti_hunted_at')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('display_name')).toBeTruthy(); // Direct attribute
 
     // Stix Meta Object
@@ -161,8 +162,10 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: STIX_SIGHTING_RELATIONSHIP },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(30);
+    expect(attributes.length).toEqual(32);
     expect(attributes.map((node) => node.value).includes('creator_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_negative')).toBeTruthy(); // Direct attribute
+    expect(attributes.map((node) => node.value).includes('x_opencti_hunt_run_id')).toBeTruthy(); // Direct attribute
+    expect(attributes.map((node) => node.value).includes('x_opencti_hunt_id')).toBeTruthy(); // Direct attribute
   });
 });

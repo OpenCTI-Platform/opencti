@@ -165,6 +165,9 @@ const investigationGraphObjectsFragment = graphql`
             ... on SecurityPlatform {
               name
             }
+            ... on Hunt {
+              name
+            }
             ... on SecurityCoverage {
               name
             }

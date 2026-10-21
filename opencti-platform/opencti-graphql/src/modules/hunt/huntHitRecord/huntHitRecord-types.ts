@@ -1,0 +1,38 @@
+import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
+import type { StixInternal } from '../../../types/stix-2-1-common';
+
+export const ENTITY_TYPE_HUNT_HIT_RECORD = 'Hunt-Hit-Record';
+
+interface HuntHitRecordAttributes {
+  hunt_id: string;
+  // The type, origin and techniques of the hunt, from the run that first found the hit, so that dashboards filter on them
+  hunt_type?: string | null;
+  hunt_source_kind?: string | null;
+  hunt_technique_ids?: string[] | null;
+  // Null for a run without security platform
+  security_platform_id?: string | null;
+  hit_key: string;
+  // first_seen and last_seen (base attributes): when a run first found the hit, and when a run last found it, dated by
+  // the observation; updated_at: when a run finding it was last recorded, which the retention reads
+  // Runs that found the hit
+  times_seen: number;
+  first_run_id: string;
+  last_run_id: string;
+  // The latest runs that found the hit, so that a run processed again is not counted twice
+  counted_run_ids?: string[];
+  // Indicator hunts: the keys of the values the hit holds (huntRun-iocs iocKey)
+  ioc_keys?: string[];
+  // The objects the hit is a sighting of: the sources of the values it holds, or what a telemetry hunt sights
+  sighted_ids?: string[];
+}
+
+/** A hit a hunt already found on a security platform: the known hits ledger tells new hits from recurring ones. */
+export interface BasicStoreEntityHuntHitRecord extends BasicStoreEntity, HuntHitRecordAttributes {}
+
+export interface StoreEntityHuntHitRecord extends StoreEntity, HuntHitRecordAttributes {}
+
+export interface StixHuntHitRecord extends StixInternal {
+  hunt_id: string;
+  security_platform_id?: string | null;
+  hit_key: string;
+}
