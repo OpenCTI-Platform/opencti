@@ -12,6 +12,8 @@ export const convertIdentityClass = (entityType: string, entity: StoreEntity) =>
     entity.identity_class = 'system';
   } else if (entityType === 'SecurityPlatform') {
     entity.identity_class = 'securityplatform';
+  } else if (entityType === 'Citizenship-Document') {
+    entity.identity_class = 'citizenship-document'; // TDO should this have a -
   }
 };
 

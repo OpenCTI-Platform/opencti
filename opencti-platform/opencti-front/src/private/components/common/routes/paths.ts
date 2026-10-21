@@ -85,6 +85,8 @@ export const PATH_EVENTS = `${PATH_DASHBOARD}/entities/events`;
 export const PATH_EVENT = (eventId: string) => `${PATH_EVENTS}/${eventId}`;
 export const PATH_SYSTEMS = `${PATH_DASHBOARD}/entities/systems`;
 export const PATH_SYSTEM = (systemId: string) => `${PATH_SYSTEMS}/${systemId}`;
+export const PATH_CITIZENSHIP_DOCUMENTS = `${PATH_DASHBOARD}/entities/citizenship_documents`;
+export const PATH_CITIZENSHIP_DOCUMENT = (citizenshipDocumentId: string) => `${PATH_CITIZENSHIP_DOCUMENTS}/${citizenshipDocumentId}`;
 
 // CASES
 export const PATH_TASKS = `${PATH_DASHBOARD}/cases/tasks`;
