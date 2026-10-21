@@ -6,6 +6,65 @@ import sys
 import jsonpatch
 from pycti import OpenCTIApiClient, OpenCTIConnectorHelper
 
+OPENCTI_EXTENSION = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+
+
+def _octi_extension(stix_object):
+    return stix_object.get("extensions", {}).get(OPENCTI_EXTENSION, {})
+
+
+# Multi-valued attributes an upsert only adds to, by upsert key: identity (alternative
+# standard ids, aliases) and access restrictions (markings, organization sharing)
+REMOVABLE_FIELDS = {
+    "x_opencti_stix_ids": lambda stix_object: _octi_extension(stix_object).get(
+        "stix_ids"
+    ),
+    "aliases": lambda stix_object: stix_object.get("aliases"),
+    "x_opencti_aliases": lambda stix_object: _octi_extension(stix_object).get(
+        "aliases"
+    ),
+    "objectMarking": lambda stix_object: stix_object.get("object_marking_refs"),
+    "objectOrganization": lambda stix_object: _octi_extension(stix_object).get(
+        "granted_refs"
+    ),
+}
+
+
+def _merge_operations(carried, removals):
+    # The operations the event carries are kept; a removal for the same key removes both lists
+    operations = [dict(operation) for operation in carried]
+    for removal in removals:
+        same = next(
+            (
+                operation
+                for operation in operations
+                if operation.get("operation") == "remove"
+                and operation.get("key") == removal["key"]
+            ),
+            None,
+        )
+        if same is None:
+            operations.append(removal)
+        else:
+            carried_values = same.get("value")
+            values = carried_values if isinstance(carried_values, list) else []
+            same["value"] = list(dict.fromkeys([*values, *removal["value"]]))
+    return operations
+
+
+def _upsert_removals(previous, current):
+    removals = []
+    for upsert_key, read in REMOVABLE_FIELDS.items():
+        current_values = read(current) or []
+        removed_values = [
+            value for value in (read(previous) or []) if value not in current_values
+        ]
+        if removed_values:
+            removals.append(
+                {"key": upsert_key, "value": removed_values, "operation": "remove"}
+            )
+    return removals
+
 
 # pylint: disable-next=too-few-public-methods
 # pylint: disable-next=too-many-instance-attributes
@@ -79,6 +138,15 @@ class TestLocalSynchronizer:
                 current = data["data"]
                 # In case of update always apply operation to the previous id
                 current["id"] = previous["id"]
+                # An upsert only adds these values: the ones the update removed are removed explicitly
+                removals = _upsert_removals(previous, current)
+                if removals:
+                    extension = current.setdefault("extensions", {}).setdefault(
+                        OPENCTI_EXTENSION, {}
+                    )
+                    extension["opencti_upsert_operations"] = _merge_operations(
+                        extension.get("opencti_upsert_operations") or [], removals
+                    )
                 bundle = {
                     "type": "bundle",
                     "x_opencti_event_version": data["version"],

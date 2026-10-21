@@ -1015,6 +1015,7 @@ enum BackgroundTaskActionType {
   SEND_EMAIL
   ENROLL_PLAYBOOK
   ADD_RELATED_COVERED_ENTITIES
+  CURATION_APPLY
   REMOVE_CUSTOM_FIELD_VALUES
 }
 enum BackgroundTaskContextType {

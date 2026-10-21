@@ -1,4 +1,6 @@
 import './connectorManager';
+import './curationManager';
+import './curationRecordsManager';
 import './dataSanityManager';
 import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';

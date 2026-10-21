@@ -16,6 +16,7 @@ const DecayRule = lazy(() => import('../decay/DecayRule'));
 const ExclusionLists = lazy(() => import('../exclusion_lists/ExclusionLists'));
 const FintelDesigns = lazy(() => import('../fintel_design/FintelDesigns'));
 const FintelDesign = lazy(() => import('../fintel_design/FintelDesign'));
+const CurationCustomization = lazy(() => import('../curation/CurationCustomization'));
 
 const RootCustomization = () => {
   const fallbackUrl = useSettingsFallbackUrl();
@@ -96,6 +97,14 @@ const RootCustomization = () => {
             element={(
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
                 <ExclusionLists />
+              </Security>
+            )}
+          />
+          <Route
+            path="/curation/*"
+            element={(
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+                <CurationCustomization />
               </Security>
             )}
           />

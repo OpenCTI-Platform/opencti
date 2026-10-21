@@ -2696,3 +2696,26 @@ components) or an `anchor` point on `Menu`, both opening from the keyboard.
 library anchor, delete the marker, and check that a right click on a node of a
 report graph opens the menu at the pointer, that Shift+F10 opens it for the
 entity of the keyboard list, and that Escape gives the focus back.
+
+## 71. No skeleton, so a loading surface falls back to MUI `Skeleton`
+
+**Needed.** The program UX charter asks every surface to show its shape while it
+loads, never the platform spinner. The curation surfaces (Inbox, proposal page,
+merge record drawer, Knowledge health page and widgets, the Merges view of the
+Changes tab) load through Relay `Suspense` boundaries and need a placeholder
+with the page's blocks.
+
+**Today.** The library ships `Spinner` and `ProgressBar` but no skeleton
+component or skeleton token.
+
+**Workaround.** FDS-WORKAROUND #71 in `CurationSkeleton.tsx`: one shared
+component renders MUI `Skeleton` blocks (`variant="rounded"`) of the given
+heights; every curation surface goes through it, so MUI `Skeleton` is imported
+in that file only.
+
+**Ask.** A `Skeleton` (block, text line, circle) on the elevation and radius
+tokens, with a reduced-motion variant.
+
+**Removal test.** At a pin that ships it: swap the import in
+`CurationSkeleton.tsx`, delete the marker, and confirm no file under
+`private/components/data/curation` imports `@mui/material/Skeleton`.

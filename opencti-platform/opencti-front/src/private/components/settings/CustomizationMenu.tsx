@@ -32,6 +32,10 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/exclusion_lists',
       label: 'Exclusion lists',
     },
+    {
+      path: '/dashboard/settings/customization/curation',
+      label: 'Curation',
+    },
   ];
 
   return <NavToolbarMenu entries={entries} />;
