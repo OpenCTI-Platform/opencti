@@ -161,7 +161,22 @@ export const READ_RELATIONSHIPS_INDICES = [
   READ_INDEX_INFERRED_RELATIONSHIPS,
 ];
 
-export const isNotEmptyField = <T>(field: T | undefined | null): field is T => !R.isEmpty(field) && !R.isNil(field);
+// Fast path for the common shapes, with exactly R.isEmpty's answer; anything else (Map, Set, typed arrays,
+// fantasy-land types, objects with an empty() method) still goes through R.isEmpty. Called for most fields of
+// every object written, so the generic path showed up in ingestion profiles.
+const isPlainObjectWithoutEmpty = (value: object) => {
+  const proto = Object.getPrototypeOf(value);
+  return (proto === Object.prototype || proto === null)
+    && typeof (value as any).empty !== 'function' && typeof (value as any)['fantasy-land/empty'] !== 'function';
+};
+export const isNotEmptyField = <T>(field: T | undefined | null): field is T => {
+  if (field === null || field === undefined) return false;
+  if (typeof field === 'string') return field.length > 0;
+  if (typeof field !== 'object' && typeof field !== 'function') return true;
+  if (Array.isArray(field) && (field.constructor === Array)) return field.length > 0;
+  if (isPlainObjectWithoutEmpty(field as object)) return Object.keys(field as object).length > 0;
+  return !R.isEmpty(field);
+};
 export const isEmptyField = <T>(field: T | undefined | null): field is undefined | null => !isNotEmptyField(field);
 
 export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: string | string[] | undefined | null): string => {

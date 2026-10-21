@@ -1,0 +1,40 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generateStandardId > keeps alias ids 1`] = `
+[
+  "intrusion-set--d8c8eecd-f050-5643-bac7-bffdcdcad851",
+  "intrusion-set--75c384b7-6af2-5456-89ea-ef4cb34fefb1",
+]
+`;
+
+exports[`generateStandardId > keeps the standard id of PAP marking 1`] = `"marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"`;
+
+exports[`generateStandardId > keeps the standard id of TLP:GREEN 1`] = `"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"`;
+
+exports[`generateStandardId > keeps the standard id of TLP:RED 1`] = `"marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"`;
+
+exports[`generateStandardId > keeps the standard id of TLP:WHITE 1`] = `"marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"`;
+
+exports[`generateStandardId > keeps the standard id of TLP-like marking, other definition 1`] = `"marking-definition--cde3d225-d21a-59a3-8924-2560f81334df"`;
+
+exports[`generateStandardId > keeps the standard id of attack pattern with external id 1`] = `"attack-pattern--d041e624-3991-5138-9544-d3ba2ce68ff7"`;
+
+exports[`generateStandardId > keeps the standard id of domain name 1`] = `"domain-name--bedb4899-d24b-5401-bc86-8f6b4cc18ec7"`;
+
+exports[`generateStandardId > keeps the standard id of file with empty hash 1`] = `"file--c10ebc4d-e065-5ec7-93e4-fa1fd2bae072"`;
+
+exports[`generateStandardId > keeps the standard id of file with hashes 1`] = `"file--aba4f1e7-e3b9-59a9-a722-60a6ada7a8ec"`;
+
+exports[`generateStandardId > keeps the standard id of indicates 1`] = `"relationship--507d72c4-b226-5ff6-aa77-4d2796cac953"`;
+
+exports[`generateStandardId > keeps the standard id of intrusion set 1`] = `"intrusion-set--f743ab1d-b2f2-58f8-975f-0993511c0b9d"`;
+
+exports[`generateStandardId > keeps the standard id of intrusion set, padded name 1`] = `"intrusion-set--f743ab1d-b2f2-58f8-975f-0993511c0b9d"`;
+
+exports[`generateStandardId > keeps the standard id of ipv4 1`] = `"ipv4-addr--7dd44d27-f473-5ba9-b12b-0d3a61bbed2e"`;
+
+exports[`generateStandardId > keeps the standard id of malware 1`] = `"malware--1fa27f3c-beda-59f1-b476-f8ad99cbdeff"`;
+
+exports[`generateStandardId > keeps the standard id of uses 1`] = `"relationship--6d330ec4-8b4e-598f-8a61-cb632abbdf10"`;
+
+exports[`generateStandardId > keeps the standard id of uses with time 1`] = `"relationship--95f4b153-8113-5a46-b341-330e9689bb4a"`;

@@ -174,7 +174,7 @@ import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { asyncMap } from '../utils/data-processing';
-import { doYield } from '../utils/eventloop-utils';
+import { doYield, isYieldDue } from '../utils/eventloop-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -4628,14 +4628,14 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
   const thing: Record<string, any> = {};
   const keyItems = Object.keys(element);
   for (let index = 0; index < keyItems.length; index += 1) {
-    await doYield();
+    if (isYieldDue()) await doYield();
     const key = keyItems[index];
     const value = element[key];
     if (Array.isArray(value)) { // Array of Date, objects, string or number
       const preparedArray = [];
       let yieldCount = 0;
       for (let valueIndex = 0; valueIndex < value.length; valueIndex += 1) {
-        if (await doYield()) {
+        if (isYieldDue() && await doYield()) {
           // If we extend the preparation 5 times, log a warn
           // It will help to understand what kind of key have so many elements
           if (yieldCount === 5) {
@@ -4675,6 +4675,7 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
   }
   return thing;
 };
+const RELATION_FIELDS_NOT_INDEXED = new Set([INTERNAL_TO_FIELD, INTERNAL_FROM_FIELD, 'from', 'fromId', 'fromRole', 'fromType', 'to', 'toId', 'toRole', 'toType']);
 const prepareRelation = (thing: Record<string, any>) => {
   if (thing.fromRole === undefined || thing.toRole === undefined) {
     throw DatabaseError('Cant index relation connections without from or to', {
@@ -4715,21 +4716,14 @@ const prepareRelation = (thing: Record<string, any>) => {
     types: [to.entity_type, ...getParentTypes(to.entity_type)],
     role: thing.toRole,
   });
-  return R.pipe(
-    R.assoc('connections', connections),
-    R.dissoc(INTERNAL_TO_FIELD),
-    R.dissoc(INTERNAL_FROM_FIELD),
-    // Dissoc from
-    R.dissoc('from'),
-    R.dissoc('fromId'),
-    R.dissoc('fromRole'),
-    R.dissoc('fromType'),
-    // Dissoc to
-    R.dissoc('to'),
-    R.dissoc('toId'),
-    R.dissoc('toRole'),
-    R.dissoc('toType'),
-  )(thing);
+  // One copy without the from/to fields (a chain of R.dissoc copied the document once per field)
+  const prepared: Record<string, any> = {};
+  const keys = Object.keys(thing);
+  for (let index = 0; index < keys.length; index += 1) {
+    if (!RELATION_FIELDS_NOT_INDEXED.has(keys[index])) prepared[keys[index]] = thing[keys[index]];
+  }
+  prepared.connections = connections;
+  return prepared;
 };
 const prepareEntity = (thing: Record<string, any>) => {
   return R.pipe(R.dissoc(INTERNAL_TO_FIELD), R.dissoc(INTERNAL_FROM_FIELD))(thing);

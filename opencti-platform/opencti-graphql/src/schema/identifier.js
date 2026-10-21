@@ -88,9 +88,16 @@ const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_AMBER_STRICT_ID, data: { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' } },
   { id: MARKING_TLP_RED_ID, data: { definition_type: 'TLP', definition: 'TLP:RED' } },
 ];
+// Static ids by their exact data. Every entry is a plain object of two strings, so a lookup by those two
+// values answers like R.equals against each entry, without a deep comparison on every id generation.
+const STATIC_STANDARD_IDS_BY_DATA = new Map(STATIC_STANDARD_IDS.map((s) => [`${s.data.definition_type}|${s.data.definition}`, s.id]));
 const getStaticIdFromData = (data) => {
-  const findStatic = R.find((s) => R.equals(s.data, data), STATIC_STANDARD_IDS);
-  return findStatic?.id;
+  if (!data || typeof data !== 'object') return undefined;
+  const proto = Object.getPrototypeOf(data);
+  if (proto !== Object.prototype && proto !== null) return undefined;
+  const keys = Object.keys(data);
+  if (keys.length !== 2 || typeof data.definition_type !== 'string' || typeof data.definition !== 'string') return undefined;
+  return STATIC_STANDARD_IDS_BY_DATA.get(`${data.definition_type}|${data.definition}`);
 };
 
 const stixBaseCyberObservableContribution = {
@@ -409,7 +416,13 @@ const filteredIdContributions = (contrib, way, data) => {
       objectData[destKey] = R.is(String, value) ? value.trim() : value;
     }
   }
-  return R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), objectData);
+  const filledData = {};
+  const objectEntries = Object.entries(objectData);
+  for (let index = 0; index < objectEntries.length; index += 1) {
+    const [key, value] = objectEntries[index];
+    if (isNotEmptyField(value)) filledData[key] = value;
+  }
+  return filledData;
 };
 
 const generateDataUUID = (type, input) => {

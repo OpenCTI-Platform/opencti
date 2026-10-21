@@ -57,10 +57,17 @@ const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
 };
 
 export const STREAM_FILE_DIRECTORY = `streams/${REDIS_PREFIX}${LIVE_STREAM_NAME}/`;
-export const isEventTooLarge = (eventStreamData: any) => {
-  const eventStreamDataBlob = new Blob(eventStreamData);
-  const totalStreamEventSize = eventStreamDataBlob.size;
-  return { isTooLarge: streamMaxEventSize > 0 && totalStreamEventSize > streamMaxEventSize, eventSize: totalStreamEventSize };
+export const isEventTooLarge = (eventStreamData: string[]) => {
+  // No limit configured (the default): nothing to measure
+  if (streamMaxEventSize <= 0) {
+    return { isTooLarge: false, eventSize: 0 };
+  }
+  // UTF-8 size of the strings, as a Blob of them would report, without copying them into one
+  let totalStreamEventSize = 0;
+  for (let index = 0; index < eventStreamData.length; index += 1) {
+    totalStreamEventSize += Buffer.byteLength(eventStreamData[index], 'utf8');
+  }
+  return { isTooLarge: totalStreamEventSize > streamMaxEventSize, eventSize: totalStreamEventSize };
 };
 export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
   const redisClient = getClientBase();
