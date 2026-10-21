@@ -478,6 +478,22 @@ export const computeManagerConnectorImage = async (connectorEntity: any) => {
   return `${managerContract.image}:${managerContract.contract_version}`;
 };
 
+// Connectors lists: an unrepaired managed connector must not fail the whole query
+export const computeConnectorImage = async (connectorEntity: any) => {
+  if (!connectorEntity.catalog_id) {
+    return null;
+  }
+  if (!connectorEntity.manager_contract) {
+    logApp.error('[OPENCTI-MODULE] Managed connector without contract snapshot', {
+      module: 'connector',
+      connectorId: connectorEntity.internal_id,
+      catalogId: connectorEntity.catalog_id,
+    });
+    return null;
+  }
+  return computeManagerConnectorImage(connectorEntity);
+};
+
 export const computeManagerContractHash = async (context: AuthContext, user: AuthUser, connectorEntity: any) => {
   const image = connectorEntity.catalog_id ? await computeManagerConnectorImage(connectorEntity) : null;
   const configuration = await computeManagerConnectorConfiguration(context, user, connectorEntity, { withEncrypted: true });

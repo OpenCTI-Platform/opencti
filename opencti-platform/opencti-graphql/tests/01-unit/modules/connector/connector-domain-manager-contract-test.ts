@@ -1,6 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { logApp } from '../../../../src/config/conf';
 import { FunctionalError } from '../../../../src/config/errors';
-import { computeManagerConnectorContract, computeManagerConnectorExcerpt, computeManagerConnectorImage } from '../../../../src/modules/connector/connector-domain';
+import {
+  computeConnectorImage,
+  computeManagerConnectorContract,
+  computeManagerConnectorExcerpt,
+  computeManagerConnectorImage,
+} from '../../../../src/modules/connector/connector-domain';
 
 const connectorWithContract = () => ({
   id: 'connector-1',
@@ -79,5 +85,29 @@ describe('repository manager contract helpers', () => {
     const connector = connectorWithContract();
     delete (connector.manager_contract as any).image;
     await expect(computeManagerConnectorImage(connector as any)).rejects.toThrowError(FunctionalError('Invalid manager contract snapshot').message);
+  });
+});
+
+describe('connectors lists image', () => {
+  it('should return a null image for a connector that is not managed', async () => {
+    const connector = { id: 'connector-1', internal_id: 'connector-1' };
+    await expect(computeConnectorImage(connector as any)).resolves.toBeNull();
+  });
+
+  it('should return a null image and log an error for a managed connector without contract snapshot', async () => {
+    const logError = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+    const connector = { id: 'connector-1', internal_id: 'connector-1', catalog_id: 'ipinfo' };
+    await expect(computeConnectorImage(connector as any)).resolves.toBeNull();
+    expect(logError).toHaveBeenCalledWith('[OPENCTI-MODULE] Managed connector without contract snapshot', {
+      module: 'connector',
+      connectorId: 'connector-1',
+      catalogId: 'ipinfo',
+    });
+    logError.mockRestore();
+  });
+
+  it('should compute the image of a managed connector from its contract snapshot', async () => {
+    const connector = { ...connectorWithContract(), catalog_id: 'catalog-1' };
+    await expect(computeConnectorImage(connector as any)).resolves.toBe('opencti/connector-ipinfo:1.2.3');
   });
 });
