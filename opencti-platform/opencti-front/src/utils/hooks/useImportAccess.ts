@@ -49,12 +49,19 @@ const useImportAccess = () => {
   });
   const hasOnlyAccessToFormImport = hasFormIntakeCapability && !hasAnyImportCapability;
 
+  // Same rule as formSubmit (canSubmitFormTo): Create / Update knowledge or the form capability, in main or in draft,
+  // or Import knowledge granted in draft (a form is then submitted into a draft). Import knowledge in main is not enough.
+  const canSubmitForms = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE], false, {
+    capabilitiesInDraft: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNASKIMPORT],
+  });
+
   return {
     isForcedImportToDraft,
     isForcedFormSubmissionToDraft,
     hasKnowledgeUpdateInMain,
     hasOnlyAccessToImportDraftTab,
     hasOnlyAccessToFormImport,
+    canSubmitForms,
     canOpenDraft,
   };
 };
