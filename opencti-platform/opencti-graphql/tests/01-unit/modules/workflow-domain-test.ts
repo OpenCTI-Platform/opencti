@@ -4532,7 +4532,8 @@ describe('triggerWorkflowEvent — closing reason', () => {
 
   it.each([
     ['reopen', 'open', 'duplicate', null],
-    ['reopen', 'open', undefined, undefined],
+    // The entity may be read before the lock, while a concurrent close writes its reason: clear anyway
+    ['reopen', 'open', undefined, null],
     ['suspend', 'suspended', 'duplicate', null],
     ['archive', 'archived', 'duplicate', undefined],
     ['park', 'parked', 'duplicate', undefined],
