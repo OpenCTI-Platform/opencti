@@ -4615,6 +4615,16 @@ describe('triggerWorkflowEvent — closing reason', () => {
     expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, { ...bypassFieldsUser, draft_context: undefined }, entity, 'closed', StatusScope.Global, null);
   });
 
+  it('does not let a draft-only bypass of mandatory fields skip a required closing reason', async () => {
+    setup('required');
+    const draftUser = { id: 'user-id', draft_context: 'draft-1', capabilities: [], capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' }] } as any;
+
+    const result = await triggerWorkflowEvent(mockContext, draftUser, 'entity-1', 'close');
+
+    expect(result).toMatchObject({ success: false, reason: 'A closing reason is required for this transition' });
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
   it.each([undefined, 'disabled'])('rejects a closing reason when the transition mode is %s', async (mode) => {
     setup(mode);
 

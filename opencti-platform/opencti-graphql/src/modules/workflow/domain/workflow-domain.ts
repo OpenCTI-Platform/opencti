@@ -1449,7 +1449,8 @@ export const triggerWorkflowEvent = async (
       return fromStates.includes(currentStateId) && t.event === eventName;
     });
     const clears = !!targetTransition?.to && clearsClosingReason(definitionData.transitions, currentStateId, targetTransition.to);
-    const resolvedClosingReason = resolveTransitionClosingReason(user, targetTransition?.closingReason, closingReason, clears);
+    // The reason is written to the live entity: draft-only capabilities cannot skip a required one
+    const resolvedClosingReason = resolveTransitionClosingReason(executionUser, targetTransition?.closingReason, closingReason, clears);
     if ('error' in resolvedClosingReason) {
       return { success: false, reason: resolvedClosingReason.error };
     }
