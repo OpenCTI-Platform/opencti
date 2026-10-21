@@ -83,6 +83,7 @@ RUN <<EOT
   echo "93dcc18adc78c65a028a84799ecf8ad40c936fdfc5f2a57b1acda5a8117fa82c /sbin/tini" | sha256sum -c -
   chmod +x /sbin/tini
 
+  dnf -y upgrade --refresh
   dnf -y module enable nodejs:22
   dnf -y --setopt=install_weak_deps=0 install nodejs python${PYTHON_VERSION} python${PYTHON_VERSION}-devel
   alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 2
