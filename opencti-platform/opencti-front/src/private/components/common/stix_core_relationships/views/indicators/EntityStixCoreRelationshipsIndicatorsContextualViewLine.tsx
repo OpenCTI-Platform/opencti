@@ -30,6 +30,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   bodyItem: bodyItemStyle,
   bodyItemText: {
+    width: '100%',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
