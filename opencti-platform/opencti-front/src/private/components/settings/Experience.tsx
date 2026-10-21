@@ -37,6 +37,8 @@ import ExperienceDetailRow from './experience/ExperienceDetailRow';
 import ExperienceFeatureTile from './experience/ExperienceFeatureTile';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import ThreatPulseSettings from './experience/ThreatPulseSettings';
+import ConfigPresetExportFooter from './config_preset/ConfigPresetExportFooter';
+import useConfigPresetExportAccess from './config_preset/useConfigPresetExportAccess';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 export enum CGUStatus {
@@ -104,6 +106,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const { xtmOneConfigured } = useChatbot();
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
+  const canExportConfigPreset = useConfigPresetExportAccess();
   const data = usePreloadedQuery(experienceQuery, queryRef);
   const settings = useFragment<Experience$key>(ExperienceFragment, data.settings);
   const enterpriseEdition = settings.platform_enterprise_edition;
@@ -202,6 +205,8 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           {t_i18n('Discover OpenCTI EE')}
         </Button>
       );
+
+  const eeFooter = isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter;
 
   const eeActivatedBody = (
     <div>
@@ -340,7 +345,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             title={t_i18n('Enterprise Edition')}
             accent={eeAccent}
             statusChip={eeStatusChip}
-            footer={isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter}
+            footer={canExportConfigPreset ? <ConfigPresetExportFooter>{eeFooter}</ConfigPresetExportFooter> : eeFooter}
             testId="experience-enterprise-edition-card"
           >
             {isEnterpriseEditionActivated ? eeActivatedBody : eeCommunityBody}

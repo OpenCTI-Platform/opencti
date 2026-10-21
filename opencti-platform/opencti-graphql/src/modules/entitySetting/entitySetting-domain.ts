@@ -229,3 +229,12 @@ export const queryDefaultValuesAttributesForSetting = async (
   }));
   return defaultValuesAttributes;
 };
+
+// Entity types hidden for the whole platform (platform_hidden_type on their entity setting), sorted
+export const getPlatformHiddenEntityTypes = async (context: AuthContext, user: AuthUser): Promise<string[]> => {
+  const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING]);
+  return entitySettings
+    .filter((entitySetting) => entitySetting.platform_hidden_type)
+    .map((entitySetting) => entitySetting.target_type)
+    .sort();
+};

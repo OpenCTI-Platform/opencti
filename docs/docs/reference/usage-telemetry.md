@@ -180,3 +180,7 @@ No hash, no object and no knowledge content is ever collected, only counts.
 ### Workflows
 
 - The number of workflow definitions published
+
+### Configuration presets
+
+- The number of configuration preset bundles exported

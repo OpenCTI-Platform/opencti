@@ -9224,6 +9224,7 @@ type Query {
     include_preview: Boolean
   ): PulseTrending!
   pulseBenchmark(period: PulsePeriod!): PulseBenchmark!
+  configPresetExportableTypes: [ConfigPresetExportableType!]!
 }
 
 type Subscription {
@@ -10202,6 +10203,7 @@ type Mutation {
   pulseConfigure(input: PulseConfigurationInput!): PulseSettings!
   pulsePurge: PulsePurgeResult!
   pulseTelemetry(event: PulseTelemetryEvent!, surface: PulseSurface!): Boolean
+  configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File!
 }
 
 enum WorkflowExecutionStatus {
@@ -18022,4 +18024,27 @@ input PulseConfigurationInput {
   excluded_markings: [String!]
   sector_bucket: PulseSectorBucket
   region_bucket: PulseRegionBucket
+}
+
+type ConfigPresetExportableItem {
+  key: String!
+  label: String!
+  translatable: Boolean!
+}
+
+type ConfigPresetExportableGroup {
+  key: String!
+  label: String!
+}
+
+type ConfigPresetExportableType {
+  key: String!
+  label: String!
+  group: ConfigPresetExportableGroup!
+  items: [ConfigPresetExportableItem!]!
+}
+
+input ConfigPresetSelectionInput {
+  type: ID!
+  items: [ID!]
 }
