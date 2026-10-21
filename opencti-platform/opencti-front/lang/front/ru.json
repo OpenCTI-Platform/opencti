@@ -5224,6 +5224,7 @@
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "В этом списке отображаются все черновики, для которых включено ограничение доступа, то есть они доступны только определенным пользователям. На этом экране можно снять ограничение доступа.",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "В этом списке отображаются все сущности, для которых включено ограничение доступа, то есть они доступны только определенным пользователям. На этом экране можно снять ограничение доступа.",
   "This malware has been used": "Эта вредоносная программа использовалась",
+  "This map cannot be displayed because your browser does not support WebGL2 or has it disabled.": "Эту карту невозможно отобразить, так как ваш браузер не поддерживает WebGL2 или он отключён.",
   "This mean that the indicator is not managed by the platform.": "Это означает, что индикатор не управляется платформой.",
   "this month": "в этом месяце",
   "This name is already used for an other widget": "Это имя уже используется для другого виджета",

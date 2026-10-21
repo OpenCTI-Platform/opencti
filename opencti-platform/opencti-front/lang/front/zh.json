@@ -5224,6 +5224,7 @@
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "此列表显示启用了某些访问限制的所有草稿，即只有某些特定用户才能访问这些草稿。您可以在此界面删除此访问限制。",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "此列表显示启用了某些访问限制的所有实体，即只有某些特定用户才能访问这些实体。您可以在此屏幕上删除此访问限制。",
   "This malware has been used": "该恶意软件已经被使用",
+  "This map cannot be displayed because your browser does not support WebGL2 or has it disabled.": "无法显示此地图，因为您的浏览器不支持 WebGL2 或已将其禁用。",
   "This mean that the indicator is not managed by the platform.": "这意味着该指标不受平台管理。",
   "this month": "本月",
   "This name is already used for an other widget": "此名称已用于其他部件",
