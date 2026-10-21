@@ -7,6 +7,7 @@ WORKDIR /opt/opencti-worker
 RUN --mount=type=bind,source=requirements.txt,target=requirements.txt <<EOT
     set -euxo pipefail
 
+    apk --no-cache upgrade
     apk --no-cache add libmagic
 
     apk --no-cache add -t .pip_deps git

@@ -74,6 +74,7 @@ FROM base AS app
 RUN <<EOT
   set -euxo pipefail
 
+  apk --no-cache upgrade
   apk --no-cache add tini python3 python3-dev libmagic
   rm /var/log/apk.log
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED
