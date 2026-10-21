@@ -8,9 +8,9 @@ import type { MenuEntry } from './NavToolbarMenu';
 const useVisibleEntries = (entries: MenuEntry[]): MenuEntry[] => {
   const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
-  return entries.filter(({ requiredCapabilities, featureFlag }) => (
+  return entries.filter(({ requiredCapabilities, capabilitiesInDraft, featureFlag }) => (
     (!featureFlag || isFeatureEnable(featureFlag))
-    && (!requiredCapabilities || isGrantedTo(me, requiredCapabilities))
+    && (!requiredCapabilities || isGrantedTo(me, requiredCapabilities, false, { capabilitiesInDraft }))
   ));
 };
 
