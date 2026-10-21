@@ -1224,11 +1224,21 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   ],
 };
 
+const toVocabularyDefinition = (key: string, value: typeof vocabularyDefinitions[VocabularyCategory]): VocabularyDefinition => {
+  return { key: key as VocabularyCategory, ...value, closed: value.closed ?? false };
+};
+
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
   return Object.entries(vocabularyDefinitions)
     .filter(([_, value]) => value.entity_types?.length > 0)
-    .map(([key, value]) => ({ key: key as VocabularyCategory, ...value, closed: value.closed ?? false }))
+    .map(([key, value]) => toVocabularyDefinition(key, value))
     .sort();
+};
+
+// Also returns a category hidden from the list, such as closing_reason_ov while the workflow engine is off
+export const getVocabularyCategory = (key: string): VocabularyDefinition | undefined => {
+  const value = vocabularyDefinitions[key as VocabularyCategory];
+  return value ? toVocabularyDefinition(key, value) : undefined;
 };
 
 export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: string) => {
