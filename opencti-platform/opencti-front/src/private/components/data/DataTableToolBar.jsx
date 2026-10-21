@@ -124,9 +124,11 @@ import {
   buildWorkflowStatusOptions,
   buildWorkflowTransitionAction,
   isFieldOptionDisabled,
+  isTransitionInputValid,
   WORKFLOW_TRANSITION_FIELD,
   withWorkflowBypassOptions,
 } from '../common/workflow/workflowMassActions';
+import MassTransitionInputs from '../common/workflow/MassTransitionInputs';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
@@ -377,6 +379,9 @@ const toolBarWorkflowQuery = graphql`
           name
         }
       }
+      comment
+      requiresShareOrganizationInput
+      requiresUnshareOrganizationInput
     }
   }
 `;
@@ -799,6 +804,12 @@ class DataTableToolBar extends Component {
       R.assoc(key, checked === true, actionsInputs[i]?.options || {}),
       actionsInputs[i] || {},
     );
+    this.setState({ actionsInputs });
+  }
+
+  handleChangeActionInputTransitionInputs(i, inputs) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc('options', inputs, actionsInputs[i] || {});
     this.setState({ actionsInputs });
   }
 
@@ -2406,6 +2417,9 @@ class DataTableToolBar extends Component {
       if (isWorkflowField && !n.values[0]) {
         return false;
       }
+      if (n.field === WORKFLOW_TRANSITION_FIELD && !isTransitionInputValid(n)) {
+        return false;
+      }
     }
     return true;
   }
@@ -3170,6 +3184,15 @@ class DataTableToolBar extends Component {
                               >
                                 {t('The "start time" must be earlier than the "stop time".')}
                               </Alert>
+                            </Grid>
+                          )}
+                          {actionsInputs[i]?.field === WORKFLOW_TRANSITION_FIELD && actionsInputs[i]?.values?.[0]?.requirements && (
+                            <Grid item xs={12}>
+                              <MassTransitionInputs
+                                key={actionsInputs[i].values[0].value}
+                                requirements={actionsInputs[i].values[0].requirements}
+                                onChange={(inputs) => this.handleChangeActionInputTransitionInputs(i, inputs)}
+                              />
                             </Grid>
                           )}
                           {actionsInputs[i]?.field === 'x_opencti_workflow_id' && this.state.workflowBypass && (

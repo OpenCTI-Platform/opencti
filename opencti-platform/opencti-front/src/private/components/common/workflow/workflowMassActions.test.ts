@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildTransitionOptions, buildWorkflowStatusOptions, buildWorkflowTransitionAction, isFieldOptionDisabled, withWorkflowBypassOptions } from './workflowMassActions';
+import {
+  buildTransitionOptions,
+  buildWorkflowStatusOptions,
+  buildWorkflowTransitionAction,
+  isFieldOptionDisabled,
+  isTransitionInputValid,
+  withWorkflowBypassOptions,
+} from './workflowMassActions';
 
 describe('buildWorkflowTransitionAction', () => {
   it('should send the selected event as a replace of the workflow status', () => {
@@ -20,10 +27,43 @@ describe('buildWorkflowTransitionAction', () => {
     });
   });
 
+  it('should send the comment and the organizations the transition needs', () => {
+    const [option] = buildTransitionOptions([
+      { event: 'approve', toState: 'approved', comment: 'required', requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false },
+    ]);
+    const action = buildWorkflowTransitionAction({
+      type: 'REPLACE',
+      values: [option],
+      options: {
+        comment: '  Checked  ',
+        shareOrganizations: [{ value: 'org-1', label: 'Org 1' }],
+        unshareOrganizations: [{ value: 'org-2', label: 'Org 2' }],
+        inputsValid: true,
+      },
+    });
+
+    expect(action.context.options).toEqual({ eventName: 'approve', comment: 'Checked', shareOrganizationIds: ['org-1'] });
+  });
+
+  it('should send no comment for a transition without one, even if one was typed for another transition', () => {
+    const [option] = buildTransitionOptions([{ event: 'approve', toState: 'approved', comment: 'disabled' }]);
+    const action = buildWorkflowTransitionAction({ type: 'REPLACE', values: [option], options: { comment: 'Left over' } });
+
+    expect(action.context.options).toEqual({ eventName: 'approve' });
+  });
+
   it('should send a null event name when no event is selected, so the backend rejects the task', () => {
     const action = buildWorkflowTransitionAction({ type: 'REPLACE', fieldType: 'ATTRIBUTE', values: [] });
 
     expect(action.context.options).toEqual({ eventName: null });
+  });
+});
+
+describe('isTransitionInputValid', () => {
+  it('should wait for the transition inputs to be reported complete', () => {
+    expect(isTransitionInputValid({ type: 'REPLACE', values: [] })).toBe(false);
+    expect(isTransitionInputValid({ type: 'REPLACE', values: [], options: { inputsValid: false } })).toBe(false);
+    expect(isTransitionInputValid({ type: 'REPLACE', values: [], options: { inputsValid: true } })).toBe(true);
   });
 });
 
@@ -44,7 +84,7 @@ describe('buildTransitionOptions', () => {
       { event: 'reject', toState: 'rejected', toStatus: null },
     ]);
 
-    expect(options).toEqual([
+    expect(options.map(({ label, value }) => ({ label, value }))).toEqual([
       { label: 'start → Analyse', value: 'start' },
       { label: 'reject → rejected', value: 'reject' },
     ]);
