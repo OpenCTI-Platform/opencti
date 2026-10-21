@@ -1,4 +1,4 @@
-# Work with graphs
+# Working with graphs in OpenCTI
 
 OpenCTI draws knowledge data as graphs in several places: the **Graph** and **Correlation** views of containers (reports, groupings, incident responses, requests for information and for takedown), **investigations**, the graph view of the **Analyses** tab of an entity, and the explanation of an **inferred relationship**. All of them draw nodes, links and badges the same way. The first four are the interactive graph described on this page; the explanation of an inferred relationship is a fixed, read-only illustration of the rule that produced it, with the focus on hover and the keyboard list of its elements but without controls, legend, layouts or context menu.
 
