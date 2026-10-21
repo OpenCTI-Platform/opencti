@@ -12315,7 +12315,7 @@ __metadata:
     react-router: "npm:8.4.0"
     react-syntax-highlighter: "npm:16.1.2"
     react-transition-group: "npm:4.4.5"
-    react-virtualized: "npm:9.22.6"
+    react-virtualized: "npm:10.0.0"
     react-wordcloud: "npm:1.2.7"
     reactflow: "npm:11.11.4"
     recharts: "npm:3.10.1"
@@ -12995,7 +12995,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15, prop-types@npm:15.8.1, prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:15, prop-types@npm:15.8.1, prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -13485,13 +13485,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-lifecycles-compat@npm:^3.0.4":
-  version: 3.0.4
-  resolution: "react-lifecycles-compat@npm:3.0.4"
-  checksum: 10c0/1d0df3c85af79df720524780f00c064d53a9dd1899d785eddb7264b378026979acbddb58a4b7e06e7d0d12aa1494fd5754562ee55d32907b15601068dae82c27
-  languageName: node
-  linkType: hard
-
 "react-markdown@npm:10.1.0":
   version: 10.1.0
   resolution: "react-markdown@npm:10.1.0"
@@ -13776,20 +13769,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtualized@npm:9.22.6":
-  version: 9.22.6
-  resolution: "react-virtualized@npm:9.22.6"
+"react-virtualized@npm:10.0.0":
+  version: 10.0.0
+  resolution: "react-virtualized@npm:10.0.0"
   dependencies:
-    "@babel/runtime": "npm:^7.7.2"
     clsx: "npm:^1.0.4"
     dom-helpers: "npm:^5.1.3"
-    loose-envify: "npm:^1.4.0"
-    prop-types: "npm:^15.7.2"
-    react-lifecycles-compat: "npm:^3.0.4"
   peerDependencies:
-    react: ^16.3.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/0c4fbe86e0c121adcdb7a3f322601eee4661afe65e31ef767c6d876016b1e7043fdad7998b4fa0252eaf73ffb6c14effcf0f729d154cd15304a8b15ad42b7b06
+    react: ^18.0.0 || ^19.0.0
+    react-dom: ^18.0.0 || ^19.0.0
+  checksum: 10c0/725eb3de63c405ac3d2b941b1649bba867caf9a0a42c9bcbdc524f92b62f3cb525569853c099f9e510b11ec728256f40af00d14cd16c65632c5a2e270964fade
   languageName: node
   linkType: hard
 
