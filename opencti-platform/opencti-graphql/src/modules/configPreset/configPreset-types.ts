@@ -5,7 +5,10 @@ export type ConfigPresetConfiguration = Record<string, unknown>;
 // Content of the JSON file written for one item
 export interface ConfigPresetItemFile {
   openCTI_version: string;
+  // `<group id>.<category id>`
   type: string;
+  // The id of the item in its category
+  id: string;
   configuration: ConfigPresetConfiguration;
 }
 

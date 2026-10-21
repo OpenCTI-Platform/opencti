@@ -100,7 +100,8 @@ describe('Config preset registry', () => {
     const file = await exportConfigPresetItem(context, user, findFamily('platform'), await findItem('platform', 'platform'));
     expect(file).toEqual({
       openCTI_version: PLATFORM_VERSION,
-      type: 'platform.platform',
+      type: 'platformSettings.platform',
+      id: 'platform',
       configuration: {
         platform_title: 'My platform',
         platform_favicon: 'https://example.com/favicon.ico',
@@ -111,7 +112,8 @@ describe('Config preset registry', () => {
 
   it('exports only the allowlisted message fields', async () => {
     const file = await exportConfigPresetItem(context, user, findFamily('messages'), await findItem('messages', 'messages'));
-    expect(file.type).toBe('messages.messages');
+    expect(file.type).toBe('platformSettings.messages');
+    expect(file.id).toBe('messages');
     expect(file.configuration).toEqual({
       platform_banner_text: 'Banner',
       platform_banner_level: 'RED',
@@ -130,7 +132,8 @@ describe('Config preset registry', () => {
 
   it('exports the sorted list of hidden entity types only', async () => {
     const file = await exportConfigPresetItem(context, user, findFamily('hiddenEntityTypes'), await findItem('hiddenEntityTypes', 'hiddenEntityTypes'));
-    expect(file.type).toBe('hiddenEntityTypes.hiddenEntityTypes');
+    expect(file.type).toBe('dataModel.hiddenEntityTypes');
+    expect(file.id).toBe('hiddenEntityTypes');
     expect(file.configuration).toEqual({ hidden_entity_types: ['Channel', 'Malware'] });
   });
 
