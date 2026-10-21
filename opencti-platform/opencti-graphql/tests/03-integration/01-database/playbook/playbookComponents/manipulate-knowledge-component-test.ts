@@ -589,6 +589,18 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       expect(result.bundle.objects[0].extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
     });
 
+    it('should keep the bundle unmodified when the entity is already in the target status', async () => {
+      vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: true, executionStatus: 'completed', unchanged: true });
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: THREAT_ACTOR_ID,
+        bundleObjects: [testBundleObject<StixThreatActor>({ id: THREAT_ACTOR_ID, type: ENTITY_TYPE_THREAT_ACTOR })],
+        configuration: { applyToElements: 'only-main', actions: [statusAction(true)] },
+      }));
+
+      expect(result.output_port).toEqual('unmodified');
+      expect(result.bundle.objects[0].extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
+    });
+
     it('should keep the bundle unmodified when the workflow engine rejects the status', async () => {
       vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: false, reason: 'not mapped' });
       const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
