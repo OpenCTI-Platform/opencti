@@ -107,6 +107,75 @@ describe('resolveWorkflowStatusFilter', () => {
     ]);
   });
 
+  it('keeps the caller mode: with mode or, the id filter is OR-ed like the status filter it replaces', async () => {
+    (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
+    const args = {
+      filters: {
+        mode: 'or',
+        filters: [
+          { key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-abc'], operator: 'eq', mode: 'or' },
+          { key: 'name', values: ['foo'], operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [],
+      },
+    };
+
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
+
+    expect(result.filters.mode).toBe('or');
+    expect(result.filters.filters).toEqual([
+      { key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' },
+      expect.objectContaining({ key: 'name' }),
+    ]);
+  });
+
+  it('excludes the matching entities for a not_eq workflow status filter', async () => {
+    (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-abc'], operator: 'not_eq', mode: 'and' }],
+        filterGroups: [],
+      },
+    };
+
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
+
+    expect(result.filters.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'not_eq', mode: 'and' }]);
+  });
+
+  it('resolves workflow status filters nested in filter groups', async () => {
+    (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [],
+        filterGroups: [{
+          mode: 'or',
+          filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-abc'], operator: 'eq', mode: 'or' }],
+          filterGroups: [],
+        }],
+      },
+    };
+
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
+
+    expect(result.filters.filterGroups[0].filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' }]);
+  });
+
+  it('rejects a workflow status filter with a non-equality operator', async () => {
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: [], operator: 'nil', mode: 'or' }],
+        filterGroups: [],
+      },
+    };
+
+    await expect(resolveWorkflowStatusFilter(mockContext, args)).rejects.toThrow('Workflow status filter only supports equality operators');
+    expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+  });
+
   it('does not cap the resolved id list', async () => {
     const instances = Array.from({ length: 5001 }, (_, i) => ({ entity_id: `entity-${i}` }));
     (middlewareLoader.fullEntitiesList as any).mockResolvedValue(instances);
