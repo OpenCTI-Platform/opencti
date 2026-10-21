@@ -21,7 +21,7 @@ import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser } from '../../../utils/access';
+import { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser, isUserHasCapability } from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
@@ -1259,6 +1259,34 @@ export const getWorkflowInstance = async (
   };
 };
 
+type TransitionInputRequirements = {
+  comment?: string | null;
+  requiresShareOrganizationInput?: boolean;
+  requiresUnshareOrganizationInput?: boolean;
+};
+
+// Organizations a share/unshare action configured without any must receive at runtime
+const getMissingOrganizationInput = (requirements: TransitionInputRequirements, runtimeParams: Record<string, unknown>) => {
+  for (const [key, required] of [
+    ['shareOrganizationIds', requirements.requiresShareOrganizationInput],
+    ['unshareOrganizationIds', requirements.requiresUnshareOrganizationInput],
+  ] as const) {
+    const ids = runtimeParams[key];
+    if (required && (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => typeof id !== 'string' || !id.trim()))) {
+      return `${key} must contain at least one organization ID`;
+    }
+  }
+  return undefined;
+};
+
+// Inputs the triggering user must give: the organizations, and a required comment unless the user can bypass mandatory fields
+const getMissingTransitionInput = (user: AuthUser, transition: TransitionInputRequirements, comment?: string, runtimeParams: Record<string, unknown> = {}) => {
+  if (transition.comment === 'required' && !comment?.trim() && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
+    return 'A comment is required for this transition';
+  }
+  return getMissingOrganizationInput(transition, runtimeParams);
+};
+
 const toAllowedTransition = (
   transition: ReturnType<ReturnType<typeof WorkflowFactory.createDefinition>['getTransitions']>[number],
   statuses: BasicWorkflowStatus[],
@@ -1353,7 +1381,8 @@ const keepCommonTransitions = (transitionLists: AllowedTransition[][]): AllowedT
  * Transitions that every targeted entity can take, for a mass transition. A selection is checked
  * entity by entity, conditions included. A filter (select all) is checked from the statuses found
  * under it: entities without status are in the initial state, and conditions are only checked when
- * the transition runs.
+ * the transition runs. A mass transition carries no comment nor organizations, so transitions that
+ * require them are left out.
  */
 export const getMassWorkflowTransitions = async (
   context: AuthContext,
@@ -1370,7 +1399,7 @@ export const getMassWorkflowTransitions = async (
     const transitionLists = await BluePromise.map(target.entityIds, (entityId) => {
       return getAllowedTransitions(context, user, entityId, { entitySetting, definitionData, statuses });
     }, { concurrency: ES_MAX_CONCURRENCY });
-    return keepCommonTransitions(transitionLists);
+    return keepCommonTransitions(transitionLists).filter((transition) => !getMissingTransitionInput(user, transition));
   }
   let filters = target.filters ? JSON.parse(target.filters) : undefined;
   if (target.excludedIds && target.excludedIds.length > 0) {
@@ -1389,7 +1418,7 @@ export const getMassWorkflowTransitions = async (
   }));
   return keepCommonTransitions([...states].map((state) => {
     return definition.getTransitions(state).map((transition) => toAllowedTransition(transition, statuses, StatusScope.Global));
-  }));
+  })).filter((transition) => !getMissingTransitionInput(user, transition));
 };
 
 /**
@@ -1484,13 +1513,20 @@ export const triggerWorkflowEvent = async (
       __draftEntityIds: draftEntityIds,
     };
 
-    // 5. Create instance and trigger the event
+    // 5. Reject a transition whose required inputs are missing, before any action runs
+    const transition = definition.getTransitions(currentStateId).find((t) => t.event === eventName);
+    const missingInput = transition && getMissingTransitionInput(user, transition, comment, runtimeParams);
+    if (missingInput) {
+      return { success: false, reason: missingInput, entity };
+    }
+
+    // 6. Create instance and trigger the event
     const instance = WorkflowFactory.getInstance(definitionData, definition, currentStateId || '', workflowContext);
     const result = await instance.trigger(eventName);
 
     if (!result.success) {
       // The engine names the state by its status template id, unreadable in task errors and notifications
-      if (!definition.getTransition(currentStateId, eventName)) {
+      if (!transition) {
         const statusTemplate = await storeLoadById<BasicStoreEntity>(executionContext, executionUser, currentStateId, ENTITY_TYPE_STATUS_TEMPLATE);
         const reason = `Transition '${eventName}' is not available from status '${statusTemplate?.name ?? currentStateId}'`;
         return { ...result, reason, entity };
@@ -1711,15 +1747,9 @@ const executeWorkflowBypass = async (
     return { success: false, reason: 'A workflow transition is pending or failed. Clear the pending state before bypassing.' };
   }
   if (applyTransitionActions) {
-    const requirements = getWorkflowBypassRequirements(definitionData, currentState, targetStatus.template_id);
-    for (const [key, required] of [
-      ['shareOrganizationIds', requirements.requiresShareOrganizationInput],
-      ['unshareOrganizationIds', requirements.requiresUnshareOrganizationInput],
-    ] as const) {
-      const ids = runtimeParams[key];
-      if (required && (!Array.isArray(ids) || ids.length === 0 || ids.some((id) => typeof id !== 'string' || !id.trim()))) {
-        return { success: false, reason: `${key} must contain at least one organization ID` };
-      }
+    const missingInput = getMissingOrganizationInput(getWorkflowBypassRequirements(definitionData, currentState, targetStatus.template_id), runtimeParams);
+    if (missingInput) {
+      return { success: false, reason: missingInput };
     }
   }
   const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData, false);

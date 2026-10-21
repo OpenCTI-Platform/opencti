@@ -2820,6 +2820,47 @@ describe('Transition comments – Domain', () => {
 
       expect(getLastHistoryEntry()).not.toHaveProperty('comment');
     });
+
+    describe('required inputs', () => {
+      const mockTransition = (transition: Record<string, unknown>) => {
+        (WorkflowFactory.createDefinition as any).mockImplementation(() => ({ ...defaultCreateDefinition(), getTransitions: () => [{ event: 'review', to: 'reviewed', ...transition }] }));
+      };
+      afterEach(() => {
+        (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
+      });
+
+      it('should reject a transition that requires a comment when none is given, before any action runs', async () => {
+        setupMocks();
+        mockTransition({ comment: 'required' });
+
+        const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', '  ');
+
+        expect(result).toMatchObject({ success: false, reason: 'A comment is required for this transition' });
+        expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+      });
+
+      it('should run a transition that requires a comment when one is given, or when the user can bypass mandatory fields', async () => {
+        setupMocks();
+        mockTransition({ comment: 'required' });
+        const bypassFieldsUser = { id: 'user-id', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' }] } as any;
+
+        expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Reviewed')).toMatchObject({ success: true });
+        expect(await triggerWorkflowEvent(mockContext, bypassFieldsUser, 'entity-id', 'review')).toMatchObject({ success: true });
+      });
+
+      it.each([
+        ['requiresShareOrganizationInput', 'shareOrganizationIds'],
+        ['requiresUnshareOrganizationInput', 'unshareOrganizationIds'],
+      ])('should reject a transition with %s when no organization is given', async (requirement, key) => {
+        setupMocks();
+        mockTransition({ [requirement]: true });
+
+        expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review'))
+          .toMatchObject({ success: false, reason: `${key} must contain at least one organization ID` });
+        expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+        expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', undefined, { [key]: ['org-id'] })).toMatchObject({ success: true });
+      });
+    });
   });
 
   describe('triggerWorkflowEvent – notifications', () => {
@@ -3246,7 +3287,7 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     });
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
     (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'reviewing', history: '[]' });
-    (WorkflowFactory.createDefinition as any).mockReturnValueOnce({ getTransition: () => undefined });
+    (WorkflowFactory.createDefinition as any).mockReturnValueOnce({ getTransitions: () => [] });
     (WorkflowFactory.getInstance as any).mockReturnValueOnce({
       trigger: vi.fn().mockResolvedValue({ success: false, reason: "No transition found from state 'reviewing' for event 'submit'" }),
     });
@@ -3503,6 +3544,24 @@ describe('getMassWorkflowTransitions', () => {
     const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
 
     expect(result).toEqual([expect.objectContaining({ event: 'start', toState: 'analyse', toStatus: statuses[1] })]);
+  });
+
+  it.each([
+    { comment: 'required' },
+    { requiresShareOrganizationInput: true },
+    { requiresUnshareOrganizationInput: true },
+  ])('should leave out a transition that needs inputs a mass transition cannot give: %o', async (requirement) => {
+    transitionsByState.new.push({ event: 'approve', to: 'analyse', actionTypes: [], conditions: [], ...requirement });
+    (elAggregationCount as any).mockResolvedValue([{ label: 'status-new', value: 2, count: 2 }]);
+    try {
+      const selection = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
+      const selectAll = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { filters: null });
+
+      expect(selection.map((transition) => transition.event)).toEqual(['start']);
+      expect(selectAll.map((transition) => transition.event)).toEqual(['start']);
+    } finally {
+      transitionsByState.new.pop();
+    }
   });
 
   it('should offer nothing when the selected entities have no transition in common', async () => {
