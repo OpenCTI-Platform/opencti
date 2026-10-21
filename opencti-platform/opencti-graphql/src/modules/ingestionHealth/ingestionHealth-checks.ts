@@ -131,8 +131,8 @@ export const computeIngestionHealthPatch = (
 
 // region transition
 
-// ponytail: hardcoded guard, moves to a settings object editable from the UI later
-export const HEALTH_NOTIFICATION_DELAY_MS = 5 * 60 * 1000;
+// Default of the notification delay, editable in the ingestion health settings of the platform
+export const DEFAULT_HEALTH_NOTIFICATION_DELAY_MS = 5 * 60 * 1000;
 
 // The current status was already notified: the last failure event was published after its start
 const isStatusNotified = (health: StoredIngestionHealth) => !!health.last_event_date
@@ -142,7 +142,7 @@ const isStatusNotified = (health: StoredIngestionHealth) => !!health.last_event_
  * Computes the health activity event to publish for an ingestion, evaluated at every period of the ingestion health manager.
  *
  * The event is deferred to avoid notifying a flapping status: it is due once the status has not changed
- * for {@link HEALTH_NOTIFICATION_DELAY_MS}, and was not notified since it started.
+ * for the notification delay, and was not notified since it started.
  * The delay runs on the status, not on the event: going back to the notified status inside the delay is notified again.
  *
  * Healthy and unknown end a failure: their recovery is reported only while a failure reported is not recovered yet
@@ -153,11 +153,13 @@ const isStatusNotified = (health: StoredIngestionHealth) => !!health.last_event_
  *
  * @param health health after the write of this period, absent when never evaluated or stopped
  * @param evaluatedAt date of the evaluation period
+ * @param notificationDelay ms a status must stay unchanged before it is notified
  * @returns the transition to publish, or null when nothing is due
  */
 export const computeHealthTransition = (
   health: StoredIngestionHealth | null | undefined,
   evaluatedAt: string,
+  notificationDelay = DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
 ): HealthTransition | null => {
   if (!health) {
     return null;
@@ -167,7 +169,7 @@ export const computeHealthTransition = (
     return null;
   }
   // The status changed less than the delay ago: it may still flap, wait for the next periods
-  if (new Date(evaluatedAt).getTime() - new Date(health.status_since).getTime() < HEALTH_NOTIFICATION_DELAY_MS) {
+  if (new Date(evaluatedAt).getTime() - new Date(health.status_since).getTime() < notificationDelay) {
     return null;
   }
   // Stable and not notified failing status: report it

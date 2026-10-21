@@ -522,6 +522,7 @@
   "Infrastructure types": "Типы инфраструктуры",
   "Ingestion health": "Состояние приёма данных",
   "Ingestion health manager": "Менеджер состояния загрузки данных",
+  "Ingestion health settings": "Настройки состояния приёма данных",
   "Ingestion running": "Приём данных выполняется",
   "Ingestion state": "Состояние приема данных",
   "ingestion_health": "состояние приёма данных",

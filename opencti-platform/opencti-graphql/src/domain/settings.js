@@ -38,6 +38,7 @@ import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
+import { validateIngestionHealthSettingsInput } from '../modules/ingestionHealth/ingestionHealth-settings';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -248,6 +249,7 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'enterprise_license',
   'platform_trash_enabled',
   'platform_reference_attachment',
+  'ingestion_health_settings',
 ];
 
 const SETTINGS_SET_CUSTOMIZATION_KEYS = [
@@ -348,6 +350,11 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     if (invalidEntries.length > 0) {
       throw UnsupportedError(`Invalid IP address or CIDR entries in allow list: ${invalidEntries.join(', ')}`);
     }
+  }
+
+  const ingestionHealthSettings = data.find((inputData) => inputData.key === 'ingestion_health_settings');
+  if (ingestionHealthSettings) {
+    validateIngestionHealthSettingsInput(ingestionHealthSettings);
   }
 
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);

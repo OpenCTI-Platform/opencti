@@ -522,6 +522,7 @@
   "Infrastructure types": "インフラの種類",
   "Ingestion health": "インジェストヘルス",
   "Ingestion health manager": "インジェストヘルスマネージャー",
+  "Ingestion health settings": "インジェストヘルス設定",
   "Ingestion running": "取り込み実行中",
   "Ingestion state": "取り込み状態",
   "ingestion_health": "インジェストヘルス",

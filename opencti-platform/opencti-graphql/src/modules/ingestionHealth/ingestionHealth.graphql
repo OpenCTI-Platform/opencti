@@ -22,6 +22,12 @@ type IngestionHealthCheck {
   health_check_severity: IngestionHealthCheckSeverity!
 }
 
+# Platform settings of the ingestion health, see Settings.ingestion_health_settings
+type IngestionHealthSettings {
+  # ms a status must stay unchanged before it is notified
+  notification_delay: Int!
+}
+
 type IngestionHealth {
   status: IngestionHealthStatus!
   status_since: DateTime!

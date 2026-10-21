@@ -1525,6 +1525,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
+  ingestion_health_settings: IngestionHealthSettings
   messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
@@ -10860,6 +10861,10 @@ type IngestionHealthCheck {
   health_check_message: String
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
+}
+
+type IngestionHealthSettings {
+  notification_delay: Int!
 }
 
 type IngestionHealth {

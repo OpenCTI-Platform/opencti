@@ -25,6 +25,12 @@ export interface StoredIngestionHealth {
   health_checks?: StoredHealthCheck[];
 }
 
+// Content of the ingestion_health_settings object of the platform settings, edited from the Parameters page
+export interface IngestionHealthSettings {
+  // ms a status must stay unchanged before it is notified
+  notification_delay?: number;
+}
+
 // ingestion_health is absent until the manager first evaluates the ingestion, and removed (null in a patch) when it is stopped
 export interface IngestionHealthFields {
   ingestion_health?: StoredIngestionHealth | null;

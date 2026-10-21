@@ -1,11 +1,13 @@
 import conf, { BUS_TOPICS, INGESTION_HEALTH_FEATURE_FLAG, booleanConf, isFeatureEnabled, logApp } from '../config/conf';
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
+import type { BasicStoreSettings } from '../types/settings';
+import { resolveIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-settings';
 import type { BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS } from '../utils/access';
@@ -144,7 +146,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
 
   // The notification is evaluated at every period, even when the health did not change: it is deferred until the status is stable
   const nextHealth = patch ? patch.ingestion_health : element.ingestion_health;
-  const transition = computeHealthTransition(nextHealth, sourceContext.evaluatedAt);
+  const transition = computeHealthTransition(nextHealth, sourceContext.evaluatedAt, sourceContext.notificationDelay);
   if (transition) {
     await publishUserAction({
       user: INGESTION_HEALTH_MANAGER_USER,
@@ -178,6 +180,8 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     const authUser = internal ? INTERNAL_USERS[userId] : users.get(userId); // Ensure userID exist in user list or INTERNAL_USERS
     return authUser ? { internal, user_service_account: authUser.user_service_account === true } : undefined;
   };
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_SETTINGS);
+  const { notification_delay: notificationDelay } = resolveIngestionHealthSettings(settings);
   const pingingConnectors = await findRegularlyPingingConnectors(context, INGESTION_HEALTH_MANAGER_USER);
   const pingingConnectorsIds = new Set(pingingConnectors.map((connector) => connector.internal_id));
 
@@ -219,7 +223,7 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER' });
   }
   // Right after the read: the values read are judged against the moment they were read at
-  const periodContext = { ...globalContext, evaluatedAt: now() };
+  const periodContext = { ...globalContext, evaluatedAt: now(), notificationDelay };
 
   // Active
   for (let i = 0; i < activeIngestions.length; i += 1) {

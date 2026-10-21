@@ -29,6 +29,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
+import useHelper from '../../../utils/hooks/useHelper';
 import DangerZoneChip from '../common/danger_zone/DangerZoneChip';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
@@ -38,6 +39,7 @@ import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsMapSource from './settings_map_source/SettingsMapSource';
 import SettingsManagers from './settings_managers/SettingsManagers';
+import SettingsIngestionHealth from './settings_ingestion_health/SettingsIngestionHealth';
 import SettingsDependencies from './settings_platform/SettingsDependencies';
 import SettingsInfoRow from './settings_platform/SettingsInfoRow';
 import SettingsPlatformSummary from './settings_platform/SettingsPlatformSummary';
@@ -115,6 +117,7 @@ const settingsQuery = graphql`
       }
       otp_mandatory
       ...SettingsMessages_settingsMessages
+      ...SettingsIngestionHealth_settings
       analytics_google_analytics_v4
       filigran_chatbot_ai_cgu_status
       platform_map_custom_file {
@@ -197,6 +200,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   const { isSensitive: isEnterpriseToggleSensitive, isAllowed: isEnterpriseToggleAllowed } = useSensitiveModifications('ce_ee_toggle');
 
   const { t_i18n, fldt } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const { setTitle } = useConnectedDocumentModifier();
 
   const { settings, about } = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
@@ -627,6 +631,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           modules={modules ?? []}
           isEnterpriseEditionValid={isEnterpriseEditionValid}
         />
+
+        {isFeatureEnable('INGESTION_HEALTH') && <SettingsIngestionHealth settings={settings} />}
       </Box>
     </div>
   );
