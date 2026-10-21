@@ -311,7 +311,7 @@ export const validateWorkflowDefinitionData = async (
       });
     } else if (isClosingReasonEnabled(transition) && transition.to === '*') {
       errors.push({
-        type: 'CLOSING_REASON_NOT_LAST',
+        type: 'CLOSING_REASON_ANY_STATE',
         message: `Closing reason in transition '${transition.event}' is not allowed on a transition to any state`,
       });
     } else if (isClosingReasonEnabled(transition) && transition.to) {

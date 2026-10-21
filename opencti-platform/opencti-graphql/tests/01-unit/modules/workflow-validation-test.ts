@@ -1358,7 +1358,7 @@ describe('Workflow Validation – transition closingReason field', () => {
       };
       const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
       expect(result).toContainEqual(expect.objectContaining({
-        type: 'CLOSING_REASON_NOT_LAST',
+        type: 'CLOSING_REASON_ANY_STATE',
         message: "Closing reason in transition 'close' is not allowed on a transition to any state",
       }));
     });
