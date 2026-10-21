@@ -69,7 +69,7 @@ The same interactive graph, with the same controls, is drawn on every surface be
 
 ### Nodes
 
-Each entity is a disc tinted with the colour of its type, ringed with that colour and marked with the icon of its type, the same icon as everywhere else in the platform. Its name is written below; long names are shortened, the full name is in the hover card. Relationships that are themselves the source or target of another relationship are drawn as smaller nodes.
+Each knowledge entity is a node, a disc tinted with the colour of its type, ringed with that colour and marked with the icon of its type. The node's name is written below; long names are shortened, the full name is in the hover card. Relationships that are themselves the source or target of another relationship are drawn as smaller nodes.
 
 Above a node, **badges** give its state. At most three are drawn, the most severe first (an error before a warning), followed by `+2` for example when the entity carries more; the hover card lists every badge with what it means.
 
