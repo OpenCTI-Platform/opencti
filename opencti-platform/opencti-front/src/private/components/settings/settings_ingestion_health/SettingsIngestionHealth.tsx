@@ -109,35 +109,44 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
           </Form>
         )}
       </Formik>
-      <Box component="h4" sx={{ marginTop: 3, marginBottom: 1 }}>{t_i18n('Health checks')}</Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {(ingestion_health_settings?.health_checks ?? []).map((check) => {
-          // A failing blocking check makes the ingestion critical, an advisory one degraded: same chips as the health status
-          const isBlocking = check.health_check_severity === 'blocking';
-          return (
-            <Box
-              key={check.health_check_code}
-              data-testid={`settings-ingestion-health-check-${check.health_check_code}`}
-              sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
-            >
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Switch
-                  checked={check.enabled}
-                  onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
-                  // Named by the backend registry, translated with the labels of the backend schema
-                  label={t_i18n(check.health_check_label)}
-                />
+      <Box component="h4" sx={{ marginTop: 3, marginBottom: 2 }}>{t_i18n('Health checks')}</Box>
+      {/* 20px between the toggles, as between the switches of the group edition form */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto auto', alignItems: 'center', columnGap: 2, rowGap: '20px' }}>
+        {[...(ingestion_health_settings?.health_checks ?? [])]
+          // Configuration checks first, then runtime ones; by translated label within each kind
+          .sort((a, b) => Number(a.health_check_kind === 'runtime') - Number(b.health_check_kind === 'runtime')
+            || t_i18n(a.health_check_label).localeCompare(t_i18n(b.health_check_label)))
+          .map((check) => {
+            // A failing blocking check makes the ingestion critical, an advisory one degraded: same chips as the health status
+            const isBlocking = check.health_check_severity === 'blocking';
+            return (
+              <Box
+                key={check.health_check_code}
+                data-testid={`settings-ingestion-health-check-${check.health_check_code}`}
+                sx={{ display: 'contents' }}
+              >
+                <Box sx={{ minWidth: 0 }}>
+                  <Switch
+                    checked={check.enabled}
+                    onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
+                    // Named by the backend registry, translated with the labels of the backend schema
+                    label={t_i18n(check.health_check_label)}
+                  />
+                </Box>
+                {/* Centered in their column: the column is as wide as its longest value */}
+                <Box component="span" sx={{ justifySelf: 'center', textAlign: 'center', fontSize: 12, color: 'text.secondary' }}>
+                  {check.health_check_kind === 'runtime' ? t_i18n('Runtime') : t_i18n('Configuration')}
+                </Box>
+                {/* Further apart from the kind than the gap of the grid: same padding on every row, the chips stay aligned */}
+                <Box sx={{ justifySelf: 'center', display: 'flex', paddingLeft: 3 }}>
+                  <Chip
+                    label={isBlocking ? t_i18n('Critical') : t_i18n('Degraded')}
+                    severity={isBlocking ? 'critical' : 'high'}
+                  />
+                </Box>
               </Box>
-              <Box component="span" sx={{ fontSize: 12, color: 'text.secondary' }}>
-                {check.health_check_kind === 'runtime' ? t_i18n('Runtime') : t_i18n('Configuration')}
-              </Box>
-              <Chip
-                label={isBlocking ? t_i18n('Critical') : t_i18n('Degraded')}
-                severity={isBlocking ? 'critical' : 'high'}
-              />
-            </Box>
-          );
-        })}
+            );
+          })}
       </Box>
     </Card>
   );
