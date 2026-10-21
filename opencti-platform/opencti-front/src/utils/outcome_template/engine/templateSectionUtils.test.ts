@@ -154,6 +154,22 @@ describe('templateSectionUtils', () => {
     expect(content).toEqual('<div><h3>Keep</h3><p>Filled</p></div>');
   });
 
+  it('should insert rich text content after pruning, without taking its headings for template sections', () => {
+    // Content of a container used as $description: html from the rich text editor, with its own headings
+    // and a picture whose alternative text has a blank line, as Word writes it.
+    const richText = '<div><h2>Content heading</h2><p><img src="data:image/png;base64,AAAA" alt="A shield\n\nDescription automatically generated"></p></div>';
+    const content = buildTemplateContentWithOptionalSectionPruning(
+      '<main><h2>Executive Summary</h2><div>$description</div><h2>Key points</h2><p>$empty</p></main>',
+      [
+        { variableName: 'description', replacement: richText, isEmpty: false },
+        { variableName: 'empty', replacement: '', isEmpty: true },
+      ],
+      { removeEmptySections: true },
+    );
+
+    expect(content).toEqual(`<main><h2>Executive Summary</h2><div>${richText}</div></main>`);
+  });
+
   it('should keep page breaks the template already ends with when nothing around them is pruned', () => {
     const content = buildTemplateContentWithOptionalSectionPruning(
       '<div><h3>Keep</h3><p>$full</p><div class="page-break"></div></div>',
