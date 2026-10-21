@@ -589,6 +589,11 @@ describe('Settings ingestion health behavior', () => {
         id
         ingestion_health_settings {
           notification_delay
+          disabled_health_checks
+          health_checks {
+            health_check_code
+            enabled
+          }
         }
       }
     }
@@ -600,6 +605,11 @@ describe('Settings ingestion health behavior', () => {
           id
           ingestion_health_settings {
             notification_delay
+            disabled_health_checks
+            health_checks {
+              health_check_code
+              enabled
+            }
           }
         }
       }
@@ -610,14 +620,23 @@ describe('Settings ingestion health behavior', () => {
     const { data } = await queryAsAdminWithSuccess({ query: READ_INGESTION_HEALTH_QUERY, variables: {} });
     return data.settings;
   };
-  const editDelay = (id, notification_delay) => ({
+  const editSettings = (id, value) => ({
     query: EDIT_INGESTION_HEALTH_QUERY,
-    variables: { id, input: { key: 'ingestion_health_settings', value: [{ notification_delay }] } },
+    variables: { id, input: { key: 'ingestion_health_settings', value: [value] } },
   });
+  const editDelay = (id, notification_delay) => editSettings(id, { notification_delay });
+  const enabledByCode = (ingestionHealthSettings) => Object.fromEntries(ingestionHealthSettings.health_checks.map((check) => [check.health_check_code, check.enabled]));
+  const ALL_CHECKS_ENABLED = { USER_MISSING: true, USER_NOT_SERVICE_ACCOUNT: true, HEARTBEAT_MISSING: true, FEED_AND_SYNC_EXECUTION_FAILED: true };
 
   it('should apply the default notification delay when not configured', async () => {
     const settings = await readSettings();
     expect(settings.ingestion_health_settings.notification_delay).toEqual(DEFAULT_NOTIFICATION_DELAY);
+  });
+
+  it('should enable every health check when not configured', async () => {
+    const settings = await readSettings();
+    expect(settings.ingestion_health_settings.disabled_health_checks).toEqual([]);
+    expect(enabledByCode(settings.ingestion_health_settings)).toEqual(ALL_CHECKS_ENABLED);
   });
 
   it('should update the notification delay', async () => {
@@ -649,9 +668,46 @@ describe('Settings ingestion health behavior', () => {
     expect(settings.ingestion_health_settings.notification_delay).toEqual(120000);
   });
 
-  it('should restore the default notification delay', async () => {
+  it('should disable a health check', async () => {
+    const { id } = await readSettings();
+    const { data } = await queryAsAdminWithSuccess(editSettings(id, { notification_delay: 120000, disabled_health_checks: ['HEARTBEAT_MISSING'] }));
+    const { ingestion_health_settings } = data.settingsEdit.fieldPatch;
+    expect(ingestion_health_settings.disabled_health_checks).toEqual(['HEARTBEAT_MISSING']);
+    expect(enabledByCode(ingestion_health_settings)).toEqual({ ...ALL_CHECKS_ENABLED, HEARTBEAT_MISSING: false });
+    const settings = await readSettings();
+    expect(settings.ingestion_health_settings.disabled_health_checks).toEqual(['HEARTBEAT_MISSING']);
+    expect(settings.ingestion_health_settings.notification_delay).toEqual(120000);
+  });
+
+  it('should allow disabling health checks with SETTINGS_SETPARAMETERS capability', async () => {
+    const { id } = await readSettings();
+    const disabled = ['HEARTBEAT_MISSING', 'USER_NOT_SERVICE_ACCOUNT'];
+    const { data } = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, editSettings(id, { notification_delay: 120000, disabled_health_checks: disabled }));
+    expect(data.settingsEdit.fieldPatch.ingestion_health_settings.disabled_health_checks).toEqual(disabled);
+  });
+
+  it('should reject unknown or duplicated disabled health checks and keep the stored ones', async () => {
+    const { id } = await readSettings();
+    const error = 'Invalid disabled health checks, expected distinct codes among USER_MISSING, USER_NOT_SERVICE_ACCOUNT, HEARTBEAT_MISSING, FEED_AND_SYNC_EXECUTION_FAILED';
+    await queryAsAdminWithError(editSettings(id, { notification_delay: 120000, disabled_health_checks: ['UNKNOWN_CHECK'] }), error);
+    await queryAsAdminWithError(editSettings(id, { notification_delay: 120000, disabled_health_checks: ['USER_MISSING', 'USER_MISSING'] }), error);
+    const settings = await readSettings();
+    expect(settings.ingestion_health_settings.disabled_health_checks).toEqual(['HEARTBEAT_MISSING', 'USER_NOT_SERVICE_ACCOUNT']);
+  });
+
+  it('should reject disabling health checks without SETTINGS_SETPARAMETERS capability', async () => {
+    const { id } = await readSettings();
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, editSettings(id, { notification_delay: 120000, disabled_health_checks: [] }));
+    const settings = await readSettings();
+    expect(settings.ingestion_health_settings.disabled_health_checks).toEqual(['HEARTBEAT_MISSING', 'USER_NOT_SERVICE_ACCOUNT']);
+  });
+
+  it('should restore the default settings: the object is replaced, a delay sent alone enables every check again', async () => {
     const { id } = await readSettings();
     const { data } = await queryAsAdminWithSuccess(editDelay(id, DEFAULT_NOTIFICATION_DELAY));
-    expect(data.settingsEdit.fieldPatch.ingestion_health_settings.notification_delay).toEqual(DEFAULT_NOTIFICATION_DELAY);
+    const { ingestion_health_settings } = data.settingsEdit.fieldPatch;
+    expect(ingestion_health_settings.notification_delay).toEqual(DEFAULT_NOTIFICATION_DELAY);
+    expect(ingestion_health_settings.disabled_health_checks).toEqual([]);
+    expect(enabledByCode(ingestion_health_settings)).toEqual(ALL_CHECKS_ENABLED);
   });
 });
