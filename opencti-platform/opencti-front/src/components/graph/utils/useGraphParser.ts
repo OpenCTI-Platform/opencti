@@ -101,7 +101,7 @@ const useGraphParser = () => {
   const { t_i18n } = useFormatter();
   // A platform keeps the stored provenance when provenance is disabled: graphs only draw it while it is enabled
   const { platformModuleHelpers } = useContext(UserContext);
-  const isProvenanceEnabled = platformModuleHelpers?.isProvenanceEnabled() ?? false;
+  const isProvenanceEnabled = platformModuleHelpers?.isProvenanceEnabled?.() ?? false;
   const corroborationOf = (data: ObjectToParse) => (isProvenanceEnabled ? data.corroboration_count ?? undefined : undefined);
 
   const getRelationshipName = (data: ObjectToParse, forNode = false) => {
