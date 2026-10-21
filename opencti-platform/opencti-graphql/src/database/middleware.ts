@@ -218,7 +218,17 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
-import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  confidence,
+  customFieldValues,
+  iAliasedIds,
+  iAttributes,
+  modified,
+  type RefAttribute,
+  updatedAt,
+} from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -285,7 +295,10 @@ import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
-  normalizeCustomFieldValuesDates,
+  foldCustomFieldValuesInputs,
+  isCustomFieldOptionsRemove,
+  mergeCustomFieldValues,
+  normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
@@ -1410,7 +1423,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           // `field_id` is a stable per-entry identifier used by nested object attributes that don't
           // have a plain `id` (e.g. custom_field_values), allowing a precise removal that is recomputed
           // against the live value at apply time instead of a stale pre-computed snapshot.
-          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c)));
+          const isRemoved = (c: any) => toRemove.some((r) => (r.id !== undefined && r.id === c.id)
+            || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c));
+          const newValues = current.filter((c) => !isRemoved(c));
           patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
@@ -1870,7 +1885,13 @@ const mergeEntitiesRaw = async (
     const sourceFieldValue = (takenFrom as Record<string, any>)[targetFieldKey];
     const fieldValues = R.flatten((sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isObjectAttribute(targetFieldKey)) {
+    if (targetFieldKey === customFieldValues.name) {
+      // Custom fields are merged one by one as standard attributes, not appended as a list of objects
+      if (fieldValues.length > 0) {
+        const sourcesCustomFieldValues = (sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey]);
+        updateAttributes.push({ key: targetFieldKey, value: mergeCustomFieldValues(mergedEntityCurrentFieldValue, sourcesCustomFieldValues) });
+      }
+    } else if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
       const isObjectMultiple = isMultipleAttribute(targetType, targetFieldKey);
       if (isObjectMultiple) {
@@ -3027,17 +3048,24 @@ export const updateAttribute = async <T extends StoreObject>(
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
   // Validate custom field values against their definitions (mandatory / min-max / select options)
-  if (inputs.filter((input) => input.key === 'custom_field_values').length > 1) {
-    throw FunctionalError('Only one custom_field_values input is allowed', { id, type });
-  }
   let finalInputs = inputs;
-  const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
-  if (customFieldValuesInput) {
+  const customFieldValuesInputs = inputs.filter((inputData) => inputData.key === customFieldValues.name);
+  if (customFieldValuesInputs.length > 0) {
     if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
-      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValuesDates(resolvedValues) };
-      await validateCustomFieldValuesEditInput(context, user, normalizedCustomFieldValuesInput, initial);
-      finalInputs = inputs.map((inputData) => (inputData === customFieldValuesInput ? normalizedCustomFieldValuesInput : inputData));
+      const normalizedInputs: EditInput[] = [];
+      for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
+        const customFieldValuesInput = customFieldValuesInputs[i];
+        const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+        normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
+      }
+      // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
+      const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
+      const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
+      const customFieldValuesInput = isFolded
+        ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
+        : normalizedInputs[0];
+      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+      finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
     } else {
       throw FunctionalError('Custom fields feature is not enabled', { id, type });
     }

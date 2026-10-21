@@ -1,6 +1,6 @@
 import { v5 as uuidv5 } from 'uuid';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
-import { type GetHttpClient, getHttpClient } from '../utils/http-client';
+import { type GetHttpClient, getHttpClient, HttpClientError } from '../utils/http-client';
 import { connector, connectors } from '../modules/connector/connector-domain';
 import { registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
@@ -37,7 +37,6 @@ import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '.
 import { createOnTheFlyUser } from '../modules/user/user-domain';
 import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import type { Work } from '../types/work';
-import { AxiosError } from 'axios';
 import { URL } from 'node:url';
 import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
@@ -157,7 +156,7 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
     return data.data.streamCollections.edges.map((e: any) => e.node);
   } catch (e) {
     let errorMessage = '';
-    if (e instanceof AxiosError) {
+    if (e instanceof HttpClientError) {
       logApp.error('[OPENCTI-MODULE] Issue when trying to call OpenCTI remote stream', { httpStatus: e.status, message: e.message, streamURI: uri });
       errorMessage = e.message;
     }

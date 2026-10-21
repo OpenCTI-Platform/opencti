@@ -84,6 +84,44 @@ describe('SelectEntitiesToCoverStep-utils', () => {
     });
   });
 
+  describe('buildCoveredEntitiesFilters with an existing result', () => {
+    const alreadyCoveredFilter = {
+      key: 'regardingOf',
+      operator: 'not_eq',
+      mode: 'or',
+      values: [
+        { key: 'id', values: ['scr-1'] },
+        { key: 'relationship_type', values: ['has-covered'] },
+      ],
+    };
+
+    it.each([
+      ['container', containerEntity],
+      ['non container', nonContainerEntity],
+    ])('should exclude the entities already covered by the result for a %s', (_label, entity) => {
+      expect(buildCoveredEntitiesFilters(entity, 'scr-1')).toContainEqual(alreadyCoveredFilter);
+    });
+
+    it('should exclude the given entity ids', () => {
+      expect(buildCoveredEntitiesFilters(nonContainerEntity, 'scr-1', ['id1', 'id2'])).toContainEqual({
+        key: 'ids',
+        operator: 'not_eq',
+        mode: 'or',
+        values: ['id1', 'id2'],
+      });
+    });
+
+    it('should not exclude any id when the list is empty', () => {
+      const filters = buildCoveredEntitiesFilters(nonContainerEntity, 'scr-1', []);
+      expect(filters.some((f) => f.key === 'ids')).toBe(false);
+    });
+
+    it('should not exclude anything when no result is given', () => {
+      const filters = buildCoveredEntitiesFilters(nonContainerEntity);
+      expect(filters.some((f) => f.operator === 'not_eq')).toBe(false);
+    });
+  });
+
   describe('buildEntitiesSelection', () => {
     const baseArgs = {
       selectAll: false,

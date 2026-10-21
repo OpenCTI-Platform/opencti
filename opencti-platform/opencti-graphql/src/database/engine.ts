@@ -2170,7 +2170,7 @@ const buildFieldForScriptQuery = (field: string) => {
 export const buildLocalMustFilter = (validFilter: any) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
-  const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
+  const { key, values, nested, negateNested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
   if (isEmptyField(key)) {
     throw FunctionalError('A filter key must be defined', { key });
   }
@@ -2286,6 +2286,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
         },
       },
     };
+    // A document without any nested element must also match a negated filter
+    if (negateNested) {
+      return { bool: { must_not: [{ nested: nestedQuery }] } };
+    }
     return { nested: nestedQuery };
   }
   // 02. Handle nil and not_nil operators

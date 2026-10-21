@@ -1,7 +1,33 @@
+import { convertCreatedBy, convertMarkings } from '../../../../../utils/edition';
+import { FieldOption } from '../../../../../utils/field';
+import type { SecurityCoverageResultFormData } from './SecurityCoverageResultFormDetails';
+import type { SecurityCoverageResultFormDrawerFragment$data } from './__generated__/SecurityCoverageResultFormDrawerFragment.graphql';
+
 export interface ExistingSecurityCoverageResult {
   name: string;
   external_uri?: string | null;
 }
+
+export type SecurityCoverageResultToEdit = NonNullable<SecurityCoverageResultFormDrawerFragment$data['results']>[number];
+
+export const resultToFormData = (result: SecurityCoverageResultToEdit): SecurityCoverageResultFormData => ({
+  name: result.name,
+  description: result.description ?? '',
+  confidence: result.confidence ?? undefined,
+  createdBy: result.createdBy ? convertCreatedBy(result) as FieldOption : undefined,
+  objectMarking: convertMarkings(result),
+  objectLabel: (result.objectLabel ?? []).map((label) => ({
+    label: label.value ?? '',
+    value: label.id,
+    color: label.color ?? undefined,
+  })),
+  coverageInformation: result.coverage_information?.length
+    ? result.coverage_information.map(({ coverage_name, coverage_score }) => ({ coverage_name, coverage_score }))
+    : [{ coverage_name: null, coverage_score: null }],
+  externalUri: result.external_uri ?? '',
+  validFrom: result.coverage_valid_from ? new Date(result.coverage_valid_from) : null,
+  validTo: result.coverage_valid_to ? new Date(result.coverage_valid_to) : null,
+});
 
 // Same normalization as the backend identifier of a security coverage result:
 // the name is case insensitive, the external link is not.
