@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../utils/tests/test-render';
 import { defaultColumnsMap } from './dataTableUtils';
 import type { DataTableColumn } from './dataTableTypes';
@@ -33,6 +33,7 @@ const renderColumn = (
 const fileData = (mimetype: string, size: number) => ({
   importFiles: { edges: [{ node: { name: 'sample.bin', metaData: { mimetype }, size } }] },
 });
+
 describe('dataTableUtils default columns — tooltip anchors', () => {
   it('anchors the color tooltip', async () => {
     const { user } = renderColumn('color', { color: '#ff7f50' });
@@ -89,6 +90,8 @@ describe('dataTableUtils default columns, allowed markings', () => {
 });
 
 describe('dataTableUtils status columns', () => {
+  beforeEach(() => handleAddFilter.mockClear());
+
   it('workflowInstance column renders the workflow status of a draft', () => {
     renderColumn('workflowInstance', {
       entity_type: 'DraftWorkspace',
@@ -150,9 +153,16 @@ describe('dataTableUtils status columns', () => {
     expect(screen.getByText('Legacy status')).toBeInTheDocument();
   });
 
-  it('x_opencti_workflow_id column adds a filter when the legacy status is clicked', async () => {
+  it('x_opencti_workflow_id column adds a filter on the legacy status id when it is clicked', async () => {
     const { user } = renderColumn('x_opencti_workflow_id', { entity_type: 'Report', status: legacyStatus, workflowEnabled: true });
     await user.click(screen.getByText('Legacy status'));
-    expect(handleAddFilter).toHaveBeenCalled();
+    expect(handleAddFilter).toHaveBeenCalledTimes(1);
+    expect(handleAddFilter).toHaveBeenCalledWith('x_opencti_workflow_id', 'status-1', 'eq', expect.objectContaining({ type: 'click' }));
+  });
+
+  it('x_opencti_workflow_id column adds a "no status" filter when an empty status is clicked', async () => {
+    const { user } = renderColumn('x_opencti_workflow_id', { entity_type: 'Report', status: null, workflowEnabled: true });
+    await user.click(screen.getByText('Unknown'));
+    expect(handleAddFilter).toHaveBeenCalledWith('x_opencti_workflow_id', null, 'eq', expect.objectContaining({ type: 'click' }));
   });
 });
