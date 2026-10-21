@@ -57,7 +57,7 @@ const useAutoLayout = (options: LayoutOptions) => {
     );
     setNodes(nodes);
     setEdges(edges);
-  }, [nodesInitialized, elements, setNodes, setEdges]);
+  }, [nodesInitialized, elements, options.initialStatusId, setNodes, setEdges]);
 };
 
 export default useAutoLayout;

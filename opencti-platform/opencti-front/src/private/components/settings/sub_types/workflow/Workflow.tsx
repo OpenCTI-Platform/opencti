@@ -7,7 +7,7 @@ import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Box, Typography } from '@mui/material';
-import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
+import { getInitialState, NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
 import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
@@ -169,10 +169,16 @@ const Workflow = ({
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
 
-  // The initial state last sent by the autosave. The mutation does not return it, so
-  // workflowDefinition.initialState keeps the value fetched with the page.
-  const initialStateRef = useRef(workflowDefinition?.initialState);
-  const layoutOptions: LayoutOptions = { spacing: [50, 50], initialStatusId: initialStateRef.current };
+  // Store previous schema to avoid unnecessary mutations. It is the schema last sent, or loaded by
+  // a mount, refetch, reset or restore, and it holds the saved initial state: the autosave
+  // mutation does not return initialState, so workflowDefinition.initialState keeps the value
+  // fetched with the page.
+  const previousSchemaRef = useRef<string | null>(null);
+  const savedInitialState = (): string | null | undefined => (previousSchemaRef.current
+    ? JSON.parse(previousSchemaRef.current).initialState
+    : workflowDefinition?.initialState);
+  // The initial state the autosave is about to send, so the layout draws it on top.
+  const layoutOptions: LayoutOptions = { spacing: [50, 50], initialStatusId: getInitialState(nodes, edges, savedInitialState()) };
 
   // 3. Sync layout and recenter graph
   useWorkflowLayout(layoutOptions);
@@ -202,9 +208,6 @@ const Workflow = ({
     validationErrors: workflowDefinition?.errors ? [...workflowDefinition.errors as WorkflowValidationError[]] : [],
   });
 
-  // Store previous schema to avoid unnecessary mutations
-  const previousSchemaRef = useRef<string | null>(null);
-
   // 4. When Relay delivers fresh data after a parent refetch (e.g., after restore),
   //    reset the React Flow state to reflect the new workflow definition.
   const isInitialMountRef = useRef(true);
@@ -215,7 +218,6 @@ const Workflow = ({
     }
     setNodes(initialNodes);
     setEdges(initialEdges);
-    initialStateRef.current = workflowDefinition?.initialState;
     previousSchemaRef.current = JSON.stringify(
       transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
     );
@@ -238,8 +240,7 @@ const Workflow = ({
   }, []);
 
   useEffect(() => {
-    const finalSchema = transformToWorkflowDefinition(nodes, edges, { ...workflowDefinition, initialState: initialStateRef.current });
-    initialStateRef.current = finalSchema.initialState;
+    const finalSchema = transformToWorkflowDefinition(nodes, edges, { ...workflowDefinition, initialState: savedInitialState() });
     const schemaString = JSON.stringify(finalSchema);
 
     // Only save if schema has actually changed

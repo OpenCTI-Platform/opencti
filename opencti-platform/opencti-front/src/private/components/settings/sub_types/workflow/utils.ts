@@ -110,6 +110,22 @@ const formatActions = (actions: Action[] = []) => {
   }).filter(Boolean);
 };
 
+// When the graph holds no status node (empty draft / reset), do NOT fall back to the
+// server's initialState: that would carry a stale value into an otherwise empty schema.
+// Use the wildcard '*' instead — the backend treats it as a neutral initial state and
+// skips state-existence checks for it. This also keeps this function's output aligned
+// between handleReset and the autosave effect, preventing a spurious follow-up mutation.
+// Keep the saved initial state while its status is still on the canvas: deleting an unrelated
+// connection must not move it to whichever status is left without an incoming edge. Only when
+// that status is gone does the first status without an incoming edge take over.
+const getInitialState = (nodes: Node[], edges: Edge[], savedInitialState: string | null | undefined) => {
+  const statusNodes = nodes.filter((node) => node.type === WorkflowNodeType.status);
+  if (statusNodes.length === 0) return '*';
+  if (savedInitialState && statusNodes.some((n) => n.data.statusTemplate?.id === savedInitialState)) return savedInitialState;
+  const rootStatusNode = statusNodes.find(({ id }) => !edges.find((e) => e.target === id));
+  return rootStatusNode?.data.statusTemplate.id || savedInitialState;
+};
+
 const transformToWorkflowDefinition = (
   nodes: Node[],
   edges: Edge[],
@@ -164,27 +180,7 @@ const transformToWorkflowDefinition = (
   });
 
   // 3. Identify Initial State
-  const statusNodes = nodes.filter((node) => node.type === WorkflowNodeType.status);
-  const rootStatusNode = statusNodes.find(({ id }) => !edges.find((e) => e.target === id));
-
-  // When the graph holds no status node (empty draft / reset), do NOT fall back to the
-  // server's initialState: that would carry a stale value into an otherwise empty schema.
-  // Use the wildcard '*' instead — the backend treats it as a neutral initial state and
-  // skips state-existence checks for it. This also keeps this function's output aligned
-  // between handleReset and the autosave effect, preventing a spurious follow-up mutation.
-  // Keep the saved initial state while its status is still on the canvas: deleting an unrelated
-  // connection must not move it to whichever status is left without an incoming edge. Only when
-  // that status is gone does the first status without an incoming edge take over.
-  const savedInitialState = workflowDefinition?.initialState;
-  const savedStillPresent = !!savedInitialState && statusNodes.some((n) => n.data.statusTemplate?.id === savedInitialState);
-  let initialState: string | null | undefined;
-  if (statusNodes.length === 0) {
-    initialState = '*';
-  } else if (savedStillPresent) {
-    initialState = savedInitialState;
-  } else {
-    initialState = nodes.find((n) => n.id === rootStatusNode?.id)?.data.statusTemplate.id || savedInitialState;
-  }
+  const initialState = getInitialState(nodes, edges, workflowDefinition?.initialState);
 
   return {
     id: workflowDefinition?.id,
@@ -199,6 +195,7 @@ const isElementStatus = (selectedElement: Node) => (selectedElement?.type === Wo
 const isNewElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.placeholder);
 
 export {
+  getInitialState,
   transformToWorkflowDefinition,
   isElementStatus,
   isNewElementStatus,

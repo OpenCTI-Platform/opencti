@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
 import Workflow from './Workflow';
 import useWorkflowLayout from './hooks/useWorkflowLayout';
+import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
 import { WorkflowNodeType } from './utils';
 import ThemeDark from '../../../../../components/ThemeDark';
 import type { PreloadedQuery } from 'react-relay';
@@ -386,6 +387,40 @@ describe('Workflow Component', () => {
       rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
       expect(lastSaved()).toBe('R');
       expect(lastLayoutOptions()).toEqual(expect.objectContaining({ initialStatusId: 'R' }));
+    });
+
+    it('takes the restored initial state after a restore, and draws it on top', async () => {
+      const status = (id: string) => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name: id, color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } });
+      const link = (source: string, target: string) => ({ id: `e-${source}->${target}`, source, target, type: WorkflowNodeType.transition });
+      // Published: S -t-> R, S initial.
+      const published = {
+        initialNodes: [status('S'), { id: 't', type: WorkflowNodeType.transition, data: { event: 't' }, position: { x: 0, y: 0 } }, status('R')],
+        initialEdges: [link('S', 't'), link('t', 'R')],
+      };
+      vi.mocked(useWorkflowInitialElements).mockImplementation(() => published);
+      try {
+        const user = userEvent.setup();
+        const workflow = () => <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />;
+        mockNodes = published.initialNodes;
+        mockEdges = published.initialEdges;
+        const { rerender } = renderWithTheme(workflow());
+        // Delete S and t: R becomes the initial state.
+        mockNodes = [published.initialNodes[2]];
+        mockEdges = [];
+        rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
+        expect(JSON.parse(mockSaveWorkflowDefinition.mock.calls.at(-1)![0].variables.definition).initialState).toBe('R');
+        const saves = mockSaveWorkflowDefinition.mock.calls.length;
+
+        await user.click(screen.getByTestId('restore-button'));
+        act(() => mockRestoreWorkflowDefinition.mock.calls[0][0].onCompleted());
+        rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
+
+        // The restored graph is the saved one: nothing to send, and S is on top again.
+        expect(mockSaveWorkflowDefinition.mock.calls.length).toBe(saves);
+        expect(vi.mocked(useWorkflowLayout).mock.calls.at(-1)![0]).toEqual(expect.objectContaining({ initialStatusId: 'S' }));
+      } finally {
+        vi.mocked(useWorkflowInitialElements).mockImplementation(() => ({ initialNodes: mockInitialNodes, initialEdges: mockInitialEdges }));
+      }
     });
   });
 

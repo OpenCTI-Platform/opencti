@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
 import type { Edge, Node } from 'reactflow';
-import { applyLayout } from './useWorkflowLayout';
+import useAutoLayout, { applyLayout } from './useWorkflowLayout';
 import { transformToWorkflowDefinition } from '../utils';
 import type { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 
@@ -14,6 +15,17 @@ const edges: Edge[] = [
   { id: 'e2', source: 't', target: 'DONE', type: 'transition', data: { kept: true } },
 ];
 const options = { spacing: [50, 50] as [number, number] };
+
+const mockSetNodes = vi.fn();
+const mockSetEdges = vi.fn();
+// One stable store snapshot: the graph never changes between renders in these tests.
+const mockElements = { nodeMap: new Map(nodes.map((n) => [n.id, n])), edgeMap: new Map(edges.map((e) => [e.id, e])) };
+vi.mock('reactflow', async (importOriginal) => ({
+  ...await importOriginal<typeof import('reactflow')>(),
+  useReactFlow: () => ({ setNodes: mockSetNodes, setEdges: mockSetEdges }),
+  useNodesInitialized: () => true,
+  useStore: () => mockElements,
+}));
 
 describe('applyLayout', () => {
   it('moves nodes into rows and keeps their data', () => {
@@ -44,5 +56,15 @@ describe('applyLayout', () => {
     applyLayout(nodes, edges, options);
     expect(nodes[0].position).toEqual({ x: 0, y: 0 });
     expect(edges[0].data).toBeUndefined();
+  });
+});
+
+describe('useAutoLayout', () => {
+  it('lays the graph out again when the initial status changes, even if the graph did not', () => {
+    const { rerender } = renderHook(({ initialStatusId }) => useAutoLayout({ ...options, initialStatusId }), { initialProps: { initialStatusId: 'NEW' } });
+    rerender({ initialStatusId: 'NEW' });
+    expect(mockSetNodes).toHaveBeenCalledTimes(1);
+    rerender({ initialStatusId: 'DONE' });
+    expect(mockSetNodes).toHaveBeenCalledTimes(2);
   });
 });
