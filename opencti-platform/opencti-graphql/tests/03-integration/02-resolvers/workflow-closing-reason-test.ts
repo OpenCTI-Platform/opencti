@@ -57,6 +57,9 @@ const CASE_INCIDENT_QUERY = gql`
   query WorkflowClosingReasonCase($id: String!) {
     caseIncident(id: $id) {
       x_opencti_closing_reason
+      status {
+        id
+      }
       workflowInstance {
         currentState
         allowedTransitions {
@@ -220,6 +223,25 @@ describe('Workflow closing reason (Case-Incident)', () => {
     expect(merged.workflowInstance.currentState).toBe('open');
     expect(merged.x_opencti_closing_reason).toBeNull();
     await queryAsAdmin({ query: CASE_INCIDENT_DELETE_MUTATION, variables: { id: targetId } });
+  });
+
+  it('should apply the closing reason rules to a status written outside the workflow', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_ADD_MUTATION, variables: { input: { name: `Closing reason status write ${Date.now()}` } } });
+    const id = created.data.caseIncidentAdd.id;
+    await trigger(id, 'close', 'duplicate');
+    const closedStatusId = (await readCase(id)).status.id;
+    await trigger(id, 'reopen');
+    const openStatusId = (await readCase(id)).status.id;
+    // A required reason cannot be skipped by writing the closed status
+    await queryAsUserWithSuccess(USER_EDITOR, { query: FIELD_PATCH_MUTATION, variables: { id, input: [{ key: 'x_opencti_workflow_id', value: [closedStatusId] }] } });
+    expect((await readCase(id)).workflowInstance.currentState).toBe('open');
+    // Reopening by writing the open status clears the reason
+    await trigger(id, 'close', 'duplicate');
+    await queryAsUserWithSuccess(USER_EDITOR, { query: FIELD_PATCH_MUTATION, variables: { id, input: [{ key: 'x_opencti_workflow_id', value: [openStatusId] }] } });
+    const reopened = await readCase(id);
+    expect(reopened.workflowInstance.currentState).toBe('open');
+    expect(reopened.x_opencti_closing_reason).toBeNull();
+    await queryAsAdmin({ query: CASE_INCIDENT_DELETE_MUTATION, variables: { id } });
   });
 
   it('should let a bypass user edit the closing reason directly', async () => {

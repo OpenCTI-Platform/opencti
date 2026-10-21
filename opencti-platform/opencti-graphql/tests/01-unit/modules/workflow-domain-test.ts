@@ -4348,6 +4348,33 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', reason: 'transition_has_actions' })]);
   });
 
+  it('keeps the current state when the allowed transition requires a closing reason', async () => {
+    setupPublishedDefinition(draftInstance);
+    mockTransitionFromDraft({ closingReason: 'required' });
+
+    await syncWrite('status-reviewing-id');
+
+    expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', reason: 'transition_has_actions' })]);
+  });
+
+  it('clears the closing reason when the write moves the entity to a state that can be closed again', async () => {
+    setupPublishedDefinition({ ...draftInstance, currentState: 'closed' }, JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }, { statusId: 'closed' }],
+      transitions: [{ from: 'draft', to: 'closed', event: 'close', closingReason: 'required' }, { from: 'closed', to: 'draft', event: 'reopen' }],
+    }));
+    (WorkflowFactory.createDefinition as any).mockReturnValue({
+      getInitialState: () => 'draft',
+      hasState: () => true,
+      getTransitions: () => [{ event: 'reopen', to: 'draft', actionTypes: [] }],
+    });
+
+    await syncWrite('status-draft-id');
+
+    expect(lastHistory()).toEqual([expect.objectContaining({ state: 'draft', event: 'event_external' })]);
+    expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ id: 'entity-1' }), 'draft', 'GLOBAL', null);
+  });
+
   it('keeps the current state when the target state has onEnter actions', async () => {
     setupPublishedDefinition(draftInstance, JSON.stringify({
       initialState: 'draft',
