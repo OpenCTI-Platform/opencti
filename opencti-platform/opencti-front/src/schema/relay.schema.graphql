@@ -9291,6 +9291,7 @@ type Query {
   timelineEvent(id: String!): TimelineEvent
   timelineAnchors(containerId: String!): TimelineAnchors
   timelineRules: [TimelineRuleDefinition!]!
+  configPresetExportableTypes: [ConfigPresetExportableType!]!
 }
 
 type Subscription {
@@ -10289,6 +10290,7 @@ type Mutation {
   Store a timeline export (PDF, CSV, SVG or PNG) in the exported files of the container, marked at least like the events it holds within the content ceiling
   """
   timelineExportFileAdd(containerId: ID!, file: Upload!, contentMaxMarkings: [String!], fileMarkings: [String!]): File
+  configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File!
 }
 
 enum WorkflowExecutionStatus {
@@ -18238,4 +18240,27 @@ type TimelineExportFile {
 input TimelineSettingsInput {
   enabled_lanes: [TimelineLane!]
   hidden_kinds: [TimelineEventKind!]
+}
+
+type ConfigPresetExportableItem {
+  key: String!
+  label: String!
+  translatable: Boolean!
+}
+
+type ConfigPresetExportableGroup {
+  key: String!
+  label: String!
+}
+
+type ConfigPresetExportableType {
+  key: String!
+  label: String!
+  group: ConfigPresetExportableGroup!
+  items: [ConfigPresetExportableItem!]!
+}
+
+input ConfigPresetSelectionInput {
+  type: ID!
+  items: [ID!]
 }

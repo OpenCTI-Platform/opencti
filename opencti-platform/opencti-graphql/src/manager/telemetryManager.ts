@@ -159,6 +159,7 @@ export const TELEMETRY_GAUGE_TIMELINE_DERIVED_EVENT = 'timelineDerivedEventCount
 export const TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT = 'timelineManualEventCount';
 export const TELEMETRY_GAUGE_TIMELINE_EXPORT = 'timelineExportCount';
 export const TELEMETRY_GAUGE_TIMELINE_VIEW = 'timelineViewCount';
+export const TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT = 'configPresetExportCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -325,6 +326,11 @@ export const addTimelineExportCount = () => {
 export const addTimelineViewCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_TIMELINE_VIEW, 1)
     .catch((reason) => logApp.warn('Error adding timeline view count to telemetry', { reason }));
+};
+
+export const addConfigPresetExportCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT, 1)
+    .catch((reason) => logApp.warn('Error adding config preset export count to telemetry', { reason }));
 };
 
 // All the counters below are fire-and-forget: they are called from feature
@@ -822,6 +828,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setTimelineManualEventCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT));
     manager.setTimelineExportCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_EXPORT));
     manager.setTimelineViewCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_VIEW));
+    const configPresetExportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT);
+    manager.setConfigPresetExportCount(configPresetExportCountInRedis);
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
     manager.setChatbotMessageCount(chatbotMessageCountInRedis);
     const aiInsightItems: DimensionalGaugeItem[] = [];

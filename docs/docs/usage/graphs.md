@@ -1,13 +1,13 @@
-# Work with graphs
+# Working with graphs in OpenCTI
 
-OpenCTI draws knowledge as graphs in several places: the **Graph** and **Correlation** views of containers (reports, groupings, incident responses, requests for information and for takedown), **investigations**, the graph view of the **Analyses** tab of an entity, and the explanation of an **inferred relationship**. All of them draw nodes, links and badges the same way. The first four are the interactive graph described on this page; the explanation of an inferred relationship is a fixed, read-only illustration of the rule that produced it, with the focus on hover and the keyboard list of its elements but without controls, legend, layouts or context menu.
+OpenCTI draws knowledge data as graphs in several places: the **Graph** and **Correlation** views of containers (reports, groupings, incident responses, requests for information and for takedown), **investigations**, the graph view of the **Analyses** tab of an entity, and the explanation of an **inferred relationship**. All of them draw nodes, links and badges the same way. The first four are the interactive graph described on this page; the explanation of an inferred relationship is a fixed, read-only illustration of the rule that produced it, with the focus on hover and the keyboard list of its elements but without controls, legend, layouts or context menu.
 
 ## Why use the graph?
 
 A graph shows what a list cannot: who is connected to what, through which relationships, and how strongly. The graph is built to answer those questions quickly:
 
 - every node says what it is (icon and colour of its type), what it carries (markings, a low confidence, an inference) and how certain its relationships are;
-- focusing on an entity fades everything else, so its neighbourhood reads at a glance;
+- focusing on an entity fades everything else, so you can see what an entity is connected to at a glance;
 - deterministic layouts arrange the same graph the same way every time, from the threat to its victims;
 - every element can be acted on from where it is drawn.
 
@@ -69,7 +69,7 @@ The same interactive graph, with the same controls, is drawn on every surface be
 
 ### Nodes
 
-Each entity is a disc tinted with the colour of its type, ringed with that colour and marked with the icon of its type, the same icon as everywhere else in the platform. Its name is written below; long names are shortened, the full name is in the hover card. Relationships that are themselves the source or target of another relationship are drawn as smaller nodes.
+Each knowledge entity is a node, a disc tinted with the colour of its type, ringed with that colour and marked with the icon of its type. The node's name is written below; long names are shortened, the full name is in the hover card. Relationships that are themselves the source or target of another relationship are drawn as smaller nodes.
 
 Above a node, **badges** give its state. At most three are drawn, the most severe first (an error before a warning), followed by `+2` for example when the entity carries more; the hover card lists every badge with what it means.
 
@@ -121,13 +121,13 @@ From left to right:
 
 The toolbar acts on the drawing: what is shown and how, the selection, the filters of the drawing and its image. The header of the page acts on the knowledge it is about: export as a PDF or a STIX report, add to a container, duplicate, delete, manage the access restriction. The legend opens and closes from itself (see [The legend](#the-legend)).
 
-The search field and the **More actions** menu close the toolbar. **More actions** holds, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way; the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) are in the [context menu](#context-menu), and in **More actions** in 3D mode, which has no context menu. On a graph narrower still (a small window, or a side panel open next to it), the creation and removal tools fold into one **Creation and removal** button that opens them.
+The search field and the **More actions** menu are on the right side of the toolbar. **More actions** holds, actions that can't be displayed because of window size and less frequently used actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) are in the [context menu](#context-menu), and in **More actions** in 3D mode, which has no context menu. On a graph narrower still (a small window, or a side panel open next to it), the creation and removal tools fold into one **Creation and removal** button that opens them.
 
 Every tooltip names the action, and its keyboard shortcut when it has one; a disabled action says why in its tooltip (for example "Select entities first"). The toolbar is one stop of the `Tab` key: the arrow keys, `Home` and `End` move between its controls.
 
 ## Navigate
 
-Fitting keeps every entity clear of the legend, the details panel and the toolbar. A graph opened for the first time is fitted again once its layout settles, unless you zoomed or moved it meanwhile; afterwards it opens as you left it. In full screen, the toolbar and every dialog stay available; press `Esc` or **Full screen** again to leave.
+Fit the whole graph and Fit the selection displays your data on the visible areas of your screen. A graph opened for the first time is fitted again once its layout settles, unless you zoomed or moved it meanwhile; afterwards it opens as you left it. In full screen, the toolbar and every dialog stay available; press `Esc` or **Full screen** again to leave.
 
 ## Focus and hover cards
 
@@ -164,7 +164,7 @@ The legend on the bottom left counts the entities of each type and the relations
 
 ![The legend minimised to its pill, with two type filters in use](assets/graph-legend-minimized.png)
 
-When the time range selector of the toolbar is open, the legend moves up so that the whole slider stays free; when the graph is too short to show the legend whole, it scrolls.
+When the time range selector of the toolbar is open, the legend moves up so that the whole slider stays free; when the graph is too short to show the whole legend, it scrolls.
 
 ## When nothing is drawn
 

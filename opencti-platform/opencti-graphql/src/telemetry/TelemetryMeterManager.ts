@@ -259,6 +259,8 @@ export class TelemetryMeterManager {
   // Number of incident and case timelines opened
   timelineViewCount = 0;
 
+  configPresetExportCount = 0;
+
   // endregion providers usage
 
   // region Custom fields
@@ -608,6 +610,10 @@ export class TelemetryMeterManager {
     this.timelineViewCount = n;
   }
 
+  setConfigPresetExportCount(n: number) {
+    this.configPresetExportCount = n;
+  }
+
   setChatbotMessageCount(n: number) {
     this.chatbotMessageCount = n;
   }
@@ -841,6 +847,7 @@ export class TelemetryMeterManager {
     this.registerGauge('timeline_manual_event_count', 'Number of analyst milestones added to incident and case timelines', 'timelineManualEventCount');
     this.registerGauge('timeline_export_count', 'Number of incident and case timeline exports', 'timelineExportCount');
     this.registerGauge('timeline_view_count', 'Number of incident and case timelines opened', 'timelineViewCount');
+    this.registerGauge('config_preset_export_count', 'Number of configuration preset bundles exported', 'configPresetExportCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');
     this.registerDimensionalGauge('ai_insight_request_count', 'AI Insights requests broken down by cache state (hit, miss)', 'aiInsightRequestItems');
