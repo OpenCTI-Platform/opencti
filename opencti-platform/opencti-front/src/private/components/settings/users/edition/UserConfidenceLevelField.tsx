@@ -2,9 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, useFormikContext } from 'formik';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
-import { InformationOutline } from 'mdi-material-ui';
 import { UserEdition_user$data } from '@components/settings/users/__generated__/UserEdition_user.graphql';
 import ConfidenceInputSliderField from '../../../../../components/ConfidenceInputSliderField';
 import { useFormatter } from '../../../../../components/i18n';
@@ -108,23 +106,18 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
           {t_i18n('This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.')}
         </Box>
       )}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '24px' }}>
+      <Box sx={{ marginBottom: '24px' }}>
         {/* we still use a technical field for this switch to be able to do lazy yup validation ; do NOT submit! */}
         <Field
           component={SwitchField}
           type="checkbox"
           name="user_confidence_level_enabled"
           label={t_i18n('Enable user Max Confidence Level')}
+          tooltip={t_i18n('The user\'s Max Confidence Level overrides Max Confidence Level inherited from user\'s groups')}
           // controlled field
           checked={switchValue}
           onChange={handleSwitchChange}
         />
-        <Tooltip
-          sx={{ zIndex: 2 }}
-          title={t_i18n('The user\'s Max Confidence Level overrides Max Confidence Level inherited from user\'s groups')}
-        >
-          <InformationOutline fontSize="small" color="primary" />
-        </Tooltip>
       </Box>
       <Field
         component={ConfidenceInputSliderField}
