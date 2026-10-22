@@ -1962,7 +1962,10 @@ function processSearch(
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
     // Any other ~ (inside an url, invalid edit distance, ...) is escaped, as query_string would fail parsing it as fuzziness
-    const fuzzyMatch = partialElement.match(LUCENE_FUZZY_TERM_REGEX);
+    // Fuzzy terms are not analyzed: a term with special chars (apt-28, url) would never match the tokenized text, so it is searched as a regular term
+    const luceneFuzzyMatch = partialElement.match(LUCENE_FUZZY_TERM_REGEX);
+    const isSingleWordFuzzy = luceneFuzzyMatch && specialElasticCharsEscapeWithLuceneSyntax(luceneFuzzyMatch[1]) === luceneFuzzyMatch[1];
+    const fuzzyMatch = isSingleWordFuzzy ? luceneFuzzyMatch : null;
     const term = fuzzyMatch ? fuzzyMatch[1] : partialElement;
     const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(term);
     if (isNotEmptyField(cleanElement)) {

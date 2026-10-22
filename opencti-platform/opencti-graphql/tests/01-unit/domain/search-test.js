@@ -53,6 +53,10 @@ it('should search parsing correctly generated', () => {
   parsed = parse('apt\n~1');
   expect(parsed.queriesString).toBe('apt* \\~1*');
 
+  // Fuzzy is only kept on a single word, as fuzzy terms are not split by the analyzer
+  parsed = parse('apt-28~ https://x.com/a~ mal*~1');
+  expect(parsed.queriesString).toBe('apt\\-28\\~* https\\:\\/\\/x.com\\/a\\~* mal*~1');
+
   // GENERIC TESTING
   parsed = parse('(Citation:');
   expect(parsed.queriesString).toBe('\\(Citation\\:*');
