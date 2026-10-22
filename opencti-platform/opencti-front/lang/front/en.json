@@ -3703,6 +3703,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "Only lowercase letters, numbers and hyphens are allowed",
   "Only lowercase letters, numbers and underscores, starting with a letter": "Only lowercase letters, numbers and underscores, starting with a letter",
   "Only main element in the bundle": "Only main element in the bundle",
+  "Only on a transition into a final state: {status} is left by {transitions}.": "Only on a transition into a final state: {status} is left by {transitions}.",
   "Only successful tests allow the ingestion creation.": "Only successful tests allow the ingestion creation.",
   "Only successful tests allow the ingestion edition.": "Only successful tests allow the ingestion edition.",
   "Only yourself and service accounts can be selected": "Only yourself and service accounts can be selected",

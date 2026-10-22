@@ -3703,6 +3703,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "Seuls les lettres minuscules, les chiffres et les traits d'union sont autorisés",
   "Only lowercase letters, numbers and underscores, starting with a letter": "Uniquement des lettres minuscules, des chiffres et des traits de soulignement, commençant par une lettre",
   "Only main element in the bundle": "Uniquement l'élément principal du bundle",
+  "Only on a transition into a final state: {status} is left by {transitions}.": "Uniquement sur une transition vers un état final : {status} est quitté par {transitions}.",
   "Only successful tests allow the ingestion creation.": "Seuls les tests réussis permettent la création de l'ingestion.",
   "Only successful tests allow the ingestion edition.": "Seuls les tests réussis permettent l'édition de l'ingestion.",
   "Only yourself and service accounts can be selected": "Seuls vous-même et les comptes de service peuvent être sélectionnés",

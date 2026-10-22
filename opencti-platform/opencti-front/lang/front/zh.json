@@ -3703,6 +3703,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "只允许使用小写字母、数字和连字符",
   "Only lowercase letters, numbers and underscores, starting with a letter": "仅限小写字母、数字和下划线，且必须以字母开头",
   "Only main element in the bundle": "仅捆绑包中的主要元素",
+  "Only on a transition into a final state: {status} is left by {transitions}.": "仅适用于进入最终状态的转换：{status} 可通过 {transitions} 离开。",
   "Only successful tests allow the ingestion creation.": "只有成功的测试才允许创建摄取。",
   "Only successful tests allow the ingestion edition.": "只有成功的测试才允许摄取版本。",
   "Only yourself and service accounts can be selected": "仅可选择您本人和服务账户",
