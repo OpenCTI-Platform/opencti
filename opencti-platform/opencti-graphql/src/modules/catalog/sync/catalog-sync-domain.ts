@@ -467,9 +467,15 @@ export const synchronizeCatalogs = async (
       syncedCatalogs.push(result.catalogId);
     }
   };
+  const isSyncComplete = syncedCatalogs.length === sources.length;
   // Cleanup obsolete catalogs only if no sync failed
-  if (syncedCatalogs.length === sources.length) {
+  if (isSyncComplete) {
     await cleanupObsoleteCatalogs(context, syncedCatalogs);
   }
-  return syncedCatalogs;
+  return {
+    synchronizedCatalogIds: syncedCatalogs,
+    // Embedded catalogs only change with the platform version: once every source is embedded
+    // and synchronized, the next synchronizations would change nothing until the platform restarts.
+    isEmbeddedOnlySyncComplete: isSyncComplete && sources.every((source) => source.kind === 'embedded'),
+  };
 };
