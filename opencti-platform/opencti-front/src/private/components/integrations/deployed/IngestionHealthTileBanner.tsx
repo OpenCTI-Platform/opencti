@@ -27,9 +27,9 @@ const IngestionHealthTileBanner = ({ issue, to }: IngestionHealthTileBannerProps
       data-testid="integration-health-banner"
       className="integration-health-banner"
       direction="row"
-      alignItems="center"
-      gap={1}
       sx={{
+        alignItems: 'center',
+        gap: 1,
         color,
         textDecoration: 'none',
         padding: theme.spacing(1.25, 3),
