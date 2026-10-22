@@ -1,5 +1,5 @@
 import { graphql } from 'react-relay';
-import { commitMutation } from '../relay/environment';
+import { commitMutation, defaultCommitMutation } from '../relay/environment';
 
 const xtmHubLogMutation = graphql`
   mutation xtmHubLogMutation($message: String!) {
@@ -20,6 +20,7 @@ export const logXtmHubIgnoredMessage = (receivedOrigin: string, expectedOrigin: 
     variables: {
       message: `XTM Hub: message ignored, it comes from "${receivedOrigin}" but the configured XTM Hub origin is "${expectedOrigin}"`,
     },
+    ...defaultCommitMutation,
     onError: () => {},
   });
 };
