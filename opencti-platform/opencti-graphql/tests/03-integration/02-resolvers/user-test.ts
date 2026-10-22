@@ -953,7 +953,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
   it('should list no group when its administrated organizations have no grantable group', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, { query: GROUPS_QUERY, variables: {} });
     expect(queryResult.data?.groups.edges).toEqual([]);
   });
   it('should user created', async () => {
@@ -993,7 +993,7 @@ describe('User has no settings capability and is organization admin query behavi
     userInternalId = user.data.userAdd.id;
   });
   it('should list only the grantable groups of its administrated organizations', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, { query: GROUPS_QUERY, variables: {} });
     const groupsIds = queryResult.data?.groups.edges.map((e: { node: { id: string } }) => e.node.id);
     expect(groupsIds).toEqual([amberGroupId]);
   });
