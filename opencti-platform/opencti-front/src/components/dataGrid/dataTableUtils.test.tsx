@@ -157,7 +157,7 @@ describe('dataTableUtils status columns', () => {
     const { user } = renderColumn('x_opencti_workflow_id', { entity_type: 'Report', status: legacyStatus, workflowEnabled: true });
     await user.click(screen.getByText('Legacy status'));
     expect(handleAddFilter).toHaveBeenCalledTimes(1);
-    expect(handleAddFilter).toHaveBeenCalledWith('x_opencti_workflow_id', 'status-1', 'eq', expect.objectContaining({ type: 'click' }));
+    expect(handleAddFilter).toHaveBeenCalledWith('workflow_id', 'status-1', 'eq', expect.objectContaining({ type: 'click' }));
   });
 
   it('x_opencti_workflow_id column adds no filter when the Disabled tag is clicked', async () => {
@@ -184,6 +184,6 @@ describe('dataTableUtils status columns', () => {
       workflowInstance: { id: 'instance-1', currentStatus: workflowStatus },
     }, { flag: true });
     await user.click(screen.getByText('Workflow status'));
-    expect(handleAddFilter).toHaveBeenCalledWith('x_opencti_workflow_id', 'status-2', 'eq', expect.objectContaining({ type: 'click' }));
+    expect(handleAddFilter).toHaveBeenCalledWith('workflow_id', 'status-2', 'eq', expect.objectContaining({ type: 'click' }));
   });
 });
