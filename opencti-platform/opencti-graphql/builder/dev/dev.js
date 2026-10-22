@@ -1,12 +1,21 @@
+const fs = require('fs');
+const path = require('path');
 const esbuild = require('esbuild');
 const {default: importGlobPlugin} = require('esbuild-plugin-import-glob');
 const {default: graphqlLoaderPlugin} = require('@luckycatfactory/esbuild-graphql-loader');
 const nativeNodePlugin = require('../plugin/native.node.plugin');
 const {copy} = require('esbuild-plugin-copy');
 
+// safeEjs evaluates the ejs sources inside its sandbox; inline them so the bundle needs no node_modules.
+const ejsDirectory = path.dirname(require.resolve('ejs'));
+const safeEjsSources = Object.fromEntries(['ejs.js', 'utils.js'].map((file) => [file, fs.readFileSync(path.join(ejsDirectory, file), 'utf8')]));
+
 esbuild.build({
     logLevel: 'info',
-    define: {'process.env.NODE_ENV': '\"development\"'},
+    define: {
+        'process.env.NODE_ENV': '\"development\"',
+        __SAFE_EJS_SOURCES__: JSON.stringify(safeEjsSources),
+    },
     plugins: [
         importGlobPlugin(),
         graphqlLoaderPlugin(),
