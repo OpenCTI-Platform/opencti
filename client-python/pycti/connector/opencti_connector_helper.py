@@ -1861,8 +1861,12 @@ def _sanitize_connector_errors(errors) -> List[Dict]:
         ]
     except Exception:  # pylint: disable=broad-except
         return []
-    sanitized.sort(key=lambda error: error["criticity"], reverse=True)
-    return sanitized[:CONNECTOR_ERRORS_MAX_COUNT]
+    # The platform merges errors by code, the last report wins: a repeated code takes a single slot
+    last_error_by_code = {error["code"]: error for error in sanitized}
+    deduplicated = sorted(
+        last_error_by_code.values(), key=lambda error: error["criticity"], reverse=True
+    )
+    return deduplicated[:CONNECTOR_ERRORS_MAX_COUNT]
 
 
 class ConnectorInfo:

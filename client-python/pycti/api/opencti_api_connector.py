@@ -1,7 +1,19 @@
 import json
+import re
 from typing import Any, Dict, List
 
 from pycti.connector.opencti_connector import OpenCTIConnector
+
+# Wording of a platform without errors support, from graphql 16 and graphql 17
+_ERRORS_FIELD_REJECTED = re.compile(
+    r'Field "errors" is not defined by type "ConnectorInfoInput"'
+    r'|type "ConnectorInfoInput" not to include unknown field "errors"'
+)
+
+
+def _is_errors_field_rejected(error: ValueError) -> bool:
+    # A non 200 response is raised with its raw JSON body, where quotes are escaped
+    return _ERRORS_FIELD_REJECTED.search(str(error).replace('\\"', '"')) is not None
 
 
 class OpenCTIApiConnector:
@@ -143,7 +155,11 @@ class OpenCTIApiConnector:
         try:
             result = self.api.query(query, variables)
         except ValueError as e:
-            if not connector_info or not connector_info.get("errors"):
+            if (
+                not connector_info
+                or not connector_info.get("errors")
+                or not _is_errors_field_rejected(e)
+            ):
                 raise
             # Platforms older than errors support reject the field: the ping itself must still go through.
             self.api.app_logger.warning(

@@ -72,7 +72,7 @@ const connectorResolvers: Resolvers = {
     },
   },
   Connector: {
-    connector_info: async (cn) => (cn.connector_info ? { ...cn.connector_info, errors: await loadConnectorErrors(cn.internal_id) } : null),
+    connector_info: (cn) => (cn.connector_info ? { ...cn.connector_info, connector_id: cn.internal_id } : null),
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_priority_group: (cn) => cn.connector_priority_group ?? ConnectorPriorityGroup.Default,
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
@@ -91,6 +91,9 @@ const connectorResolvers: Resolvers = {
     has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
     jwks: () => getConnectorJwks(),
     ...ingestionHealthFieldResolvers,
+  },
+  ConnectorInfo: {
+    errors: (connectorInfo) => loadConnectorErrors(connectorInfo.connector_id),
   },
   ManagedConnector: {
     manager_current_status: (cn) => computeManagedConnectorCurrentStatus(cn),

@@ -25,6 +25,11 @@ export interface ConnectorInfo {
   errors?: ConnectorInfoError[] | null;
 }
 
+// Parent of the ConnectorInfo GraphQL type: errors live in redis and are only loaded when requested, by connector id
+export interface ResolvedConnectorInfo extends ConnectorInfo {
+  connector_id: string;
+}
+
 type ConnectorManagerContract = CatalogContractEntityFields;
 
 export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHealthFields {

@@ -170,3 +170,25 @@ def test_ping_alive_does_not_log_errors_on_each_ping():
 def test_connector_run_error_objects_are_sent():
     info = ConnectorInfo(errors=[ConnectorRunError.model_validate(API_ERROR)])
     assert info.all_details["errors"] == [API_ERROR]
+
+
+def test_sent_errors_keep_the_last_report_of_a_repeated_code():
+    info = ConnectorInfo()
+    info.add_error("API_UNREACHABLE", "old", 1)
+    info.add_error("RATE_LIMITED", "", 2)
+    info.add_error("  API_UNREACHABLE  ", "latest", 3)
+    assert info.all_details["errors"] == [
+        {"code": "API_UNREACHABLE", "message": "latest", "criticity": 3},
+        {"code": "RATE_LIMITED", "message": "", "criticity": 2},
+    ]
+
+
+def test_sent_errors_count_a_repeated_code_once_against_the_limit():
+    info = ConnectorInfo()
+    for _ in range(CONNECTOR_ERRORS_MAX_COUNT):
+        info.add_error("REPEATED", "", 3)
+    info.add_error("DISTINCT", "", 2)
+    assert [error["code"] for error in info.all_details["errors"]] == [
+        "REPEATED",
+        "DISTINCT",
+    ]
