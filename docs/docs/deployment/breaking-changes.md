@@ -10,6 +10,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 | Change                                                                                                              | Deprecated in | Changed in |
 |:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
+| [Elasticsearch 9 support and search engine client detection](#elasticsearch-9)                                      | -             | TBD        |
 | [Removal of filter script](#filter-script-api)                                                                      | -             | 7.260401.0 |
 | [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
 | [Update license for SSO (& migration to UI)](#SSO-update-license)                                                   |               | 7.260224.0 |
@@ -19,6 +20,15 @@ This table regroups all the breaking changes introduced, with the corresponding 
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                    |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                |               | 5.12       |
+
+<a id="elasticsearch-9"></a>
+### Elasticsearch 9 support and search engine client detection
+Starting with **OpenCTI TBD**, the platform supports Elasticsearch 8, Elasticsearch 9 and OpenSearch, and detects
+at startup which one runs behind `elasticsearch:url` to use the matching client. The `elasticsearch:engine_selector`
+and `elasticsearch:engine_check` parameters are removed: a value still set is ignored with a warning.
+`elasticsearch:engine_client` forces a client when the detection cannot work.
+
+For more details, see [this migration guide](breaking-changes/elasticsearch-9-support.md)
 
 <a id="filter-script-api"></a>
 ### Removal of filter script
