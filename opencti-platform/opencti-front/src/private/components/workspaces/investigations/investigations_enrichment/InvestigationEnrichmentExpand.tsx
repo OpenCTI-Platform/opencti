@@ -13,77 +13,7 @@ import { ObjectToParse } from '../../../../../components/graph/utils/useGraphPar
 import { countExpandOptions, ExpandElement, selectExpandIds } from './investigation-enrichment.utils';
 import { InvestigationEnrichmentExpandTouchedElementsQuery$data } from './__generated__/InvestigationEnrichmentExpandTouchedElementsQuery.graphql';
 
-// What the graph needs to draw an entity: its representative, plus the fields giving its date
-// in the time range and the details of observables.
-// Spread unmasked both on the touched elements and on the ends of the touched relationships.
-export const touchedNodeFragment = graphql`
-  fragment InvestigationEnrichmentExpand_node on StixCoreObject {
-    id
-    standard_id
-    entity_type
-    parent_types
-    is_inferred
-    created_at
-    numberOfConnectedElement
-    representative {
-      main
-    }
-    createdBy {
-      ... on Identity {
-        id
-        name
-        entity_type
-      }
-    }
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-    }
-    ... on StixDomainObject {
-      created
-      confidence
-    }
-    ... on Campaign {
-      first_seen
-    }
-    ... on IntrusionSet {
-      first_seen
-    }
-    ... on Malware {
-      first_seen
-    }
-    ... on ThreatActor {
-      first_seen
-    }
-    ... on Incident {
-      first_seen
-    }
-    ... on Indicator {
-      valid_from
-    }
-    ... on Report {
-      published
-    }
-    ... on ObservedData {
-      first_observed
-    }
-    ... on StixCyberObservable {
-      observable_value
-    }
-    ... on StixFile {
-      observableName: name
-      hashes {
-        algorithm
-        hash
-      }
-    }
-  }
-`;
-
-// The touched elements of one work, with what the graph needs to draw them.
+// The touched elements of one work, with what the graph needs to draw them (see graphNodeFragment).
 // Fetched only on expand: the list of works is polled and only needs ids and types.
 const touchedElementsQuery = graphql`
   query InvestigationEnrichmentExpandTouchedElementsQuery(
@@ -96,7 +26,7 @@ const touchedElementsQuery = graphql`
         edges {
           node {
             touchedElements {
-              ...InvestigationEnrichmentExpand_node @relay(mask: false)
+              ...graphNodeFragment_node @relay(mask: false)
               ... on StixRelationship {
                 id
                 entity_type
@@ -150,7 +80,7 @@ const touchedElementsQuery = graphql`
                   created_at
                 }
                 from {
-                  ...InvestigationEnrichmentExpand_node @relay(mask: false)
+                  ...graphNodeFragment_node @relay(mask: false)
                   ... on BasicRelationship {
                     id
                     entity_type
@@ -161,7 +91,7 @@ const touchedElementsQuery = graphql`
                   }
                 }
                 to {
-                  ...InvestigationEnrichmentExpand_node @relay(mask: false)
+                  ...graphNodeFragment_node @relay(mask: false)
                   ... on BasicRelationship {
                     id
                     entity_type
