@@ -325,7 +325,7 @@ const nextRefsToLoad = (state, stack) => {
   const top = stack[stack.length - 1];
   addRefsToLoad(top.refs, top.index);
   const lookedAhead = new Set();
-  const canLookAhead = () => ids.size < RESOLUTION_BATCH_SIZE && state.pendingCount + ids.size < RESOLUTION_LOOK_AHEAD_MAX_PENDING;
+  const canLookAhead = () => state.pendingCount > 0 && ids.size < RESOLUTION_BATCH_SIZE && state.pendingCount + ids.size < RESOLUTION_LOOK_AHEAD_MAX_PENDING;
   for (let level = stack.length - 1; level >= 0 && canLookAhead(); level -= 1) {
     const { refs, index: fromIndex } = stack[level];
     const toIndex = Math.min(refs.length, fromIndex + RESOLUTION_BATCH_SIZE);
