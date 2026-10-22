@@ -33,7 +33,7 @@ import {
 } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
-import { UnsupportedError } from '../../config/errors';
+import { BadUserInputError, UnsupportedError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
 import { isInternalId, isValidDate } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -479,7 +479,7 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
   const allKeys = extractFilterKeys(filterGroup);
   const malformedKeys = allKeys.filter((k) => k.split('.').some((segment) => !FILTER_KEY_SEGMENT_ALLOWED_CHARS_REGEX.test(segment)));
   if (malformedKeys.length > 0) {
-    throw UnsupportedError('Incorrect filter keys containing invalid characters', { keys: malformedKeys });
+    throw BadUserInputError('Incorrect filter keys containing invalid characters', { keys: malformedKeys });
   }
   const incorrectKeys = allKeys
     .map((k) => k.split('.')[0])
@@ -490,7 +490,7 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
     ));
 
   if (incorrectKeys.length > 0) {
-    throw UnsupportedError('Incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
+    throw BadUserInputError('Incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
   }
 };
 
