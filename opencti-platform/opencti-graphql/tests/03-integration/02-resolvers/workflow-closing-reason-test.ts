@@ -98,7 +98,9 @@ const definition = JSON.stringify({
   states: [{ statusId: 'open' }, { statusId: 'triaged' }, { statusId: 'closed' }, { statusId: 'archived' }],
   // closed and archived are final: only a bypass or an external status write moves an entity out of them
   transitions: [
-    { from: ['open', 'triaged'], to: 'closed', event: 'close', closingReason: 'required' },
+    // The engine reads a single `from` per transition
+    { from: 'open', to: 'closed', event: 'close', closingReason: 'required' },
+    { from: 'triaged', to: 'closed', event: 'close', closingReason: 'required' },
     { from: 'open', to: 'triaged', event: 'triage' },
     { from: 'open', to: 'archived', event: 'archive' },
   ],
