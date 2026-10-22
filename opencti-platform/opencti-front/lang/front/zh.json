@@ -4705,6 +4705,7 @@
   "Show the relationships history": "显示关系历史",
   "Showing {max} of {count} attack patterns. Some results are not displayed.": "显示 {max} 个（共 {count} 个）攻击模式。部分结果未显示。",
   "Showing {max} of {count} vulnerabilities. Some results are not displayed.": "显示 {max} 个（共 {count} 个）漏洞。部分结果未显示。",
+  "Showing at most {max} pages, refine your search to narrow them down": "最多显示 {max} 页，请优化搜索条件以缩小范围",
   "Sidebar": "侧边栏",
   "sig": "选择",
   "sighted in/at": "发现在",

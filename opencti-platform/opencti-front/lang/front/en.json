@@ -4705,6 +4705,7 @@
   "Show the relationships history": "Show the relationships history",
   "Showing {max} of {count} attack patterns. Some results are not displayed.": "Showing {max} of {count} attack patterns. Some results are not displayed.",
   "Showing {max} of {count} vulnerabilities. Some results are not displayed.": "Showing {max} of {count} vulnerabilities. Some results are not displayed.",
+  "Showing at most {max} pages, refine your search to narrow them down": "Showing at most {max} pages, refine your search to narrow them down",
   "Sidebar": "Sidebar",
   "sig": "sig",
   "sighted in/at": "sighted in/at",

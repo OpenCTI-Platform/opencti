@@ -4705,6 +4705,7 @@
   "Show the relationships history": "Mostrar el historial de relaciones",
   "Showing {max} of {count} attack patterns. Some results are not displayed.": "Se muestran {max} de {count} patrones de ataque. No se muestran algunos resultados.",
   "Showing {max} of {count} vulnerabilities. Some results are not displayed.": "Se muestran {max} de {count} vulnerabilidades. No se muestran algunos resultados.",
+  "Showing at most {max} pages, refine your search to narrow them down": "Se muestran como máximo {max} páginas; refina tu búsqueda para reducir el número de resultados",
   "Sidebar": "Barra lateral",
   "sig": "sig",
   "sighted in/at": "visto en",

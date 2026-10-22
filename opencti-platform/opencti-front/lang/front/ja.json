@@ -4705,6 +4705,7 @@
   "Show the relationships history": "関係の履歴を表示",
   "Showing {max} of {count} attack patterns. Some results are not displayed.": "{max}件の攻撃パターンのうち{count}件を表示しています。一部の結果は表示されていません。",
   "Showing {max} of {count} vulnerabilities. Some results are not displayed.": "{max}件の脆弱性のうち{count}件を表示しています。一部の結果は表示されていません。",
+  "Showing at most {max} pages, refine your search to narrow them down": "最大 {max} ページを表示しています。検索条件を絞り込んで表示件数を減らしてください",
   "Sidebar": "サイドバー",
   "sig": "シグ",
   "sighted in/at": "観測された場所",
