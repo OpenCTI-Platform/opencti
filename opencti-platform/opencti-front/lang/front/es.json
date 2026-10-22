@@ -120,6 +120,7 @@
   "A result with this external link already exists in this security coverage": "Ya existe un resultado con este enlace externo en esta cobertura de seguridad",
   "A result with this name already exists in this security coverage": "Ya existe un resultado con este nombre en esta cobertura de seguridad",
   "A selection cannot hold more than 200 values": "Una selección no puede contener más de 200 valores",
+  "A URL or an external ID is required": "Se requiere una URL o un ID externo",
   "A value cannot reference another variable": "Un valor no puede hacer referencia a otra variable",
   "A value that the bundle does not carry is left as it is.": "Un valor que el paquete no incluye se deja tal como está.",
   "A variable with this name already exists": "Ya existe una variable con este nombre",

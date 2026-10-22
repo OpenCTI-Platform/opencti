@@ -50,7 +50,8 @@ const externalReferenceCreationMutation = graphql`
   }
 `;
 
-const externalReferenceValidation = (t: (value: string) => string) => Yup.object().shape({
+// Created at the submission of a form, an external reference is imported, which identifies it by its URL or by its external ID
+const externalReferenceValidation = (t: (value: string) => string, requireIdentifier = false) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string().nullable(),
   url: Yup.string()
@@ -58,7 +59,11 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
     .matches(
       /^https?:\/\/[^\s/$.?#].[^\s]*$/,
       t('The value must be an URL'),
-    ),
+    )
+    .when('external_id', {
+      is: (externalId?: string | null) => requireIdentifier && !externalId,
+      then: (schema) => schema.required(t('A URL or an external ID is required')),
+    }),
   description: Yup.string().nullable(),
   file: Yup.mixed().nullable(),
 });
@@ -232,7 +237,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               description: '',
               file: '',
             }}
-            validationSchema={externalReferenceValidation(t_i18n)}
+            validationSchema={externalReferenceValidation(t_i18n, isDeferredMode)}
             validateOnChange={true}
             validateOnBlur={true}
             onSubmit={onSubmit}
@@ -323,7 +328,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
               description: '',
               file: '',
             }}
-            validationSchema={externalReferenceValidation(t_i18n)}
+            validationSchema={externalReferenceValidation(t_i18n, isDeferredMode)}
             validateOnChange={true}
             validateOnBlur={true}
             onReset={onResetContextual}
