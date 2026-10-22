@@ -967,14 +967,35 @@ export interface IngestionLogEntry {
 
 export const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
 
+// The outcome of the last execution of each feed or sync, kept apart from the log history: progress entries (started, buffering...)
+// would push it out of the bounded history while no execution runs.
+// Single hash (field: feed id) so that a batch of feeds is read in one call, cluster included.
+const FEEDS_AND_SYNC_LAST_OUTCOMES_KEY = 'feeds_and_sync_last_outcomes';
+
+export interface FeedsAndSyncLastOutcome {
+  timestamp: number;
+  level: 'success' | 'error';
+  meta?: Record<string, unknown>;
+}
+
+const isFeedsAndSyncOutcome = (entry: Pick<IngestionLogEntry, 'level'>): entry is { level: FeedsAndSyncLastOutcome['level'] } => {
+  return entry.level === 'success' || entry.level === 'error';
+};
+
 export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>) => {
   try {
     const key = ingestionLogListKey(feedId);
-    const value = JSON.stringify({ timestamp: Date.now(), ...entry });
+    const timestamp = Date.now();
+    const value = JSON.stringify({ timestamp, ...entry });
     await redisTx(getClientBase(), async (tx) => {
       tx.lpush(key, value);
       tx.ltrim(key, 0, INGESTION_LOG_MAX_SIZE - 1);
     });
+    // Not in the transaction: two keys of different slots cannot be in the same one on a cluster
+    if (isFeedsAndSyncOutcome(entry)) {
+      const outcome: FeedsAndSyncLastOutcome = { timestamp, level: entry.level, meta: entry.meta };
+      await getClientBase().hset(FEEDS_AND_SYNC_LAST_OUTCOMES_KEY, feedId, JSON.stringify(outcome));
+    }
   } catch (err) {
     logApp.error('Failed to push ingestion log entry to Redis', { cause: err });
   }
@@ -992,9 +1013,25 @@ export const redisGetIngestionLogHistory = async (feedId: string): Promise<Inges
   }).filter((e): e is IngestionLogEntry => e !== null);
 };
 
+// Feeds without any outcome recorded are omitted
+export const redisGetFeedsAndSyncLastOutcomes = async (feedIds: string[]): Promise<Map<string, FeedsAndSyncLastOutcome>> => {
+  const outcomes = new Map<string, FeedsAndSyncLastOutcome>();
+  if (feedIds.length === 0) {
+    return outcomes;
+  }
+  const rawOutcomes = await getClientBase().hmget(FEEDS_AND_SYNC_LAST_OUTCOMES_KEY, ...feedIds);
+  rawOutcomes.forEach((rawOutcome, index) => {
+    if (rawOutcome) {
+      outcomes.set(feedIds[index], JSON.parse(rawOutcome) as FeedsAndSyncLastOutcome);
+    }
+  });
+  return outcomes;
+};
+
 export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<void> => {
   try {
     await getClientBase().del(ingestionLogListKey(feedId));
+    await getClientBase().hdel(FEEDS_AND_SYNC_LAST_OUTCOMES_KEY, feedId);
   } catch (err) {
     logApp.error('Failed to delete ingestion log history from Redis', { cause: err });
   }

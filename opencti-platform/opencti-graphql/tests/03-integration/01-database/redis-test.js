@@ -20,6 +20,7 @@ import {
   redisGetForgotPasswordOtp,
   redisGetIngestionHistory,
   redisGetIngestionLogHistory,
+  redisGetFeedsAndSyncLastOutcomes,
   redisGetTelemetry,
   redisDeleteXtmAgentResponse,
   redisGetXtmAgentResponse,
@@ -382,6 +383,37 @@ describe('Redis ingestion logs', () => {
     expect(logs[19].message).toBe('log-5');
   });
 
+  it('should keep the last outcome when progress logs push it out of the history', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+    const pushLog = (level, message, meta = {}) => redisPushIngestionLog(feedId, { level, type: 'taxii', identifier: feedId, message, meta });
+
+    await pushLog('error', 'Feed fetch failed', { http_status: 404 });
+    // Queue still filled with the bundles of the failed run: one buffering entry per manager cycle, no execution
+    for (let i = 0; i < 25; i += 1) {
+      await pushLog('info', 'Feed is buffering, waiting for queue to drain', { messages_number: 25 - i });
+    }
+    await pushLog('warn', 'a-warning');
+
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs.some((log) => log.level === 'error')).toBe(false);
+    const outcomes = await redisGetFeedsAndSyncLastOutcomes([feedId]);
+    expect(outcomes.get(feedId)?.level).toBe('error');
+    expect(outcomes.get(feedId)?.meta).toEqual({ http_status: 404 });
+
+    await pushLog('success', 'Feed fetched successfully');
+    expect((await redisGetFeedsAndSyncLastOutcomes([feedId])).get(feedId)?.level).toBe('success');
+  });
+
+  it('should omit feeds without any outcome recorded', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+    await redisPushIngestionLog(feedId, { level: 'info', type: 'taxii', identifier: feedId, message: 'Feed execution started', meta: {} });
+
+    const outcomes = await redisGetFeedsAndSyncLastOutcomes([feedId]);
+    expect(outcomes.has(feedId)).toBe(false);
+  });
+
   it('should delete ingestion logs history', async () => {
     const feedId = `ingestion-${uuid()}`;
     await redisDeleteIngestionLogHistory(feedId);
@@ -396,6 +428,15 @@ describe('Redis ingestion logs', () => {
     await redisDeleteIngestionLogHistory(feedId);
     const logs = await redisGetIngestionLogHistory(feedId);
     expect(logs).toHaveLength(0);
+  });
+
+  it('should delete the last outcome with the ingestion logs history', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisPushIngestionLog(feedId, { level: 'error', type: 'taxii', identifier: feedId, message: 'Feed fetch failed', meta: {} });
+
+    await redisDeleteIngestionLogHistory(feedId);
+    const outcomes = await redisGetFeedsAndSyncLastOutcomes([feedId]);
+    expect(outcomes.has(feedId)).toBe(false);
   });
 });
 

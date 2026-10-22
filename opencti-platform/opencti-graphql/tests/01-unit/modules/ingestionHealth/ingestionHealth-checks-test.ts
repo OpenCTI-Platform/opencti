@@ -223,7 +223,8 @@ describe('isRuntimeCheckEnabled', () => {
 
 describe('execution failed check', () => {
   const NOT_FOUND = { http_status: 404, http_status_text: 'Not Found', error_code: 'ERR_BAD_REQUEST' };
-  const failedWith = (meta?: Record<string, unknown>) => ({ ...CONTEXT, ...NOT_PINGING, runtimeData: { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: { level: 'error' as const, meta } } });
+  const FEEDS_AND_SYNC_OUTCOME_TIMESTAMP = Date.parse(EVALUATED_AT);
+  const failedWith = (meta?: Record<string, unknown>) => ({ ...CONTEXT, ...NOT_PINGING, runtimeData: { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: { timestamp: FEEDS_AND_SYNC_OUTCOME_TIMESTAMP, level: 'error' as const, meta } } });
   const messageOf = (meta?: Record<string, unknown>, ingestor = FEED) => {
     return toGraphqlHealthChecks(computeIngestionHealthChecks(ingestor, failedWith(meta)), ingestor.entity_type)[0]?.health_check_message;
   };
@@ -243,7 +244,7 @@ describe('execution failed check', () => {
 
   it('should not flag a feed or sync whose last execution succeeded, or that has no execution logged', () => {
     const checksContext = { ...CONTEXT, ...NOT_PINGING };
-    expect(computeIngestionHealthChecks(FEED, { ...checksContext, runtimeData: { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: { level: 'success' } } })).toEqual([]);
+    expect(computeIngestionHealthChecks(FEED, { ...checksContext, runtimeData: { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: { timestamp: FEEDS_AND_SYNC_OUTCOME_TIMESTAMP, level: 'success' } } })).toEqual([]);
     expect(computeIngestionHealthChecks(FEED, { ...checksContext, runtimeData: {} })).toEqual([]);
   });
 
