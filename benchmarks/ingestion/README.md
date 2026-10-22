@@ -214,14 +214,20 @@ From a connector to stored data, with `app:lockfree_ingestion:enabled`:
    same for bundles pushed through its API (`app:lockfree_ingestion:push_chunk_size`). The work still expects
    one report per object.
 2. The worker takes up to `WORKER_BATCH_SIZE` (500) messages at a time from a queue; consecutive messages with
-   the same context (user, work, update flag, no draft) are imported as one bundle, capped at 2,000 objects.
-   Each message is still acknowledged, retried or sent to the dead letter queue on its own.
+   the same context (user, work, update flag, no draft) are imported as one bundle, capped at 2,000 objects, and a
+   message alone too, even with a single object. Each message is still acknowledged, retried or sent to the dead
+   letter queue on its own.
 3. pycti converts each object as today, inside a batch: every create it sends (STIX objects, relationships,
    sightings, external references) is kept and answered with a placeholder, its STIX id; any other request first
    sends what was kept. Kept creates go 1,000 per `lockfreeImport` request.
 4. The platform runs each create through its own resolver, in dependency order, the placeholders replaced by
    the real ids, and writes their objects as lock-free chunks. An object whose create failed is imported again on
    its own by pycti, with today's retries and error reporting; success is reported per object once confirmed.
+5. An object whose create failed only because what it references does not exist yet (another worker may still be
+   importing it) is not retried in the worker: pycti leaves it to the worker (`defer_missing_references`,
+   `stix2.last_batch_deferred`) without reporting it, and the worker sends those objects to the end of its queue as
+   one message, imported again no sooner than 1, 2, 4, 8 and 16 s later. After the fifth time, today's retries and
+   error report apply. The work's counts stay exact: the object is reported once, when it is finally imported.
 
 Each step falls back to today's: a platform without the switch answers the probe with an error, and the helper
 sends one object per message, the worker one message at a time, pycti one create per request. Objects written
@@ -458,6 +464,43 @@ chunked messages); a message holding several objects was imported one by one whe
 references took today's path, two forced refreshes each, 200 at a time; and labels created by pycti were unknown
 to the identity index, so every import first failed on a missing reference and was retried.
 
+### Live connectors (demo platform)
+
+Real connectors deployed through the integration manager on a platform with the switch on, one platform process
+and 4 workers, 22 October 2026. Not a benchmark scenario: the feeds, the laptop's load and the restarts made along
+the way are not repeatable.
+
+**AlienVault**, pulses since 1 May 2026, 1.84 million objects (5.9 million records with their labels, markings and
+authors). On the first run Elasticsearch had 5 CPUs and was the limit (about 315% CPU, thousands of rejected
+searches a minute):
+
+| Workers | Objects stored per second | Limit |
+|---|---|---|
+| 1 | 1,300 | the worker waits for each batch; the platform's main thread is idle 42% of the time |
+| 3 | 1,610 | Elasticsearch's search pool (8 threads, 1,000 queued) turns requests away |
+| 4 | 1,100 to 2,500 | the same, at all the CPU Elasticsearch had |
+
+With 10 CPUs for the container VM (Elasticsearch's search pool sizes itself: 16 threads) and
+`thread_pool.search.queue_size: 5000`, a fresh import of the same feed stored 1,836,700 objects in about 24 minutes,
+about 1,300/s on average including two restarts, 2,898/s at the best minute, with no rejected search. The limit is
+now the platform process: its main thread is busy 82% of the time, spread over many functions (garbage collection
+11%), while Elasticsearch uses about 1 of its 10 CPUs.
+
+**Recorded Future** sends one object per message (its connector image has the released pycti) and each indicator
+brings an observable, a relationship, labels and markings: 300 to 430 messages a second from one platform process.
+
+What these runs found and fixed:
+
+- A report with tens of thousands of objects held the platform's event loop for minutes: writing its refs rebuilt
+  the whole ref list for every ref. Now one set per field (`fc5629c270`).
+- The Elasticsearch client opened a tracing span for every request even with tracing off, 4% of the platform's
+  CPU (`ca05b8f46a`).
+- 21 relationships were dropped on the first AlienVault import: they came while their end was still in another
+  worker's batch, and today's 8 s of retries in the worker ran out; their ends arrived 0 to 4 s later. Step 5 of
+  the full flow above sends them through the queue again (`6fff9d90ad`). A forced race on the demo (a relationship
+  12 s ahead of its ends) lands after 4 deferrals with no error; on Recorded Future, thousands of objects were
+  deferred and none failed for a missing reference.
+
 ### Several processes (`lockfree-processes`)
 
 Same day and platform, 16,000 objects per case, each process with 2 chunk writers of 500. Settled throughput of
@@ -521,6 +564,9 @@ relationships with refs from 1,254 to 1,481/s.
 - End to end, from a connector's bundle through the queue and the worker to stored data, a mixed bundle goes
   19 times faster than today (729/s against 38/s), storing the same data. What remains is mostly the platform's
   own work per create (resolvers, ref resolution, chunk writes), 1,000 creates in about 0.65 s.
+- On a live feed with several workers, the limit moves to Elasticsearch's search pool and CPU first, then, once
+  Elasticsearch has the CPU and queue for it, back to the platform process: about 1,300 objects/s per process,
+  sustained, on AlienVault data. More throughput then means more platform processes, not more workers.
 
 ## Limits
 
@@ -531,7 +577,10 @@ relationships with refs from 1,254 to 1,481/s.
 - The lock-free throughput scenarios use intrusion sets, malware and `uses` relationships; `full-flow` times a
   mixed bundle (observables, attack patterns, external references, a report); sightings and files are checked
   for parity in `lockfree-behaviours`, not timed.
-- One worker and one connector queue in `full-flow`; several workers on one queue were not measured.
+- One worker and one connector queue in `full-flow`; several workers on one queue were measured only on live
+  connectors (above), not in a repeatable scenario.
+- Elasticsearch's defaults size its search pool from its CPUs and queue 1,000 searches: on a small node, lock-free
+  imports from several workers fill that queue in bursts. The live runs used 10 CPUs and a queue of 5,000.
 - The worker-path scenario times the client side only; its platform phases are not recorded.
 
 ## Adding a scenario
