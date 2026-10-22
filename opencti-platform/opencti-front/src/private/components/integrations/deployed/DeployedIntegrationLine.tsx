@@ -450,14 +450,14 @@ const DeployedIntegrationLine = ({
           )}
         </Stack>
       </Box>
-      {/* Health status column: forms are not ingestions, they have no health. */}
+      {/* Health status column: forms are not ingestions, they have no health. Only a failure is shown */}
       {isFeatureEnable("INGESTION_HEALTH") && (
         <Box
           onClick={stopLinkNavigation}
           onAuxClick={stopLinkNavigation}
           sx={cellSx("healthStatus")}
         >
-          {item.kind !== "form" && item.healthStatus ? (
+          {item.kind !== "form" && item.healthIssue ? (
             <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
           ) : (
             <Typography

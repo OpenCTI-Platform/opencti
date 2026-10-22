@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
-import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
+import { HealthTransition, type IngestionHealthFields, type StoredHealthCheck, type StoredIngestionHealth } from './ingestionHealth-types';
 import {
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_REGISTRY,
@@ -72,8 +72,8 @@ export const computeIngestionHealthChecks = (
 };
 
 // Priority: critical > degraded > healthy. A stopped ingestion is never evaluated (see the ingestion health manager).
-// Unknown is not a status: it is the absence of ingestion_health, before the first evaluation.
-export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: SourceIngestionHealthContext): IngestionHealthStatus | null => {
+// Unknown when no status can be computed: no proof of life nor failure.
+export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: SourceIngestionHealthContext): IngestionHealthStatus => {
   // A code unknown to this platform version has no definition: it cannot change the status
   const healthChecks = checks
     .map((check) => findHealthCheckDefinition(check.health_check_code))
@@ -93,7 +93,7 @@ export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, 
   if (checks.length === 0 && isHeartbeatAlive(runtimeData[HEALTH_CHECK_HEARTBEAT_MISSING], evaluatedAt)) {
     return IngestionHealthStatus.Healthy;
   }
-  return null;
+  return IngestionHealthStatus.Unknown;
 };
 
 const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[] => {
@@ -103,7 +103,7 @@ const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[]
 
 // Returns the fields to write, or null when neither the status nor the checks changed.
 // The write replaces the whole ingestion_health object, so it carries the unchanged since.
-// When no status can be computed anymore, a stored ingestion_health is removed: absence reads as unknown.
+// Unknown is stored once an ingestion had another status: since moves, and its recovery is notified after the delay like any status.
 export const computeIngestionHealthPatch = (
   current: IngestionHealthFields,
   checks: StoredHealthCheck[],
@@ -112,9 +112,6 @@ export const computeIngestionHealthPatch = (
   const { evaluatedAt } = context;
   const currentHealth = current.ingestion_health;
   const status = computeHealthStatus(checks, context);
-  if (!status) {
-    return currentHealth ? { ingestion_health: null } : null;
-  }
   const nextChecks = normalizeHealthChecks(checks);
   const isStatusChanged = currentHealth?.status !== status;
   const isChecksChanged = !R.equals(normalizeHealthChecks(currentHealth?.health_checks ?? []), nextChecks);
@@ -126,25 +123,18 @@ export const computeIngestionHealthPatch = (
       status,
       status_since: currentHealth && !isStatusChanged ? currentHealth.status_since : evaluatedAt,
       health_checks: nextChecks,
-      // Kept across status changes: it tells whether the current status was already notified
+      // Kept across status changes: it tells whether the current status was already notified, and whether a recovery is due
       ...(currentHealth?.last_event_date ? { last_event_date: currentHealth.last_event_date } : {}),
     },
   };
 };
 
 // region transition
-// Scope of the activity event published when the status changes
-export const HealthTransition = {
-  Critical: 'critical',
-  Degraded: 'degraded',
-  Recovered: 'recovered',
-} as const;
-export type HealthTransition = typeof HealthTransition[keyof typeof HealthTransition];
 
 // ponytail: hardcoded guard, moves to a settings object editable from the UI later
 export const HEALTH_NOTIFICATION_DELAY_MS = 5 * 60 * 1000;
 
-// The current status was already notified: the last event was published after its start
+// The current status was already notified: the last failure event was published after its start
 const isStatusNotified = (health: StoredIngestionHealth) => !!health.last_event_date
   && new Date(health.last_event_date).getTime() > new Date(health.status_since).getTime();
 
@@ -155,41 +145,47 @@ const isStatusNotified = (health: StoredIngestionHealth) => !!health.last_event_
  * for {@link HEALTH_NOTIFICATION_DELAY_MS}, and was not notified since it started.
  * The delay runs on the status, not on the event: going back to the notified status inside the delay is notified again.
  *
+ * Healthy and unknown end a failure: their recovery is reported only while a failure reported is not recovered yet
+ * (last_event_date, removed by the recovery), so nothing is reported between unknown and healthy, nor twice for the same failure.
+ * A failure never reported (shorter than the delay) has no recovery reported.
+ *
  * A stopped ingestion is not evaluated: its health is removed and nothing is reported.
  *
- * @param previous health before the write of this period, absent on the first evaluation
- * @param next health after the write of this period, null when removed (no status can be computed anymore: unknown)
+ * @param health health after the write of this period, absent when never evaluated with a status or stopped
  * @param evaluatedAt date of the evaluation period
  * @returns the transition to publish, or null when nothing is due
  */
 export const computeHealthTransition = (
-  previous: StoredIngestionHealth | null | undefined,
-  next: StoredIngestionHealth | null | undefined,
+  health: StoredIngestionHealth | null | undefined,
   evaluatedAt: string,
 ): HealthTransition | null => {
-  // Health removed: the status is unknown, no proof of failure nor of recovery, nothing to report.
-  if (!next) {
+  if (!health) {
     return null;
   }
   // The current status was already notified (last event after its start): one event per status change
-  if (isStatusNotified(next)) {
+  if (isStatusNotified(health)) {
     return null;
   }
   // The status changed less than the delay ago: it may still flap, wait for the next periods
-  if (new Date(evaluatedAt).getTime() - new Date(next.status_since).getTime() < HEALTH_NOTIFICATION_DELAY_MS) {
+  if (new Date(evaluatedAt).getTime() - new Date(health.status_since).getTime() < HEALTH_NOTIFICATION_DELAY_MS) {
     return null;
   }
   // Stable and not notified failing status: report it
-  if (next.status === IngestionHealthStatus.Critical) {
+  if (health.status === IngestionHealthStatus.Critical) {
     return HealthTransition.Critical;
   }
-  if (next.status === IngestionHealthStatus.Degraded) {
+  if (health.status === IngestionHealthStatus.Degraded) {
     return HealthTransition.Degraded;
   }
-  // Stable and not notified healthy status: a recovery only when an event was already published and a health
-  // was evaluated before this period; a healthy ingestion never notified (new, restarted, back from unknown)
-  // or evaluated for the first time has nothing to recover from
-  return next.last_event_date && previous ? HealthTransition.Recovered : null;
+  // Stable healthy or unknown status: a recovery only while a failure reported is not recovered yet.
+  // Never notified (new, restarted) or already recovered, there is nothing to recover from
+  return health.last_event_date ? HealthTransition.Recovered : null;
+};
+
+// The health to write once the transition is published: a failure reported is kept until its recovery removes it
+export const markHealthNotified = (health: StoredIngestionHealth, transition: HealthTransition, evaluatedAt: string): StoredIngestionHealth => {
+  const { last_event_date: _, ...healthWithoutEvent } = health;
+  return transition === HealthTransition.Recovered ? healthWithoutEvent : { ...healthWithoutEvent, last_event_date: evaluatedAt };
 };
 
 // The activity log prefixes the message with the manager user name
