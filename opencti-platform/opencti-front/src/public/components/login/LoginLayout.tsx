@@ -11,6 +11,7 @@ import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQu
 import LoginLogo from './LoginLogo';
 import { hasCustomColor } from '../../../utils/theme';
 import { getLoginAsideType } from '../../../private/components/settings/themes/theme-utils';
+import { mergeSx } from '../../../utils/sx';
 
 const LogoBaseline = () => {
   const theme = useTheme<Theme>();
@@ -124,20 +125,20 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
         }}
       >
         <Stack
-          sx={[{
+          sx={mergeSx({
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
             gap: 4,
-          }, ...(Array.isArray(contentSx) ? contentSx : [contentSx])]}
+          }, contentSx)}
         >
           <LoginLogo data={settings} />
           {children}
         </Stack>
         <Box
-          sx={[{
+          sx={mergeSx({
             flex: 1,
-          }, ...(Array.isArray(asideSx) ? asideSx : [asideSx])]}
+          }, asideSx)}
         >
           {loginAsideType === '' && <LogoFiligran />}
           {!isWhitemarkEnable && <LogoBaseline />}

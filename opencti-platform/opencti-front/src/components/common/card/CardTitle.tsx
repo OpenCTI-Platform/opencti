@@ -2,6 +2,7 @@ import { CSSProperties, PropsWithChildren, ReactNode } from 'react';
 import { Stack, SxProps, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../Theme';
+import { mergeSx } from '../../../utils/sx';
 
 interface CardTitleProps extends PropsWithChildren {
   action?: ReactNode;
@@ -37,10 +38,10 @@ const CardTitle = ({
   return (
     <Stack
       direction="row"
-      sx={[{
+      sx={mergeSx({
         justifyContent: 'space-between',
         alignItems: alignItems,
-      }, ...(Array.isArray(containerSx) ? containerSx : [containerSx])]}
+      }, containerSx)}
     >
       <Typography variant="h5" sx={titleSx}>
         {children}
