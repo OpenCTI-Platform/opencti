@@ -40,7 +40,7 @@ export const ingestionHealthAttributes: AttributeDefinition[] = [
       },
       {
         name: 'last_event_date',
-        label: 'Health last event date',
+        label: 'Health last failure event date',
         type: 'date',
         mandatoryType: 'no',
         editDefault: false,
