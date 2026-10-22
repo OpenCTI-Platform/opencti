@@ -13,6 +13,10 @@ from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
 # Objects imported together at most, whatever the number of messages they come in
 MAX_GROUP_OBJECTS = 2000
+# An item whose reference does not exist yet (another worker may still be importing it) is sent again through the
+# queue, and imported again no sooner than these seconds later; after the last, the usual retries and error report
+MISSING_REF_DEFERRAL_DELAYS = (1, 2, 4, 8, 16)
+MAX_MISSING_REF_DEFERRALS = len(MISSING_REF_DEFERRAL_DELAYS)
 
 
 @dataclass(unsafe_hash=True)
@@ -144,7 +148,52 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             data.get("previous_standard"),
             data.get("update", False),
             tuple(data.get("entities_types") or []),
+            data.get("missing_ref_deferrals", 0),
         )
+
+    def send_deferred(self, data: Dict[str, Any]) -> None:
+        """Send the items of the last batch import whose references did not exist yet to the end of the queue,
+        as one message: by the time it comes back, what they reference has been imported. Their expectations
+        stay open until then."""
+        items = self.api.stix2.last_batch_deferred
+        if len(items) == 0:
+            return
+        deferrals = data.get("missing_ref_deferrals", 0) + 1
+        self.logger.info(
+            "Sending items with missing references to the queue again",
+            {"items": len(items), "deferrals": deferrals},
+        )
+        message = {
+            **data,
+            "missing_ref_deferrals": deferrals,
+            "missing_ref_retry_at": time.time()
+            + MISSING_REF_DEFERRAL_DELAYS[deferrals - 1],
+            "no_split": True,
+        }
+        bundle = {"type": "bundle", "id": f"bundle--{uuid.uuid4()}", "objects": items}
+        with pika.BlockingConnection(self.pika_parameters) as push_pika_connection:
+            with push_pika_connection.channel() as push_channel:
+                try:
+                    push_channel.confirm_delivery()
+                except Exception as err:  # pylint: disable=broad-except
+                    self.logger.warning(str(err))
+                self.send_bundle_to_specific_queue(
+                    push_channel,
+                    self.push_exchange,
+                    self.push_routing,
+                    message,
+                    bundle,
+                    True,
+                )
+
+    @staticmethod
+    def wait_for_retry(messages: List[Dict[str, Any]]) -> None:
+        """Items sent again for a missing reference come back as soon as the queue reaches them: when that is
+        sooner than their delay, wait for the rest of it."""
+        retry_at = max((m.get("missing_ref_retry_at") or 0) for m in messages)
+        wait = min(retry_at - time.time(), MISSING_REF_DEFERRAL_DELAYS[-1])
+        if wait > 0:
+            time.sleep(wait)
 
     def handle_batch(
         self, bodies: List[str]
@@ -179,7 +228,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             ):
                 objects += len(parsed[end][2])
                 end += 1
-            if end - index == 1 and objects <= 1:
+            # A message alone with one object too goes through the batch import: an item with a missing reference
+            # is then sent again through the queue rather than retried in the worker
+            if key is None:
                 results.append(self.handle_message(bodies[index]))
             else:
                 results.extend(self._handle_group(bodies[index:end], parsed[index:end]))
@@ -200,6 +251,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 seen.add(o.get("id"))
             objects.extend(message_objects)
         data = parsed[0][1]
+        self.wait_for_retry([message_data for _, message_data, _ in parsed])
         try:
             self.api.set_applicant_id_header(data.get("applicant_id"))
             self.api.set_playbook_id_header(data.get("playbook_id"))
@@ -216,6 +268,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 "objects": objects,
             }
             self.api.batch_import_enabled = True
+            self.api.defer_missing_references = (
+                data.get("missing_ref_deferrals", 0) < MAX_MISSING_REF_DEFERRALS
+            )
             try:
                 imported_items, rejected = self.api.stix2.import_bundle(
                     bundle,
@@ -226,7 +281,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 )
             finally:
                 self.api.batch_import_enabled = False
+                self.api.defer_missing_references = False
             self.send_to_dead_letter(data, rejected)
+            self.send_deferred(data)
             results: List[Literal["ack", "nack", "requeue"]] = ["ack"] * len(bodies)
         except Exception as ex:  # pylint: disable=broad-except
             self.logger.error(
@@ -263,6 +320,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             return "nack"
 
         imported_items = []
+        self.wait_for_retry([data])
         start_processing = datetime.datetime.now()
         try:
             # Set the API headers
@@ -292,10 +350,17 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 if len(content["objects"]) == 1 or data.get("no_split", False):
                     update = data.get("update", False)
                     # Several objects in one message: imported together when the platform can
+                    # (an item sent again for a missing reference too, so that it can be sent again)
                     self.api.batch_import_enabled = (
-                        len(content["objects"]) > 1
+                        (
+                            len(content["objects"]) > 1
+                            or data.get("missing_ref_deferrals", 0) > 0
+                        )
                         and not data.get("draft_id")
                         and self.batch_import_supported()
+                    )
+                    self.api.defer_missing_references = (
+                        data.get("missing_ref_deferrals", 0) < MAX_MISSING_REF_DEFERRALS
                     )
                     try:
                         imported_items, too_large_items_bundles = (
@@ -309,7 +374,9 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         )
                     finally:
                         self.api.batch_import_enabled = False
+                        self.api.defer_missing_references = False
                     self.send_to_dead_letter(data, too_large_items_bundles)
+                    self.send_deferred(data)
                 else:
                     # As bundle is received as complete, split and requeue
                     self.logger.warning(

@@ -186,3 +186,87 @@ class TestClientBatch:
         with patch.object(api_client, "send_query", return_value={"data": {}}) as send:
             api_client.query(INTRUSION_SET_ADD, intrusion_set("intrusion-set--1"))
         assert send.call_count == 1
+
+
+def malware_item(stix_id):
+    return {"type": "malware", "id": stix_id, "name": stix_id}
+
+
+class TestDeferMissingReferences:
+    """In a batch import, an item whose reference does not exist yet can be left to the caller (the worker sends
+    it again through its queue) instead of being retried on its own."""
+
+    @staticmethod
+    def run(api_client, rows, defer):
+        """Imports two items; the platform answers each item's create with the given rows."""
+        imported_alone = []
+        api_client.defer_missing_references = defer
+        stix2 = api_client.stix2
+
+        def import_item(item, *args, **kwargs):
+            api_client.query(INTRUSION_SET_ADD, intrusion_set(item["id"]))
+
+        with patch.object(stix2, "import_item", side_effect=import_item), patch.object(
+            stix2,
+            "import_item_with_retries",
+            side_effect=lambda item, *a, **k: imported_alone.append(item["id"]),
+        ), patch.object(
+            api_client, "send_query", return_value={"data": {"lockfreeImport": rows}}
+        ), patch.object(
+            api_client.work, "report_expectation_success"
+        ) as success:
+            bundles = [
+                {
+                    "id": "bundle--1",
+                    "objects": [malware_item("malware--1"), malware_item("malware--2")],
+                }
+            ]
+            imported, _ = stix2._import_bundles_batched(bundles, False, None, "w1", 0)
+        return imported, imported_alone, success.call_count
+
+    DONE = {"status": "done", "id": "a", "error": None, "code": None}
+    MISSING = {
+        "status": "error",
+        "id": None,
+        "error": "Element(s) not found",
+        "code": "MISSING_REFERENCE_ERROR",
+    }
+
+    def test_a_missing_reference_is_left_to_the_caller(self, api_client):
+        imported, imported_alone, successes = self.run(
+            api_client, [self.DONE, self.MISSING], defer=True
+        )
+        assert [i["id"] for i in api_client.stix2.last_batch_deferred] == ["malware--2"]
+        assert imported_alone == []  # not retried here
+        assert [i["id"] for i in imported] == ["malware--1"]
+        assert successes == 1  # its expectation stays open
+        assert api_client.stix2.last_batch_retried == 0
+
+    def test_without_deferral_it_is_retried_on_its_own(self, api_client):
+        _, imported_alone, _ = self.run(
+            api_client, [self.DONE, self.MISSING], defer=False
+        )
+        assert api_client.stix2.last_batch_deferred == []
+        assert imported_alone == ["malware--2"]
+
+    def test_another_error_is_retried_on_its_own(self, api_client):
+        other = {**self.MISSING, "code": "VALIDATION_ERROR"}
+        _, imported_alone, _ = self.run(api_client, [self.DONE, other], defer=True)
+        assert api_client.stix2.last_batch_deferred == []
+        assert imported_alone == ["malware--2"]
+
+    def test_a_single_item_that_may_be_deferred_goes_through_the_batch(
+        self, api_client
+    ):
+        api_client.batch_import_enabled = True
+        api_client.defer_missing_references = True
+        bundle = {
+            "type": "bundle",
+            "id": "bundle--1",
+            "objects": [malware_item("malware--1")],
+        }
+        with patch.object(
+            api_client.stix2, "_import_bundles_batched", return_value=([], [])
+        ) as batched:
+            api_client.stix2.import_bundle(bundle)
+        batched.assert_called_once()

@@ -205,6 +205,9 @@ class OpenCTIStix2:
         self.last_batch_retried = (
             0  # items of the last batch import imported again on their own
         )
+        self.last_batch_deferred = (
+            []
+        )  # items of the last batch import left to the caller, see defer_missing_references
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
@@ -3997,9 +4000,11 @@ class OpenCTIStix2:
         # Import every element in a specific order
         imported_elements = []
         too_large_elements_bundles = []
-        if (
-            self.opencti.batch_import_enabled
-            and sum(len(b["objects"]) for b in bundles) > 1
+        self.last_batch_deferred = []
+        # (a single item too when it may be deferred: only the batch import defers)
+        if self.opencti.batch_import_enabled and (
+            sum(len(b["objects"]) for b in bundles) > 1
+            or self.opencti.defer_missing_references
         ):
             return self._import_bundles_batched(
                 bundles, update, types, work_id, objects_max_refs
@@ -4095,14 +4100,25 @@ class OpenCTIStix2:
                         pass  # imported again on its own below
             finally:
                 self._defer_item_report = False
+        # A reference another worker is still importing: left to the caller, which sends the item again later,
+        # instead of waiting here for it (not reported, its expectation stays open)
+        deferred = {
+            index
+            for index, (_, code) in batch.failed.items()
+            if self.opencti.defer_missing_references
+            and code == ERROR_TYPE_MISSING_REFERENCE
+        }
+        self.last_batch_deferred = [candidates[i][1] for i in sorted(deferred)]
         self.last_batch_retried = len(
             [
                 i
                 for i in range(len(candidates))
-                if i not in converted or i in batch.failed
+                if (i not in converted or i in batch.failed) and i not in deferred
             ]
         )
         for index, (bundle_id, item) in enumerate(candidates):
+            if index in deferred:
+                continue
             if index in converted and index not in batch.failed:
                 if work_id is not None:
                     self.opencti.work.report_expectation_success(work_id)

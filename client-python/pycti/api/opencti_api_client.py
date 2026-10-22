@@ -274,6 +274,9 @@ class OpenCTIApiClient:
         # Bundles of several items go through the lock-free batch import (set by the worker when the platform has it)
         self.batch_import_enabled = False
         self.batch_chunk_size = 1000  # creates sent per batch import request
+        # In a batch import, items whose references do not exist yet are left to the caller (stix2.last_batch_deferred)
+        # instead of being retried here: set by the worker, which sends them again through its queue
+        self.defer_missing_references = False
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
         self.notification = OpenCTIApiNotification(self)
