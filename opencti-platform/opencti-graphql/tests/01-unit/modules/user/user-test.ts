@@ -41,6 +41,8 @@ vi.mock('../../../../src/listener/UserActionListener', () => ({
 
 vi.mock('../../../../src/database/redis', () => ({
   notify: vi.fn(),
+  // Read when the ingestion health registry is loaded (through the connector resolvers)
+  redisGetFeedsAndSyncLastOutcomes: vi.fn(),
 }));
 
 vi.mock('../../../../src/utils/access', async () => {
