@@ -21,7 +21,15 @@ import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { validateFormSubmission } from './form-validation';
-import { countPendingLabels, getPendingUploadCopies, readUploads, resolvePendingFieldRefs, validatePendingPayload, validatePendingRoots } from './form-pending';
+import {
+  countPendingLabels,
+  getPendingMainEntityAuthor,
+  getPendingUploadCopies,
+  readUploads,
+  resolvePendingFieldRefs,
+  validatePendingPayload,
+  validatePendingRoots,
+} from './form-pending';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from './form-bundle-builder';
 
 export { completeEntity } from './form-entity-builder';
@@ -245,6 +253,7 @@ export const resolveMainEntityAuthorFromValues = (
     resolveIn(values)
     || resolveIn(values.mainEntityFields)
     || resolveIn(Array.isArray(values.mainEntityGroups) ? values.mainEntityGroups[0] : undefined)
+    || getPendingMainEntityAuthor(values)
     || null
   );
 };

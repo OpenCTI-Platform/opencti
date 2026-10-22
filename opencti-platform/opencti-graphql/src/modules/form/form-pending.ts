@@ -538,6 +538,14 @@ export const countPendingLabels = (values: Record<string, any>): number => {
   return toArray<PendingObject>(values.pendingObjects).filter((object) => object.entityType === ENTITY_TYPE_LABEL).length;
 };
 
+// The author of the main entity created in the form, an existing identity (validated and loaded by materializePendingRoots)
+export const getPendingMainEntityAuthor = (values: Record<string, any>): string | undefined => {
+  const [root] = toArray<PendingObject>(values.mainEntityLookupPending);
+  const [author] = isObject(root) ? toArray<PendingRef>(getPendingRefs(root)[INPUT_CREATED_BY]) : [];
+  const existing = isObject(author) ? (author as Record<string, unknown>).existing : undefined;
+  return isFilledString(existing) ? existing : undefined;
+};
+
 /**
  * Reads the given uploads (all by default, once each) into memory as base64, one after the other. The result is indexed
  * like the uploads, the ones that are not asked for stay empty. The decoded size is capped as put in the bundle: an upload

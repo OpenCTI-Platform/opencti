@@ -21,6 +21,7 @@ import {
   type PendingObject,
 } from '../../../../src/modules/form/form-pending';
 import type { AuthContext } from '../../../../src/types/user';
+import { resolveMainEntityAuthorFromValues } from '../../../../src/modules/form/form-domain';
 import type { FormSchemaDefinition } from '../../../../src/modules/form/form-types';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
@@ -768,5 +769,18 @@ describe('withPendingExternalReferenceFiles', () => {
     withPendingExternalReferenceFiles(stix, entity);
     expect(stix.external_references[0]).toEqual({ source_name: 'existing' });
     expect(stix.external_references[1]).toEqual({ source_name: 'pending', x_opencti_files: [{ name: 'a.pdf', data: 'cGRm', mime_type: 'application/pdf' }] });
+  });
+});
+
+describe('resolveMainEntityAuthorFromValues', () => {
+  const schema = { mainEntityType: 'Malware', mainEntityLookup: true, fields: [] } as unknown as FormSchemaDefinition;
+
+  it('should take the author of a main entity created in the form', () => {
+    const withAuthor = (refs: any) => ({ mainEntityLookupPending: [malware({ refs })] });
+    expect(resolveMainEntityAuthorFromValues(schema, withAuthor({ createdBy: [{ existing: 'identity-1' }] }))).toBe('identity-1');
+    expect(resolveMainEntityAuthorFromValues(schema, withAuthor({ createdBy: { existing: 'identity-1' } }))).toBe('identity-1');
+    expect(resolveMainEntityAuthorFromValues(schema, { mainEntityLookupPending: malware({ refs: { createdBy: [{ existing: 'identity-1' }] } }) })).toBe('identity-1');
+    expect(resolveMainEntityAuthorFromValues(schema, withAuthor({ createdBy: [] }))).toBeNull();
+    expect(resolveMainEntityAuthorFromValues(schema, { mainEntityLookupPending: [malware()] })).toBeNull();
   });
 });
