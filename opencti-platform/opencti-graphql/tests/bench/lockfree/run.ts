@@ -9,14 +9,14 @@ import { getClientBase } from '../../../src/database/redis';
 import { REDIS_PREFIX } from '../../../src/config/conf';
 import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../../src/database/utils';
 import { now as nowMs, phaseSummary, pool, resetPhases, round } from '../bench-utils';
-import { IDENTITY_INDEX, identityKeys, setKeys } from './identity';
-import { mgetRaw, toElements } from './load';
-import { countPending, PENDING_INDEX } from './pending';
-import { clearQueue, queueDepth } from './queue';
-import { Settler, settlerCounters } from './settler';
-import { add, type Counters, newCounters } from './store';
-import type { WriteOptions } from './upsert';
-import { type EntityItem, type ItemResult, writeEntityChunk, writeRelationChunk } from './writer';
+import { IDENTITY_INDEX, identityKeys, setKeys } from '../../../src/database/lockfree/identity';
+import { mgetRaw, toElements } from '../../../src/database/lockfree/load';
+import { countPending, PENDING_INDEX } from '../../../src/database/lockfree/pending';
+import { clearQueue, queueDepth } from '../../../src/database/lockfree/queue';
+import { Settler, settlerCounters } from '../../../src/database/lockfree/settler';
+import { add, type Counters, newCounters } from '../../../src/database/lockfree/store';
+import type { WriteOptions } from '../../../src/database/lockfree/upsert';
+import { type EntityItem, type ItemResult, writeEntityChunk, writeRelationChunk } from '../../../src/database/lockfree/writer';
 
 // Users pending relationships are written as, by id
 const knownUsers = new Map<string, AuthUser>([[ADMIN_USER.internal_id, ADMIN_USER]]);
@@ -159,6 +159,7 @@ export const resetLockFreeState = async () => {
   await elDeleteIndices([IDENTITY_INDEX, PENDING_INDEX]);
   await clearQueue();
   const client = getClientBase() as any;
+  await client.del(`${REDIS_PREFIX}lockfree:backfill:done`);
   let cursor = '0';
   do {
     const [next, keys] = await client.scan(cursor, 'MATCH', `${REDIS_PREFIX}lockfree:applied:*`, 'COUNT', 1000);

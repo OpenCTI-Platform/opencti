@@ -3,10 +3,10 @@
 // the normal path once their ends exist. One whose end is deleted is refused, as today; one still waiting after
 // `ttlMs` is dropped and counted.
 import * as R from 'ramda';
-import { testContext } from '../../utils/testQuery';
-import { elRawBulk, elRawSearch, elRefreshIndices } from '../../../src/database/engine';
-import { ES_INDEX_PREFIX } from '../../../src/database/utils';
-import { now } from '../../../src/utils/format';
+import { lockfreeContext } from './context';
+import { elRawBulk, elRawSearch, elRefreshIndices } from '../../database/engine';
+import { ES_INDEX_PREFIX } from '../../database/utils';
+import { now } from '../../utils/format';
 import { deterministicId } from './identity';
 import { liveOwners } from './load';
 
@@ -23,13 +23,13 @@ export const addPending = async (items: PendingItem[]) => {
     { index: { _index: PENDING_INDEX, _id: pendingId(item.input) } },
     { input: JSON.stringify(item.input), missing: item.missing.map((m) => m.toLowerCase()), user_id: item.user_id, created_at: now() },
   ]);
-  const response: any = await elRawBulk(testContext, { refresh: false, body });
+  const response: any = await elRawBulk(lockfreeContext, { refresh: false, body });
   if (response.errors) throw new Error('Pending store write failed');
 };
 
 const listPending = async () => {
   await elRefreshIndices([PENDING_INDEX]).catch(() => undefined);
-  const response: any = await elRawSearch(testContext, null as any, null, {
+  const response: any = await elRawSearch(lockfreeContext, null as any, null, {
     index: PENDING_INDEX, size: 10000, ignore_unavailable: true, body: { sort: [{ created_at: 'asc' }], query: { match_all: {} } },
   }).catch(() => ({ hits: { hits: [] } }));
   return response.hits.hits.map((h: any) => ({ id: h._id, ...h._source, input: JSON.parse(h._source.input) }));
@@ -62,13 +62,13 @@ export const processPending = async (
   }
   const done = [...ready, ...refused, ...expired];
   if (done.length > 0) {
-    await elRawBulk(testContext, { refresh: false, body: done.map((p: any) => ({ delete: { _index: PENDING_INDEX, _id: p.id } })) });
+    await elRawBulk(lockfreeContext, { refresh: false, body: done.map((p: any) => ({ delete: { _index: PENDING_INDEX, _id: p.id } })) });
   }
   return { resolved: ready.length, refused_deleted: refused.length, expired: expired.length, waiting: pending.length - done.length };
 };
 
 export const clearPending = async () => {
-  await elRawBulk(testContext, { refresh: true, body: [{ delete: { _index: PENDING_INDEX, _id: 'none' } }] }).catch(() => undefined);
+  await elRawBulk(lockfreeContext, { refresh: true, body: [{ delete: { _index: PENDING_INDEX, _id: 'none' } }] }).catch(() => undefined);
   const { elRawDeleteByQuery } = await import('../../../src/database/engine');
   await elRawDeleteByQuery({ index: PENDING_INDEX, refresh: true, ignore_unavailable: true, body: { query: { match_all: {} } } }).catch(() => undefined);
 };

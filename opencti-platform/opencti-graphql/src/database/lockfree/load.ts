@@ -2,12 +2,12 @@
 // refresh, and comes back in the platform's own store shape (elConvertHits), so the platform's rules can run
 // on it unchanged.
 import * as R from 'ramda';
-import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { elRawMget } from '../../../src/database/engine';
-import { elConvertHits } from '../../../src/database/engine-data-converter';
-import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
-import { userFilterStoreElements } from '../../../src/utils/access';
-import { pool } from '../bench-utils';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { elRawMget } from '../../database/engine';
+import { elConvertHits } from '../../database/engine-data-converter';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
+import { userFilterStoreElements } from '../../utils/access';
+import { pool } from './context';
 import { lookupKeys, type Owner } from './identity';
 
 export interface RawDoc { _index: string; _id: string; _seq_no: number; _primary_term: number; _source: Record<string, any> }

@@ -16,7 +16,7 @@ import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { addLabel } from '../../../src/domain/label';
 import { benchParam, createOne, denormalizedCount, measure, RUN_ID, writeResults } from '../bench-utils';
 import { batchWriteRelations } from '../batch-writer';
-import { deterministicId, registerExisting } from '../lockfree/identity';
+import { deterministicId, registerExisting } from '../../../src/database/lockfree/identity';
 import { writeEntities, writeRelations } from '../lockfree/run';
 
 // Inputs as these scenarios build them, turned into the write path's createEntity / createRelation inputs

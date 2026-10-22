@@ -170,6 +170,8 @@ def run(scenario, objects, concurrency, work_id):
         raw = bundle(stix_object)
         start = time.perf_counter()
         try:
+            # As push_handler.py does: the platform knows the request is a worker import
+            client.set_work_id(work_id)
             client.stix2.import_bundle_from_json(raw, False, None, work_id, 0)
         except Exception:  # pylint: disable=broad-except
             with latencies_lock:

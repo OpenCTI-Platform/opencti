@@ -3,10 +3,10 @@
 // Elasticsearch refuses a second `create` of the same _id, so claiming a key is atomic without a lock, and a
 // realtime get by _id sees a claim before any refresh. A deleted object keeps its keys as tombstones.
 import { v5 as uuidv5 } from 'uuid';
-import { testContext } from '../../utils/testQuery';
-import { elRawBulk, elRawMget } from '../../../src/database/engine';
-import { ES_INDEX_PREFIX } from '../../../src/database/utils';
-import { getInputIds } from '../../../src/schema/identifier';
+import { lockfreeContext } from './context';
+import { elRawBulk, elRawMget } from '../../database/engine';
+import { ES_INDEX_PREFIX } from '../../database/utils';
+import { getInputIds } from '../../schema/identifier';
 
 const NAMESPACE = 'a6b4c1e2-0f8d-4c5e-9b7a-3d2f1e0c9b8a';
 // Outside the platform prefix, so that no platform index template (strict mappings) applies to it
@@ -50,7 +50,7 @@ export const claimKeys = async (claims: { keys: string[]; owner: Omit<Owner, 'ke
     { ...owner, key, state: 'live' },
   ]));
   if (body.length === 0) return [];
-  const response: any = await elRawBulk(testContext, { refresh: false, body });
+  const response: any = await elRawBulk(lockfreeContext, { refresh: false, body });
   const flat = claims.flatMap(({ keys, owner }) => keys.map((key) => ({ key, owner })));
   const conflicts = response.items
     .map((item: any, i: number) => ({ item: item.create, ...flat[i] }))
@@ -74,7 +74,7 @@ export const setKeys = async (entries: { key: string; owner: Omit<Owner, 'key' |
     { ...owner, key, state: state ?? 'live' },
   ]);
   if (body.length === 0) return;
-  const response: any = await elRawBulk(testContext, { refresh: false, body });
+  const response: any = await elRawBulk(lockfreeContext, { refresh: false, body });
   if (response.errors) throw new Error('Identity update failed');
 };
 

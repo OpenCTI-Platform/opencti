@@ -3,12 +3,12 @@
 // relations_deduplication, its per-type overrides, created-by when configured), or share an id.
 // The candidates come from one "pair" document per (type, from, to) in the identity index, listing that pair's
 // relationships, read by id (no search, no refresh). Appending to it is a script, atomic per document.
-import { testContext } from '../../utils/testQuery';
-import { elRawBulk, elRawMget } from '../../../src/database/engine';
-import { buildRelationDeduplicationFilters } from '../../../src/database/middleware';
-import { buildRefRelationKey } from '../../../src/schema/general';
-import { RELATION_CREATED_BY } from '../../../src/schema/stixRefRelationship';
-import { getInputIds } from '../../../src/schema/identifier';
+import { lockfreeContext } from './context';
+import { elRawBulk, elRawMget } from '../../database/engine';
+import { buildRelationDeduplicationFilters } from '../../database/middleware';
+import { buildRefRelationKey } from '../../schema/general';
+import { RELATION_CREATED_BY } from '../../schema/stixRefRelationship';
+import { getInputIds } from '../../schema/identifier';
 import { deterministicId, IDENTITY_INDEX } from './identity';
 import { mgetRaw } from './load';
 
@@ -51,7 +51,7 @@ export const appendPairs = async (entries: { key: string; entry: PairEntry }[]) 
     { update: { _index: IDENTITY_INDEX, _id: pairDocId(key), retry_on_conflict: 20, _source: true } },
     { script: { source: APPEND_SCRIPT, params: { entry } }, upsert: { kind: 'pair', key, relations: [entry] } },
   ]);
-  const response: any = await elRawBulk(testContext, { refresh: false, body });
+  const response: any = await elRawBulk(lockfreeContext, { refresh: false, body });
   response.items.forEach((item: any, i: number) => {
     if (item.update.status >= 300) throw new Error(`Pair append failed: ${JSON.stringify(item.update.error)}`);
     after.set(entries[i].key, item.update.get?._source?.relations ?? [entries[i].entry]);
@@ -60,7 +60,7 @@ export const appendPairs = async (entries: { key: string; entry: PairEntry }[]) 
 };
 
 export const removeFromPair = async (key: string, id: string) => {
-  await elRawBulk(testContext, {
+  await elRawBulk(lockfreeContext, {
     refresh: false,
     body: [{ update: { _index: IDENTITY_INDEX, _id: pairDocId(key), retry_on_conflict: 20 } }, { script: { source: REMOVE_SCRIPT, params: { id } } }],
   });

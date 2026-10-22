@@ -7,19 +7,19 @@
 //  - pending relationships (pending.ts) whose ends now exist are written through the normal path.
 // Tasks are acknowledged once applied; a settler that stops leaves its tasks to the next one.
 import * as R from 'ramda';
-import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { testContext } from '../../utils/testQuery';
-import { EL_DENORMALIZED_REFS_SCRIPT_SOURCE, buildDenormalizedRefsScriptParams, elRawBulk } from '../../../src/database/engine';
-import { storeDeleteEvent } from '../../../src/database/stream/stream-handler';
-import { inferIndexFromConceptType } from '../../../src/database/utils';
-import { SYSTEM_USER } from '../../../src/utils/access';
-import { buildRefRelationKey, ID_INTERNAL } from '../../../src/schema/general';
-import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
-import { now } from '../../../src/utils/format';
-import { benchTimer } from '../../../src/utils/bench-timing';
-import { pool } from '../bench-utils';
-import { getClientBase } from '../../../src/database/redis';
-import { REDIS_PREFIX } from '../../../src/config/conf';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { lockfreeContext } from './context';
+import { EL_DENORMALIZED_REFS_SCRIPT_SOURCE, buildDenormalizedRefsScriptParams, elRawBulk } from '../../database/engine';
+import { storeDeleteEvent } from '../../database/stream/stream-handler';
+import { inferIndexFromConceptType } from '../../database/utils';
+import { SYSTEM_USER } from '../../utils/access';
+import { buildRefRelationKey, ID_INTERNAL } from '../../schema/general';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
+import { now } from '../../utils/format';
+import { benchTimer } from '../../utils/bench-timing';
+import { pool } from './context';
+import { getClientBase } from '../../database/redis';
+import { REDIS_PREFIX } from '../../config/conf';
 import { lookupKeys } from './identity';
 import { loadWithRefs, mgetRaw, toElements } from './load';
 import { processPending } from './pending';
@@ -68,7 +68,7 @@ export interface SettlerOptions {
 
 // A relationship with its ends, for its stream event: the ends as stored, or rebuilt from their tombstone
 const withEnds = async (relation: any) => {
-  const full = await loadWithRefs(testContext, SYSTEM_USER, relation);
+  const full = await loadWithRefs(lockfreeContext, SYSTEM_USER, relation);
   const owners = await lookupKeys([relation.fromId, relation.toId].filter(Boolean));
   const stub = (id: string, role: string) => {
     const connection = (relation.connections ?? []).find((c: any) => c.role.endsWith(role));
@@ -121,7 +121,7 @@ export class Settler {
     if (this.partitions.includes(0) && this.opts.writePending && this.opts.resolveUser) {
       const outcome = await processPending(async (userId, inputs) => {
         const user = await (this.opts.resolveUser as any)(userId);
-        await (this.opts.writePending as any)(testContext, user, inputs, this.counters);
+        await (this.opts.writePending as any)(lockfreeContext, user, inputs, this.counters);
       }, { ttlMs: this.opts.pendingTtlMs ?? 24 * 3600 * 1000 });
       add(this.counters, 'pending_resolved', outcome.resolved);
       add(this.counters, 'pending_refused_deleted', outcome.refused_deleted);
@@ -173,7 +173,7 @@ export class Settler {
       add(this.counters, 'endpoint_updates');
     });
     await pool(R.splitEvery(2000, body), this.opts.parallelBulks ?? 4, async (chunk) => {
-      const response: any = await elRawBulk(testContext, { refresh: false, body: chunk });
+      const response: any = await elRawBulk(lockfreeContext, { refresh: false, body: chunk });
       const failed = response.items.find((i: any) => (Object.values(i)[0] as any).status >= 300 && (Object.values(i)[0] as any).status !== 404);
       if (failed) throw new Error(`Settle failed: ${JSON.stringify(failed)}`);
     });
@@ -205,7 +205,7 @@ export class Settler {
       const targets = [].concat(relation[ref.databaseName] ?? []);
       await deleteMetaRelations(relation.internal_id, ref.databaseName, targets);
     }
-    await elRawBulk(testContext, { refresh: false, body: [{ delete: { _index: raw._index, _id: raw._id } }] });
+    await elRawBulk(lockfreeContext, { refresh: false, body: [{ delete: { _index: raw._index, _id: raw._id } }] });
     const fromId = relation.fromId;
     const toId = relation.toId;
     await removeFromPair(pairKey(relation.entity_type, fromId, toId), relation.internal_id);
@@ -217,8 +217,8 @@ export class Settler {
       const remove = [{ field: buildRefRelationKey(relation.entity_type), ids: [other.id] }];
       return [{ update: { _index: end.index, _id: end.id, retry_on_conflict: 20 } }, { script: { source: REMOVE_SCRIPT, params: { remove } } }];
     });
-    if (body.length > 0) await elRawBulk(testContext, { refresh: false, body });
-    await storeDeleteEvent(testContext, SYSTEM_USER, await withEnds(relation));
+    if (body.length > 0) await elRawBulk(lockfreeContext, { refresh: false, body });
+    await storeDeleteEvent(lockfreeContext, SYSTEM_USER, await withEnds(relation));
     add(this.counters, 'relations_deleted_dangling');
   }
 
@@ -233,9 +233,9 @@ export class Settler {
     const dropRaw = raws.get(task.drop.id);
     if (!dropRaw || !raws.get(task.keep.id)) return;
     const [dropElement] = await toElements([dropRaw]);
-    const drop = await loadWithRefs(testContext, SYSTEM_USER, dropElement);
+    const drop = await loadWithRefs(lockfreeContext, SYSTEM_USER, dropElement);
     const patch: Record<string, any> = R.omit(['_index', '_id', 'id', 'internal_id', 'standard_id', 'i_raw', 'connections', 'from', 'to', 'fromId', 'toId'], drop);
-    await upsertLockFree(testContext, SYSTEM_USER, task.keep, drop.entity_type, patch, this.counters);
+    await upsertLockFree(lockfreeContext, SYSTEM_USER, task.keep, drop.entity_type, patch, this.counters);
     await this.deleteRelationKeepingEnds(drop, dropRaw._index);
     await removeFromPair(task.pair, task.drop.id);
     add(this.counters, 'relations_reconciled');
@@ -245,8 +245,8 @@ export class Settler {
     for (const ref of schemaRelationsRefDefinition.getRelationsRef(relation.entity_type)) {
       await deleteMetaRelations(relation.internal_id, ref.databaseName, [].concat(relation[ref.databaseName] ?? []).map((r: any) => r.internal_id ?? r));
     }
-    await elRawBulk(testContext, { refresh: false, body: [{ delete: { _index: index, _id: relation.internal_id } }] });
-    await storeDeleteEvent(testContext, SYSTEM_USER, await withEnds(relation));
+    await elRawBulk(lockfreeContext, { refresh: false, body: [{ delete: { _index: index, _id: relation.internal_id } }] });
+    await storeDeleteEvent(lockfreeContext, SYSTEM_USER, await withEnds(relation));
   }
 }
 

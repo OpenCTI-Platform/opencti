@@ -14,7 +14,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { addLabel } from '../../../src/domain/label';
 import { benchParam, createOne, RUN_ID, writeResults } from '../bench-utils';
-import { registerExisting } from '../lockfree/identity';
+import { registerExisting } from '../../../src/database/lockfree/identity';
 import { writeEntities, writeRelations } from '../lockfree/run';
 
 // Inputs as these scenarios build them, turned into the write path's createEntity / createRelation inputs

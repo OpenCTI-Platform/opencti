@@ -2,8 +2,8 @@
 // work always lands in the same partition. Settlers read through a consumer group: an item is acknowledged only
 // once applied, items a settler read but never acknowledged stay pending for it, and items left pending by a
 // settler that stopped are claimed by another one after `claimIdleMs`.
-import { getClientBase } from '../../../src/database/redis';
-import { REDIS_PREFIX } from '../../../src/config/conf';
+import { getClientBase } from '../../database/redis';
+import { REDIS_PREFIX } from '../../config/conf';
 import type { Owner } from './identity';
 
 export const PARTITIONS = 4;

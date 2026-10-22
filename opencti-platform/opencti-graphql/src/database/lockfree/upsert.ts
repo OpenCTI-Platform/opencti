@@ -4,9 +4,9 @@
 // update event) on the object read by id. Only the write changes: the new version is written with if_seq_no, and
 // when someone wrote in between, everything is recomputed on the newer version.
 import * as R from 'ramda';
-import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { testContext } from '../../utils/testQuery';
-import { buildChanges } from '../../../src/database/data-changes';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { lockfreeContext } from './context';
+import { buildChanges } from '../../database/data-changes';
 import {
   createContainerSharingTask,
   mergeInstanceWithInputs,
@@ -16,7 +16,7 @@ import {
   triggerEntityUpdateAutoEnrichment,
   updateAttribute,
   updateAttributeRaw,
-} from '../../../src/database/middleware';
+} from '../../database/middleware';
 import {
   elRawBulk,
   elRawSearch,
@@ -27,10 +27,10 @@ import {
   prepareIndexingElement,
   ROLE_FROM,
   ROLE_TO,
-} from '../../../src/database/engine';
-import { buildInnerRelation } from '../../../src/database/data-builder';
-import { storeUpdateEvent } from '../../../src/database/stream/stream-handler';
-import { getEntityFromCache } from '../../../src/database/cache';
+} from '../../database/engine';
+import { buildInnerRelation } from '../../database/data-builder';
+import { storeUpdateEvent } from '../../database/stream/stream-handler';
+import { getEntityFromCache } from '../../database/cache';
 import {
   extractObjectsPirsFromInputs,
   extractObjectsRestrictionsFromInputs,
@@ -38,41 +38,44 @@ import {
   isEmptyField,
   isNotEmptyField,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-} from '../../../src/database/utils';
-import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../../../src/utils/upsert-utils';
-import { controlUpsertInputWithUserConfidence } from '../../../src/utils/confidence-level';
-import { AccessOperation, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER, validateUserAccessOperation } from '../../../src/utils/access';
-import { handleMarkingOperations } from '../../../src/utils/markingDefinition-utils';
-import { checkObservableSyntax } from '../../../src/utils/syntax';
-import { generateVulnerabilitiesUpdates } from '../../../src/utils/vulnerabilities';
-import { isIndividualAssociatedToUser } from '../../../src/database/data-consistency';
-import { rewriteEmbeddedDataUriImagesInDescriptions, rewriteEmbeddedDataUriImagesInUpdateInputs } from '../../../src/database/middlewareEmbeddedImages';
-import { findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from '../../../src/database/markdown-embedded-images';
-import { deleteFile } from '../../../src/database/file-storage';
-import { isEnterpriseEditionFromSettings } from '../../../src/enterprise-edition/ee';
-import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
-import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
-import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
-import { generateAliasesId, generateStandardId, getInstanceIds, isFieldContributingToStandardId } from '../../../src/schema/identifier';
-import { buildRefRelationKey, IDS_STIX } from '../../../src/schema/general';
-import { RELATION_GRANTED_TO, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, isStixObjectAliased } from '../../../src/schema/stixDomainObject';
-import { isStixCyberObservable } from '../../../src/schema/stixCyberObservable';
-import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
-import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../../../src/modules/securityCoverage/securityCoverage-types';
-import { ACTION_TYPE_SHARE } from '../../../src/domain/backgroundTask-common';
-import { authorizedMembers, authorizedMembersActivationDate, iAttributes, modified, updatedAt, iAliasedIds } from '../../../src/schema/attribute-definition';
-import { ForbiddenAccess, FunctionalError } from '../../../src/config/errors';
-import { logApp } from '../../../src/config/conf';
-import { now } from '../../../src/utils/format';
-import { computeDateFromEventId } from '../../../src/utils/format';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
+} from '../../database/utils';
+import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../../utils/upsert-utils';
+import { controlUpsertInputWithUserConfidence } from '../../utils/confidence-level';
+import { AccessOperation, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
+import { handleMarkingOperations } from '../../utils/markingDefinition-utils';
+import { checkObservableSyntax } from '../../utils/syntax';
+import { generateVulnerabilitiesUpdates } from '../../utils/vulnerabilities';
+import { isIndividualAssociatedToUser } from '../../database/data-consistency';
+import { rewriteEmbeddedDataUriImagesInDescriptions, rewriteEmbeddedDataUriImagesInUpdateInputs } from '../../database/middlewareEmbeddedImages';
+import { findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from '../../database/markdown-embedded-images';
+import { deleteFile } from '../../database/file-storage';
+import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
+import { schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { generateAliasesId, generateStandardId, getInstanceIds, isFieldContributingToStandardId } from '../../schema/identifier';
+import { buildRefRelationKey, IDS_STIX } from '../../schema/general';
+import { RELATION_GRANTED_TO, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, isStixObjectAliased } from '../../schema/stixDomainObject';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { ENTITY_TYPE_VULNERABILITY } from '../../modules/vulnerability/vulnerability-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../../modules/securityCoverage/securityCoverage-types';
+import { ACTION_TYPE_SHARE } from '../../domain/backgroundTask-common';
+import { authorizedMembers, authorizedMembersActivationDate, iAttributes, modified, updatedAt, iAliasedIds } from '../../schema/attribute-definition';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { logApp } from '../../config/conf';
+import { now } from '../../utils/format';
+import { computeDateFromEventId } from '../../utils/format';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../database/utils';
 import { deterministicId, setKeys } from './identity';
 import { liveOwners, loadWithRefs, mgetRaw, type RawDoc, toElements } from './load';
 import { enqueue, type Task } from './queue';
 import { add, type Counters } from './store';
 
-export interface WriteOptions { waitForSearch?: boolean }
+export interface WriteOptions {
+  waitForSearch?: boolean; // each write searchable when the call returns (refresh wait_for), as today
+  missingEnds?: 'pending' | 'error'; // a relationship whose end is missing waits (default) or fails as today
+}
 
 export const metaId = (relationType: string, fromId: string, toId: string) => deterministicId(`${relationType}|${fromId}|${toId}`);
 
@@ -101,7 +104,7 @@ export const metaTargetTasks = (metas: any[], op: 'add' | 'remove'): Task[] => m
 export const deleteMetaRelations = async (fromId: string, relationType: string, toIds: string[]) => {
   if (toIds.length === 0) return;
   const index = inferIndexFromConceptType(relationType);
-  const response: any = await elRawBulk(testContext, {
+  const response: any = await elRawBulk(lockfreeContext, {
     refresh: false,
     body: toIds.map((toId) => ({ delete: { _index: index, _id: metaId(relationType, fromId, toId) } })),
   });
@@ -109,7 +112,7 @@ export const deleteMetaRelations = async (fromId: string, relationType: string, 
   if (missing.length === 0) return;
   // Written by today's path (random ids): find them, after a refresh of the meta relationships only
   await elRefreshIndices([index]);
-  const found: any = await elRawSearch(testContext, SYSTEM_USER, null, {
+  const found: any = await elRawSearch(lockfreeContext, SYSTEM_USER, null, {
     index: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     size: 1000,
     body: {
@@ -125,7 +128,7 @@ export const deleteMetaRelations = async (fromId: string, relationType: string, 
     },
   });
   const hits = found.hits.hits;
-  if (hits.length > 0) await elRawBulk(testContext, { refresh: false, body: hits.map((h: any) => ({ delete: { _index: h._index, _id: h._id } })) });
+  if (hits.length > 0) await elRawBulk(lockfreeContext, { refresh: false, body: hits.map((h: any) => ({ delete: { _index: h._index, _id: h._id } })) });
 };
 
 // One bulk is indexed by one write thread per shard: a large one goes as several bulks at once, so Elasticsearch
@@ -137,7 +140,7 @@ export const bulkCreateDocs = async (docs: any[], opts: WriteOptions) => {
   const slices = R.splitEvery(Math.max(BULK_SLICE, Math.ceil(docs.length / BULK_SLICES_AT_ONCE)), docs);
   const statuses = await Promise.all(slices.map(async (slice) => {
     const body = slice.flatMap((doc) => [{ create: { _index: doc._index, _id: doc.internal_id } }, R.dissoc('_index', doc)]);
-    const response: any = await elRawBulk(testContext, { refresh: opts.waitForSearch ? 'wait_for' : false, body });
+    const response: any = await elRawBulk(lockfreeContext, { refresh: opts.waitForSearch ? 'wait_for' : false, body });
     return response.items.map((item: any) => {
       if (item.create.status !== 201 && item.create.status !== 409) throw new Error(`Create failed: ${JSON.stringify(item.create.error)}`);
       return item.create.status as number;
@@ -335,7 +338,7 @@ const applyUpdate = async (
     if (ids.length === 0) delete source[field];
     else source[field] = ids;
   });
-  const response: any = await elRawBulk(testContext, {
+  const response: any = await elRawBulk(lockfreeContext, {
     refresh: opts.waitForSearch ? 'wait_for' : false,
     body: [{ index: { _index: raw._index, _id: raw._id, if_seq_no: raw._seq_no, if_primary_term: raw._primary_term } }, source],
   });

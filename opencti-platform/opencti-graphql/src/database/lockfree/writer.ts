@@ -12,8 +12,8 @@
 // Inputs left to today's path, unchanged: drafts, file uploads, explicit ref relationships (created-by,
 // object-marking... sent as relationships) and relationships replacing a single ref.
 import * as R from 'ramda';
-import type { AuthContext, AuthUser } from '../../../src/types/user';
-import { buildEntityData, buildRelationData } from '../../../src/database/data-builder';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { buildEntityData, buildRelationData } from '../../database/data-builder';
 import {
   cleanEntityForIdsCollision,
   createContainerSharingTask,
@@ -24,37 +24,37 @@ import {
   triggerEntityUpdateAutoEnrichment,
   updateAttribute,
   validateEntityAndRelationCreation,
-} from '../../../src/database/middleware';
-import { elRawMget, isImpactedTypeAndSide, prepareIndexingElement, ROLE_FROM, ROLE_TO } from '../../../src/database/engine';
-import { storeCreateEvents } from '../../../src/database/stream/stream-handler';
-import { generateCreateMessage } from '../../../src/database/data-changes';
-import { inferIndexFromConceptType } from '../../../src/database/utils';
-import { fillDefaultCustomFieldValues, fillDefaultValues, getEntitySettingFromCache } from '../../../src/modules/entitySetting/entitySetting-utils';
-import { controlCreateInputWithUserConfidence } from '../../../src/utils/confidence-level';
-import { AccessOperation, userFilterStoreElements, validateUserAccessOperation } from '../../../src/utils/access';
-import { checkRelationConsistency } from '../../../src/utils/modelConsistency';
-import { getDraftContext } from '../../../src/utils/draftContext';
-import { rewriteEmbeddedDataUriImagesInDescriptions } from '../../../src/database/middlewareEmbeddedImages';
-import { transformCustomFieldValueAddInput } from '../../../src/modules/customField/custom-field-validator';
-import { initializeEntityWorkflow, resolveEntityWorkflowConfig, syncWorkflowInstanceFromExternalWrite } from '../../../src/modules/workflow/domain/workflow-domain';
-import { CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../src/config/conf';
-import { DOC_INSUFFICIENT_CONFIDENCE_LEVEL, ForbiddenAccess, FunctionalError, UnsupportedError } from '../../../src/config/errors';
-import { generateHashedObservableStandardIds, generateStandardId, getInputIds, getInstanceIds } from '../../../src/schema/identifier';
-import { isStixCyberObservableHashedObservable } from '../../../src/schema/stixCyberObservable';
-import { isStixRefRelationship } from '../../../src/schema/stixRefRelationship';
-import { isSingleRelationsRef } from '../../../src/schema/stixEmbeddedRelationship';
-import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
-import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
-import { authorizedMembersActivationDate } from '../../../src/schema/attribute-definition';
-import { buildRefRelationKey } from '../../../src/schema/general';
-import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../../../src/modules/securityCoverage/securityCoverage-types';
-import { ACTION_TYPE_SHARE } from '../../../src/domain/backgroundTask-common';
-import { now } from '../../../src/utils/format';
+} from '../../database/middleware';
+import { elRawMget, isImpactedTypeAndSide, prepareIndexingElement, ROLE_FROM, ROLE_TO } from '../../database/engine';
+import { storeCreateEvents } from '../../database/stream/stream-handler';
+import { generateCreateMessage } from '../../database/data-changes';
+import { inferIndexFromConceptType } from '../../database/utils';
+import { fillDefaultCustomFieldValues, fillDefaultValues, getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
+import { controlCreateInputWithUserConfidence } from '../../utils/confidence-level';
+import { AccessOperation, userFilterStoreElements, validateUserAccessOperation } from '../../utils/access';
+import { checkRelationConsistency } from '../../utils/modelConsistency';
+import { getDraftContext } from '../../utils/draftContext';
+import { rewriteEmbeddedDataUriImagesInDescriptions } from '../../database/middlewareEmbeddedImages';
+import { transformCustomFieldValueAddInput } from '../../modules/customField/custom-field-validator';
+import { initializeEntityWorkflow, resolveEntityWorkflowConfig, syncWorkflowInstanceFromExternalWrite } from '../../modules/workflow/domain/workflow-domain';
+import { CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
+import { DOC_INSUFFICIENT_CONFIDENCE_LEVEL, ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
+import { generateHashedObservableStandardIds, generateStandardId, getInputIds, getInstanceIds } from '../../schema/identifier';
+import { isStixCyberObservableHashedObservable } from '../../schema/stixCyberObservable';
+import { isStixRefRelationship } from '../../schema/stixRefRelationship';
+import { isSingleRelationsRef } from '../../schema/stixEmbeddedRelationship';
+import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
+import { schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { authorizedMembersActivationDate } from '../../schema/attribute-definition';
+import { buildRefRelationKey } from '../../schema/general';
+import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../../modules/securityCoverage/securityCoverage-types';
+import { ACTION_TYPE_SHARE } from '../../domain/backgroundTask-common';
+import { now } from '../../utils/format';
 import { claimKeys, deterministicId, type Owner, setKeys } from './identity';
 import { liveOwners, mgetRaw, toElements } from './load';
 import { addPending } from './pending';
-import { pool } from '../bench-utils';
-import { benchTimer } from '../../../src/utils/bench-timing';
+import { pool } from './context';
+import { benchTimer } from '../../utils/bench-timing';
 import { reconcileEntities } from './reconcile';
 import { appendPairs, findDuplicates, pairEntryOf, type PairEntry, pairKey, readPairs, withoutDeleted } from './pairs';
 import { enqueue, type Task } from './queue';
@@ -62,7 +62,15 @@ import { add, type Counters } from './store';
 import { bulkCreateDocs, metaTargetTasks, upsertLockFree, withMetaIds, type WriteOptions } from './upsert';
 
 export interface EntityItem { type: string; input: Record<string, any> }
-export interface ItemResult { status: 'created' | 'merged' | 'unchanged' | 'pending' | 'fallback' | 'error'; id?: string; error?: string }
+export interface ItemResult {
+  status: 'created' | 'merged' | 'unchanged' | 'pending' | 'fallback' | 'error';
+  id?: string;
+  error?: string;
+  cause?: unknown; // the error itself, for a caller that rethrows it
+}
+
+// Today's path, called for what the lock-free path leaves to it: marked so the platform does not send it back here
+export const todayContext = (context: AuthContext): AuthContext => ({ ...context, lockfree_bypass: true, lockfree_write: false } as AuthContext);
 
 // Fields the access rules and hooks read, fetched beside otherwise light documents (no rel_* lists)
 const ACCESS_FIELDS = ['rel_object-marking.*', 'rel_granted-to.*', `rel_${RELATION_COVERED}.*`, 'restricted_members', 'authorized_authorities'];
@@ -146,7 +154,7 @@ const ownerOf = (element: any): Owner => ({
   key: '', state: 'live', owner_id: element.internal_id, owner_index: element._index, owner_type: element.entity_type, owner_standard_id: element.standard_id,
 });
 
-const errorResult = (e: any): ItemResult => ({ status: 'error', error: e?.extensions?.data?.doc_code ?? e?.extensions?.code ?? e?.message ?? String(e) });
+const errorResult = (e: any): ItemResult => ({ status: 'error', error: e?.extensions?.data?.doc_code ?? e?.extensions?.code ?? e?.message ?? String(e), cause: e });
 
 const groupByKeys = <T>(items: T[], keysOf: (item: T) => string[]) => {
   const parent = items.map((_, i) => i);
@@ -207,7 +215,7 @@ export const writeEntityChunk = async (
   }))).filter(Boolean) as any[];
   for (const p of prepared.filter((v) => v.fallback)) {
     try {
-      const element: any = await createEntity(context, user, items[p.i].input, items[p.i].type);
+      const element: any = await createEntity(todayContext(context), user, items[p.i].input, items[p.i].type);
       results[p.i] = { status: 'fallback', id: element.internal_id };
       add(counters, 'fallbacks');
     } catch (e) {
@@ -458,6 +466,7 @@ export const writeRelationChunk = async (
           add(counters, 'rejected_deleted_ref');
           throw e;
         }
+        if (opts.missingEnds === 'error') throw e;
         // Its end has not arrived: it waits, invisible, instead of being refused and sent again
         pendingItems.push({ input: raw, missing: missingEnds, user_id: user.internal_id });
         results[i] = { status: 'pending' };
@@ -478,7 +487,7 @@ export const writeRelationChunk = async (
   add(counters, 'pending_added', pendingItems.length);
   for (const p of prepared.filter((v) => v.fallback)) {
     try {
-      const element: any = await createRelation(context, user, rawInputs[p.i]);
+      const element: any = await createRelation(todayContext(context), user, rawInputs[p.i]);
       results[p.i] = { status: 'fallback', id: element.internal_id };
       add(counters, 'fallbacks');
     } catch (e) {

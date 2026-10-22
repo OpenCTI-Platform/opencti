@@ -16,7 +16,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { addLabel } from '../../../src/domain/label';
 import { benchParam, createOne, denormalizedCount, writeResults } from '../bench-utils';
-import { deterministicId, registerExisting } from '../lockfree/identity';
+import { deterministicId, registerExisting } from '../../../src/database/lockfree/identity';
 import { writeEntities, writeRelations } from '../lockfree/run';
 
 const PROCESSES = benchParam('PROCESSES', 1);

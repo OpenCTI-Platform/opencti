@@ -22,7 +22,7 @@ import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
-import { logApp } from '../../config/conf';
+import { booleanConf, logApp } from '../../config/conf';
 import { getEntitiesMapFromCache } from '../cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 
@@ -86,6 +86,11 @@ export const publishStixToStream = async (context: AuthContext, user: AuthUser, 
   await pushToStream(context, user, event);
 };
 
+// The lock-free write path keeps its identity index in step with what today's path writes (lockfree/ingestion.ts),
+// loaded on first use: it depends on the middleware, which depends on this file
+const LOCKFREE_INGESTION_ENABLED = booleanConf('app:lockfree_ingestion:enabled', false);
+const lockFreeSync = () => import('../lockfree/ingestion');
+
 export const storeMergeEvent = async (
   context: AuthContext,
   user: AuthUser,
@@ -97,6 +102,7 @@ export const storeMergeEvent = async (
   try {
     const event = await buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
     await pushToStream(context, user, event, opts);
+    if (LOCKFREE_INGESTION_ENABLED) await (await lockFreeSync()).syncIdentityOnMerge(context, user, mergedInstance, sourceEntities);
     return event;
   } catch (e) {
     throw DatabaseError('Error in store merge event', { cause: e });
@@ -119,6 +125,7 @@ export const storeUpdateEvent = async (
       const workflowStatuses = { previous: previousStatus, current: currentStatus };
       const event = buildUpdateEvent(user, previous, instance, changes, opts, workflowStatuses);
       await pushToStream(context, user, event, opts);
+      if (LOCKFREE_INGESTION_ENABLED) await (await lockFreeSync()).syncIdentityOnUpdate(context, user, instance);
       return event;
     }
     return undefined;
@@ -138,6 +145,7 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
       const workflowStatus = await resolveWorkflowStatusName(context, user, instance);
       const event = buildCreateEvent(user, instance, message, workflowStatus);
       await pushToStream(context, user, event, opts);
+      if (LOCKFREE_INGESTION_ENABLED) await (await lockFreeSync()).syncIdentityOnCreate(context, user, instance);
       return event;
     }
     return undefined;
@@ -152,6 +160,7 @@ export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUse
       const workflowStatus = await resolveWorkflowStatusName(context, user, instance);
       const event = buildCreateEvent(user, instance, message, workflowStatus);
       await pushToStream(context, user, event, opts);
+      if (LOCKFREE_INGESTION_ENABLED) await (await lockFreeSync()).syncIdentityOnCreate(context, user, instance);
       return event;
     }
     return undefined;
@@ -185,6 +194,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message);
       await pushToStream(context, user, event, opts);
+      if (LOCKFREE_INGESTION_ENABLED) await (await lockFreeSync()).syncIdentityOnDelete(context, user, instance);
       return event;
     }
     return undefined;

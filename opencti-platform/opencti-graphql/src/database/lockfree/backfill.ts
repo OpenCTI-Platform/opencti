@@ -3,17 +3,17 @@
 // run again, and keys a lock-free write already holds are not taken from it, unless their holder no longer exists
 // (an object deleted or wiped without its tombstone): the object found in the index then takes the key over.
 // Runs before lock-free writes are enabled, so a holder without its document is stale, not a write in flight.
-import { testContext } from '../../utils/testQuery';
-import { elRawSearch } from '../../../src/database/engine';
+import { lockfreeContext } from './context';
+import { elRawSearch } from '../../database/engine';
 import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_META_OBJECTS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
-} from '../../../src/database/utils';
-import { elConvertHits } from '../../../src/database/engine-data-converter';
-import { SYSTEM_USER } from '../../../src/utils/access';
+} from '../../database/utils';
+import { elConvertHits } from '../../database/engine-data-converter';
+import { SYSTEM_USER } from '../../utils/access';
 import { claimKeys, identityKeys, type Owner, setKeys } from './identity';
 import { mgetRaw } from './load';
 import { appendPairs, pairEntryOf, pairKey } from './pairs';
@@ -22,7 +22,7 @@ const scan = async (index: string, size: number, onPage: (elements: any[]) => Pr
   let searchAfter: any[] | undefined;
   let total = 0;
   for (;;) {
-    const response: any = await elRawSearch(testContext, SYSTEM_USER, null, {
+    const response: any = await elRawSearch(lockfreeContext, SYSTEM_USER, null, {
       index,
       size,
       body: { sort: [{ 'internal_id.keyword': 'asc' }], query: { match_all: {} }, _source: { excludes: ['rel_*.inferred_id'] }, ...(searchAfter ? { search_after: searchAfter } : {}) },
