@@ -1946,7 +1946,7 @@ class ConnectorInfo:
             "last_run_datetime": self._last_run_datetime,
         }
         errors = _sanitize_connector_errors(self._errors)
-        # Platforms without errors support reject the key, and the platform treats it missing as no error.
+        # Platforms without errors support reject the key, and a missing key reports no new error.
         if errors:
             details["errors"] = errors
         return details

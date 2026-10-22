@@ -4,9 +4,12 @@ import {
   CONNECTOR_ERROR_CODE_MAX_LENGTH,
   CONNECTOR_ERROR_MESSAGE_MAX_LENGTH,
   CONNECTOR_ERRORS_MAX_COUNT,
+  mergeConnectorErrors,
   sanitizeConnectorInfoErrors,
+  selectActiveConnectorErrors,
 } from '../../../../src/modules/connector/connector-domain';
-import type { ConnectorInfoError } from '../../../../src/modules/connector/connector-types';
+import { CONNECTOR_ERRORS_TTL_SECONDS } from '../../../../src/modules/connector/connector-redis';
+import type { ConnectorInfoError, StoredConnectorInfoError } from '../../../../src/modules/connector/connector-types';
 
 const API_ERROR: ConnectorInfoError = { code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 2 };
 
@@ -91,5 +94,47 @@ describe('sanitizeConnectorInfoErrors', () => {
       sanitizeConnectorInfoErrors([API_ERROR], 'connector-id');
       expect(infoSpy).not.toHaveBeenCalled();
     });
+  });
+});
+
+const NOW = 1_800_000_000_000;
+const TTL_MS = CONNECTOR_ERRORS_TTL_SECONDS * 1000;
+const stored = (code: string, criticity: number, ageMs: number, message = ''): StoredConnectorInfoError => ({ code, message, criticity, last_seen_at: NOW - ageMs });
+
+describe('mergeConnectorErrors', () => {
+  it('should accumulate errors with distinct codes from successive pings', () => {
+    const { kept, removedCodes } = mergeConnectorErrors([stored('FIRST', 1, 1000)], [{ code: 'SECOND', message: '', criticity: 1 }], NOW);
+    expect(kept.map(({ code }) => code)).toEqual(['SECOND', 'FIRST']);
+    expect(removedCodes).toEqual([]);
+  });
+
+  it('should keep the latest report of a code and refresh when it was seen', () => {
+    const { kept } = mergeConnectorErrors([stored('API_UNREACHABLE', 1, 1000, 'old message')], [{ code: 'API_UNREACHABLE', message: 'new message', criticity: 3 }], NOW);
+    expect(kept).toEqual([{ code: 'API_UNREACHABLE', message: 'new message', criticity: 3, last_seen_at: NOW }]);
+  });
+
+  it('should drop errors not reported for 10 minutes', () => {
+    const { kept, removedCodes } = mergeConnectorErrors([stored('EXPIRED', 3, TTL_MS), stored('RECENT', 1, TTL_MS - 1)], [{ code: 'NEW', message: '', criticity: 1 }], NOW);
+    expect(kept.map(({ code }) => code)).toEqual(['NEW', 'RECENT']);
+    expect(removedCodes).toEqual(['EXPIRED']);
+  });
+
+  it('should keep the most critical errors up to the limit and remove the others', () => {
+    const lowErrors = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => stored(`LOW_${index}`, 0, index + 1));
+    const { kept, removedCodes } = mergeConnectorErrors(lowErrors, [{ code: 'CRITICAL', message: '', criticity: 3 }], NOW);
+    expect(kept).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
+    expect(kept[0].code).toBe('CRITICAL');
+    expect(removedCodes).toEqual([`LOW_${CONNECTOR_ERRORS_MAX_COUNT - 1}`]);
+  });
+});
+
+describe('selectActiveConnectorErrors', () => {
+  it('should return recent errors sorted by criticity then recency, without the seen date', () => {
+    const errors = [stored('EXPIRED', 3, TTL_MS), stored('OLDER', 2, 2000), stored('NEWER', 2, 1000), stored('LOW', 1, 500)];
+    expect(selectActiveConnectorErrors(errors, NOW)).toEqual([
+      { code: 'NEWER', message: '', criticity: 2 },
+      { code: 'OLDER', message: '', criticity: 2 },
+      { code: 'LOW', message: '', criticity: 1 },
+    ]);
   });
 });
