@@ -42,7 +42,7 @@ export interface GlobalIngestionHealthContext {
 // What the evaluation looks at, besides the configuration of the ingestion: whether a check applies, whether it fails, the status.
 // A new check needing a new fact adds a field here, not a parameter to every function.
 export interface SourceIngestionHealthContext extends GlobalIngestionHealthContext {
-  // Values read by the runtime checks for this ingestion, by check code: whether they are still fresh is judged here, not when read
+  // Values read by the runtime checks enabled for this ingestion, by check code: whether they are still fresh is judged here, not when read
   runtimeData?: RuntimeData;
 }
 

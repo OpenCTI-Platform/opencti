@@ -20,6 +20,7 @@ import {
 } from '../modules/ingestion/ingestion-types';
 import {
   buildHealthTransitionMessage,
+  buildIngestionHealthContext,
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
@@ -124,7 +125,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   periodContext: GlobalIngestionHealthContext,
   runtimeData: RuntimeData,
 ) => {
-  const healthContext = { ...periodContext, runtimeData };
+  const healthContext = buildIngestionHealthContext(element, periodContext, runtimeData);
   const checks = computeIngestionHealthChecks(element, healthContext);
   const patch = computeIngestionHealthPatch(element, checks, healthContext);
   if (!patch) {

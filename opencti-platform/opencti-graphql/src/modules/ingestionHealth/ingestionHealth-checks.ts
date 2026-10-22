@@ -5,9 +5,11 @@ import {
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_REGISTRY,
   type HealthCheckCode,
+  type GlobalIngestionHealthContext,
   type HealthCheckDefinition,
   type HealthCheckMetadata,
   type HealthCheckIngestor,
+  type RuntimeData,
   type SourceIngestionHealthContext,
   isHeartbeatAlive,
 } from './ingestionHealth-registry';
@@ -37,6 +39,17 @@ const getHealthCheckFailure = (
   return definition.getFailure(ingestor, context);
 };
 
+// Keeps only the runtime values of the checks enabled for the ingestor: a value read for a disabled check proves nothing.
+// A connector not pinging continuously still leaves a heartbeat after each run: kept, it would be healthy after every run.
+export const buildIngestionHealthContext = (
+  ingestor: HealthCheckIngestor,
+  periodContext: GlobalIngestionHealthContext,
+  runtimeData: RuntimeData,
+): SourceIngestionHealthContext => {
+  const enabledRuntimeData: RuntimeData = R.pickBy((_, code) => HEALTH_CHECK_REGISTRY[code as HealthCheckCode].isEnabled(ingestor, periodContext), runtimeData);
+  return { ...periodContext, runtimeData: enabledRuntimeData };
+};
+
 export const computeIngestionHealthChecks = (
   ingestor: HealthCheckIngestor,
   context: SourceIngestionHealthContext,
@@ -64,7 +77,8 @@ export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, 
     || definition.kind === IngestionHealthCheckKind.Configuration)) {
     return IngestionHealthStatus.Degraded;
   }
-  // healthy needs a proof of life from the runtime data AND no check at all, otherwise the status stays unknown
+  // healthy needs a proof of life from the runtime data AND no check at all, otherwise the status stays unknown.
+  // The runtime data only holds the values of the checks enabled for the ingestor (see buildIngestionHealthContext)
   if (checks.length === 0 && isHeartbeatAlive(runtimeData[HEALTH_CHECK_HEARTBEAT_MISSING], evaluatedAt)) {
     return IngestionHealthStatus.Healthy;
   }

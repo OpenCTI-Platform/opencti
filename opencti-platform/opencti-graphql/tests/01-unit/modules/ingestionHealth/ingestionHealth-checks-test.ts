@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   buildHealthTransitionMessage,
+  buildIngestionHealthContext,
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
@@ -97,7 +98,8 @@ describe('computeIngestionHealthPatch', () => {
 });
 
 describe('computeIngestionHealthPatch with runtime data', () => {
-  const ALIVE = { ...CONTEXT, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } };
+  // runtimeData only holds the values of the checks enabled for the ingestor (see buildIngestionHealthContext): here a pinging connector
+  const ALIVE = { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } };
 
   it('should be healthy with no check and a heartbeat', () => {
     expect(computeIngestionHealthPatch({}, [], ALIVE)).toEqual({
@@ -177,6 +179,22 @@ describe('heartbeat check', () => {
 
   it('should not flag built-in connectors', () => {
     expect(computeIngestionHealthChecks({ ...input, built_in: true }, { ...CONTEXT, ...PINGING, isExistingUser })).toEqual([]);
+  });
+
+  it('should be healthy with a fresh heartbeat when the connector pings continuously', () => {
+    const context = buildIngestionHealthContext(input, { ...CONTEXT, ...PINGING }, { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT });
+    expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, context), context)?.ingestion_health?.status).toBe(IngestionHealthStatus.Healthy);
+  });
+
+  it('should give no status with a fresh heartbeat when the connector does not ping continuously, such as after a run and terminate run', () => {
+    const context = buildIngestionHealthContext(input, { ...CONTEXT, ...NOT_PINGING }, { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT });
+    expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, context), context)).toBeNull();
+  });
+
+  it('should give no status with a fresh heartbeat on a built-in connector', () => {
+    const builtIn = { ...input, built_in: true };
+    const context = buildIngestionHealthContext(builtIn, { ...CONTEXT, ...PINGING }, { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT });
+    expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(builtIn, context), context)).toBeNull();
   });
 
   it('should give a critical status with the check message', () => {
