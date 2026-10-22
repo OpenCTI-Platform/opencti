@@ -98,7 +98,11 @@ export class WriteCollector {
   // Writes the waiting creates, one chunk per user, and settles each one with its element or its error
   private async write(waiting: Waiting[], writeChunk: (user: AuthUser, items: Waiting[]) => Promise<ItemResult[]>) {
     const byUser = new Map<string, Waiting[]>();
-    waiting.forEach((w) => byUser.set(w.user.internal_id, [...(byUser.get(w.user.internal_id) ?? []), w]));
+    waiting.forEach((w) => {
+      const items = byUser.get(w.user.internal_id);
+      if (items) items.push(w);
+      else byUser.set(w.user.internal_id, [w]);
+    });
     for (const items of byUser.values()) {
       try {
         const results = await writeChunk(items[0].user, items);

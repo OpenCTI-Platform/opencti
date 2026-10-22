@@ -75,7 +75,11 @@ export const ackTasks = async (tasks: QueuedTask[]) => {
   if (tasks.length === 0) return;
   const pipeline = getClientBase().pipeline();
   const byPartition = new Map<number, string[]>();
-  tasks.forEach((t) => byPartition.set(t.partition, [...(byPartition.get(t.partition) ?? []), t.id]));
+  tasks.forEach((t) => {
+    const ids = byPartition.get(t.partition);
+    if (ids) ids.push(t.id);
+    else byPartition.set(t.partition, [t.id]);
+  });
   byPartition.forEach((ids, partition) => {
     pipeline.call('XACK', streamName(partition), GROUP, ...ids);
     pipeline.call('XDEL', streamName(partition), ...ids);

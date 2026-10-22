@@ -131,13 +131,19 @@ const prepareInput = async (context: AuthContext, user: AuthUser, rawInput: Reco
 const isNotEmpty = (v: any) => v !== undefined && v !== null && !(Array.isArray(v) && v.length === 0);
 
 // Denormalized ref ids on the source of its meta relationships (what elIndexElements' impacts write today)
+// (one Set per field: a container can have tens of thousands of refs)
 const denormalizeOnSource = (source: Record<string, any>, metas: any[]) => {
   const out = { ...source };
+  const ids = new Map<string, Set<string>>();
   metas.forEach((meta) => {
     if (isImpactedTypeAndSide(meta.entity_type, source.entity_type, meta.to.entity_type, ROLE_FROM)) {
       const field = buildRefRelationKey(meta.entity_type);
-      out[field] = R.uniq([...(out[field] ?? []), meta.to.internal_id]);
+      if (!ids.has(field)) ids.set(field, new Set(out[field] ?? []));
+      ids.get(field)!.add(meta.to.internal_id);
     }
+  });
+  ids.forEach((fieldIds, field) => {
+    out[field] = [...fieldIds];
   });
   return out;
 };
@@ -170,7 +176,11 @@ const groupByKeys = <T>(items: T[], keysOf: (item: T) => string[]) => {
     else parent[find(i)] = find(j);
   }));
   const groups = new Map<number, T[]>();
-  items.forEach((item, i) => groups.set(find(i), [...(groups.get(find(i)) ?? []), item]));
+  items.forEach((item, i) => {
+    const group = groups.get(find(i));
+    if (group) group.push(item);
+    else groups.set(find(i), [item]);
+  });
   return [...groups.values()];
 };
 
