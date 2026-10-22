@@ -140,6 +140,9 @@ export const isConnectorActive = (connector: any, lastSeenAt?: string | null) =>
   return isNotEmptyField(lastSeenAt) && sinceNowInMs(lastSeenAt) < CONNECTOR_LIVELINESS_GRACE_PERIOD_MS;
 };
 
+// Projection read from Elasticsearch by findRegularlyPingingConnectors: other connector fields are NOT loaded
+export type PingingConnector = Pick<BasicStoreEntityConnector, 'internal_id' | 'standard_id' | 'entity_type' | 'built_in' | 'connector_info'>;
+
 /**
  * Finds the connectors pinging continuously.
  *
@@ -162,11 +165,15 @@ export const isConnectorActive = (connector: any, lastSeenAt?: string | null) =>
  *
  * @param context the execution context
  * @param user the user reading the connectors
- * @returns the non built-in connectors pinging continuously, as stored in Elasticsearch
+ * @returns the non built-in connectors pinging continuously, projected on base fields + built_in + connector_info
  */
-export const findRegularlyPingingConnectors = async (context: AuthContext, user: AuthUser) => {
+export const findRegularlyPingingConnectors = async (context: AuthContext, user: AuthUser): Promise<PingingConnector[]> => {
   // Not read from cache because connector_info update does not trigger a cache invalidation
-  const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, user, [ENTITY_TYPE_CONNECTOR]);
+  // Projection: only the fields used below, read every period by the health manager
+  const connectors: PingingConnector[] = await fullEntitiesList<BasicStoreEntityConnector>(context, user, [ENTITY_TYPE_CONNECTOR], {
+    baseData: true,
+    baseFields: ['built_in', 'connector_info'],
+  });
   // connector_info is not filterable (flat object): filtered here. A few hundred connectors at most
   return connectors.filter((connector) => !connector.built_in
     && isNotEmptyField(connector.connector_info) && connector.connector_info.run_and_terminate !== true);

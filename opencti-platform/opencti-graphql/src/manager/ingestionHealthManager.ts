@@ -167,8 +167,9 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     lock.signal.throwIfAborted();
     const source = INGESTION_SOURCES[sourceIndex];
     const elements = await source.load(context);
-    const stoppedElements = elements.filter(isIngestionStopped);
-    const activeElements = elements.filter((element) => !isIngestionStopped(element));
+    const stoppedElements: IngestionElement[] = [];
+    const activeElements: IngestionElement[] = [];
+    elements.forEach((element) => (isIngestionStopped(element) ? stoppedElements : activeElements).push(element));
 
     // Stopped: the only place handling them, nothing read, nothing evaluated, nothing reported
     for (let i = 0; i < stoppedElements.length; i += 1) {
