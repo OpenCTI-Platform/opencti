@@ -84,11 +84,6 @@ const WorkspaceManageAccessDialog: FunctionComponent<
   ) => {
     const finalValues = (values.authorizedMembers ?? [])
       .filter((v) => v.accessRight !== 'none')
-      .filter((item, index, array) => {
-        return (
-          array.findIndex((member) => member.value === item.value) === index
-        );
-      })
       .map((member) => {
         return {
           id: member.value,
