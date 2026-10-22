@@ -70,6 +70,33 @@ describe('sanitizeConnectorInfoErrors', () => {
     expect(sanitized[sanitized.length - 1].code).toBe(`LOW_${CONNECTOR_ERRORS_MAX_COUNT - 2}`);
   });
 
+  it('should keep the last report of a repeated code', () => {
+    const errors = [
+      { code: 'API_UNREACHABLE', message: 'old', criticity: 1 },
+      { code: 'RATE_LIMITED', message: '', criticity: 2 },
+      { code: 'API_UNREACHABLE', message: 'latest', criticity: 3 },
+    ];
+    expect(sanitizeConnectorInfoErrors(errors)).toEqual([
+      { code: 'API_UNREACHABLE', message: 'latest', criticity: 3 },
+      { code: 'RATE_LIMITED', message: '', criticity: 2 },
+    ]);
+  });
+
+  it('should count a repeated code once against the limit', () => {
+    const repeated = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, () => ({ code: 'REPEATED', message: '', criticity: 3 }));
+    const distinct = { code: 'DISTINCT', message: '', criticity: 2 };
+    expect(sanitizeConnectorInfoErrors([...repeated, distinct]).map(({ code }) => code)).toEqual(['REPEATED', 'DISTINCT']);
+  });
+
+  it('should keep the latest report of a code once merged, even with a lower criticity', () => {
+    const errors = [
+      { code: 'API_UNREACHABLE', message: 'old', criticity: 3 },
+      { code: 'API_UNREACHABLE', message: 'latest', criticity: 1 },
+    ];
+    const { kept } = mergeConnectorErrors([], sanitizeConnectorInfoErrors(errors), 0);
+    expect(kept).toEqual([{ code: 'API_UNREACHABLE', message: 'latest', criticity: 1, last_seen_at: 0 }]);
+  });
+
   describe('dropped entries logging', () => {
     afterEach(() => {
       vi.restoreAllMocks();

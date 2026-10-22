@@ -2,7 +2,7 @@ import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } f
 import type { BasicStoreBase, BasicStoreEntityFeed, BasicStoreEntity, BasicCapabilityEntity, BasicGroupEntity } from '../types/store.d';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
 import type { GraphqlCatalog } from '../modules/catalog/catalog-types';
-import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager } from '../modules/connector/connector-types';
+import type { BasicStoreEntityConnector, ResolvedConnectorInfo, BasicStoreEntityConnectorManager } from '../modules/connector/connector-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
 import type { BasicStoreEntityNarrative } from '../modules/narrative/narrative-types';
@@ -41031,7 +41031,7 @@ export type ResolversTypes = ResolversObject<{
   ConnectorContractConfiguration: ResolverTypeWrapper<ConnectorContractConfiguration>;
   ConnectorCurrentStatus: ConnectorCurrentStatus;
   ConnectorHealthMetrics: ResolverTypeWrapper<ConnectorHealthMetrics>;
-  ConnectorInfo: ResolverTypeWrapper<ConnectorInfo>;
+  ConnectorInfo: ResolverTypeWrapper<ResolvedConnectorInfo>;
   ConnectorInfoError: ResolverTypeWrapper<ConnectorInfoError>;
   ConnectorInfoErrorInput: ConnectorInfoErrorInput;
   ConnectorInfoInput: ConnectorInfoInput;
@@ -42221,7 +42221,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConnectorConfiguration: ConnectorConfiguration;
   ConnectorContractConfiguration: ConnectorContractConfiguration;
   ConnectorHealthMetrics: ConnectorHealthMetrics;
-  ConnectorInfo: ConnectorInfo;
+  ConnectorInfo: ResolvedConnectorInfo;
   ConnectorInfoError: ConnectorInfoError;
   ConnectorInfoErrorInput: ConnectorInfoErrorInput;
   ConnectorInfoInput: ConnectorInfoInput;

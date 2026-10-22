@@ -646,7 +646,7 @@ const invalidConnectorErrorReason = ({ code, criticity }: ConnectorInfoError) =>
 
 // Errors are only reported by the connector: invalid entries are dropped, never thrown, so ping keeps working.
 export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null | undefined, connectorId?: string): ConnectorInfoError[] => {
-  return (errors ?? [])
+  const validErrors = (errors ?? [])
     .map(({ code, message, criticity }) => ({
       code: truncate(code ?? '', CONNECTOR_ERROR_CODE_MAX_LENGTH),
       message: truncate(message ?? '', CONNECTOR_ERROR_MESSAGE_MAX_LENGTH),
@@ -658,7 +658,11 @@ export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null 
         logApp.info('[CONNECTOR] Invalid error reported on ping, entry dropped', { connectorId, reason, code: error.code, criticity: error.criticity });
       }
       return reason === undefined;
-    })
+    });
+  // Errors are merged by code, the last report wins: deduplicated before ranking so a repeated code takes a single slot
+  const lastErrorByCode = new Map<string, ConnectorInfoError>();
+  validErrors.forEach((error) => lastErrorByCode.set(error.code, error));
+  return [...lastErrorByCode.values()]
     .sort((a, b) => b.criticity - a.criticity)
     .slice(0, CONNECTOR_ERRORS_MAX_COUNT);
 };
