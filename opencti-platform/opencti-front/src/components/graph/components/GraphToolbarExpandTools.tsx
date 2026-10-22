@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import { useParams } from 'react-router';
-import InvestigationExpandForm, { InvestigationExpandFormProps } from '@components/workspaces/investigations/InvestigationExpandForm';
+import InvestigationExpandDialogContent, { InvestigationExpandDialogContentProps } from '@components/workspaces/investigations/InvestigationExpandDialogContent';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
 import InvestigationRollBackExpandDialog from '@components/workspaces/investigations/dialog/InvestigationRollBackExpandDialog';
 import GraphToolbarItem from './GraphToolbarItem';
@@ -620,7 +620,7 @@ const GraphToolbarExpandTools = ({
     onInvestigationRollback?.();
   };
 
-  const onExpand: InvestigationExpandFormProps['onSubmit'] = async (
+  const onExpand: InvestigationExpandDialogContentProps['onSubmit'] = async (
     { entity_types, relationship_types },
     { resetForm },
   ) => {
@@ -695,7 +695,7 @@ const GraphToolbarExpandTools = ({
         sx={{ '& .MuiDialog-paper': { width: 640 } }}
         onClose={() => setIsExpandOpen(false)}
       >
-        <InvestigationExpandForm
+        <InvestigationExpandDialogContent
           links={graphData?.links ?? []}
           selectedNodes={selectedNodes}
           onSubmit={onExpand}

@@ -86,7 +86,7 @@ type FormData = {
   reset_filters: boolean;
 };
 
-export type InvestigationExpandFormProps = {
+export type InvestigationExpandDialogContentProps = {
   links: GraphLink[];
   selectedNodes: GraphNode[];
   onSubmit: (data: FormData, helpers: FormikHelpers<FormData>) => void;
@@ -94,13 +94,13 @@ export type InvestigationExpandFormProps = {
 };
 
 // Refs of queries instantiated by the wrapper (bottom of the file).
-type InvestigationExpandFormContentProps = InvestigationExpandFormProps & {
+type InvestigationExpandDialogContentComponentProps = InvestigationExpandDialogContentProps & {
   distributionRelQueryRef: PreloadedQuery<InvestigationExpandFormRelDistributionQuery>;
   distributionFromQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionFromQuery>;
   distributionToQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionToQuery>;
 };
 
-const InvestigationExpandFormContent = ({
+const InvestigationExpandDialogContentComponent = ({
   links,
   selectedNodes,
   onSubmit,
@@ -108,7 +108,7 @@ const InvestigationExpandFormContent = ({
   distributionRelQueryRef,
   distributionFromQueryRef,
   distributionToQueryRef,
-}: InvestigationExpandFormContentProps) => {
+}: InvestigationExpandDialogContentComponentProps) => {
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
 
@@ -419,7 +419,7 @@ const InvestigationExpandFormContent = ({
 };
 
 // Wrapper component that prepares queries.
-const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
+const InvestigationExpandDialogContent = (props: InvestigationExpandDialogContentProps) => {
   const classes = useStyles();
 
   // Number of relations grouped by type of relation.
@@ -454,7 +454,7 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
     && distributionFromQueryRef
     && distributionToQueryRef ? (
         <Suspense fallback={Fallback}>
-          <InvestigationExpandFormContent
+          <InvestigationExpandDialogContentComponent
             {...props}
             distributionRelQueryRef={distributionRelQueryRef}
             distributionFromQueryRef={distributionFromQueryRef}
@@ -466,4 +466,4 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
       );
 };
 
-export default InvestigationExpandForm;
+export default InvestigationExpandDialogContent;
