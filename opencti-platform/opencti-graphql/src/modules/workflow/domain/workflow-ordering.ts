@@ -146,7 +146,7 @@ export const computeStateOrder = (
  * final, an ending state: only a bypass or an external status write moves an entity out of it. Transitions from any
  * state (`*`) are ignored.
  */
-export const findStatesWithOutgoingTransitions = (transitions: Pick<OrderingTransition, 'from'>[]): Set<string> => {
+export const findStatesWithOutgoingTransitions = (transitions: OrderingTransition[]): Set<string> => {
   const states = new Set<string>();
   transitions.forEach((transition) => {
     const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
