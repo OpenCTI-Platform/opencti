@@ -241,7 +241,13 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
                 borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.05)}`,
               }}
             >
-              <Stack direction="row" gap={2.5} sx={{ minWidth: 0 }}>
+              <Stack
+                direction="row"
+                sx={{
+                  gap: 2.5,
+                  minWidth: 0,
+                }}
+              >
                 {item.messagesCount != null && (
                   <Metric label={t_i18n('Messages')} value={n(item.messagesCount)} />
                 )}
@@ -258,7 +264,15 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
                   <Metric label={t_i18n('User')} value={item.userName} />
                 )}
               </Stack>
-              <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+              <Stack
+                direction="column"
+                onClick={stopLinkNavigation}
+                onAuxClick={stopLinkNavigation}
+                sx={{
+                  alignItems: 'flex-end',
+                  gap: 0.75,
+                }}
+              >
                 {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
                 {statusChip}
               </Stack>
