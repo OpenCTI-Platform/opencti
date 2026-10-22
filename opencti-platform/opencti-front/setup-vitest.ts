@@ -16,13 +16,23 @@ type ModuleNode = { importers: Set<string>; meta?: object };
 const vitestGlobals = globalThis as {
   __vitest_mocker__?: { reset: () => void };
   __vitest_worker__?: {
-    evaluatedModules: { idToModuleMap: Map<string, ModuleNode>; invalidateModule: (node: ModuleNode) => void };
+    evaluatedModules?: { idToModuleMap: Map<string, ModuleNode>; invalidateModule: (node: ModuleNode) => void };
   };
 };
-vitestGlobals.__vitest_mocker__?.reset();
+// Written against vitest 5.0.4. If a vitest upgrade renames one of these,
+// fail here rather than silently skip the reset: mocks would leak between
+// files and worker memory would grow until the run is killed.
+const { __vitest_mocker__: mocker, __vitest_worker__: worker } = vitestGlobals;
+const evaluatedModules = worker?.evaluatedModules;
+if (!mocker || !evaluatedModules) {
+  throw new Error(
+    `setup-vitest.ts: vitest internal "${mocker ? '__vitest_worker__.evaluatedModules' : '__vitest_mocker__'}" is missing. `
+    + 'The per-file reset was written against vitest 5.0.4; adapt it to the installed version.',
+  );
+}
+mocker.reset();
 vi.resetModules();
-const evaluatedModules = vitestGlobals.__vitest_worker__?.evaluatedModules;
-evaluatedModules?.idToModuleMap.forEach((node, id) => {
+evaluatedModules.idToModuleMap.forEach((node, id) => {
   if (!id.startsWith('mock:') && !(node.meta && 'mockedModule' in node.meta)) return;
   evaluatedModules.invalidateModule(node);
   node.importers.clear();

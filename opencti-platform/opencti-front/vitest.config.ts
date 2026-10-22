@@ -19,6 +19,10 @@ export default defineConfig({
     // (coverage, 4 shared vCPUs) than locally, and the 5 s default trips on a
     // few of them. 15 s still flags a real hang.
     testTimeout: 15_000,
+    // Opt-in order check: with isolate: false a test can depend on what ran
+    // before it in the same worker. `yarn test:shuffle`, optionally with
+    // --sequence.seed=<n> to replay a failing order.
+    sequence: { shuffle: process.env.VITEST_SHUFFLE === 'true' },
     include: ['src/**/*.test.{ts,tsx}'],
     globals: true,
     server: {
