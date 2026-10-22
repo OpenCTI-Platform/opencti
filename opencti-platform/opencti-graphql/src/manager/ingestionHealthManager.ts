@@ -133,7 +133,6 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   source: IngestionSource<T>,
   element: T,
   sourceContext: SourceIngestionHealthContext,
-  user: HealthCheckUser | undefined,
 ) => {
   const healthContext = buildIngestionHealthContext(element, sourceContext);
   const checks = computeIngestionHealthChecks(element, healthContext);
@@ -145,12 +144,8 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   // The notification is evaluated at every period, even when the health did not change: it is deferred until the status is stable
   const previousHealth = element.ingestion_health;
   const nextHealth = patch ? patch.ingestion_health : previousHealth;
-  const transition = computeHealthTransition(previousHealth, nextHealth, periodContext.evaluatedAt);
+  const transition = computeHealthTransition(previousHealth, nextHealth, sourceContext.evaluatedAt);
   if (transition) {
-    // Marks the status as notified before publishing: a failed write is retried at the next period and reports the transition then
-    if (nextHealth) {
-      await writeIngestionHealth(context, source, element, { ingestion_health: { ...nextHealth, last_event_date: periodContext.evaluatedAt } });
-    }
     await publishUserAction({
       user: INGESTION_HEALTH_MANAGER_USER,
       event_type: 'ingestion_health',
@@ -160,6 +155,11 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
       message: buildHealthTransitionMessage(element, transition, nextHealth?.health_checks ?? []),
       context_data: { id: element.internal_id, entity_type: source.entityType, entity_name: element.name },
     });
+    // Marks the status as notified once published only: a failed publication is retried at the next period.
+    // A failed write publishes the transition again at the next period: a duplicate event rather than a lost one
+    if (nextHealth) {
+      await writeIngestionHealth(context, source, element, { ingestion_health: { ...nextHealth, last_event_date: sourceContext.evaluatedAt } });
+    }
   }
 };
 
