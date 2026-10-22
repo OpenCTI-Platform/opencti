@@ -15217,6 +15217,16 @@ type Subscription {
 
 ###### INTERNAL
 
+input LockfreeEntityInput {
+  type: String!
+  input: JSON!
+}
+type LockfreeImportResult {
+  status: String!
+  id: String
+  error: String
+}
+
 type WorkEditMutations {
   delete: ID!
   ping: ID!
@@ -15734,6 +15744,9 @@ type Mutation {
 
   ######## STIX DOMAIN OBJECT ENTITIES
   stixBundlePush(connectorId: String!, bundle: String!, work_id: String): Boolean @auth(for: [CONNECTORAPI])
+  # Lock-free batch import (app:lockfree_ingestion:enabled): a chunk of objects written in one call, entities then
+  # relationships, each input as the matching *Add mutation takes it
+  lockfreeImport(entities: [LockfreeEntityInput!], relationships: [JSON!]): [LockfreeImportResult!] @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations @auth
   stixDomainObjectsExportAsk(

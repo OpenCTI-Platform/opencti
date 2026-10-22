@@ -10,11 +10,12 @@ import { inferIndexFromConceptType } from '../utils';
 import { getDraftContext } from '../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
+import { isStixMetaObject } from '../../schema/stixMetaObject';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../../schema/stixSightingRelationship';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY } from '../../schema/stixRefRelationship';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { claimKeys, identityKeys, setKeys } from './identity';
 import { mgetRaw, toElements } from './load';
 import { appendPairs, pairEntryOf, pairKey, removeFromPair } from './pairs';
@@ -73,6 +74,28 @@ export const createRelationLockFree = async (context: AuthContext, user: AuthUse
   return storedElement(result, input.relationship_type);
 };
 
+// A chunk of objects in one call: entities, then the relationships between them and existing objects, each input
+// as the matching *Add mutation takes it. A missing end fails the relationship, as today.
+export const importLockFree = async (
+  context: AuthContext,
+  user: AuthUser,
+  entities: { type: string; input: Record<string, any> }[],
+  relationships: Record<string, any>[],
+) => {
+  if (!LOCKFREE_INGESTION_ENABLED) throw UnsupportedError('Lock-free ingestion is not enabled');
+  if (!(await isIdentityBackfillDone())) throw UnsupportedError('Lock-free ingestion is not ready: identity backfill running');
+  const supported = (type: string) => isStixCoreObject(type);
+  const unsupported = entities.filter((e) => !supported(e.type));
+  if (unsupported.length > 0) throw UnsupportedError('Lock-free import takes STIX core objects', { types: R.uniq(unsupported.map((e) => e.type)) });
+  const writeContext = lockFreeContext(context);
+  const counters = newCounters();
+  const results = [
+    ...await writeEntityChunk(writeContext, user, entities, counters, { missingEnds: 'error' }),
+    ...await writeRelationChunk(writeContext, user, relationships, counters, { missingEnds: 'error' }),
+  ];
+  return results.map(({ status, id, error }) => ({ status, id, error }));
+};
+
 // region identity index in step with today's path
 const ownerOf = (element: any) => ({ owner_id: element.internal_id, owner_index: element._index, owner_type: element.entity_type, owner_standard_id: element.standard_id });
 const isRelationshipElement = (element: any) => isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type);
@@ -86,12 +109,13 @@ const createdByOf = (element: any): string | undefined => {
   const value = element.createdBy?.internal_id ?? element[buildRefRelationKey(RELATION_CREATED_BY)] ?? element['created-by'];
   return Array.isArray(value) ? value[0] : value;
 };
-// Only the objects the lock-free path reads: live STIX core objects and relationships, outside drafts and inferences
+// The objects the lock-free path reads: live STIX core and meta objects (labels, markings, external references,
+// kill chain phases are refs of what it writes) and relationships, outside drafts and inferences
 const isSynced = (context: AuthContext, user: AuthUser, element: any) => {
   if (!LOCKFREE_INGESTION_ENABLED || isMarked(context, 'lockfree_write')) return false;
   if (!element?.internal_id || !element.entity_type || getDraftContext(context, user)) return false;
   if (element.is_inferred || element._index?.includes('inferred')) return false;
-  return isStixCoreObject(element.entity_type) || isRelationshipElement(element);
+  return isStixCoreObject(element.entity_type) || isStixMetaObject(element.entity_type) || isRelationshipElement(element);
 };
 const safely = async (operation: string, element: any, fn: () => Promise<void>) => {
   try {

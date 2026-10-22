@@ -51,7 +51,7 @@ import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../../modules/s
 import { ACTION_TYPE_SHARE } from '../../domain/backgroundTask-common';
 import { now } from '../../utils/format';
 import { claimKeys, deterministicId, type Owner, setKeys } from './identity';
-import { liveOwners, mgetRaw, toElements } from './load';
+import { findUnknownBySearch, liveOwners, mgetRaw, toElements } from './load';
 import { addPending } from './pending';
 import { pool } from './context';
 import { benchTimer } from '../../utils/bench-timing';
@@ -99,8 +99,9 @@ const chunkFinder = (context: AuthContext, user: AuthUser) => {
     const missing = R.uniq(ids.filter((id) => id && !cache.has(id.toLowerCase())));
     if (missing.length > 0) {
       const loaded = await loadWithAccessFields(missing);
+      const searched = await findUnknownBySearch(context, missing, loaded);
       missing.forEach((id) => cache.set(id.toLowerCase(), null));
-      loaded.forEach((element) => getInstanceIds(element).forEach((id: string) => cache.set(id.toLowerCase(), element)));
+      [...loaded, ...searched].forEach((element) => getInstanceIds(element).forEach((id: string) => cache.set(id.toLowerCase(), element)));
     }
     const elements = R.uniqBy((e: any) => e.internal_id, ids.map((id) => cache.get(id?.toLowerCase())).filter(Boolean));
     return userFilterStoreElements(context, user, elements) as Promise<any[]>;

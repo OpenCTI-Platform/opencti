@@ -9,6 +9,7 @@ import { ENABLED_DEMO_MODE } from '../config/conf';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { FunctionalError } from '../config/errors';
 import { loadCreators } from '../database/members';
+import { importLockFree } from '../database/lockfree/ingestion';
 
 const internalLoadThroughDenormalized = (context, user, element, inputName) => {
   if (inputName === INPUT_GRANTED_REFS) {
@@ -69,6 +70,7 @@ const stixResolvers = {
       merge: ({ stixObjectsIds }) => stixObjectMerge(context, context.user, id, stixObjectsIds),
     }),
     stixBundlePush: (_, { connectorId, bundle, work_id }, context) => sendStixBundle(context, context.user, connectorId, bundle, work_id),
+    lockfreeImport: (_, { entities, relationships }, context) => importLockFree(context, context.user, entities ?? [], relationships ?? []),
   },
   StixObject: {
     __resolveType(obj) {

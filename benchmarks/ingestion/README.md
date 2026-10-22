@@ -64,6 +64,7 @@ Global options: `--prefix` (default `bench`, see [Isolation](#isolation)), `--es
 | `lockfree` | Lock-free write path against today's path and the batch prototype: entities and relationships with refs, one per call, 8 at a time and in chunks, on spread ends, a hub and a hub that already lists 20,000 relationships, and re-ingestion | 2,000 per case (500 on the big hub) | ~6 min |
 | `lockfree-batch` | Lock-free write path in chunks against the batch prototype: hub and spread, with and without refs, 1, 4 and 8 parallel chunk writers, chunks of 100 to 2,000, and bundles carrying entities with their relationships; per-step timing of each chunk | 8,000 per case | ~2 min |
 | `lockfree-profile` | CPU profile of lock-free chunks (relationships with and without refs, entities with refs), one `.cpuprofile` per case in `results/`; summarize with `tools/cpu_profile.py` | 8,000 per case | ~40 s |
+| `batch-import` | The `lockfreeImport` mutation over HTTP: chunks of 1, 100 and 500 objects per request, 1 and 4 clients, entities with refs then relationships with refs on one hub; waits until the platform lists them all | 4,000 per case | ~1.5 min |
 | `lockfree-processes` | The lock-free path from 1, 2 and 4 platform processes at once, as the nodes of a cluster: entities with refs, then relationships with refs from all of them to one hub; `--processes 1,2` picks the counts | 16,000 per case | ~2 min |
 | `lockfree-behaviours` | Correctness of the lock-free path: parity with today's path (stored documents, meta relationships and stream events of the same steps written both ways) and 28 checks over concurrency, races, out-of-order arrival, deletes, renames, access, restarts, drafts, backfill | 50 per case | ~1.5 min |
 
@@ -393,6 +394,22 @@ the same day, 1 and 8 writers.
 With one writer, or with bundles, step 8 adds 29 to 70%; with 8 writers in one process it changes nothing (within
 the 10% runs vary by), because that process's event loop is then busy all the time. More processes are the way
 past it (next section).
+
+### Batch import over HTTP (`batch-import`)
+
+`lockfreeImport` takes a chunk of inputs (entities as `{type, input}`, then relationships, each as the matching
+`*Add` mutation takes it) and writes it with the lock-free path in one request; it needs
+`app:lockfree_ingestion:enabled`. The client sends the chunks over HTTP, as a worker would. Two runs, 22 October
+2026, every object with an author, TLP:GREEN and 3 labels:
+
+| Case | 1 per request, 8 clients | Chunks of 100, 1 client | Chunks of 500, 1 client | Chunks of 500, 4 clients |
+|---|---|---|---|---|
+| Entities | 225 to 394/s | 1,494 to 1,590/s | 2,047 to 2,229/s | 2,949 to 3,048/s |
+| Relationships, all on one hub | 277 to 463/s | 1,282 to 1,297/s | 1,518 to 1,610/s | 2,030 to 2,240/s |
+
+No errors; the platform listed all 13,000 relationships of the hub at most 1.1 s after the last write. Over HTTP,
+chunks reach the rates measured inside the platform: the per-request cost is paid once per chunk. The worker does
+not use it yet: pycti converts STIX to inputs object by object and sends each one.
 
 ### Several processes (`lockfree-processes`)
 

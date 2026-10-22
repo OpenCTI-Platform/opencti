@@ -6,7 +6,9 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { elRawMget } from '../../database/engine';
 import { elConvertHits } from '../../database/engine-data-converter';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { userFilterStoreElements } from '../../utils/access';
+import { SYSTEM_USER, userFilterStoreElements } from '../../utils/access';
+import { internalFindByIds } from '../middleware-loader';
+import { getInstanceIds } from '../../schema/identifier';
 import { pool } from './context';
 import { lookupKeys, type Owner } from './identity';
 
@@ -45,11 +47,21 @@ export const loadByAnyIds = async (ids: string[], opts: { light?: boolean } = {}
   return toElements([...raws.values()]);
 };
 
+// Ids the identity index does not lead to (an object today's path wrote that it was not told about) are looked up as
+// today's path looks them up: today's writes are refreshed, so its search sees them
+export const findUnknownBySearch = async (context: AuthContext, ids: string[], found: any[]) => {
+  const known = new Set(found.flatMap((e) => getInstanceIds(e).map((id: string) => id.toLowerCase())));
+  const unknown = ids.filter((id) => id && !known.has(id.toLowerCase()));
+  if (unknown.length === 0) return [];
+  return internalFindByIds(context, SYSTEM_USER, unknown) as Promise<any[]>;
+};
+
 // The finder handed to inputResolveRefs: same contract as internalFindByIds(context, user, ids), the user's access
 // filter included, but realtime
 export const makeFinder = (context: AuthContext, user: AuthUser) => async (ids: string[]) => {
   const elements = await loadByAnyIds(ids, { light: true });
-  return userFilterStoreElements(context, user, elements);
+  const searched = await findUnknownBySearch(context, ids, elements);
+  return userFilterStoreElements(context, user, [...elements, ...searched]);
 };
 
 // An element with its refs resolved, as storeLoadByIdWithRefs returns it: each ref input (createdBy,

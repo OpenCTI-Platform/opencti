@@ -15865,6 +15865,18 @@ export enum LocationsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type LockfreeEntityInput = {
+  input: Scalars['JSON']['input'];
+  type: Scalars['String']['input'];
+};
+
+export type LockfreeImportResult = {
+  __typename?: 'LockfreeImportResult';
+  error?: Maybe<Scalars['String']['output']>;
+  id?: Maybe<Scalars['String']['output']>;
+  status: Scalars['String']['output'];
+};
+
 export type Log = {
   __typename?: 'Log';
   context_data?: Maybe<ContextData>;
@@ -17663,6 +17675,7 @@ export type Mutation = {
   listTaskAdd: BackgroundTask;
   locationAdd?: Maybe<Location>;
   locationEdit?: Maybe<LocationEditMutations>;
+  lockfreeImport?: Maybe<Array<LockfreeImportResult>>;
   logout?: Maybe<Scalars['ID']['output']>;
   malwareAdd?: Maybe<Malware>;
   malwareAnalysisAdd?: Maybe<MalwareAnalysis>;
@@ -19269,6 +19282,12 @@ export type MutationLocationAddArgs = {
 
 export type MutationLocationEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationLockfreeImportArgs = {
+  entities?: InputMaybe<Array<LockfreeEntityInput>>;
+  relationships?: InputMaybe<Array<Scalars['JSON']['input']>>;
 };
 
 
@@ -41454,6 +41473,8 @@ export type ResolversTypes = ResolversObject<{
   LocationEdge: ResolverTypeWrapper<Omit<LocationEdge, 'node'> & { node: ResolversTypes['Location'] }>;
   LocationEditMutations: ResolverTypeWrapper<Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Location']>, contextPatch?: Maybe<ResolversTypes['Location']>, fieldPatch?: Maybe<ResolversTypes['Location']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Location']> }>;
   LocationsOrdering: LocationsOrdering;
+  LockfreeEntityInput: LockfreeEntityInput;
+  LockfreeImportResult: ResolverTypeWrapper<LockfreeImportResult>;
   Log: ResolverTypeWrapper<Omit<Log, 'context_data' | 'user'> & { context_data?: Maybe<ResolversTypes['ContextData']>, user?: Maybe<ResolversTypes['Creator']> }>;
   LogConnection: ResolverTypeWrapper<Omit<LogConnection, 'edges'> & { edges: Array<ResolversTypes['LogEdge']> }>;
   LogEdge: ResolverTypeWrapper<Omit<LogEdge, 'node'> & { node: ResolversTypes['Log'] }>;
@@ -42573,6 +42594,8 @@ export type ResolversParentTypes = ResolversObject<{
   LocationConnection: Omit<LocationConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LocationEdge']>>> };
   LocationEdge: Omit<LocationEdge, 'node'> & { node: ResolversParentTypes['Location'] };
   LocationEditMutations: Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Location']>, contextPatch?: Maybe<ResolversParentTypes['Location']>, fieldPatch?: Maybe<ResolversParentTypes['Location']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Location']> };
+  LockfreeEntityInput: LockfreeEntityInput;
+  LockfreeImportResult: LockfreeImportResult;
   Log: Omit<Log, 'context_data' | 'user'> & { context_data?: Maybe<ResolversParentTypes['ContextData']>, user?: Maybe<ResolversParentTypes['Creator']> };
   LogConnection: Omit<LogConnection, 'edges'> & { edges: Array<ResolversParentTypes['LogEdge']> };
   LogEdge: Omit<LogEdge, 'node'> & { node: ResolversParentTypes['Log'] };
@@ -48521,6 +48544,12 @@ export type LocationEditMutationsResolvers<ContextType = any, ParentType extends
   relationDelete?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<LocationEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
 }>;
 
+export type LockfreeImportResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['LockfreeImportResult'] = ResolversParentTypes['LockfreeImportResult']> = ResolversObject<{
+  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type LogResolvers<ContextType = any, ParentType extends ResolversParentTypes['Log'] = ResolversParentTypes['Log']> = ResolversObject<{
   context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType, Partial<LogContext_DataArgs>>;
   context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -49385,6 +49414,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   listTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationListTaskAddArgs, 'input'>>;
   locationAdd?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<MutationLocationAddArgs, 'input'>>;
   locationEdit?: Resolver<Maybe<ResolversTypes['LocationEditMutations']>, ParentType, ContextType, RequireFields<MutationLocationEditArgs, 'id'>>;
+  lockfreeImport?: Resolver<Maybe<Array<ResolversTypes['LockfreeImportResult']>>, ParentType, ContextType, Partial<MutationLockfreeImportArgs>>;
   logout?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   malwareAdd?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, RequireFields<MutationMalwareAddArgs, 'input'>>;
   malwareAnalysisAdd?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisAddArgs, 'input'>>;
@@ -55716,6 +55746,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LocationConnection?: LocationConnectionResolvers<ContextType>;
   LocationEdge?: LocationEdgeResolvers<ContextType>;
   LocationEditMutations?: LocationEditMutationsResolvers<ContextType>;
+  LockfreeImportResult?: LockfreeImportResultResolvers<ContextType>;
   Log?: LogResolvers<ContextType>;
   LogConnection?: LogConnectionResolvers<ContextType>;
   LogEdge?: LogEdgeResolvers<ContextType>;

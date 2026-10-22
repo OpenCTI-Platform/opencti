@@ -43,6 +43,7 @@ class Scenario:
     params: dict
     quick: dict
     needs: list = field(default_factory=list)  # python modules the scenario needs
+    env: dict = field(default_factory=dict)  # platform configuration the scenario needs
 
 
 SCENARIOS = {
@@ -110,6 +111,15 @@ SCENARIOS = {
             "vitest",
             {"n": 50, "concurrency": 8, "settle_ms": 100},
             {"n": 20},
+        ),
+        Scenario(
+            "batch-import",
+            "Chunks of 1 to 500 objects per HTTP request to the lockfreeImport mutation, 1 and 4 clients, entities then relationships on one hub",
+            "vitest",
+            {"n": 4000},
+            {"n": 500},
+            needs=["pycti"],
+            env={"APP__LOCKFREE_INGESTION__ENABLED": "true"},
         ),
         Scenario(
             "worker-path",
@@ -314,6 +324,8 @@ def run_one(scenario, args, stamp):
         env["BENCH_OUT"] = str(out_path)
         env["BENCH_PYTHON"] = args.python
         env["BENCH_WORKER_SCRIPT"] = str(TOOLS / "worker_path.py")
+        env["BENCH_BATCH_SCRIPT"] = str(TOOLS / "batch_import.py")
+        env.update(scenario.env)
         env["BENCH_PROFILE_DIR"] = str(RESULTS)
         for key, value in params.items():
             env[f"BENCH_{key.upper()}"] = str(value)
