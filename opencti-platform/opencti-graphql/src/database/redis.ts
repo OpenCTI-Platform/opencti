@@ -569,11 +569,23 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
-export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean) => {
+// A work created by a Form Intake submission is bound to its applicant, its form and its draft:
+// the API only lets the import write on behalf of a form-only user for that exact work.
+export interface FormSubmissionBinding {
+  applicant_id: string;
+  form_id: string;
+  draft_id?: string | null;
+}
+export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean, formSubmission?: FormSubmissionBinding) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectRaw(tx, workId, {
       is_initialized: true,
       is_multipart: isMultiPartWork,
+      ...(formSubmission ? {
+        form_applicant_id: formSubmission.applicant_id,
+        form_id: formSubmission.form_id,
+        form_draft_id: formSubmission.draft_id ?? '',
+      } : {}),
     });
   });
 };

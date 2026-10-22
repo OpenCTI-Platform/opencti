@@ -48,7 +48,7 @@ describe('commitSubmission', () => {
         applicant_id: mockUser.id,
         content: Buffer.from(JSON.stringify(plan.bundle), 'utf-8').toString('base64'),
         work_id: 'work-1',
-        draft_id: null,
+        draft_id: '',
         update: true,
         no_split: true,
       },

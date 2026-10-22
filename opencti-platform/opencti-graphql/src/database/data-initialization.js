@@ -13,7 +13,7 @@ import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../modules/user/user-domain';
-import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from '../schema/general';
+import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FORM_INTAKE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -38,6 +38,8 @@ export const TAXII_CAPABILITIES = {
     { name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 },
   ],
 };
+// Sibling of KNUPDATE on purpose: capabilities are matched by name inclusion, a child of KNUPDATE would imply it.
+export const FORM_INTAKE_CAPABILITY = { name: KNOWLEDGE_FORM_INTAKE, description: 'Create knowledge via Form Intake', attribute_order: 170 };
 export const SHARE_FILTERS_CAPABILITY = { name: KNOWLEDGE_SHARE_FILTERS, description: 'Share filters', attribute_order: 950 };
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,
@@ -46,6 +48,7 @@ const KNOWLEDGE_CAPABILITIES = {
   dependencies: [
     { name: KNOWLEDGE_COLLABORATION, description: 'Access to collaborative creation', attribute_order: 150 },
     { name: KNOWLEDGE_FRONTEND_EXPORT, description: 'Can use web interface export functions (PDF, PNG, etc.)', attribute_order: 160 },
+    FORM_INTAKE_CAPABILITY,
     {
       name: KNOWLEDGE_UPDATE,
       description: 'Create / Update knowledge',
