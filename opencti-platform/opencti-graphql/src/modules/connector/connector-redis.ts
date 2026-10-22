@@ -1,4 +1,5 @@
 import { getClientBase } from '../../database/redis';
+import type { StoredConnectorInfoError } from './connector-types';
 
 export interface ConnectorHealthMetrics {
   restart_count: number;
@@ -77,5 +78,35 @@ export const redisGetConnectorsHeartbeats = async (): Promise<Map<string, string
 
 export const redisDeleteConnectorHeartbeat = async (connectorId: string) => {
   await getClientBase().zrem(CONNECTOR_HEARTBEATS_KEY, connectorId);
+};
+// endregion
+
+// region connector errors
+// Errors reported on ping are transient and kept out of Elasticsearch: one hash per connector, one field per error code.
+// Each error expires 10 minutes after the last ping that reported it (see mergeConnectorErrors), the key itself
+// expires 10 minutes after the last ping that reported any error.
+export const CONNECTOR_ERRORS_TTL_SECONDS = 600;
+export const connectorErrorsKey = (connectorId: string) => `connector-${connectorId}-errors`;
+
+export const redisGetConnectorErrors = async (connectorId: string): Promise<StoredConnectorInfoError[]> => {
+  const rawErrors = await getClientBase().hgetall(connectorErrorsKey(connectorId));
+  return Object.values(rawErrors).map((rawError) => JSON.parse(rawError));
+};
+
+export const redisSaveConnectorErrors = async (connectorId: string, kept: StoredConnectorInfoError[], removedCodes: string[]) => {
+  const key = connectorErrorsKey(connectorId);
+  const transaction = getClientBase().multi();
+  if (removedCodes.length > 0) {
+    transaction.hdel(key, ...removedCodes);
+  }
+  if (kept.length > 0) {
+    transaction.hset(key, Object.fromEntries(kept.map((error) => [error.code, JSON.stringify(error)])));
+    transaction.expire(key, CONNECTOR_ERRORS_TTL_SECONDS);
+  }
+  await transaction.exec();
+};
+
+export const redisDeleteConnectorErrors = async (connectorId: string) => {
+  await getClientBase().del(connectorErrorsKey(connectorId));
 };
 // endregion
