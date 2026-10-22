@@ -523,6 +523,13 @@ describe('materializePendingRoots', () => {
       .rejects.toThrow('Pending ref does not target an accessible entity of the expected type');
   });
 
+  it('should materialize a root given as a single object like a list of one, as the validation reads it', async () => {
+    const single = malware();
+    expect(() => validatePendingPayload({ mainEntityLookupPending: single }, 0)).not.toThrow();
+    const entities = await materializePendingRoots(context, user, single as any, {}, []);
+    expect(entities).toHaveLength(1);
+  });
+
   it('should attach uploaded files as base64 x_opencti_files', async () => {
     const uploads = [{ filename: 'report.pdf', mimetype: 'application/pdf', data: 'ZGF0YQ==' }];
     const root = malware({ files: [{ name: 'renamed.pdf', uploadIndex: 0 }] });
