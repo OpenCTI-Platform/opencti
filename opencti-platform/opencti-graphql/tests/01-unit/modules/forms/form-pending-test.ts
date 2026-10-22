@@ -111,6 +111,17 @@ describe('validatePendingPayload', () => {
     expect(() => validatePendingPayload(used, 1)).not.toThrow();
   });
 
+  it('should reject a pooled external reference without a URL nor an external ID', () => {
+    const usedBy = (input: Record<string, any>) => ({
+      mainEntityLookupPending: [malware({ refs: { externalReferences: [{ pending: 'e1' }] } })],
+      pendingObjects: [{ id: 'e1', entityType: 'External-Reference', input }],
+    });
+    expect(() => validatePendingPayload(usedBy({ source_name: 'src' }), 0)).toThrow('An external reference created in a form requires a URL or an external ID');
+    expect(() => validatePendingPayload(usedBy({ source_name: 'src', url: '' }), 0)).toThrow('requires a URL or an external ID');
+    expect(() => validatePendingPayload(usedBy({ source_name: 'src', external_id: 'REF-1' }), 0)).not.toThrow();
+    expect(() => validatePendingPayload(usedBy({ source_name: 'src', url: 'https://example.com' }), 0)).not.toThrow();
+  });
+
   it('should reject files on a pooled label', () => {
     const values = {
       mainEntityLookupPending: [malware({ refs: { objectLabel: [{ pending: 'l1' }] } })],
@@ -140,7 +151,7 @@ describe('validatePendingPayload', () => {
   });
 
   it('should cap the size of the pooled objects once copied on the objects that use them', () => {
-    const big = { id: 'e1', entityType: 'External-Reference', input: { source_name: 's', description: 'x'.repeat(MAX_PENDING_POOLED_BYTES / 4) } };
+    const big = { id: 'e1', entityType: 'External-Reference', input: { source_name: 's', url: 'https://example.com', description: 'x'.repeat(MAX_PENDING_POOLED_BYTES / 4) } };
     const usedBy = (count: number) => ({ externalReferences: Array.from({ length: count }, () => ({ pending: 'e1' })), pendingObjects: [big] });
     expect(() => validatePendingPayload(usedBy(3), 0)).not.toThrow();
     expect(() => validatePendingPayload(usedBy(4), 0)).toThrow('The labels and external references created in the form are too large');
@@ -692,7 +703,7 @@ describe('files of pending objects', () => {
     // an image with no token to replace
     await expect(materializePendingRoots(context, user, [malware({ files: [image(0)] })], {}, [png()])).rejects.toThrow(message);
     // the same applies to the description of a pooled external reference
-    const pooled: PendingObject = { id: 'e1', entityType: 'External-Reference', input: { source_name: 's', description: one.description } };
+    const pooled: PendingObject = { id: 'e1', entityType: 'External-Reference', input: { source_name: 's', url: 'https://example.com', description: one.description } };
     const root = malware({ refs: { externalReferences: [{ pending: 'e1' }] } });
     await expect(materializePendingRoots(context, user, [root], { pendingObjects: [pooled] }, [])).rejects.toThrow(message);
   });
@@ -733,7 +744,7 @@ describe('files of pending objects', () => {
     const pooled: PendingObject = {
       id: 'e1',
       entityType: 'External-Reference',
-      input: { source_name: 'src', description: `![shot](opencti-image://temp/${TOKEN_A})` },
+      input: { source_name: 'src', url: 'https://example.com', description: `![shot](opencti-image://temp/${TOKEN_A})` },
       files: [image(0), { name: 'report.pdf', uploadIndex: 1 }],
     };
     const root = malware({ refs: { externalReferences: [{ pending: 'e1' }] } });
@@ -743,6 +754,7 @@ describe('files of pending objects', () => {
     const [entity] = await materializePendingRoots(context, user, [root], values, uploads) as any[];
     expect(entity.externalReferences).toEqual([{
       source_name: 'src',
+      url: 'https://example.com',
       description: '![shot](data:image/png;base64,cG5n)',
       x_opencti_files: [{ name: 'report.pdf', data: 'cGRm', mime_type: 'application/pdf' }],
     }]);
