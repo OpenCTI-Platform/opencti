@@ -8,6 +8,9 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboa
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
+import { getGraphAnalyticsComputeConfig, processDirtyEntities } from '../../../src/modules/graphAnalytics/graphAnalytics-compute';
+import { deleteSimilarityRowsForEntities } from '../../../src/modules/graphAnalytics/graphAnalytics-store';
+import { GRAPH_ANALYTICS_MANAGER_USER } from '../../../src/utils/access';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -540,6 +543,7 @@ describe('PublicDashboard resolver', () => {
             query: DELETE_MALWARE,
             variables: { id: octopusId },
           });
+          await deleteSimilarityRowsForEntities([vadorId, magnetoId, octopusId]);
           // endregion
         });
 
@@ -632,6 +636,8 @@ describe('PublicDashboard resolver', () => {
             },
           });
           // endregion
+          // graph metrics of the malwares, as computed in the background by the graph analytics manager
+          await processDirtyEntities(testContext, GRAPH_ANALYTICS_MANAGER_USER, [vadorId, magnetoId, octopusId], getGraphAnalyticsComputeConfig());
         });
 
         it('should not return data if disabled publicDashboard', async () => {
@@ -766,6 +772,72 @@ describe('PublicDashboard resolver', () => {
           expect(areasData[0].value).toEqual(2);
           expect(malwaressData.length).toEqual(1);
           expect(malwaressData[0].value).toEqual(3);
+        });
+
+        it('should return the data for API: graph similarity matrix', async () => {
+          const API_MATRIX_QUERY = gql`
+            query PublicGraphSimilarityMatrix($uriKey: String!, $widgetId: String!) {
+              publicGraphSimilarityMatrix(uriKey: $uriKey, widgetId: $widgetId) {
+                entities { id }
+                cells { source_id target_id score shared_count }
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_MATRIX_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa101' },
+          });
+          const { entities, cells } = data.publicGraphSimilarityMatrix;
+          // pairwise scores computed live on the shared victims
+          expect(entities.map((e) => e.id).sort()).toEqual([vadorId, magnetoId, octopusId].sort());
+          expect(cells.length).toEqual(6);
+          const cell = (a, b) => cells.find((c) => c.source_id === a && c.target_id === b);
+          expect(cell(magnetoId, vadorId).score).toBeGreaterThan(0);
+          expect(cell(magnetoId, octopusId).score).toBeGreaterThan(0);
+          expect(cell(vadorId, octopusId).score).toEqual(0);
+        });
+
+        it('should return the data for API: graph clusters size', async () => {
+          const API_CLUSTERS_QUERY = gql`
+            query PublicGraphClustersSize($uriKey: String!, $widgetId: String!) {
+              publicGraphClustersSizeTimeSeries(uriKey: $uriKey, widgetId: $widgetId) {
+                cluster { id name }
+                data { date value }
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_CLUSTERS_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa102' },
+          });
+          // none of the test malwares belongs to a cluster
+          expect(data.publicGraphClustersSizeTimeSeries).toEqual([]);
+        });
+
+        it('should refuse graph data for a widget published with another visualization', async () => {
+          const API_MATRIX_QUERY = gql`
+            query PublicGraphSimilarityMatrixOfOtherWidget($uriKey: String!, $widgetId: String!) {
+              publicGraphSimilarityMatrix(uriKey: $uriKey, widgetId: $widgetId) { entities { id } }
+            }
+          `;
+          const API_CLUSTERS_QUERY = gql`
+            query PublicGraphClustersSizeOfOtherWidget($uriKey: String!, $widgetId: String!) {
+              publicGraphClustersSizeTimeSeries(uriKey: $uriKey, widgetId: $widgetId) { cluster { id } }
+            }
+          `;
+          // the clusters size widget id on the matrix endpoint, a list widget id on the clusters size endpoint
+          const matrix = await queryAsAdmin({
+            query: API_MATRIX_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa102' },
+          });
+          expect(matrix.data.publicGraphSimilarityMatrix).toBeNull();
+          expect(matrix.errors?.[0]?.message).toEqual('This widget does not publish this visualization');
+          const clusters = await queryAsAdmin({
+            query: API_CLUSTERS_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa103' },
+          });
+          expect(clusters.data.publicGraphClustersSizeTimeSeries).toBeNull();
+          expect(clusters.errors?.[0]?.message).toEqual('This widget does not publish this visualization');
         });
 
         it('should return the data for API: SCR Time series', async () => {
@@ -974,6 +1046,51 @@ describe('PublicDashboard resolver', () => {
           const belgique = publicStixCoreObjects.edges.find((e) => e.node.name === 'belgique');
           expect(france).toBeDefined();
           expect(belgique).toBeDefined();
+        });
+
+        it('should return the data for API: SCO List with its configured sort', async () => {
+          const API_SCO_SORTED_LIST_QUERY = gql`
+            query PublicStixCoreObjectsSorted($uriKey: String!, $widgetId : String!) {
+              publicStixCoreObjects(uriKey: $uriKey, widgetId : $widgetId) {
+                edges {
+                  node {
+                    ... on Malware {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_SCO_SORTED_LIST_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa103' },
+          });
+          expect(data.publicStixCoreObjects.edges.map((e) => e.node.name)).toEqual(['magneto', 'octopus', 'vador']);
+        });
+
+        it('should return the data for API: graph top hubs', async () => {
+          const API_TOP_HUBS_QUERY = gql`
+            query PublicGraphTopHubs($uriKey: String!, $widgetId : String!) {
+              publicStixCoreObjects(uriKey: $uriKey, widgetId : $widgetId) {
+                edges {
+                  node {
+                    id
+                    x_opencti_graph_metrics { degree }
+                  }
+                }
+              }
+            }
+          `;
+          const { data, errors } = await queryAsAdmin({
+            query: API_TOP_HUBS_QUERY,
+            variables: { uriKey: publicDashboardUriKey, widgetId: '5c0f7a52-2a7b-4f50-a5ff-6c8e2f6fa104' },
+          });
+          // ranked by graph degree: a dashboard sharing no marking does not read every relationship of the platform,
+          // so the platform-wide degrees cannot rank its entities
+          expect(data.publicStixCoreObjects).toBeNull();
+          expect(errors?.[0]?.message).toEqual('Graph metrics filtering and sorting require access to every relationship of the platform');
+          expect(errors?.[0]?.extensions?.data?.fields).toEqual(['x_opencti_graph_metrics.degree']);
         });
 
         it('should return the data for API: SCR List', async () => {

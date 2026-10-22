@@ -14,6 +14,7 @@ import GraphToolbarTimeRange from './components/GraphToolbarTimeRange';
 import { useGraphContext } from './GraphContext';
 import { useGraphView } from './GraphViewContext';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
+import GraphToolbarAnalyticsTools from './components/GraphToolbarAnalyticsTools';
 import GraphToolbarItem from './components/GraphToolbarItem';
 import GraphToolbarOptionsList from './components/GraphToolbarOptionsList';
 import GraphToolbarMoreActions from './components/GraphToolbarMoreActions';
@@ -185,10 +186,13 @@ const GraphToolbar = ({
   const creationTools = (
     <>
       {context === 'investigation' && (
-        <GraphToolbarExpandTools
-          onInvestigationExpand={onInvestigationExpand}
-          onInvestigationRollback={onInvestigationRollback}
-        />
+        <>
+          <GraphToolbarExpandTools
+            onInvestigationExpand={onInvestigationExpand}
+            onInvestigationRollback={onInvestigationRollback}
+          />
+          <GraphToolbarAnalyticsTools onInvestigationExpand={onInvestigationExpand} />
+        </>
       )}
       <GraphToolbarContentTools {...props} />
     </>

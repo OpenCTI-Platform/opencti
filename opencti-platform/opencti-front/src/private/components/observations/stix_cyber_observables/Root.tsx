@@ -12,6 +12,8 @@ import StixCyberObservable from './StixCyberObservable';
 import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectSimilar from '../../common/graph_analytics/StixCoreObjectSimilar';
+import { isGraphSimilarEntityType } from '../../common/graph_analytics/graphAnalyticsUtils';
 import StixCyberObservableHeader from './StixCyberObservableHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -162,6 +164,9 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
                   ]}
                 />
               ),
+              ...(isGraphSimilarEntityType(stixCyberObservable.entity_type) ? {
+                similar: <StixCoreObjectSimilar stixCoreObjectId={observableId} />,
+              } : {}),
               files: (
                 <FileManager
                   id={observableId}

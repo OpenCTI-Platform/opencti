@@ -44,11 +44,13 @@ import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableW
 import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidgetColumns';
 import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 'src/utils/customFields';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
+import useGraphMetricsPlatformView, { GRAPH_METRICS_SORT_KEYS } from '@components/common/graph_analytics/useGraphMetricsPlatformView';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
 
   const { t_i18n } = useFormatter();
+  const hasGraphMetricsPlatformView = useGraphMetricsPlatformView();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
     schema: { filterKeysSchema },
@@ -79,6 +81,7 @@ const WidgetCreationParameters = () => {
     'opinions_metrics_max',
     'opinions_metrics_min',
     'opinions_metrics_total',
+    ...(hasGraphMetricsPlatformView ? GRAPH_METRICS_SORT_KEYS : []),
   ];
 
   const draftWorkspaceSortByValues: { value: string; label: string }[] = [
@@ -521,7 +524,8 @@ const WidgetCreationParameters = () => {
                 )}
 
                 {(widgetCategory === 'distribution'
-                  || widgetCategory === 'list') && (
+                  || widgetCategory === 'list'
+                  || type === 'graph-clusters-size') && (
                   <Input
                     label={t_i18n('Number of results')}
                     type="number"

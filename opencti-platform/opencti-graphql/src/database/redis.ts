@@ -837,6 +837,96 @@ export const redisGetManagerEventState = async (managerName: string) => {
 };
 // endregion
 
+// region - graph analytics
+// Sorted set of entity ids waiting for a recompute, scored by the time of their last change.
+// Re-marking an id moves its score forward, which is what debounces bursts of events on the same entity.
+const GRAPH_ANALYTICS_DIRTY_KEY = 'graph_analytics_dirty';
+// Explicit recompute requests, served before the debounced backlog and never pushed back by new events
+const GRAPH_ANALYTICS_PRIORITY_KEY = 'graph_analytics_priority';
+const GRAPH_ANALYTICS_STATE_KEY = 'graph_analytics_state';
+export const redisGraphAnalyticsMarkDirty = async (ids: string[], timestamp = Date.now()) => {
+  if (ids.length === 0) return;
+  const members = ids.flatMap((id) => [timestamp, id]);
+  await getClientBase().zadd(GRAPH_ANALYTICS_DIRTY_KEY, ...members);
+};
+export const redisGraphAnalyticsMarkPriority = async (ids: string[]) => {
+  if (ids.length === 0) return;
+  const now = Date.now();
+  const members = ids.flatMap((id) => [now, id]);
+  // moved, not duplicated: the priority entry replaces the debounced one. Removed first, so a change marked meanwhile
+  // stays queued (at worst one more recompute, never a lost one)
+  await getClientBase().zrem(GRAPH_ANALYTICS_DIRTY_KEY, ...ids);
+  // NX keeps the original request time, so repeated requests do not delay each other
+  await getClientBase().zadd(GRAPH_ANALYTICS_PRIORITY_KEY, 'NX', ...members);
+};
+// Selection and removal must be atomic: a mark landing between them would otherwise be deleted and lost
+const POP_RANGE_SCRIPT = `
+local ids = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'LIMIT', 0, tonumber(ARGV[2]))
+if #ids > 0 then redis.call('ZREM', KEYS[1], unpack(ids)) end
+return ids`;
+const popRange = async (key: string, max: number, limit: number): Promise<string[]> => {
+  if (limit <= 0) return [];
+  return await getClientBase().eval(POP_RANGE_SCRIPT, 1, key, max, limit) as string[];
+};
+export const redisGraphAnalyticsPopReady = async (readyBefore: number, limit: number): Promise<string[]> => {
+  const priority = await popRange(GRAPH_ANALYTICS_PRIORITY_KEY, Date.now(), limit);
+  const debounced = await popRange(GRAPH_ANALYTICS_DIRTY_KEY, readyBefore, limit - priority.length);
+  return Array.from(new Set([...priority, ...debounced]));
+};
+export const redisGraphAnalyticsPendingCount = async (): Promise<number> => {
+  const [dirty, priority] = await Promise.all([
+    getClientBase().zcard(GRAPH_ANALYTICS_DIRTY_KEY),
+    getClientBase().zcard(GRAPH_ANALYTICS_PRIORITY_KEY),
+  ]);
+  return dirty + priority;
+};
+// Next ids to recompute, in processing order (explicit requests first), without removing them
+export const redisGraphAnalyticsPendingIds = async (limit: number): Promise<string[]> => {
+  if (limit <= 0) return [];
+  const priority = await getClientBase().zrange(GRAPH_ANALYTICS_PRIORITY_KEY, 0, limit - 1);
+  const debounced = priority.length < limit ? await getClientBase().zrange(GRAPH_ANALYTICS_DIRTY_KEY, 0, limit - priority.length - 1) : [];
+  return Array.from(new Set([...priority, ...debounced]));
+};
+export const redisGraphAnalyticsGetState = async (): Promise<Record<string, string>> => {
+  return getClientBase().hgetall(GRAPH_ANALYTICS_STATE_KEY);
+};
+export const redisGraphAnalyticsSetState = async (state: Record<string, string>) => {
+  if (Object.keys(state).length === 0) return;
+  await getClientBase().hset(GRAPH_ANALYTICS_STATE_KEY, state);
+};
+export const redisGraphAnalyticsDeleteState = async (fields: string[]) => {
+  if (fields.length === 0) return;
+  await getClientBase().hdel(GRAPH_ANALYTICS_STATE_KEY, ...fields);
+};
+// One clustering run writes at a time: each write of the run refreshes its lease, completion releases it
+const GRAPH_ANALYTICS_RUN_LEASE_KEY = 'graph_analytics_run_lease';
+const ACQUIRE_RUN_LEASE_SCRIPT = `
+local current = redis.call('GET', KEYS[1])
+if current == false or current == ARGV[1] then
+  redis.call('SET', KEYS[1], ARGV[1], 'PX', tonumber(ARGV[2]))
+  return 1
+end
+return 0`;
+const RELEASE_RUN_LEASE_SCRIPT = `
+if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) end
+return 0`;
+// unlike the acquisition, never takes a free lease back: another run may have written and released it meanwhile
+const RENEW_RUN_LEASE_SCRIPT = `
+if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('PEXPIRE', KEYS[1], tonumber(ARGV[2])) end
+return 0`;
+export const redisGraphAnalyticsAcquireRunLease = async (runId: string, ttlMs: number): Promise<boolean> => {
+  const acquired = await getClientBase().eval(ACQUIRE_RUN_LEASE_SCRIPT, 1, GRAPH_ANALYTICS_RUN_LEASE_KEY, runId, ttlMs);
+  return Number(acquired) === 1;
+};
+export const redisGraphAnalyticsRenewRunLease = async (runId: string, ttlMs: number): Promise<boolean> => {
+  const renewed = await getClientBase().eval(RENEW_RUN_LEASE_SCRIPT, 1, GRAPH_ANALYTICS_RUN_LEASE_KEY, runId, ttlMs);
+  return Number(renewed) === 1;
+};
+export const redisGraphAnalyticsReleaseRunLease = async (runId: string) => {
+  await getClientBase().eval(RELEASE_RUN_LEASE_SCRIPT, 1, GRAPH_ANALYTICS_RUN_LEASE_KEY, runId);
+};
+// endregion
+
 // region connector logs
 export interface FeedLog {
   timestamp: string;

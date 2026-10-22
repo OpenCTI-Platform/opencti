@@ -18,6 +18,8 @@ const RootNote = lazy(() => import('./notes/Root'));
 const RootOpinion = lazy(() => import('./opinions/Root'));
 const ExternalReferences = lazy(() => import('./ExternalReferences'));
 const RootExternalReference = lazy(() => import('./external_references/Root'));
+const GraphClusters = lazy(() => import('./clusters/GraphClusters'));
+const RootGraphCluster = lazy(() => import('./clusters/Root'));
 
 const Root = () => {
   let redirect;
@@ -90,6 +92,14 @@ const Root = () => {
         <Route
           path="/external_references/:externalReferenceId/*"
           element={boundaryWrapper(RootExternalReference)}
+        />
+        <Route
+          path="/clusters"
+          element={boundaryWrapper(GraphClusters)}
+        />
+        <Route
+          path="/clusters/:clusterId/*"
+          element={boundaryWrapper(RootGraphCluster)}
         />
       </Routes>
     </Suspense>

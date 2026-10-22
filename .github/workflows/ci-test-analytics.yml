@@ -1,0 +1,67 @@
+name: Run OpenCTI analytics process tests
+
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
+
+jobs:
+  analytics-lint:
+    runs-on: ubuntu-latest
+    name: analytics formatting and lint
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 #v7.0.0
+      with:
+        python-version: "3.12"
+
+    - name: Install lint dependencies
+      run: |
+        cd opencti-analytics
+        pip3 install -r test-requirements.txt
+
+    - name: Run isort check
+      run: cd opencti-analytics && isort --check-only .
+
+    - name: Run black check
+      run: cd opencti-analytics && black --check .
+
+    - name: Run flake8
+      run: cd opencti-analytics && flake8 .
+
+  analytics-test:
+    runs-on: ubuntu-latest
+    name: analytics test - python ${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.12" ]
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 #v7.0.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies with the client-python of the same commit
+      run: |
+        cd opencti-analytics
+        sed -i 's|^pycti==.*$||' requirements.txt
+        pip3 install ../client-python
+        pip3 install -r requirements.txt
+        pip3 install -r test-requirements.txt
+
+    - name: Run tests
+      run: cd opencti-analytics && python -m pytest -q

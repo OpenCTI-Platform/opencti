@@ -23,6 +23,7 @@ import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_US
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
 import { computeConnectorsUpdateStatus } from '../modules/connector/connector-domain';
+import { batchGraphMetrics } from '../modules/graphAnalytics/graphAnalytics-domain';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -48,6 +49,7 @@ export const computeLoaders = (executeContext, user) => {
     subAttackPatternsBatchLoader: batchLoader(batchSubAttackPatterns, executeContext, user),
     coursesOfActionBatchLoader: batchLoader(batchCoursesOfAction, executeContext, user),
     connectorUpdateStatusBatchLoader: batchLoader(computeConnectorsUpdateStatus, executeContext, user),
+    graphMetricsBatchLoader: batchLoader(batchGraphMetrics, executeContext, user),
   };
 };
 
