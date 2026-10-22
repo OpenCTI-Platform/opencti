@@ -15220,7 +15220,8 @@ type Subscription {
 type WorkEditMutations {
   delete: ID!
   ping: ID!
-  reportExpectation(error: WorkErrorInput): ID!
+  # count: number of objects processed without error reported at once (default 1)
+  reportExpectation(error: WorkErrorInput, count: Int): ID!
   addExpectations(expectations: Int): ID!
   addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!

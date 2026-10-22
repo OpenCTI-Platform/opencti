@@ -39429,6 +39429,7 @@ export type WorkEditMutationsAddExpectationsArgs = {
 
 
 export type WorkEditMutationsReportExpectationArgs = {
+  count?: InputMaybe<Scalars['Int']['input']>;
   error?: InputMaybe<WorkErrorInput>;
 };
 

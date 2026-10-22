@@ -51,6 +51,8 @@ def is_priority_connector(connector_priority_group: str) -> bool:
 @dataclass(unsafe_hash=True)
 class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
     consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
+    # Push handlers by queue, to send their pending work reports when they stop
+    push_handlers: Dict[str, PushHandler] = field(default_factory=dict, hash=False)
 
     def __post_init__(self) -> None:
         self.exit_event = threading.Event()
@@ -218,6 +220,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         # Wait for all consumers to stop
         for consumer in self.consumers.values():
             consumer.wait_for_completion()
+        for push_handler in self.push_handlers.values():
+            push_handler.api.work.flush_expectations()
         if self.telemetry_enabled:
             self.prom_httpd.shutdown()
             self.prom_httpd.server_close()
@@ -292,6 +296,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             connector["connector_priority_group"]
                         )
 
+                        self.push_handlers[push_queue] = push_handler
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
@@ -337,6 +342,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         )
                         self.consumers[consumer_queue].request_stop()
                         self.consumers.pop(consumer_queue, None)
+                        stopped_handler = self.push_handlers.pop(consumer_queue, None)
+                        if stopped_handler is not None:
+                            stopped_handler.api.work.flush_expectations()
             except Exception as e:  # pylint: disable=broad-except
                 self.worker_logger.error(type(e).__name__, {"reason": str(e)})
             self.exit_event.wait(60)

@@ -632,7 +632,14 @@ class OpenCTIApiClient:
 
         return obj, []
 
-    def query(self, query, variables=None, disable_impersonate=False):
+    def query(
+        self,
+        query,
+        variables=None,
+        disable_impersonate=False,
+        headers=None,
+        session=None,
+    ):
         """Submit a query to the OpenCTI GraphQL API.
 
         :param query: GraphQL query string
@@ -641,6 +648,10 @@ class OpenCTIApiClient:
         :type variables: dict, optional
         :param disable_impersonate: removes impersonate header if set to True, defaults to False
         :type disable_impersonate: bool, optional
+        :param headers: headers to send instead of the client's current ones, defaults to None
+        :type headers: dict, optional
+        :param session: HTTP session to send with instead of the client's, defaults to None
+        :type session: requests.Session, optional
         :return: returns the response JSON content
         :rtype: dict
         :raises ValueError: if the API returns an error or non-200 status code
@@ -652,7 +663,10 @@ class OpenCTIApiClient:
         # Recursively extract File objects from nested dictionaries
         query_var, files_vars = self._extract_files(variables)
 
-        query_headers = self.request_headers.copy()
+        query_headers = (
+            headers if headers is not None else self.request_headers
+        ).copy()
+        http = session if session is not None else self.session
         if disable_impersonate and "opencti-applicant-id" in query_headers:
             del query_headers["opencti-applicant-id"]
         # If yes, transform variable (file to null) and create multipart query
@@ -717,7 +731,7 @@ class OpenCTIApiClient:
                     multipart_files.append(file_multi)
                     file_index += 1
             # Send the multipart request
-            r = self.session.post(
+            r = http.post(
                 self.api_url,
                 data=multipart_data,
                 files=multipart_files,
@@ -729,7 +743,7 @@ class OpenCTIApiClient:
             )
         # If no files, send a normal request
         else:
-            r = self.session.post(
+            r = http.post(
                 self.api_url,
                 json={"query": query, "variables": query_var},
                 headers=query_headers,

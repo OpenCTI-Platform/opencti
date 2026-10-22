@@ -4,6 +4,11 @@ For no_split single-object bundles, push_handler.py calls
 api.stix2.import_bundle_from_json(raw, update, types, work_id, objects_max_refs). This script does the same
 from a thread pool and times every HTTP request pycti sends, by GraphQL operation.
 
+Every case runs twice, with the two ways of reporting an imported object to its work: "each" sends one
+reportExpectation per object and waits for it, as pycti did before; "batched" counts successes and sends them
+together from a background thread. Each way has its own work, expecting every object it imports; the run checks
+that the work counted them all and completed.
+
 Started by the worker-path scenario, which provides BENCH_OPENCTI_URL, BENCH_OPENCTI_TOKEN, BENCH_N,
 BENCH_CONCURRENCY and BENCH_CLIENT_OUT.
 """
@@ -44,8 +49,9 @@ OPERATIONS = [
 
 stats_lock = threading.Lock()
 http_ms = {}
-current = {"scenario": "setup"}
+current = {"scenario": "setup", "reports": "batched"}
 thread_local = threading.local()
+clients = []
 
 
 def summarize(values):
@@ -69,22 +75,38 @@ def new_client():
         json_logging=True,
         provider="worker/" + pycti.__version__,
     )
-    original_post = client.session.post
 
-    def timed_post(*args, **kwargs):
-        body = kwargs.get("json") or {}
-        query = body.get("query", "") if isinstance(body, dict) else ""
-        operation = next((op for op in OPERATIONS if op in query), "other")
-        start = time.perf_counter()
-        response = original_post(*args, **kwargs)
-        elapsed = (time.perf_counter() - start) * 1000
-        with stats_lock:
-            http_ms.setdefault(current["scenario"], {}).setdefault(
-                operation, []
-            ).append(elapsed)
-        return response
+    def timed(post, suffix=""):
+        def timed_post(*args, **kwargs):
+            body = kwargs.get("json") or {}
+            query = body.get("query", "") if isinstance(body, dict) else ""
+            operation = next((op for op in OPERATIONS if op in query), "other")
+            start = time.perf_counter()
+            response = post(*args, **kwargs)
+            elapsed = (time.perf_counter() - start) * 1000
+            with stats_lock:
+                http_ms.setdefault(current["scenario"], {}).setdefault(
+                    operation + suffix, []
+                ).append(elapsed)
+            return response
 
-    client.session.post = timed_post
+        return timed_post
+
+    client.session.post = timed(client.session.post)
+    # Batched reports go through their own session, off the import's path
+    batcher = client.work.expectations
+    batcher._session.post = timed(batcher._session.post, " (background)")
+    batched = client.work.report_expectation_success
+
+    def report_success(work_id):
+        if current["reports"] == "each":
+            client.work.report_expectation(work_id, None)
+        else:
+            batched(work_id)
+
+    client.work.report_expectation_success = report_success
+    with stats_lock:
+        clients.append(client)
     return client
 
 
@@ -138,7 +160,7 @@ def uses(source_ref, target_ref):
 
 
 def run(scenario, objects, concurrency, work_id):
-    current["scenario"] = scenario
+    current["scenario"] = f"{scenario}_{current['reports']}"
     latencies = []
     errors = [0]
     latencies_lock = threading.Lock()
@@ -169,27 +191,16 @@ def run(scenario, objects, concurrency, work_id):
     }
 
 
-def main():
-    client = new_client()
-    connectors = client.connector.list()
-    connector = next(
-        (c for c in connectors if c.get("connector_type") == "INTERNAL_IMPORT_FILE"),
-        connectors[0],
-    )
-    work_id = client.work.initiate_work(connector["id"], f"bench-{RUN_ID}")
-
-    spread_sources = [intrusion_set(f"py-{RUN_ID}-spread-src-{i}") for i in range(N)]
-    spread_targets = [malware(f"py-{RUN_ID}-spread-dst-{i}") for i in range(N)]
-    hub_sources = [intrusion_set(f"py-{RUN_ID}-hub-src-{i}") for i in range(N)]
-    hub_concurrent_sources = [
-        intrusion_set(f"py-{RUN_ID}-hubc-src-{i}") for i in range(N)
-    ]
-    hub = malware(f"py-{RUN_ID}-hub")
-    hub_concurrent = malware(f"py-{RUN_ID}-hubc")
-
-    results = {
-        "pycti_version": pycti.__version__,
-        "entities_concurrent": run(
+def cases(reports):
+    tag = f"{RUN_ID}-{reports}"
+    spread_sources = [intrusion_set(f"py-{tag}-spread-src-{i}") for i in range(N)]
+    spread_targets = [malware(f"py-{tag}-spread-dst-{i}") for i in range(N)]
+    hub_sources = [intrusion_set(f"py-{tag}-hub-src-{i}") for i in range(N)]
+    hub_concurrent_sources = [intrusion_set(f"py-{tag}-hubc-src-{i}") for i in range(N)]
+    hub = malware(f"py-{tag}-hub")
+    hub_concurrent = malware(f"py-{tag}-hubc")
+    return [
+        (
             "entities_concurrent",
             spread_sources
             + spread_targets
@@ -197,27 +208,56 @@ def main():
             + hub_concurrent_sources
             + [hub, hub_concurrent],
             CONCURRENCY,
-            work_id,
         ),
-        "spread_sequential": run(
+        (
             "spread_sequential",
             [uses(s["id"], t["id"]) for s, t in zip(spread_sources, spread_targets)],
             1,
-            work_id,
         ),
-        "hub_sequential": run(
-            "hub_sequential",
-            [uses(s["id"], hub["id"]) for s in hub_sources],
-            1,
-            work_id,
-        ),
-        "hub_concurrent": run(
+        ("hub_sequential", [uses(s["id"], hub["id"]) for s in hub_sources], 1),
+        (
             "hub_concurrent",
             [uses(s["id"], hub_concurrent["id"]) for s in hub_concurrent_sources],
             CONCURRENCY,
-            work_id,
         ),
+    ]
+
+
+def work_state(client, work_id):
+    work = client.work.get_work(work_id)
+    return {
+        "status": work["status"],
+        "expected": work["tracking"]["import_expected_number"],
+        "processed": work["tracking"]["import_processed_number"],
+        "errors": len(work["errors"] or []),
     }
+
+
+def main():
+    client = new_client()
+    connectors = client.connector.list()
+    connector = next(
+        (c for c in connectors if c.get("connector_type") == "INTERNAL_IMPORT_FILE"),
+        connectors[0],
+    )
+    results = {"pycti_version": pycti.__version__}
+    checks = {}
+    for reports in ("each", "batched"):
+        current["reports"] = reports
+        work_id = client.work.initiate_work(
+            connector["id"], f"bench-{RUN_ID}-{reports}"
+        )
+        planned = cases(reports)
+        expected = sum(len(objects) for _, objects, _ in planned)
+        client.work.add_expectations(work_id, expected)
+        for name, objects, concurrency in planned:
+            results[f"{name}_{reports}"] = run(name, objects, concurrency, work_id)
+        # What a stopping worker does: send what is still pending
+        for each_client in clients:
+            each_client.work.flush_expectations()
+        state = work_state(client, work_id)
+        checks[reports] = {**state, "imported": expected}
+    results["checks"] = checks
     results["http_ms_by_operation"] = {
         scenario: {
             operation: summarize(values) for operation, values in operations.items()
@@ -226,6 +266,13 @@ def main():
     }
     with open(OUTPUT, "w", encoding="utf-8") as output:
         json.dump(results, output, indent=1)
+    failed = {
+        reports: state
+        for reports, state in checks.items()
+        if state["processed"] != state["imported"] or state["status"] != "complete"
+    }
+    if failed:
+        raise SystemExit(f"Work reports incomplete: {json.dumps(failed)}")
 
 
 if __name__ == "__main__":

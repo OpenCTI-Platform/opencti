@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { v4 as uuid } from 'uuid';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo, Connector } from '../../../src/generated/graphql';
 import { BACKGROUND_TASK_QUEUES } from '../../../src/modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
@@ -79,6 +79,14 @@ const UPDATE_WORK_REPORT_EXPECTATION_QUERY = gql`
   mutation workReportExpectation($id: ID!, $error: WorkErrorInput) {
     workEdit(id: $id) {
       reportExpectation(error: $error)
+    }
+  }
+`;
+
+const UPDATE_WORK_REPORT_EXPECTATIONS_COUNT_QUERY = gql`
+  mutation workReportExpectations($id: ID!, $error: WorkErrorInput, $count: Int) {
+    workEdit(id: $id) {
+      reportExpectation(error: $error, count: $count)
     }
   }
 `;
@@ -687,6 +695,45 @@ describe('Connector using the default work isMultiPartWork=false option', () => 
     // Status should have changed to `complete` without the need to call `toProcessed`
     queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
     expect(queryResult.data.work.status).toEqual('complete');
+  });
+});
+
+describe('Worker reporting processed items in batches', () => {
+  it('should count every item of a batch and complete the work', async () => {
+    let queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: CREATE_WORK_QUERY,
+      variables: { connectorId: TEST_CN_ID, friendlyName: 'TestConnectorBatchedReports' },
+    });
+    const workId = queryResult.data.workAdd.id;
+    await queryAsAdminWithSuccess({ query: UPDATE_WORK_ADD_EXPECTATIONS_QUERY, variables: { id: workId, expectations: 6 } });
+
+    // 3 successes at once, then one error
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATIONS_COUNT_QUERY, variables: { id: workId, count: 3 } });
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: {
+      id: workId,
+      error: { error: 'woups', source: 'code' },
+    } });
+    queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+    expect(queryResult.data.work.status).toEqual('progress');
+
+    // An error is reported for one item; a count must be positive
+    await queryAsUserIsExpectedError(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATIONS_COUNT_QUERY, variables: {
+      id: workId,
+      count: 2,
+      error: { error: 'woups', source: 'code' },
+    } }, 'Invalid expectation count');
+    await queryAsUserIsExpectedError(USER_CONNECTOR, {
+      query: UPDATE_WORK_REPORT_EXPECTATIONS_COUNT_QUERY,
+      variables: { id: workId, count: 0 },
+    }, 'Invalid expectation count');
+    queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+    expect(queryResult.data.work.status).toEqual('progress');
+
+    // The last 2 complete it
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATIONS_COUNT_QUERY, variables: { id: workId, count: 2 } });
+    queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+    expect(queryResult.data.work.status).toEqual('complete');
+    expect(queryResult.data.work.completed_number).toEqual(6);
   });
 });
 

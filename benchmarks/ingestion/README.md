@@ -309,15 +309,26 @@ attack pattern side is not locked.
 
 ### Worker path (`worker-path`)
 
-| Case | Per second | Mean per message |
-|---|---|---|
-| Relationships, spread, 1 at a time | 33 | 30.2 ms |
-| Relationships, hub, 1 at a time | 30 | 32.9 ms |
-| Relationships, hub, 8 at a time | 34 | 231 ms, p95 1.1 s |
-| Entities, 8 at a time | 180 | 44.4 ms |
+Each case runs twice: reporting each imported object to its work with its own `reportExpectation` request, as
+pycti did before, and with the success reports batched (`ExpectationBatcher` in `pycti/api/opencti_api_work.py`:
+counted per work, sent with a count from a background thread every second or every 500). Each way imports into
+its own work, which expects every object; both works counted 3,502 of 3,502 and completed. Two runs, per second:
 
-A spread relationship message is `stixCoreRelationshipAdd` (21.4 ms) followed by `workEdit` for
-`reportExpectation` (8.7 ms, 29% of the message). With 8 entities at a time, `workEdit` takes 19.3 ms.
+| Case | Report each | Batched | Mean per message, batched |
+|---|---|---|---|
+| Entities, 8 at a time | 230 / 270 | 315 / 315 | 25.2 ms |
+| Relationships, spread, 1 at a time | 42.7 / 45.0 | 47.9 / 45.4 | 21.4 ms |
+| Relationships, hub, 1 at a time | 41.5 / 39.2 | 44.0 / 43.6 | 22.7 ms |
+| Relationships, hub, 8 at a time | 43.0 / 41.2 | 43.0 / 43.8 | 179 ms, p95 1.1 s |
+
+Batching sends 154 report requests instead of 3,503. A report cost 2.6 ms per object sent one at a time and
+5 ms with 8 entities at a time (`workEdit`), now off the message's path. The hub at 8 at a time does not move:
+it waits on the hub's lock. On a real deployment the worker and the platform are further apart than on this
+laptop, so each request saved is worth more.
+
+An earlier version of this scenario created its work without expected objects. Every report then completed the
+work again and updated it in Elasticsearch, which made a report look like 8.7 ms (29% of a message). A real
+import sets its expectations, as the scenario now does.
 
 ### Queue loop (`queue-loop`)
 
@@ -396,8 +407,9 @@ lookup, the upsert patch, access filtering), which today's path pays too.
 
 ### What the numbers say
 
-- On the worker path, a relationship costs about 30 ms of HTTP plus about 5 ms of queue loop. The separate
-  `reportExpectation` request is close to 30% of the HTTP time.
+- On the worker path, a relationship costs about 20 ms of HTTP plus about 5 ms of queue loop. The separate
+  `reportExpectation` request was 2.6 ms of it (5 ms with 8 at a time); batching takes it off the path and
+  sends 96% fewer of them.
 - Inside the platform, the two bulk requests with `refresh: true` are most of a write, and they run while the
   endpoints are locked.
 - Relationships that share an entity are written one after another: 8 writers give no more throughput than 1.

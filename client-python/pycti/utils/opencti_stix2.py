@@ -3764,7 +3764,7 @@ class OpenCTIStix2:
                         ):
                             self.import_object(item, update, types)
         if work_id is not None:
-            self.opencti.work.report_expectation(work_id, None)
+            self.opencti.work.report_expectation_success(work_id)
         bundles_success_counter.add(1)
         return True
 

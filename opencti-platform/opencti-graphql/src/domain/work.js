@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import { logApp } from '../config/conf';
-import { AlreadyDeletedError, DatabaseError } from '../config/errors';
+import { AlreadyDeletedError, DatabaseError, FunctionalError } from '../config/errors';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { internalLoadById } from '../database/middleware-loader';
@@ -339,9 +339,14 @@ const countIngestionObjectsProcessed = (work, objectsCount) => {
     .catch((reason) => logApp.warn('Error acquiring work completion flag for telemetry', { reason }));
 };
 
-export const reportExpectation = async (context, user, workId, errorData) => {
+// count: objects processed reported at once, so a worker can report its successes in batches. An error is reported
+// for one object.
+export const reportExpectation = async (context, user, workId, errorData, count = 1) => {
+  if (!Number.isInteger(count) || count < 1 || (errorData && count !== 1)) {
+    throw FunctionalError('Invalid expectation count', { count, hasError: !!errorData });
+  }
   const timestamp = now();
-  await redisUpdateWorkFigures(workId);
+  await redisUpdateWorkFigures(workId, count);
   const { expected, total, isProcessed, isMultiPartWork } = await redisGetWorkCompletionState(workId);
   const isComplete = (!isMultiPartWork || isProcessed) && isWorkFinished(expected, total);
 
