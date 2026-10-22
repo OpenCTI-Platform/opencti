@@ -1607,7 +1607,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: (data, { storageHelpers: { handleAddFilter } }) => (
       <StatusCell
         data={data}
-        onStatusClick={(statusId, event) => handleAddFilter('x_opencti_workflow_id', statusId, 'eq', event)}
+        onStatusClick={(statusId, event) => handleAddFilter('workflow_id', statusId, 'eq', event)}
       />
     ),
   },
