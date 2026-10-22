@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { commitMutation } from '../relay/environment';
 import { logXtmHubIgnoredMessage } from './xtmHubLog';
 
-vi.mock('../relay/environment', () => ({ commitMutation: vi.fn() }));
+vi.mock('../relay/environment', () => ({ commitMutation: vi.fn(), defaultCommitMutation: {} }));
 
 describe('Function: logXtmHubIgnoredMessage', () => {
   beforeEach(() => {
