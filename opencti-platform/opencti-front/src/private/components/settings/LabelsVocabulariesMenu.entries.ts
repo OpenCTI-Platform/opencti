@@ -6,7 +6,7 @@ import {
   SETTINGS_SETLABELS,
   SETTINGS_SETSTATUSTEMPLATES,
   SETTINGS_SETVOCABULARIES,
-} from '../../../utils/hooks/useGranted';
+} from '../../../utils/hooks/capabilities';
 
 // Pure data (no component import): collected by the pages search through its `*.entries.ts(x)` name.
 export const menuEntries: MenuEntry[] = [

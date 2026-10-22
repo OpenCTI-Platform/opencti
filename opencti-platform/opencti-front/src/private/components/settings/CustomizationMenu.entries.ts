@@ -1,5 +1,5 @@
 import type { MenuEntry } from '../common/menus/NavToolbarMenu';
-import { SETTINGS_SETCUSTOMIZATION } from '../../../utils/hooks/useGranted';
+import { SETTINGS_SETCUSTOMIZATION } from '../../../utils/hooks/capabilities';
 
 // Pure data (no component import): collected by the pages search through its `*.entries.ts(x)` name.
 export const menuEntries: MenuEntry[] = [
