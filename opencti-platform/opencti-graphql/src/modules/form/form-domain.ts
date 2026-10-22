@@ -21,7 +21,7 @@ import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { validateFormSubmission } from './form-validation';
-import { getPendingUploadIndexes, readUploads, resolvePendingFieldRefs, validatePendingPayload, validatePendingRoots } from './form-pending';
+import { getPendingUploadCopies, readUploads, resolvePendingFieldRefs, validatePendingPayload, validatePendingRoots } from './form-pending';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from './form-bundle-builder';
 
 export { completeEntity } from './form-entity-builder';
@@ -520,7 +520,7 @@ export const planSubmission = async (
   validateFormSubmission(schema, values, isBypass);
   validatePendingPayload(values, input.files?.length ?? 0);
   validatePendingRoots(schema, values);
-  const uploads = await readUploads(input.files, getPendingUploadIndexes(values));
+  const uploads = await readUploads(input.files, getPendingUploadCopies(values));
   values = resolvePendingFieldRefs(values, uploads);
   const bundle: any = {
     type: 'bundle',

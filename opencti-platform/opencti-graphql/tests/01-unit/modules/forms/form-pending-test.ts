@@ -3,10 +3,12 @@ import { Readable } from 'stream';
 import '../../../../src/modules/index'; // registers the entity types and their attributes
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import {
+  countPooledCopies,
   getPendingRoots,
-  getPendingUploadIndexes,
+  getPendingUploadCopies,
   materializePendingRoots,
   MAX_PENDING_POOL,
+  MAX_PENDING_POOLED_BYTES,
   MAX_PENDING_REFS_PER_OBJECT,
   MAX_PENDING_REFS_TOTAL,
   MAX_PENDING_ROOTS,
@@ -101,19 +103,46 @@ describe('validatePendingPayload', () => {
     const values = { mainEntityLookupPending: [malware({ files: [{ name: 'a.txt', uploadIndex: 1 }] })] };
     expect(() => validatePendingPayload(values, 2)).toThrow('An upload is not referenced by any object created in the form');
     expect(() => validatePendingPayload({}, 1)).toThrow('An upload is not referenced');
-    // an upload referenced by a pooled object only is referenced
+    // an upload of a pooled object is referenced once an object of the form uses the pooled object
     const pooled = { pendingObjects: [{ ...extRef('e1'), files: [{ name: 'a.txt', uploadIndex: 0 }] }] };
-    expect(() => validatePendingPayload(pooled, 1)).not.toThrow();
+    expect(() => validatePendingPayload(pooled, 1)).toThrow('An upload is not referenced by any object created in the form');
+    const used = { ...pooled, mainEntityLookupPending: [malware({ refs: { externalReferences: [{ pending: 'e1' }] } })] };
+    expect(() => validatePendingPayload(used, 1)).not.toThrow();
   });
 
-  it('should collect the indexes of the uploads of the roots and of the pool once', () => {
+  it('should reject files on a pooled label', () => {
     const values = {
-      mainEntityLookupPending: [malware({ files: [{ name: 'a', uploadIndex: 2 }, { name: 'b', uploadIndex: 0 }] })],
-      additional_a_lookup_pending: [malware({ files: [{ name: 'c', uploadIndex: 2 }] })],
-      pendingObjects: [{ ...extRef('e1'), files: [{ name: 'd', uploadIndex: 1 }] }],
+      mainEntityLookupPending: [malware({ refs: { objectLabel: [{ pending: 'l1' }] } })],
+      pendingObjects: [{ ...label('l1'), files: [{ name: 'a.txt', uploadIndex: 0 }] }],
     };
-    expect(getPendingUploadIndexes(values)).toEqual([0, 1, 2]);
-    expect(getPendingUploadIndexes({})).toEqual([]);
+    expect(() => validatePendingPayload(values, 1)).toThrow('Files cannot be attached to a label created in a form');
+  });
+
+  it('should count the copies of each upload put in the bundle', () => {
+    const values = {
+      mainEntityLookupPending: [malware({
+        files: [{ name: 'a', uploadIndex: 2 }, { name: 'b', uploadIndex: 0 }],
+        refs: { externalReferences: [{ pending: 'e1' }] },
+      })],
+      additional_a_lookup_pending: [malware({ files: [{ name: 'c', uploadIndex: 2 }], refs: { externalReferences: [{ pending: 'e1' }] } })],
+      // a direct field of the form uses the pooled external reference too
+      externalReferences: [{ pending: 'e1' }, 'existing-ref'],
+      pendingObjects: [{ ...extRef('e1'), files: [{ name: 'd', uploadIndex: 1 }] }, { ...extRef('e2'), files: [{ name: 'e', uploadIndex: 3 }] }],
+    };
+    expect(countPooledCopies(values)).toEqual(new Map([['e1', 3]]));
+    // the files of a pooled object are copied with it; an unused pooled object is never put in the bundle
+    expect(getPendingUploadCopies(values)).toEqual(new Map([[0, 1], [1, 3], [2, 2]]));
+    // the same upload listed twice on an object is copied twice
+    expect(getPendingUploadCopies({ mainEntityLookupPending: [malware({ files: [{ name: 'a', uploadIndex: 0 }, { name: 'a', uploadIndex: 0 }] })] }))
+      .toEqual(new Map([[0, 2]]));
+    expect(getPendingUploadCopies({})).toEqual(new Map());
+  });
+
+  it('should cap the size of the pooled objects once copied on the objects that use them', () => {
+    const big = { id: 'e1', entityType: 'External-Reference', input: { source_name: 's', description: 'x'.repeat(MAX_PENDING_POOLED_BYTES / 4) } };
+    const usedBy = (count: number) => ({ externalReferences: Array.from({ length: count }, () => ({ pending: 'e1' })), pendingObjects: [big] });
+    expect(() => validatePendingPayload(usedBy(3), 0)).not.toThrow();
+    expect(() => validatePendingPayload(usedBy(4), 0)).toThrow('The labels and external references created in the form are too large');
   });
 
   it('should cap the number of roots, of pooled objects and of references of an object', () => {
@@ -532,7 +561,7 @@ describe('readUploads', () => {
     const result = await readUploads([
       Promise.resolve({ filename: 'a', mimetype: 'text/plain', createReadStream }),
       Promise.resolve({ filename: 'b', mimetype: 'text/plain', createReadStream: skipped }),
-    ], [0]);
+    ], new Map([[0, 1]]));
     expect(result[0].filename).toBe('a');
     expect(result[1]).toBeUndefined();
     expect(skipped).not.toHaveBeenCalled();
@@ -546,6 +575,8 @@ describe('readUploads', () => {
     // a single upload streamed in several chunks is capped as well
     const chunks = Promise.resolve({ filename: 'c', mimetype: 'text/plain', createReadStream: () => Readable.from([chunk, chunk]) });
     await expect(readUploads([chunks])).rejects.toThrow('The uploads of the form are too large');
+    // an upload copied twice in the bundle counts twice
+    await expect(readUploads([big()], new Map([[0, 2]]))).rejects.toThrow('The uploads of the form are too large');
   });
 });
 
