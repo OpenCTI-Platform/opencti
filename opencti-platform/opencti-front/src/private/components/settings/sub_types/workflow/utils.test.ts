@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType } from './utils';
+import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType, findTargetStatusExits } from './utils';
 import type { Node, Edge } from 'reactflow';
 import { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 
@@ -177,5 +177,27 @@ describe('Workflow utils', () => {
     expect(isNewElementStatus(statusNode)).toBe(false);
     expect(isNewElementStatus(placeholderNode)).toBe(true);
     expect(isNewElementStatus(transitionNode)).toBe(false);
+  });
+});
+
+describe('findTargetStatusExits', () => {
+  const status = (id: string, name: string) => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name, color: '' } }, position: { x: 0, y: 0 } }) as Node;
+  const transition = (id: string, event: string) => ({ id, type: WorkflowNodeType.transition, data: { event }, position: { x: 0, y: 0 } }) as Node;
+  const edge = (source: string, target: string) => ({ id: `${source}->${target}`, source, target }) as Edge;
+  const nodes = [status('open', 'Open'), status('closed', 'Closed'), transition('t-close', 'close'), transition('t-reopen', 'reopen'),
+    { id: 'placeholder-open', type: WorkflowNodeType.placeholder, data: {}, position: { x: 0, y: 0 } } as Node];
+
+  it('returns nothing for a transition into a final status', () => {
+    const edges = [edge('open', 't-close'), edge('t-close', 'closed'), edge('closed', 'placeholder-closed')];
+    expect(findTargetStatusExits('t-close', nodes, edges)).toBeUndefined();
+  });
+
+  it('names the target status and the transitions that leave it', () => {
+    const edges = [edge('open', 't-close'), edge('t-close', 'closed'), edge('closed', 't-reopen'), edge('t-reopen', 'open')];
+    expect(findTargetStatusExits('t-close', nodes, edges)).toEqual({ status: 'Closed', events: ['reopen'] });
+  });
+
+  it('returns nothing for a transition without a target status', () => {
+    expect(findTargetStatusExits('t-close', nodes, [edge('open', 't-close')])).toBeUndefined();
   });
 });
