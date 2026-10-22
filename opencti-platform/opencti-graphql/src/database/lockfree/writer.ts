@@ -563,7 +563,8 @@ export const writeRelationChunk = async (
   created.forEach((c) => {
     const list = after.get(c.pair) ?? [];
     const position = list.findIndex((e: PairEntry) => e.id === c.element.internal_id);
-    const earlier = findDuplicates(c.resolvedInput, list.slice(0, Math.max(0, position)));
+    // (its standard id is known now: not generated again)
+    const earlier = findDuplicates({ ...c.resolvedInput, standard_id: c.element.standard_id }, list.slice(0, Math.max(0, position)));
     if (earlier.length > 0) {
       reconcileTasks.push({ kind: 'relation-reconcile', keep: { id: earlier[0].id, index: earlier[0].index }, drop: { id: c.element.internal_id, index: c.element._index }, pair: c.pair });
     }

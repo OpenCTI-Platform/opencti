@@ -1,6 +1,6 @@
 import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
-import { Client as ElkClient } from '@elastic/elasticsearch';
+import { Client as ElkClient, SniffingTransport, type TransportOptions } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
@@ -48,7 +48,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
-import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
+import conf, { booleanConf, ENABLED_TRACING, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
 import {
   ClientAbortError,
   ComplexSearchError,
@@ -408,6 +408,13 @@ export const searchEngineVersion = async () => {
   }
 };
 
+// The client's transport opens an OpenTelemetry span per request unless told not to: only when the platform traces
+class ElkTransport extends SniffingTransport {
+  constructor(opts: TransportOptions) {
+    super(ENABLED_TRACING ? opts : { ...opts, openTelemetry: { enabled: false } });
+  }
+}
+
 export const searchEngineInit = async (): Promise<boolean> => {
   logApp.info('[CHECK] Checking if Search engine is available');
   // Build the engine configuration
@@ -454,7 +461,7 @@ export const searchEngineInit = async (): Promise<boolean> => {
   let enginePlatform;
   const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
   const engineCheck = booleanConf('elasticsearch:engine_check', true);
-  const elasticSearchClient = new ElkClient(elkSearchConfiguration);
+  const elasticSearchClient = new ElkClient({ ...elkSearchConfiguration, Transport: ElkTransport });
   const openSearchClient = new OpenClient(openSearchConfiguration);
   if (engineSelector === ELK_ENGINE) {
     logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
