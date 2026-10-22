@@ -1334,7 +1334,7 @@ const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || 
 // stays in one: a bypass or an external status write moving it to a state it can leave clears it.
 // It does not look at the stored reason: the entity may be read before the lock, and clearing an empty one changes nothing.
 // Workflows asking for no closing reason never touch it.
-const clearsClosingReason = (transitions: Pick<WorkflowSerializedTransition, 'from' | 'closingReason'>[] | undefined, fromState: string, toState: string) => {
+const clearsClosingReason = (transitions: Pick<WorkflowSerializedTransition, 'from' | 'to' | 'closingReason'>[] | undefined, fromState: string, toState: string) => {
   const allTransitions = transitions ?? [];
   return fromState !== toState
     && allTransitions.some((t) => isClosingReasonMode(t.closingReason))
