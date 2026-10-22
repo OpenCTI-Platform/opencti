@@ -58,7 +58,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT with custom fields', () => {
       { name: SECTORS, label: 'Playbook sectors', field_type: 'multi_select', select_options: ['a', 'b', 'c'] },
     ];
     for (const input of definitions) {
-      const added = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input } });
+      const added = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input: { description: `${input.label} description`, ...input } } });
       expect(added.errors).toBeUndefined();
       const { id } = added.data?.customFieldDefinitionAdd ?? {};
       await queryAsAdmin({ query: CUSTOM_FIELD_ADD_ENTITY_TYPE, variables: { id, entityType: 'Malware', mandatory: false } });

@@ -9,6 +9,8 @@
   "- Unsupported": "- 不支持",
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- 您将不再与主平台组织有关，除非您已被特别授予组织访问权。",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 除了当前用户所属的任何组织外，您的用户还将与主平台组织有关",
+  "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "别名必须以 x_ 开头，且只能包含小写字母、数字和下划线",
+  "When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create": "当导入的实体包含别名字段时，将用它来填充您创建的自定义字段的值",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“是，始终”会为您保存该偏好设置。此后，该工具将无需再次询问即可运行——包括在无人监视的定时运行中——直到您撤销该授权为止。",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) 点击查看中枢上的所有新资源",
   "(no output)": "（无输出）",
