@@ -41,6 +41,26 @@ it('should search parsing correctly generated', () => {
   expect(parsed.queriesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
   expect(parsed.matchesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
 
+  parsed = parse('https://example.com/~user/page');
+  expect(parsed.queriesString).toBe('https\\:\\/\\/example.com\\/\\~user\\/page*');
+
+  // FUZZY TESTING
+  parsed = parse('lazarous~ apt~1 group');
+  expect(parsed.queriesString).toBe('lazarous~ apt~1 group*');
+
+  parsed = parse('~ ~1 apt~5 a~b');
+  expect(parsed.queriesString).toBe('\\~* \\~1* apt\\~5* a\\~b*');
+
+  parsed = parse('lazarous~\tgroup');
+  expect(parsed.queriesString).toBe('lazarous~ group*');
+
+  parsed = parse('apt\n~1');
+  expect(parsed.queriesString).toBe('apt* \\~1*');
+
+  // Fuzzy is only kept on a single word, as fuzzy terms are not split by the analyzer
+  parsed = parse('apt-28~ https://x.com/a~ mal*~1');
+  expect(parsed.queriesString).toBe('apt\\-28\\~* https\\:\\/\\/x.com\\/a\\~* mal*~1');
+
   // GENERIC TESTING
   parsed = parse('(Citation:');
   expect(parsed.queriesString).toBe('\\(Citation\\:*');
