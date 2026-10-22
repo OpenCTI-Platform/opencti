@@ -37,10 +37,13 @@ export interface MenuEntry {
   path: string;
   label: string;
   icon?: ReactElement;
+  /** Visible for everyone, with an EE chip (the page itself shows the EE lock). */
   isEE?: boolean;
+  /** Entry hidden unless the platform has a valid Enterprise Edition licence. */
+  requiresEE?: boolean;
   /** Extra words matching this entry in the main search (aliases, CTI jargon...). */
   keywords?: string[];
-  /** Entry hidden if the user has none of these capabilities. */
+  /** Entry hidden if the user has none of these capabilities: ANY one is enough (never "all of"). */
   requiredCapabilities?: string[];
   /** Also granted if the user has one of these capabilities in a draft (see `useGranted` options). */
   capabilitiesInDraft?: string[];
