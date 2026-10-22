@@ -13,7 +13,7 @@ import { isStixDomainObject, isStixDomainObjectIdentity } from '../../schema/sti
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { FormSchemaDefinition } from './form-types';
+import { FormFieldType, type FormSchemaDefinition } from './form-types';
 import { PENDING_EXTERNAL_REFERENCE } from './form-pending-marker';
 
 /**
@@ -509,33 +509,44 @@ const isPendingRef = (node: any): node is { pending: string } => {
     && Object.keys(node).length === 1 && typeof node.pending === 'string';
 };
 
+// Fields of a form that take objects created in it, by field type
+const FIELD_POOLED_TYPES: Partial<Record<string, string>> = {
+  [FormFieldType.ObjectLabel]: ENTITY_TYPE_LABEL,
+  [FormFieldType.ExternalReferences]: ENTITY_TYPE_EXTERNAL_REFERENCE,
+};
+
 /**
  * Direct label / external reference fields can hold `{ pending: id }` entries next to the usual
  * values (label names, external reference ids). Replace them by the pooled label name or the pooled
  * external reference attributes, so the field converters handle them like any other value.
+ * An entry must sit in a field of the form that takes its type (a labels field takes a label, wherever the field is).
  * Pending roots and the pool are left untouched (their refs are resolved by materializePendingRoots).
  */
-export const resolvePendingFieldRefs = (values: Record<string, any>, uploads: PendingUpload[] = []): Record<string, any> => {
+export const resolvePendingFieldRefs = (values: Record<string, any>, schema: FormSchemaDefinition, uploads: PendingUpload[] = []): Record<string, any> => {
   const pool = new Map(toArray<PendingObject>(values.pendingObjects).map((object) => [object.id, object]));
-  const resolve = (id: string) => {
+  const fieldTypes = new Map((schema.fields ?? []).map((field) => [field.name, FIELD_POOLED_TYPES[field.type]]));
+  const resolve = (id: string, expected: string | undefined) => {
     const target = pool.get(id);
-    if (target?.entityType === ENTITY_TYPE_LABEL) return target.input.value;
-    if (target?.entityType === ENTITY_TYPE_EXTERNAL_REFERENCE) {
-      // Marked (not enumerable) so the field converter only accepts the objects produced here
-      return Object.defineProperty(materializePooledReference(target, uploads), PENDING_EXTERNAL_REFERENCE, { value: true });
+    if (!target || !POOLED_TYPES.includes(target.entityType)) {
+      throw FunctionalError('Pending field ref must target a pooled label or external reference', { id });
     }
-    throw FunctionalError('Pending field ref must target a pooled label or external reference', { id });
+    if (target.entityType !== expected) {
+      throw FunctionalError('This field cannot receive this object created in the form', { id, entityType: target.entityType });
+    }
+    if (target.entityType === ENTITY_TYPE_LABEL) return target.input.value;
+    // Marked (not enumerable) so the field converter only accepts the objects produced here
+    return Object.defineProperty(materializePooledReference(target, uploads), PENDING_EXTERNAL_REFERENCE, { value: true });
   };
-  const walk = (node: any): any => {
-    if (Array.isArray(node)) return node.map(walk);
-    if (isPendingRef(node)) return resolve(node.pending);
+  const walk = (node: any, expected: string | undefined): any => {
+    if (Array.isArray(node)) return node.map((item) => walk(item, expected));
+    if (isPendingRef(node)) return resolve(node.pending, expected);
     if (typeof node === 'object' && node !== null) {
-      return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, walk(value)]));
+      return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, walk(value, fieldTypes.has(key) ? fieldTypes.get(key) : expected)]));
     }
     return node;
   };
   const isPendingKey = (key: string) => key === 'pendingObjects' || isRootKey(key);
-  return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, isPendingKey(key) ? value : walk(value)]));
+  return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, isPendingKey(key) ? value : walk(value, fieldTypes.get(key))]));
 };
 
 export const countPendingLabels = (values: Record<string, any>): number => {
