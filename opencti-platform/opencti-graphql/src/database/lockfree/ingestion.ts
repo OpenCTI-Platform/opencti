@@ -10,18 +10,21 @@ import { inferIndexFromConceptType } from '../utils';
 import { getDraftContext } from '../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { isStixMetaObject } from '../../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, isStixMetaObject } from '../../schema/stixMetaObject';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../../schema/stixSightingRelationship';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY } from '../../schema/stixRefRelationship';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { claimKeys, identityKeys, setKeys } from './identity';
-import { mgetRaw, toElements } from './load';
+import { loadByAnyIds, mgetRaw, toElements } from './load';
+import { userFilterStoreElements } from '../../utils/access';
 import { appendPairs, pairEntryOf, pairKey, removeFromPair } from './pairs';
 import { enqueue, type Task } from './queue';
 import { newCounters } from './store';
 import { type ItemResult, writeEntityChunk, writeRelationChunk } from './writer';
+import { executeOperations, type Operation, type WriteCollector } from './batch';
+import type { GraphQLSchema } from 'graphql';
 
 export const LOCKFREE_INGESTION_ENABLED = booleanConf('app:lockfree_ingestion:enabled', false);
 const BACKFILL_DONE_KEY = `${REDIS_PREFIX}lockfree:backfill:done`;
@@ -42,12 +45,16 @@ export const markIdentityBackfillDone = async () => {
 };
 
 const isMarked = (context: AuthContext, mark: 'lockfree_bypass' | 'lockfree_write') => (context as any)[mark] === true;
+// Meta objects written lock-free too: plain objects with an id from their content, created with each object that
+// carries them (labels and markings keep today's path)
+const LOCKFREE_META_TYPES = [ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE];
 
 // Whether a create goes through the lock-free path
 export const isLockFreeIngestion = async (context: AuthContext, user: AuthUser, type: string) => {
-  if (!LOCKFREE_INGESTION_ENABLED || !context.workId || isMarked(context, 'lockfree_bypass')) return false;
+  const batch = (context as any).lockfree_batch !== undefined;
+  if (!LOCKFREE_INGESTION_ENABLED || (!context.workId && !batch) || isMarked(context, 'lockfree_bypass')) return false;
   if (getDraftContext(context, user)) return false;
-  if (!isStixCoreObject(type) && !isStixCoreRelationship(type) && !isStixSightingRelationship(type)) return false;
+  if (!isStixCoreObject(type) && !LOCKFREE_META_TYPES.includes(type) && !isStixCoreRelationship(type) && !isStixSightingRelationship(type)) return false;
   return isIdentityBackfillDone();
 };
 
@@ -62,14 +69,25 @@ const storedElement = async (result: ItemResult, type: string) => {
   return element;
 };
 
+// Objects by any of their ids, read in real time (a lock-free write is searchable only after the next refresh), with
+// the user's access filter
+export const findByIdsRealtime = async (context: AuthContext, user: AuthUser, ids: string[]) => {
+  if (ids.length === 0) return [];
+  return userFilterStoreElements(context, user, await loadByAnyIds(ids, { light: true }));
+};
+
 const lockFreeContext = (context: AuthContext): AuthContext => ({ ...context, lockfree_write: true } as AuthContext);
 
 export const createEntityLockFree = async (context: AuthContext, user: AuthUser, input: Record<string, any>, type: string) => {
+  const batch: WriteCollector | undefined = (context as any).lockfree_batch;
+  if (batch) return batch.createEntity(user, type, input);
   const [result] = await writeEntityChunk(lockFreeContext(context), user, [{ type, input }], newCounters(), { missingEnds: 'error' });
   return storedElement(result, type);
 };
 
 export const createRelationLockFree = async (context: AuthContext, user: AuthUser, input: Record<string, any>) => {
+  const batch: WriteCollector | undefined = (context as any).lockfree_batch;
+  if (batch) return batch.createRelation(user, input);
   const [result] = await writeRelationChunk(lockFreeContext(context), user, [input], newCounters(), { missingEnds: 'error' });
   return storedElement(result, input.relationship_type);
 };
@@ -81,9 +99,15 @@ export const importLockFree = async (
   user: AuthUser,
   entities: { type: string; input: Record<string, any> }[],
   relationships: Record<string, any>[],
+  operations: Operation[] = [],
+  schema?: GraphQLSchema,
 ) => {
   if (!LOCKFREE_INGESTION_ENABLED) throw UnsupportedError('Lock-free ingestion is not enabled');
   if (!(await isIdentityBackfillDone())) throw UnsupportedError('Lock-free ingestion is not ready: identity backfill running');
+  if (operations.length > 0) {
+    if (getDraftContext(context, user)) throw UnsupportedError('Lock-free import does not write into drafts');
+    return executeOperations(context, schema as GraphQLSchema, operations);
+  }
   const supported = (type: string) => isStixCoreObject(type);
   const unsupported = entities.filter((e) => !supported(e.type));
   if (unsupported.length > 0) throw UnsupportedError('Lock-free import takes STIX core objects', { types: R.uniq(unsupported.map((e) => e.type)) });

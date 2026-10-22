@@ -627,6 +627,7 @@
   "Location propagation": "Ausbreitung des Standorts",
   "Location type": "Standorttyp",
   "Locations propagation in reports": "Ortsausbreitung in Berichten",
+  "LOCKFREE_SETTLER_MANAGER": "Manager für die Lock-free-Ingestion",
   "Log sources": "Protokollquellen",
   "login": "Anmelden",
   "Login message": "Login-Nachricht",

@@ -3778,6 +3778,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.metric.inc("error_count")
             raise ValueError("Nothing to import")
 
+        # Messages sent: the split bundles, in their dependency order, several objects per message when the
+        # platform imports them together (lock-free batch import)
+        messages = bundles
+        chunk_size = self._push_chunk_size() if not no_split else 1
+        if chunk_size > 1 and len(bundles) > 1:
+            messages = [
+                self._merge_split_bundles(bundles[i : i + chunk_size])
+                for i in range(0, len(bundles), chunk_size)
+            ]
+
         if bundle_send_to_queue:
             if entities_types is None:
                 entities_types = []
@@ -3812,16 +3822,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 self.connector_logger.info(
                     self.connect_name + " sending bundle to queue"
                 )
-                for sequence, bundle in enumerate(bundles, start=1):
+                for sequence, message_bundle in enumerate(messages, start=1):
                     self._send_bundle(
                         channel,
-                        bundle,
+                        message_bundle,
                         work_id=work_id,
                         entities_types=entities_types,
                         sequence=sequence,
                         update=update,
                         draft_id=draft_id,
-                        no_split=no_split,
+                        no_split=no_split or len(messages) < len(bundles),
                     )
                 channel.close()
                 pika_connection.close()
@@ -3836,6 +3846,35 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 )
 
         return bundles
+
+    def _push_chunk_size(self) -> int:
+        """Objects per pushed message: CONNECTOR_PUSH_CHUNK_SIZE (default 500) when the platform imports a
+        message's objects together (lock-free batch import), 1 otherwise. Checked once.
+        """
+        if getattr(self, "_push_chunk", None) is None:
+            configured = get_config_variable(
+                "CONNECTOR_PUSH_CHUNK_SIZE",
+                ["connector", "push_chunk_size"],
+                self.config,
+                True,
+                500,
+            )
+            try:
+                self.api.send_query(
+                    "mutation { lockfreeImport(operations: []) { status } }"
+                )
+                self._push_chunk = max(1, configured)
+            except Exception:  # pylint: disable=broad-except
+                self._push_chunk = 1
+        return self._push_chunk
+
+    @staticmethod
+    def _merge_split_bundles(bundles: list) -> str:
+        """One bundle with the objects of several split bundles, in their order."""
+        parsed = [json.loads(b) if isinstance(b, str) else b for b in bundles]
+        merged = dict(parsed[0])
+        merged["objects"] = [o for b in parsed for o in b.get("objects", [])]
+        return json.dumps(merged)
 
     def _send_bundle(self, channel, bundle, **kwargs) -> None:
         """Send a STIX2 bundle to RabbitMQ to be consumed by workers.

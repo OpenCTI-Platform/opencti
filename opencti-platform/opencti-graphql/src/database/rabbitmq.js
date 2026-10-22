@@ -514,6 +514,21 @@ export const getBestBackgroundConnectorId = async (context, user) => {
  *   message isn't a STIX bundle at all (e.g. sync 'event' messages), since those don't carry
  *   expectation semantics here.
  */
+// With the lock-free write path, a worker imports the objects of a message together (lockfreeImport): the split
+// bundles, in their dependency order, travel PUSH_CHUNK_SIZE objects per message instead of one, which also spares
+// publishing one message per object
+const LOCKFREE_INGESTION_ENABLED = booleanConf('app:lockfree_ingestion:enabled', false);
+const PUSH_CHUNK_SIZE = conf.get('app:lockfree_ingestion:push_chunk_size') || 500;
+export const chunkSplitBundles = (bundles) => {
+  if (!LOCKFREE_INGESTION_ENABLED || bundles.length <= 1) return bundles;
+  const chunks = [];
+  for (let i = 0; i < bundles.length; i += PUSH_CHUNK_SIZE) {
+    const parsed = bundles.slice(i, i + PUSH_CHUNK_SIZE).map((bundle) => JSON.parse(bundle));
+    chunks.push(JSON.stringify({ ...parsed[0], objects: parsed.flatMap((bundle) => bundle.objects ?? []) }));
+  }
+  return chunks;
+};
+
 export const buildSplitMessages = (message) => {
   const unsplit = (expectations) => ({ messages: [message], expectations });
   if (message.type !== 'bundle') {
@@ -541,7 +556,7 @@ export const buildSplitMessages = (message) => {
   // re-adding expectations for) content we already split.
   const splitter = new Stix2Splitter();
   const { bundles, numberExpectations } = splitter.splitBundleWithExpectations(bundleContent);
-  const messages = bundles.map((bundle) => ({ ...message, content: toBase64(bundle), no_split: true }));
+  const messages = chunkSplitBundles(bundles).map((bundle) => ({ ...message, content: toBase64(bundle), no_split: true }));
   return { messages, expectations: numberExpectations };
 };
 

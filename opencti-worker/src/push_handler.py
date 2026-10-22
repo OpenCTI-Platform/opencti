@@ -2,13 +2,17 @@ import base64
 import datetime
 import json
 import time
+import uuid
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
+
+# Objects imported together at most, whatever the number of messages they come in
+MAX_GROUP_OBJECTS = 2000
 
 
 @dataclass(unsafe_hash=True)
@@ -30,6 +34,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     objects_max_refs: int
 
     def __post_init__(self) -> None:
+        self._batch_supported: Optional[bool] = None
+        self._batch_checked_at = 0.0
         self.api = OpenCTIApiClient(
             url=self.opencti_url,
             token=self.opencti_token,
@@ -80,6 +86,168 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 self.logger.debug("Unable to send bundle error", {"error": str(err)})
                 time.sleep(10)
 
+    def send_to_dead_letter(self, data: Dict[str, Any], items: List[Any]) -> None:
+        """Send rejected items (too large, too many retries) to the dead letter queue."""
+        if len(items) == 0:
+            return
+        with pika.BlockingConnection(self.pika_parameters) as push_pika_connection:
+            with push_pika_connection.channel() as push_channel:
+                try:
+                    push_channel.confirm_delivery()
+                except Exception as err:  # pylint: disable=broad-except
+                    self.logger.warning(str(err))
+                for item in items:
+                    rejection_info = item.setdefault("rejection_info", {})
+                    rejection_info["original_connector_id"] = self.connector_id
+                    self.logger.warning(
+                        "Detected a bundle too large, sending it to dead letter queue...",
+                        {"bundle_id": item["id"], "connector_id": self.connector_id},
+                    )
+                    self.send_bundle_to_specific_queue(
+                        push_channel,
+                        self.listen_exchange,
+                        self.dead_letter_routing,
+                        data,
+                        item,
+                    )
+
+    def batch_import_supported(self) -> bool:
+        """Whether the platform takes lock-free batch imports (checked again every 5 minutes when not)."""
+        now = time.monotonic()
+        if self._batch_supported is None or (
+            not self._batch_supported and now - self._batch_checked_at > 300
+        ):
+            self._batch_checked_at = now
+            try:
+                self.api.send_query(
+                    "mutation { lockfreeImport(operations: []) { status } }"
+                )
+                self._batch_supported = True
+            except Exception:  # pylint: disable=broad-except
+                self._batch_supported = False
+            self.logger.info(
+                "Batch import support", {"supported": self._batch_supported}
+            )
+        return self._batch_supported
+
+    @staticmethod
+    def _batch_key(data: Dict[str, Any]):
+        """Messages with the same key are imported together; None when a message goes on its own."""
+        if data.get("type", "bundle") != "bundle" or data.get("draft_id"):
+            return None
+        return (
+            data.get("applicant_id"),
+            data.get("playbook_id"),
+            data.get("event_id"),
+            data.get("work_id"),
+            data.get("synchronized", False),
+            data.get("previous_standard"),
+            data.get("update", False),
+            tuple(data.get("entities_types") or []),
+        )
+
+    def handle_batch(
+        self, bodies: List[str]
+    ) -> List[Literal["ack", "nack", "requeue"]]:
+        """Handle messages received together: consecutive bundles with the same context are imported as one
+        bundle through the lock-free batch import, every other message on its own."""
+        if not self.batch_import_supported():
+            return [self.handle_message(body) for body in bodies]
+        parsed = []
+        for body in bodies:
+            try:
+                data = json.loads(body)
+                content = json.loads(base64.b64decode(data["content"]).decode("utf-8"))
+                key = self._batch_key(data)
+                objects = content.get("objects") or []
+                if key is None or len(objects) == 0:
+                    key = None
+                parsed.append((key, data, objects))
+            except Exception:  # pylint: disable=broad-except
+                parsed.append((None, None, None))
+        results: List[Literal["ack", "nack", "requeue"]] = []
+        index = 0
+        while index < len(bodies):
+            key = parsed[index][0]
+            end = index + 1
+            objects = len(parsed[index][2] or [])
+            while (
+                key is not None
+                and end < len(bodies)
+                and parsed[end][0] == key
+                and objects + len(parsed[end][2]) <= MAX_GROUP_OBJECTS
+            ):
+                objects += len(parsed[end][2])
+                end += 1
+            if end - index == 1 and objects <= 1:
+                results.append(self.handle_message(bodies[index]))
+            else:
+                results.extend(self._handle_group(bodies[index:end], parsed[index:end]))
+            index = end
+        return results
+
+    def _handle_group(self, bodies, parsed) -> List[Literal["ack", "nack", "requeue"]]:
+        start_processing = datetime.datetime.now()
+        imported_items = []
+        objects = []
+        seen = set()
+        alone = []  # messages repeating an object of the group: on their own, after
+        for position, (_, _, message_objects) in enumerate(parsed):
+            if any(o.get("id") in seen for o in message_objects):
+                alone.append(position)
+                continue
+            for o in message_objects:
+                seen.add(o.get("id"))
+            objects.extend(message_objects)
+        data = parsed[0][1]
+        try:
+            self.api.set_applicant_id_header(data.get("applicant_id"))
+            self.api.set_playbook_id_header(data.get("playbook_id"))
+            self.api.set_event_id(data.get("event_id"))
+            self.api.set_draft_id(data.get("draft_id"))
+            self.api.set_synchronized_upsert_header(data.get("synchronized", False))
+            self.api.set_previous_standard_header(data.get("previous_standard"))
+            work_id = data.get("work_id")
+            self.api.set_work_id(work_id)
+            types = data["entities_types"] if data.get("entities_types") else None
+            bundle = {
+                "type": "bundle",
+                "id": f"bundle--{uuid.uuid4()}",
+                "objects": objects,
+            }
+            self.api.batch_import_enabled = True
+            try:
+                imported_items, rejected = self.api.stix2.import_bundle(
+                    bundle,
+                    data.get("update", False),
+                    types,
+                    work_id,
+                    self.objects_max_refs,
+                )
+            finally:
+                self.api.batch_import_enabled = False
+            self.send_to_dead_letter(data, rejected)
+            results: List[Literal["ack", "nack", "requeue"]] = ["ack"] * len(bodies)
+        except Exception as ex:  # pylint: disable=broad-except
+            self.logger.error(
+                "Error importing messages together, importing them one by one",
+                {"reason": str(ex), "messages": len(bodies)},
+            )
+            return [self.handle_message(body) for body in bodies]
+        finally:
+            try:
+                self.bundles_global_counter.add(len(imported_items))
+                processing_delta = datetime.datetime.now() - start_processing
+                self.bundles_processing_time_gauge.record(processing_delta.seconds)
+            except Exception as telemetry_ex:  # pylint: disable=broad-except
+                self.logger.error(
+                    "Failed to record bundle processing telemetry",
+                    {"reason": str(telemetry_ex)},
+                )
+        for position in alone:
+            results[position] = self.handle_message(bodies[position])
+        return results
+
     def handle_message(
         self,
         body: str,
@@ -123,41 +291,25 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     raise ValueError("JSON data type is not a STIX2 bundle")
                 if len(content["objects"]) == 1 or data.get("no_split", False):
                     update = data.get("update", False)
-                    imported_items, too_large_items_bundles = (
-                        self.api.stix2.import_bundle_from_json(
-                            raw_content, update, types, work_id, self.objects_max_refs
-                        )
+                    # Several objects in one message: imported together when the platform can
+                    self.api.batch_import_enabled = (
+                        len(content["objects"]) > 1
+                        and not data.get("draft_id")
+                        and self.batch_import_supported()
                     )
-                    if len(too_large_items_bundles) > 0:
-                        with pika.BlockingConnection(
-                            self.pika_parameters
-                        ) as push_pika_connection:
-                            with push_pika_connection.channel() as push_channel:
-                                try:
-                                    push_channel.confirm_delivery()
-                                except Exception as err:  # pylint: disable=broad-except
-                                    self.logger.warning(str(err))
-                                for too_large_item_bundle in too_large_items_bundles:
-                                    rejection_info = too_large_item_bundle.setdefault(
-                                        "rejection_info", {}
-                                    )
-                                    rejection_info["original_connector_id"] = (
-                                        self.connector_id
-                                    )
-                                    self.logger.warning(
-                                        "Detected a bundle too large, sending it to dead letter queue...",
-                                        {
-                                            "bundle_id": too_large_item_bundle["id"],
-                                            "connector_id": self.connector_id,
-                                        },
-                                    )
-                                    self.send_bundle_to_specific_queue(
-                                        push_channel,
-                                        self.listen_exchange,
-                                        self.dead_letter_routing,
-                                        data,
-                                        too_large_item_bundle,
-                                    )
+                    try:
+                        imported_items, too_large_items_bundles = (
+                            self.api.stix2.import_bundle_from_json(
+                                raw_content,
+                                update,
+                                types,
+                                work_id,
+                                self.objects_max_refs,
+                            )
+                        )
+                    finally:
+                        self.api.batch_import_enabled = False
+                    self.send_to_dead_letter(data, too_large_items_bundles)
                 else:
                     # As bundle is received as complete, split and requeue
                     self.logger.warning(

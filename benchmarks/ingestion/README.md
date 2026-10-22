@@ -66,6 +66,8 @@ Global options: `--prefix` (default `bench`, see [Isolation](#isolation)), `--es
 | `lockfree-profile` | CPU profile of lock-free chunks (relationships with and without refs, entities with refs), one `.cpuprofile` per case in `results/`; summarize with `tools/cpu_profile.py` | 8,000 per case | ~40 s |
 | `batch-import` | The `lockfreeImport` mutation over HTTP: chunks of 1, 100 and 500 objects per request, 1 and 4 clients, entities with refs then relationships with refs on one hub; waits until the platform lists them all | 4,000 per case | ~1.5 min |
 | `lockfree-processes` | The lock-free path from 1, 2 and 4 platform processes at once, as the nodes of a cluster: entities with refs, then relationships with refs from all of them to one hub; `--processes 1,2` picks the counts | 16,000 per case | ~2 min |
+| `full-flow` | A connector-shaped bundle (author, marking, labels, attack patterns with kill chain phases and external references, intrusion sets on one malware, observables, one report containing everything) pushed to a connector queue and imported by a real worker started by the scenario, lock-free; then pycti one object per request against batch mode; checks the stored data is the same | 2,403 objects per run | ~1 min |
+| `full-flow-today` | The same bundle through the queue and the worker, today's flow (lock-free off) | 2,403 objects | ~1.5 min |
 | `lockfree-behaviours` | Correctness of the lock-free path: parity with today's path (stored documents, meta relationships and stream events of the same steps written both ways) and 28 checks over concurrency, races, out-of-order arrival, deletes, renames, access, restarts, drafts, backfill | 50 per case | ~1.5 min |
 
 \* On a recent laptop, including the ~15 s platform start of each scenario.
@@ -99,7 +101,7 @@ whole time. The reference results below were measured that way.
 | Worker path | `tools/worker_path.py` calls `import_bundle_from_json` with one-object bundles, as `push_handler.py` does, one pycti client per thread, and times every HTTP request by GraphQL operation. The platform serves it from the Vitest global setup, in another process, so this scenario has no phase timings. | `worker-path` |
 | Queue loop | `tools/queue_loop.py` runs the real `MessageQueueConsumer` from `opencti-worker/src` on a temporary durable queue. The handler sleeps 0, 10, 25 or 33 ms; anything above that per message is the loop's cost. A variant that waits on `done()` every 1 ms instead of `running()` every 50 ms shows whether that wait matters. | `queue-loop` |
 | Batch prototype | `tests/bench/batch-writer.ts`, see below. | `relationships`, `batch-variants`, `feed-shaped` |
-| Lock-free prototype | `tests/bench/lockfree/`, see below. Called like the batch prototype, inside the test platform. | `lockfree`, `lockfree-behaviours` |
+| Lock-free write path | `src/database/lockfree/`, see below. Called inside the benchmark platform by the scenarios, over HTTP by `batch-import`, and through queue and worker by `full-flow`. | `lockfree*`, `batch-import`, `full-flow` |
 
 ### Data
 
@@ -177,9 +179,9 @@ as an upper bound for a real implementation with those added.
 
 ### The lock-free write path
 
-`tests/bench/lockfree/` writes entities and relationships without Redis locks, forced refreshes or searches for
-existing copies, with today's behaviour. It takes the same inputs as `createEntity` and `createRelation` and
-runs the platform's own code for every rule: input preparation (confidence, access, custom fields, restricted
+`src/database/lockfree/` writes entities and relationships without Redis locks, forced refreshes or searches for
+existing copies, with today's behaviour (`tests/bench/lockfree/run.ts` drives it in the scenarios). It takes the
+same inputs as `createEntity` and `createRelation` and runs the platform's own code for every rule: input preparation (confidence, access, custom fields, restricted
 members), `inputResolveRefs` (given a finder that reads by id), defaults, validation, `buildEntityData` /
 `buildRelationData`, the multiple-match rules of `internalCreateEntityRaw` (merges with `mergeEntities`), the
 upsert rules (`buildUpdatePatchForUpsert`, `generateInputsForUpsert`, `updateAttributeRaw`, the ref handling and
@@ -198,7 +200,32 @@ writes differ.
 | `pending.ts` | Relationships waiting for an end, in their own index, invisible to reads; written through the normal path when the ends exist, refused when an end was deleted (as today), dropped after their time to live. |
 | `reconcile.ts` | Merges two entities found to be one, with today's `mergeEntities`, and moves the identity keys. |
 | `backfill.ts` | One-time backfill of the identity index and pair documents for data written before, run before lock-free writes are enabled; idempotent. A key still held by an object that no longer exists is given to the object that has it now. |
-| `run.ts` | Runs writes in chunks with background settlers (`writeEntities`, `writeRelations`, `writeBundles`); delete and rename through today's path with their identity updates; `waitForSearch` makes each write searchable when it returns, as today; `resetLockFreeState` drops the lock-free state of a wiped platform (`run.py init` calls it). |
+| `ingestion.ts` | The path inside the platform, behind `app:lockfree_ingestion:enabled`: worker imports and batch imports go through it (`createEntity` / `createRelation` hand them over), the identity index follows what today's path writes (creates, updates, merges, deletes, from where the platform stores their stream events), `lockfreeImport`. |
+| `batch.ts` | `lockfreeImport` operations: each create mutation as pycti sends it, run through its resolver in dependency order with placeholders replaced by real ids; a collector holds their creates and writes them as lock-free chunks (up to 4 at once). |
+| `context.ts` | The path's own context and a small concurrency pool. |
+| `run.ts` (in `tests/bench/lockfree/`) | Runs writes in chunks with background settlers (`writeEntities`, `writeRelations`, `writeBundles`); delete and rename through today's path with their identity updates; `waitForSearch` makes each write searchable when it returns, as today; `resetLockFreeState` drops the lock-free state of a wiped platform (`run.py init` calls it). |
+
+### The full flow
+
+From a connector to stored data, with `app:lockfree_ingestion:enabled`:
+
+1. The connector helper (pycti) splits a bundle in dependency order, as today, but sends `CONNECTOR_PUSH_CHUNK_SIZE`
+   (500) split objects per message instead of one, when the platform takes batch imports; the platform does the
+   same for bundles pushed through its API (`app:lockfree_ingestion:push_chunk_size`). The work still expects
+   one report per object.
+2. The worker takes up to `WORKER_BATCH_SIZE` (500) messages at a time from a queue; consecutive messages with
+   the same context (user, work, update flag, no draft) are imported as one bundle, capped at 2,000 objects.
+   Each message is still acknowledged, retried or sent to the dead letter queue on its own.
+3. pycti converts each object as today, inside a batch: every create it sends (STIX objects, relationships,
+   sightings, external references) is kept and answered with a placeholder, its STIX id; any other request first
+   sends what was kept. Kept creates go 1,000 per `lockfreeImport` request.
+4. The platform runs each create through its own resolver, in dependency order, the placeholders replaced by
+   the real ids, and writes their objects as lock-free chunks. An object whose create failed is imported again on
+   its own by pycti, with today's retries and error reporting; success is reported per object once confirmed.
+
+Each step falls back to today's: a platform without the switch answers the probe with an error, and the helper
+sends one object per message, the worker one message at a time, pycti one create per request. Objects written
+lock-free are found by id at once (also by the filters that resolve ids) and by searches after the next refresh.
 
 ### Several processes
 
@@ -411,6 +438,26 @@ No errors; the platform listed all 13,000 relationships of the hub at most 1.1 s
 chunks reach the rates measured inside the platform: the per-request cost is paid once per chunk. The worker does
 not use it yet: pycti converts STIX to inputs object by object and sends each one.
 
+### Full flow (`full-flow`, `full-flow-today`)
+
+A connector-shaped bundle of 2,403 objects, through the connector queue and a real worker, until the work is
+complete, on a freshly initialized benchmark platform, 22 October 2026:
+
+| Flow | Time | Throughput |
+|---|---|---|
+| Today (lock-free off, one object per message) | 62.9 s | 38.2/s |
+| Lock-free, messages imported together | 3.3 s | 729/s |
+
+The two store the same data: 1,000 intrusion sets with author, marking and 2 labels, 100 attack patterns with 100
+kill chain phases and 200 external references, 1,200 relationships on the malware, a report with 2,401 objects,
+every object counted, no error. On the demo platform the same flow ran at 790 to 801/s three times in a row, and
+today's at 41.5/s. pycti alone, without the queue: 1,034/s in batch mode against 98/s one object per request.
+
+Building it found, and fixed: a pushed bundle published one RabbitMQ message per object (2.65 s of 4.72 s before
+chunked messages); a message holding several objects was imported one by one when it came alone; external
+references took today's path, two forced refreshes each, 200 at a time; and labels created by pycti were unknown
+to the identity index, so every import first failed on a missing reference and was retried.
+
 ### Several processes (`lockfree-processes`)
 
 Same day and platform, 16,000 objects per case, each process with 2 chunk writers of 500. Settled throughput of
@@ -442,6 +489,8 @@ with refs all on one entity, settled, best configuration of each step:
 | 7 | Today's behaviour in full: upsert rules, duplicate window, access checks, enrichment and workflow, durable settler queue, pending store, backfill; 8 writers | 2,137/s (1,850/s on 22 Oct) |
 | 8 | Less waiting per chunk: workflow configuration read once per type and chunk instead of once per entity, keys, pair entries and meta relationships written at once, large bulks sent as parallel slices; 1 process, 2 writers | 1,864/s |
 | 9 | Two platform processes, 2 writers each | 3,088/s |
+| 10 | `lockfreeImport` over HTTP, chunks of 500, 4 clients | 2,030 to 2,240/s |
+| 11 | The full flow, a mixed connector bundle through queue and worker (all object kinds, not only relationships on one entity) | 729 to 801/s (today 38 to 41/s) |
 
 Step 3 showed the limit had moved into the Node process (100-170% CPU while Elasticsearch used 17-35% of its
 cores); `lockfree-profile` and `tools/cpu_profile.py` found the hot spots fixed in steps 4 and 5. Step 5 raised
@@ -469,6 +518,9 @@ relationships with refs from 1,254 to 1,481/s.
 - In chunks, relationships with refs on one entity reach about 1,850/s settled from one process and about 3,000/s
   from two or four, 45 to 75 times today, with the same stored documents, meta relationships and stream events
   as today's path.
+- End to end, from a connector's bundle through the queue and the worker to stored data, a mixed bundle goes
+  19 times faster than today (729/s against 38/s), storing the same data. What remains is mostly the platform's
+  own work per create (resolvers, ref resolution, chunk writes), 1,000 creates in about 0.65 s.
 
 ## Limits
 
@@ -476,8 +528,10 @@ relationships with refs from 1,254 to 1,481/s.
   replicas usually pays more for each refresh.
 - Stream consumers (rules engine, history, notifications) run in the benchmark platform, but their load is
   not representative of production.
-- Throughput scenarios use intrusion sets, malware and `uses` relationships; observables, sightings, files,
-  attack patterns and reports are checked for parity in `lockfree-behaviours`, not timed.
+- The lock-free throughput scenarios use intrusion sets, malware and `uses` relationships; `full-flow` times a
+  mixed bundle (observables, attack patterns, external references, a report); sightings and files are checked
+  for parity in `lockfree-behaviours`, not timed.
+- One worker and one connector queue in `full-flow`; several workers on one queue were not measured.
 - The worker-path scenario times the client side only; its platform phases are not recorded.
 
 ## Adding a scenario
@@ -496,6 +550,11 @@ The scenarios are excluded from the platform's test suites: they only match `vit
 |---|---|
 | `benchmarks/ingestion/run.py` | Entry point |
 | `benchmarks/ingestion/tools/worker_path.py` | pycti client of the `worker-path` scenario |
+| `benchmarks/ingestion/tools/batch_import.py` | Client of the `batch-import` scenario |
+| `benchmarks/ingestion/tools/full_flow.py` | The connector-shaped bundle, the queue flow and pycti's two modes (`full-flow`) |
+| `opencti-platform/opencti-graphql/src/database/lockfree/` | The lock-free write path, its platform integration and `lockfreeImport` |
+| `client-python/pycti/api/opencti_api_batch.py` | pycti's batch import (creates kept and sent together) |
+| `opencti-worker/src/push_handler.py`, `message_queue_consumer.py` | The worker's batches of messages |
 | `benchmarks/ingestion/tools/queue_loop.py` | The `queue-loop` scenario |
 | `benchmarks/ingestion/tools/data_shape.py` | The `data-shape` report |
 | `benchmarks/ingestion/tools/cpu_profile.py` | Summary of a `.cpuprofile`: CPU by area and by function, inclusive time of platform functions |
@@ -503,5 +562,5 @@ The scenarios are excluded from the platform's test suites: they only match `vit
 | `opencti-platform/opencti-graphql/tests/bench/scenarios/` | The scenarios run inside the benchmark platform |
 | `opencti-platform/opencti-graphql/tests/bench/bench-utils.ts` | Measurement helpers |
 | `opencti-platform/opencti-graphql/tests/bench/batch-writer.ts` | The batch prototype |
-| `opencti-platform/opencti-graphql/tests/bench/lockfree/` | The lock-free write path |
+| `opencti-platform/opencti-graphql/tests/bench/lockfree/run.ts` | The scenarios' driver of the lock-free write path |
 | `opencti-platform/opencti-graphql/src/utils/bench-timing.ts` | Phase timers, off unless `OPENCTI_BENCH_TIMING=true` |

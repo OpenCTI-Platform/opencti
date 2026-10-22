@@ -167,6 +167,15 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             0,
         )
+        # Push messages imported together through the platform's lock-free batch import, when it has one
+        # (1: one message at a time)
+        self.batch_size = get_config_variable(
+            "WORKER_BATCH_SIZE",
+            ["worker", "batch_size"],
+            config,
+            True,
+            500,
+        )
         # Telemetry
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
@@ -306,6 +315,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 push_thread_pool_selector.submit, is_realtime
                             ),
                             push_handler.handle_message,
+                            handle_batch=push_handler.handle_batch,
+                            batch_size=self.batch_size,
                         )
 
                     # Listen for webhook message

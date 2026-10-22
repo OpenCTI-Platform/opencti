@@ -199,6 +199,12 @@ class OpenCTIStix2:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
+        self._defer_item_report = (
+            False  # inside a batch import, items are reported once sent
+        )
+        self.last_batch_retried = (
+            0  # items of the last batch import imported again on their own
+        )
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
@@ -3763,9 +3769,10 @@ class OpenCTIStix2:
                             in types
                         ):
                             self.import_object(item, update, types)
-        if work_id is not None:
-            self.opencti.work.report_expectation_success(work_id)
-        bundles_success_counter.add(1)
+        if not self._defer_item_report:
+            if work_id is not None:
+                self.opencti.work.report_expectation_success(work_id)
+            bundles_success_counter.add(1)
         return True
 
     def _report_expectation_item_error(self, work_id: Optional[str], item, error: str):
@@ -3990,6 +3997,13 @@ class OpenCTIStix2:
         # Import every element in a specific order
         imported_elements = []
         too_large_elements_bundles = []
+        if (
+            self.opencti.batch_import_enabled
+            and sum(len(b["objects"]) for b in bundles) > 1
+        ):
+            return self._import_bundles_batched(
+                bundles, update, types, work_id, objects_max_refs
+            )
         for bundle in bundles:
             bundle_id = bundle["id"]
             for item in bundle["objects"]:
@@ -4024,6 +4038,85 @@ class OpenCTIStix2:
                         )
 
         return imported_elements, too_large_elements_bundles
+
+    def _import_bundles_batched(
+        self,
+        bundles: List[Dict],
+        update: bool,
+        types: List,
+        work_id: Optional[str],
+        objects_max_refs: int,
+    ) -> Tuple[list, list]:
+        """Import the split bundles' items through one lock-free batch import.
+
+        Every item goes through the usual conversion (:py:meth:`import_item`) inside a batch, which sends its
+        creates together. An item is reported done once the platform confirmed its creates; an item whose
+        conversion or creates failed is imported again on its own, with the usual retries and error reporting.
+
+        :return: Tuple of (list of imported elements, list of failed/too-large elements)
+        """
+        worker_logger = self.opencti.logger_class("worker")
+        imported_elements = []
+        rejected = []
+        candidates = []
+        for bundle in bundles:
+            for item in bundle["objects"]:
+                nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
+                if 0 < objects_max_refs <= nb_refs:
+                    too_large_element_message = "Too large element in bundle"
+                    worker_logger.warning(too_large_element_message)
+                    item["rejection_info"] = {
+                        "reject_reason": "ELEMENT_TOO_LARGE",
+                        "objects_max_refs": objects_max_refs,
+                    }
+                    self.opencti.work.report_expectation(
+                        work_id,
+                        {
+                            "error": too_large_element_message,
+                            "source": "Element "
+                            + item["id"]
+                            + " is too large and couldn't be processed",
+                        },
+                    )
+                    rejected.append(item)
+                else:
+                    candidates.append((bundle["id"], item))
+        converted = set()
+        with self.opencti.batch_import() as batch:
+            self._defer_item_report = True
+            try:
+                for index, (bundle_id, item) in enumerate(candidates):
+                    batch.owner = index
+                    try:
+                        self.opencti.set_retry_number(0)
+                        self.import_item(item, update, types, work_id, bundle_id)
+                        converted.add(index)
+                    except Exception:  # pylint: disable=broad-except
+                        pass  # imported again on its own below
+            finally:
+                self._defer_item_report = False
+        self.last_batch_retried = len(
+            [
+                i
+                for i in range(len(candidates))
+                if i not in converted or i in batch.failed
+            ]
+        )
+        for index, (bundle_id, item) in enumerate(candidates):
+            if index in converted and index not in batch.failed:
+                if work_id is not None:
+                    self.opencti.work.report_expectation_success(work_id)
+                bundles_success_counter.add(1)
+                imported_elements.append({"id": item["id"], "type": item["type"]})
+                continue
+            failed_item = self.import_item_with_retries(
+                item, update, types, work_id, bundle_id
+            )
+            if failed_item is not None:
+                rejected.append(failed_item)
+            else:
+                imported_elements.append({"id": item["id"], "type": item["type"]})
+        return imported_elements, rejected
 
     @staticmethod
     def put_attribute_in_extension(

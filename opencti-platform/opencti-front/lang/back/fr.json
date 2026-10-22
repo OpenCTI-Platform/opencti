@@ -627,6 +627,7 @@
   "Location propagation": "Propagation de l'emplacement",
   "Location type": "Type d'emplacement",
   "Locations propagation in reports": "Propagation de l'emplacement dans les rapports",
+  "LOCKFREE_SETTLER_MANAGER": "Manager d'ingestion sans verrou",
   "Log sources": "Sources de logs",
   "login": "connexion",
   "Login message": "Message de connexion",

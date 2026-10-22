@@ -9240,10 +9240,17 @@ input LockfreeEntityInput {
   input: JSON!
 }
 
+input LockfreeOperationInput {
+  ref: String
+  query: String!
+  variables: JSON
+}
+
 type LockfreeImportResult {
   status: String!
   id: String
   error: String
+  code: String
 }
 
 type WorkEditMutations {
@@ -9744,7 +9751,7 @@ type Mutation {
   stixCoreObjectsExportAsk(input: StixCoreObjectsExportAskInput!): [File!]
   stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
   stixBundlePush(connectorId: String!, bundle: String!, work_id: String): Boolean
-  lockfreeImport(entities: [LockfreeEntityInput!], relationships: [JSON!]): [LockfreeImportResult!]
+  lockfreeImport(entities: [LockfreeEntityInput!], relationships: [JSON!], operations: [LockfreeOperationInput!]): [LockfreeImportResult!]
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String], search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, pirId: ID, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]

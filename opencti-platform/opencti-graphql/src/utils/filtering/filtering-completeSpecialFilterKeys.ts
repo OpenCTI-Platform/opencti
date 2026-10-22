@@ -67,6 +67,10 @@ import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 import { pushAll } from '../arrayUtil';
+import { booleanConf } from '../../config/conf';
+import { getInstanceIds } from '../../schema/identifier';
+
+const LOCKFREE_INGESTION_ENABLED = booleanConf('app:lockfree_ingestion:enabled', false);
 
 export const adaptFilterToRegardingOfFilterKey = async (
   context: AuthContext,
@@ -110,6 +114,12 @@ export const adaptFilterToRegardingOfFilterKey = async (
   if (ids.length > 0) {
     // Keep ids the user has access to
     const filteredEntities = await elFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
+    // An object written by the lock-free path is not searchable before the next refresh: found by id meanwhile
+    if (LOCKFREE_INGESTION_ENABLED && filteredEntities.length < ids.length) {
+      const { findByIdsRealtime } = await import('../../database/lockfree/ingestion');
+      const known = new Set(filteredEntities.flatMap((e) => getInstanceIds(e)));
+      pushAll(filteredEntities, await findByIdsRealtime(context, user, ids.filter((id: string) => !known.has(id))));
+    }
     ids = noRegardingOfFilterIdsCheck
       ? ids // if noRegardingOfFilterIdsCheck=true, we keep all the ids, even if the user has not access to them
       : filteredEntities.map((n) => n.id);

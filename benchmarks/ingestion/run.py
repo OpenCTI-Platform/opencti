@@ -44,6 +44,7 @@ class Scenario:
     quick: dict
     needs: list = field(default_factory=list)  # python modules the scenario needs
     env: dict = field(default_factory=dict)  # platform configuration the scenario needs
+    file: str = None  # scenario file, when not <name>.scenario.ts
 
 
 SCENARIOS = {
@@ -120,6 +121,25 @@ SCENARIOS = {
             {"n": 500},
             needs=["pycti"],
             env={"APP__LOCKFREE_INGESTION__ENABLED": "true"},
+        ),
+        Scenario(
+            "full-flow",
+            "A connector bundle through the queue and a real worker, lock-free (messages imported together), and pycti one by one vs batch",
+            "vitest",
+            {"n": 1000},
+            {"n": 200},
+            needs=["pycti", "pika"],
+            env={"APP__LOCKFREE_INGESTION__ENABLED": "true"},
+        ),
+        Scenario(
+            "full-flow-today",
+            "The same connector bundle through the queue and a real worker, today's flow",
+            "vitest",
+            {"n": 1000},
+            {"n": 200},
+            needs=["pycti", "pika"],
+            env={"APP__LOCKFREE_INGESTION__ENABLED": "false"},
+            file="full-flow",
         ),
         Scenario(
             "worker-path",
@@ -329,7 +349,9 @@ def run_one(scenario, args, stamp):
         env["BENCH_PROFILE_DIR"] = str(RESULTS)
         for key, value in params.items():
             env[f"BENCH_{key.upper()}"] = str(value)
-        code = run_vitest(f"{scenario.name}.scenario.ts", env, log_path)
+        code = run_vitest(
+            f"{scenario.file or scenario.name}.scenario.ts", env, log_path
+        )
     elapsed = time.time() - start
     if code != 0 or not out_path.exists():
         log(f"    FAILED after {elapsed:.0f} s, see {log_path}\n{tail(log_path)}")

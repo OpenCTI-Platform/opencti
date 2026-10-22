@@ -15221,10 +15221,16 @@ input LockfreeEntityInput {
   type: String!
   input: JSON!
 }
+input LockfreeOperationInput {
+  ref: String
+  query: String!
+  variables: JSON
+}
 type LockfreeImportResult {
   status: String!
   id: String
   error: String
+  code: String
 }
 
 type WorkEditMutations {
@@ -15744,9 +15750,10 @@ type Mutation {
 
   ######## STIX DOMAIN OBJECT ENTITIES
   stixBundlePush(connectorId: String!, bundle: String!, work_id: String): Boolean @auth(for: [CONNECTORAPI])
-  # Lock-free batch import (app:lockfree_ingestion:enabled): a chunk of objects written in one call, entities then
-  # relationships, each input as the matching *Add mutation takes it
-  lockfreeImport(entities: [LockfreeEntityInput!], relationships: [JSON!]): [LockfreeImportResult!] @auth(for: [KNOWLEDGE_KNUPDATE])
+  # Lock-free batch import (app:lockfree_ingestion:enabled), in one call: a chunk of entities then relationships, each
+  # input as the matching *Add mutation takes it; or create operations (*Add mutations as a client sends them, run
+  # through their resolvers in dependency order, their references to each other by `ref`)
+  lockfreeImport(entities: [LockfreeEntityInput!], relationships: [JSON!], operations: [LockfreeOperationInput!]): [LockfreeImportResult!] @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations @auth
   stixDomainObjectsExportAsk(

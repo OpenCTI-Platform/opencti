@@ -70,7 +70,9 @@ const stixResolvers = {
       merge: ({ stixObjectsIds }) => stixObjectMerge(context, context.user, id, stixObjectsIds),
     }),
     stixBundlePush: (_, { connectorId, bundle, work_id }, context) => sendStixBundle(context, context.user, connectorId, bundle, work_id),
-    lockfreeImport: (_, { entities, relationships }, context) => importLockFree(context, context.user, entities ?? [], relationships ?? []),
+    lockfreeImport: (_, { entities, relationships, operations }, context, info) => {
+      return importLockFree(context, context.user, entities ?? [], relationships ?? [], operations ?? [], info.schema);
+    },
   },
   StixObject: {
     __resolveType(obj) {

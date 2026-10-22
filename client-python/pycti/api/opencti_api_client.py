@@ -11,11 +11,13 @@ import shutil
 import signal
 import tempfile
 import threading
+from contextlib import contextmanager
 from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
 
 from pycti import __version__
+from pycti.api.opencti_api_batch import BatchImport
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_draft import OpenCTIApiDraft
 from pycti.api.opencti_api_internal_file import OpenCTIApiInternalFile
@@ -268,6 +270,10 @@ class OpenCTIApiClient:
         )
         self.session = requests.session()
         self.session_requests_timeout = requests_timeout
+        self._batch = None  # open batch import, see batch_import
+        # Bundles of several items go through the lock-free batch import (set by the worker when the platform has it)
+        self.batch_import_enabled = False
+        self.batch_chunk_size = 1000  # creates sent per batch import request
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
         self.notification = OpenCTIApiNotification(self)
@@ -641,6 +647,44 @@ class OpenCTIApiClient:
         session=None,
     ):
         """Submit a query to the OpenCTI GraphQL API.
+
+        Inside :py:meth:`batch_import`, create mutations are kept for the batch and answered with a placeholder;
+        any other request first sends what the batch kept. See :py:meth:`send_query` for the parameters.
+        """
+        batch = self._batch
+        if batch is not None and headers is None and session is None:
+            captured = batch.capture(query, variables)
+            if captured is not None:
+                return captured
+            batch.flush()
+        return self.send_query(query, variables, disable_impersonate, headers, session)
+
+    @contextmanager
+    def batch_import(self, chunk_size: int = None):
+        """Open a batch: the create mutations sent until it closes go to the lock-free batch import together.
+
+        :param chunk_size: kept creates that trigger a send
+        :type chunk_size: int
+        :return: the :py:class:`~pycti.api.opencti_api_batch.BatchImport`, whose ``failed`` maps the owner
+            set on it (a bundle item) to the error of its first failed create
+        """
+        batch = BatchImport(self, chunk_size or self.batch_chunk_size)
+        self._batch = batch
+        try:
+            yield batch
+        finally:
+            self._batch = None
+            batch.flush()
+
+    def send_query(
+        self,
+        query,
+        variables=None,
+        disable_impersonate=False,
+        headers=None,
+        session=None,
+    ):
+        """Submit a query to the OpenCTI GraphQL API, now.
 
         :param query: GraphQL query string
         :type query: str

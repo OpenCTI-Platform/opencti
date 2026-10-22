@@ -15872,9 +15872,16 @@ export type LockfreeEntityInput = {
 
 export type LockfreeImportResult = {
   __typename?: 'LockfreeImportResult';
+  code?: Maybe<Scalars['String']['output']>;
   error?: Maybe<Scalars['String']['output']>;
   id?: Maybe<Scalars['String']['output']>;
   status: Scalars['String']['output'];
+};
+
+export type LockfreeOperationInput = {
+  query: Scalars['String']['input'];
+  ref?: InputMaybe<Scalars['String']['input']>;
+  variables?: InputMaybe<Scalars['JSON']['input']>;
 };
 
 export type Log = {
@@ -19287,6 +19294,7 @@ export type MutationLocationEditArgs = {
 
 export type MutationLockfreeImportArgs = {
   entities?: InputMaybe<Array<LockfreeEntityInput>>;
+  operations?: InputMaybe<Array<LockfreeOperationInput>>;
   relationships?: InputMaybe<Array<Scalars['JSON']['input']>>;
 };
 
@@ -41475,6 +41483,7 @@ export type ResolversTypes = ResolversObject<{
   LocationsOrdering: LocationsOrdering;
   LockfreeEntityInput: LockfreeEntityInput;
   LockfreeImportResult: ResolverTypeWrapper<LockfreeImportResult>;
+  LockfreeOperationInput: LockfreeOperationInput;
   Log: ResolverTypeWrapper<Omit<Log, 'context_data' | 'user'> & { context_data?: Maybe<ResolversTypes['ContextData']>, user?: Maybe<ResolversTypes['Creator']> }>;
   LogConnection: ResolverTypeWrapper<Omit<LogConnection, 'edges'> & { edges: Array<ResolversTypes['LogEdge']> }>;
   LogEdge: ResolverTypeWrapper<Omit<LogEdge, 'node'> & { node: ResolversTypes['Log'] }>;
@@ -42596,6 +42605,7 @@ export type ResolversParentTypes = ResolversObject<{
   LocationEditMutations: Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Location']>, contextPatch?: Maybe<ResolversParentTypes['Location']>, fieldPatch?: Maybe<ResolversParentTypes['Location']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Location']> };
   LockfreeEntityInput: LockfreeEntityInput;
   LockfreeImportResult: LockfreeImportResult;
+  LockfreeOperationInput: LockfreeOperationInput;
   Log: Omit<Log, 'context_data' | 'user'> & { context_data?: Maybe<ResolversParentTypes['ContextData']>, user?: Maybe<ResolversParentTypes['Creator']> };
   LogConnection: Omit<LogConnection, 'edges'> & { edges: Array<ResolversParentTypes['LogEdge']> };
   LogEdge: Omit<LogEdge, 'node'> & { node: ResolversParentTypes['Log'] };
@@ -48545,6 +48555,7 @@ export type LocationEditMutationsResolvers<ContextType = any, ParentType extends
 }>;
 
 export type LockfreeImportResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['LockfreeImportResult'] = ResolversParentTypes['LockfreeImportResult']> = ResolversObject<{
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
