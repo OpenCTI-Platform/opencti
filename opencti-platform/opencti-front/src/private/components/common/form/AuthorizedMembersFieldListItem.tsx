@@ -8,13 +8,15 @@ import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import { Delete, InfoOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import { Tooltip } from '@mui/material';
+import { IconButton as LibIconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import React from 'react';
+import { useTheme } from '@mui/styles';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';
 import SelectField from '../../../../components/fields/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
 import { AccessRight, AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
 // Common style applied in JSX.
@@ -43,6 +45,7 @@ const AuthorizedMembersFieldListItem = ({
   disabled,
 }: AuthorizedMembersFieldListItemProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { me } = useAuth();
   // Used for artificial rows for ALL and CREATOR if they have
   // no access.
@@ -95,14 +98,25 @@ const AuthorizedMembersFieldListItem = ({
             )}
             {authorizedMember.groupsRestriction && authorizedMember.groupsRestriction.length > 0 && (
               <>
-                <span style={smallText}>
-                  {' '}({t_i18n('Groups restriction')})
+                {' '}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                  <span style={smallText}>
+                    ({t_i18n('Groups restriction')})
+                  </span>
+                  <Tooltip>
+                    {/* The library IconButton, not the local wrapper: `asChild` needs a trigger that forwards its ref. */}
+                    <TooltipTrigger asChild>
+                      <LibIconButton
+                        variant="default"
+                        priority="tertiary"
+                        size="sm"
+                        aria-label={t_i18n('Information')}
+                        icon={<InfoOutlined fontSize="small" />}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{`Groups restriction: ${groupsLabel}`}</TooltipContent>
+                  </Tooltip>
                 </span>
-                <Tooltip title={`Groups restriction: ${groupsLabel}`}>
-                  <IconButton size="small" color="primary" aria-label={t_i18n('Information')}>
-                    <InfoOutlined fontSize="small" />
-                  </IconButton>
-                </Tooltip>
               </>
             )}
           </>
