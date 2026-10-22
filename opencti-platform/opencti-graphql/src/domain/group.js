@@ -16,10 +16,11 @@ import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SECURITYACTIVITY, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
+import { emptyPaginationResult } from '../database/utils';
 
 export const GROUP_DEFAULT = 'Default';
 
@@ -35,6 +36,10 @@ export const findById = (context, user, groupId) => {
 export const findGroupPaginated = async (context, user, args) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => (orga.grantable_groups ?? [])).flat());
+    // Empty ids are ignored by the engine and would list every group
+    if (groupsIds.length === 0 && !isUserHasCapability(user, SETTINGS_SECURITYACTIVITY)) {
+      return emptyPaginationResult();
+    }
     return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], args);
