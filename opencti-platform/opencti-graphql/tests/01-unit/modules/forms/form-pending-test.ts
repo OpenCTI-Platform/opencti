@@ -613,6 +613,8 @@ describe('readUploads', () => {
 
 describe('resolvePendingFieldRefs', () => {
   const pool = [label('l1'), extRef('e1'), { id: 'm1', entityType: 'Malware', input: { name: 'M' } }];
+  const field = (name: string, type: string) => ({ id: name, name, label: name, type, attributeMapping: { entity: 'main_entity', attributeName: name } });
+  const schema = { mainEntityType: 'Malware', fields: [field('labels', 'objectLabel'), field('refs', 'externalReferences'), field('title', 'text')] } as unknown as FormSchemaDefinition;
 
   it('should replace pending entries of direct fields by the label name or the external reference attributes', () => {
     const values = {
@@ -621,7 +623,7 @@ describe('resolvePendingFieldRefs', () => {
       mainEntityGroups: [{ labels: [{ pending: 'l1' }] }],
       pendingObjects: pool,
     };
-    const resolved = resolvePendingFieldRefs(values);
+    const resolved = resolvePendingFieldRefs(values, schema);
     expect(resolved.labels).toEqual(['existing-name', 'new-label']);
     expect(resolved.refs).toEqual([{ source_name: 'src', url: 'https://example.com' }, 'ext-id']);
     expect(resolved.mainEntityGroups).toEqual([{ labels: ['new-label'] }]);
@@ -630,16 +632,27 @@ describe('resolvePendingFieldRefs', () => {
   it('should leave the pending roots and the pool untouched', () => {
     const root = malware({ refs: { objectLabel: [{ pending: 'l1' }] } });
     const values = { mainEntityLookupPending: [root], pendingObjects: pool };
-    const resolved = resolvePendingFieldRefs(values);
+    const resolved = resolvePendingFieldRefs(values, schema);
     expect(resolved.mainEntityLookupPending).toEqual([root]);
     expect(resolved.pendingObjects).toEqual(pool);
   });
 
   it('should reject a dangling entry or an entry targeting something else than a label or external reference', () => {
-    expect(() => resolvePendingFieldRefs({ labels: [{ pending: 'nope' }], pendingObjects: pool }))
+    expect(() => resolvePendingFieldRefs({ labels: [{ pending: 'nope' }], pendingObjects: pool }, schema))
       .toThrow('Pending field ref must target a pooled label or external reference');
-    expect(() => resolvePendingFieldRefs({ labels: [{ pending: 'm1' }], pendingObjects: pool }))
+    expect(() => resolvePendingFieldRefs({ labels: [{ pending: 'm1' }], pendingObjects: pool }, schema))
       .toThrow('Pending field ref must target a pooled label or external reference');
+  });
+
+  it('should reject an entry whose pooled object does not match the type of its field', () => {
+    const message = 'This field cannot receive this object created in the form';
+    expect(() => resolvePendingFieldRefs({ refs: [{ pending: 'l1' }], pendingObjects: pool }, schema)).toThrow(message);
+    expect(() => resolvePendingFieldRefs({ labels: [{ pending: 'e1' }], pendingObjects: pool }, schema)).toThrow(message);
+    // the type of the field is the same in the groups of fields
+    expect(() => resolvePendingFieldRefs({ mainEntityGroups: [{ refs: [{ pending: 'l1' }] }], pendingObjects: pool }, schema)).toThrow(message);
+    // a field that takes no label nor external reference, or a key that is no field of the form
+    expect(() => resolvePendingFieldRefs({ title: { pending: 'l1' }, pendingObjects: pool }, schema)).toThrow(message);
+    expect(() => resolvePendingFieldRefs({ other: [{ pending: 'l1' }], pendingObjects: pool }, schema)).toThrow(message);
   });
 });
 
@@ -759,7 +772,8 @@ describe('files of pending objects', () => {
       x_opencti_files: [{ name: 'report.pdf', data: 'cGRm', mime_type: 'application/pdf' }],
     }]);
     // the same pooled reference reached from a direct field
-    const resolved = resolvePendingFieldRefs({ refs: [{ pending: 'e1' }], pendingObjects: [pooled] }, uploads);
+    const refsSchema = { mainEntityType: 'Malware', fields: [{ id: 'refs', name: 'refs', label: 'refs', type: 'externalReferences', attributeMapping: { entity: 'main_entity', attributeName: 'refs' } }] } as unknown as FormSchemaDefinition;
+    const resolved = resolvePendingFieldRefs({ refs: [{ pending: 'e1' }], pendingObjects: [pooled] }, refsSchema, uploads);
     expect(resolved.refs).toEqual(entity.externalReferences);
   });
 

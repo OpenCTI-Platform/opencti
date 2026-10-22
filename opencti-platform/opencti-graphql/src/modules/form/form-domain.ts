@@ -539,7 +539,7 @@ export const planSubmission = async (
     throw ForbiddenAccess('You are not allowed to create labels.', { capability: SETTINGS_SETLABELS });
   }
   const uploads = await readUploads(input.files, getPendingUploadCopies(values));
-  values = resolvePendingFieldRefs(values, uploads);
+  values = resolvePendingFieldRefs(values, schema, uploads);
   const bundle: any = {
     type: 'bundle',
     id: `bundle--${uuidv4()}`,
