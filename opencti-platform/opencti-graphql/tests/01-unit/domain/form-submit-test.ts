@@ -577,14 +577,14 @@ describe('formSubmit - deferred creation', () => {
   it('should send the files of a pending external reference with it in the bundle', async () => {
     const values = {
       mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'File Malware' }, refs: { externalReferences: [{ pending: 'e1' }] } }],
-      pendingObjects: [{ id: 'e1', entityType: 'External-Reference', input: { source_name: 'src' }, files: [{ name: 'report.txt', uploadIndex: 0 }] }],
+      pendingObjects: [{ id: 'e1', entityType: 'External-Reference', input: { source_name: 'src', external_id: 'REF-1' }, files: [{ name: 'report.txt', uploadIndex: 0 }] }],
     };
 
     await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values), files: [upload('report')] } as any, false);
 
     const malware = pushedBundle().objects.find((o: any) => o.name === 'File Malware');
     expect(malware.external_references).toEqual([
-      { source_name: 'src', x_opencti_files: [{ name: 'report.txt', data: Buffer.from('report').toString('base64'), mime_type: 'text/plain' }] },
+      { source_name: 'src', external_id: 'REF-1', x_opencti_files: [{ name: 'report.txt', data: Buffer.from('report').toString('base64'), mime_type: 'text/plain' }] },
     ]);
   });
 

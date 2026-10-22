@@ -396,6 +396,10 @@ export const validatePendingPayload = (values: Record<string, any>, uploadCount:
     }
     if (object.id === undefined) throw FunctionalError('A pooled pending object requires an id', { entityType: object.entityType });
     if (object.refs) throw FunctionalError('A pooled pending object cannot have refs', { id: object.id });
+    // The import identifies an external reference by its URL, or by its source name and external ID: without them it is skipped
+    if (object.entityType === ENTITY_TYPE_EXTERNAL_REFERENCE && !isFilledString(object.input.url) && !isFilledString(object.input.external_id)) {
+      throw FunctionalError('An external reference created in a form requires a URL or an external ID', { id: object.id });
+    }
     if (object.entityType === ENTITY_TYPE_LABEL && toArray(object.files).length > 0) {
       throw FunctionalError('Files cannot be attached to a label created in a form', { id: object.id });
     }
