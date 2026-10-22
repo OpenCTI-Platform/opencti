@@ -11,7 +11,7 @@ export default defineConfig({
     globals: true,
     server: {
       deps: {
-        inline: ['formik-mui'],
+        inline: ['formik-mui', 'react-virtualized'],
       },
     },
     coverage: {
