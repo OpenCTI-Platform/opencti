@@ -88,6 +88,7 @@
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "wird ein zufälliges Passwort für Ihren Benutzer generiert: Sie müssen es ändern, um sich per E-Mail und Passwort anmelden zu können. Verwenden Sie einfach den Workflow \"Passwort vergessen\".",
   "A result with this external link already exists in this security coverage": "Ein Ergebnis mit diesem externen Link existiert bereits in dieser Sicherheitsabdeckung",
   "A result with this name already exists in this security coverage": "Ein Ergebnis mit diesem Namen existiert bereits in dieser Sicherheitsabdeckung",
+  "A URL or an external ID is required": "Eine URL oder eine externe ID ist erforderlich",
   "A value cannot reference another variable": "Ein Wert kann nicht auf eine andere Variable verweisen",
   "A variable with this name already exists": "Eine Variable mit diesem Namen existiert bereits",
   "A widget has a @me filter enabled...": "Ein Widget hat einen @me-Filter aktiviert. Wenn Sie dieses Dashboard als öffentliches Dashboard teilen, wird der @me-Filter durch \"{name}\" ersetzt, der das Dashboard teilt. Dies kann Auswirkungen auf die im Dashboard angezeigten Daten haben.",
