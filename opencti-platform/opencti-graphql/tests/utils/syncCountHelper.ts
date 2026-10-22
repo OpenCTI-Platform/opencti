@@ -85,8 +85,8 @@ testUpdatedCounter['intrusion-set'] = 5;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
-// 7 by workflow-closing-reason-test merge (1) and external status write (6) cases
-testUpdatedCounter['case-incident'] = 30;
+// 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
+testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
 testUpdatedCounter.report = 28;
 testUpdatedCounter['course-of-action'] = 3;
