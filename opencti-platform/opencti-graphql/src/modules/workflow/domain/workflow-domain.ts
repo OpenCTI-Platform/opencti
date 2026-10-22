@@ -1740,22 +1740,38 @@ export const setWorkflowStatus = async (
  * onEnter hooks of the initial state. No-op if no workflow is configured for
  * the entity type or if an instance already exists.
  */
+// The workflow configuration of an entity type: its entity setting and published definition. Resolved once,
+// it serves every entity of that type created together (a chunk), instead of one search per entity.
+export interface EntityWorkflowConfig {
+  entitySetting: BasicStoreEntityEntitySetting | undefined;
+  definitionData: WorkflowDefinitionResponse | null;
+}
+export const resolveEntityWorkflowConfig = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<EntityWorkflowConfig> => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+  const entitySetting = await getWorkflowConfig(executionContext, executionUser, entityType);
+  const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
+  return { entitySetting, definitionData };
+};
+
 export const initializeEntityWorkflow = async (
   context: AuthContext,
   user: AuthUser,
   entity: any,
+  config?: EntityWorkflowConfig,
 ): Promise<void> => {
   // Avoid self-referential/unnecessary work for the internal objects created by workflow
   // initialization itself: the `has-workflow` relationship and the WorkflowInstance entity.
   if (entity.entity_type === RELATION_HAS_WORKFLOW || entity.entity_type === ENTITY_TYPE_WORKFLOW_INSTANCE) return;
   // Never eagerly initialize a workflow for an entity created/updated inside a draft
   if (getDraftContext(context, user)) return;
-  const executionContext = bypassDraftContext(context);
-  const executionUser = bypassDraftUser(user);
-  const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
-  const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
+  const { entitySetting, definitionData } = config ?? await resolveEntityWorkflowConfig(context, user, entity.entity_type);
   if (!definitionData) return;
-  await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+  await ensureWorkflowInstance(bypassDraftContext(context), bypassDraftUser(user), entity, entitySetting, definitionData);
 };
 
 const parseWorkflowHistory = (instanceEntity: WorkflowInstanceStoreEntity): any[] => {

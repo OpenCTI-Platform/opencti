@@ -36,7 +36,7 @@ import { checkRelationConsistency } from '../../../src/utils/modelConsistency';
 import { getDraftContext } from '../../../src/utils/draftContext';
 import { rewriteEmbeddedDataUriImagesInDescriptions } from '../../../src/database/middlewareEmbeddedImages';
 import { transformCustomFieldValueAddInput } from '../../../src/modules/customField/custom-field-validator';
-import { initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../../../src/modules/workflow/domain/workflow-domain';
+import { initializeEntityWorkflow, resolveEntityWorkflowConfig, syncWorkflowInstanceFromExternalWrite } from '../../../src/modules/workflow/domain/workflow-domain';
 import { CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../src/config/conf';
 import { DOC_INSUFFICIENT_CONFIDENCE_LEVEL, ForbiddenAccess, FunctionalError, UnsupportedError } from '../../../src/config/errors';
 import { generateHashedObservableStandardIds, generateStandardId, getInputIds, getInstanceIds } from '../../../src/schema/identifier';
@@ -285,21 +285,31 @@ export const writeEntityChunk = async (
   const statuses = await bulkCreateDocs(await Promise.all(creators.map((c) => prepareIndexingElement(c.element))), opts);
   const created = creators.filter((_, k) => statuses[k] === 201);
   creators.filter((_, k) => statuses[k] === 409).forEach((c) => merges.push({ w: c, target: ownerOf(c.element), patch: c.resolvedInput }));
-  const metaStatuses = await bulkCreateDocs(await Promise.all(created.flatMap((c) => c.metas).map((m: any) => prepareIndexingElement(m))), opts);
+  bench.step('create.docs');
+  const entityMetaDocs = await Promise.all(created.flatMap((c) => c.metas).map((m: any) => prepareIndexingElement(m)));
+  bench.step('create.metas_prepare');
+  const metaStatuses = await bulkCreateDocs(entityMetaDocs, opts);
   add(counters, 'meta_created', metaStatuses.filter((s: number) => s === 201).length);
+  bench.step('create.metas');
   await enqueue(created.flatMap((c) => metaTargetTasks(c.metas, 'add')));
+  bench.step('create.enqueue');
   await pool(created, 16, async (c) => {
     await createContainerSharingTask(context, ACTION_TYPE_SHARE, c.element, c.metas);
   });
+  bench.step('create.sharing');
   const createdElements = created.map((c) => createdElementOf(c.resolvedInput, c.element));
   const events = await storeCreateEvents(context, user, created.map((c, k) => ({ instance: createdElements[k] as any, message: generateCreateMessage(c.element) })));
   add(counters, 'events_create', events.length);
   add(counters, 'entities_created', created.length);
-  bench.step('create');
-  // What createEntity does after the creation, for each object (independent of each other)
+  bench.step('create.events');
+  // What createEntity does after the creation, for each object (independent of each other). The workflow
+  // configuration is read once per type for the chunk, not once per entity.
+  const workflowTypes = isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) ? R.uniq(createdElements.map((e: any) => e.entity_type as string)) : [];
+  const workflowConfigs = new Map(await Promise.all(workflowTypes.map(async (t) => [t, await resolveEntityWorkflowConfig(context, user, t)] as const)));
   await pool(created.map((_, k) => k), 64, async (k) => {
     await triggerCreateEntityAutoEnrichment(context, user, createdElements[k] as any);
-    if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) await initializeEntityWorkflow(context, user, createdElements[k] as any);
+    const workflowConfig = workflowConfigs.get((createdElements[k] as any).entity_type);
+    if (workflowConfig) await initializeEntityWorkflow(context, user, createdElements[k] as any, workflowConfig);
     results[created[k].i] = { status: 'created', id: created[k].element.internal_id };
   });
   bench.step('after_create');
@@ -518,10 +528,17 @@ export const writeRelationChunk = async (
   const statuses = await bulkCreateDocs(await Promise.all(built.map((b) => prepareIndexingElement(b.element))), opts);
   const created = built.filter((_, k) => statuses[k] === 201);
   built.filter((_, k) => statuses[k] === 409).forEach((b) => merges.push({ w: b, target: { id: b.element.internal_id, index: b.element._index } }));
-  await setKeys(created.flatMap((c) => [c.element.internal_id, c.element.standard_id, ...(c.element.x_opencti_stix_ids ?? [])]
-    .map((key: string) => ({ key: key.toLowerCase(), owner: R.omit(['key', 'state'], ownerOf(c.element)) }))));
-  // Record them in their pair; a duplicate recorded earlier by another writer makes this one the duplicate
-  const after: Map<string, any[]> = await appendPairs(created.map((c) => ({ key: c.pair, entry: pairEntryOf(c.element, c.resolvedInput.createdBy?.internal_id) })));
+  bench.step('create.docs');
+  // Once the relationships exist, their keys, their pair entries and their meta relationships do not depend on each
+  // other: written at once. A duplicate recorded earlier in the pair by another writer makes this one the duplicate.
+  const [, after, metaStatuses] = await Promise.all([
+    setKeys(created.flatMap((c) => [c.element.internal_id, c.element.standard_id, ...(c.element.x_opencti_stix_ids ?? [])]
+      .map((key: string) => ({ key: key.toLowerCase(), owner: R.omit(['key', 'state'], ownerOf(c.element)) })))),
+    appendPairs(created.map((c) => ({ key: c.pair, entry: pairEntryOf(c.element, c.resolvedInput.createdBy?.internal_id) }))),
+    Promise.all(created.flatMap((c) => c.metas).map((m: any) => prepareIndexingElement(m))).then((docs) => bulkCreateDocs(docs, opts)),
+  ]);
+  add(counters, 'meta_created', metaStatuses.filter((s: number) => s === 201).length);
+  bench.step('create.keys_pairs_metas');
   const reconcileTasks: Task[] = [];
   created.forEach((c) => {
     const list = after.get(c.pair) ?? [];
@@ -531,8 +548,6 @@ export const writeRelationChunk = async (
       reconcileTasks.push({ kind: 'relation-reconcile', keep: { id: earlier[0].id, index: earlier[0].index }, drop: { id: c.element.internal_id, index: c.element._index }, pair: c.pair });
     }
   });
-  const metaStatuses = await bulkCreateDocs(await Promise.all(created.flatMap((c) => c.metas).map((m: any) => prepareIndexingElement(m))), opts);
-  add(counters, 'meta_created', metaStatuses.filter((s: number) => s === 201).length);
   const endpointTasks: Task[] = created.flatMap((c) => {
     const { from, to } = c.resolvedInput;
     const base = { kind: 'endpoint' as const, op: 'add' as const, relation_type: c.type, relation: c.element.internal_id, relation_index: c.element._index };
@@ -543,10 +558,11 @@ export const writeRelationChunk = async (
   });
   await enqueue([...endpointTasks, ...created.flatMap((c) => metaTargetTasks(c.metas, 'add')), ...reconcileTasks]);
   add(counters, 'relation_races', reconcileTasks.length);
+  bench.step('create.enqueue');
   const events = await storeCreateEvents(context, user, created.map((c) => ({ instance: { ...c.resolvedInput, ...c.element } as any })));
   add(counters, 'events_create', events.length);
   add(counters, 'relations_created', created.length);
-  bench.step('create');
+  bench.step('create.events');
   for (const c of created) results[c.i] = { status: 'created', id: c.element.internal_id };
   for (const c of created.filter((x) => x.resolvedInput.from?.[RELATION_COVERED])) {
     const { from, to } = c.resolvedInput;

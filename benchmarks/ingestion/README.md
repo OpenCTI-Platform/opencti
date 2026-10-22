@@ -64,6 +64,7 @@ Global options: `--prefix` (default `bench`, see [Isolation](#isolation)), `--es
 | `lockfree` | Lock-free write path against today's path and the batch prototype: entities and relationships with refs, one per call, 8 at a time and in chunks, on spread ends, a hub and a hub that already lists 20,000 relationships, and re-ingestion | 2,000 per case (500 on the big hub) | ~6 min |
 | `lockfree-batch` | Lock-free write path in chunks against the batch prototype: hub and spread, with and without refs, 1, 4 and 8 parallel chunk writers, chunks of 100 to 2,000, and bundles carrying entities with their relationships; per-step timing of each chunk | 8,000 per case | ~2 min |
 | `lockfree-profile` | CPU profile of lock-free chunks (relationships with and without refs, entities with refs), one `.cpuprofile` per case in `results/`; summarize with `tools/cpu_profile.py` | 8,000 per case | ~40 s |
+| `lockfree-processes` | The lock-free path from 1, 2 and 4 platform processes at once, as the nodes of a cluster: entities with refs, then relationships with refs from all of them to one hub; `--processes 1,2` picks the counts | 16,000 per case | ~2 min |
 | `lockfree-behaviours` | Correctness of the lock-free path: parity with today's path (stored documents, meta relationships and stream events of the same steps written both ways) and 28 checks over concurrency, races, out-of-order arrival, deletes, renames, access, restarts, drafts, backfill | 50 per case | ~1.5 min |
 
 \* On a recent laptop, including the ~15 s platform start of each scenario.
@@ -197,6 +198,15 @@ writes differ.
 | `reconcile.ts` | Merges two entities found to be one, with today's `mergeEntities`, and moves the identity keys. |
 | `backfill.ts` | One-time backfill of the identity index and pair documents for data written before, run before lock-free writes are enabled; idempotent. A key still held by an object that no longer exists is given to the object that has it now. |
 | `run.ts` | Runs writes in chunks with background settlers (`writeEntities`, `writeRelations`, `writeBundles`); delete and rename through today's path with their identity updates; `waitForSearch` makes each write searchable when it returns, as today; `resetLockFreeState` drops the lock-free state of a wiped platform (`run.py init` calls it). |
+
+### Several processes
+
+`lockfree-processes` is the one scenario `run.py` starts several times at once: each copy is a whole platform
+process (its own HTTP and liveness ports, its own managers), writes its share of the objects with 2 chunk writers,
+and waits for the others at barriers kept in Redis, so that every case starts together. The first process creates
+the shared refs and the hub. `run.py` then adds the shares up: all items over the time from the first start to the
+last write returned (written) or to the shared settler queue being empty (settled). Settlers of every process read
+the same queue through the same consumer group.
 
 ### Profiling
 
@@ -345,46 +355,63 @@ runs; run this scenario several times before drawing a conclusion from it.
 
 ### Lock-free write path (`lockfree`)
 
-Final code, on a freshly initialized benchmark platform. 2,000 items per case (500 on the big hub), every object
-with an author, a marking and 3 labels. *Settled* = every endpoint lists its relationships and a refresh was
-done, so searches see everything.
+Final code, on a freshly initialized benchmark platform, 22 October 2026. 2,000 items per case (500 on the big
+hub), every object with an author, a marking and 3 labels. *Settled* = every endpoint lists its relationships and
+a refresh was done, so searches see everything. The machine ran about 8% slower that day than the day before, on
+today's path too (entities one at a time: 51/s against 59/s).
 
 | Workload | Today | Batch prototype | Lock-free, written | Lock-free, settled |
 |---|---|---|---|---|
-| Entities, 1 at a time | 59/s | - | 152/s | 152/s |
-| Entities, 8 at a time | - | - | 572/s | 569/s |
-| Entities, chunks of 500 | - | - | 760/s | 753/s |
-| Relationships, spread, 1 at a time | 47/s | - | 170/s | 170/s |
-| Relationships, spread, 8 at a time | - | - | 576/s | 561/s |
-| Relationships, hub, 8 at a time | 41/s | - | 572/s | 563/s |
-| Relationships, hub, chunks of 500 | - | 1,337/s | 1,508/s | 1,361/s |
-| Relationships, hub listing 20,000, 8 at a time | 10.6/s | - | 448/s | 391/s |
-| Re-ingestion of the hub, changed, 8 at a time | 46/s | - | 483/s | 481/s |
-| Re-ingestion of the hub, unchanged, 8 at a time | - | - | 762/s | 761/s |
+| Entities, 1 at a time | 51/s | - | 122/s | 122/s |
+| Entities, 8 at a time | - | - | 512/s | 510/s |
+| Entities, chunks of 500 | - | - | 2,244/s | 1,870/s |
+| Relationships, spread, 1 at a time | 47/s | - | 197/s | 196/s |
+| Relationships, spread, 8 at a time | - | - | 448/s | 443/s |
+| Relationships, hub, 8 at a time | 38/s | - | 584/s | 576/s |
+| Relationships, hub, chunks of 500 | - | 1,317/s | 1,516/s | 1,371/s |
+| Relationships, hub listing 20,000, 8 at a time | 10.2/s | - | 412/s | 371/s |
+| Re-ingestion of the hub, changed, 8 at a time | 43/s | - | 404/s | 403/s |
+| Re-ingestion of the hub, unchanged, 8 at a time | - | - | 702/s | 701/s |
 
-Entities in chunks vary between runs (760 to 1,180/s across the last three); the other rows move by less than
-10%. `lockfree-behaviours`: parity on 22 objects, 98 meta relationships and 33 stream events, and 28 of 28
-checks; in the alias race, 49 of 50 pairs met at the same moment and were merged before either was visible twice.
+One object at a time moves by up to 20% between runs: those cases wait on Elasticsearch. `lockfree-behaviours`:
+parity on 22 objects, 98 meta relationships and 33 stream events, and 28 of 28 checks; in the alias race, 48 of
+50 pairs met at the same moment and were merged before either was visible twice.
 
 ### Lock-free in chunks (`lockfree-batch`)
 
 Final code, freshly initialized benchmark platform, 8,000 relationships per case, chunks of 500. Settled
-throughput, written in brackets where it differs by more than 10%.
+throughput, written in brackets where it differs by more than 10%. The last column is the code before step 8, run
+the same day, 1 and 8 writers.
 
-| Case | Batch prototype | Lock-free, 1 writer | Lock-free, 4 writers | Lock-free, 8 writers |
-|---|---|---|---|---|
-| Hub, without refs | 2,890/s | 2,444/s | 3,385/s (4,120 written) | 3,672/s (4,665 written) |
-| Hub, with refs | 1,314/s (1,254 with 4 writers) | 1,247/s | 1,879/s (2,098 written) | 2,137/s (2,495 written) |
-| Spread, without refs | - | 1,858/s (2,346 written) | 2,575/s (3,535 written) | - |
-| Bundles of 250 entities and their 250 relationships, with refs | - | 1,044/s | 1,778/s | - |
+| Case | Batch prototype | Lock-free, 1 writer | Lock-free, 4 writers | Lock-free, 8 writers | Before step 8 |
+|---|---|---|---|---|---|
+| Hub, without refs | 2,755/s | 2,483/s | 3,307/s (3,914 written) | 3,168/s (4,590 written) | 2,243/s, 3,318/s |
+| Hub, with refs | 1,265/s (1,273 with 4 writers) | 1,486/s | 1,683/s (2,010 written) | 1,736/s (2,077 written) | 1,026/s, 1,850/s |
+| Spread, without refs | - | 1,614/s | 2,745/s (3,822 written) | - | - |
+| Bundles of 250 entities and their 250 relationships, with refs | - | 1,495/s | 2,269/s | - | 957/s, 1,337/s (4 writers) |
 
-Settler bulks sent at once, on the spread case with 4 writers: 1 gives 2,388/s, 4 gives 2,575/s, 8 gives
-2,815/s; 4 is the default.
+With one writer, or with bundles, step 8 adds 29 to 70%; with 8 writers in one process it changes nothing (within
+the 10% runs vary by), because that process's event loop is then busy all the time. More processes are the way
+past it (next section).
+
+### Several processes (`lockfree-processes`)
+
+Same day and platform, 16,000 objects per case, each process with 2 chunk writers of 500. Settled throughput of
+all processes together; two runs on 22 October.
+
+| Case | 1 process | 2 processes | 4 processes |
+|---|---|---|---|
+| Entities with refs | 2,507 to 2,864/s | 4,049 to 4,103/s | 4,139 to 4,317/s |
+| Relationships with refs, all on one hub | 1,771 to 1,864/s | 2,478 to 3,088/s | 2,968 to 3,046/s |
+
+A second process adds 40 to 65%; the next two add up to 20% more. Every hub listed all 16,000 relationships. With 4
+processes the Node processes used up to 5.6 of the laptop's 15 cores and Elasticsearch (one node, 5 cores) peaked
+at 84%, so the single Elasticsearch node is the likely limit here; a cluster with more data nodes was not tried.
 
 ### Optimization steps
 
 Each step was measured with the scenarios above; the progression on the hardest realistic case, relationships
-with refs all on one entity, settled:
+with refs all on one entity, settled, best configuration of each step:
 
 | Step | Change | Throughput |
 |---|---|---|
@@ -395,15 +422,19 @@ with refs all on one entity, settled:
 | 4 | Cheaper per-object work: `isNotEmptyField` fast path, one copy in `prepareRelation`, `doYield` only when due | 2,379/s |
 | 5 | Stream events of a chunk in one Redis round trip, stream size check without copy, TLP ids by lookup, faster id field filter | 2,328/s |
 | 6 | Settler: one read per round, relationships indexed by end, parallel update bulks | 3,133/s |
-| 7 | Today's behaviour in full: upsert rules, duplicate window, access checks, enrichment and workflow, durable settler queue, pending store, backfill; 8 writers | 2,137/s |
+| 7 | Today's behaviour in full: upsert rules, duplicate window, access checks, enrichment and workflow, durable settler queue, pending store, backfill; 8 writers | 2,137/s (1,850/s on 22 Oct) |
+| 8 | Less waiting per chunk: workflow configuration read once per type and chunk instead of once per entity, keys, pair entries and meta relationships written at once, large bulks sent as parallel slices; 1 process, 2 writers | 1,864/s |
+| 9 | Two platform processes, 2 writers each | 3,088/s |
 
 Step 3 showed the limit had moved into the Node process (100-170% CPU while Elasticsearch used 17-35% of its
 cores); `lockfree-profile` and `tools/cpu_profile.py` found the hot spots fixed in steps 4 and 5. Step 5 raised
 written throughput (8 writers without refs: 8,182 to 11,768/s) while the settled rate waited for step 6.
 Steps 4 and 5 are platform changes that also speed up today's batch path (2,018 to 2,979/s without refs).
 Steps 2 to 6 skipped part of today's rules; step 7 runs all of them, through the platform's own functions, and
-gives up about a third of step 6 for it, mostly in the per-object work those rules do (the entity workflow
-lookup, the upsert patch, access filtering), which today's path pays too.
+gives up about a third of step 6 for it. Step 8 came from timing each part of a chunk: the per-entity workflow
+lookup (an Elasticsearch search each, which `createEntity` also pays) was 43% of an entity chunk, and the meta
+relationships about half of a chunk with refs. With one writer, entities in chunks went from 1,059 to 1,912/s and
+relationships with refs from 1,254 to 1,481/s.
 
 ### What the numbers say
 
@@ -416,10 +447,11 @@ lookup, the upsert patch, access filtering), which today's path pays too.
 - Writing relationships in chunks was 24 to 52 times faster than one at a time in these runs, on spread, hub
   and feed-shaped data.
 - Without locks, forced refreshes and searches for existing copies, and with today's rules in full, one object
-  per call is 2.5 to 3.5 times faster, concurrency scales again (8 writers on one hub: 14 times today), and a hub
-  that already lists 20,000 relationships no longer slows writes down (37 times today).
-- In chunks, relationships with refs on one entity reach about 2,100/s settled with 8 writers, 52 times today,
-  with the same stored documents, meta relationships and stream events as today's path.
+  per call is 2.5 to 4 times faster, concurrency scales again (8 writers on one hub: 15 times today), and a hub
+  that already lists 20,000 relationships no longer slows writes down (36 times today).
+- In chunks, relationships with refs on one entity reach about 1,850/s settled from one process and about 3,000/s
+  from two or four, 45 to 75 times today, with the same stored documents, meta relationships and stream events
+  as today's path.
 
 ## Limits
 

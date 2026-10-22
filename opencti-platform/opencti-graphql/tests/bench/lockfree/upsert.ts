@@ -128,14 +128,22 @@ export const deleteMetaRelations = async (fromId: string, relationType: string, 
   if (hits.length > 0) await elRawBulk(testContext, { refresh: false, body: hits.map((h: any) => ({ delete: { _index: h._index, _id: h._id } })) });
 };
 
+// One bulk is indexed by one write thread per shard: a large one goes as several bulks at once, so Elasticsearch
+// indexes them in parallel. Statuses come back in the order of the documents.
+const BULK_SLICE = 500;
+const BULK_SLICES_AT_ONCE = 4;
 export const bulkCreateDocs = async (docs: any[], opts: WriteOptions) => {
   if (docs.length === 0) return [];
-  const body = docs.flatMap((doc) => [{ create: { _index: doc._index, _id: doc.internal_id } }, R.dissoc('_index', doc)]);
-  const response: any = await elRawBulk(testContext, { refresh: opts.waitForSearch ? 'wait_for' : false, body });
-  return response.items.map((item: any) => {
-    if (item.create.status !== 201 && item.create.status !== 409) throw new Error(`Create failed: ${JSON.stringify(item.create.error)}`);
-    return item.create.status as number;
-  });
+  const slices = R.splitEvery(Math.max(BULK_SLICE, Math.ceil(docs.length / BULK_SLICES_AT_ONCE)), docs);
+  const statuses = await Promise.all(slices.map(async (slice) => {
+    const body = slice.flatMap((doc) => [{ create: { _index: doc._index, _id: doc.internal_id } }, R.dissoc('_index', doc)]);
+    const response: any = await elRawBulk(testContext, { refresh: opts.waitForSearch ? 'wait_for' : false, body });
+    return response.items.map((item: any) => {
+      if (item.create.status !== 201 && item.create.status !== 409) throw new Error(`Create failed: ${JSON.stringify(item.create.error)}`);
+      return item.create.status as number;
+    });
+  }));
+  return statuses.flat();
 };
 
 // ---------------------------------------------------------------------------------------------------------------

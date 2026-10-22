@@ -39,9 +39,7 @@ PROTECTED_PREFIXES = {"", "opencti"}
 class Scenario:
     name: str
     summary: str
-    kind: (
-        str  # "vitest" (runs inside a benchmark platform) or "python" (standalone tool)
-    )
+    kind: str  # "vitest" (runs inside a benchmark platform), "processes" (several at once) or "python"
     params: dict
     quick: dict
     needs: list = field(default_factory=list)  # python modules the scenario needs
@@ -98,6 +96,13 @@ SCENARIOS = {
             "vitest",
             {"n": 8000, "chunk": 500, "settle_ms": 250},
             {"n": 2000},
+        ),
+        Scenario(
+            "lockfree-processes",
+            "Lock-free write path from 1, 2 and 4 platform processes at once: entities, then relationships on one hub",
+            "processes",
+            {"n": 16000, "processes": "1,2,4", "chunk": 500, "writers": 2},
+            {"n": 4000, "processes": "1,2"},
         ),
         Scenario(
             "lockfree-behaviours",
@@ -258,7 +263,7 @@ def scenario_params(scenario, args):
     params = dict(scenario.params)
     if args.quick:
         params.update(scenario.quick)
-    for key in ("n", "concurrency", "chunk", "messages"):
+    for key in ("n", "concurrency", "chunk", "messages", "processes"):
         value = getattr(args, key, None)
         if value is not None and key in params:
             params[key] = value
@@ -273,6 +278,8 @@ def run_one(scenario, args, stamp):
     log(f"\n=== {scenario.name}: {scenario.summary}")
     log(f"    params {params}, log {log_path.relative_to(REPO)}")
     start = time.time()
+    if scenario.kind == "processes":
+        return run_processes(scenario, args, params, base, start)
     if scenario.kind == "python":
         command = [
             args.python,
@@ -321,6 +328,81 @@ def run_one(scenario, args, stamp):
     payload["duration_s"] = round(elapsed, 1)
     out_path.write_text(json.dumps(payload, indent=1), encoding="utf-8")
     log(f"    done in {elapsed:.0f} s -> {out_path.relative_to(REPO)}")
+    print_summary(payload, phases=args.phases)
+    return True
+
+
+def run_processes(scenario, args, params, base, start):
+    """Starts several platform processes on the same scenario at once, then adds up their shares of each case."""
+    if not is_initialized(args.es_url, args.prefix):
+        command_init(args)
+    combined = {}
+    for processes in [int(p) for p in str(params["processes"]).split(",")]:
+        tag = f"{base.name.split('-')[1]}p{processes}"
+        children = []
+        for index in range(processes):
+            env = platform_env(args.prefix)
+            env["SKIP_CLEANUP_PLATFORM"] = "true"
+            env["BENCH_OUT"] = str(
+                base.with_name(f"{base.name}-p{processes}-{index}.json")
+            )
+            env["BENCH_PROCESSES"] = str(processes)
+            env["BENCH_PROCESS_INDEX"] = str(index)
+            env["BENCH_RUN_TAG"] = tag
+            env["APP__PORT"] = str(4110 + index)
+            env["APP__LIVENESS_PORT"] = str(4150 + index)
+            for key, value in params.items():
+                if key != "processes":
+                    env[f"BENCH_{key.upper()}"] = str(value)
+            log_path = base.with_name(f"{base.name}-p{processes}-{index}.log")
+            log_file = open(
+                log_path, "w", encoding="utf-8"
+            )  # pylint: disable=consider-using-with
+            command = [shutil.which("yarn"), "vitest", "run", "--config", VITEST_CONFIG]
+            command.append(f"tests/bench/scenarios/{scenario.name}.scenario.ts")
+            child = subprocess.Popen(  # pylint: disable=consider-using-with
+                command, cwd=GRAPHQL, env=env, stdout=log_file, stderr=subprocess.STDOUT
+            )
+            children.append((child, log_file, log_path, env["BENCH_OUT"]))
+        shares = []
+        for child, log_file, log_path, out in children:
+            code = child.wait()
+            log_file.close()
+            if code != 0 or not Path(out).exists():
+                log(
+                    f"    FAILED with {processes} processes, see {log_path}\n{tail(log_path)}"
+                )
+                return False
+            shares.append(json.loads(Path(out).read_text(encoding="utf-8"))["results"])
+        for case in ("entities", "relations_hub"):
+            runs = [share[case] for share in shares]
+            first = min(r["started_at"] for r in runs)
+            written = max(r["written_at"] for r in runs) - first
+            settled = max(r["settled_at"] for r in runs) - first
+            count = sum(r["count"] for r in runs)
+            combined[f"{case}_{processes}p"] = {
+                "count": count,
+                "processes": processes,
+                "chunk_size": runs[0]["chunk_size"],
+                "concurrency": runs[0]["concurrency"],
+                "write_throughput_per_s": round(count / written * 1000, 2),
+                "settled_throughput_per_s": round(count / settled * 1000, 2),
+                "settle_after_write_ms": round(settled - written, 2),
+                "created": sum(r["created"] for r in runs),
+                "merged": sum(r["merged"] for r in runs),
+                "errors": sum(r["statuses"].get("error", 0) for r in runs),
+            }
+        combined[f"checks_{processes}p"] = shares[0]["checks"]
+    out_path = base.with_suffix(".json")
+    payload = {
+        "scenario": scenario.name,
+        "results": combined,
+        "environment": environment(args),
+        "params": params,
+        "duration_s": round(time.time() - start, 1),
+    }
+    out_path.write_text(json.dumps(payload, indent=1), encoding="utf-8")
+    log(f"    done in {time.time() - start:.0f} s -> {out_path.relative_to(REPO)}")
     print_summary(payload, phases=args.phases)
     return True
 
@@ -558,6 +640,9 @@ def main():
     run.add_argument("--concurrency", type=int)
     run.add_argument("--chunk", type=int, help="batch prototype chunk size")
     run.add_argument("--messages", type=int, help="queue-loop messages per case")
+    run.add_argument(
+        "--processes", help="lockfree-processes: process counts to run, e.g. 1,2,4"
+    )
     run.add_argument(
         "--phases", action="store_true", help="also print the platform phase timings"
     )
