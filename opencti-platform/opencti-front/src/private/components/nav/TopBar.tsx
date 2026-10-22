@@ -18,7 +18,7 @@ import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
 import Security from '../../../utils/Security';
@@ -279,7 +279,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <Security needs={[KNOWLEDGE]}>
                 <>
                   {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
-                  <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+                  <Security needs={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
                     <UploadImport
                       variant="icon"
                       fontSize="medium"

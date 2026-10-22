@@ -7,10 +7,12 @@ import React from 'react';
 import Card from '../../../../../components/common/card/Card';
 import { useFormatter } from '../../../../../components/i18n';
 import { Theme } from '../../../../../components/Theme';
+import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 
 const ImportFilesToggleMode = () => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { canSubmitForms } = useImportAccess();
   const { setActiveStep, importMode, setImportMode, entityId, isForcedImportToDraft } = useImportFilesContext();
 
   const modes: { mode: ImportMode; title: string; description: string; icon: React.ReactElement }[] = [
@@ -31,8 +33,8 @@ const ImportFilesToggleMode = () => {
     });
   }
 
-  // Add form mode only when entityId is not defined (global usage)
-  if (!entityId) {
+  // Add form mode only when entityId is not defined (global usage) and the user can submit a form
+  if (!entityId && canSubmitForms) {
     modes.push({
       mode: 'form',
       title: t_i18n('Import using a Form'),

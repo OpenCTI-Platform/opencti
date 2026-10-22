@@ -32,13 +32,33 @@ vi.mock('../../../common/form/ObjectParticipantField', () => ({
   default: (props: { name?: string }) => <div data-testid={`participant-field-${props.name}`} />,
 }));
 
+// The lookups: shows whether on-the-fly creation is offered, and can pick an object created on the fly
+vi.mock('../../../common/form/StixCoreObjectsField', async () => {
+  const { useField } = await vi.importActual<typeof import('formik')>('formik');
+  return {
+    __esModule: true,
+    default: ({ name, disableCreation }: { name: string; disableCreation?: boolean }) => {
+      const [, , { setValue }] = useField(name);
+      return (
+        <div data-testid={`lookup-${name}`} data-disable-creation={String(!!disableCreation)}>
+          <button type="button" onClick={() => setValue([{ value: 'pending-1', label: 'On the fly', isPendingCreation: true }])}>
+            {`pick on the fly ${name}`}
+          </button>
+        </div>
+      );
+    },
+  };
+});
+
+const mockNavigate = vi.hoisted(() => vi.fn());
+
 // Mock useParams
 vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
   return {
     ...actual,
     useParams: () => ({ formId: 'form-id' }),
-    useNavigate: () => vi.fn(),
+    useNavigate: () => mockNavigate,
   };
 });
 
@@ -292,5 +312,130 @@ describe('FormView', () => {
     relayEnv.mock.rejectMostRecentOperation(error);
     expect(await screen.findByText('You are not allowed to create labels.')).toBeTruthy();
     expect(screen.queryByText(/Relay request/)).toBeNull();
+  });
+});
+
+describe('FormView submission into a draft', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const submitForm = async (canOpenDraft: boolean, onSuccess = vi.fn(), embedded = false) => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => {
+      if (capabilities.includes(useGrantedModule.BYPASS)) return false;
+      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE)) return canOpenDraft;
+      return true;
+    });
+    const { relayEnv, user } = testRender(<FormView embedded={embedded} onSuccess={onSuccess} />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, defaultMockForm);
+    await user.type(screen.getByRole('textbox', { name: /Name/ }), 'My report');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    await waitFor(() => {
+      relayEnv.mock.resolveMostRecentOperation({ data: { formSubmit: { success: true, message: null, entityId: 'draft-id' } } });
+    });
+    return { user, onSuccess };
+  };
+
+  it('opens the draft, closing the dialog first, when the user can open it', async () => {
+    const { onSuccess } = await submitForm(true, vi.fn(), true);
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/data/import/draft/draft-id');
+    });
+    expect(onSuccess).toHaveBeenCalled();
+  });
+
+  it('confirms the submission instead of opening a draft the user cannot open', async () => {
+    await submitForm(false);
+    expect(await screen.findByText('Your submission has been sent and is being processed.')).toBeTruthy();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('offers to close the dialog, and to submit again, once the submission is confirmed', async () => {
+    const { user, onSuccess } = await submitForm(false, vi.fn(), true);
+    await screen.findByText('Your submission has been sent and is being processed.');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onSuccess).toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Submit again' }));
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeTruthy();
+  });
+});
+
+describe('FormView objects created on the fly', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const lookupForm = (schema: object) => ({
+    id: 'form-id',
+    name: 'Test Form',
+    description: 'Test Description',
+    active: true,
+    form_schema: JSON.stringify({
+      fields: [],
+      mainEntityType: 'Malware',
+      mainEntityLookup: true,
+      mainEntityMultiple: true,
+      additionalEntities: [{ id: 'tools', entityType: 'Tool', label: 'Tools', lookup: true, multiple: true }],
+      relationships: [],
+      ...schema,
+    }),
+  });
+  // Capabilities granted in the main scope, and in the draft scope
+  const grant = (main: string[], draft: string[] = []) => {
+    useGrantedSpy.mockImplementation((capabilities: string[], _matchAll?: boolean, options?: { capabilitiesInDraft?: string[] }) => {
+      return capabilities.some((capability) => main.includes(capability))
+        || (options?.capabilitiesInDraft ?? []).some((capability) => draft.includes(capability));
+    });
+  };
+  const renderForm = async (schema: object) => {
+    const { relayEnv, user } = testRender(<FormView />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, lookupForm(schema));
+    return user;
+  };
+  const creationDisabled = (name: string) => screen.getByTestId(`lookup-${name}`).getAttribute('data-disable-creation');
+  const draftCheckbox = () => screen.getByRole('checkbox', { name: 'Create as draft' });
+
+  it('should offer creation on the fly to a form-only user submitting in main, as the form configures it', async () => {
+    grant([useGrantedModule.KNOWLEDGE_KNFORMINTAKE]);
+    await renderForm({ isDraftByDefault: false });
+    expect(creationDisabled('mainEntityLookup')).toBe('false');
+    expect(creationDisabled('additional_tools_lookup')).toBe('false');
+  });
+
+  it('should not offer creation on the fly where the form disables it, whatever the capabilities', async () => {
+    grant([useGrantedModule.KNOWLEDGE_KNFORMINTAKE, useGrantedModule.KNOWLEDGE_KNUPDATE]);
+    await renderForm({
+      isDraftByDefault: false,
+      mainEntityDisableCreation: true,
+      additionalEntities: [{ id: 'tools', entityType: 'Tool', label: 'Tools', lookup: true, multiple: true, disableCreation: true }],
+    });
+    expect(creationDisabled('mainEntityLookup')).toBe('true');
+    expect(creationDisabled('additional_tools_lookup')).toBe('true');
+  });
+
+  it('should let a form-only user uncheck the draft with objects created on the fly picked', async () => {
+    grant([useGrantedModule.KNOWLEDGE_KNFORMINTAKE]);
+    const user = await renderForm({ isDraftByDefault: true, allowDraftOverride: true });
+    await user.click(screen.getByRole('button', { name: 'pick on the fly additional_tools_lookup' }));
+    expect(draftCheckbox()).toBeEnabled();
+    await user.click(draftCheckbox());
+    expect(draftCheckbox()).not.toBeChecked();
+    expect(creationDisabled('additional_tools_lookup')).toBe('false');
+  });
+
+  it('should not force a draft on the form capability in main with Create / Update knowledge in draft only', async () => {
+    grant([useGrantedModule.KNOWLEDGE_KNFORMINTAKE], [useGrantedModule.KNOWLEDGE_KNUPDATE]);
+    await renderForm({ isDraftByDefault: false });
+    expect(draftCheckbox()).not.toBeChecked();
+    expect(draftCheckbox()).toBeEnabled();
+    expect(creationDisabled('mainEntityLookup')).toBe('false');
+  });
+
+  it('should still force a draft on Create / Update knowledge in draft only, without the form capability in main', async () => {
+    grant([], [useGrantedModule.KNOWLEDGE_KNUPDATE]);
+    await renderForm({ isDraftByDefault: false });
+    expect(draftCheckbox()).toBeChecked();
+    expect(draftCheckbox()).toBeDisabled();
+    expect(creationDisabled('mainEntityLookup')).toBe('false');
   });
 });
