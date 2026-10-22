@@ -106,17 +106,18 @@ const writeIngestionHealth = async <T extends IngestionElement>(context: AuthCon
 };
 
 // Reads the values of the runtime checks for a batch of ingestions: one getRuntimeData call per check, whatever the number of ingestions.
+// Each check only reads the ingestions it is enabled for, and is not called when there is none.
 // A read failure is not hidden: it rejects, so that an unreachable storage is never read as a missing value.
-const loadRuntimeData = async (ingestionIds: string[]): Promise<Map<string, RuntimeData>> => {
-  if (ingestionIds.length === 0) {
-    return new Map();
-  }
+const loadRuntimeData = async (elements: IngestionElement[], globalContext: GlobalIngestionHealthContext): Promise<Map<string, RuntimeData>> => {
   const runtimeChecks = Object.entries(HEALTH_CHECK_REGISTRY)
     .filter((entry): entry is [HealthCheckCode, RuntimeCheck] => entry[1].kind === IngestionHealthCheckKind.Runtime);
-  const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => definition.getRuntimeData(ingestionIds)));
-  return new Map(ingestionIds.map((ingestionId) => {
-    const runtimeData = Object.fromEntries(runtimeChecks.map(([code], index) => [code, valuesByCheck[index].get(ingestionId)]));
-    return [ingestionId, runtimeData];
+  const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => {
+    const enabledIds = elements.filter((element) => definition.isEnabled(element, globalContext)).map((element) => element.internal_id);
+    return enabledIds.length > 0 ? definition.getRuntimeData(enabledIds) : new Map<string, unknown>();
+  }));
+  return new Map(elements.map((element) => {
+    const runtimeData = Object.fromEntries(runtimeChecks.map(([code], index) => [code, valuesByCheck[index].get(element.internal_id)]));
+    return [element.internal_id, runtimeData];
   }));
 };
 
@@ -207,12 +208,13 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   }
 
   // Read once per period, for the ingestions enabling a runtime check only: nothing is read when there is none
-  const runtimeIngestionIds = new Set(activeIngestions
-    .filter(({ element }) => isRuntimeCheckEnabled(element, globalContext))
-    .map(({ element }) => element.internal_id));
+  const runtimeElements = activeIngestions
+    .map(({ element }) => element)
+    .filter((element) => isRuntimeCheckEnabled(element, globalContext));
+  const runtimeIngestionIds = new Set(runtimeElements.map((element) => element.internal_id));
   let runtimeDataByIngestion: Map<string, RuntimeData> | undefined;
   try {
-    runtimeDataByIngestion = await loadRuntimeData([...runtimeIngestionIds]);
+    runtimeDataByIngestion = await loadRuntimeData(runtimeElements, globalContext);
   } catch (e) {
     // Not read as a missing value: the ingestions needing it are skipped until the next period, the others are still evaluated
     logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER' });

@@ -79,8 +79,8 @@ interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
 }
 
 // A runtime check is judged from a value reported by the sources, read by its getRuntimeData.
-// getRuntimeData reads the values of every ingestion at once, by ingestion id: the ingestion health manager calls it at most once per period,
-// only when an active ingestion enables a runtime check.
+// getRuntimeData reads the values of many ingestions at once, by ingestion id: the ingestion health manager calls it at most once per period,
+// only with the active ingestions for which isEnabled is true, and not at all when there is none.
 // It returns what was reported, as stored: what is stale is judged by getFailure. Absent ingestions are omitted.
 // A read failure must reject, never be read as a missing value.
 // The value given to getFailure is undefined when the sources reported nothing.
