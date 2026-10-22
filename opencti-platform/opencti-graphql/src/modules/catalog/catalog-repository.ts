@@ -26,15 +26,9 @@ export const findCatalogByCatalogId = async (
   user: AuthUser,
   catalogId: string,
 ) => {
-  const catalog = await elLoadBy<BasicStoreEntityCatalog>(
-    context,
-    user,
-    'catalog_id',
-    catalogId,
-    ENTITY_TYPE_CATALOG,
-    [READ_INDEX_INTERNAL_OBJECTS],
-  );
-  return catalog;
+  // Compared literally, the catalog id can come from an API input: as a filter value, EXISTS would be a presence check
+  const catalogs = await findAllCatalogs(context, user);
+  return catalogs.find((catalog) => catalog.catalog_id === catalogId);
 };
 
 export const findCatalogBySourceUri = async (
