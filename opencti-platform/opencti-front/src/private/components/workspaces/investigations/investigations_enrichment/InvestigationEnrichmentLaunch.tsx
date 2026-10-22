@@ -65,6 +65,7 @@ const InvestigationEnrichmentLaunch = ({
           )}
           {!!enrichmentType && (
             <EnrichmentConnectorSelection
+              value={selectedConnectors}
               onChange={setSelectedConnectors}
               type={enrichmentType}
             />
@@ -90,6 +91,7 @@ const InvestigationEnrichmentLaunch = ({
         onClose={() => setShowValidation(false)}
         onLaunch={() => setProcessing(true)}
         onCompleted={() => {
+          setSelectedConnectors([]);
           setShowValidation(false);
           setProcessing(false);
           onCompleted();

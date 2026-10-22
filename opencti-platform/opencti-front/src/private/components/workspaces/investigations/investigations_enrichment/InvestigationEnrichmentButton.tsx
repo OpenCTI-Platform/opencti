@@ -46,8 +46,6 @@ const InvestigationEnrichmentButton = ({
   if (hasOngoing) badgeContent = ongoingSize;
   if (hasToReview) badgeContent = toreviewSize;
 
-  console.log(works.toreview);
-
   return (
     <Badge
       content={badgeContent}

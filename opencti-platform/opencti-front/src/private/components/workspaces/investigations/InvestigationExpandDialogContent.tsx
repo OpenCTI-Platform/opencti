@@ -1,12 +1,7 @@
-import Button from '@common/button/Button';
-import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, Form, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import { Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import CheckboxesField from '../../../../components/CheckboxesField';
-import SwitchField from '../../../../components/fields/SwitchField';
 import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -15,7 +10,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { InvestigationExpandFormRelDistributionQuery } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
 import { InvestigationExpandFormTargetsDistributionFromQuery } from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
 import { InvestigationExpandFormTargetsDistributionToQuery } from './__generated__/InvestigationExpandFormTargetsDistributionToQuery.graphql';
-import { Stack } from '@mui/material';
+import InvestigationExpandForm from './InvestigationExpandForm';
 
 // The number of elements targeted by the given
 // entities ids, sorted by type of entity.
@@ -359,62 +354,12 @@ const InvestigationExpandDialogContentComponent = ({
   ]);
 
   return (
-    <Formik<FormData>
-      enableReinitialize={true}
-      initialValues={{
-        entity_types: [],
-        relationship_types: [],
-        reset_filters: true,
-      }}
-      onSubmit={onSubmit}
+    <InvestigationExpandForm
       onReset={onReset}
-    >
-      {({ submitForm, handleReset, isSubmitting }) => (
-        <Form>
-          <Stack spacing={3} sx={{ p: 3 }}>
-            <Stack
-              direction="row"
-              sx={{
-                justifyContent: 'space-between',
-              }}
-            >
-              <Field
-                name="entity_types"
-                component={CheckboxesField}
-                label={t_i18n('All types of target')}
-                items={targets}
-              />
-              <Field
-                name="relationship_types"
-                component={CheckboxesField}
-                label={t_i18n('All types of relationship')}
-                items={relationships}
-              />
-            </Stack>
-
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              name="reset_filters"
-              label={t_i18n('Reset filters')}
-              containerstyle={{ marginTop: 12 }}
-            />
-
-            <DialogActions>
-              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
-                {t_i18n('Expand')}
-              </Button>
-            </DialogActions>
-          </Stack>
-        </Form>
-      )}
-    </Formik>
+      onSubmit={onSubmit}
+      targets={targets}
+      relationships={relationships}
+    />
   );
 };
 
