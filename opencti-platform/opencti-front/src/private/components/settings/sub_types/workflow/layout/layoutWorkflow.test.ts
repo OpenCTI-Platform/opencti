@@ -14,58 +14,59 @@ const run = (fixture: WorkflowFixture, initialStatusId?: string) => {
 };
 
 const fixtures: WorkflowFixture[] = [...Object.values(SAMPLES), ...Array.from({ length: 300 }, (_, i) => randomWorkflow(i + 1))];
-// Each fixture again with its last status as the saved initial one, usually not a root.
-const cases = fixtures.flatMap((f): [WorkflowFixture, string | undefined][] => [[f, undefined], [f, f.statuses.at(-1)]]);
+// Each fixture again with its last status as the saved initial one, usually not a root. Laid out
+// once for all the invariants below, which collect offenders and assert once: an expect per
+// segment and box made the suite slow enough to time out on CI.
+const runs = fixtures.flatMap((f) => [undefined, f.statuses.at(-1)].map((initial) => ({
+  name: initial ? `${f.name} from ${initial}` : f.name,
+  ...run(f, initial),
+})));
 
 describe('layoutWorkflow – invariants (4 samples + 300 random workflows, from the default root and from the last status)', () => {
   it('positions every node and routes every edge', () => {
-    cases.forEach(([fixture, initial]) => {
-      const { nodes, edges, result } = run(fixture, initial);
-      nodes.forEach((n) => expect(result.positions.has(n.id)).toBe(true));
-      edges.forEach((e) => expect(result.routes.get(e.id)?.length).toBeGreaterThanOrEqual(2));
-    });
+    const offenders = runs.flatMap(({ name, nodes, edges, result }) => [
+      ...nodes.filter((n) => !result.positions.has(n.id)).map((n) => `${name}: ${n.id}`),
+      ...edges.filter((e) => (result.routes.get(e.id)?.length ?? 0) < 2).map((e) => `${name}: ${e.id}`),
+    ]);
+    expect(offenders).toEqual([]);
   });
 
   it('never overlaps nodes', () => {
-    cases.forEach(([fixture, initial]) => {
-      const { boxes } = run(fixture, initial);
-      for (let i = 0; i < boxes.length; i += 1) {
-        for (let j = i + 1; j < boxes.length; j += 1) expect(boxesOverlap(boxes[i], boxes[j])).toBe(false);
-      }
-    });
+    const offenders = runs.flatMap(({ name, boxes }) => boxes.flatMap((a, i) => boxes.slice(i + 1)
+      .filter((b) => boxesOverlap(a, b))
+      .map((b) => `${name}: ${a.id} / ${b.id}`)));
+    expect(offenders).toEqual([]);
   });
 
   it('draws only horizontal and vertical segments', () => {
-    cases.forEach(([fixture, initial]) => {
-      run(fixture, initial).result.routes.forEach((points) => expect(isAxisAligned(points)).toBe(true));
-    });
+    const offenders = runs.flatMap(({ name, result }) => [...result.routes]
+      .filter(([, points]) => !isAxisAligned(points))
+      .map(([id]) => `${name}: ${id}`));
+    expect(offenders).toEqual([]);
   });
 
   it('never draws an edge through a node other than its endpoints', () => {
-    cases.forEach(([fixture, initial]) => {
-      const { edges, result, boxes } = run(fixture, initial);
-      edges.forEach((e) => {
-        const points = result.routes.get(e.id)!;
-        boxes.filter((b) => b.id !== e.source && b.id !== e.target).forEach((b) => {
-          points.slice(1).forEach((q, i) => expect(segmentHitsBox(points[i], q, b)).toBe(false));
-        });
-      });
-    });
+    const offenders = runs.flatMap(({ name, edges, result, boxes }) => edges.flatMap((e) => {
+      const points = result.routes.get(e.id)!;
+      return boxes
+        .filter((b) => b.id !== e.source && b.id !== e.target && points.slice(1).some((q, i) => segmentHitsBox(points[i], q, b)))
+        .map((b) => `${name}: ${e.id} through ${b.id}`);
+    }));
+    expect(offenders).toEqual([]);
   });
 
   it('starts and ends edges on the outline of the transition hexagon', () => {
-    cases.forEach(([fixture, initial]) => {
-      const { nodes, edges, result, boxes } = run(fixture, initial);
+    const offenders = runs.flatMap(({ name, nodes, edges, result, boxes }) => {
       const transitionIds = new Set(nodes.filter((n) => n.type === 'transition').map((n) => n.id));
       const transitions = new Map(boxes.filter((b) => transitionIds.has(b.id)).map((b) => [b.id, b]));
-      edges.forEach((e) => {
+      return edges.filter((e) => {
         const points = result.routes.get(e.id)!;
         const source = transitions.get(e.source);
         const target = transitions.get(e.target);
-        if (source) expect(isOnHexagonOutline(points[0], source)).toBe(true);
-        if (target) expect(isOnHexagonOutline(points[points.length - 1], target)).toBe(true);
-      });
+        return (source && !isOnHexagonOutline(points[0], source)) || (target && !isOnHexagonOutline(points[points.length - 1], target));
+      }).map((e) => `${name}: ${e.id}`);
     });
+    expect(offenders).toEqual([]);
   });
 
   it('is deterministic', () => {
