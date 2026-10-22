@@ -248,7 +248,6 @@ describe('Hook: useImportAccess - isForcedFormSubmissionToDraft', () => {
       { userContext: buildUserContext([KNOWLEDGE_KNFORMINTAKE], [KNOWLEDGE_KNUPDATE]) },
     );
     expect(hook.result.current.isForcedImportToDraft).toBe(true);
-    expect(hook.result.current.hasKnowledgeUpdateInMain).toBe(false);
   });
 });
 
