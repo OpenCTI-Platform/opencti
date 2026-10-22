@@ -12,6 +12,7 @@ import InvestigationEnrichmentButton from './InvestigationEnrichmentButton';
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
 import { addInEnrichmentMap } from './investigation-enrichment.utils';
+import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
 const investigationQuery = graphql`
   query InvestigationEnrichmentToolQuery($id: String!, $entityIds: [String!]) {
@@ -65,9 +66,13 @@ const investigationQuery = graphql`
                 id
                 entity_type
                 fromId
-                fromType
                 toId
-                toType
+              }
+              ...on StixSightingRelationship {
+                id
+                entity_type
+                fromId
+                toId
               }
             }
           }
@@ -80,11 +85,13 @@ const investigationQuery = graphql`
 interface InvestigationEnrichmentToolComponentProps {
   queryRef: PreloadedQuery<InvestigationEnrichmentToolQuery>;
   onRefresh: () => void;
+  onExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const InvestigationEnrichmentToolComponent = ({
   queryRef,
   onRefresh,
+  onExpand,
 }: InvestigationEnrichmentToolComponentProps) => {
   const [openEnrichment, setOpenEnrichment] = useState(false);
   const { workspace: investigation } = usePreloadedQuery(investigationQuery, queryRef);
@@ -133,6 +140,7 @@ const InvestigationEnrichmentToolComponent = ({
         works={works}
         onClose={() => setOpenEnrichment(false)}
         askRefresh={onRefresh}
+        onExpand={onExpand}
       />
     </>
   );
@@ -140,10 +148,12 @@ const InvestigationEnrichmentToolComponent = ({
 
 interface InvestigationEnrichmentToolProps {
   entity: GraphEntity;
+  onExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const InvestigationEnrichmentTool = ({
   entity,
+  onExpand,
 }: InvestigationEnrichmentToolProps) => {
   const { t_i18n } = useFormatter();
   const { graphState } = useGraphContext();
@@ -191,6 +201,7 @@ const InvestigationEnrichmentTool = ({
         <InvestigationEnrichmentToolComponent
           queryRef={queryRef}
           onRefresh={activateBoost}
+          onExpand={onExpand}
         />
       )}
     </Suspense>

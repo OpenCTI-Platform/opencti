@@ -1,0 +1,52 @@
+import { describe, expect, it } from 'vitest';
+import { countExpandOptions, ExpandElement, selectExpandIds } from './investigation-enrichment.utils';
+
+const malware: ExpandElement = { id: 'malware-1', entity_type: 'Malware' };
+const indicator: ExpandElement = { id: 'indicator-1', entity_type: 'Indicator' };
+const otherIndicator: ExpandElement = { id: 'indicator-2', entity_type: 'Indicator' };
+const indicates: ExpandElement = { id: 'rel-1', entity_type: 'indicates', fromId: 'indicator-1', toId: 'malware-1' };
+const uses: ExpandElement = { id: 'rel-2', entity_type: 'uses', fromId: 'source-id', toId: 'tool-1' };
+
+describe('Function: countExpandOptions', () => {
+  it('counts the entities by type and the relationships by type', () => {
+    const { targets, relationships } = countExpandOptions(
+      [malware, indicator, otherIndicator, indicates, uses],
+      new Set(),
+    );
+    expect([...targets.entries()]).toEqual([['Malware', 1], ['Indicator', 2]]);
+    expect([...relationships.entries()]).toEqual([['indicates', 1], ['uses', 1]]);
+  });
+
+  it('leaves out what is already on the graph', () => {
+    const { targets, relationships } = countExpandOptions(
+      [malware, indicator, indicates],
+      new Set(['malware-1', 'rel-1']),
+    );
+    expect([...targets.entries()]).toEqual([['Indicator', 1]]);
+    expect([...relationships.entries()]).toEqual([]);
+  });
+});
+
+describe('Function: selectExpandIds', () => {
+  const elements = [malware, indicator, otherIndicator, indicates, uses];
+
+  it('adds only the entities of a ticked type, without their relationships', () => {
+    expect(selectExpandIds(elements, new Set(), ['Indicator'], [])).toEqual(['indicator-1', 'indicator-2']);
+  });
+
+  it('adds a relationship of a ticked type with both of its ends', () => {
+    expect(selectExpandIds(elements, new Set(), [], ['indicates'])).toEqual(['rel-1', 'indicator-1', 'malware-1']);
+  });
+
+  it('adds the ends of a relationship even when they were not touched', () => {
+    expect(selectExpandIds(elements, new Set(['source-id']), [], ['uses'])).toEqual(['rel-2', 'tool-1']);
+  });
+
+  it('adds nothing already on the graph', () => {
+    expect(selectExpandIds(elements, new Set(['indicator-1', 'rel-2']), ['Indicator'], ['uses'])).toEqual(['indicator-2']);
+  });
+
+  it('adds each element once', () => {
+    expect(selectExpandIds(elements, new Set(), ['Indicator', 'Malware'], ['indicates'])).toEqual(['malware-1', 'indicator-1', 'indicator-2', 'rel-1']);
+  });
+});

@@ -1,72 +1,309 @@
+import { useMemo } from 'react';
 import { Dialog, DialogTitle } from '@mui/material';
+import { graphql } from 'react-relay';
 import { fdsLayerClass, layerInputVars, SURFACE_LAYER } from '../../../../../utils/fdsLayer';
 import InvestigationExpandForm, { InvestigationExpandFormProps } from '../InvestigationExpandForm';
 import { useFormatter } from '../../../../../components/i18n';
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
 import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
-import { useMemo } from 'react';
+import { fetchQuery } from '../../../../../relay/environment';
+import { useGraphContext } from '../../../../../components/graph/GraphContext';
+import useGraphInteractions from '../../../../../components/graph/utils/useGraphInteractions';
+import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
+import { countExpandOptions, ExpandElement, selectExpandIds } from './investigation-enrichment.utils';
+import { InvestigationEnrichmentExpandTouchedElementsQuery$data } from './__generated__/InvestigationEnrichmentExpandTouchedElementsQuery.graphql';
+
+// What the graph needs to draw an entity: its representative, plus the fields giving its date
+// in the time range and the details of observables.
+// Spread unmasked both on the touched elements and on the ends of the touched relationships.
+export const touchedNodeFragment = graphql`
+  fragment InvestigationEnrichmentExpand_node on StixCoreObject {
+    id
+    standard_id
+    entity_type
+    parent_types
+    is_inferred
+    created_at
+    numberOfConnectedElement
+    representative {
+      main
+    }
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    ... on StixDomainObject {
+      created
+      confidence
+    }
+    ... on Campaign {
+      first_seen
+    }
+    ... on IntrusionSet {
+      first_seen
+    }
+    ... on Malware {
+      first_seen
+    }
+    ... on ThreatActor {
+      first_seen
+    }
+    ... on Incident {
+      first_seen
+    }
+    ... on Indicator {
+      valid_from
+    }
+    ... on Report {
+      published
+    }
+    ... on ObservedData {
+      first_observed
+    }
+    ... on StixCyberObservable {
+      observable_value
+    }
+    ... on StixFile {
+      observableName: name
+      hashes {
+        algorithm
+        hash
+      }
+    }
+  }
+`;
+
+// The touched elements of one work, with what the graph needs to draw them.
+// Fetched only on expand: the list of works is polled and only needs ids and types.
+const touchedElementsQuery = graphql`
+  query InvestigationEnrichmentExpandTouchedElementsQuery(
+    $id: String!
+    $entityIds: [String!]
+    $filters: FilterGroup
+  ) {
+    workspace(id: $id) {
+      enrichmentWorks(entityIds: $entityIds, filters: $filters) {
+        edges {
+          node {
+            touchedElements {
+              ...InvestigationEnrichmentExpand_node @relay(mask: false)
+              ... on StixRelationship {
+                id
+                entity_type
+                parent_types
+                is_inferred
+                ... on StixCoreRelationship {
+                  relationship_type
+                  start_time
+                  stop_time
+                  confidence
+                  created
+                  created_at
+                  createdBy {
+                    ... on Identity {
+                      id
+                      name
+                      entity_type
+                    }
+                  }
+                  objectMarking {
+                    id
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
+                  }
+                }
+                ... on StixSightingRelationship {
+                  first_seen
+                  last_seen
+                  created_at
+                  createdBy {
+                    ... on Identity {
+                      id
+                      name
+                      entity_type
+                    }
+                  }
+                  objectMarking {
+                    id
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
+                  }
+                }
+                ... on StixRefRelationship {
+                  relationship_type
+                  start_time
+                  stop_time
+                  created_at
+                }
+                from {
+                  ...InvestigationEnrichmentExpand_node @relay(mask: false)
+                  ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on StixCoreRelationship {
+                    relationship_type
+                  }
+                }
+                to {
+                  ...InvestigationEnrichmentExpand_node @relay(mask: false)
+                  ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on StixCoreRelationship {
+                    relationship_type
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * The touched elements of a work, from the ids and types loaded with the list of works.
+ */
+const toExpandElements = (work?: InvestigationEnrichmentWork): ExpandElement[] => {
+  return (work?.touchedElements ?? []).flatMap((element) => (
+    element?.id && element.entity_type
+      ? [{
+          id: element.id,
+          entity_type: element.entity_type,
+          fromId: element.fromId,
+          toId: element.toId,
+        }]
+      : []
+  ));
+};
 
 interface InvestigationEnrichmentExpandProps {
+  investigationId: string;
   work?: InvestigationEnrichmentWork;
   onClose: () => void;
   onDismiss: (workId: string) => void;
+  onExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const InvestigationEnrichmentExpand = ({
+  investigationId,
   work,
   onClose,
   onDismiss,
+  onExpand,
 }: InvestigationEnrichmentExpandProps) => {
   const { t_i18n } = useFormatter();
+  const { rawObjects } = useGraphContext();
+  const { setLinearProgress } = useGraphInteractions();
 
+  const sourceId = work?.eventSource?.id ?? '';
+  const graphIds = useMemo(() => new Set(rawObjects.map((o) => o.id)), [rawObjects]);
+
+  /**
+   * Options of the expand form from counts by type, sorted alphabetically.
+   */
   const mapToOptions = (map: Map<string, number>, isRel = false) => {
     const prefix = isRel ? 'relationship' : 'entity';
-    return [...map.entries().map(([key, value]) => ({
-      label: `${t_i18n(`${prefix}_${key}`)} (${value})`,
-      value: key,
-    }))];
+    return [...map.entries()]
+      .map(([key, value]) => ({
+        label: `${t_i18n(`${prefix}_${key}`)} (${value})`,
+        value: key,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   };
 
   const { targets, relationships } = useMemo(() => {
-    const targetsMap = new Map<string, number> ();
-    const relationshipsMap = new Map<string, number>();
-    (work?.touchedElements ?? []).forEach((element) => {
-      const isSourceElement = element?.id === work?.eventSource?.id;
-      if (element?.entity_type && !isSourceElement) {
-        const counts = element.fromId ? relationshipsMap : targetsMap;
-        counts.set(
-          element.entity_type,
-          (counts.get(element.entity_type) ?? 0) + 1,
-        );
-      }
-    });
+    const counts = countExpandOptions(toExpandElements(work), graphIds);
     return {
-      targets: mapToOptions(targetsMap),
-      relationships: mapToOptions(relationshipsMap, true),
+      targets: mapToOptions(counts.targets),
+      relationships: mapToOptions(counts.relationships, true),
     };
-  }, [work]);
+  }, [work, graphIds]);
 
-  const onSubmitExpand: InvestigationExpandFormProps['onSubmit'] = (data, { resetForm }) => {
-    const entityTypes = data.entity_types.map((o) => o.value);
-    const relationshipTypes = data.relationship_types.map((o) => o.value);
-    const allTypes = [...entityTypes, ...relationshipTypes];
+  /**
+   * Adds to the graph the touched entities of a ticked type, and the touched
+   * relationships of a ticked type with their ends.
+   */
+  const onSubmitExpand: InvestigationExpandFormProps['onSubmit'] = async (
+    { entity_types, relationship_types },
+    { resetForm },
+  ) => {
+    if (!work || !sourceId || (entity_types.length === 0 && relationship_types.length === 0)) {
+      // Do not expand if nothing has been checked.
+      return;
+    }
 
-    const idsToAdd: string[] = [];
-    (work?.touchedElements ?? []).forEach((element) => {
-      if (!element || !allTypes.includes(element.entity_type ?? '')) {
-        return;
-      }
-      idsToAdd.push(element.id!);
-      // In case of a relationship, also add the other extremity.
-      if (element.fromId && element.toId) {
-        const entityId = element.fromId === work?.eventSource?.id
-          ? element.toId
-          : element.fromId;
-        idsToAdd.push(entityId);
-      }
-    });
-    console.log(idsToAdd);
-    resetForm();
+    setLinearProgress(true);
+    try {
+      const { workspace } = (await fetchQuery(
+        touchedElementsQuery,
+        {
+          id: investigationId,
+          entityIds: [sourceId],
+          filters: {
+            mode: 'and',
+            filters: [{ key: 'ids', values: [work.id] }],
+            filterGroups: [],
+          },
+        },
+      ).toPromise()) as InvestigationEnrichmentExpandTouchedElementsQuery$data;
+
+      const touchedElements = (workspace?.enrichmentWorks?.edges?.[0]?.node.touchedElements ?? [])
+        .flatMap((element) => (element?.id ? [element] : []));
+
+      // Ends of relationships first, so that a touched element replaces the end it also is.
+      const objects = new Map<string, ObjectToParse>();
+      touchedElements.forEach((element) => {
+        [element.from, element.to].forEach((end) => {
+          if (end?.id) {
+            objects.set(end.id, end as unknown as ObjectToParse);
+          }
+        });
+      });
+      touchedElements.forEach((element) => {
+        objects.set(element.id!, element as unknown as ObjectToParse);
+      });
+
+      const ids = selectExpandIds(
+        touchedElements.map((element) => ({
+          id: element.id!,
+          entity_type: element.entity_type ?? '',
+          fromId: element.from?.id,
+          toId: element.to?.id,
+        })),
+        graphIds,
+        entity_types.map((o) => o.value),
+        relationship_types.map((o) => o.value),
+      );
+
+      onExpand?.(ids.flatMap((id) => {
+        const object = objects.get(id);
+        return object ? [object] : [];
+      }));
+      resetForm();
+      onClose();
+    } finally {
+      setLinearProgress(false);
+    }
   };
 
   return (

@@ -11,6 +11,7 @@ import useInvestigationEnrichmentRights from './useInvestigationEnrichmentRights
 import InvestigationEnrichmentExpand from './InvestigationEnrichmentExpand';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { InvestigationEnrichmentDrawerDismissReview } from './__generated__/InvestigationEnrichmentDrawerDismissReview.graphql';
+import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
 const dismissReviewMutation = graphql`
   mutation InvestigationEnrichmentDrawerDismissReview($workId: ID!, $status: WorkInvestigationStatus!) {
@@ -27,6 +28,7 @@ interface InvestigationEnrichmentDrawerProps {
   investigation: Investigation;
   works: InvestigationWorkSorted;
   askRefresh: () => void;
+  onExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const InvestigationEnrichmentDrawer = ({
@@ -35,6 +37,7 @@ const InvestigationEnrichmentDrawer = ({
   investigation,
   works,
   askRefresh,
+  onExpand,
 }: InvestigationEnrichmentDrawerProps) => {
   const { t_i18n } = useFormatter();
   const [tab, setTab] = useState<TabList>('toreview');
@@ -95,9 +98,11 @@ const InvestigationEnrichmentDrawer = ({
       </Drawer>
 
       <InvestigationEnrichmentExpand
+        investigationId={investigation.id}
         work={workToReview}
         onClose={() => setWorkToReview(undefined)}
         onDismiss={dismissReview}
+        onExpand={onExpand}
       />
     </>
   );
