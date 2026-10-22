@@ -7,7 +7,7 @@ import {
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
   isRuntimeCheckEnabled,
-  HealthTransition,
+  markHealthNotified,
   toGraphqlHealthChecks,
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
@@ -23,7 +23,7 @@ import {
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/connector/connector-types';
 import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
-import type { StoredHealthCheck, StoredIngestionHealth } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
+import { HealthTransition, type IngestionHealthFields, type StoredHealthCheck, type StoredIngestionHealth } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
 
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
@@ -61,10 +61,24 @@ describe('computeIngestionHealthPatch', () => {
     expect(computeIngestionHealthPatch(current, [USER_MISSING], CONTEXT)).toBeNull();
   });
 
-  it('should remove ingestion_health when a status was stored and none can be computed anymore', () => {
-    // The user was fixed: degraded -> no status (healthy is not computed yet), absence reads as unknown
-    const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    expect(computeIngestionHealthPatch(current, [], CONTEXT)).toEqual({ ingestion_health: null });
+  it('should store unknown since this evaluation when a status was stored and none can be computed anymore', () => {
+    // The user was fixed but no proof of life: degraded -> unknown. The last event is kept: the recovery is due after the delay
+    const current = {
+      ingestion_health: {
+        status: IngestionHealthStatus.Degraded,
+        status_since: PREVIOUS_SINCE,
+        health_checks: [USER_MISSING],
+        last_event_date: PREVIOUS_SINCE,
+      },
+    };
+    expect(computeIngestionHealthPatch(current, [], CONTEXT)).toEqual({
+      ingestion_health: {
+        status: IngestionHealthStatus.Unknown,
+        status_since: EVALUATED_AT,
+        health_checks: [],
+        last_event_date: PREVIOUS_SINCE,
+      },
+    });
   });
 
   it('should write nothing when ingestion_health is already absent and no status can be computed', () => {
@@ -128,7 +142,14 @@ describe('computeIngestionHealthPatch with runtime data', () => {
 
   it('should go back to unknown when the heartbeat expires', () => {
     const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
-    expect(computeIngestionHealthPatch(current, [], CONTEXT)).toEqual({ ingestion_health: null });
+    expect(computeIngestionHealthPatch(current, [], CONTEXT)).toEqual({
+      ingestion_health: { status: IngestionHealthStatus.Unknown, status_since: EVALUATED_AT, health_checks: [] },
+    });
+  });
+
+  it('should keep since while the ingestion stays unknown', () => {
+    const current = { ingestion_health: { status: IngestionHealthStatus.Unknown, status_since: PREVIOUS_SINCE, health_checks: [] } };
+    expect(computeIngestionHealthPatch(current, [], CONTEXT)).toBeNull();
   });
 
   it('should not be healthy on a stale heartbeat', () => {
@@ -417,114 +438,98 @@ describe('computeHealthTransition', () => {
   const at = (ms: number) => new Date(new Date(SINCE).getTime() + ms).toISOString();
   const AFTER_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS);
   const BEFORE_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS - 1);
+  const { Critical, Degraded, Healthy, Unknown } = IngestionHealthStatus;
   const health = (status: IngestionHealthStatus, last_event_date?: string): StoredIngestionHealth => (
     { status, status_since: SINCE, health_checks: [], ...(last_event_date ? { last_event_date } : {}) }
   );
-  // Health of the previous period: only its presence matters
-  const PREVIOUS = health(IngestionHealthStatus.Healthy);
 
-  describe('no previous or no next health', () => {
-    it.each([
-      [IngestionHealthStatus.Critical, HealthTransition.Critical],
-      [IngestionHealthStatus.Degraded, HealthTransition.Degraded],
-    ])('should report %s on the first evaluation once the delay is elapsed', (status, expected) => {
-      expect(computeHealthTransition(undefined, health(status), AFTER_DELAY)).toBe(expected);
-      expect(computeHealthTransition(null, health(status, OLD_EVENT), AFTER_DELAY)).toBe(expected);
+  it('should return null without health: never evaluated with a status, or stopped', () => {
+    expect(computeHealthTransition(undefined, AFTER_DELAY)).toBeNull();
+    expect(computeHealthTransition(null, AFTER_DELAY)).toBeNull();
+  });
+
+  describe('delay', () => {
+    it.each(Object.values(IngestionHealthStatus))('should defer %s inside the delay', (status) => {
+      expect(computeHealthTransition(health(status, OLD_EVENT), SINCE)).toBeNull();
+      expect(computeHealthTransition(health(status, OLD_EVENT), BEFORE_DELAY)).toBeNull();
     });
 
-    it.each(Object.values(IngestionHealthStatus))('should defer %s on the first evaluation inside the delay', (status) => {
-      expect(computeHealthTransition(undefined, health(status), BEFORE_DELAY)).toBeNull();
-      expect(computeHealthTransition(null, health(status, OLD_EVENT), BEFORE_DELAY)).toBeNull();
-    });
-
-    it('should not report a recovery on the first evaluation of healthy, even after an older event', () => {
-      expect(computeHealthTransition(undefined, health(IngestionHealthStatus.Healthy), AFTER_DELAY)).toBeNull();
-      expect(computeHealthTransition(null, health(IngestionHealthStatus.Healthy, OLD_EVENT), AFTER_DELAY)).toBeNull();
-    });
-
-    it.each(Object.values(IngestionHealthStatus))('should return null when the health is removed after a notified %s: unknown is not a recovery', (status) => {
-      expect(computeHealthTransition(health(status, OLD_EVENT), null, AFTER_DELAY)).toBeNull();
-      expect(computeHealthTransition(health(status, OLD_EVENT), undefined, AFTER_DELAY)).toBeNull();
-    });
-
-    it('should return null when there is no health at all', () => {
-      expect(computeHealthTransition(undefined, undefined, AFTER_DELAY)).toBeNull();
+    it.each(Object.values(IngestionHealthStatus))('should report %s exactly when the delay is elapsed', (status) => {
+      expect(computeHealthTransition(health(status, OLD_EVENT), AFTER_DELAY)).not.toBeNull();
     });
   });
 
   describe('already notified', () => {
     it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event is after its start', (status) => {
-      expect(computeHealthTransition(PREVIOUS, health(status, AFTER_DELAY), at(10 * HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
+      expect(computeHealthTransition(health(status, AFTER_DELAY), at(10 * HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
     });
 
     it.each(Object.values(IngestionHealthStatus))('should report %s when the last event is at its start: strictly after is required', (status) => {
-      const result = computeHealthTransition(PREVIOUS, health(status, SINCE), AFTER_DELAY);
-      expect(result).not.toBeNull();
+      expect(computeHealthTransition(health(status, SINCE), AFTER_DELAY)).not.toBeNull();
     });
   });
 
-  describe('delay', () => {
-    it.each(Object.values(IngestionHealthStatus))('should defer %s inside the delay', (status) => {
-      expect(computeHealthTransition(PREVIOUS, health(status, OLD_EVENT), SINCE)).toBeNull();
-      expect(computeHealthTransition(PREVIOUS, health(status, OLD_EVENT), BEFORE_DELAY)).toBeNull();
-    });
-
-    it.each(Object.values(IngestionHealthStatus))('should report %s exactly when the delay is elapsed', (status) => {
-      expect(computeHealthTransition(PREVIOUS, health(status, OLD_EVENT), AFTER_DELAY)).not.toBeNull();
-    });
-  });
-
-  describe('transition', () => {
+  describe('failure', () => {
     it.each([
-      [IngestionHealthStatus.Critical, HealthTransition.Critical],
-      [IngestionHealthStatus.Degraded, HealthTransition.Degraded],
-    ])('should report %s never notified before', (status, expected) => {
-      expect(computeHealthTransition(PREVIOUS, health(status), AFTER_DELAY)).toBe(expected);
-    });
-
-    it.each([
-      [IngestionHealthStatus.Critical, HealthTransition.Critical],
-      [IngestionHealthStatus.Degraded, HealthTransition.Degraded],
-      [IngestionHealthStatus.Healthy, HealthTransition.Recovered],
-    ])('should report %s after an older event', (status, expected) => {
-      expect(computeHealthTransition(PREVIOUS, health(status, OLD_EVENT), AFTER_DELAY)).toBe(expected);
-    });
-
-    it('should return null for a healthy ingestion never notified: nothing to recover from', () => {
-      expect(computeHealthTransition(PREVIOUS, health(IngestionHealthStatus.Healthy), AFTER_DELAY)).toBeNull();
+      [Critical, HealthTransition.Critical],
+      [Degraded, HealthTransition.Degraded],
+    ])('should report %s, whatever the last event', (status, expected) => {
+      expect(computeHealthTransition(health(status), AFTER_DELAY)).toBe(expected);
+      expect(computeHealthTransition(health(status, OLD_EVENT), AFTER_DELAY)).toBe(expected);
     });
   });
 
-  // Replays periods as the ingestion health manager does: status_since moves on a status change,
-  // last_event_date is kept and set when an event is published. Returns the published events.
+  describe('recovery', () => {
+    it.each([Healthy, Unknown])('should report a recovery when %s follows a failure reported and not recovered yet', (status) => {
+      expect(computeHealthTransition(health(status, OLD_EVENT), AFTER_DELAY)).toBe(HealthTransition.Recovered);
+    });
+
+    it.each([Healthy, Unknown])('should not report %s when no failure is reported, never or already recovered: nothing to recover from', (status) => {
+      expect(computeHealthTransition(health(status), AFTER_DELAY)).toBeNull();
+    });
+  });
+
+  describe('markHealthNotified', () => {
+    it.each([HealthTransition.Critical, HealthTransition.Degraded])('should keep the date of the %s event reported', (transition) => {
+      expect(markHealthNotified(health(Critical, OLD_EVENT), transition, AFTER_DELAY)).toEqual(health(Critical, AFTER_DELAY));
+      expect(markHealthNotified(health(Critical), transition, AFTER_DELAY)).toEqual(health(Critical, AFTER_DELAY));
+    });
+
+    it('should remove the failure reported once its recovery is published', () => {
+      expect(markHealthNotified(health(Healthy, OLD_EVENT), HealthTransition.Recovered, AFTER_DELAY)).toEqual(health(Healthy));
+    });
+  });
+
+  // Replays periods as the ingestion health manager does, through computeIngestionHealthPatch. Returns the published events.
   describe('scenarios over periods', () => {
     const MINUTE = 60 * 1000;
-    const run = (steps: [number, IngestionHealthStatus | null][]) => {
-      let stored: StoredIngestionHealth | null = null;
+    const DELAY_MINUTES = HEALTH_NOTIFICATION_DELAY_MS / MINUTE;
+    const checksOf = (status: IngestionHealthStatus): StoredHealthCheck[] => {
+      if (status === Critical) return [HEARTBEAT_MISSING];
+      if (status === Degraded) return [USER_MISSING];
+      return [];
+    };
+    const run = (steps: [number, IngestionHealthStatus][]) => {
+      let current: IngestionHealthFields = {};
       const events: [number, HealthTransition][] = [];
       steps.forEach(([minute, status]) => {
         const evaluatedAt = at(minute * MINUTE);
-        let next: StoredIngestionHealth | null = null;
-        if (status) {
-          const since = stored?.status === status ? stored.status_since : evaluatedAt;
-          next = { status, status_since: since, health_checks: [], ...(stored?.last_event_date ? { last_event_date: stored.last_event_date } : {}) };
-        }
-        const transition = computeHealthTransition(stored, next, evaluatedAt);
-        if (transition && next) {
-          next = { ...next, last_event_date: evaluatedAt };
-        }
+        // Healthy needs a proof of life: a live heartbeat. Without one and without check, the status is unknown
+        const runtimeData = status === Healthy ? { [HEALTH_CHECK_HEARTBEAT_MISSING]: evaluatedAt } : {};
+        const patch = computeIngestionHealthPatch(current, checksOf(status), { ...CONTEXT, ...PINGING, evaluatedAt, runtimeData });
+        let next = patch ? patch.ingestion_health : current.ingestion_health;
+        const transition = computeHealthTransition(next, evaluatedAt);
         if (transition) {
           events.push([minute, transition]);
+          next = next ? markHealthNotified(next, transition, evaluatedAt) : next;
         }
-        stored = next;
+        current = { ingestion_health: next };
       });
       return events;
     };
-    const minutes = (from: number, to: number, status: IngestionHealthStatus | null) => (
-      Array.from({ length: to - from + 1 }, (_, i): [number, IngestionHealthStatus | null] => [from + i, status])
+    const minutes = (from: number, to: number, status: IngestionHealthStatus) => (
+      Array.from({ length: to - from + 1 }, (_, i): [number, IngestionHealthStatus] => [from + i, status])
     );
-    const DELAY_MINUTES = HEALTH_NOTIFICATION_DELAY_MS / MINUTE;
-    const { Critical, Degraded, Healthy } = IngestionHealthStatus;
 
     it('should report a stable failure once, after the delay', () => {
       expect(run(minutes(0, 30, Critical))).toEqual([[DELAY_MINUTES, HealthTransition.Critical]]);
@@ -546,23 +551,41 @@ describe('computeHealthTransition', () => {
       expect(run(flapping)).toEqual([]);
     });
 
-    it('should report a degraded becoming critical', () => {
-      expect(run([...minutes(0, 10, Degraded), ...minutes(11, 30, Critical)])).toEqual([
+    it('should report a degraded becoming critical, and a critical becoming degraded', () => {
+      expect(run([...minutes(0, 10, Degraded), ...minutes(11, 20, Critical), ...minutes(21, 30, Degraded)])).toEqual([
         [DELAY_MINUTES, HealthTransition.Degraded],
         [11 + DELAY_MINUTES, HealthTransition.Critical],
+        [21 + DELAY_MINUTES, HealthTransition.Degraded],
       ]);
     });
 
-    it('should report nothing when the health becomes unknown, and no recovery when healthy after unknown', () => {
-      expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, null), ...minutes(21, 40, Healthy)])).toEqual([
+    it('should report the recovery of a notified failure becoming unknown after the delay, and nothing when healthy after it', () => {
+      expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, Unknown), ...minutes(21, 40, Healthy)])).toEqual([
         [DELAY_MINUTES, HealthTransition.Critical],
+        [11 + DELAY_MINUTES, HealthTransition.Recovered],
       ]);
+    });
+
+    it('should report nothing when a failure becomes unknown inside the delay', () => {
+      expect(run([...minutes(0, DELAY_MINUTES - 1, Degraded), ...minutes(DELAY_MINUTES, 30, Unknown)])).toEqual([]);
+    });
+
+    it('should report nothing between healthy and unknown, nor for an ingestion unknown from its first evaluation', () => {
+      expect(run([...minutes(0, 10, Healthy), ...minutes(11, 20, Unknown), ...minutes(21, 40, Healthy)])).toEqual([]);
+      expect(run([...minutes(0, 10, Unknown), ...minutes(11, 30, Healthy)])).toEqual([]);
     });
 
     it('should report a failure again after going back to it inside the delay: the delay runs on the status', () => {
       expect(run([...minutes(0, 10, Critical), [11, Healthy], ...minutes(12, 30, Critical)])).toEqual([
         [DELAY_MINUTES, HealthTransition.Critical],
         [12 + DELAY_MINUTES, HealthTransition.Critical],
+      ]);
+    });
+
+    it('should report a recovery once: a failure never notified after it does not report it again', () => {
+      expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, Healthy), ...minutes(21, 22, Critical), ...minutes(23, 40, Healthy)])).toEqual([
+        [DELAY_MINUTES, HealthTransition.Critical],
+        [11 + DELAY_MINUTES, HealthTransition.Recovered],
       ]);
     });
   });

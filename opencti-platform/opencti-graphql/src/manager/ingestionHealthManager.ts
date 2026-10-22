@@ -24,8 +24,8 @@ import {
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
-  HealthTransition,
   isRuntimeCheckEnabled,
+  markHealthNotified,
 } from '../modules/ingestionHealth/ingestionHealth-checks';
 import {
   getIngestorUserId,
@@ -38,7 +38,7 @@ import {
   type SourceIngestionHealthContext,
 } from '../modules/ingestionHealth/ingestionHealth-registry';
 import { publishUserAction } from '../listener/UserActionListener';
-import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
+import { HealthTransition, type IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 import { IngestionHealthCheckKind } from '../generated/graphql';
 import { findRegularlyPingingConnectors, isConnectorStopped } from '../modules/connector/connector-domain';
 import { isSyncRunning } from '../domain/connector';
@@ -143,9 +143,8 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   }
 
   // The notification is evaluated at every period, even when the health did not change: it is deferred until the status is stable
-  const previousHealth = element.ingestion_health;
-  const nextHealth = patch ? patch.ingestion_health : previousHealth;
-  const transition = computeHealthTransition(previousHealth, nextHealth, sourceContext.evaluatedAt);
+  const nextHealth = patch ? patch.ingestion_health : element.ingestion_health;
+  const transition = computeHealthTransition(nextHealth, sourceContext.evaluatedAt);
   if (transition) {
     await publishUserAction({
       user: INGESTION_HEALTH_MANAGER_USER,
@@ -159,7 +158,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
     // Marks the status as notified once published only: a failed publication is retried at the next period.
     // A failed write publishes the transition again at the next period: a duplicate event rather than a lost one
     if (nextHealth) {
-      await writeIngestionHealth(context, source, element, { ingestion_health: { ...nextHealth, last_event_date: sourceContext.evaluatedAt } });
+      await writeIngestionHealth(context, source, element, { ingestion_health: markHealthNotified(nextHealth, transition, sourceContext.evaluatedAt) });
     }
   }
 };
