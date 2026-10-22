@@ -76,6 +76,8 @@ const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_H
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
 const RESOLUTION_BATCH_SIZE = Math.max(conf.get('app:live_stream:resolution_batch_size') ?? 500, 1);
+// Loads stop looking ahead once this many elements are pending. Refs needed to walk on are always loaded.
+const RESOLUTION_LOOK_AHEAD_MAX_PENDING = 4 * RESOLUTION_BATCH_SIZE;
 // Elements are only loaded to be converted to STIX: members of containers are not needed beyond their ids
 const STREAM_LOAD_OPTS = { objectsBaseData: true };
 
@@ -289,22 +291,50 @@ const loadMissingElements = async (state, ids) => {
       const stix = convertStoreToStix_2_1(missingElement);
       // Loads also match alias ids: index the entry under them too, or a ref matching only an alias would never be walked
       const elementIds = [...extractIdsFromStoreObject(missingElement), ...(missingElement.i_aliases_ids ?? [])];
-      const entry = { message: generateCreateMessage(missingElement), stix, refs: stixRefsExtractor(stix), ids: elementIds };
+      // Only relationships and sightings are looked ahead: they always have few refs, unlike containers
+      const isLookAhead = stix.type === STIX_TYPE_RELATION || stix.type === STIX_TYPE_SIGHTING;
+      const entry = { message: generateCreateMessage(missingElement), stix, refs: stixRefsExtractor(stix), ids: elementIds, isLookAhead };
       elementIds.forEach((id) => {
         seenIds.add(id);
         pending.set(id, entry);
       });
+      state.pendingCount += 1;
     }
   }
 };
 
-// Next refs of a frame to load, starting from its current ref, never more than the batch size
-const nextRefsToLoad = (state, refs, fromIndex) => {
+/**
+ * Next refs to load when the frame on top of the stack reaches a ref not loaded yet, never more than the batch size.
+ *
+ * The next refs of this frame come first: they are needed to walk on, so they are always loaded.
+ * The batch is then completed with the refs of the relationships and sightings pending in the stack, in walk order.
+ * They are walked next, so without this look-ahead each of them would load its from and to on its own.
+ * Containers are never looked ahead, their members are loaded batch by batch when the walk reaches them.
+ * Only the next batch size refs of each frame are scanned, and the look-ahead stops once enough elements are pending.
+ */
+const nextRefsToLoad = (state, stack) => {
   const ids = new Set();
-  for (let index = fromIndex; index < refs.length && ids.size < RESOLUTION_BATCH_SIZE; index += 1) {
-    const refId = refs[index];
-    if (!state.cache.has(refId) && !state.seenIds.has(refId)) {
-      ids.add(refId);
+  const addRefsToLoad = (refs, fromIndex) => {
+    for (let index = fromIndex; index < refs.length && ids.size < RESOLUTION_BATCH_SIZE; index += 1) {
+      const refId = refs[index];
+      if (!state.cache.has(refId) && !state.seenIds.has(refId)) {
+        ids.add(refId);
+      }
+    }
+  };
+  const top = stack[stack.length - 1];
+  addRefsToLoad(top.refs, top.index);
+  const lookedAhead = new Set();
+  const canLookAhead = () => ids.size < RESOLUTION_BATCH_SIZE && state.pendingCount + ids.size < RESOLUTION_LOOK_AHEAD_MAX_PENDING;
+  for (let level = stack.length - 1; level >= 0 && canLookAhead(); level -= 1) {
+    const { refs, index: fromIndex } = stack[level];
+    const toIndex = Math.min(refs.length, fromIndex + RESOLUTION_BATCH_SIZE);
+    for (let index = fromIndex; index < toIndex && canLookAhead(); index += 1) {
+      const entry = state.pending.get(refs[index]);
+      if (entry?.isLookAhead && !lookedAhead.has(entry)) {
+        lookedAhead.add(entry);
+        addRefsToLoad(entry.refs, 0);
+      }
     }
   }
   return Array.from(ids);
@@ -333,7 +363,8 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
     return false;
   }
   // seenIds: requested or loaded ids, published or not. pending: loaded entries not walked yet, by each of their ids.
-  const state = { context, user, cache, seenIds: new Set(), loadedInternalIds: new Set(), pending: new Map() };
+  // pendingCount: number of these entries, as pending holds each of them under all its ids.
+  const state = { context, user, cache, seenIds: new Set(), loadedInternalIds: new Set(), pending: new Map(), pendingCount: 0 };
   const requiredToLoad = [...new Set(requiredRefs.filter((id) => !cache.has(id)))];
   // Loaded in slices of the batch size, all before any publication.
   // Ids already loaded by a previous slice (through another of their ids) are skipped.
@@ -374,14 +405,15 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
       const pendingEntry = state.pending.get(refId);
       if (pendingEntry) {
         pendingEntry.ids.forEach((id) => state.pending.delete(id));
+        state.pendingCount -= 1;
         frame.index += 1;
         stack.push({ entry: pendingEntry, refs: pendingEntry.refs, index: 0 });
       } else if (cache.has(refId) || state.seenIds.has(refId)) {
         // Already published, currently walked (circular reference) or not accessible
         frame.index += 1;
       } else {
-        // Not loaded yet: load it with the next refs of this element, then walk it on the next iteration
-        await loadMissingElements(state, nextRefsToLoad(state, frame.refs, frame.index));
+        // Not loaded yet: load it with the next refs of this element and the look-ahead, then walk it on the next iteration
+        await loadMissingElements(state, nextRefsToLoad(state, stack));
       }
     }
   }

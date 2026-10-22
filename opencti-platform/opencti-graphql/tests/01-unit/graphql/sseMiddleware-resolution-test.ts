@@ -18,10 +18,10 @@ vi.mock('../../../src/database/engine', () => ({ elCount: vi.fn(), elList: vi.fn
 vi.mock('../../../src/database/middleware-loader', () => ({ fullRelationsList: vi.fn() }));
 vi.mock('../../../src/database/middleware', () => ({ stixLoadById: vi.fn(), storeLoadByIdsWithRefs: vi.fn() }));
 vi.mock('../../../src/database/cache', () => ({ getEntitiesListFromCache: vi.fn(), getEntityFromCache: vi.fn() }));
-// The STIX of a test element is { id, refs }: only what the resolution reads from it
+// The STIX of a test element is { id, type, refs }: only what the resolution reads from it
 vi.mock('../../../src/database/stix-2-1-converter', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/database/stix-2-1-converter')>();
-  return { ...actual, convertStoreToStix_2_1: vi.fn((element: any) => ({ id: element.standard_id, refs: element.refs })) };
+  return { ...actual, convertStoreToStix_2_1: vi.fn((element: any) => ({ id: element.standard_id, type: element.stix_type, refs: element.refs })) };
 });
 vi.mock('../../../src/schema/stixEmbeddedRelationship', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/schema/stixEmbeddedRelationship')>();
@@ -46,13 +46,30 @@ let resolveReferences = resolveMissingReferences;
 const context = {} as any;
 const user = { id: 'user-id' } as any;
 
-// Store element whose standard_id is its own name, with refs to other elements by name
-const buildGraph = (edges: Record<string, string[]>) => {
+// Store element whose standard_id is its own name, with refs to other elements by name and an optional STIX type
+const buildGraph = (edges: Record<string, string[]>, stixTypes: Record<string, string> = {}) => {
   const graph: Record<string, any> = {};
   Object.entries(edges).forEach(([id, refs]) => {
-    graph[id] = { internal_id: `internal-${id}`, standard_id: id, refs };
+    graph[id] = { internal_id: `internal-${id}`, standard_id: id, stix_type: stixTypes[id], refs };
   });
   return graph;
+};
+
+// Reload the modules under test with another batch size for the current suite
+const useBatchSize = (size: number) => {
+  beforeAll(async () => {
+    batchConfig.size = size;
+    vi.resetModules();
+    loadByIdsWithRefs = vi.mocked((await import('../../../src/database/middleware')).storeLoadByIdsWithRefs);
+    // eslint-disable-next-line import/extensions
+    resolveReferences = (await import('../../../src/graphql/sseMiddleware.js')).resolveMissingReferences;
+  });
+
+  afterAll(() => {
+    batchConfig.size = BATCH_SIZE;
+    loadByIdsWithRefs = vi.mocked(storeLoadByIdsWithRefs);
+    resolveReferences = resolveMissingReferences;
+  });
 };
 
 const mockStore = (graph: Record<string, any>) => {
@@ -251,20 +268,82 @@ describe('resolveMissingReferences', () => {
     });
   });
 
-  describe('with a batch size of one', () => {
-    beforeAll(async () => {
-      batchConfig.size = 1;
-      vi.resetModules();
-      loadByIdsWithRefs = vi.mocked((await import('../../../src/database/middleware')).storeLoadByIdsWithRefs);
-      // eslint-disable-next-line import/extensions
-      resolveReferences = (await import('../../../src/graphql/sseMiddleware.js')).resolveMissingReferences;
+  describe('with a look-ahead on relationships and sightings', () => {
+    it('should load the from and to of the next pending relationships with the current ones', async () => {
+      const graph = buildGraph({ container: ['r1', 'r2'], r1: ['s1'], r2: ['s2'], s1: [], s2: [] }, { r1: 'relationship', r2: 'sighting' });
+      mockStore(graph);
+      const { isComplete, published } = await resolve(['container']);
+      expect(isComplete).toBe(true);
+      expect(loadedChunks()).toEqual([['container'], ['r1', 'r2'], ['s1', 's2']]);
+      expect(published).toEqual(['s1', 'r1', 's2', 'r2', 'container']);
     });
 
-    afterAll(() => {
-      batchConfig.size = BATCH_SIZE;
-      loadByIdsWithRefs = vi.mocked(storeLoadByIdsWithRefs);
-      resolveReferences = resolveMissingReferences;
+    it('should not look ahead into the members of a pending container', async () => {
+      const members = ['m1', 'm2', 'm3', 'm4', 'm5'];
+      const graph = buildGraph(
+        { container: ['r1', 'grouping'], r1: ['s1'], s1: [], grouping: members, ...Object.fromEntries(members.map((m) => [m, []])) },
+        { r1: 'relationship', grouping: 'grouping' },
+      );
+      mockStore(graph);
+      const { isComplete, published } = await resolve(['container']);
+      expect(isComplete).toBe(true);
+      // The grouping members are loaded batch by batch, only when the walk reaches the grouping
+      expect(loadedChunks()).toEqual([['container'], ['r1', 'grouping'], ['s1'], ['m1', 'm2'], ['m3', 'm4'], ['m5']]);
+      expectDependenciesFirst(graph, published);
     });
+
+    it('should stop looking ahead once enough elements are pending', async () => {
+      // A chain of relationships with a pending sibling at each level: 7 elements are pending when g1 needs its ref,
+      // so with the 4 batches limit, g2 is not looked ahead
+      const graph = buildGraph({
+        a1: ['b1', 'b2'], a2: [],
+        b1: ['c1', 'c2'], b2: [],
+        c1: ['d1', 'd2'], c2: [],
+        d1: ['e1', 'e2'], d2: [],
+        e1: ['f1', 'f2'], e2: [],
+        f1: ['g1', 'g2'], f2: [],
+        g1: ['g1-ref'], g2: ['g2-ref'],
+        'g1-ref': [], 'g2-ref': [],
+      }, Object.fromEntries(['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'g2'].map((id) => [id, 'relationship'])));
+      mockStore(graph);
+      const { isComplete, published } = await resolve(['a1', 'a2']);
+      expect(isComplete).toBe(true);
+      expect(loadedChunks()).toEqual([
+        ['a1', 'a2'], ['b1', 'b2'], ['c1', 'c2'], ['d1', 'd2'], ['e1', 'e2'], ['f1', 'f2'], ['g1', 'g2'], ['g1-ref'], ['g2-ref'],
+      ]);
+      expectDependenciesFirst(graph, published);
+    });
+
+    describe('with a batch size of ten', () => {
+      useBatchSize(10);
+
+      it('should load the from and to of a large container relationships in full batches', async () => {
+        // Relationships come before their from and to in the container: without look-ahead, each would load them on its own
+        const relationships = Array.from({ length: 10 }, (_, index) => `r${index + 1}`);
+        const edges: Record<string, string[]> = { container: [...relationships, ...relationships.flatMap((r) => [`${r}-from`, `${r}-to`])] };
+        relationships.forEach((r) => {
+          edges[r] = [`${r}-from`, `${r}-to`];
+          edges[`${r}-from`] = [];
+          edges[`${r}-to`] = [];
+        });
+        const graph = buildGraph(edges, Object.fromEntries(relationships.map((r) => [r, 'relationship'])));
+        mockStore(graph);
+        const { isComplete, published } = await resolve(['container']);
+        expect(isComplete).toBe(true);
+        expect(loadedChunks()).toEqual([
+          ['container'],
+          relationships,
+          relationships.slice(0, 5).flatMap((r) => [`${r}-from`, `${r}-to`]),
+          relationships.slice(5).flatMap((r) => [`${r}-from`, `${r}-to`]),
+        ]);
+        expect([...published].sort()).toEqual(Object.keys(graph).sort());
+        expectDependenciesFirst(graph, published);
+      });
+    });
+  });
+
+  describe('with a batch size of one', () => {
+    useBatchSize(1);
 
     it('should load required refs one by one before publishing anything', async () => {
       const graph = buildGraph({ from: ['marking'], to: ['marking'], marking: [] });
