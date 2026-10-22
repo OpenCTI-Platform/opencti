@@ -273,33 +273,35 @@ class ListLinesContent extends Component {
         }}
         ref={this.containerRef}
       >
-        <InfiniteLoader
-          isRowLoaded={this._isRowLoaded}
-          loadMoreRows={this._loadMoreRows}
-          rowCount={globalCount}
-        >
-          {({ onRowsRendered, registerChild }) => (
-            <AutoSizer
-              style={{ overflow: 'visible', width: 0 }}
-              renderProp={({ width }) => (width ? (
-                <List
-                  ref={(ref) => {
-                    this.listRef = ref;
-                    registerChild(ref);
-                  }}
-                  role="grid"
-                  scrollElement={scrollElement}
-                  onRowsRendered={onRowsRendered}
-                  overscanRowCount={nbOfRowsToLoad}
-                  rowCount={rowCount}
-                  rowHeight={50}
-                  rowRenderer={this._rowRenderer.bind(this)}
-                  width={width}
-                />
-              ) : null)}
-            />
-          )}
-        </InfiniteLoader>
+        <div>
+          <InfiniteLoader
+            isRowLoaded={this._isRowLoaded}
+            loadMoreRows={this._loadMoreRows}
+            rowCount={globalCount}
+          >
+            {({ onRowsRendered, registerChild }) => (
+              <AutoSizer
+                style={{ overflow: 'visible', width: 0 }}
+                renderProp={({ width }) => (width ? (
+                  <List
+                    ref={(ref) => {
+                      this.listRef = ref;
+                      registerChild(ref);
+                    }}
+                    role="grid"
+                    scrollElement={scrollElement}
+                    onRowsRendered={onRowsRendered}
+                    overscanRowCount={nbOfRowsToLoad}
+                    rowCount={rowCount}
+                    rowHeight={50}
+                    rowRenderer={this._rowRenderer.bind(this)}
+                    width={width}
+                  />
+                ) : null)}
+              />
+            )}
+          </InfiniteLoader>
+        </div>
       </div>
     );
   }
