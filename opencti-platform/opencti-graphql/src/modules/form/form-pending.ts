@@ -14,6 +14,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TY
 import type { StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { FormFieldType, type FormSchemaDefinition } from './form-types';
+import { STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { PENDING_EXTERNAL_REFERENCE } from './form-pending-marker';
 
 /**
@@ -641,13 +642,17 @@ export const materializePendingRoots = async (
  */
 export const withPendingExternalReferenceFiles = <T extends Record<string, any>>(stix: T, entity: Record<string, any>): T => {
   const references = entity[INPUT_EXTERNAL_REFS];
-  if (Array.isArray(references) && Array.isArray(stix.external_references)) {
-    references.forEach((reference, index) => {
-      const files = (reference?.x_opencti_files ?? []).filter((file: Record<string, any>) => file?.data);
-      if (files.length > 0 && stix.external_references[index]) {
-        stix.external_references[index].x_opencti_files = files;
-      }
-    });
+  // Observables keep their external references in their OpenCTI extension, the other objects at the top level
+  const targets = [stix.external_references, stix.extensions?.[STIX_EXT_OCTI_SCO]?.external_references].filter(Array.isArray);
+  if (Array.isArray(references)) {
+    for (const target of targets) {
+      references.forEach((reference, index) => {
+        const files = (reference?.x_opencti_files ?? []).filter((file: Record<string, any>) => file?.data);
+        if (files.length > 0 && target[index]) {
+          target[index].x_opencti_files = files;
+        }
+      });
+    }
   }
   return stix;
 };

@@ -22,6 +22,7 @@ import {
 } from '../../../../src/modules/form/form-pending';
 import type { AuthContext } from '../../../../src/types/user';
 import { resolveMainEntityAuthorFromValues } from '../../../../src/modules/form/form-domain';
+import { STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
 import type { FormSchemaDefinition } from '../../../../src/modules/form/form-types';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
@@ -795,6 +796,13 @@ describe('withPendingExternalReferenceFiles', () => {
     withPendingExternalReferenceFiles(stix, entity);
     expect(stix.external_references[0]).toEqual({ source_name: 'existing' });
     expect(stix.external_references[1]).toEqual({ source_name: 'pending', x_opencti_files: [{ name: 'a.pdf', data: 'cGRm', mime_type: 'application/pdf' }] });
+  });
+
+  it('should put the files on the external references of an observable, kept in its extension', () => {
+    const files = [{ name: 'a.pdf', data: 'cGRm', mime_type: 'application/pdf' }];
+    const stix: any = { extensions: { [STIX_EXT_OCTI_SCO]: { external_references: [{ source_name: 'pending' }] } } };
+    withPendingExternalReferenceFiles(stix, { externalReferences: [{ source_name: 'pending', x_opencti_files: files }] });
+    expect(stix.extensions[STIX_EXT_OCTI_SCO].external_references[0]).toEqual({ source_name: 'pending', x_opencti_files: files });
   });
 });
 
