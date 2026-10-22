@@ -1,5 +1,5 @@
 import type { MenuEntry } from '../common/menus/NavToolbarMenu';
-import { AUTOMATION_AUTMANAGE, CSVMAPPERS, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { AUTOMATION_AUTMANAGE, CSVMAPPERS, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/capabilities';
 
 // Pure data (no component import): collected by the pages search through its `*.entries.ts(x)` name.
 export const menuEntries: MenuEntry[] = [

@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import { AccountGroupOutline } from 'mdi-material-ui';
 import type { MenuEntry } from '../common/menus/NavToolbarMenu';
-import { SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETDISSEMINATION, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import { SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETDISSEMINATION, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/capabilities';
 
 // Pure data (no component import): collected by the pages search through its `*.entries.ts(x)` name.
 export const menuEntries: MenuEntry[] = [
