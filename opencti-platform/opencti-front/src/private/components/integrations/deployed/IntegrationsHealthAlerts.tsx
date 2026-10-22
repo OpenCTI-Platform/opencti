@@ -57,8 +57,8 @@ const IntegrationsHealthAlerts = ({ items, onShowIssue }: IntegrationsHealthAler
   if (alerts.length === 0) return null;
   return (
     <Stack
-      gap={1}
       sx={{
+        gap: 1,
         // The design system ships no CSS reset: the legacy page leaves the default margins of the paragraphs of the Alert
         '& p': { margin: 0 },
         // More room than the Alert default, and the icon centered on the whole banner instead of on the title line

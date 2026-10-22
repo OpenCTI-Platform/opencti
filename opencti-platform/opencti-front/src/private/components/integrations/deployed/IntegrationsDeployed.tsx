@@ -83,21 +83,31 @@ const IntegrationsDeployedContent = ({
     hasActiveFilters,
     clearAllFilters,
     facets,
-  } = useDeployedIntegrationsFilters({ items, searchParams, isConnectorUpdateEnabled, isIngestionHealthEnabled });
+  } = useDeployedIntegrationsFilters({
+    items,
+    searchParams,
+    isConnectorUpdateEnabled,
+    isIngestionHealthEnabled,
+  });
 
   const [searchInput, setSearchInput] = useState(filters.search);
 
-  const [view, setView] = useState<DeployedViewMode>(
-    () => (localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards'),
+  const [view, setView] = useState<DeployedViewMode>(() =>
+    localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards',
   );
-  const handleViewChange = (_: React.MouseEvent, value: DeployedViewMode | null) => {
+  const handleViewChange = (
+    _: React.MouseEvent,
+    value: DeployedViewMode | null,
+  ) => {
     if (!value) return;
     localStorage.setItem(VIEW_STORAGE_KEY, value);
     setView(value);
   };
 
   // Sections are collapsible to keep large fleets scannable.
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [collapsedSections, setCollapsedSections] = useState<
+    Record<string, boolean>
+  >({});
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -128,7 +138,10 @@ const IntegrationsDeployedContent = ({
 
   // Progressive mounting while scrolling, as on the available tab.
   const revealResetKey = JSON.stringify({ filters, sort });
-  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(filteredItems.length, revealResetKey);
+  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(
+    filteredItems.length,
+    revealResetKey,
+  );
   const visibleSections = useMemo(() => {
     const result: (DeployedSection & { totalCount: number })[] = [];
     let remaining = visibleCount;
@@ -152,7 +165,17 @@ const IntegrationsDeployedContent = ({
       {alertsSlot && createPortal(
         <IntegrationsHealthAlerts
           items={items}
-          onShowIssue={(health) => setFilters((prev) => ({ ...prev, healthStatuses: [health] }))}
+          onShowIssue={(health) => {
+            setSearchInput('');
+            setFilters({
+              search: '',
+              types: [],
+              statuses: [],
+              kinds: [],
+              updateAvailable: false,
+              healthStatuses: [health],
+            });
+          }}
         />,
         alertsSlot,
       )}
@@ -194,7 +217,9 @@ const IntegrationsDeployedContent = ({
               variant="outlined"
               label={t_i18n('Sort by')}
               value={sort}
-              onChange={(event) => setSort(event.target.value as DeployedSortMode)}
+              onChange={(event) =>
+                setSort(event.target.value as DeployedSortMode)
+              }
               sx={{ width: 200, backgroundColor: paperBg(theme) }}
             >
               <MenuItem value="name">{t_i18n('Name (A-Z)')}</MenuItem>
@@ -210,12 +235,20 @@ const IntegrationsDeployedContent = ({
               onChange={handleViewChange}
               sx={{ backgroundColor: paperBg(theme) }}
             >
-              <ToggleButton value="cards" aria-label="cards" data-testid="integrations-view-cards">
+              <ToggleButton
+                value="cards"
+                aria-label="cards"
+                data-testid="integrations-view-cards"
+              >
                 <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>
-              <ToggleButton value="lines" aria-label="lines" data-testid="integrations-view-lines">
+              <ToggleButton
+                value="lines"
+                aria-label="lines"
+                data-testid="integrations-view-lines"
+              >
                 <Tooltip title={t_i18n('Lines view')}>
                   <ViewListOutlined fontSize="small" />
                 </Tooltip>
@@ -228,16 +261,19 @@ const IntegrationsDeployedContent = ({
               hasActiveFilters={hasActiveFilters}
               onResetFilters={handleResetFilters}
               extraAction={(
-                <Button
-                  component={Link}
-                  to="/dashboard/integrations/available"
-                >
+                <Button component={Link} to="/dashboard/integrations/available">
                   {t_i18n('Browse the catalog')}
                 </Button>
               )}
             />
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: view === 'lines' ? 3 : 4 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: view === 'lines' ? 3 : 4,
+              }}
+            >
               {visibleSections.map((section) => {
                 const { label, icon } = typeMetadata(section.key);
                 if (collapsedSections[section.key]) {
@@ -272,7 +308,11 @@ const IntegrationsDeployedContent = ({
                       >
                         <DeployedIntegrationLinesHeader />
                         {section.items.map((item) => (
-                          <DeployedIntegrationLine key={item.id} item={item} onChange={handleItemChange} />
+                          <DeployedIntegrationLine
+                            key={item.id}
+                            item={item}
+                            onChange={handleItemChange}
+                          />
                         ))}
                       </Box>
                     ) : (
@@ -282,7 +322,10 @@ const IntegrationsDeployedContent = ({
                             key={item.id}
                             size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
                           >
-                            <DeployedIntegrationCard item={item} onChange={handleItemChange} />
+                            <DeployedIntegrationCard
+                              item={item}
+                              onChange={handleItemChange}
+                            />
                           </Grid>
                         ))}
                       </Grid>
@@ -307,13 +350,21 @@ interface IntegrationsDeployedProps {
 
 // The deployed tab: registered connectors and built-in feed instances merged
 // in a single faceted marketplace view, with live monitoring metrics.
-const IntegrationsDeployed = ({ data, alertsSlot }: IntegrationsDeployedProps) => {
+const IntegrationsDeployed = ({
+  data,
+  alertsSlot,
+}: IntegrationsDeployedProps) => {
   const isConnectorReader = useGranted([MODULES]);
 
-  const [connectorsListRef, loadConnectorsList] = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
-  const [connectorsStateRef, loadConnectorsState] = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
-  const [connectorsLogosRef, loadConnectorsLogos] = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
-  const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(new Map());
+  const [connectorsListRef, loadConnectorsList]
+    = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
+  const [connectorsStateRef, loadConnectorsState]
+    = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
+  const [connectorsLogosRef, loadConnectorsLogos]
+    = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
+  const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(
+    new Map(),
+  );
 
   useEffect(() => {
     if (!isConnectorReader) return undefined;
