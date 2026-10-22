@@ -1,7 +1,9 @@
-import { APIRequestContext, Playwright } from '@playwright/test';
+import { APIRequestContext, PlaywrightWorkerArgs } from '@playwright/test';
 import { expect } from '../fixtures/baseFixtures';
 import { executeGraphql } from './query-utils';
 import { authenticateAdminApi } from './session.data';
+
+type Playwright = PlaywrightWorkerArgs['playwright'];
 
 export const THREAT_ADVISORY_FORM_NAME = 'Threat Advisories';
 
