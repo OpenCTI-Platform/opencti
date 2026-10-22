@@ -25,6 +25,8 @@ import {
 import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
+import { resolveUserById } from '../../../src/domain/user';
+import { findGroupPaginated } from '../../../src/domain/group';
 import {
   adminQueryWithError,
   adminQueryWithSuccess,
@@ -955,6 +957,10 @@ describe('User has no settings capability and is organization admin query behavi
   it('should list no group when its administrated organizations have no grantable group', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, { query: GROUPS_QUERY, variables: {} });
     expect(queryResult.data?.groups.edges).toEqual([]);
+    // Same check in process, as queries through the test client are not counted in coverage
+    const userEditor = await resolveUserById(testContext, userEditorId);
+    const groups = await findGroupPaginated(testContext, userEditor, {});
+    expect(groups.edges).toEqual([]);
   });
   it('should user created', async () => {
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
@@ -996,6 +1002,9 @@ describe('User has no settings capability and is organization admin query behavi
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, { query: GROUPS_QUERY, variables: {} });
     const groupsIds = queryResult.data?.groups.edges.map((e: { node: { id: string } }) => e.node.id);
     expect(groupsIds).toEqual([amberGroupId]);
+    const userEditor = await resolveUserById(testContext, userEditorId);
+    const groups = await findGroupPaginated(testContext, userEditor, {});
+    expect(groups.edges.map((e: { node: { id: string } }) => e.node.id)).toEqual([amberGroupId]);
   });
   it('should not create user in an organization the org admin does not administrate', async () => {
     const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
