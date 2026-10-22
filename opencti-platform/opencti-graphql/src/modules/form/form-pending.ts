@@ -534,6 +534,10 @@ export const resolvePendingFieldRefs = (values: Record<string, any>, uploads: Pe
   return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, isPendingKey(key) ? value : walk(value)]));
 };
 
+export const countPendingLabels = (values: Record<string, any>): number => {
+  return toArray<PendingObject>(values.pendingObjects).filter((object) => object.entityType === ENTITY_TYPE_LABEL).length;
+};
+
 /**
  * Reads the given uploads (all by default, once each) into memory as base64, one after the other. The result is indexed
  * like the uploads, the ones that are not asked for stay empty. The decoded size is capped as put in the bundle: an upload
