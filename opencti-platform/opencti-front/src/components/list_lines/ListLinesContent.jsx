@@ -1,18 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import { InfiniteLoader, List } from 'react-virtualized';
 import { AutoSizer } from 'react-virtualized-auto-sizer';
 import inject18n from '../i18n';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { isEmptyField } from '../../utils/utils';
-
-const styles = () => ({
-  windowScrollerWrapper: {
-    flex: '1 1 auto',
-  },
-});
 
 class ListLinesContent extends Component {
   constructor(props) {
@@ -251,7 +244,6 @@ class ListLinesContent extends Component {
       initialLoading,
       isLoading,
       nbOfRowsToLoad,
-      classes,
       height: propHeight,
       width: propWidth,
       containerRef: propContainerRef,
@@ -260,7 +252,7 @@ class ListLinesContent extends Component {
       ? dataList.length + this.state.loadingRowCount
       : dataList.length;
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
-    let scrollElement = window;
+    let scrollElement = 'window';
     if (propHeight && this.containerRef && this.containerRef.current) {
       scrollElement = this.containerRef.current;
     } else if (propContainerRef && propContainerRef.current) {
@@ -281,37 +273,33 @@ class ListLinesContent extends Component {
         }}
         ref={this.containerRef}
       >
-        <div
-          key={scrollElement === window ? 'window' : 'element'}
-          className={classes.windowScrollerWrapper}
+        <InfiniteLoader
+          isRowLoaded={this._isRowLoaded}
+          loadMoreRows={this._loadMoreRows}
+          rowCount={globalCount}
         >
-          <InfiniteLoader
-            isRowLoaded={this._isRowLoaded}
-            loadMoreRows={this._loadMoreRows}
-            rowCount={globalCount}
-          >
-            {({ onRowsRendered, registerChild }) => (
-              <AutoSizer
-                renderProp={({ width }) => (width ? (
-                  <List
-                    ref={(ref) => {
-                      this.listRef = ref;
-                      registerChild(ref);
-                    }}
-                    role="grid"
-                    scrollElement={scrollElement === window ? 'window' : scrollElement}
-                    onRowsRendered={onRowsRendered}
-                    overscanRowCount={nbOfRowsToLoad}
-                    rowCount={rowCount}
-                    rowHeight={50}
-                    rowRenderer={this._rowRenderer.bind(this)}
-                    width={width}
-                  />
-                ) : null)}
-              />
-            )}
-          </InfiniteLoader>
-        </div>
+          {({ onRowsRendered, registerChild }) => (
+            <AutoSizer
+              style={{ overflow: 'visible', width: 0 }}
+              renderProp={({ width }) => (width ? (
+                <List
+                  ref={(ref) => {
+                    this.listRef = ref;
+                    registerChild(ref);
+                  }}
+                  role="grid"
+                  scrollElement={scrollElement}
+                  onRowsRendered={onRowsRendered}
+                  overscanRowCount={nbOfRowsToLoad}
+                  rowCount={rowCount}
+                  rowHeight={50}
+                  rowRenderer={this._rowRenderer.bind(this)}
+                  width={width}
+                />
+              ) : null)}
+            />
+          )}
+        </InfiniteLoader>
       </div>
     );
   }
@@ -346,7 +334,6 @@ class ListLinesContent extends Component {
 }
 
 ListLinesContent.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   initialLoading: PropTypes.bool,
   loadMore: PropTypes.func,
@@ -381,4 +368,4 @@ ListLinesContent.propTypes = {
   isCoverage: PropTypes.bool,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ListLinesContent);
+export default R.compose(inject18n)(ListLinesContent);

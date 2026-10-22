@@ -9,10 +9,6 @@ import inject18n from '../i18n';
 const numberOfCardsPerLine = 4;
 
 const styles = () => ({
-  windowScrollerWrapper: {
-    marginLeft: -10,
-    flex: '1 1 auto',
-  },
   defaultCard: {
     padding: '0 15px 30px 15px',
   },
@@ -182,56 +178,52 @@ class ListCardsContent extends Component {
       ? nbLineForCards + this.state.loadingCardCount
       : nbLineForCards;
     const rowCount = initialLoading ? nbOfLinesToLoad : nbLinesWithLoading;
-    const scrollElement = this.state.computedScrollElement || window;
+    const scrollElement = this.state.computedScrollElement || 'window';
     return (
       <div ref={this.containerRef}>
-        <div
-          key={scrollElement === window ? 'window' : 'element'}
-          className={styles.windowScrollerWrapper}
+        <InfiniteLoader
+          isRowLoaded={this._isCellLoaded}
+          loadMoreRows={this._loadMoreRows}
+          rowCount={globalCount}
         >
-          <InfiniteLoader
-            isRowLoaded={this._isCellLoaded}
-            loadMoreRows={this._loadMoreRows}
-            rowCount={globalCount}
-          >
-            {({ onRowsRendered, registerChild }) => {
-              this._onRowsRendered = onRowsRendered;
-              return (
-                <AutoSizer
-                  renderProp={({ width }) => (width ? (
-                    <ColumnSizer
-                      columnCount={numberOfCardsPerLine}
-                      width={width}
-                    >
-                      {({ adjustedWidth, getColumnWidth }) => {
-                        const columnWidth = getColumnWidth();
-                        return (
-                          <Grid
-                            ref={(ref) => {
-                              this.gridRef = ref;
-                              registerChild(ref);
-                            }}
-                            scrollElement={scrollElement === window ? 'window' : scrollElement}
-                            onRowsRendered={onRowsRendered}
-                            columnWidth={columnWidth}
-                            columnCount={numberOfCardsPerLine}
-                            rowHeight={rowHeight || 195}
-                            overscanColumnCount={numberOfCardsPerLine}
-                            overscanRowCount={2}
-                            rowCount={rowCount}
-                            cellRenderer={this._cellRenderer}
-                            onSectionRendered={this._onSectionRendered}
-                            width={adjustedWidth}
-                          />
-                        );
-                      }}
-                    </ColumnSizer>
-                  ) : null)}
-                />
-              );
-            }}
-          </InfiniteLoader>
-        </div>
+          {({ onRowsRendered, registerChild }) => {
+            this._onRowsRendered = onRowsRendered;
+            return (
+              <AutoSizer
+                style={{ overflow: 'visible', width: 0 }}
+                renderProp={({ width }) => (width ? (
+                  <ColumnSizer
+                    columnCount={numberOfCardsPerLine}
+                    width={width}
+                  >
+                    {({ adjustedWidth, getColumnWidth }) => {
+                      const columnWidth = getColumnWidth();
+                      return (
+                        <Grid
+                          ref={(ref) => {
+                            this.gridRef = ref;
+                            registerChild(ref);
+                          }}
+                          scrollElement={scrollElement}
+                          onRowsRendered={onRowsRendered}
+                          columnWidth={columnWidth}
+                          columnCount={numberOfCardsPerLine}
+                          rowHeight={rowHeight || 195}
+                          overscanColumnCount={numberOfCardsPerLine}
+                          overscanRowCount={2}
+                          rowCount={rowCount}
+                          cellRenderer={this._cellRenderer}
+                          onSectionRendered={this._onSectionRendered}
+                          width={adjustedWidth}
+                        />
+                      );
+                    }}
+                  </ColumnSizer>
+                ) : null)}
+              />
+            );
+          }}
+        </InfiniteLoader>
       </div>
     );
   }

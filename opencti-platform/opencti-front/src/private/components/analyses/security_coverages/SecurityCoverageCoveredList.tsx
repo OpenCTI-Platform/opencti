@@ -30,6 +30,7 @@ const SecurityCoverageCoveredList = <T,>({
   return (
     <div style={{ height, width: '100%', ...style }}>
       <AutoSizer
+        style={{ overflow: 'visible', width: 0 }}
         renderProp={({ width }) => (width ? (
           <List
             role="grid"
