@@ -497,6 +497,8 @@ describe('formSubmit - deferred creation', () => {
     name: 'Lookup Form',
     form_schema: JSON.stringify({ fields: [], mainEntityType: 'Malware', mainEntityLookup: true }),
   };
+  // Creating a label is a right of its own, the pending labels of these tests need it
+  const labelManager = { ...mockUser, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }, { name: 'SETTINGS_SETLABELS' }] };
   const pushedBundle = () => {
     const message = vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3] as any;
     return JSON.parse(Buffer.from(message.content, 'base64').toString('utf-8'));
@@ -534,7 +536,7 @@ describe('formSubmit - deferred creation', () => {
       ],
     };
 
-    const result = await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values), files: [upload('hello')] } as any, false);
+    const result = await formSubmit(mockContext, labelManager, { formId: 'form-1', values: JSON.stringify(values), files: [upload('hello')] } as any, false);
 
     expect(result.success).toBe(true);
     const malware = pushedBundle().objects.find((o: any) => o.name === 'Pending Malware');
@@ -565,7 +567,7 @@ describe('formSubmit - deferred creation', () => {
       ],
     };
 
-    await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values) }, false);
+    await formSubmit(mockContext, labelManager, { formId: 'form-1', values: JSON.stringify(values) }, false);
 
     const malware = pushedBundle().objects.find((o: any) => o.name === 'Direct Malware');
     expect(malware.labels).toEqual(['existing-label', 'new-label']);
@@ -584,6 +586,23 @@ describe('formSubmit - deferred creation', () => {
     expect(malware.external_references).toEqual([
       { source_name: 'src', x_opencti_files: [{ name: 'report.txt', data: Buffer.from('report').toString('base64'), mime_type: 'text/plain' }] },
     ]);
+  });
+
+  it('should refuse the labels created in the form to a user who cannot manage labels', async () => {
+    const values = {
+      mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'Labelled Malware' }, refs: { objectLabel: [{ pending: 'l1' }] } }],
+      pendingObjects: [{ id: 'l1', entityType: 'Label', input: { value: 'new-label' } }],
+    };
+    const submit = (user: any, isDraft: boolean) => formSubmit(mockContext, user, { formId: 'form-1', values: JSON.stringify(values) }, isDraft);
+    const editor = { ...mockUser, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
+    await expect(submit(editor, false)).rejects.toThrow('You are not allowed to create labels.');
+    expect(rabbitmq.pushBundleToWorker).not.toHaveBeenCalled();
+    // the right of the draft scope counts for a draft destination only
+    const inDraft = { ...editor, capabilitiesInDraft: [{ name: 'SETTINGS_SETLABELS' }] };
+    vi.spyOn(draftWorkspaceDomain, 'addDraftWorkspace').mockResolvedValue({ id: 'draft-1' } as any);
+    await expect(submit(inDraft, false)).rejects.toThrow('You are not allowed to create labels.');
+    await expect(submit(inDraft, true)).resolves.toMatchObject({ success: true });
+    await expect(submit({ ...mockUser, capabilities: [{ name: BYPASS }] }, false)).resolves.toMatchObject({ success: true });
   });
 
   it('should still accept the legacy pending payload', async () => {
@@ -636,7 +655,7 @@ describe('formSubmit - deferred creation', () => {
     });
     const values = { mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'Draft Malware' }, refs: { objectLabel: [{ pending: 'l1' }] } }], pendingObjects: [{ id: 'l1', entityType: 'Label', input: { value: 'draft-label' } }] };
 
-    const result = await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values) }, true);
+    const result = await formSubmit(mockContext, labelManager, { formId: 'form-1', values: JSON.stringify(values) }, true);
 
     expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledTimes(1);
     expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: 'draft-1', applicant_id: 'user-1' });
