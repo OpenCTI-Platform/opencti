@@ -1,13 +1,6 @@
-import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
+import NavToolbarMenu from '@components/common/menus/NavToolbarMenu';
+import { menuEntries } from './HealthMenu.entries';
 
-const HealthMenu = () => {
-  const entries: MenuEntry[] = [
-    {
-      path: '/dashboard/data/health/operations',
-      label: 'Operations',
-    },
-  ];
-  return <NavToolbarMenu entries={entries} />;
-};
+const HealthMenu = () => <NavToolbarMenu entries={menuEntries} />;
 
 export default HealthMenu;
