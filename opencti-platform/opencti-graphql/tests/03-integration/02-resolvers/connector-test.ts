@@ -583,6 +583,14 @@ describe('Connector resolver standard behaviour', () => {
       expect(await pingWithErrors(connectorInfo)).toEqual(errors);
     });
 
+    it('should apply the downgrade of a stored code reported in an oversized payload', async () => {
+      await pingWithErrors({ ...baseConnectorInfo, errors: [{ code: 'DOWNGRADED', message: '', criticity: 3 }] });
+      const others = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `OTHER_${index}`, message: '', criticity: 1 }));
+      const storedErrors = await pingWithErrors({ ...baseConnectorInfo, errors: [{ code: 'DOWNGRADED', message: '', criticity: 0 }, ...others] });
+      expect(storedErrors).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
+      expect(storedErrors.map(({ code }) => code)).not.toContain('DOWNGRADED');
+    });
+
     it('should keep only the most critical errors across pings', async () => {
       const lowErrors = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `LOW_${index}`, message: '', criticity: 0 }));
       await pingWithErrors({ ...baseConnectorInfo, errors: lowErrors });
