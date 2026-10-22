@@ -4,6 +4,7 @@ import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
+import { shutdownSafeEjsPool } from './utils/safeEjs.pool';
 
 // region platform start and stop
 export const platformStart = async () => {
@@ -56,6 +57,8 @@ export const platformStop = async () => {
   await cacheManager.shutdown();
   // Destroy the modules
   await shutdownModules();
+  // Shutdown the safe-ejs worker pool
+  await shutdownSafeEjsPool();
   // Shutdown the redis clients
   shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);
