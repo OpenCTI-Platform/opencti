@@ -7,6 +7,7 @@ import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
+import { shutdownSafeEjsPool } from './utils/safeEjs.pool';
 
 // region platform start and stop
 export const platformStart = async () => {
@@ -74,6 +75,8 @@ export const platformStop = async () => {
   await cacheManager.shutdown();
   // Destroy the modules
   await shutdownModules();
+  // Shutdown the safe-ejs worker pool
+  await shutdownSafeEjsPool();
   // Shutdown the redis clients
   shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);
