@@ -36,7 +36,6 @@ Roles that had Create / Update knowledge received it automatically at upgrade, i
 
 - While a submission is imported, only Create / Update knowledge is granted to the user. Every other right still applies (markings, confidence, organization, draft).
 - Creating a new label through a form requires the **Manage labels** capability.
-- Creating objects on the fly (the **+** of a lookup field) requires **Create / Update knowledge** in the main scope when the submission is made in main. Without it, the **+** is hidden while the submission goes to main, and it is available again when the submission is made in a draft.
 - The import dialog of the top bar and the form intake buttons of the entity lists are available to these users. The other import modes (file upload, step-by-step) still need the **Import knowledge** capability.
 
 
@@ -62,7 +61,7 @@ This has been built to offer advanced users the option to directly submit their 
 
 However, if your user is only able to create data via draft, due to the [user's specific draft capabilities (enterprise edition)](../administration/users.md) then the user will not be able to untick the box.
 By default, the form intake will be accessible to the user and the form intake output will result in a draft creation.
-A user who also has **Create knowledge via Form Intake** in the main scope is not forced into a draft: the submission can be made in main, without creating objects on the fly.
+A user who also has **Create knowledge via Form Intake** in the main scope is not forced into a draft: the submission can be made in main.
 
 ### Advanced draft settings
 
