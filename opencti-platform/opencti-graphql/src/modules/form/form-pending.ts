@@ -44,7 +44,9 @@ import { PENDING_EXTERNAL_REFERENCE } from './form-pending-marker';
 export type PendingRef = { existing: string } | { pending: string };
 
 // Limits of the payload, it comes from the client. They are checked before anything is read or loaded.
-export const MAX_PENDING_UPLOAD_BYTES = 40 * 1024 * 1024; // decoded size of all the uploads together
+// Sizes are the ones put in the bundle: an upload or a pooled object is counted once per copy (once per object or field that uses it).
+export const MAX_PENDING_UPLOAD_BYTES = 40 * 1024 * 1024; // decoded size of the uploads
+export const MAX_PENDING_POOLED_BYTES = 5 * 1024 * 1024; // attributes of the pooled labels and external references
 export const MAX_PENDING_ROOTS = 1000; // objects created in the lookup fields
 export const MAX_PENDING_POOL = 200; // pooled labels and external references
 export const MAX_PENDING_REFS_PER_OBJECT = 100; // references of one object, all kinds together
@@ -261,10 +263,35 @@ const materializePooledReference = (pooled: PendingObject, uploads: PendingUploa
   return reference;
 };
 
-// Indexes of the uploads the pending objects point to (roots and pool), only these are read.
-export const getPendingUploadIndexes = (values: Record<string, any>): number[] => {
-  const objects = [...getPendingRoots(values), ...toArray<PendingObject>(values.pendingObjects)];
-  return [...new Set(objects.flatMap((object) => (object.files ?? []).map((file) => file.uploadIndex)))].sort((a, b) => a - b);
+/**
+ * How many times each pooled object is put in the bundle: once per reference of a root, and once per entry of a
+ * direct field of the form. A pooled object nothing uses is never put in it.
+ */
+export const countPooledCopies = (values: Record<string, any>): Map<string, number> => {
+  const copies = new Map<string, number>();
+  const add = (id: string) => copies.set(id, (copies.get(id) ?? 0) + 1);
+  for (const root of getPendingRoots(values)) {
+    Object.values(getPendingRefs(root)).flatMap((refs) => toArray(refs)).forEach((ref) => isPendingRef(ref) && add(ref.pending));
+  }
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) node.forEach(walk);
+    else if (isPendingRef(node)) add(node.pending);
+    else if (isObject(node)) Object.values(node).forEach(walk);
+  };
+  Object.entries(values).filter(([key]) => key !== 'pendingObjects' && !isRootKey(key)).forEach(([, value]) => walk(value));
+  return copies;
+};
+
+// How many times each upload is put in the bundle: once per file of a root, once per copy of its pooled object. Only these are read.
+export const getPendingUploadCopies = (values: Record<string, any>): Map<number, number> => {
+  const pooledCopies = countPooledCopies(values);
+  const copies = new Map<number, number>();
+  const add = (object: PendingObject, count: number) => (object.files ?? []).forEach((file) => {
+    if (count > 0) copies.set(file.uploadIndex, (copies.get(file.uploadIndex) ?? 0) + count);
+  });
+  getPendingRoots(values).forEach((root) => add(root, 1));
+  toArray<PendingObject>(values.pendingObjects).forEach((pooled) => add(pooled, pooledCopies.get(pooled.id as string) ?? 0));
+  return new Map([...copies].sort(([a], [b]) => a - b));
 };
 
 const isObject = (value: unknown): value is Record<string, any> => typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -343,6 +370,9 @@ export const validatePendingPayload = (values: Record<string, any>, uploadCount:
     }
     if (object.id === undefined) throw FunctionalError('A pooled pending object requires an id', { entityType: object.entityType });
     if (object.refs) throw FunctionalError('A pooled pending object cannot have refs', { id: object.id });
+    if (object.entityType === ENTITY_TYPE_LABEL && toArray(object.files).length > 0) {
+      throw FunctionalError('Files cannot be attached to a label created in a form', { id: object.id });
+    }
     const required = POOLED_REQUIRED_ATTRIBUTE[object.entityType];
     if (!isFilledString(object.input[required])) {
       throw FunctionalError('A pooled pending object lacks a required attribute', { id: object.id, entityType: object.entityType, attribute: required });
@@ -383,7 +413,15 @@ export const validatePendingPayload = (values: Record<string, any>, uploadCount:
       }
     }
   }
-  const referenced = new Set(getPendingUploadIndexes(values));
+  const pooledCopies = countPooledCopies(values);
+  let pooledBytes = 0;
+  for (const object of pool) {
+    pooledBytes += (pooledCopies.get(object.id as string) ?? 0) * Buffer.byteLength(JSON.stringify(object.input));
+    if (pooledBytes > MAX_PENDING_POOLED_BYTES) {
+      throw FunctionalError('The labels and external references created in the form are too large once copied on the objects that use them', { maxBytes: MAX_PENDING_POOLED_BYTES });
+    }
+  }
+  const referenced = getPendingUploadCopies(values);
   for (let index = 0; index < uploadCount; index += 1) {
     if (!referenced.has(index)) throw FunctionalError('An upload is not referenced by any object created in the form', { uploadIndex: index });
   }
@@ -471,18 +509,19 @@ export const resolvePendingFieldRefs = (values: Record<string, any>, uploads: Pe
 };
 
 /**
- * Reads the given uploads (all by default) into memory as base64, one after the other. The result is indexed
- * like the uploads, the ones that are not asked for stay empty. The decoded size of the whole is capped.
+ * Reads the given uploads (all by default, once each) into memory as base64, one after the other. The result is indexed
+ * like the uploads, the ones that are not asked for stay empty. The decoded size is capped as put in the bundle: an upload
+ * counts once per copy (getPendingUploadCopies).
  */
-export const readUploads = async (uploads: any[] | null | undefined, indexes?: Iterable<number>): Promise<PendingUpload[]> => {
+export const readUploads = async (uploads: any[] | null | undefined, copies?: Map<number, number>): Promise<PendingUpload[]> => {
   const list = uploads ?? [];
   const result: PendingUpload[] = [];
   let totalBytes = 0;
-  for (const index of indexes ?? list.keys()) {
+  for (const [index, count] of copies ?? list.map((_, i) => [i, 1] as const)) {
     const { filename, mimetype, createReadStream } = await list[index];
     const chunks: Buffer[] = [];
     for await (const chunk of createReadStream()) {
-      totalBytes += chunk.length;
+      totalBytes += chunk.length * count;
       if (totalBytes > MAX_PENDING_UPLOAD_BYTES) {
         throw FunctionalError('The uploads of the form are too large', { maxBytes: MAX_PENDING_UPLOAD_BYTES });
       }
