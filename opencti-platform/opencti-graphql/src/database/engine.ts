@@ -2,6 +2,7 @@ import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as Elk9Client } from '@elastic/elasticsearch-v9';
+import { ENGINE_CLIENT_AUTO, probeEngine, resolveEngineClient } from './engine-detection';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
@@ -461,62 +462,48 @@ export const searchEngineInit = async (): Promise<boolean> => {
       },
     }) : {}),
   };
-  // Select the correct engine
-  let engineVersion;
-  let enginePlatform;
-  const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
-  const engineCheck = booleanConf('elasticsearch:engine_check', true);
-  const elasticSearchClient = new ElkClient(elkSearchConfiguration);
-  // Single type bridge for the dual Elastic client: the 9.x instance is handled through the
-  // 8.x types everywhere (same call shapes at runtime, response envelope unchanged).
-  const elasticSearch9Client = new Elk9Client(elkSearchConfiguration) as unknown as ElkClient;
-  const openSearchClient = new OpenClient(openSearchConfiguration);
-  // ES 8 rejects the 9.x client requests (compatible-with=9 is one major ahead), so an ES 8 server
-  // needs the 8.x client. ES 9 accepts the 8.x client through REST API compatibility (compatible-with=8
-  // is one major back): this is why the 8.x client can probe an ES 9 server below, but on ES 9 the
-  // 9.x client is preferred, so the platform does not rely on that compatibility mode.
-  const elkClientForVersion = (version: string) => (semver.major(semver.coerce(version) ?? '8.0.0') >= 9 ? elasticSearch9Client : elasticSearchClient);
-  if (engineSelector === ELK_ENGINE) {
-    logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
-    setEngine(elasticSearchClient, true);
-    const searchVersion = await searchEngineVersion();
-    if (engineCheck && searchVersion.platform !== ELK_ENGINE) {
-      throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
-    }
-    enginePlatform = ELK_ENGINE;
-    engineVersion = searchVersion.version;
-    setEngine(elkClientForVersion(engineVersion), true);
-  } else if (engineSelector === OPENSEARCH_ENGINE) {
-    logApp.info(`[SEARCH] Engine ${OPENSEARCH_ENGINE} client selected by configuration`);
-    setEngine(openSearchClient, false);
-    const searchVersion = await searchEngineVersion();
-    if (engineCheck && searchVersion.platform !== OPENSEARCH_ENGINE) {
-      throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
-    }
-    enginePlatform = OPENSEARCH_ENGINE;
-    engineVersion = searchVersion.version;
+  // Select the client: forced, AWS SigV4 or detected from the server (see engine-detection.ts)
+  const legacyKeys = ['elasticsearch:engine_selector', 'elasticsearch:engine_check'].filter((key) => conf.get(key) !== undefined);
+  if (legacyKeys.length > 0) {
+    logApp.warn(`[SEARCH] ${legacyKeys.join(' and ')} no longer apply and are ignored: the client is detected from the server, or forced with elasticsearch:engine_client`);
+  }
+  const decision = await resolveEngineClient(
+    conf.get('elasticsearch:engine_client') || ENGINE_CLIENT_AUTO,
+    region,
+    () => probeEngine({
+      url: elkSearchConfiguration.node,
+      auth: elkSearchConfiguration.auth,
+      ca,
+      rejectUnauthorized: elkSearchConfiguration.tls.rejectUnauthorized,
+      proxy: elkSearchConfiguration.proxy,
+      timeout: elkSearchConfiguration.requestTimeout,
+    }),
+  );
+  if (decision.client === 'opensearch') {
+    setEngine(new OpenClient(openSearchConfiguration), false);
+  } else if (decision.client === 'elasticsearch9') {
+    // Single type bridge for the dual Elastic client: the 9.x instance is handled through the
+    // 8.x types everywhere (same call shapes at runtime, response envelope unchanged).
+    setEngine(new Elk9Client(elkSearchConfiguration) as unknown as ElkClient, true);
   } else {
-    logApp.info(`[SEARCH] Engine client not specified, trying to discover it with ${OPENSEARCH_ENGINE} client`);
-    setEngine(openSearchClient, false);
-    const searchVersion = await searchEngineVersion();
-    enginePlatform = searchVersion.platform;
-    logApp.info(`[SEARCH] Engine detected to ${enginePlatform}`);
-    engineVersion = searchVersion.version;
-    if (enginePlatform === ELK_ENGINE) {
-      setEngine(elkClientForVersion(engineVersion), true);
-    } else {
-      setEngine(openSearchClient, false);
-    }
+    setEngine(new ElkClient(elkSearchConfiguration), true);
   }
-  if (enginePlatform === ELK_ENGINE) {
-    const elkMajor = semver.major(semver.coerce(engineVersion) ?? '8.0.0');
-    logApp.info(`[SEARCH] Elasticsearch ${elkMajor}.x server detected, using the ${elkMajor >= 9 ? '9.x' : '8.x'} client`);
-    if (elkMajor < 9) {
-      logApp.warn('[SEARCH] Elasticsearch 8.x server support is deprecated and will be removed in a future release. Plan the upgrade to Elasticsearch 9.x (or OpenSearch).');
-    }
+  const enginePlatform = decision.client === 'opensearch' ? OPENSEARCH_ENGINE : ELK_ENGINE;
+  const engineVersion = decision.version ?? 'version not read';
+  const origin = {
+    detection: `detected from ${enginePlatform} ${engineVersion}`,
+    aws: 'AWS SigV4 (opensearch:region)',
+    configuration: 'forced by elasticsearch:engine_client',
+  }[decision.source];
+  logApp.info(`[SEARCH] Search engine client ${decision.client} selected, ${origin}`);
+  // Announced only when the server was read: a forced client says nothing about the server version
+  if (decision.source === 'detection' && decision.client === 'elasticsearch8') {
+    logApp.warn('[SEARCH] Elasticsearch versions before 9 are deprecated and their support will be removed in a future release. Plan the upgrade to Elasticsearch 9.x (or OpenSearch).');
   }
-  // Setup the platform runtime field option
-  isRuntimeSortingEnable = enginePlatform === ELK_ENGINE && semver.satisfies(engineVersion, '>=7.12.x');
+  // Setup the platform runtime field option: from the detected version, or trusted from the client
+  const detectedVersion = decision.version ? semver.coerce(decision.version) : null;
+  isRuntimeSortingEnable = enginePlatform === ELK_ENGINE
+    && (decision.client === 'elasticsearch9' || !detectedVersion || semver.gte(detectedVersion, '7.12.0'));
   const runtimeStatus = isRuntimeSortingEnable ? 'enabled' : 'disabled';
   // configure attachment processor
   attachmentProcessorEnabled = await elConfigureAttachmentProcessor();
