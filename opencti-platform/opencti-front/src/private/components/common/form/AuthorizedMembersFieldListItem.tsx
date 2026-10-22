@@ -107,6 +107,7 @@ const AuthorizedMembersFieldListItem = ({
                     {/* The library IconButton, not the local wrapper: `asChild` needs a trigger that forwards its ref. */}
                     <TooltipTrigger asChild>
                       <LibIconButton
+                        type="button"
                         variant="default"
                         priority="tertiary"
                         size="sm"
