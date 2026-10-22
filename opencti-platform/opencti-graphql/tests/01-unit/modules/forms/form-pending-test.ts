@@ -707,6 +707,16 @@ describe('files of pending objects', () => {
     expect(entity.description).toBe(`${external} ![pasted](data:image/png;base64,cA==)`);
   });
 
+  it('should count a pasted image once per place it is shown in the descriptions', () => {
+    const twice = `![a](opencti-image://temp/${TOKEN_A}) ![again](opencti-image://temp/${TOKEN_A}) ![b](opencti-image://temp/${TOKEN_B})`;
+    const root = malware({ input: { name: 'M', description: `${twice} ![a](opencti-image://temp/${TOKEN_A})` }, files: [image(0), image(1)] });
+    expect(getPendingUploadCopies({ mainEntityLookupPending: [root] })).toEqual(new Map([[0, 3], [1, 1]]));
+    // the same goes for a pooled external reference, on top of its copies
+    const pooled: PendingObject = { id: 'e1', entityType: 'External-Reference', input: { source_name: 's', url: 'https://example.com', description: twice }, files: [image(0), image(1)] };
+    const users = [malware({ refs: { externalReferences: [{ pending: 'e1' }] } }), malware({ refs: { externalReferences: [{ pending: 'e1' }] } })];
+    expect(getPendingUploadCopies({ mainEntityLookupPending: users, pendingObjects: [pooled] })).toEqual(new Map([[0, 4], [1, 2]]));
+  });
+
   it('should check the mime type of the upload, not the one the client declares', async () => {
     const input = { name: 'M', description: `![one](opencti-image://temp/${TOKEN_A})` };
     const svg = { filename: 'a.svg', mimetype: 'image/svg+xml', data: 'PHN2Zz4=' };
