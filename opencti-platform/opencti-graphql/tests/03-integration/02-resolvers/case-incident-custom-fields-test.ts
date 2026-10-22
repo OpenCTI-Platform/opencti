@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 
 const CUSTOM_FIELD_ADD_QUERY = gql`
   mutation CustomFieldDefinitionAddForCaseIncidentTest($input: CustomFieldDefinitionAddInput!) {
@@ -77,6 +78,14 @@ const CASE_INCIDENT_DELETE_QUERY = gql`
     caseIncidentDelete(id: $id)
   }
 `;
+
+// Managing the custom field definitions is an Enterprise Edition feature
+beforeAll(() => {
+  vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+});
+afterAll(() => {
+  vi.restoreAllMocks();
+});
 
 describe('Custom fields wired on Case-Incident', () => {
   let customFieldId: string;
