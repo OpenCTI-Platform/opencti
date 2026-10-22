@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeStateOrder, findForwardEdges, findUnreachableStates } from '../../../src/modules/workflow/domain/workflow-ordering';
+import { computeStateOrder, findStatesWithOutgoingTransitions, findUnreachableStates } from '../../../src/modules/workflow/domain/workflow-ordering';
 
 describe('workflow-ordering: computeStateOrder', () => {
   it('yields sequential orders 0,1,2,3 for a linear chain', () => {
@@ -193,39 +193,21 @@ describe('workflow-ordering: findUnreachableStates', () => {
   });
 });
 
-describe('workflow-ordering: findForwardEdges', () => {
-  it('returns the edges reachable forward from a state', () => {
-    const edges = findForwardEdges('new', [
+describe('workflow-ordering: findStatesWithOutgoingTransitions', () => {
+  it('returns the states that a transition leaves, so the others are final', () => {
+    const states = findStatesWithOutgoingTransitions([
       { from: 'new', to: 'in_progress' },
-      { from: 'in_progress', to: 'review' },
-      { from: 'review', to: 'closed' },
-    ], 'in_progress');
-    expect(edges).toEqual(new Set(['in_progress->review', 'review->closed']));
-  });
-
-  it('does not follow a way back', () => {
-    const edges = findForwardEdges('new', [
-      { from: 'new', to: 'in_progress' },
-      { from: 'in_progress', to: 'closed' },
-      { from: 'closed', to: 'in_progress' },
-      { from: 'closed', to: 'archived' },
-    ], 'closed');
-    expect(edges).toEqual(new Set(['closed->archived']));
+      { from: ['in_progress', 'review'], to: 'closed' },
+      { from: 'closed', to: 'closed' },
+    ]);
+    expect(states).toEqual(new Set(['new', 'in_progress', 'review', 'closed']));
   });
 
   it('ignores transitions from any state', () => {
-    const edges = findForwardEdges('new', [
+    const states = findStatesWithOutgoingTransitions([
       { from: 'new', to: 'closed' },
       { from: '*', to: 'new' },
-    ], 'closed');
-    expect(edges.size).toBe(0);
-  });
-
-  it('returns nothing for an unreachable state', () => {
-    const edges = findForwardEdges('new', [
-      { from: 'new', to: 'closed' },
-      { from: 'orphan', to: 'archived' },
-    ], 'orphan');
-    expect(edges.size).toBe(0);
+    ]);
+    expect(states).toEqual(new Set(['new']));
   });
 });
