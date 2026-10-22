@@ -436,15 +436,6 @@ export const convertFormSchemaToYupSchema = (
   return Yup.object().shape(shape);
 };
 
-// Are objects created on the fly picked in the lookups of the form? They are created at submission, in its destination.
-export const hasPendingLookupCreation = (values: Record<string, unknown>, schema: FormSchemaDefinition): boolean => {
-  const lookupNames = [
-    ...(schema.mainEntityLookup ? ['mainEntityLookup'] : []),
-    ...(schema.additionalEntities ?? []).filter((entity) => entity.lookup).map((entity) => `additional_${entity.id}_lookup`),
-  ];
-  return lookupNames.some((name) => [values[name]].flat().some((option) => (option as PendingOption | null | undefined)?.isPendingCreation === true));
-};
-
 type SubmissionValues = Record<string, string | string[] | null | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>;
 
 export const formatFormDataForSubmission = (

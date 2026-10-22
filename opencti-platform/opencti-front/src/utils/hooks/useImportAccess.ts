@@ -58,7 +58,6 @@ const useImportAccess = () => {
   return {
     isForcedImportToDraft,
     isForcedFormSubmissionToDraft,
-    hasKnowledgeUpdateInMain,
     hasOnlyAccessToImportDraftTab,
     hasOnlyAccessToFormImport,
     canSubmitForms,
