@@ -171,7 +171,7 @@ const InvestigationEnrichmentExpand = ({
 
   /**
    * Adds to the graph the touched entities of a ticked type, and the touched
-   * relationships of a ticked type with their ends.
+   * relationships of a ticked type with their ends, then marks the work as reviewed.
    */
   const onSubmitExpand: InvestigationExpandFormProps['onSubmit'] = async (
     { entity_types, relationship_types },
@@ -230,7 +230,8 @@ const InvestigationEnrichmentExpand = ({
         return object ? [object] : [];
       }));
       resetForm();
-      onClose();
+      // Expanding reviews the work: it moves to done, which also closes the dialog.
+      onDismiss(work.id);
     } finally {
       setLinearProgress(false);
     }
