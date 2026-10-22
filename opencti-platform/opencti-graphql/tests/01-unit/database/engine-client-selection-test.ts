@@ -1,77 +1,120 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// The server every fake client answers for; each test sets it before calling searchEngineInit.
-const { server, FakeElk8Client, FakeElk9Client, FakeOpenClient } = vi.hoisted(() => {
-  const serverState = { distribution: 'elasticsearch', number: '8.19.0', tagline: 'You Know, for Search' };
-  const serverInfo = () => ({ version: { distribution: serverState.distribution, number: serverState.number }, tagline: serverState.tagline });
+// Fake clients, and the answer of GET / that each test sets before calling searchEngineInit.
+const { probe, FakeElk8Client, FakeElk9Client, FakeOpenClient } = vi.hoisted(() => {
   class Elk8ClientStub {
     ingest = { putPipeline: vi.fn(async () => ({})) };
-
-    info = vi.fn(async () => serverInfo());
   }
   class Elk9ClientStub {
     ingest = { putPipeline: vi.fn(async () => ({})) };
-
-    info = vi.fn(async () => serverInfo());
   }
   class OpenClientStub {
     ingest = { putPipeline: vi.fn(async () => ({ body: {} })) };
-
-    info = vi.fn(async () => ({ body: serverInfo() }));
   }
-  return { server: serverState, FakeElk8Client: Elk8ClientStub, FakeElk9Client: Elk9ClientStub, FakeOpenClient: OpenClientStub };
+  return { probe: vi.fn(), FakeElk8Client: Elk8ClientStub, FakeElk9Client: Elk9ClientStub, FakeOpenClient: OpenClientStub };
 });
 
 vi.mock('@elastic/elasticsearch', () => ({ Client: FakeElk8Client }));
 vi.mock('@elastic/elasticsearch-v9', () => ({ Client: FakeElk9Client }));
 vi.mock('@opensearch-project/opensearch', () => ({ Client: FakeOpenClient }));
 vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() => ({})) }));
+// Only the network call is replaced: the decision rules run for real
+vi.mock('../../../src/database/engine-detection', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/engine-detection')>()),
+  probeEngine: probe,
+}));
 
 import conf, { logApp } from '../../../src/config/conf';
-import { engine, isElkEngine, searchEngineInit } from '../../../src/database/engine';
+import { engine, isElkEngine, isRuntimeSortEnable, searchEngineInit } from '../../../src/database/engine';
 
-const DEPRECATION_WARNING = expect.stringContaining('Elasticsearch 8.x server support is deprecated');
+const DEPRECATION_WARNING = expect.stringContaining('Elasticsearch versions before 9 are deprecated');
+const ES8 = { version: { number: '8.19.0', build_flavor: 'default' }, tagline: 'You Know, for Search' };
+const ES9 = { version: { number: '9.1.0', build_flavor: 'default' }, tagline: 'You Know, for Search' };
+const OPENSEARCH = { version: { distribution: 'opensearch', number: '3.7.0' }, tagline: 'The OpenSearch Project: https://opensearch.org/' };
 
-const initEngine = async (selector: 'elk' | 'opensearch' | 'auto', serverVersion: string, distribution = 'elasticsearch') => {
-  server.number = serverVersion;
-  server.distribution = distribution;
-  server.tagline = distribution === 'opensearch' ? 'The OpenSearch Project: https://opensearch.org/' : 'You Know, for Search';
+const initEngine = async (settings: Record<string, unknown>) => {
   const realGet = conf.get.bind(conf);
-  vi.spyOn(conf, 'get').mockImplementation((key?: string) => {
-    if (key === 'elasticsearch:engine_selector') return selector;
-    return realGet(key as string);
-  });
+  vi.spyOn(conf, 'get').mockImplementation((key?: string) => (key && key in settings ? settings[key] : realGet(key as string)));
   await searchEngineInit();
 };
 
-describe('engine: Elasticsearch client selection', () => {
+describe('engine: search engine client selection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
   });
 
-  it.each(['elk', 'auto'] as const)('should use the 8.x client on an Elasticsearch 8 server (selector %s)', async (selector) => {
+  it('should detect Elasticsearch 8 and use the 8.x client, with the deprecation warning', async () => {
+    probe.mockResolvedValue(ES8);
     const warn = vi.spyOn(logApp, 'warn');
-    await initEngine(selector, '8.19.0');
+    await initEngine({ 'elasticsearch:engine_client': 'auto' });
 
     expect(engine).toBeInstanceOf(FakeElk8Client);
     expect(isElkEngine()).toBe(true);
+    expect(isRuntimeSortEnable()).toBe(true);
     expect(warn).toHaveBeenCalledWith(DEPRECATION_WARNING);
   });
 
-  it.each(['elk', 'auto'] as const)('should use the 9.x client on an Elasticsearch 9 server (selector %s)', async (selector) => {
+  it('should detect Elasticsearch 9 and use the 9.x client, without the deprecation warning', async () => {
+    probe.mockResolvedValue(ES9);
     const warn = vi.spyOn(logApp, 'warn');
-    await initEngine(selector, '9.1.0');
+    await initEngine({ 'elasticsearch:engine_client': 'auto' });
 
     expect(engine).toBeInstanceOf(FakeElk9Client);
     expect(isElkEngine()).toBe(true);
     expect(warn).not.toHaveBeenCalledWith(DEPRECATION_WARNING);
   });
 
-  it.each(['opensearch', 'auto'] as const)('should keep the OpenSearch client on an OpenSearch server (selector %s)', async (selector) => {
-    await initEngine(selector, '3.7.0', 'opensearch');
+  it('should detect OpenSearch and use the OpenSearch client', async () => {
+    probe.mockResolvedValue(OPENSEARCH);
+    await initEngine({ 'elasticsearch:engine_client': 'auto' });
 
     expect(engine).toBeInstanceOf(FakeOpenClient);
     expect(isElkEngine()).toBe(false);
+    expect(isRuntimeSortEnable()).toBe(false);
+  });
+
+  it.each([
+    ['elasticsearch8', FakeElk8Client, true],
+    ['elasticsearch9', FakeElk9Client, true],
+    ['opensearch', FakeOpenClient, false],
+  ] as const)('should trust a forced %s client without reading the server', async (client, expectedClass, isElk) => {
+    const warn = vi.spyOn(logApp, 'warn');
+    await initEngine({ 'elasticsearch:engine_client': client });
+
+    expect(probe).not.toHaveBeenCalled();
+    expect(engine).toBeInstanceOf(expectedClass);
+    expect(isElkEngine()).toBe(isElk);
+    expect(warn).not.toHaveBeenCalledWith(DEPRECATION_WARNING);
+  });
+
+  it('should refuse an unknown forced client', async () => {
+    await expect(initEngine({ 'elasticsearch:engine_client': 'elasticsearch10' })).rejects.toThrow('Invalid elasticsearch:engine_client');
+  });
+
+  it('should use the OpenSearch client with AWS SigV4, without reading the server', async () => {
+    await initEngine({ 'elasticsearch:engine_client': 'auto', 'opensearch:region': 'eu-west-1' });
+
+    expect(probe).not.toHaveBeenCalled();
+    expect(engine).toBeInstanceOf(FakeOpenClient);
+  });
+
+  it('should refuse a forced Elasticsearch client with AWS SigV4', async () => {
+    await expect(initEngine({ 'elasticsearch:engine_client': 'elasticsearch9', 'opensearch:region': 'eu-west-1' }))
+      .rejects.toThrow('must be opensearch with AWS SigV4');
+  });
+
+  it('should stop when the server cannot be read', async () => {
+    probe.mockRejectedValue(new Error('Search engine seems down'));
+    await expect(initEngine({ 'elasticsearch:engine_client': 'auto' })).rejects.toThrow('Search engine seems down');
+  });
+
+  it('should warn that the former settings are ignored', async () => {
+    probe.mockResolvedValue(ES9);
+    const warn = vi.spyOn(logApp, 'warn');
+    await initEngine({ 'elasticsearch:engine_client': 'auto', 'elasticsearch:engine_selector': 'elk', 'elasticsearch:engine_check': true });
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('elasticsearch:engine_selector and elasticsearch:engine_check no longer apply'));
+    expect(engine).toBeInstanceOf(FakeElk9Client);
   });
 });
