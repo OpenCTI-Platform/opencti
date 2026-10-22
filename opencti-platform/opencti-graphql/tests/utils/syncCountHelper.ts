@@ -15,7 +15,8 @@ export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 testCreatedCounter['attack-pattern'] = 25;
 testCreatedCounter.campaign = 6;
-testCreatedCounter['case-incident'] = 19;
+// 3 created by workflow-closing-reason-test merge and external status write cases
+testCreatedCounter['case-incident'] = 22;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
@@ -84,7 +85,8 @@ testUpdatedCounter['intrusion-set'] = 5;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
-testUpdatedCounter['case-incident'] = 23;
+// 7 by workflow-closing-reason-test merge (1) and external status write (6) cases
+testUpdatedCounter['case-incident'] = 30;
 testUpdatedCounter.feedback = 1;
 testUpdatedCounter.report = 28;
 testUpdatedCounter['course-of-action'] = 3;
@@ -124,13 +126,14 @@ testMergedCounter.report = 3;
 testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
-testMergedCounter['case-incident'] = 1;
+testMergedCounter['case-incident'] = 2; // 1 by workflow-closing-reason-test merge case
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
 testDeletedCounter['attack-pattern'] = 20;
 testDeletedCounter.campaign = 2;
-testDeletedCounter['case-incident'] = 17;
+// 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
+testDeletedCounter['case-incident'] = 19;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
