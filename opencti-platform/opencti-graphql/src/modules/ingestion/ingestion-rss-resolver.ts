@@ -17,7 +17,7 @@ import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionRss } from './ingestion-types';
 import { findIngestionLogsForFeed } from './ingestion-common';
-import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-resolvers';
 
 const ingestionRssResolvers: Resolvers = {
   Query: {

@@ -27,10 +27,13 @@ const StatusDot = ({ item, label }: StatusDotProps) => {
   return (
     <Tooltip title={label}>
       <Box
+        component="span"
         sx={{
+          display: 'inline-block',
+          verticalAlign: 'middle',
+          marginLeft: 1,
           width: 8,
           height: 8,
-          flexShrink: 0,
           borderRadius: '50%',
           backgroundColor: color,
           boxShadow: `0 0 6px ${color}`,
@@ -177,25 +180,23 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
                 </Tooltip>
               )}
             </Stack>
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Typography
+              sx={{
+                fontSize: 15,
+                fontWeight: 600,
+                lineHeight: 1.35,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
+              }}
+            >
               <Tooltip title={item.name} placement="bottom-start">
-                <Typography
-                  sx={{
-                    fontSize: 15,
-                    fontWeight: 600,
-                    lineHeight: 1.35,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {item.name}
-                </Typography>
+                <span>{item.name}</span>
               </Tooltip>
               <StatusDot item={item} label={statusText} />
-            </Stack>
+            </Typography>
           </Box>
           <DeployedIntegrationPopover item={item} onChange={onChange} />
         </Stack>

@@ -14166,8 +14166,7 @@ export enum IngestionHealthCheckSeverity {
 export enum IngestionHealthStatus {
   Critical = 'critical',
   Degraded = 'degraded',
-  Healthy = 'healthy',
-  Stopped = 'stopped'
+  Healthy = 'healthy'
 }
 
 export type IngestionJson = BasicObject & InternalObject & {

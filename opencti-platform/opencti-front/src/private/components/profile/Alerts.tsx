@@ -7,7 +7,7 @@ import { AlertsLinesPaginationQuery, AlertsLinesPaginationQuery$variables } from
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { Badge, Stack, Tooltip } from '@mui/material';
-import { Chip } from '@filigran/design-system';
+import { Chip, type ChipSeverity } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import { FunctionComponent, Suspense, useState } from 'react';
@@ -28,7 +28,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
-import { getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { computeNotificationLink, getFirstOperation, iconSelector } from './notifications/notificationUtils';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
@@ -132,12 +132,16 @@ interface AlertsLineActionsProps {
 
 // Event type is categorical, so the tone carries the distinction without asserting a level:
 // create -> low, update -> info, delete -> critical, several at once -> medium.
-const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'critical' => {
+// Ingestion health transitions follow IngestionHealthChip: critical, degraded -> high, recovered -> low.
+const operationSeverity = (operation: string): ChipSeverity => {
   switch (operation) {
     case 'update':
       return 'info';
     case 'delete':
+    case 'critical':
       return 'critical';
+    case 'degraded':
+      return 'high';
     case 'multiple':
       return 'medium';
     default:
@@ -253,11 +257,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
     const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
     if (isLinkAvailable && firstEvent.instance_id) {
       markAsRead();
-      if (firstEvent.entity_type === 'DraftWorkspace') {
-        navigate(`/dashboard/data/import/draft/${firstEvent.instance_id}`);
-      } else {
-        navigate(`/dashboard/id/${firstEvent.instance_id}`);
-      }
+      navigate(computeNotificationLink(firstEvent.instance_id, firstEvent.entity_type));
     }
   };
 
@@ -297,6 +297,9 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           update: t_i18n('Modification'),
           delete: t_i18n('Deletion'),
           none: t_i18n('Unknown'),
+          critical: t_i18n('Critical'),
+          degraded: t_i18n('Degraded'),
+          recovered: t_i18n('Recovered'),
         };
         return (
           <div style={{ fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
