@@ -539,7 +539,7 @@ export const readUploads = async (uploads: any[] | null | undefined, copies?: Ma
 export const materializePendingRoots = async (
   context: AuthContext,
   user: AuthUser,
-  roots: PendingObject[],
+  roots: PendingObject | PendingObject[], // the raw value of a root field, read like validatePendingPayload reads it
   values: Record<string, any>,
   uploads: PendingUpload[],
 ): Promise<StoreEntity[]> => {
@@ -562,7 +562,7 @@ export const materializePendingRoots = async (
     }));
   };
 
-  return Promise.all(roots.map(async (pending) => {
+  return Promise.all(toArray(roots).map(async (pending) => {
     const entity = buildPendingAttributes(pending);
     applyPendingFiles(entity, pending.files, uploads);
     for (const [key, refs] of Object.entries(getPendingRefs(pending)) as [PendingRefKey, PendingRef | PendingRef[]][]) {
