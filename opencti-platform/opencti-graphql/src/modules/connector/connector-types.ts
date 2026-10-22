@@ -14,6 +14,10 @@ export interface ConnectorInfoError {
   criticity: number;
 }
 
+export interface StoredConnectorInfoError extends ConnectorInfoError {
+  last_seen_at: number;
+}
+
 export interface ConnectorInfo {
   run_and_terminate: boolean;
   buffering: boolean;

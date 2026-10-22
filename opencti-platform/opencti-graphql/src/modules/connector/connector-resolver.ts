@@ -40,6 +40,7 @@ import {
   registerConnector,
   registerConnectorsManager,
   resetStateConnector,
+  loadConnectorErrors,
   managedConnectorAdd,
   managedConnectorEdit,
   updateConnectorCurrentStatus,
@@ -71,6 +72,7 @@ const connectorResolvers: Resolvers = {
     },
   },
   Connector: {
+    connector_info: async (cn) => (cn.connector_info ? { ...cn.connector_info, errors: await loadConnectorErrors(cn.internal_id) } : null),
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_priority_group: (cn) => cn.connector_priority_group ?? ConnectorPriorityGroup.Default,
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),

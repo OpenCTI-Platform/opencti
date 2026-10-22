@@ -95,7 +95,7 @@ def test_ping_sends_connector_info_errors(simple_connector, api_client, api_conn
 
 
 @pytest.mark.connectors
-def test_ping_without_errors_clears_previous_ones(
+def test_ping_accumulates_errors_and_does_not_clear_them(
     simple_connector, api_client, api_connector
 ):
     connector_id = simple_connector.to_input()["input"]["id"]
@@ -104,9 +104,20 @@ def test_ping_without_errors_clears_previous_ones(
     api_connector.ping(connector_id, {}, connector_info.all_details)
 
     connector_info.clear_errors()
+    connector_info.add_error("RATE_LIMITED", "Too many requests", 0)
     api_connector.ping(connector_id, {}, connector_info.all_details)
 
-    assert read_connector_errors(api_client, connector_id) == []
+    connector_info.clear_errors()
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+
+    assert read_connector_errors(api_client, connector_id) == [
+        {
+            "code": "API_UNREACHABLE",
+            "message": "Source API returned 503",
+            "criticity": 2,
+        },
+        {"code": "RATE_LIMITED", "message": "Too many requests", "criticity": 0},
+    ]
 
 
 @pytest.fixture(params=cases_of(ExternalImportConnectorTest), ids=case_id)
