@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import TransitionForm from './TransitionForm';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
-import { WorkflowActionType, CommentMode } from './utils';
+import { WorkflowActionType, CommentMode, type TargetStatusExits } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
@@ -43,11 +43,16 @@ vi.mock('../../../../../utils/hooks/useHelper', () => ({
 // ---------------------------------------------------------------------------
 // Helper: render TransitionForm inside a Formik context
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
+const renderForm = (
+  initialValues: Partial<WorkflowEditionFormValues>,
+  onSubmit = vi.fn(),
+  entityType = 'DraftWorkspace',
+  targetStatusExits?: TargetStatusExits,
+) => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <TransitionForm entityType={entityType} />
+        <TransitionForm entityType={entityType} targetStatusExits={targetStatusExits} />
       </Form>
     </Formik>,
     { userContext: createMockUserContext({ schema: { sdos: [{ id: 'Case-Incident', label: 'Case-Incident' }] } }) },
@@ -466,5 +471,16 @@ describe('TransitionForm – closing reason section', () => {
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ closingReason: CommentMode.required }), expect.anything());
     });
+  });
+
+  it('cannot be enabled on a transition into a status other transitions leave', () => {
+    renderForm({ event: 'close', syncActions: [] }, vi.fn(), 'Case-Incident', { status: 'Closed', events: ['reopen', 'archive'] });
+    expect((screen.getByRole('checkbox', { name: /enable closing reason/i }) as HTMLInputElement).disabled).toBe(true);
+    expect(screen.getByText("Only on a transition into a final state: 'Closed' is left by 'reopen', 'archive'.")).toBeTruthy();
+  });
+
+  it('can still be turned off when it was enabled before the status was left by a transition', () => {
+    renderForm({ event: 'close', syncActions: [], closingReason: CommentMode.allowed }, vi.fn(), 'Case-Incident', { status: 'Closed', events: ['reopen'] });
+    expect((screen.getByRole('checkbox', { name: /enable closing reason/i }) as HTMLInputElement).disabled).toBe(false);
   });
 });

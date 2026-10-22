@@ -3704,6 +3704,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "Допускаются только строчные буквы, цифры и дефисы",
   "Only lowercase letters, numbers and underscores, starting with a letter": "Только строчные буквы, цифры и подчеркивания, начинается с буквы",
   "Only main element in the bundle": "Только основной элемент пакета",
+  "Only on a transition into a final state: {status} is left by {transitions}.": "Только для перехода в конечное состояние: из {status} выходит переход {transitions}.",
   "Only successful tests allow the ingestion creation.": "Только успешные тесты позволяют создать впуск.",
   "Only successful tests allow the ingestion edition.": "Только успешно пройденные тесты дают право на включение издания.",
   "Only yourself and service accounts can be selected": "Можно выбрать только себя и служебные учетные записи",
