@@ -195,3 +195,12 @@ jobs:
         continue-on-error: true
         run: cat runner_resource_stat.log
 
+  # Single required check for branch protection: the shard count can change without touching the ruleset.
+  e2e-tests:
+    name: e2e tests
+    runs-on: ubuntu-26.04
+    needs: opencti-frontend-e2e-test
+    if: always()
+    steps:
+      - name: Fail if any e2e matrix job did not succeed
+        run: test "${{ needs.opencti-frontend-e2e-test.result }}" = "success"
