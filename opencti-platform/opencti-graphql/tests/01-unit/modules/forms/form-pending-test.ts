@@ -696,6 +696,17 @@ describe('files of pending objects', () => {
     await expect(materializePendingRoots(context, user, [root], { pendingObjects: [pooled] }, [])).rejects.toThrow(message);
   });
 
+  it('should only count the temp image tokens, not the other image URLs that contain a uuid', async () => {
+    const external = `![logo](https://example.com/images/${TOKEN_B}.png) ![storage](/storage/get/${TOKEN_B})`;
+    // the legacy payload has no file: an image URL of the description is left as it is
+    const [legacy] = await materializePendingRoots(context, user, [malware({ input: { name: 'M', description: external } })], {}, []) as any[];
+    expect(legacy.description).toBe(external);
+    // with a pasted image, only the temp token receives it
+    const mixed = `${external} ![pasted](opencti-image://temp/${TOKEN_A})`;
+    const [entity] = await materializePendingRoots(context, user, [malware({ input: { name: 'M', description: mixed }, files: [image(0)] })], {}, [png('cA==')]) as any[];
+    expect(entity.description).toBe(`${external} ![pasted](data:image/png;base64,cA==)`);
+  });
+
   it('should check the mime type of the upload, not the one the client declares', async () => {
     const input = { name: 'M', description: `![one](opencti-image://temp/${TOKEN_A})` };
     const svg = { filename: 'a.svg', mimetype: 'image/svg+xml', data: 'PHN2Zz4=' };

@@ -98,6 +98,9 @@ const EXISTING_ONLY_INPUT_REFS = [INPUT_ASSIGNEE, INPUT_PARTICIPANT] as const;
 // objectOrganization (sharing) needs its own capability, which a form submission does not grant: it is also refused in refs.
 const UNSUPPORTED_INPUT_FIELDS = ['objects', 'caseTemplates', 'content_mapping', 'authorized_members', 'restricted_members', 'customFieldValues', INPUT_GRANTED_REFS];
 
+// URL of an image pasted in a markdown editor, before its upload (see the markdown field of the frontend)
+const TEMP_IMAGE_SCHEME = 'opencti-image://temp/';
+
 const isRootKey = (key: string) => key === 'mainEntityLookupPending' || key.endsWith('_lookup_pending');
 
 const toArray = <T>(value: T | T[] | undefined | null): T[] => (value === undefined || value === null ? [] : [value].flat() as T[]);
@@ -236,7 +239,9 @@ const applyPendingFiles = (entity: Record<string, any>, files: PendingFile[] | u
   const regular = resolved.filter((file) => !file.embedded).map(({ name, data, mime_type }) => ({ name, data, mime_type }));
   if (regular.length > 0) entity.x_opencti_files = regular;
   const images = resolved.filter((file) => file.embedded);
-  const tokens = collectTempImageTokensFromDescriptionFields(entity);
+  // The shared collector takes the uuid of any image URL: only the temp images pasted in the editor are uploaded with the form
+  const markdown = JSON.stringify(entity);
+  const tokens = collectTempImageTokensFromDescriptionFields(entity).filter((token) => markdown.includes(`${TEMP_IMAGE_SCHEME}${token}`));
   if (images.length !== tokens.length) {
     throw FunctionalError('The embedded images do not match the image references of the description', { images: images.length, references: tokens.length });
   }
