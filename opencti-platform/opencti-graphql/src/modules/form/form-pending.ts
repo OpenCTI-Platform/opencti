@@ -216,6 +216,12 @@ const buildPendingAttributes = (pending: PendingObject): Record<string, any> => 
   return entity;
 };
 
+// The shared collector takes the uuid of any image URL: only the temp images pasted in the editor are uploaded with the form
+const getTempImageTokens = (payload: unknown): string[] => {
+  const markdown = JSON.stringify(payload);
+  return collectTempImageTokensFromDescriptionFields(payload).filter((token) => markdown.includes(`${TEMP_IMAGE_SCHEME}${token}`));
+};
+
 /**
  * Attach the uploaded files of a pending object to its store entity.
  * Regular files are attached as they are. Markdown images (embedded) replace the temp image tokens of the
@@ -239,9 +245,7 @@ const applyPendingFiles = (entity: Record<string, any>, files: PendingFile[] | u
   const regular = resolved.filter((file) => !file.embedded).map(({ name, data, mime_type }) => ({ name, data, mime_type }));
   if (regular.length > 0) entity.x_opencti_files = regular;
   const images = resolved.filter((file) => file.embedded);
-  // The shared collector takes the uuid of any image URL: only the temp images pasted in the editor are uploaded with the form
-  const markdown = JSON.stringify(entity);
-  const tokens = collectTempImageTokensFromDescriptionFields(entity).filter((token) => markdown.includes(`${TEMP_IMAGE_SCHEME}${token}`));
+  const tokens = getTempImageTokens(entity);
   if (images.length !== tokens.length) {
     throw FunctionalError('The embedded images do not match the image references of the description', { images: images.length, references: tokens.length });
   }
@@ -288,13 +292,29 @@ export const countPooledCopies = (values: Record<string, any>): Map<string, numb
   return copies;
 };
 
-// How many times each upload is put in the bundle: once per file of a root, once per copy of its pooled object. Only these are read.
+/**
+ * How many times each upload is put in the bundle: once per file of a root, once per copy of its pooled object. Only these are read.
+ * A pasted image is written in the description at each place it is shown: it counts once per place (the images are given in the
+ * order of their tokens, see applyPendingFiles).
+ */
 export const getPendingUploadCopies = (values: Record<string, any>): Map<number, number> => {
   const pooledCopies = countPooledCopies(values);
   const copies = new Map<number, number>();
-  const add = (object: PendingObject, count: number) => (object.files ?? []).forEach((file) => {
-    if (count > 0) copies.set(file.uploadIndex, (copies.get(file.uploadIndex) ?? 0) + count);
-  });
+  const add = (object: PendingObject, count: number) => {
+    if (count === 0) return;
+    const markdown = JSON.stringify(object.input);
+    const tokens = getTempImageTokens(object.input);
+    let image = 0;
+    (object.files ?? []).forEach((file) => {
+      let places = 1;
+      if (file.embedded === true) {
+        const token = tokens[image];
+        image += 1;
+        if (token) places = Math.max(1, markdown.split(`${TEMP_IMAGE_SCHEME}${token}`).length - 1);
+      }
+      copies.set(file.uploadIndex, (copies.get(file.uploadIndex) ?? 0) + count * places);
+    });
+  };
   getPendingRoots(values).forEach((root) => add(root, 1));
   toArray<PendingObject>(values.pendingObjects).forEach((pooled) => add(pooled, pooledCopies.get(pooled.id as string) ?? 0));
   return new Map([...copies].sort(([a], [b]) => a - b));
