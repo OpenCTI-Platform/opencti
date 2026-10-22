@@ -14,6 +14,11 @@ import {
   isHeartbeatAlive,
 } from './ingestionHealth-registry';
 
+// A stored code can be unknown to this platform version (written by another one): undefined then
+const findHealthCheckDefinition = (code: string): HealthCheckDefinition | undefined => {
+  return HEALTH_CHECK_REGISTRY[code as HealthCheckCode] as HealthCheckDefinition | undefined;
+};
+
 // region evaluation (pure, no I/O)
 /**
  * Runs one check against one ingestor, giving its getFailure what the kind of the check judges:
@@ -71,8 +76,8 @@ export const computeIngestionHealthChecks = (
 export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: SourceIngestionHealthContext): IngestionHealthStatus | null => {
   // A code unknown to this platform version has no definition: it cannot change the status
   const healthChecks = checks
-    .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code])
-    .filter((definition) => !!definition);
+    .map((check) => findHealthCheckDefinition(check.health_check_code))
+    .filter((definition): definition is HealthCheckDefinition => !!definition);
   // blocking AND runtime -> critical
   if (healthChecks.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
     && definition.severity === IngestionHealthCheckSeverity.Blocking)) {
@@ -170,7 +175,7 @@ export const buildHealthTransitionMessage = (element: { name: string; entity_typ
 // region api
 export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
   return (checks ?? []).flatMap((check) => {
-    const definition = HEALTH_CHECK_REGISTRY[check.health_check_code];
+    const definition = findHealthCheckDefinition(check.health_check_code);
     if (!definition) {
       // Code unknown to this platform version: nothing reliable to show
       return [];
