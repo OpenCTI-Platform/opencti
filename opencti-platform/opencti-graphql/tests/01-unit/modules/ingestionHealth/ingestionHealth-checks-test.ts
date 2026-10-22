@@ -5,6 +5,7 @@ import {
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
+  isRuntimeCheckEnabled,
   HealthTransition,
   toGraphqlHealthChecks,
   toGraphqlIngestionHealth,
@@ -182,18 +183,18 @@ describe('heartbeat check', () => {
   });
 
   it('should be healthy with a fresh heartbeat when the connector pings continuously', () => {
-    const context = buildIngestionHealthContext(input, { ...CONTEXT, ...PINGING }, { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT });
+    const context = buildIngestionHealthContext(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } });
     expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, context), context)?.ingestion_health?.status).toBe(IngestionHealthStatus.Healthy);
   });
 
   it('should give no status with a fresh heartbeat when the connector does not ping continuously, such as after a run and terminate run', () => {
-    const context = buildIngestionHealthContext(input, { ...CONTEXT, ...NOT_PINGING }, { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT });
+    const context = buildIngestionHealthContext(input, { ...CONTEXT, ...NOT_PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } });
     expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, context), context)).toBeNull();
   });
 
   it('should give no status with a fresh heartbeat on a built-in connector', () => {
     const builtIn = { ...input, built_in: true };
-    const context = buildIngestionHealthContext(builtIn, { ...CONTEXT, ...PINGING }, { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT });
+    const context = buildIngestionHealthContext(builtIn, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } });
     expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(builtIn, context), context)).toBeNull();
   });
 
@@ -206,6 +207,25 @@ describe('heartbeat check', () => {
       health_check_kind: IngestionHealthCheckKind.Runtime,
       health_check_severity: IngestionHealthCheckSeverity.Blocking,
     }]);
+  });
+});
+
+describe('isRuntimeCheckEnabled', () => {
+  // Tells the manager whether the runtime data must be read: true only for the ingestions a runtime check is enabled for
+  it('should be true for a connector pinging continuously', () => {
+    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING })).toBe(true);
+  });
+
+  it('should be false for a connector not pinging continuously', () => {
+    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
+  });
+
+  it('should be false for a built-in connector', () => {
+    expect(isRuntimeCheckEnabled({ ...CONNECTOR, built_in: true }, { ...CONTEXT, ...PINGING })).toBe(false);
+  });
+
+  it('should be false for feeds and syncs, which have no runtime check', () => {
+    expect(isRuntimeCheckEnabled(FEED, { ...CONTEXT, ...PINGING })).toBe(false);
   });
 });
 

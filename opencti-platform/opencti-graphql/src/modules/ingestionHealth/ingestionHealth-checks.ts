@@ -39,15 +39,21 @@ const getHealthCheckFailure = (
   return definition.getFailure(ingestor, context);
 };
 
+// Whether a runtime check is enabled for the ingestor: its runtime data must be read before it is evaluated
+export const isRuntimeCheckEnabled = (ingestor: HealthCheckIngestor, context: GlobalIngestionHealthContext): boolean => {
+  return Object.values(HEALTH_CHECK_REGISTRY).some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
+    && definition.isEnabled(ingestor, context));
+};
+
 // Keeps only the runtime values of the checks enabled for the ingestor: a value read for a disabled check proves nothing.
 // A connector not pinging continuously still leaves a heartbeat after each run: kept, it would be healthy after every run.
 export const buildIngestionHealthContext = (
   ingestor: HealthCheckIngestor,
-  periodContext: GlobalIngestionHealthContext,
-  runtimeData: RuntimeData,
+  context: SourceIngestionHealthContext,
 ): SourceIngestionHealthContext => {
-  const enabledRuntimeData: RuntimeData = R.pickBy((_, code) => HEALTH_CHECK_REGISTRY[code as HealthCheckCode].isEnabled(ingestor, periodContext), runtimeData);
-  return { ...periodContext, runtimeData: enabledRuntimeData };
+  const runtimeData: RuntimeData = context.runtimeData ?? {};
+  const enabledRuntimeData: RuntimeData = R.pickBy((_, code) => HEALTH_CHECK_REGISTRY[code as HealthCheckCode].isEnabled(ingestor, context), runtimeData);
+  return { ...context, runtimeData: enabledRuntimeData };
 };
 
 export const computeIngestionHealthChecks = (

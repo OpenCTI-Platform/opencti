@@ -25,6 +25,7 @@ import {
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
   HealthTransition,
+  isRuntimeCheckEnabled,
 } from '../modules/ingestionHealth/ingestionHealth-checks';
 import {
   type GlobalIngestionHealthContext,
@@ -32,6 +33,7 @@ import {
   type HealthCheckCode,
   type RuntimeCheck,
   type RuntimeData,
+  type SourceIngestionHealthContext,
 } from '../modules/ingestionHealth/ingestionHealth-registry';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
@@ -122,10 +124,9 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   context: AuthContext,
   source: IngestionSource<T>,
   element: T,
-  periodContext: GlobalIngestionHealthContext,
-  runtimeData: RuntimeData,
+  sourceContext: SourceIngestionHealthContext,
 ) => {
-  const healthContext = buildIngestionHealthContext(element, periodContext, runtimeData);
+  const healthContext = buildIngestionHealthContext(element, sourceContext);
   const checks = computeIngestionHealthChecks(element, healthContext);
   const patch = computeIngestionHealthPatch(element, checks, healthContext);
   if (!patch) {
@@ -158,7 +159,10 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   const pingingConnectors = await findRegularlyPingingConnectors(context, INGESTION_HEALTH_MANAGER_USER);
   const pingingConnectorsIds = new Set(pingingConnectors.map((connector) => connector.internal_id));
 
-  // check the ingestions sources
+  const globalContext: GlobalIngestionHealthContext = { isExistingUser, pingingConnectorsIds };
+
+  // check the ingestions sources: the active ones are evaluated together, once the runtime data is read for all of them
+  const activeIngestions: { source: IngestionSource<IngestionElement>; element: IngestionElement }[] = [];
   for (let sourceIndex = 0; sourceIndex < INGESTION_SOURCES.length; sourceIndex += 1) {
     lock.signal.throwIfAborted();
     const source = INGESTION_SOURCES[sourceIndex];
@@ -176,25 +180,36 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
         logApp.warn('[OPENCTI-MODULE] Ingestion health clear error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: stoppedElements[i].internal_id, type: source.entityType });
       }
     }
+    activeIngestions.push(...activeElements.map((element) => ({ source, element })));
+  }
 
-    // Active
-    let runtimeDataByIngestion: Map<string, RuntimeData>;
-    try {
-      runtimeDataByIngestion = await loadRuntimeData(activeElements.map((element) => element.internal_id));
-    } catch (e) {
-      logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', type: source.entityType });
+  // Read once per period, for the ingestions enabling a runtime check only: nothing is read when there is none
+  const runtimeIngestionIds = new Set(activeIngestions
+    .filter(({ element }) => isRuntimeCheckEnabled(element, globalContext))
+    .map(({ element }) => element.internal_id));
+  let runtimeDataByIngestion: Map<string, RuntimeData> | undefined;
+  try {
+    runtimeDataByIngestion = await loadRuntimeData([...runtimeIngestionIds]);
+  } catch (e) {
+    // Not read as a missing value: the ingestions needing it are skipped until the next period, the others are still evaluated
+    logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER' });
+  }
+  // Right after the read: the values read are judged against the moment they were read at
+  const periodContext = { ...globalContext, evaluatedAt: now() };
+
+  // Active
+  for (let i = 0; i < activeIngestions.length; i += 1) {
+    lock.signal.throwIfAborted();
+    const { source, element } = activeIngestions[i];
+    if (!runtimeDataByIngestion && runtimeIngestionIds.has(element.internal_id)) {
       continue;
     }
-    const periodContext = { evaluatedAt: now(), isExistingUser, pingingConnectorsIds };
-    for (let i = 0; i < activeElements.length; i += 1) {
-      lock.signal.throwIfAborted();
-      const element = activeElements[i];
-      try {
-        await evaluateIngestionHealth(context, source, element, periodContext, runtimeDataByIngestion.get(element.internal_id) ?? {});
-      } catch (e) {
-        // One broken ingestion must not stop the evaluation of the others, retried at the next period
-        logApp.warn('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: element.internal_id, type: source.entityType });
-      }
+    try {
+      const runtimeData = runtimeDataByIngestion?.get(element.internal_id) ?? {};
+      await evaluateIngestionHealth(context, source, element, { ...periodContext, runtimeData });
+    } catch (e) {
+      // One broken ingestion must not stop the evaluation of the others, retried at the next period
+      logApp.warn('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: element.internal_id, type: source.entityType });
     }
   }
 };

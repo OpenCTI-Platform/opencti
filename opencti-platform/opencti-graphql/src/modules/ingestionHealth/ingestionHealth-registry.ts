@@ -30,10 +30,9 @@ export interface HealthCheckIngestor {
   user_id?: string | null;
 }
 
-// Computed once at the beginning of each period of the ingestion health manager, shared by the evaluation of every ingestion
+// Computed once at the beginning of each period of the ingestion health manager, shared by the evaluation of every ingestion.
+// Known before the runtime data is read: whether a check is enabled depends on it only, which tells what to read.
 export interface GlobalIngestionHealthContext {
-  // The moment of the evaluation: what is stale is judged against it
-  evaluatedAt: string;
   // Connectors pinging continuously
   pingingConnectorsIds: Set<string>;
   isExistingUser: (userId: string) => boolean;
@@ -42,6 +41,8 @@ export interface GlobalIngestionHealthContext {
 // What the evaluation looks at, besides the configuration of the ingestion: whether a check applies, whether it fails, the status.
 // A new check needing a new fact adds a field here, not a parameter to every function.
 export interface SourceIngestionHealthContext extends GlobalIngestionHealthContext {
+  // The moment of the evaluation, taken right after the runtime data is read: what is stale is judged against it
+  evaluatedAt: string;
   // Values read by the runtime checks enabled for this ingestion, by check code: whether they are still fresh is judged here, not when read
   runtimeData?: RuntimeData;
 }
@@ -53,8 +54,8 @@ export type HealthCheckMetadata = Record<string, unknown>;
 interface BaseHealthCheckDefinition {
   severity: IngestionHealthCheckSeverity;
   message: (metadata: HealthCheckMetadata) => string;
-  // Whether the ingestor is evaluated for this check
-  isEnabled: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => boolean;
+  // Whether the ingestor is evaluated for this check. Called before the runtime data is read, to know what to read
+  isEnabled: (ingestor: HealthCheckIngestor, context: GlobalIngestionHealthContext) => boolean;
 }
 
 // getFailure returns null when the check passes, and the metadata of the failure when it fails ({} when there is nothing to tell)
@@ -64,7 +65,8 @@ interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
 }
 
 // A runtime check is judged from a value reported by the sources, read by its getRuntimeData.
-// getRuntimeData reads the values of every ingestion at once, by ingestion id: it is called once per source by the ingestion health manager.
+// getRuntimeData reads the values of every ingestion at once, by ingestion id: the ingestion health manager calls it at most once per period,
+// only when an active ingestion enables a runtime check.
 // It returns what was reported, as stored: what is stale is judged by getFailure. Absent ingestions are omitted.
 // The value given to getFailure is undefined when the sources reported nothing.
 // Its isEnabled must be false for a stopped ingestor: nothing is read for it, a missing value would be reported as a failure.
