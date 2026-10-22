@@ -204,7 +204,7 @@ const DeployedFacetSidebar = ({
                   <Box
                     component="span"
                     aria-hidden
-                    sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', backgroundColor: ingestionHealthColor(health) }}
+                    sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', backgroundColor: ingestionHealthColor(theme, health) }}
                   />
                 )}
                 label={t_i18n(capitalizeFirstLetter(health))}

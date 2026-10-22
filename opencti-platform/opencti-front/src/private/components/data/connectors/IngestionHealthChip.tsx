@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Chip, type ChipSeverity, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import type { IngestionHealthChip_ingestionHealth$key } from './__generated__/IngestionHealthChip_ingestionHealth.graphql';
@@ -30,17 +31,12 @@ const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
   healthy: 'low',
 };
 
-// Label colour the design system Chip paints for these severities, for health markers drawn outside a chip
-const SEVERITY_LABEL_COLORS: Partial<Record<ChipSeverity, string>> = {
-  critical: 'var(--icon-error)',
-  high: 'var(--icon-warning)',
-  low: 'var(--icon-success)',
-};
-
-export const ingestionHealthColor = (status: string): string | undefined => {
-  const severity = HEALTH_STATUS_SEVERITY_COLORS[status];
-  return severity ? SEVERITY_LABEL_COLORS[severity] : undefined;
-};
+// Theme colour of a health status, for health markers drawn outside a chip
+export const ingestionHealthColor = (theme: Theme, status: string): string | undefined => ({
+  critical: theme.palette.error.main,
+  degraded: theme.palette.warn.main,
+  healthy: theme.palette.success.main,
+}[status]);
 
 const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth: ingestionHealthKey }) => {
   const { t_i18n, nsdt } = useFormatter();
