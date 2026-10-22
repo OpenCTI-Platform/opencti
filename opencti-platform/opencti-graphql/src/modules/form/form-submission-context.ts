@@ -29,19 +29,13 @@ export const canSubmitFormTo = (user: AuthUser, isDraft: boolean): boolean => {
 };
 
 export interface FormSubmissionSideEffects {
-  pendingRoots: number; // domain objects created on the fly in the lookups of the form
   pendingLabels: number; // labels created by the submission
   pendingKillChainPhases: number; // objects created by the submission that carry a kill chain phase
 }
 
-export const checkFormSubmissionAccess = (user: AuthUser, isDraft: boolean, { pendingRoots, pendingLabels, pendingKillChainPhases }: FormSubmissionSideEffects): void => {
+export const checkFormSubmissionAccess = (user: AuthUser, isDraft: boolean, { pendingLabels, pendingKillChainPhases }: FormSubmissionSideEffects): void => {
   if (!canSubmitFormTo(user, isDraft)) {
     throw ForbiddenAccess('You are not allowed to submit forms in this destination.', { isDraft });
-  }
-  // Creating objects on the fly writes them in the destination: in the main scope, the form capability is not enough,
-  // only Create / Update knowledge granted in the main scope is. A draft keeps them out of the main knowledge.
-  if (pendingRoots > 0 && !isDraft && !hasCapability(scopeCapabilities(user, false), KNOWLEDGE_KNUPDATE)) {
-    throw ForbiddenAccess('You are not allowed to create objects on the fly when the form is not submitted in a draft.', { capability: KNOWLEDGE_KNUPDATE });
   }
   // Only Create / Update knowledge is given by the form capability: creating a label is still a right of its own.
   if (pendingLabels > 0 && !hasCapability(scopeCapabilities(user, isDraft), SETTINGS_SETLABELS)) {
