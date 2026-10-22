@@ -268,8 +268,10 @@ describe('validatePendingPayload - shapes', () => {
     expect(check({ mainEntityLookupPending: [malware({ refs: { objectOrganization: [{ existing: 'org-1' }] } as any })] })).toThrow(message);
     expect(check({ mainEntityLookupPending: [malware({ refs: { objectOrganization: { existing: 'org-1' } } as any })] })).toThrow(message);
     expect(check({ mainEntityLookupPending: [malware({ refs: { objectOrganization: { pending: 'l1' } } as any })], pendingObjects: [label('l1')] })).toThrow(message);
-    // empty values are what the dialogs send when nothing is filled
+    // empty values are what the dialogs send when nothing is filled, in the input and in the refs
     expect(check({ mainEntityLookupPending: [malware({ input: { name: 'M', objectOrganization: [] } })] })).not.toThrow();
+    expect(check({ mainEntityLookupPending: [malware({ refs: { objectOrganization: [] } as any })] })).not.toThrow();
+    expect(check({ mainEntityLookupPending: [malware({ refs: { objectOrganization: null, other: [] } as any })] })).not.toThrow();
   });
 
   it('should cap the references of the whole submission', () => {
@@ -528,6 +530,16 @@ describe('materializePendingRoots', () => {
     expect(() => validatePendingPayload({ mainEntityLookupPending: single }, 0)).not.toThrow();
     const entities = await materializePendingRoots(context, user, single as any, {}, []);
     expect(entities).toHaveLength(1);
+  });
+
+  it('should ignore an empty author, like an empty list of any other reference', async () => {
+    for (const createdBy of [[], null]) {
+      const root = malware({ refs: { createdBy, objectMarking: [] } as any });
+      expect(() => validatePendingPayload({ mainEntityLookupPending: [root] }, 0)).not.toThrow();
+      const [entity] = await materializePendingRoots(context, user, [root], {}, []) as any[];
+      expect(entity.createdBy).toBeUndefined();
+      expect(entity.objectMarking).toBeUndefined();
+    }
   });
 
   it('should attach uploaded files as base64 x_opencti_files', async () => {

@@ -109,8 +109,9 @@ export const getPendingRoots = (values: Record<string, any>): PendingObject[] =>
 };
 
 // The references of a pending object: its `refs` plus the existing-only ones left in its input (ids).
+// An empty value (null, empty list) is what the dialogs send when nothing is filled: it is no reference at all.
 export const getPendingRefs = (pending: PendingObject): Partial<Record<PendingRefKey, PendingRef | PendingRef[]>> => {
-  const refs = { ...pending.refs };
+  const refs = Object.fromEntries(Object.entries(pending.refs ?? {}).filter(([, value]) => !isEmptyInput(value))) as Partial<Record<PendingRefKey, PendingRef | PendingRef[]>>;
   for (const key of EXISTING_ONLY_INPUT_REFS) {
     const ids = toArray<string>(pending.input[key]).filter((id) => id !== '');
     if (ids.length > 0 && refs[key] === undefined) refs[key] = ids.map((existing) => ({ existing }));
