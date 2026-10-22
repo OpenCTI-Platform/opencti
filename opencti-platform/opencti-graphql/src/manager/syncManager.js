@@ -478,14 +478,6 @@ const syncManagerInstance = (syncId) => {
                 });
                 await saveCurrentState(context, 'event', lastEventId);
                 processed = true;
-                // Recovered from a failed attempt: without a new success, the failure would be the last outcome until the next reconnection
-                if (failed) {
-                  await patchSync(context, SYSTEM_USER, syncId, {
-                    last_execution_date: new Date().toISOString(),
-                    last_execution_status: 'success',
-                  });
-                  await syncLogger.success('Feed execution succeeded');
-                }
               } catch (processingError) {
                 failed = true;
                 logApp.warn('[OPENCTI-MODULE] Sync manager event handling error, retrying...', {
@@ -496,6 +488,23 @@ const syncManagerInstance = (syncId) => {
                   last_execution_status: 'error',
                 });
                 await syncLogger.error('Feed execution failed', buildIngestionErrorMeta(processingError));
+                await wait(5000);
+              }
+            }
+            // Recovered from a failed attempt: without a new success, the failure would be the last outcome until the next reconnection.
+            // Retried on its own: the event is already processed, a failure here must neither push it again nor report it as failed
+            while (processed && failed && running) {
+              try {
+                await patchSync(context, SYSTEM_USER, syncId, {
+                  last_execution_date: new Date().toISOString(),
+                  last_execution_status: 'success',
+                });
+                await syncLogger.success('Feed execution succeeded');
+                failed = false;
+              } catch (recoveryError) {
+                logApp.warn('[OPENCTI-MODULE] Sync manager recovery status error, retrying...', {
+                  cause: recoveryError, id: syncId, manager: 'SYNC_MANAGER',
+                });
                 await wait(5000);
               }
             }
