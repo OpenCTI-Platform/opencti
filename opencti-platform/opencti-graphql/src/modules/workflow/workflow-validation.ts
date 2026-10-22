@@ -8,7 +8,7 @@ import { isStixDomainObject } from '../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
-import { findForwardEdges, findUnreachableStates } from './domain/workflow-ordering';
+import { findStatesWithOutgoingTransitions, findUnreachableStates } from './domain/workflow-ordering';
 import { findEntitiesReferencingStatus } from './domain/workflow-status-usage';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
@@ -149,13 +149,7 @@ export const findInstancesBlockingStateRemoval = async (
 ): Promise<{ states: string[]; instances: any[] }> => {
   const newStates = extractAllStatesFromDefinition(newDefinition);
   const removedStates = [...extractAllStatesFromDefinition(oldDefinition)].filter((s) => !newStates.has(s));
-  const statesWithOutgoingTransitions = new Set<string>();
-  for (const transition of (oldDefinition.transitions ?? [])) {
-    const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
-    for (const s of fromStates) {
-      if (s && s !== '*') statesWithOutgoingTransitions.add(s);
-    }
-  }
+  const statesWithOutgoingTransitions = findStatesWithOutgoingTransitions(oldDefinition.transitions ?? []);
   const states = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
   if (states.length === 0) return { states, instances: [] };
 
@@ -190,8 +184,6 @@ const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, sour
 const isClosingReasonEnabled = (transition: z.infer<typeof workflowSerializedTransitionSchema>) => {
   return !!transition.closingReason && transition.closingReason !== 'disabled';
 };
-
-const toStateList = (states: string | string[] | null) => (Array.isArray(states) ? states : [states]).filter((state): state is string => !!state);
 
 export const validateWorkflowDefinitionData = async (
   context: AuthContext,
@@ -265,10 +257,11 @@ export const validateWorkflowDefinitionData = async (
   const fromEventPairs = new Set<string>();
   let hasValidateDraft = false;
   const statesWithIncomingTransition = new Set<string>();
+  const statesWithOutgoingTransitions = findStatesWithOutgoingTransitions(transitions);
 
   for (const transition of transitions) {
     // A null `to` is only a valid terminal transition (the engine keeps the instance in its
-    // current state, see `targetTransitionForSync?.to ?? instance.getCurrentState()`) when the
+    // current state, see `targetTransition?.to ?? instance.getCurrentState()`) when the
     // transition explicitly completes the workflow via `validateDraft`. Otherwise it's an
     // orphaned reference (e.g. an admin deleted the target status) and must still be reported.
     const completesWorkflow = (transition.syncActions ?? []).some((action) => action.type === 'validateDraft');
@@ -314,17 +307,12 @@ export const validateWorkflowDefinitionData = async (
         type: 'CLOSING_REASON_ANY_STATE',
         message: `Closing reason in transition '${transition.event}' is not allowed on a transition to any state`,
       });
-    } else if (isClosingReasonEnabled(transition) && transition.to) {
-      // The entity is closed by the last transition asking for a reason, so none may follow
-      const forwardEdges = findForwardEdges(initialState, transitions, transition.to);
-      const nextClosingTransition = transitions.find((next) => next !== transition && isClosingReasonEnabled(next)
-        && toStateList(next.from).some((from) => forwardEdges.has(`${from}->${next.to}`)));
-      if (nextClosingTransition) {
-        errors.push({
-          type: 'CLOSING_REASON_NOT_LAST',
-          message: `Closing reason in transition '${transition.event}' is not allowed: transition '${nextClosingTransition.event}' further in the workflow already asks for one`,
-        });
-      }
+    } else if (isClosingReasonEnabled(transition) && transition.to && statesWithOutgoingTransitions.has(transition.to)) {
+      // The reason is kept while the entity stays in a final state, so it may only be asked on the way into one
+      errors.push({
+        type: 'CLOSING_REASON_NOT_FINAL',
+        message: `Closing reason in transition '${transition.event}' is only allowed into a final state, but transitions leave '${transition.to}'`,
+      });
     }
 
     if (transition.conditions) {

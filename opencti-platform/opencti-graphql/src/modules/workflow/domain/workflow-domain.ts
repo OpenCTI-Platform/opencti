@@ -47,7 +47,7 @@ import {
   type WorkflowValidationError,
 } from '../types/workflow-types';
 import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWorkflowDefinitionData } from '../workflow-validation';
-import { computeStateOrder } from './workflow-ordering';
+import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 import { appendWorkflowHistoryEntry, runWorkflowBypassActions } from './workflow-async-completion';
@@ -1323,33 +1323,15 @@ export const getAllowedTransitions = async (
 
 const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || mode === 'required';
 
-type ClosingReasonTransition = Pick<WorkflowSerializedTransition, 'from' | 'to' | 'closingReason'>;
-
-// Whether a closing reason transition can still be taken from this state, directly or further down the graph.
-const canReachClosingTransition = (transitions: ClosingReasonTransition[], state: string) => {
-  const visited = new Set<string>();
-  const queue = [state];
-  while (queue.length > 0) {
-    const current = queue.shift() as string;
-    if (!visited.has(current)) {
-      visited.add(current);
-      for (const t of transitions) {
-        const fromStates = Array.isArray(t.from) ? t.from : [t.from];
-        if (fromStates.includes(current)) {
-          if (isClosingReasonMode(t.closingReason)) return true;
-          if (t.to) queue.push(t.to);
-        }
-      }
-    }
-  }
-  return false;
-};
-
-// The closing reason is cleared when the entity moves to a state from which it can be closed again (e.g. reopen,
-// or a bypass out of a dead end), and kept when it moves to a state that cannot be closed again (e.g. archive).
+// A closing reason is only asked on the way into a final state (no transition leaves it), and kept while the entity
+// stays in one: a bypass or an external status write moving it to a state it can leave clears it.
 // It does not look at the stored reason: the entity may be read before the lock, and clearing an empty one changes nothing.
-const clearsClosingReason = (transitions: ClosingReasonTransition[] | undefined, fromState: string, toState: string) => {
-  return fromState !== toState && canReachClosingTransition(transitions ?? [], toState);
+// Workflows asking for no closing reason never touch it.
+const clearsClosingReason = (transitions: Pick<WorkflowSerializedTransition, 'from' | 'closingReason'>[] | undefined, fromState: string, toState: string) => {
+  const allTransitions = transitions ?? [];
+  return fromState !== toState
+    && allTransitions.some((t) => isClosingReasonMode(t.closingReason))
+    && findStatesWithOutgoingTransitions(allTransitions).has(toState);
 };
 
 const resolveTransitionClosingReason = (

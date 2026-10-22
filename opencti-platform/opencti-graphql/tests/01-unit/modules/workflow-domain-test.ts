@@ -223,7 +223,7 @@ describe('Workflow bypass', () => {
     vi.mocked(createListTask).mockResolvedValue({ work_id: 'work-id' } as any);
   });
 
-  it('clears the closing reason when a bypass leaves a closing state', async () => {
+  it('clears the closing reason when a bypass leaves a final state', async () => {
     definition.transitions[0].closingReason = 'allowed';
     instance.currentState = 'closed';
     entity.x_opencti_closing_reason = 'duplicate';
@@ -234,17 +234,17 @@ describe('Workflow bypass', () => {
     expect(projectWorkflowState).toHaveBeenCalledWith(context, { ...user, draft_context: undefined }, entity, 'open', StatusScope.Global, null);
   });
 
-  it('clears the closing reason when a bypass leaves a state that cannot be closed again for one that can', async () => {
+  it('keeps the closing reason when a bypass moves from a final state to another one', async () => {
     definition.transitions[0].closingReason = 'allowed';
     definition.states.push({ statusId: 'archived' });
-    definition.transitions.push({ from: 'closed', to: 'archived', event: 'archive' });
+    definition.transitions.push({ from: 'open', to: 'archived', event: 'archive' });
     instance.currentState = 'archived';
     entity.x_opencti_closing_reason = 'duplicate';
 
-    const result = await setWorkflowStatus(context, user, entity.id, legacy.id, false);
+    const result = await setWorkflowStatus(context, user, entity.id, target.id, false);
 
-    expect(result).toMatchObject({ success: true, newState: 'open' });
-    expect(projectWorkflowState).toHaveBeenCalledWith(context, { ...user, draft_context: undefined }, entity, 'open', StatusScope.Global, null);
+    expect(result).toMatchObject({ success: true, newState: 'closed' });
+    expect(projectWorkflowState).toHaveBeenCalledWith(context, { ...user, draft_context: undefined }, entity, 'closed', StatusScope.Global, undefined);
   });
 
   it('projects a status-only bypass with explicit user and normalized history, without hooks or edge actions', async () => {
@@ -4357,20 +4357,16 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', reason: 'transition_has_actions' })]);
   });
 
-  it('clears the closing reason when the write moves the entity to a state that can be closed again', async () => {
+  it('clears the closing reason when a BYPASS write moves the entity out of a final state', async () => {
     setupPublishedDefinition({ ...draftInstance, currentState: 'closed' }, JSON.stringify({
       initialState: 'draft',
       states: [{ statusId: 'draft' }, { statusId: 'closed' }],
-      transitions: [{ from: 'draft', to: 'closed', event: 'close', closingReason: 'required' }, { from: 'closed', to: 'draft', event: 'reopen' }],
+      transitions: [{ from: 'draft', to: 'closed', event: 'close', closingReason: 'required' }],
     }));
-    (WorkflowFactory.createDefinition as any).mockReturnValue({
-      getInitialState: () => 'draft',
-      hasState: () => true,
-      getTransitions: () => [{ event: 'reopen', to: 'draft', actionTypes: [] }],
-    });
     (projectWorkflowState as any).mockResolvedValue(undefined);
+    storedStatusId = 'status-draft-id';
 
-    await syncWrite('status-draft-id');
+    await syncWorkflowInstanceFromExternalWrite(mockContext, { id: 'bypass-id', capabilities: [{ name: 'BYPASS' }] } as any, entity, 'status-draft-id');
 
     expect(lastHistory()).toEqual([expect.objectContaining({ state: 'draft', event: 'event_external' })]);
     expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ id: 'entity-1' }), 'draft', 'GLOBAL', null);
@@ -4559,40 +4555,31 @@ describe('triggerWorkflowEvent — closing reason', () => {
   });
 
   it.each([
-    ['reopen', 'open', 'duplicate', null],
-    // The entity may be read before the lock, while a concurrent close writes its reason: clear anyway
-    ['reopen', 'open', undefined, null],
-    ['suspend', 'suspended', 'duplicate', null],
-    ['archive', 'archived', 'duplicate', undefined],
-    ['park', 'parked', 'duplicate', undefined],
-    ['share', 'closed', 'duplicate', undefined],
-  ])('projects the closing reason update of %s from a closing state to %s holding %s', async (event, toState, storedReason, expected) => {
-    const closedEntity = { ...entity, x_opencti_closing_reason: storedReason };
+    // Only a bypass or an external write leaves a final state: a transition into a state the entity can leave clears it
+    ['triage', 'triaged', null],
+    ['hold', 'on_hold', null],
+    ['reject', 'rejected', undefined],
+  ])('projects the closing reason update of %s into %s', async (event, toState, expected) => {
     const workflowContent = {
       initialState: 'open',
-      states: [{ statusId: 'open' }, { statusId: 'closed' }, { statusId: 'suspended' }, { statusId: 'archived' }, { statusId: 'parked' }, { statusId: 'held' }],
+      states: [{ statusId: 'open' }, { statusId: 'triaged' }, { statusId: 'on_hold' }, { statusId: 'closed' }, { statusId: 'rejected' }],
       transitions: [
-        { from: 'open', to: 'closed', event: 'close', closingReason: 'required' },
-        { from: 'closed', to: 'open', event: 'reopen' },
-        { from: 'closed', to: 'suspended', event: 'suspend' },
-        { from: ['suspended', 'held'], to: 'open', event: 'resume' },
-        { from: 'closed', to: 'archived', event: 'archive' },
-        // parked only loops on itself or ends in archived: it can never be closed again
-        { from: 'closed', to: 'parked', event: 'park' },
-        { from: 'parked', to: 'parked', event: 'touch' },
-        { from: ['parked'], to: 'archived', event: 'drop' },
-        { from: 'archived', to: null, event: 'noop' },
-        { from: 'closed', to: 'closed', event: 'share' },
+        { from: 'open', to: 'triaged', event: 'triage' },
+        // on_hold never leads to a closing transition, but the entity can leave it: not a final state
+        { from: 'open', to: 'on_hold', event: 'hold' },
+        { from: 'on_hold', to: 'rejected', event: 'drop' },
+        { from: 'triaged', to: 'closed', event: 'close', closingReason: 'required' },
+        { from: 'open', to: 'rejected', event: 'reject' },
       ],
     };
     const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
     (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
-      if (type === 'Basic-Object') return closedEntity;
+      if (type === 'Basic-Object') return entity;
       if (type === 'WorkflowDefinition') return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
       return null;
     });
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
-    (loadEntity as any).mockResolvedValue({ ...existingInstance, currentState: 'closed' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
     (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
     (WorkflowFactory.getInstance as any).mockReturnValue({
       start: vi.fn(),
@@ -4603,7 +4590,7 @@ describe('triggerWorkflowEvent — closing reason', () => {
     const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', event);
 
     expect(result.success).toBe(true);
-    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, closedEntity, toState, StatusScope.Global, expected);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, entity, toState, StatusScope.Global, expected);
   });
 
   it('writes the vocabulary value name rather than the given spelling', async () => {
