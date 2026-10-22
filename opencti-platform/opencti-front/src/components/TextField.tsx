@@ -220,11 +220,18 @@ const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>((props, for
       onPaste={internalOnPaste}
       onKeyDown={internalOnKeyDown}
       slotProps={{
-        // The caller's label slot only: the input slot carries this wrapper's adornments.
-        inputLabel: otherProps.slotProps?.inputLabel,
-        input: {
-          startAdornment,
-          endAdornment: askAiSlot,
+        ...otherProps.slotProps,
+        // This wrapper's adornments go on top of the caller's input slot, whose own
+        // adornments stay where the wrapper has none.
+        input: (ownerState) => {
+          const callerInput = typeof otherProps.slotProps?.input === 'function'
+            ? otherProps.slotProps.input(ownerState)
+            : otherProps.slotProps?.input;
+          return {
+            ...callerInput,
+            startAdornment: startAdornment ?? callerInput?.startAdornment,
+            endAdornment: askAiSlot ?? callerInput?.endAdornment,
+          };
         },
       }}
     />
