@@ -12,7 +12,7 @@ export interface NavSearchResult {
 
 type Node = NavSearchResult & { keywords: string[] };
 
-const MAX_RESULTS = 10;
+export const PLATFORM_SEARCH_PAGE_MAX_RESULTS = 10;
 
 // Convention: any `*.entries.ts(x)` file exporting `menuEntries` takes part in the pages search, nothing to register.
 // Eagerly imported: those files are pure data (no component import), so the cost is negligible.
@@ -34,18 +34,24 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
     ...(item.subItems ?? []).map((sub) => ({ path: sub.link, label: sub.label, parents: [item.label], keywords: sub.keywords ?? [] })),
   ])).filter((node) => node.path !== '/dashboard');
 
-  // Page entries live under a left bar node: the deepest one gives the breadcrumb.
-  const parentOf = (path: string) => navNodes
+  // Page entries must live under a visible left bar subsection (its own permission, hidden in draft, etc.):
+  // the deepest one also gives the breadcrumb. No visible subsection = the entry is not reachable, so not indexed.
+  // Top-level items and `exact` sub-items (Parameters = `/dashboard/settings`) are too broad to own an entry.
+  const sectionNodes = navGroups.flatMap((group) => group.items.flatMap((item) => (
+    (item.subItems ?? []).filter((sub) => !sub.exact).map((sub) => ({ path: sub.link, label: sub.label, parents: [item.label] }))
+  )));
+  const sectionOf = (path: string) => sectionNodes
     .filter((n) => path.startsWith(`${n.path}/`))
     .sort((a, b) => b.path.length - a.path.length)[0];
-  const entryNodes: Node[] = entries.map((entry) => {
-    const parent = parentOf(entry.path);
-    return {
+  const entryNodes: Node[] = entries.flatMap((entry) => {
+    const section = sectionOf(entry.path);
+    if (!section) return [];
+    return [{
       path: entry.path,
       label: t_i18n(entry.label),
-      parents: parent ? [...parent.parents, parent.label] : [],
+      parents: [...section.parents, section.label],
       keywords: entry.keywords ?? [],
-    };
+    }];
   });
 
   const byPath = new Map<string, Node>();
@@ -61,7 +67,7 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
     .map((node) => ({ node, rank: matchRank(node) }))
     .filter(({ rank }) => rank >= 0)
     .sort((a, b) => a.rank - b.rank)
-    .slice(0, MAX_RESULTS)
+    .slice(0, PLATFORM_SEARCH_PAGE_MAX_RESULTS)
     .map(({ node: { path, label, parents } }) => ({ path, label, parents }));
 };
 

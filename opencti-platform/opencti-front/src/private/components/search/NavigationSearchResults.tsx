@@ -4,7 +4,7 @@ import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography } fro
 import { ChevronRightOutlined, DescriptionOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
-import useNavSearch from '../nav/useNavSearch';
+import useNavSearch, { PLATFORM_SEARCH_PAGE_MAX_RESULTS } from '../nav/useNavSearch';
 
 // "Application pages" card of the search results: deep links to platform pages matching the keyword.
 const INITIAL_COUNT = 2;
@@ -49,6 +49,11 @@ const NavigationSearchResults = ({ keyword }: { keyword?: string | null }) => {
         <Button variant="tertiary" size="small" onClick={() => setShowAll(true)} sx={{ mt: 1 }}>
           {`${t_i18n('Show more')} (${hidden})`}
         </Button>
+      )}
+      {showAll && results.length >= PLATFORM_SEARCH_PAGE_MAX_RESULTS && (
+        <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1 }}>
+          {t_i18n('Showing at most {max} pages, refine your search to narrow them down', { values: { max: PLATFORM_SEARCH_PAGE_MAX_RESULTS } })}
+        </Typography>
       )}
     </Box>
   );
