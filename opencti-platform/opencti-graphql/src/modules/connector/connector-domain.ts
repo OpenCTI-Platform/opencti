@@ -13,6 +13,7 @@ import {
   redisDeleteConnectorHeartbeat,
   redisGetConnectorHealthMetrics,
   redisGetConnectorHeartbeat,
+  redisGetConnectorLogs,
   redisGetConnectorsHeartbeats,
   redisGetManagedConnectorAutoUpgradeStatus,
   redisSetConnectorHealthMetrics,
@@ -23,6 +24,7 @@ import {
 import semver from 'semver';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import {
+  findCatalogByCatalogId,
   findCatalogContractsByImageName,
   findCatalogContractsBySlugs,
   findLatestCompatibleCatalogContractByImageName,
@@ -43,6 +45,7 @@ import type {
 } from './connector-types';
 import {
   type AddManagedConnectorInput,
+  type ConnectorContractConfiguration,
   ConnectorPriorityGroup,
   type CurrentConnectorStatusInput,
   type EditInput,
@@ -228,7 +231,19 @@ export const connectorManagers = (context: AuthContext, user: AuthUser) => {
 export const connectorsForManagers = async (context: AuthContext, user: AuthUser) => {
   const managedConnectors = await findManagedConnectors(context, user);
   const heartbeats = await loadConnectorsHeartbeats();
-  return managedConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
+  // Without contract snapshot there is no image to deploy, and its failing image would fail the whole list
+  const deployableConnectors = managedConnectors.filter((connector) => {
+    if (!connector.manager_contract) {
+      logApp.warn('[OPENCTI-MODULE] Managed connector without contract snapshot is not served to the manager', {
+        module: 'connector',
+        connectorId: connector.internal_id,
+        catalogId: connector.catalog_id,
+      });
+      return false;
+    }
+    return true;
+  });
+  return deployableConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 
 const NO_UPDATE_STATUS = {
@@ -375,14 +390,14 @@ export const connectorsForWorker = async (context: AuthContext, user: AuthUser) 
   return registeredConnectors;
 };
 
-export const computeManagerConnectorContract = async (_context: AuthContext, _user: AuthUser, connectorEntity: any) => {
+export const computeManagerConnectorContract = async (_context: AuthContext, _user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
   if (!connectorEntity.manager_contract) {
     return null;
   }
   return JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(connectorEntity.manager_contract, { excludeRuntimeConfigVars: true }));
 };
 
-export const computeManagerConnectorExcerpt = async (_context: AuthContext, _user: AuthUser, connectorEntity: any) => {
+export const computeManagerConnectorExcerpt = async (_context: AuthContext, _user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
   if (!connectorEntity.manager_contract) {
     return null;
   }
@@ -391,7 +406,7 @@ export const computeManagerConnectorExcerpt = async (_context: AuthContext, _use
 };
 
 const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration') ?? 604800;
-const computeConnectorTokenConfiguration = async (context: AuthContext, connectorEntity: any) => {
+const computeConnectorTokenConfiguration = async (context: AuthContext, connectorEntity: BasicStoreEntityConnector) => {
   const resourceId = `manager-configuration-${connectorEntity.internal_id}`;
   let lock;
   try {
@@ -428,14 +443,12 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
 export const computeManagerConnectorConfiguration = async (
   context: AuthContext,
   _user: AuthUser,
-  connectorEntity: any,
+  connectorEntity: BasicStoreEntityConnector,
   { withEncrypted = false }: { withEncrypted?: boolean } = {},
 ) => {
-  if (!connectorEntity.catalog_id) {
-    return [];
-  }
-  const configurations = structuredClone(connectorEntity.manager_contract_configuration) ?? [];
-  const contract = withEncrypted ? configurations : configurations.filter((configuration: any) => !configuration.encrypted);
+  // As stored, without the GraphQL type name: exposed on both ConnectorContractConfiguration and ManagerContractConfiguration
+  const configurations: Omit<ConnectorContractConfiguration, '__typename'>[] = structuredClone(connectorEntity.manager_contract_configuration) ?? [];
+  const contract = withEncrypted ? configurations : configurations.filter((configuration) => !configuration.encrypted);
   contract.push(
     { key: 'CONNECTOR_ID', value: connectorEntity.internal_id },
     { key: 'CONNECTOR_NAME', value: connectorEntity.name },
@@ -447,11 +460,14 @@ export const computeManagerConnectorConfiguration = async (
   return injectProxyConfiguration(contract).sort();
 };
 
-export const computeManagerConnectorImage = async (connectorEntity: any) => {
-  if (!connectorEntity.manager_contract) {
-    return '';
-  }
+export const computeManagerConnectorImage = async (connectorEntity: BasicStoreEntityConnector) => {
   const managerContract = connectorEntity.manager_contract;
+  if (!managerContract) {
+    throw FunctionalError('Missing manager contract snapshot', {
+      connectorId: connectorEntity.id ?? connectorEntity.internal_id,
+      catalogId: connectorEntity.catalog_id,
+    });
+  }
   if (!managerContract.image || !managerContract.contract_version) {
     throw FunctionalError('Invalid manager contract snapshot', {
       connectorId: connectorEntity.id ?? connectorEntity.internal_id,
@@ -462,15 +478,104 @@ export const computeManagerConnectorImage = async (connectorEntity: any) => {
   return `${managerContract.image}:${managerContract.contract_version}`;
 };
 
-export const computeManagerContractHash = async (context: AuthContext, user: AuthUser, connectorEntity: any) => {
+export const computeManagerContractHash = async (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
   const image = await computeManagerConnectorImage(connectorEntity);
   const configuration = await computeManagerConnectorConfiguration(context, user, connectorEntity, { withEncrypted: true });
   return shortHash({
     image,
-    subHash: configuration.map((configuration: any) => `${configuration.key}|${configuration.value}`),
+    subHash: configuration.map((configuration) => `${configuration.key}|${configuration.value}`),
     state: connectorEntity.connector_state_timestamp,
   });
 };
+
+// region manager fields, exposed on two GraphQL types:
+// - Connector: any connector, read by the UI. The manager fields of a connector that is not managed are null.
+// - ManagedConnector: read by the connectors manager, it only expects managed connectors.
+const isManagedConnector = (connectorEntity: BasicStoreEntityConnector) => isNotEmptyField(connectorEntity.catalog_id);
+
+const computeIfManagedConnector = async <T>(connectorEntity: BasicStoreEntityConnector, compute: () => T | Promise<T>) => {
+  return isManagedConnector(connectorEntity) ? compute() : null;
+};
+
+const computeForManagedConnector = async <T>(connectorEntity: BasicStoreEntityConnector, compute: () => T | Promise<T>) => {
+  if (!isManagedConnector(connectorEntity)) {
+    throw FunctionalError('Connector is not managed', { connectorId: connectorEntity.internal_id });
+  }
+  return compute();
+};
+
+export const computeConnectorCurrentStatus = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => connectorEntity.manager_current_status);
+};
+export const computeManagedConnectorCurrentStatus = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => connectorEntity.manager_current_status);
+};
+
+export const computeConnectorRequestedStatus = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => connectorEntity.manager_requested_status);
+};
+export const computeManagedConnectorRequestedStatus = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => {
+    if (!connectorEntity.manager_requested_status) {
+      throw FunctionalError('Missing manager requested status', { connectorId: connectorEntity.internal_id });
+    }
+    return connectorEntity.manager_requested_status;
+  });
+};
+
+// The connectors lists must not fail on an unrepaired managed connector, the manager must
+export const computeConnectorContractImage = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => {
+    if (!connectorEntity.manager_contract) {
+      logApp.error('[OPENCTI-MODULE] Managed connector without contract snapshot', {
+        module: 'connector',
+        connectorId: connectorEntity.internal_id,
+        catalogId: connectorEntity.catalog_id,
+      });
+      return null;
+    }
+    return computeManagerConnectorImage(connectorEntity);
+  });
+};
+export const computeManagedConnectorContractImage = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => computeManagerConnectorImage(connectorEntity));
+};
+
+export const computeConnectorContractConfiguration = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => computeManagerConnectorConfiguration(context, user, connectorEntity));
+};
+export const computeManagedConnectorContractConfiguration = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => computeManagerConnectorConfiguration(context, user, connectorEntity, { withEncrypted: true }));
+};
+
+export const computeConnectorContractHash = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => computeManagerContractHash(context, user, connectorEntity));
+};
+export const computeManagedConnectorContractHash = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => computeManagerContractHash(context, user, connectorEntity));
+};
+
+export const computeConnectorLogs = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => redisGetConnectorLogs(connectorEntity.id));
+};
+export const computeManagedConnectorLogs = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => redisGetConnectorLogs(connectorEntity.id));
+};
+
+export const computeConnectorHealthMetrics = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => connectorGetHealth(context, user, connectorEntity.id));
+};
+export const computeManagedConnectorHealthMetrics = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => connectorGetHealth(context, user, connectorEntity.id));
+};
+
+export const computeConnectorUptime = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => connectorGetUptime(context, user, connectorEntity.id));
+};
+export const computeManagedConnectorUptime = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => connectorGetUptime(context, user, connectorEntity.id));
+};
+// endregion
 
 // region connectors
 export const updateConnectorWithConnectorInfo = async (
@@ -641,11 +746,16 @@ export const managedConnectorAdd = async (
   input: AddManagedConnectorInput,
 ) => {
   await checkEnterpriseEdition(context);
+  // The connector stays bound to its catalog: auto-upgrades and contract snapshot are resolved from it
+  const catalog = await findCatalogByCatalogId(context, user, input.catalog_id);
+  if (isEmptyField(catalog)) {
+    throw FunctionalError('Catalog not found', { catalogId: input.catalog_id });
+  }
   // Get contract
-  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image);
+  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image, input.catalog_id);
   if (isEmptyField(targetContract)) {
     // Distinguish an unknown connector from a connector that the platform version cannot run
-    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image);
+    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image, input.catalog_id);
     if (imageContracts.length > 0) {
       throw FunctionalError('This connector is not compatible with the platform version', {
         image: input.manager_contract_image,
