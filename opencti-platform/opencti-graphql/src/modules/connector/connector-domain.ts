@@ -619,9 +619,8 @@ export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null 
   // Errors are merged by code, the last report wins: deduplicated before ranking so a repeated code takes a single slot
   const lastErrorByCode = new Map<string, ConnectorInfoError>();
   validErrors.forEach((error) => lastErrorByCode.set(error.code, error));
-  return [...lastErrorByCode.values()]
-    .sort((a, b) => b.criticity - a.criticity)
-    .slice(0, CONNECTOR_ERRORS_MAX_COUNT);
+  // Not limited here: a dropped update would let the stored report of its code win the merge, which applies the limit
+  return [...lastErrorByCode.values()].sort((a, b) => b.criticity - a.criticity);
 };
 
 export const updateConnectorWithConnectorInfo = async (

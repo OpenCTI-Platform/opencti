@@ -61,13 +61,12 @@ describe('sanitizeConnectorInfoErrors', () => {
     ]);
   });
 
-  it('should keep the most critical errors up to the limit', () => {
+  it('should not limit the reported errors, the merge does', () => {
     const lowErrors = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `LOW_${index}`, message: '', criticity: 0 }));
     const criticalError = { code: 'CRITICAL', message: '', criticity: 3 };
     const sanitized = sanitizeConnectorInfoErrors([...lowErrors, criticalError]);
-    expect(sanitized).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
+    expect(sanitized).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT + 1);
     expect(sanitized[0]).toEqual(criticalError);
-    expect(sanitized[sanitized.length - 1].code).toBe(`LOW_${CONNECTOR_ERRORS_MAX_COUNT - 2}`);
   });
 
   it('should keep the last report of a repeated code', () => {
@@ -82,7 +81,7 @@ describe('sanitizeConnectorInfoErrors', () => {
     ]);
   });
 
-  it('should count a repeated code once against the limit', () => {
+  it('should keep a repeated code once', () => {
     const repeated = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, () => ({ code: 'REPEATED', message: '', criticity: 3 }));
     const distinct = { code: 'DISTINCT', message: '', criticity: 2 };
     expect(sanitizeConnectorInfoErrors([...repeated, distinct]).map(({ code }) => code)).toEqual(['REPEATED', 'DISTINCT']);
@@ -152,6 +151,17 @@ describe('mergeConnectorErrors', () => {
     expect(kept).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
     expect(kept[0].code).toBe('CRITICAL');
     expect(removedCodes).toEqual([`LOW_${CONNECTOR_ERRORS_MAX_COUNT - 1}`]);
+  });
+});
+
+describe('sanitized then merged errors', () => {
+  it('should apply the downgrade of a stored code reported in an oversized payload', () => {
+    const others = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `OTHER_${index}`, message: '', criticity: 1 }));
+    const reported = sanitizeConnectorInfoErrors([{ code: 'A', message: 'downgraded', criticity: 0 }, ...others]);
+    const { kept, removedCodes } = mergeConnectorErrors([stored('A', 3, 1000)], reported, NOW);
+    expect(kept).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
+    expect(kept.map(({ code }) => code)).not.toContain('A');
+    expect(removedCodes).toEqual(['A']);
   });
 });
 
