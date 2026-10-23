@@ -94,6 +94,11 @@ const checkWorkflowActionsValidity = (context, user, actions) => {
   if (actions.some((a) => isWorkflowStatusAction(a) && a.context.options && 'eventName' in a.context.options && !isWorkflowTransitionAction(a))) {
     throw FunctionalError('A workflow transition action requires an event name');
   }
+  // With the workflow, a status only changes through a transition, unless the user can bypass it (drafts have no workflow)
+  const hasDirectStatusAction = actions.some((a) => a.context?.field === 'x_opencti_workflow_id' && !isWorkflowTransitionAction(a));
+  if (hasDirectStatusAction && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && !getDraftContext(context, user) && !isBypassUser(user)) {
+    throw ForbiddenAccess();
+  }
   const hasBypassAction = actions.some((a) => isWorkflowBypassAction(a));
   const hasTransitionAction = actions.some((a) => isWorkflowTransitionAction(a));
   if (!hasBypassAction && !hasTransitionAction) {

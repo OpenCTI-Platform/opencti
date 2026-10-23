@@ -79,6 +79,11 @@ export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => {
 // A transition step is complete once its comment and organizations are
 export const isTransitionInputValid = (input: Pick<WorkflowActionInput, 'transitionInputs'>) => input.transitionInputs?.inputsValid === true;
 
+// With the workflow, a status only changes through a transition, unless the user can bypass the workflow
+export const canReplaceStatusDirectly = ({ workflowEnabled, canBypassWorkflow }: { workflowEnabled: boolean; canBypassWorkflow: boolean }) => {
+  return !workflowEnabled || canBypassWorkflow;
+};
+
 // For a bypass user, a status update goes through the workflow engine, with the transition actions by default
 export const withWorkflowBypassOptions = (options?: { applyTransitionActions?: boolean }) => ({
   ...options,

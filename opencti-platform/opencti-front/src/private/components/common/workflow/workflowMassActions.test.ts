@@ -4,6 +4,7 @@ import {
   buildWorkflowStatusOptions,
   buildWorkflowTransitionAction,
   isFieldOptionDisabled,
+  canReplaceStatusDirectly,
   isTransitionInputValid,
   setTransitionInputs,
   withWorkflowBypassOptions,
@@ -72,6 +73,14 @@ describe('setTransitionInputs', () => {
     const updated = setTransitionInputs(row, { comment: 'Checked', shareOrganizations: [{ value: 'org-1' }], unshareOrganizations: [], inputsValid: true });
 
     expect(updated.options).toEqual({ applyTransitionActions: false });
+  });
+});
+
+describe('canReplaceStatusDirectly', () => {
+  it('should offer the direct status change only to bypass users once the workflow is enabled', () => {
+    expect(canReplaceStatusDirectly({ workflowEnabled: false, canBypassWorkflow: false })).toBe(true);
+    expect(canReplaceStatusDirectly({ workflowEnabled: true, canBypassWorkflow: true })).toBe(true);
+    expect(canReplaceStatusDirectly({ workflowEnabled: true, canBypassWorkflow: false })).toBe(false);
   });
 });
 

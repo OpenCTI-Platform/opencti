@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_DELETE, checkActionValidity, TASK_TYPE_QUERY, ACTION_TYPE_MERGE } from '../../../src/domain/backgroundTask-common';
+import {
+  ACTION_TYPE_ADD,
+  ACTION_TYPE_REMOVE,
+  ACTION_TYPE_REPLACE,
+  ACTION_TYPE_DELETE,
+  checkActionValidity,
+  TASK_TYPE_QUERY,
+  ACTION_TYPE_MERGE,
+} from '../../../src/domain/backgroundTask-common';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import { isFeatureEnabled } from '../../../src/config/conf';
 import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
@@ -196,10 +204,27 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('ENTITIES_WORKFLOW is disabled');
     });
 
-    it('should not check workflow rules for a plain status replace', async () => {
+    it('should not check workflow rules for a plain status replace when the ENTITIES_WORKFLOW feature flag is disabled', async () => {
       vi.mocked(isFeatureEnabled).mockReturnValue(false);
       const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
       await expect(checkActionValidity(testContext, userUpdate, buildInput([statusAction]), scope, type)).resolves.toEqual(undefined);
+    });
+
+    it.each([ACTION_TYPE_REPLACE, ACTION_TYPE_ADD, ACTION_TYPE_REMOVE])('should refuse a direct status %s to a user without BYPASS capability', async (actionType) => {
+      const statusAction = { type: actionType, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([statusAction]), scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should accept a direct status replace from a user with BYPASS capability', async () => {
+      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
+      await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([statusAction]), scope, type)).resolves.toEqual(undefined);
+    });
+
+    it('should accept a direct status replace in a draft, where the workflow does not apply', async () => {
+      const draftContext = { ...testContext, draft_context: 'draft-id' };
+      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
+      await expect(checkActionValidity(draftContext, userUpdate, buildInput([statusAction]), scope, type)).resolves.toEqual(undefined);
     });
   });
 

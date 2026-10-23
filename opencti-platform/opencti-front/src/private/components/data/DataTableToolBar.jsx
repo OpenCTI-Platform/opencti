@@ -124,6 +124,7 @@ import {
   buildWorkflowStatusOptions,
   buildWorkflowTransitionAction,
   isFieldOptionDisabled,
+  canReplaceStatusDirectly,
   isTransitionInputValid,
   setTransitionInputs,
   WORKFLOW_TRANSITION_FIELD,
@@ -503,6 +504,7 @@ class DataTableToolBar extends Component {
       statuses: [],
       workflowPublished: false,
       workflowBypass: false,
+      directStatusAllowed: true,
       workflowLoading: false,
       transitionOptions: [],
       workflowStatusOptions: [],
@@ -563,6 +565,8 @@ class DataTableToolBar extends Component {
       displayUpdate: true,
       workflowPublished: false,
       workflowBypass: false,
+      // The workflow entity type is only set with the workflow enabled, for a single type, outside a draft
+      directStatusAllowed: canReplaceStatusDirectly({ workflowEnabled: !!workflowEntityType, canBypassWorkflow }),
       workflowLoading: !!workflowEntityType,
       transitionOptions: [],
       workflowStatusOptions: [],
@@ -1191,7 +1195,7 @@ class DataTableToolBar extends Component {
           },
           checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
           checkTypes(typesWithDetection) && { label: t('Detection'), value: 'x_opencti_detection' },
-          selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && {
+          selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && this.state.directStatusAllowed && {
             label: t('Status'),
             value: 'x_opencti_workflow_id',
           },
