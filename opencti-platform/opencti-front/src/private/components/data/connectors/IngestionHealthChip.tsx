@@ -1,5 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
+import { useTheme } from '@mui/material/styles';
 import { Chip, type ChipSeverity, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -30,12 +31,16 @@ const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
   degraded: 'high',
 };
 
-// Theme colour of a health status, for health markers drawn outside a chip
-export const ingestionHealthColor = (theme: Theme, status: string): string | undefined => ({
-  critical: theme.palette.error.main,
-  degraded: theme.palette.warn.main,
-  healthy: theme.palette.success.main,
-}[status]);
+// Theme colour of a health status, for health markers drawn outside a chip.
+// Reads the project theme itself: a component holding the MUI theme lacks its extended palette (warn...)
+export const useIngestionHealthColor = () => {
+  const theme = useTheme<Theme>();
+  return (status: string): string | undefined => ({
+    critical: theme.palette.error.main,
+    degraded: theme.palette.warn.main,
+    healthy: theme.palette.success.main,
+  }[status]);
+};
 
 const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth: ingestionHealthKey }) => {
   const { t_i18n, nsdt } = useFormatter();

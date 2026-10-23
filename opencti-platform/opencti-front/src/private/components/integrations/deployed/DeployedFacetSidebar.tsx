@@ -4,7 +4,7 @@ import { Box, Stack } from '@mui/material';
 import { AutorenewOutlined, ExtensionOutlined, PauseCircleOutlined, PlayCircleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { ingestionHealthColor } from '@components/data/connectors/IngestionHealthChip';
+import { useIngestionHealthColor } from '@components/data/connectors/IngestionHealthChip';
 import { FacetCheckbox, FacetGroupLabel, toggleValue } from '@components/integrations/catalog/IngestionCatalogFacetSidebar';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
@@ -76,6 +76,7 @@ const DeployedFacetSidebar = ({
 }: DeployedFacetSidebarProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const healthColor = useIngestionHealthColor();
   const typeMetadata = useDeployedTypeMetadata();
 
   const statusLabel = (status: DeployedStatusFacet): string => {
@@ -204,7 +205,7 @@ const DeployedFacetSidebar = ({
                   <Box
                     component="span"
                     aria-hidden
-                    sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', backgroundColor: ingestionHealthColor(theme, health) }}
+                    sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', backgroundColor: healthColor(health) }}
                   />
                 )}
                 label={t_i18n(capitalizeFirstLetter(health))}

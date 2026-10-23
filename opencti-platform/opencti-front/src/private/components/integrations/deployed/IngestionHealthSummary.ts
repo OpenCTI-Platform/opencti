@@ -1,9 +1,7 @@
 import { graphql, readInlineData } from 'react-relay';
-import type { Theme as MuiTheme } from '@mui/material/styles';
 import { AccessTimeOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
-import { ingestionHealthColor } from '@components/data/connectors/IngestionHealthChip';
-import type { Theme } from '../../../../components/Theme';
+import { useIngestionHealthColor } from '@components/data/connectors/IngestionHealthChip';
 import type { IngestionHealthSummary_ingestionHealth$key } from './__generated__/IngestionHealthSummary_ingestionHealth.graphql';
 
 // Read as plain data, outside of any component: the integrations page aggregates the health of every item.
@@ -25,10 +23,10 @@ export interface HealthIssue {
 }
 
 // Color and icon every marker of a health issue shares: critical = red / warning, degraded = orange / clock
-// The callers hold the MUI theme, whose type ignores the platform palette (warn...): same theme object, cast once here
-export const healthIssueDisplay = (muiTheme: MuiTheme, severity: HealthIssue['severity']): { color: string; Icon: SvgIconComponent } => {
+export const useHealthIssueDisplay = (severity: HealthIssue['severity']): { color: string; Icon: SvgIconComponent } => {
+  const healthColor = useIngestionHealthColor();
   // Same colors as every other health marker; the theme colors are optional in its type
-  const color = ingestionHealthColor(muiTheme as unknown as Theme, severity) ?? 'inherit';
+  const color = healthColor(severity) ?? 'inherit';
   return { color, Icon: severity === 'critical' ? WarningAmberOutlined : AccessTimeOutlined };
 };
 
