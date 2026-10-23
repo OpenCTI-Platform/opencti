@@ -17,6 +17,7 @@ import {
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_REGISTRY,
   HEALTH_CHECK_USER_MISSING,
+  HEALTH_CHECK_USER_MISSING_CAPABILITY,
   HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
   type HealthCheckIngestor,
   type HealthCheckUser,
@@ -33,7 +34,7 @@ vi.mock('../../../../src/database/redis', async (importActual) => ({
 
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
-const SERVICE_ACCOUNT = { internal: false, user_service_account: true };
+const SERVICE_ACCOUNT = { internal: false, user_service_account: true, hasCapability: () => true };
 const CONTEXT = { evaluatedAt: EVALUATED_AT, pingingConnectorsIds: new Set<string>(), user: SERVICE_ACCOUNT };
 const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} };
 const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
@@ -448,8 +449,8 @@ describe('disabled health checks', () => {
 });
 
 describe('user not service account check', () => {
-  const REGULAR_USER = { internal: false, user_service_account: false };
-  const INTERNAL_USER = { internal: true, user_service_account: false };
+  const REGULAR_USER = { internal: false, user_service_account: false, hasCapability: () => true };
+  const INTERNAL_USER = { internal: true, user_service_account: false, hasCapability: () => true };
   const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
   const NOT_SERVICE_ACCOUNT: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_metadata: {} };
 
@@ -487,9 +488,45 @@ describe('user not service account check', () => {
     expect(toGraphqlIngestionHealth(patch?.ingestion_health, CONNECTOR.entity_type)?.healthChecks).toEqual([{
       health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
       health_check_message: 'User is not a service account',
+      health_check_metadata: {},
       health_check_kind: IngestionHealthCheckKind.Configuration,
       health_check_severity: IngestionHealthCheckSeverity.Advisory,
     }]);
+  });
+});
+
+describe('user missing capability check', () => {
+  const WITHOUT_CAPABILITY = { internal: false, user_service_account: true, hasCapability: () => false };
+  const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
+  const CONNECTOR_WITH_USER = { ...CONNECTOR, connector_user_id: 'user-id' };
+
+  it('should flag a connector whose user lacks CONNECTORAPI, with the capability in the message', () => {
+    const checks = checksFor(CONNECTOR_WITH_USER, WITHOUT_CAPABILITY);
+    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: { capability: 'CONNECTORAPI' } }]);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_metadata).toEqual({ capability: 'CONNECTORAPI' });
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('User lacks required capability: CONNECTORAPI');
+  });
+
+  it('should ask the user for CONNECTORAPI only', () => {
+    const hasCapability = vi.fn(() => true);
+    checksFor(CONNECTOR_WITH_USER, { ...SERVICE_ACCOUNT, hasCapability });
+    expect(hasCapability).toHaveBeenCalledWith('CONNECTORAPI');
+  });
+
+  it('should not flag a connector whose user has the capability', () => {
+    expect(checksFor(CONNECTOR_WITH_USER, SERVICE_ACCOUNT)).toEqual([]);
+  });
+
+  it('should not judge a feed: no capability is required', () => {
+    expect(checksFor({ ...FEED, user_id: 'user-id' }, WITHOUT_CAPABILITY)).toEqual([]);
+  });
+
+  it('should not judge an internal user', () => {
+    expect(checksFor(CONNECTOR_WITH_USER, { ...WITHOUT_CAPABILITY, internal: true })).toEqual([]);
+  });
+
+  it('should not judge a missing user: reported by USER_MISSING only', () => {
+    expect(checksFor({ ...CONNECTOR, connector_user_id: 'deleted-user-id' })).toEqual([USER_MISSING]);
   });
 });
 
