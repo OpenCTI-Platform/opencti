@@ -20,6 +20,7 @@ export interface BasicStoreEntitySecurityCoverageResult extends BasicStoreEntity
   coverage_valid_from?: string;
   coverage_valid_to?: string;
   coverage_information?: CoverageInformation[];
+  [RELATION_RESULT_OF]: string;
 }
 
 export interface StoreEntitySecurityCoverageResult extends StoreEntity {

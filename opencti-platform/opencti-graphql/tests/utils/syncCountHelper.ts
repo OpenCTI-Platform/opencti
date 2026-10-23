@@ -13,7 +13,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 25;
+testCreatedCounter['attack-pattern'] = 29;
 testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 18;
 testCreatedCounter['case-rfi'] = 9;
@@ -39,7 +39,7 @@ testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 8;
+testCreatedCounter['intrusion-set'] = 9;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -58,7 +58,7 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 147;
+testCreatedCounter.relationship = 148;
 testCreatedCounter.report = 59;
 testCreatedCounter.sighting = 5;
 testCreatedCounter.software = 2;
@@ -70,8 +70,8 @@ testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 27;
-testCreatedCounter['security-coverage-result'] = 22;
+testCreatedCounter['security-coverage'] = 29;
+testCreatedCounter['security-coverage-result'] = 24;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
@@ -128,7 +128,7 @@ testMergedCounter['case-incident'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 20;
+testDeletedCounter['attack-pattern'] = 24;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 16;
 testDeletedCounter['case-rfi'] = 9;
@@ -150,7 +150,7 @@ testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 7;
+testDeletedCounter['intrusion-set'] = 8;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
@@ -180,8 +180,8 @@ testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 25;
-testDeletedCounter['security-coverage-result'] = 20;
+testDeletedCounter['security-coverage'] = 27;
+testDeletedCounter['security-coverage-result'] = 22;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);

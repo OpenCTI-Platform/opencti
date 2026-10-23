@@ -49,7 +49,7 @@ import {
 } from './securityCoverageResult/securityCoverageResult-utils';
 import { splitSecurityCoverageInput } from './securityCoverage-utils';
 import { emptyPaginationResult } from '../../database/utils';
-import { createHasCoveredRelTask } from './securityCoverageResult/securityCoverageResult-domain';
+import { checkRelatedEntitiesCanBeCovered, createHasCoveredRelTask } from './securityCoverageResult/securityCoverageResult-domain';
 import { isFromConnectorWork } from '../../utils/connector-work';
 
 export const COVERED_ENTITIES_TYPE = [
@@ -95,6 +95,11 @@ export const addSecurityCoverage = async (
     shouldCreateResult,
   } = splitSecurityCoverageInput(input);
 
+  const coveredEntityId = securityCoverageInput[INPUT_COVERED];
+  if (add_related_entities) {
+    await checkRelatedEntitiesCanBeCovered(context, user, coveredEntityId, add_related_entities);
+  }
+
   const noEnrichOnUpdate = await isFromConnectorWork(context, user);
 
   // 1. Create the SecurityCoverage entity.
@@ -134,7 +139,7 @@ export const addSecurityCoverage = async (
         { securityCoverageResultInput, shouldCreateResult },
       );
     } else {
-      await createHasCoveredRelTask(context, user, result.id, add_related_entities);
+      await createHasCoveredRelTask(context, user, result.id, coveredEntityId, add_related_entities);
     }
   }
 
