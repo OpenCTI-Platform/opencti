@@ -64,11 +64,14 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
   return availableFilterKeys;
 };
 
+// Only the fields the status reads: a connector of any query carrying them fits, whatever its other fragments
+export type ConnectorStatusSource = Partial<Pick<ConnectorsStateQuery$data['connectors'][0], 'manager_current_status' | 'manager_requested_status' | 'active'>>;
+
 export const computeConnectorStatus = ({
   manager_current_status,
   manager_requested_status,
   active,
-}: Partial<ConnectorsStateQuery$data['connectors'][0]>) => {
+}: ConnectorStatusSource) => {
   if (manager_requested_status) {
     // On connector created, manager_current_status is null
     const isTransitioning = (manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5);
