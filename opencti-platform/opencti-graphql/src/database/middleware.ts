@@ -886,22 +886,6 @@ export const timeSeriesEntities = async (
   const { startDate, endDate, interval } = args;
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-// Rewrite a distribution field into the indexed field to aggregate on (relations are denormalized as rel_*)
-const buildEntitiesAggregationField = (field: string) => {
-  const aggregationNotSupported = field.includes('.')
-    && !field.endsWith('internal_id')
-    && !field.includes('opinions_metrics');
-  if (aggregationNotSupported) {
-    throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
-  }
-  if (field.includes('.') && !field.includes('opinions_metrics')) {
-    return REL_INDEX_PREFIX + field;
-  }
-  if (field === 'name') {
-    return 'internal_id';
-  }
-  return field;
-};
 export const TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT = 10;
 export const TIME_SERIES_BREAKDOWN_MAX_LIMIT = 50;
 // Stay under the default search.max_buckets (65,535) of Elasticsearch and OpenSearch
@@ -943,29 +927,6 @@ export const resolveBreakdownField = (types: string[], field: string) => {
     return { aggregationField: field, resolveEntities: isIdAttribute };
   }
   throw FunctionalError('Time series breakdown does not support this field for these entity types', { field, types });
-};
-// Audit logs are not described by the schema like knowledge: their breakdown fields are listed here
-const HISTORY_BREAKDOWN_FIELDS = [
-  'entity_type',
-  'event_type',
-  'event_scope',
-  'user_id',
-  'group_ids',
-  'organization_ids',
-  'context_data.id',
-  'context_data.entity_type',
-  'context_data.created_by_ref_id',
-  'context_data.labels_ids',
-  'context_data.marking_definitions',
-  'context_data.creator_ids',
-];
-const HISTORY_RESOLVED_FIELDS = ['user_id', 'group_ids', 'organization_ids', 'context_data.id', 'context_data.created_by_ref_id',
-  'context_data.labels_ids', 'context_data.marking_definitions', 'context_data.creator_ids'];
-export const resolveHistoryBreakdownField = (field: string) => {
-  if (!HISTORY_BREAKDOWN_FIELDS.includes(field)) {
-    throw FunctionalError('Time series breakdown does not support this field for audit logs', { field });
-  }
-  return { aggregationField: field, resolveEntities: HISTORY_RESOLVED_FIELDS.includes(field) };
 };
 type TimeSeriesBreakdownArgs = {
   field: string;
@@ -1075,24 +1036,6 @@ export const timeSeriesBreakdownEntities = async (
   const indices = args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES;
   return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(types, args), args);
 };
-export const timeSeriesBreakdownRelations = async (
-  context: AuthContext,
-  user: AuthUser,
-  args: EntityFilters<BasicStoreEntity> & TimeSeriesBreakdownArgs & { relationship_type?: string[] },
-) => {
-  checkTimeSeriesBreakdownLimit(args.limit);
-  const types = args.relationship_type || ['stix-core-relationship', 'object', 'stix-sighting-relationship'];
-  const breakdownField = resolveBreakdownField(types, args.field);
-  const indices = args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES;
-  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(types, args), args);
-};
-export const timeSeriesBreakdownHistory = async (context: AuthContext, user: AuthUser, args: TimeSeriesBreakdownArgs & Record<string, any>) => {
-  checkTimeSeriesBreakdownLimit(args.limit);
-  const breakdownField = resolveHistoryBreakdownField(args.field);
-  // Audit logs are dated by their timestamp
-  const queryArgs = { ...args, types: args.types ?? [ENTITY_TYPE_HISTORY], dateAttribute: args.dateAttribute || 'timestamp' };
-  return timeSeriesBreakdown(context, user, READ_INDEX_HISTORY, breakdownField, queryArgs, queryArgs);
-};
 export const timeSeriesRelations = async (
   context: AuthContext,
   user: AuthUser,
@@ -1176,9 +1119,22 @@ export const distributionEntities = async (
       },
     );
   } else {
+    const aggregationNotSupported = field.includes('.')
+      && !field.endsWith('internal_id')
+      && !field.includes('opinions_metrics');
+    if (aggregationNotSupported) {
+      throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
+    }
+    let finalField = field;
+    if (field.includes('.') && !field.includes('opinions_metrics')) {
+      finalField = REL_INDEX_PREFIX + field;
+    }
+    if (field === 'name') {
+      finalField = 'internal_id';
+    }
     distributionData = await elAggregationCount(context, user, targetIndices, {
       ...distributionArgs,
-      field: buildEntitiesAggregationField(field),
+      field: finalField,
     });
   }
 
