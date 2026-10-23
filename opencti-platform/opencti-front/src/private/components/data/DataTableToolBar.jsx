@@ -112,6 +112,18 @@ import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import { isBulkActionAllowed, isBulkActionDisabled } from './dataTableToolBarActionRules';
+import {
+  addStep,
+  areStepsValid,
+  buildUpdateActions,
+  changeStepKey,
+  isTemporalFieldRemoval,
+  removeStep,
+  setStepInputValue,
+  setStepOption,
+  setStepSwitchValue,
+  setStepValues,
+} from './dataTableToolBarUpdateSteps';
 import EnrichmentDrawer from './drawers/EnrichmentDrawer';
 import MergeDrawer from './drawers/MergeDrawer';
 import RuleRescanDrawer from './drawers/RuleRescanDrawer';
@@ -574,49 +586,15 @@ class DataTableToolBar extends Component {
   }
 
   handleAddStep() {
-    this.setState({ actionsInputs: R.append({}, this.state.actionsInputs) });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: addStep(actionsInputs) }));
   }
 
   handleRemoveStep(i) {
-    const { actionsInputs } = this.state;
-    actionsInputs.splice(i, 1);
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: removeStep(actionsInputs, i) }));
   }
 
   handleLaunchUpdate() {
-    const { actionsInputs } = this.state;
-    const categoryAttributeMapping = {
-      case_severity_ov: 'severity',
-      case_priority_ov: 'priority',
-      incident_response_types_ov: 'response_types',
-      request_for_information_types_ov: 'information_types',
-      request_for_takedown_types_ov: 'takedown_types',
-      indicator_type_ov: 'indicator_types',
-      platforms_ov: 'x_mitre_platforms',
-    };
-
-    const actions = actionsInputs.map((n) => {
-      if (categoryAttributeMapping[n.field]) {
-        return ({
-          type: n.type,
-          context: {
-            field: categoryAttributeMapping[n.field],
-            type: n.fieldType,
-            values: n.values.map((value) => value.label),
-            options: n.options,
-          },
-        });
-      }
-      return {
-        type: n.type,
-        context: {
-          field: n.field,
-          type: n.fieldType,
-          values: n.values,
-          options: n.options,
-        },
-      };
-    });
+    const actions = buildUpdateActions(this.state.actionsInputs);
     this.setState({ actions }, () => {
       this.handleCloseUpdate();
       this.handleOpenTask();
@@ -624,46 +602,7 @@ class DataTableToolBar extends Component {
   }
 
   handleChangeActionInput(i, key, value) {
-    const { actionsInputs } = this.state;
-    const currentActionInput = actionsInputs[i] || {};
-
-    actionsInputs[i] = R.assoc(key, value, currentActionInput);
-    if (key === 'field') {
-      const customFieldDefinition = (this.props.customFieldDefinitions ?? []).find((d) => d.name === value);
-      if (customFieldDefinition?.field_type === 'boolean' && actionsInputs[i]?.type !== 'REMOVE') {
-        actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
-      } else if (value === 'x_opencti_detection') {
-        actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
-      } else if (value === 'password_valid_until') {
-        actionsInputs[i] = R.assoc('values', [new Date().toISOString()], actionsInputs[i] || {});
-      } else if (['start_time', 'stop_time'].includes(value) && actionsInputs[i]?.type === 'REMOVE') {
-        actionsInputs[i] = R.assoc('values', [''], actionsInputs[i] || {});
-      } else {
-        const values = [];
-        actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
-      }
-      if (
-        value === 'object-marking'
-        || value === 'object-label'
-        || value === 'created-by'
-        || value === 'external-reference'
-        || value === 'object-assignee'
-        || value === 'object-participant'
-      ) {
-        actionsInputs[i] = R.assoc(
-          'fieldType',
-          'RELATION',
-          actionsInputs[i] || {},
-        );
-      } else {
-        actionsInputs[i] = R.assoc(
-          'fieldType',
-          'ATTRIBUTE',
-          actionsInputs[i] || {},
-        );
-      }
-    }
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: changeStepKey(actionsInputs, i, key, value, this.props.customFieldDefinitions ?? []) }));
   }
 
   // Event last and optional: the library reports it on ComboboxChangeMeta.
@@ -672,45 +611,20 @@ class DataTableToolBar extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'values',
-      Array.isArray(value) ? value : [value],
-      actionsInputs[i] || {},
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepValues(actionsInputs, i, value) }));
   }
 
   handleChangeActionInputOptions(i, key, checked) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'options',
-      R.assoc(key, checked === true, actionsInputs[i]?.options || {}),
-      actionsInputs[i] || {},
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepOption(actionsInputs, i, key, checked) }));
   }
 
   handleChangeActionInputValuesReplace(i, event) {
     const { value } = event.target;
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'values',
-      Array.isArray(value) ? value : [value],
-      actionsInputs[i] || {},
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepValues(actionsInputs, i, value) }));
   }
 
   handleChangeSwitchInput(i, key, value) {
-    const { actionsInputs } = this.state;
-    const currentValue = actionsInputs[i] ? actionsInputs[i][key] : null;
-    if (key === 'values' && currentValue !== value) {
-      actionsInputs[i] = { ...actionsInputs[i], [key]: [String(value)] };
-    } else {
-      actionsInputs[i] = { ...actionsInputs[i], [key]: value };
-    }
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepSwitchValue(actionsInputs, i, key, value) }));
   }
 
   handleLaunchRead(read) {
@@ -1110,13 +1024,7 @@ class DataTableToolBar extends Component {
   }
 
   searchContainers(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(toolBarContainersQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
     })
@@ -1141,13 +1049,7 @@ class DataTableToolBar extends Component {
   }
 
   searchGroups(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
 
     fetchQuery(toolbarGroupsQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
@@ -1167,24 +1069,12 @@ class DataTableToolBar extends Component {
   }
 
   searchActionInputOrganizations(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     this.fetchOrganizations(newValue);
   }
 
   searchMarkingDefinitions(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(objectMarkingFieldAllowedMarkingsQuery)
       .toPromise()
       .then((data) => {
@@ -1200,13 +1090,7 @@ class DataTableToolBar extends Component {
   }
 
   searchLabels(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(labelsSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
     })
@@ -1226,13 +1110,7 @@ class DataTableToolBar extends Component {
   }
 
   searchExternalReferences(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(externalReferencesQueriesSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
     })
@@ -1257,13 +1135,7 @@ class DataTableToolBar extends Component {
   }
 
   searchIdentities(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(identitySearchIdentitiesSearchQuery, {
       types: ['Individual', 'Organization', 'System'],
       search: newValue && newValue.length > 0 ? newValue : '',
@@ -1286,29 +1158,17 @@ class DataTableToolBar extends Component {
   }
 
   searchAccountStatus(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
   }
 
   searchStatuses(i, selectedTypes, newValue) {
-    const { actionsInputs } = this.state;
     let selectedType;
     if (selectedTypes.length === 1) {
       [selectedType] = selectedTypes;
     } else {
       throw Error('It is not possible to bulk edit statuses if more than one entity type is selected.');
     }
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(statusFieldStatusesSearchQuery, {
       first: 100,
       filters: {
@@ -1336,13 +1196,7 @@ class DataTableToolBar extends Component {
   }
 
   searchVocabulary(i, category, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(vocabularyQuery, {
       category,
       orderBy: 'name',
@@ -1365,12 +1219,7 @@ class DataTableToolBar extends Component {
   }
 
   searchParticipants(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = {
-      ...actionsInputs[i],
-      inputValue: newValue && newValue.length > 0 ? newValue : '',
-    };
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(objectParticipantFieldMembersSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
       entityTypes: ['User'],
@@ -1390,12 +1239,7 @@ class DataTableToolBar extends Component {
   }
 
   searchAssignees(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = {
-      ...actionsInputs[i],
-      inputValue: newValue && newValue.length > 0 ? newValue : '',
-    };
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(objectAssigneeFieldMembersSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
       entityTypes: ['User'],
@@ -1419,13 +1263,7 @@ class DataTableToolBar extends Component {
   }
 
   searchUsers(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(toolBarUsersLinesSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
       first: 100,
@@ -1447,12 +1285,7 @@ class DataTableToolBar extends Component {
   }
 
   searchKillChains(i, newValue) {
-    const { actionsInputs } = this.state;
-    actionsInputs[i] = {
-      ...actionsInputs[i],
-      inputValue: newValue && newValue.length > 0 ? newValue : '',
-    };
-    this.setState({ actionsInputs });
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
     fetchQuery(killChainPhasesSearchQuery, {
       search: newValue && newValue.length > 0 ? newValue : '',
     })
@@ -1480,29 +1313,13 @@ class DataTableToolBar extends Component {
   }
 
   handleChangeDate(i, newValue) {
-    const { actionsInputs } = this.state;
-    if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
-      return;
-    }
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
-    this.setState({ actionsInputs });
+    if (isTemporalFieldRemoval(this.state.actionsInputs[i])) return;
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
   }
 
   handleAcceptDate(i, newValue) {
-    const { actionsInputs } = this.state;
-    if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
-      return;
-    }
-    actionsInputs[i] = R.assoc(
-      'values',
-      Array.isArray(newValue) ? newValue : [newValue],
-      actionsInputs[i] || {},
-    );
-    this.setState({ actionsInputs });
+    if (isTemporalFieldRemoval(this.state.actionsInputs[i])) return;
+    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepValues(actionsInputs, i, newValue) }));
   }
 
   renderValuesOptions(i, selectedTypes, userStatuses) {
@@ -2224,15 +2041,7 @@ class DataTableToolBar extends Component {
   }
 
   areStepValid() {
-    const { actionsInputs } = this.state;
-    for (const n of actionsInputs) {
-      // Removing a custom field without value clears it
-      const isCustomFieldClear = n?.type === 'REMOVE' && isCustomFieldAttribute(n.field) && Array.isArray(n.values);
-      if (!n || !n.type || !n.field || !n.values || (n.values.length === 0 && !isCustomFieldClear)) {
-        return false;
-      }
-    }
-    return true;
+    return areStepsValid(this.state.actionsInputs);
   }
 
   togglePromoteToContainer() {
