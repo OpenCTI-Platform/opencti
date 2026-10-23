@@ -1,16 +1,25 @@
-import { useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTheme } from '@mui/material/styles';
 import * as maplibre from 'maplibre-gl';
 import type { StyleSpecification } from 'maplibre-gl';
 import maplibreglWorker from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { Protocol } from 'pmtiles';
 import Card from '@common/card/Card';
-import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import { isValidCoordinates } from '../../../../utils/position.utils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { loadCountries, type CountriesCollection } from './countries';
+
+const GeoMapFallback = lazy(() => import('./GeoMapFallback'));
+const MAP_RENDERER_STORAGE_KEY = 'opencti-map-renderer';
+
+const isFallbackForced = () => {
+  try {
+    return localStorage.getItem(MAP_RENDERER_STORAGE_KEY) === 'fallback';
+  } catch {
+    return false;
+  }
+};
 
 // Configure MapLibre worker URL (must be set before creating any Map)
 maplibre.setWorkerUrl(maplibreglWorker);
@@ -208,13 +217,12 @@ const GeoMap = ({
   markers,
 }: MapProps) => {
   const theme = useTheme();
-  const { t_i18n } = useFormatter();
   // Read locale directly from the context (bypassing useAuth's full-session check) so
   // GeoMap keeps working on public dashboards, which render outside of UserContext.Provider.
   const { locale } = useContext(UserContext);
   const dark = theme.palette.mode === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isWebGLUnavailable, setIsWebGLUnavailable] = useState(false);
+  const [isFallbackRendered, setIsFallbackRendered] = useState(isFallbackForced);
 
   useEffect(() => {
     if (!containerRef.current) return undefined;
@@ -236,10 +244,8 @@ const GeoMap = ({
         canvasContextAttributes: { preserveDrawingBuffer: true },
       });
     } catch (error) {
-      // MapLibre needs WebGL2: when the browser cannot provide it (disabled, GPU blocklisted, VDI...),
-      // show a placeholder instead of letting the error take down the whole page.
       if (error instanceof maplibre.GPUInitializationError) {
-        setIsWebGLUnavailable(true);
+        setIsFallbackRendered(true);
         return undefined;
       }
       throw error;
@@ -269,10 +275,10 @@ const GeoMap = ({
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <Card padding="none" title={title}>
-        {isWebGLUnavailable ? (
-          <div key="webgl-unavailable" style={{ height: '100%', minHeight: 300, boxSizing: 'border-box', padding: theme.spacing(2) }}>
-            <WidgetNoData message={t_i18n('This map cannot be displayed because your browser does not support WebGL2 or has it disabled.')} />
-          </div>
+        {isFallbackRendered ? (
+          <Suspense fallback={<div style={{ minHeight: 300 }} />}>
+            <GeoMapFallback zoom={zoom} center={center} countries={countries} markers={markers} />
+          </Suspense>
         ) : (
           <div ref={containerRef} style={{ width: '100%', height: '100%', minHeight: 300, borderRadius: 6 }} />
         )}

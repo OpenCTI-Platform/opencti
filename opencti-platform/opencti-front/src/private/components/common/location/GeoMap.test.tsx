@@ -1,11 +1,8 @@
-import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import GeoMap from './GeoMap';
 
-const WEBGL_UNAVAILABLE_MESSAGE = 'This map cannot be displayed because your browser does not support WebGL2 or has it disabled.';
-
-const maplibreMock = vi.hoisted(() => ({ isWebGL2Supported: true }));
+const maplibreMock = vi.hoisted(() => ({ isWebGL2Supported: true, createdMaps: 0 }));
 
 vi.mock('maplibre-gl', () => {
   class GPUInitializationError extends Error {}
@@ -13,6 +10,7 @@ vi.mock('maplibre-gl', () => {
     scrollZoom = { setWheelZoomRate: () => {} };
 
     constructor() {
+      maplibreMock.createdMaps += 1;
       if (!maplibreMock.isWebGL2Supported) {
         throw new GPUInitializationError('WebGL2 is required to display this map.');
       }
@@ -32,22 +30,48 @@ vi.mock('pmtiles', () => ({
     return { tile: () => {} };
   }),
 }));
+vi.mock('./GeoMapFallback', () => ({
+  default: () => <div>Fallback map</div>,
+}));
 
 describe('GeoMap', () => {
   beforeEach(() => {
     maplibreMock.isWebGL2Supported = true;
+    maplibreMock.createdMaps = 0;
+    localStorage.removeItem('opencti-map-renderer');
   });
 
-  it('renders the map when WebGL2 is available', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders the MapLibre map when WebGL2 is available', () => {
     const { getByText, queryByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
     expect(getByText('Mini map')).toBeTruthy();
-    expect(queryByText(WEBGL_UNAVAILABLE_MESSAGE)).toBeNull();
+    expect(queryByText('Fallback map')).toBeNull();
   });
 
-  it('renders a placeholder instead of crashing when WebGL2 is unavailable', () => {
+  it('renders the fallback map instead of crashing when WebGL2 is unavailable', async () => {
     maplibreMock.isWebGL2Supported = false;
-    const { getByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
+    const { getByText, findByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
     expect(getByText('Mini map')).toBeTruthy();
-    expect(getByText(WEBGL_UNAVAILABLE_MESSAGE)).toBeTruthy();
+    expect(await findByText('Fallback map')).toBeTruthy();
+  });
+
+  it('renders the fallback map without creating a MapLibre map when forced from local storage', async () => {
+    localStorage.setItem('opencti-map-renderer', 'fallback');
+    const { findByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
+    expect(await findByText('Fallback map')).toBeTruthy();
+    expect(maplibreMock.createdMaps).toBe(0);
+  });
+
+  it('renders the MapLibre map when local storage cannot be accessed', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('The operation is insecure.', 'SecurityError');
+    });
+    const { getByText, queryByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
+    expect(getByText('Mini map')).toBeTruthy();
+    expect(queryByText('Fallback map')).toBeNull();
+    expect(maplibreMock.createdMaps).toBe(1);
   });
 });
