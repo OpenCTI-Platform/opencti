@@ -5176,6 +5176,7 @@
   "This action will generate STIX patterns indicators from the selected observables.": "이 작업은 선택된 관찰 가능 항목에서 STIX 패턴 인디케이터를 생성합니다.",
   "This attribute will use predefined vocabulary values.": "이 속성은 미리 정의된 어휘 값을 사용합니다.",
   "this blogpost": "이 블로그 게시물",
+  "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.": "이 세부 분류 필드는 이 위젯의 데이터 세트에서 사용할 수 없습니다. 위젯을 편집하여 다른 필드를 선택하세요.",
   "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.": "이 변경 사항은 주 플랫폼 조직에 속하지 않은 사용자 및 커넥터에게 영향을 미칠 수 있으며, 이들은 더 이상 지식에 액세스할 수 없게 됩니다.",
   "This configuration enables an entity to automatically construct an external reference from the uploaded file.": "이 구성은 엔터티가 업로드된 파일에서 자동으로 외부 참조를 생성할 수 있게 합니다.",
   "This configuration enables the requirement of a reference message on an entity creation or modification.": "이 구성은 엔터티 생성 또는 수정 시 참조 메시지 요구를 활성화합니다.",

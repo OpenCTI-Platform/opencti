@@ -1,7 +1,8 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import testRender from '../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
+import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import { daysAgo, monthsAgo } from '../../../../utils/Time';
 
 const mocks = vi.hoisted(() => ({
@@ -72,13 +73,39 @@ const selection = {
   },
 } as unknown as WidgetDataSelection;
 
-const makeWidget = (type: string, parameters: Widget['parameters']): Widget => ({
+// Several types: the entity type is then a field the dataset can be broken down by
+const multiTypesSelection = {
+  ...selection,
+  filters: {
+    mode: 'and',
+    filters: [{ key: 'entity_type', values: ['Report', 'Malware'], operator: 'eq', mode: 'or' }],
+    filterGroups: [],
+  },
+} as unknown as WidgetDataSelection;
+// Without type filter, the dataset is the abstract Stix-Core-Object type
+const noTypeSelection = { ...selection, filters: { mode: 'and', filters: [], filterGroups: [] } } as unknown as WidgetDataSelection;
+
+const makeWidget = (type: string, parameters: Widget['parameters'], dataSelection = selection): Widget => ({
   id: 'widget',
   type,
   perspective: 'entities',
-  dataSelection: [selection],
+  dataSelection: [dataSelection],
   parameters,
 });
+
+const definition = (filterKey: string, subEntityTypes: string[]): FilterDefinition => ({
+  filterKey, type: 'id', label: filterKey, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
+});
+const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>([
+  ['Report', new Map([
+    ['objectAssignee', definition('objectAssignee', ['Report'])],
+    ['objectLabel', definition('objectLabel', ['Report'])],
+    ['creator_id', definition('creator_id', ['Report'])],
+  ])],
+  // the abstract type has no assignee
+  ['Stix-Core-Object', new Map([['objectLabel', definition('objectLabel', ['Stix-Core-Object', 'Report'])]])],
+]);
+const userContext = createMockUserContext({ schema: { filterKeysSchema } });
 
 const dailyData = (days: number) => Array.from({ length: days }, (_, i) => ({
   date: new Date(Date.UTC(2025, 9, 1 + i)).toISOString(),
@@ -91,6 +118,7 @@ const respond = (series: unknown[], truncated = false) => {
 
 const render = (widget: Widget) => testRender(
   <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />,
+  { userContext },
 );
 
 describe('StixCoreObjectsTimeSeriesBreakdown', () => {
@@ -151,7 +179,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       { label: 'user-id', entity: { id: 'user-id', name: 'Alice' }, data: dailyData(3) },
       { label: 'unresolved-id', entity: null, data: dailyData(3) },
     ]);
-    render(makeWidget('line', { breakdownBy: 'creator' }));
+    render(makeWidget('line', { breakdownBy: 'creator_id' }));
     expect(mocks.lines.mock.calls[0][0].series.map((serie: { name: string }) => serie.name)).toEqual(['Alice', 'unresolved-id']);
 
     vi.clearAllMocks();
@@ -159,7 +187,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       { label: 'Report', entity: null, data: dailyData(3) },
       { label: 'Not-A-Translated-Type', entity: null, data: dailyData(3) },
     ]);
-    render(makeWidget('area', { breakdownBy: 'entity_type' }));
+    render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
     const names = mocks.areas.mock.calls[0][0].series.map((serie: { name: string }) => serie.name);
     expect(names[0]).not.toEqual('entity_Report');
     expect(names[1]).toEqual('Not-A-Translated-Type');
@@ -170,7 +198,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       { label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, data: dailyData(3) },
       { label: 'Other', isOther: true, entity: null, data: dailyData(3) },
     ]);
-    render(makeWidget('line', { breakdownBy: 'creator' }));
+    render(makeWidget('line', { breakdownBy: 'creator_id' }));
     const names = mocks.lines.mock.calls[0][0].series.map((serie: { name: string }) => serie.name);
     expect(names).toEqual(['Alice', 'Other']);
     const [alice, other] = mocks.lines.mock.calls[0][0].series;
@@ -181,11 +209,11 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   it('keeps the requested interval for lines and heatmaps', () => {
     const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, data: dailyData(366) }));
     respond(series);
-    render(makeWidget('line', { breakdownBy: 'entity_type' }));
+    render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
     expect(mocks.lines.mock.calls[0][0].interval).toEqual('day');
     expect(mocks.lines.mock.calls[0][0].series[0].data).toHaveLength(366);
 
-    render(makeWidget('heatmap', { breakdownBy: 'entity_type' }));
+    render(makeWidget('heatmap', { breakdownBy: 'entity_type' }, multiTypesSelection));
     expect(mocks.heatmap.mock.calls[0][0].data[0].data).toHaveLength(366);
     expect(mocks.heatmap.mock.calls[0][0]).toMatchObject({ minValue: 0, maxValue: 2 });
   });
@@ -193,7 +221,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   it('coarsens a large bar chart, disables its animations and says so', () => {
     const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, data: dailyData(366) }));
     respond(series);
-    const { getByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }));
+    const { getByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
 
     const props = mocks.bars.mock.lastCall?.[0];
     expect(props.interval).toEqual('week');
@@ -205,7 +233,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
   it('keeps a small bar chart as configured', () => {
     respond([{ label: 'Report', entity: null, data: dailyData(30) }]);
-    const { queryByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type', stacked: true }));
+    const { queryByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type', stacked: true }, multiTypesSelection));
 
     const props = mocks.bars.mock.lastCall?.[0];
     expect(props).toMatchObject({ interval: 'day', isStacked: true, isAnimated: true });
@@ -214,19 +242,25 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
   it('warns when only the top values are displayed', () => {
     respond([{ label: 'Report', entity: null, data: dailyData(3) }], true);
-    const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5 }));
+    const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5 }, multiTypesSelection));
     expect(getByTestId('widget-warning').textContent).toContain('5');
   });
 
   it('warns that only the lowest values are displayed when ordered by lowest values', () => {
     respond([{ label: 'Report', entity: null, data: dailyData(3) }], true);
-    const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5, breakdownOrder: 'asc' }));
+    const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5, breakdownOrder: 'asc' }, multiTypesSelection));
     expect(getByTestId('widget-warning').textContent).toContain('Only the 5 lowest values are displayed.');
+  });
+
+  it('does not query a breakdown field the dataset does not support, and says so', () => {
+    const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection));
+    expect(mocks.dashboardViz).not.toHaveBeenCalled();
+    expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
   });
 
   it('shows the no data state without any series', () => {
     respond([]);
-    const { queryByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type' }));
+    const { queryByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
     expect(queryByTestId('lines')).toBeNull();
   });
 });

@@ -5176,6 +5176,7 @@
   "This action will generate STIX patterns indicators from the selected observables.": "Это действие генерирует индикаторы паттернов STIX на основе выбранных наблюдаемых.",
   "This attribute will use predefined vocabulary values.": "Этот атрибут будет использовать предопределенные словарные значения.",
   "this blogpost": "этот пост в блоге",
+  "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.": "Это поле разбивки недоступно для набора данных этого виджета. Измените виджет, чтобы выбрать другое поле.",
   "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.": "Это изменение может повлиять на пользователей и коннекторы, которые больше не смогут получить доступ к знаниям, если они не принадлежат к основной организации платформы.",
   "This configuration enables an entity to automatically construct an external reference from the uploaded file.": "Эта конфигурация позволяет сущности автоматически создавать внешнюю ссылку из загруженного файла.",
   "This configuration enables the requirement of a reference message on an entity creation or modification.": "Эта конфигурация позволяет требовать сообщения о ссылке при создании или изменении сущности.",

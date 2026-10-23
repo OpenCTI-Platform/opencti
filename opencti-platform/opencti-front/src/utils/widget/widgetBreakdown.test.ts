@@ -13,6 +13,7 @@ import {
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   hasWidgetBreakdown,
+  isBreakdownFieldSupported,
   isWidgetBreakdownActive,
   isWidgetBreakdownEligible,
 } from './widgetBreakdown';
@@ -169,6 +170,41 @@ describe('getBreakdownFieldOptions', () => {
 
   it('offers the fields of the abstract type without type filter', () => {
     expect(keys([])).toEqual(['createdBy', 'entity_type']);
+  });
+
+  describe('isBreakdownFieldSupported', () => {
+    const supported = (breakdownBy: string, entityTypes?: string[]) => isBreakdownFieldSupported(schema, {
+      ...makeWidget({}, entityTypes),
+      parameters: { breakdownBy },
+    });
+
+    it('accepts a field of the entity type of the dataset', () => {
+      expect(supported('createdBy', ['Report'])).toBe(true);
+      expect(supported('report_types', ['Report'])).toBe(true);
+    });
+
+    it('refuses a field the entity type does not have, or that cannot be broken down', () => {
+      expect(supported('report_types', ['Malware'])).toBe(false);
+      expect(supported('name', ['Report'])).toBe(false);
+      // a single type already is the entity type
+      expect(supported('entity_type', ['Report'])).toBe(false);
+    });
+
+    it('refuses a field the abstract type has not, without type filter', () => {
+      const noTypeFilter = { ...makeWidget(), dataSelection: [{ filters: undefined }], parameters: { breakdownBy: 'objectAssignee' } } as unknown as Widget;
+      expect(isBreakdownFieldSupported(schema, noTypeFilter)).toBe(false);
+      expect(isBreakdownFieldSupported(schema, { ...noTypeFilter, parameters: { breakdownBy: 'createdBy' } })).toBe(true);
+    });
+
+    it('accepts the entity type with several types, and only their common fields', () => {
+      expect(supported('entity_type', ['Report', 'Malware'])).toBe(true);
+      expect(supported('objectLabel', ['Report', 'Malware'])).toBe(true);
+      expect(supported('report_types', ['Report', 'Malware'])).toBe(false);
+    });
+
+    it('refuses a widget without breakdown field', () => {
+      expect(isBreakdownFieldSupported(schema, makeWidget({ parameters: { breakdownBy: null } }))).toBe(false);
+    });
   });
 });
 

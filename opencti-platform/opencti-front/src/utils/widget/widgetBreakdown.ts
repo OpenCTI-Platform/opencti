@@ -71,6 +71,18 @@ export const getBreakdownFieldOptions = (
   return options.sort((a, b) => a.label.localeCompare(b.label));
 };
 
+/**
+ * Whether the widget breakdown field can be used on its dataset: saved or imported widgets can carry
+ * a field the API refuses for the entity types of their filters.
+ */
+export const isBreakdownFieldSupported = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  widget: Pick<Widget, 'dataSelection' | 'parameters'>,
+) => {
+  const entityTypes = getBreakdownEntityTypes(widget.dataSelection[0]?.filters);
+  return getBreakdownFieldOptions(filterKeysSchema, entityTypes).some(({ key }) => key === widget.parameters?.breakdownBy);
+};
+
 export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) => {
   return parameters?.breakdownLimit ?? DEFAULT_BREAKDOWN_LIMIT;
 };

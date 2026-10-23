@@ -4,6 +4,7 @@ import ApexCharts from 'apexcharts';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import useAuth from '../../../../utils/hooks/useAuth';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
@@ -25,6 +26,7 @@ import {
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   isBreakdownField,
+  isBreakdownFieldSupported,
 } from 'src/utils/widget/widgetBreakdown';
 import { now } from '../../../../utils/Time';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -254,10 +256,7 @@ interface StixCoreObjectsTimeSeriesBreakdownProps {
   refreshRate?: number | null;
 }
 
-/**
- * Entities time series widget drawing one series per value of `parameters.breakdownBy`.
- */
-const StixCoreObjectsTimeSeriesBreakdown = ({
+const StixCoreObjectsTimeSeriesBreakdownViz = ({
   widget,
   popover,
   host,
@@ -303,6 +302,24 @@ const StixCoreObjectsTimeSeriesBreakdown = ({
       </WidgetRenderContent>
     </WidgetContainer>
   );
+};
+
+/**
+ * Entities time series widget drawing one series per value of `parameters.breakdownBy`.
+ * A field the dataset does not support is not queried: the API would refuse it.
+ */
+const StixCoreObjectsTimeSeriesBreakdown = (props: StixCoreObjectsTimeSeriesBreakdownProps) => {
+  const { t_i18n } = useFormatter();
+  const { schema: { filterKeysSchema } } = useAuth();
+  const { widget, popover } = props;
+  if (!isBreakdownFieldSupported(filterKeysSchema, widget)) {
+    return (
+      <WidgetContainer padding="small" title={widget.parameters?.title ?? t_i18n('Entities history')} action={popover}>
+        <WidgetNoData message={t_i18n('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')} />
+      </WidgetContainer>
+    );
+  }
+  return <StixCoreObjectsTimeSeriesBreakdownViz {...props} />;
 };
 
 export default StixCoreObjectsTimeSeriesBreakdown;

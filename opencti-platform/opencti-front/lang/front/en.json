@@ -5176,6 +5176,7 @@
   "This action will generate STIX patterns indicators from the selected observables.": "This action will generate STIX patterns indicators from the selected observables.",
   "This attribute will use predefined vocabulary values.": "This attribute will use predefined vocabulary values.",
   "this blogpost": "this blogpost",
+  "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.": "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.",
   "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.": "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.",
   "This configuration enables an entity to automatically construct an external reference from the uploaded file.": "This configuration enables an entity to automatically construct an external reference from the uploaded file.",
   "This configuration enables the requirement of a reference message on an entity creation or modification.": "This configuration enables the requirement of a reference message on an entity creation or modification.",

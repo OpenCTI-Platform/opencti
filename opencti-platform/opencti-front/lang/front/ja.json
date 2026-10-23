@@ -5176,6 +5176,7 @@
   "This action will generate STIX patterns indicators from the selected observables.": "この操作によって選択された観測結果からSTIXパターンインジケータを生成します。",
   "This attribute will use predefined vocabulary values.": "この属性は定義済みの語彙値を使用します。",
   "this blogpost": "このブログ記事",
+  "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.": "この内訳フィールドは、このウィジェットのデータセットでは使用できません。ウィジェットを編集して別のフィールドを選択してください。",
   "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.": "この変更により、メインプラットフォームの組織に所属していないユーザーやコネクターは、ナレッジにアクセスできなくなる可能性があります。",
   "This configuration enables an entity to automatically construct an external reference from the uploaded file.": "この構成により、エンティティはアップロードされたファイルから外部参照を自動的に構築できます。",
   "This configuration enables the requirement of a reference message on an entity creation or modification.": "この構成により、エンティティの作成または変更に関する参照メッセージの要件が有効になります。",
