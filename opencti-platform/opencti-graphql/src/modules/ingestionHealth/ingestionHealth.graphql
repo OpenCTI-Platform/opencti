@@ -17,9 +17,32 @@ enum IngestionHealthCheckSeverity {
 
 type IngestionHealthCheck {
   health_check_code: String!
+  # In English: the front translates it from the code and the metadata, and falls back to it
   health_check_message: String
+  # What describes this failure (e.g. the missing capability), for the front to render
+  health_check_metadata: JSON
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
+}
+
+# A check of the registry, with whether it is evaluated on the platform
+type IngestionHealthCheckSetting {
+  health_check_code: String!
+  # Name of the check, in English: translated by the front
+  health_check_label: String!
+  health_check_kind: IngestionHealthCheckKind!
+  health_check_severity: IngestionHealthCheckSeverity!
+  enabled: Boolean!
+}
+
+# Platform settings of the ingestion health, see Settings.ingestion_health_settings
+type IngestionHealthSettings {
+  # ms a status must stay unchanged before it is notified
+  notification_delay: Int!
+  # Codes of the checks never evaluated on the platform
+  disabled_health_checks: [String!]!
+  # Every check of the registry, enabled or not
+  health_checks: [IngestionHealthCheckSetting!]!
 }
 
 type IngestionHealth {
