@@ -576,7 +576,7 @@ describe('Settings ingestion health behavior', () => {
   });
   const editDelay = (id, notification_delay) => editSettings(id, { notification_delay });
   const enabledByCode = (ingestionHealthSettings) => Object.fromEntries(ingestionHealthSettings.health_checks.map((check) => [check.health_check_code, check.enabled]));
-  const ALL_CHECKS_ENABLED = { USER_MISSING: true, USER_NOT_SERVICE_ACCOUNT: true, HEARTBEAT_MISSING: true, FEED_AND_SYNC_EXECUTION_FAILED: true };
+  const ALL_CHECKS_ENABLED = { USER_MISSING: true, USER_MISSING_CAPABILITY: true, USER_NOT_SERVICE_ACCOUNT: true, HEARTBEAT_MISSING: true, FEED_AND_SYNC_EXECUTION_FAILED: true };
 
   it('should apply the default notification delay when not configured', async () => {
     const settings = await readSettings();
@@ -638,7 +638,7 @@ describe('Settings ingestion health behavior', () => {
 
   it('should reject unknown or duplicated disabled health checks and keep the stored ones', async () => {
     const { id } = await readSettings();
-    const error = 'Invalid disabled health checks, expected distinct codes among USER_MISSING, USER_NOT_SERVICE_ACCOUNT, HEARTBEAT_MISSING, FEED_AND_SYNC_EXECUTION_FAILED';
+    const error = 'Invalid disabled health checks, expected distinct codes among USER_MISSING, USER_MISSING_CAPABILITY, USER_NOT_SERVICE_ACCOUNT, HEARTBEAT_MISSING, FEED_AND_SYNC_EXECUTION_FAILED';
     await queryAsAdminWithError(editSettings(id, { notification_delay: 120000, disabled_health_checks: ['UNKNOWN_CHECK'] }), error);
     await queryAsAdminWithError(editSettings(id, { notification_delay: 120000, disabled_health_checks: ['USER_MISSING', 'USER_MISSING'] }), error);
     const settings = await readSettings();
