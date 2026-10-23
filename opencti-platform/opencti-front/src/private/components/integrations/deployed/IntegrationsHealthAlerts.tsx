@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import IngestionHealthBanner from '@components/data/connectors/IngestionHealthBanner';
 import type { HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
+import { getHealthCheckMessage } from '@components/data/connectors/ingestionHealthMessage';
 import type { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -37,7 +38,8 @@ const IntegrationsHealthAlerts = ({ items, onShowIssue }: IntegrationsHealthAler
     const names = affected.slice(0, MAX_NAMES).map((item) => item.name).join(', ');
     const more = count > MAX_NAMES ? ` +${count - MAX_NAMES}` : '';
     // A single integration says what is wrong with it
-    const message = count === 1 ? affected[0].healthIssue?.message : null;
+    const check = count === 1 ? affected[0].healthIssue?.check : null;
+    const message = check ? getHealthCheckMessage(check, t_i18n) : null;
     const label = isCritical ? t_i18n('Fix') : t_i18n('Review');
     return [(
       <IngestionHealthBanner

@@ -230,6 +230,7 @@ describe('heartbeat check', () => {
     expect(toGraphqlIngestionHealth(patch?.ingestion_health, CONNECTOR.entity_type)?.healthChecks).toEqual([{
       health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING,
       health_check_message: 'No heartbeat received',
+      health_check_metadata: {},
       health_check_kind: IngestionHealthCheckKind.Runtime,
       health_check_severity: IngestionHealthCheckSeverity.Blocking,
     }]);
@@ -541,6 +542,7 @@ describe('toGraphqlIngestionHealth', () => {
       healthChecks: [{
         health_check_code: HEALTH_CHECK_USER_MISSING,
         health_check_message: 'User is missing',
+        health_check_metadata: {},
         health_check_kind: IngestionHealthCheckKind.Configuration,
         health_check_severity: IngestionHealthCheckSeverity.Blocking,
       }],

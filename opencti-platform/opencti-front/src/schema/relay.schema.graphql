@@ -10859,6 +10859,7 @@ enum IngestionHealthCheckSeverity {
 type IngestionHealthCheck {
   health_check_code: String!
   health_check_message: String
+  health_check_metadata: JSON
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
 }
