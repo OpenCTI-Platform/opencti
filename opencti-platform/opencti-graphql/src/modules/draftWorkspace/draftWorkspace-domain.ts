@@ -71,7 +71,6 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE 
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
-import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 
 // Helper: translates workflowInstanceCurrentState filter into an entity id filter
@@ -846,7 +845,6 @@ export const listDraftContainerObjects = async (context: AuthContext, user: Auth
 };
 
 export const draftWorkspaceEditContext = async (context: AuthContext, user: AuthUser, draftId: string, input?: EditContext) => {
-  await checkEnterpriseEdition(context);
   await checkAndReturnDraft(context, user, draftId);
   if (input) {
     await setEditContext(user, draftId, input);

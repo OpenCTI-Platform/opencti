@@ -23,6 +23,8 @@ import * as rabbitMock from '../../../src/database/rabbitmq';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 import { executionContext } from '../../../src/utils/access';
 import { READ_INDEX_DRAFT_OBJECTS } from '../../../src/database/utils';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
+import { UnsupportedError } from '../../../src/config/errors';
 
 describe('Drafts workspace domain testing', () => {
   let testDraftId: string;
@@ -97,6 +99,17 @@ describe('Drafts workspace domain testing', () => {
     await expect(async () => {
       await draftWorkspaceEditContext(testContext, analystAuthUser, testDraftId, { focusOn: 'idontknow' });
     }).rejects.toThrowError(`Draft ${testDraftId} cannot be found`);
+  });
+
+  it('should draftWorkspaceEditContext as editor without Enterprise Edition', async () => {
+    // Closing the draft edition panel sends an empty focus; drafts are available in Community Edition
+    const eeSpy = vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
+    try {
+      const draft = await draftWorkspaceEditContext(testContext, editorAuthUser, testDraftId, { focusOn: '' });
+      expect(draft).toBeDefined();
+    } finally {
+      eeSpy.mockRestore();
+    }
   });
 
   it('should editor listDraftObjects', async () => {
