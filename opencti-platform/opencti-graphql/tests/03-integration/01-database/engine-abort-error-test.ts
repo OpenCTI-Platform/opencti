@@ -1,9 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { elAggregationsList, elCardinalityCount, elFindByIds, elPaginate, elUpdate } from '../../../src/database/engine';
+import {
+  elAggregationCount,
+  elAggregationNestedTermsWithFilter,
+  elAggregationRelationsCount,
+  elAggregationsList,
+  elCardinalityCount,
+  elFindByIds,
+  elPaginate,
+  elUpdate,
+} from '../../../src/database/engine';
 import { cleanAllEntityInconsistencies } from '../../../src/database/inconsistencyCleaner';
 import { CLIENT_ABORT_ERROR } from '../../../src/config/errors';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_INDEX_HISTORY } from '../../../src/database/utils';
+import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 
 // elExecuteWithAbortSignal (see src/database/engine.ts) throws AbortError as
 // soon as context.requestAbortSignal is already aborted, before Elasticsearch
@@ -31,6 +40,22 @@ describe('Engine calls classify an already-aborted request as CLIENT_ABORT_ERROR
 
   it('elAggregationsList should reject with CLIENT_ABORT_ERROR', async () => {
     await expect(elAggregationsList(abortedContext(), ADMIN_USER, READ_DATA_INDICES_WITHOUT_INFERRED, [{ field: 'entity_type.keyword', name: 'entity_type' }]))
+      .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+  });
+
+  it('elAggregationCount should reject with CLIENT_ABORT_ERROR', async () => {
+    await expect(elAggregationCount(abortedContext(), ADMIN_USER, READ_DATA_INDICES_WITHOUT_INFERRED, { field: 'entity_type' }))
+      .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+  });
+
+  it('elAggregationRelationsCount should reject with CLIENT_ABORT_ERROR', async () => {
+    await expect(elAggregationRelationsCount(abortedContext(), ADMIN_USER, READ_RELATIONSHIPS_INDICES, { field: 'entity_type' }))
+      .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+  });
+
+  it('elAggregationNestedTermsWithFilter should reject with CLIENT_ABORT_ERROR', async () => {
+    const aggregation = { path: 'connections', field: 'connections.internal_id.keyword', filter: { match_all: {} } };
+    await expect(elAggregationNestedTermsWithFilter(abortedContext(), ADMIN_USER, READ_RELATIONSHIPS_INDICES, aggregation))
       .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
   });
 
