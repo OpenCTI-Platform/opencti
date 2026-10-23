@@ -1,10 +1,30 @@
 # The catalog objects are identified by a key, not an id: a singleton category and its only item share the same key, and the
 # front-end Relay store caches every object that has an id by that id alone, which would merge them into one record.
+
+# An item another item needs: it is exported with it, whatever the selection.
+type ConfigPresetItemReference {
+    type: String!
+    key: String!
+}
+
 type ConfigPresetExportableItem {
     key: String!
     label: String!
     # True when the label is a static string the UI translates, false when it is user data shown as is.
     translatable: Boolean!
+    dependsOn: [ConfigPresetItemReference!]!
+    # The item is the platform default (the default theme).
+    isDefault: Boolean!
+}
+
+type ConfigPresetExportableItemEdge {
+    cursor: String!
+    node: ConfigPresetExportableItem!
+}
+
+type ConfigPresetExportableItemConnection {
+    pageInfo: PageInfo!
+    edges: [ConfigPresetExportableItemEdge!]!
 }
 
 # An export group (Platform settings, Data model...): it groups types in the export dialog.
@@ -13,16 +33,30 @@ type ConfigPresetExportableGroup {
     label: String!
 }
 
-# A category of configuration, in registry order. A singleton category has exactly one item, whose key is the key of the category.
+# A category of configuration, in registry order, when it has at least one item. A singleton category has exactly one item, whose key is the key of the category.
 type ConfigPresetExportableType {
     key: String!
     label: String!
+    # What the category holds, translated by the UI like the label.
+    description: String!
     group: ConfigPresetExportableGroup!
+    # First page of the items; the next pages come from configPresetExportableItems.
     items: [ConfigPresetExportableItem!]!
+    # Page info of items: globalCount is the number of exportable items of the type.
+    itemsPageInfo: PageInfo!
 }
 
 extend type Query {
     configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Items of one type, by page; ids, the keys of the items, keeps only those items, excludedIds removes those.
+    configPresetExportableItems(
+        type: ID!
+        first: Int
+        after: ID
+        search: String
+        ids: [ID!]
+        excludedIds: [ID!]
+    ): ConfigPresetExportableItemConnection! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }
 
 input ConfigPresetSelectionInput {
@@ -30,9 +64,11 @@ input ConfigPresetSelectionInput {
     type: ID!
     # Item keys of the type; null or omitted exports every item of the type at export time, an empty list none.
     items: [ID!]
+    # With items null or omitted only: every item of the type except these.
+    excluded_items: [ID!]
 }
 
 extend type Mutation {
-    # Builds the bundle of the selected items and returns the stored zip; bundle_name only goes into metadata.json.
+    # Builds the bundle of the selected items, and of the items they depend on, and returns the stored zip; bundle_name only goes into metadata.json.
     configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

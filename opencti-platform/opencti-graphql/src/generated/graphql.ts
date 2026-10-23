@@ -4590,20 +4590,43 @@ export type ConfigPresetExportableGroup = {
 
 export type ConfigPresetExportableItem = {
   __typename?: 'ConfigPresetExportableItem';
+  dependsOn: Array<ConfigPresetItemReference>;
+  isDefault: Scalars['Boolean']['output'];
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
   translatable: Scalars['Boolean']['output'];
 };
 
+export type ConfigPresetExportableItemConnection = {
+  __typename?: 'ConfigPresetExportableItemConnection';
+  edges: Array<ConfigPresetExportableItemEdge>;
+  pageInfo: PageInfo;
+};
+
+export type ConfigPresetExportableItemEdge = {
+  __typename?: 'ConfigPresetExportableItemEdge';
+  cursor: Scalars['String']['output'];
+  node: ConfigPresetExportableItem;
+};
+
 export type ConfigPresetExportableType = {
   __typename?: 'ConfigPresetExportableType';
+  description: Scalars['String']['output'];
   group: ConfigPresetExportableGroup;
   items: Array<ConfigPresetExportableItem>;
+  itemsPageInfo: PageInfo;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
 };
 
+export type ConfigPresetItemReference = {
+  __typename?: 'ConfigPresetItemReference';
+  key: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+};
+
 export type ConfigPresetSelectionInput = {
+  excluded_items?: InputMaybe<Array<Scalars['ID']['input']>>;
   items?: InputMaybe<Array<Scalars['ID']['input']>>;
   type: Scalars['ID']['input'];
 };
@@ -25021,6 +25044,7 @@ export type Query = {
   channels?: Maybe<ChannelConnection>;
   cities?: Maybe<CityConnection>;
   city?: Maybe<City>;
+  configPresetExportableItems: ConfigPresetExportableItemConnection;
   configPresetExportableTypes: Array<ConfigPresetExportableType>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
@@ -25737,6 +25761,16 @@ export type QueryCitiesArgs = {
 
 export type QueryCityArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryConfigPresetExportableItemsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  excludedIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  type: Scalars['ID']['input'];
 };
 
 
@@ -41008,7 +41042,10 @@ export type ResolversTypes = ResolversObject<{
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   ConfigPresetExportableGroup: ResolverTypeWrapper<ConfigPresetExportableGroup>;
   ConfigPresetExportableItem: ResolverTypeWrapper<ConfigPresetExportableItem>;
+  ConfigPresetExportableItemConnection: ResolverTypeWrapper<ConfigPresetExportableItemConnection>;
+  ConfigPresetExportableItemEdge: ResolverTypeWrapper<ConfigPresetExportableItemEdge>;
   ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
+  ConfigPresetItemReference: ResolverTypeWrapper<ConfigPresetItemReference>;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -42197,7 +42234,10 @@ export type ResolversParentTypes = ResolversObject<{
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   ConfigPresetExportableGroup: ConfigPresetExportableGroup;
   ConfigPresetExportableItem: ConfigPresetExportableItem;
+  ConfigPresetExportableItemConnection: ConfigPresetExportableItemConnection;
+  ConfigPresetExportableItemEdge: ConfigPresetExportableItemEdge;
   ConfigPresetExportableType: ConfigPresetExportableType;
+  ConfigPresetItemReference: ConfigPresetItemReference;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;
@@ -44576,16 +44616,35 @@ export type ConfigPresetExportableGroupResolvers<ContextType = any, ParentType e
 }>;
 
 export type ConfigPresetExportableItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItem'] = ResolversParentTypes['ConfigPresetExportableItem']> = ResolversObject<{
+  dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
+  isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
+export type ConfigPresetExportableItemConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItemConnection'] = ResolversParentTypes['ConfigPresetExportableItemConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['ConfigPresetExportableItemEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableItemEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItemEdge'] = ResolversParentTypes['ConfigPresetExportableItemEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['ConfigPresetExportableItem'], ParentType, ContextType>;
+}>;
+
 export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableType'] = ResolversParentTypes['ConfigPresetExportableType']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
   items?: Resolver<Array<ResolversTypes['ConfigPresetExportableItem']>, ParentType, ContextType>;
+  itemsPageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetItemReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemReference'] = ResolversParentTypes['ConfigPresetItemReference']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type ConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connector'] = ResolversParentTypes['Connector']> = ResolversObject<{
@@ -51111,6 +51170,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   channels?: Resolver<Maybe<ResolversTypes['ChannelConnection']>, ParentType, ContextType, Partial<QueryChannelsArgs>>;
   cities?: Resolver<Maybe<ResolversTypes['CityConnection']>, ParentType, ContextType, Partial<QueryCitiesArgs>>;
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
+  configPresetExportableItems?: Resolver<ResolversTypes['ConfigPresetExportableItemConnection'], ParentType, ContextType, RequireFields<QueryConfigPresetExportableItemsArgs, 'type'>>;
   configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
@@ -55442,7 +55502,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfidenceLevelOverride?: ConfidenceLevelOverrideResolvers<ContextType>;
   ConfigPresetExportableGroup?: ConfigPresetExportableGroupResolvers<ContextType>;
   ConfigPresetExportableItem?: ConfigPresetExportableItemResolvers<ContextType>;
+  ConfigPresetExportableItemConnection?: ConfigPresetExportableItemConnectionResolvers<ContextType>;
+  ConfigPresetExportableItemEdge?: ConfigPresetExportableItemEdgeResolvers<ContextType>;
   ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
+  ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
