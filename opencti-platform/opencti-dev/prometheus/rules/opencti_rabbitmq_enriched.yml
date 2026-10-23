@@ -1,0 +1,55 @@
+groups:
+  - name: opencti_rabbitmq_enriched
+    interval: 15s
+    rules:
+      - record: opencti:rabbitmq_detailed_queue_messages_persistent:enriched
+        expr: |
+          label_replace(
+            rabbitmq_detailed_queue_messages_persistent,
+            "connector_id",
+            "$3",
+            "queue",
+            "(.*)(listen|push)_([a-f0-9-]{36}).*"
+          )
+          * on(connector_id) group_left(name, type)
+          label_replace(
+            opencti_connector_identity_info,
+            "connector_id",
+            "$1",
+            "id",
+            "(.*)"
+          )
+      - record: opencti:rabbitmq_detailed_queue_consumers:enriched
+        expr: |
+          label_replace(
+            rabbitmq_detailed_queue_consumers,
+            "connector_id",
+            "$3",
+            "queue",
+            "(.*)(listen|push)_([a-f0-9-]{36}).*"
+          )
+          * on(connector_id) group_left(name, type)
+          label_replace(
+            opencti_connector_identity_info,
+            "connector_id",
+            "$1",
+            "id",
+            "(.*)"
+          )
+      - record: opencti:rabbitmq_queue_messages_acked_total:enriched
+        expr: |
+          label_replace(
+            rabbitmq_queue_messages_acked_total,
+            "connector_id",
+            "$3",
+            "queue",
+            "(.*)(listen|push)_([a-f0-9-]{36}).*"
+          )
+          * on(connector_id) group_left(name, type)
+          label_replace(
+            opencti_connector_identity_info,
+            "connector_id",
+            "$1",
+            "id",
+            "(.*)"
+          )
