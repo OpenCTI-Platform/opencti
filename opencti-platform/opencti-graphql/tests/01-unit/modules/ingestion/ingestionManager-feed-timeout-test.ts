@@ -295,6 +295,43 @@ describe('Ingestion manager feed timeout behavior', () => {
     );
   });
 
+  it('should record a success outcome for a RSS execution that succeeded, even when its success status patch fails', async () => {
+    const rssIngestion = {
+      id: 'ingestion--ok',
+      internal_id: 'internal--ok',
+      name: 'Working RSS',
+      uri: 'http://localhost/feed',
+      user_id: 'user--2',
+      scheduling_period: 'auto',
+      last_execution_date: undefined,
+      ssl_verify: false,
+      created_by_ref: 'identity--1',
+      object_marking_refs: [],
+      report_types: ['threat-report'],
+    };
+    findAllRssIngestionMock.mockResolvedValue([rssIngestion]);
+    // Only the success status patch fails: the state patch of the execution itself succeeds
+    patchRssIngestionMock.mockImplementation(async (_context, _user, _id, patch) => {
+      if (patch.last_execution_status === 'success') {
+        throw new Error('Elasticsearch unavailable');
+      }
+      return {};
+    });
+
+    const { rssExecutor } = await import('../../../../src/manager/ingestionManager');
+
+    await expect(rssExecutor({} as any, new TurndownService())).resolves.toBeDefined();
+
+    expect(redisPushIngestionLogMock).toHaveBeenCalledWith('internal--ok', expect.objectContaining({ level: 'success' }));
+    expect(redisPushIngestionLogMock).not.toHaveBeenCalledWith('internal--ok', expect.objectContaining({ level: 'error' }));
+    expect(patchRssIngestionMock).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      'internal--ok',
+      expect.objectContaining({ last_execution_status: 'error' }),
+    );
+  });
+
   it('should pass timeout to JSON query execution', async () => {
     const jsonIngestion = {
       id: 'json--ok',
