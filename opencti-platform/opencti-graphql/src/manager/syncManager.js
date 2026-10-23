@@ -499,7 +499,8 @@ const syncManagerInstance = (syncId) => {
                   last_execution_date: new Date().toISOString(),
                   last_execution_status: 'success',
                 });
-                await syncLogger.success('Feed execution succeeded');
+                // Strict: a last outcome left on the failure would keep the sync critical, and no later event records another success
+                await syncLogger.success('Feed execution succeeded', {}, { strictOutcome: true });
                 failed = false;
               } catch (recoveryError) {
                 logApp.warn('[OPENCTI-MODULE] Sync manager recovery status error, retrying...', {
