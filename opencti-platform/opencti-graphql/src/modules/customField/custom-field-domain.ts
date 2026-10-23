@@ -13,12 +13,12 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { createQueryTask } from '../../domain/backgroundTask';
 import { ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES } from '../../domain/backgroundTask-common';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addCustomFieldCreatedCount } from '../../manager/telemetryManager';
 import { FunctionalError, ValidationError } from '../../config/errors';
-import { enforceEnableFeatureFlag, executionContext, SYSTEM_USER } from '../../utils/access';
+import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
 
 /**
@@ -58,7 +58,6 @@ export const findCustomFieldStixFilterKeys = async (context: AuthContext, user: 
 };
 
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
-  enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   // Validate name starts with the required prefix and matches the allowed format
   if (!CUSTOM_FIELD_NAME_REGEX.test(input.name)) {
     throw ValidationError(
@@ -142,7 +141,6 @@ const scheduleCustomFieldValuesCleanupTask = async (fieldName: string, fieldId: 
 };
 
 export const customFieldDefinitionDelete = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
-  enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   const element = await deleteElementById<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   await publishUserAction({
@@ -159,7 +157,6 @@ export const customFieldDefinitionDelete = async (context: AuthContext, user: Au
 };
 
 export const customFieldDefinitionEdit = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
-  enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   // Prevent changing field_type (immutable after creation)
   const forbiddenKeys = ['field_type', 'name'];
   const attemptedForbidden = input.filter((i) => forbiddenKeys.includes(i.key));

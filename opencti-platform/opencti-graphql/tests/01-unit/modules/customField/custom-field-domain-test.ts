@@ -59,7 +59,6 @@ vi.mock('../../../../src/utils/access', async () => {
   const actual = await vi.importActual('../../../../src/utils/access') as object;
   return {
     ...actual,
-    enforceEnableFeatureFlag: vi.fn(),
     executionContext: vi.fn(() => ({ source: 'testing' })),
   };
 });
@@ -153,14 +152,6 @@ describe('customFieldDefinitionAdd', () => {
     label: 'Score',
     field_type: 'integer',
   } as any;
-
-  it('throws when the feature flag is disabled', async () => {
-    vi.mocked(Access.enforceEnableFeatureFlag).mockImplementation(() => {
-      throw new Error('feature disabled');
-    });
-    await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput)).rejects.toThrow('feature disabled');
-    expect(Middleware.createEntity).not.toHaveBeenCalled();
-  });
 
   it('throws on an invalid technical name', async () => {
     await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, name: 'invalid_name' }))

@@ -2539,7 +2539,7 @@ interface StixDomainObject {
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input StixDomainObjectAddInput {
   stix_id: StixId
@@ -2762,7 +2762,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input AttackPatternAddInput {
   stix_id: StixId
@@ -2992,7 +2992,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 input CampaignAddInput {
@@ -3382,7 +3382,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input NoteAddInput {
   stix_id: StixId
@@ -3633,7 +3633,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input ObservedDataAddInput {
   stix_id: StixId
@@ -3857,7 +3857,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input OpinionAddInput {
   stix_id: StixId
@@ -4105,7 +4105,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowInstance: WorkflowInstance
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 input ReportAddInput {
@@ -4314,7 +4314,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input CourseOfActionAddInput {
   stix_id: StixId
@@ -4721,7 +4721,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   workflowInstance: WorkflowInstance
   isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input IndividualAddInput {
   stix_id: StixId
@@ -4931,7 +4931,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input SectorAddInput {
   stix_id: StixId
@@ -5135,7 +5135,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input SystemAddInput {
   stix_id: StixId
@@ -5345,7 +5345,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input InfrastructureAddInput {
   stix_id: StixId
@@ -5556,7 +5556,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 input IntrusionSetAddInput {
@@ -5967,7 +5967,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input PositionAddInput {
   stix_id: StixId
@@ -6174,7 +6174,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input CityAddInput {
   stix_id: StixId
@@ -6375,7 +6375,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input CountryAddInput {
   stix_id: StixId
@@ -6578,7 +6578,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input RegionAddInput {
   stix_id: StixId
@@ -6796,7 +6796,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input MalwareAddInput {
   stix_id: StixId
@@ -7021,7 +7021,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 
 type ThreatActorEdge {
@@ -7191,7 +7191,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 
 input ThreatActorGroupAddInput {
@@ -7402,7 +7402,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input ToolAddInput {
   stix_id: StixId
@@ -7616,7 +7616,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 input IncidentAddInput {
@@ -13728,7 +13728,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 
 input SecurityCoverageExpectation {
@@ -13853,7 +13853,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input StixSightingRelationshipAddInput {
   # StixRelationship
