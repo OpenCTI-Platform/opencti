@@ -50,6 +50,7 @@ export const workflowQuery = graphql`
         }
         conditions
         comment
+        closingReason
       }
     }
     statusTemplates(search: "") {

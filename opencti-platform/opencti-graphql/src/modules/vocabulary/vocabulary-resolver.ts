@@ -1,6 +1,6 @@
 import type { Resolvers, VocabularyDefinition } from '../../generated/graphql';
 import { addVocabulary, deleteVocabulary, editVocabulary, findVocabularyPaginated, findById, getVocabularyUsages } from './vocabulary-domain';
-import { getVocabulariesCategories } from './vocabulary-utils';
+import { getVocabulariesCategories, getVocabularyCategory } from './vocabulary-utils';
 
 const vocabularyResolvers: Resolvers = {
   Query: {
@@ -9,8 +9,7 @@ const vocabularyResolvers: Resolvers = {
     vocabularyCategories: () => getVocabulariesCategories(),
   },
   Vocabulary: {
-    category: (current) => getVocabulariesCategories()
-      .find(({ key }) => key === current.category) ?? getVocabulariesCategories().at(0) as VocabularyDefinition,
+    category: (current) => getVocabularyCategory(current.category) ?? getVocabulariesCategories().at(0) as VocabularyDefinition,
     usages: (current, _, context) => getVocabularyUsages(context, context.user, current),
   },
   Mutation: {

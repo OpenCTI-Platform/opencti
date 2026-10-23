@@ -29,6 +29,9 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
+import { schemaTypesDefinition } from '../../schema/schema-types';
+import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
@@ -117,6 +120,19 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'channel_types',
       required: false,
       multiple: true,
+    }],
+  },
+  closing_reason_ov: {
+    description: 'Reasons given when a workflow transition closes an entity',
+    // Resolved lazily: modules register their domain object types after this file is loaded.
+    // No entity type while the workflow engine is off hides the category everywhere.
+    get entity_types() {
+      return isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) ? schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT) : [];
+    },
+    fields: [{
+      key: 'x_opencti_closing_reason',
+      required: false,
+      multiple: false,
     }],
   },
   collection_layers_ov: {

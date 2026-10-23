@@ -4,6 +4,8 @@ import { updateAttribute } from '../../../src/database/middleware';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { StatusScope } from '../../../src/generated/graphql';
 import { projectWorkflowState, resolveProjectionScope } from '../../../src/modules/workflow/domain/workflow-projection';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
+import { schemaTypesDefinition } from '../../../src/schema/schema-types';
 import type { BasicStoreEntity } from '../../../src/types/store';
 
 vi.mock('../../../src/database/middleware', () => ({
@@ -16,6 +18,13 @@ vi.mock('../../../src/database/middleware-loader', () => ({
 
 vi.mock('../../../src/config/conf', () => ({
   logApp: { warn: vi.fn(), error: vi.fn(), debug: vi.fn(), info: vi.fn() },
+}));
+
+// Only Incident carries the closing reason attribute (it is not registered while the workflow engine is off)
+vi.mock('../../../src/schema/schema-attributes', () => ({
+  schemaAttributesDefinition: {
+    getAttribute: vi.fn((type: string, name: string) => (type === 'Incident' && name === 'x_opencti_closing_reason' ? { name } : undefined)),
+  },
 }));
 
 vi.mock('../../../src/utils/draftContext', () => ({
@@ -135,6 +144,79 @@ describe('projectWorkflowState', () => {
     await expect(projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global)).resolves.toBeUndefined();
     expect(updateAttribute).toHaveBeenCalledOnce();
     expect(logApp.warn).toHaveBeenCalledOnce();
+  });
+});
+
+describe('projectWorkflowState – closing reason', () => {
+  const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' } as BasicStoreEntity;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, ['Incident', 'Report']);
+    (updateAttribute as any).mockResolvedValue({});
+    (fullEntitiesList as any).mockResolvedValue([
+      {
+        id: 'status-closed-id', type: 'Incident', scope: StatusScope.Global, template_id: 'tpl-closed', order: 2,
+      },
+    ]);
+  });
+
+  it('should write the closing reason in the same update as the status', async () => {
+    await projectWorkflowState(mockContext, mockUser, entity, 'tpl-closed', StatusScope.Global, 'false-positive');
+
+    expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-1', 'Incident', [
+      { key: 'x_opencti_workflow_id', value: ['status-closed-id'] },
+      { key: 'x_opencti_closing_reason', value: ['false-positive'] },
+    ], { workflowInternalWrite: true });
+  });
+
+  it('should clear the closing reason when null is given', async () => {
+    await projectWorkflowState(mockContext, mockUser, entity, 'tpl-closed', StatusScope.Global, null);
+
+    expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-1', 'Incident', [
+      { key: 'x_opencti_workflow_id', value: ['status-closed-id'] },
+      { key: 'x_opencti_closing_reason', value: [null] },
+    ], { workflowInternalWrite: true });
+  });
+
+  it('should still write the closing reason when no Status is mapped', async () => {
+    (fullEntitiesList as any).mockResolvedValue([]);
+
+    await projectWorkflowState(mockContext, mockUser, entity, 'tpl-unknown', StatusScope.Global, 'duplicate');
+
+    expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-1', 'Incident', [
+      { key: 'x_opencti_closing_reason', value: ['duplicate'] },
+    ], { workflowInternalWrite: true });
+  });
+
+  it('should still write the status when the closing reason attribute is not registered', async () => {
+    const report = { id: 'report-1', internal_id: 'report-1', entity_type: 'Report' } as BasicStoreEntity;
+    (fullEntitiesList as any).mockResolvedValue([
+      {
+        id: 'status-report-id', type: 'Report', scope: StatusScope.Global, template_id: 'tpl-closed', order: 2,
+      },
+    ]);
+
+    await projectWorkflowState(mockContext, mockUser, report, 'tpl-closed', StatusScope.Global, 'duplicate');
+
+    expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'report-1', 'Report', [
+      { key: 'x_opencti_workflow_id', value: ['status-report-id'] },
+    ], { workflowInternalWrite: true });
+  });
+
+  it('should ignore the closing reason for types without the attribute', async () => {
+    const draft = { id: 'draft-1', internal_id: 'draft-1', entity_type: 'DraftWorkspace' } as BasicStoreEntity;
+    (fullEntitiesList as any).mockResolvedValue([
+      {
+        id: 'status-draft-id', type: 'DraftWorkspace', scope: StatusScope.Global, template_id: 'tpl-closed', order: 2,
+      },
+    ]);
+
+    await projectWorkflowState(mockContext, mockUser, draft, 'tpl-closed', StatusScope.Global, null);
+
+    expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'draft-1', 'DraftWorkspace', [
+      { key: 'x_opencti_workflow_id', value: ['status-draft-id'] },
+    ], { workflowInternalWrite: true });
   });
 });
 

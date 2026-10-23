@@ -44,6 +44,7 @@ export const workflowStatusWorkflowInstanceFragment = graphql`
       toState
       actions
       comment
+      closingReason
       requiresShareOrganizationInput
       requiresUnshareOrganizationInput
       toStatus {
@@ -74,6 +75,7 @@ export const workflowStatusStixDomainObjectFragment = graphql`
     id
     entity_type
     currentUserAccessRight
+    x_opencti_closing_reason
     workflowInstance {
       ...WorkflowStatus_workflowInstance @relay(mask: false)
     }
@@ -81,8 +83,8 @@ export const workflowStatusStixDomainObjectFragment = graphql`
 `;
 
 export const workflowStatusTriggerMutation = graphql`
-  mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON) {
-    triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment, runtimeParams: $runtimeParams) {
+  mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON, $closingReason: String) {
+    triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment, runtimeParams: $runtimeParams, closingReason: $closingReason) {
       success
       reason
       newState

@@ -100,6 +100,7 @@ import {
   VALID_UNTIL,
   VALUE_FIELD,
   X_DETECTION,
+  X_CLOSING_REASON,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { notify, redisAddDeletions } from './redis';
@@ -1898,7 +1899,8 @@ const mergeEntitiesRaw = async (
   const updateAttributes: EditInput[] = [];
   // 1. Update all possible attributes
   const attributes = schemaAttributesDefinition.getAttributeNames(targetType);
-  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
+  // The closing reason follows the target's own workflow state: never take it from a source
+  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX) && s !== X_CLOSING_REASON);
   for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
     const targetFieldKey = targetFields[fieldIndex];
     const mergedEntityCurrentFieldValue = (targetEntity as Record<string, any>)[targetFieldKey];
@@ -2554,6 +2556,9 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   bypassValidation?: boolean;
   // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
   skipUserIndividualSync?: boolean;
+  // Set by the workflow projection: its own write is not synced back as an external write,
+  // and it is the only non-bypass writer of the closing reason
+  workflowInternalWrite?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2613,6 +2618,10 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
   if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
+  }
+  // The closing reason is owned by the workflow: only a transition or a bypass user can change it
+  if (!opts.workflowInternalWrite && !isBypassUser(user) && updates.some((e) => e.key === X_CLOSING_REASON)) {
+    throw FunctionalError('Closing reason can only be changed through a workflow transition', { id: initial.internal_id });
   }
 
   await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
@@ -3053,10 +3062,7 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
-  // Set by the workflow projection so its own write is not synced back as an external write
-  workflowInternalWrite?: boolean;
-};
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
