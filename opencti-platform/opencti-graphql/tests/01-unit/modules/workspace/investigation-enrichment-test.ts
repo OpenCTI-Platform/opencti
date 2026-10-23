@@ -11,6 +11,8 @@ const userWith = (capabilities: string[], id = '98ec0c6a-13ce-5e39-b486-354fe4a7
   return { ...user, internal_id: id, id };
 };
 
+const ENRICHER = ['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNENRICHMENT'];
+
 /**
  * Build a fake investigation workspace with the given restricted members.
  */
@@ -23,12 +25,12 @@ describe('validateEnrichmentInvestigation', () => {
 
   it('should refuse an unknown or invisible investigation', async () => {
     vi.spyOn(loader, 'storeLoadById').mockResolvedValue(undefined as any);
-    await expect(validateEnrichmentInvestigation(testContext, userWith(['INVESTIGATION_INUPDATE']), 'inv-1')).rejects.toThrow('Investigation not found');
+    await expect(validateEnrichmentInvestigation(testContext, userWith(ENRICHER), 'inv-1')).rejects.toThrow('Investigation not found');
   });
 
   it('should refuse a dashboard', async () => {
     vi.spyOn(loader, 'storeLoadById').mockResolvedValue({ ...investigation(), type: 'dashboard' });
-    await expect(validateEnrichmentInvestigation(testContext, userWith(['INVESTIGATION_INUPDATE']), 'inv-1')).rejects.toThrow('Investigation not found');
+    await expect(validateEnrichmentInvestigation(testContext, userWith(ENRICHER), 'inv-1')).rejects.toThrow('Investigation not found');
   });
 
   it('should refuse a user without the investigation update capability', async () => {
@@ -43,20 +45,20 @@ describe('validateEnrichmentInvestigation', () => {
   });
 
   it('should refuse a view-only member', async () => {
-    const user = userWith(['INVESTIGATION_INUPDATE']);
+    const user = userWith(ENRICHER);
     vi.spyOn(loader, 'storeLoadById').mockResolvedValue(investigation([{ id: user.id, access_right: 'view' }]));
     await expect(validateEnrichmentInvestigation(testContext, user, 'inv-1')).rejects.toThrow('You are not allowed to do this.');
   });
 
   it('should accept an edit member', async () => {
-    const user = userWith(['INVESTIGATION_INUPDATE']);
+    const user = userWith(ENRICHER);
     vi.spyOn(loader, 'storeLoadById').mockResolvedValue(investigation([{ id: user.id, access_right: 'edit' }]));
     await expect(validateEnrichmentInvestigation(testContext, user, 'inv-1')).resolves.toMatchObject({ id: 'inv-1' });
   });
 
-  it('should require the enrichment capability when asked', async () => {
-    vi.spyOn(loader, 'storeLoadById').mockResolvedValue(investigation());
-    await expect(validateEnrichmentInvestigation(testContext, userWith(['INVESTIGATION_INUPDATE']), 'inv-1', { checkEnrichmentCapability: true }))
-      .rejects.toThrow('You are not allowed to do this.');
+  it('should refuse a user without the enrichment capability before loading', async () => {
+    const spy = vi.spyOn(loader, 'storeLoadById').mockResolvedValue(investigation());
+    await expect(validateEnrichmentInvestigation(testContext, userWith(['INVESTIGATION_INUPDATE']), 'inv-1')).rejects.toThrow('You are not allowed to do this.');
+    expect(spy).not.toHaveBeenCalled();
   });
 });

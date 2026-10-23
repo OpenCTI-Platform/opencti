@@ -126,7 +126,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         .map((a) => a.context.options.investigationId), // Then keep only the investigation ID
     );
     for (let index = 0; index < enrichmentInvestigationIds.length; index += 1) {
-      await validateEnrichmentInvestigation(context, user, enrichmentInvestigationIds[index], { checkEnrichmentCapability: true });
+      await validateEnrichmentInvestigation(context, user, enrichmentInvestigationIds[index]);
     }
     // 2.5. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
