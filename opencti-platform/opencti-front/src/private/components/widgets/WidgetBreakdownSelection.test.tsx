@@ -1,5 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import type { FilterDefinition } from '../../../utils/hooks/useAuth';
 import type { WidgetDataSelection } from '../../../utils/widget/widget';
@@ -50,30 +51,83 @@ describe('WidgetBreakdownSelection', () => {
     vi.clearAllMocks();
   });
 
-  it('offers the fields of the dataset types, then the number of series once a field is chosen', () => {
+  const isDisabled = (element: HTMLElement) => element.hasAttribute('disabled') || element.getAttribute('data-disabled') !== null;
+
+  it('offers the fields of the dataset types, then the series settings once a field is chosen', () => {
     setWidget({ parameters: { breakdownBy: 'report_types' } });
-    const { getAllByRole, getByText } = testRender(<WidgetBreakdownSelection />);
+    const { getAllByRole, getByRole, getByText } = testRender(<WidgetBreakdownSelection />);
 
     expect(getByText('Break down by')).toBeTruthy();
     expect(getByText('Maximum number of series')).toBeTruthy();
+    expect(getByText('Order')).toBeTruthy();
+    expect(getByRole('switch').getAttribute('aria-checked')).toBe('false');
+    expect(getByText('Include Other')).toBeTruthy();
     expect(getAllByRole('combobox')[0].textContent).toContain('Report types');
+    expect(getAllByRole('combobox')[2].textContent).toContain('Highest values');
     expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+  });
+
+  it('shows the stored order and other series', () => {
+    setWidget({ parameters: { breakdownBy: 'report_types', breakdownOrder: 'asc', breakdownOther: true } });
+    const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
+
+    expect(getAllByRole('combobox')[2].textContent).toContain('Lowest values');
+    expect(getByRole('switch').getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('stores the other series choice', () => {
+    setWidget({ parameters: { breakdownBy: 'report_types' } });
+    const { getByRole } = testRender(<WidgetBreakdownSelection />);
+    fireEvent.click(getByRole('switch'));
+
+    expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
+      parameters: expect.objectContaining({ breakdownBy: 'report_types', breakdownOther: true }),
+    }));
+  });
+
+  it('does not offer the order and other series without a field', () => {
+    setWidget({});
+    const { queryByText, queryByRole } = testRender(<WidgetBreakdownSelection />);
+
+    expect(queryByText('Maximum number of series')).toBeNull();
+    expect(queryByText('Order')).toBeNull();
+    expect(queryByText('Include Other')).toBeNull();
+    expect(queryByRole('switch')).toBeNull();
   });
 
   it('cannot be chosen with several datasets', () => {
     setWidget({ dataSelection: [reports, reports] });
     const { getAllByRole, queryByText } = testRender(<WidgetBreakdownSelection />);
 
-    expect(getAllByRole('combobox')[0].hasAttribute('disabled') || getAllByRole('combobox')[0].getAttribute('data-disabled') !== null).toBe(true);
+    expect(isDisabled(getAllByRole('combobox')[0])).toBe(true);
     expect(queryByText('Maximum number of series')).toBeNull();
   });
 
-  it('drops a field the dataset types no longer carry', () => {
-    setWidget({ parameters: { breakdownBy: 'malware_types' } });
+  it('disables every control with several datasets', () => {
+    setWidget({ dataSelection: [reports, reports], parameters: { breakdownBy: 'report_types' } });
+    const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
+
+    const comboboxes = getAllByRole('combobox');
+    expect(comboboxes).toHaveLength(3);
+    comboboxes.forEach((combobox) => expect(isDisabled(combobox)).toBe(true));
+    expect(isDisabled(getByRole('switch'))).toBe(true);
+  });
+
+  it('keeps showing the configured field, disabled, with several datasets', () => {
+    setWidget({ dataSelection: [reports, reports], parameters: { breakdownBy: 'report_types' } });
+    const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+
+    const [fieldSelect] = getAllByRole('combobox');
+    expect(fieldSelect.textContent).toContain('Report types');
+    expect(isDisabled(fieldSelect)).toBe(true);
+  });
+
+  it('drops a field the dataset types no longer carry, with its settings', () => {
+    setWidget({ parameters: { breakdownBy: 'malware_types', breakdownLimit: 20, breakdownOrder: 'asc', breakdownOther: true } });
     testRender(<WidgetBreakdownSelection />);
 
     expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
-      parameters: expect.objectContaining({ breakdownBy: null }),
+      parameters: { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
     }));
   });
 

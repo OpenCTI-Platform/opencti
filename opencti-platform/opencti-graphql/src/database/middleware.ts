@@ -61,6 +61,7 @@ import {
   elFindByIds,
   type ElFindByIdsOpts,
   elHistogramBreakdownCount,
+  HISTOGRAM_BREAKDOWN_OTHER_KEY,
   elHistogramCount,
   elIndexElements,
   elList,
@@ -119,9 +120,11 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS,
+  INPUT_PARTICIPANT,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
@@ -905,6 +908,12 @@ export const TIME_SERIES_BREAKDOWN_MAX_LIMIT = 50;
 export const TIME_SERIES_BREAKDOWN_MAX_BUCKETS = 50000;
 const BREAKDOWN_UNKNOWN_KEY = 'unknown';
 const BREAKDOWN_ATTRIBUTE_FORMATS = ['id', 'vocabulary', 'enum'];
+// Among id attributes, only the creator can be broken down
+const BREAKDOWN_ALLOWED_ID_ATTRIBUTES = ['creator_id'];
+const BREAKDOWN_OTHER_LABEL = 'Other';
+// Relation refs usable as a breakdown field. Any other ref (objects, externalReferences, killChainPhases...)
+// has an unbounded cardinality or is not a classification of the entity, and is refused.
+export const BREAKDOWN_ALLOWED_REFS = [INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS, INPUT_ASSIGNEE, INPUT_PARTICIPANT];
 const getRelationRefOrNull = (type: string, name: string) => {
   try {
     return schemaRelationsRefDefinition.getRelationRef(type, name);
@@ -912,14 +921,14 @@ const getRelationRefOrNull = (type: string, name: string) => {
     return null; // type without registered relations refs
   }
 };
-// A breakdown field is a filter key that every requested type carries: a relation ref
-// (author, labels, markings, assignees...), or an id, vocabulary or enum attribute.
+// A breakdown field is a filter key that every requested type carries: a relation ref of the allowlist
+// (author, labels, markings, assignees, participants), or an id, vocabulary or enum attribute.
 // Free text, dates, numbers and the special filter keys cannot be broken down.
 export const resolveBreakdownField = (types: string[], field: string) => {
   if (field === 'entity_type') {
     return { aggregationField: field, resolveEntities: false };
   }
-  const refs = types.map((type) => getRelationRefOrNull(type, field));
+  const refs = BREAKDOWN_ALLOWED_REFS.includes(field) ? types.map((type) => getRelationRefOrNull(type, field)) : [null];
   if (refs.every((ref) => ref !== null)) {
     return { aggregationField: `${REL_INDEX_PREFIX}${(refs[0] as RefAttribute).databaseName}.${ID_INTERNAL}`, resolveEntities: true };
   }
@@ -927,7 +936,8 @@ export const resolveBreakdownField = (types: string[], field: string) => {
   const isBreakdownAttribute = (attribute: AttributeDefinition | undefined) => !!attribute
     && attribute.isFilterable
     && attribute.type === 'string'
-    && BREAKDOWN_ATTRIBUTE_FORMATS.includes(attribute.format);
+    && BREAKDOWN_ATTRIBUTE_FORMATS.includes(attribute.format)
+    && (attribute.format !== 'id' || BREAKDOWN_ALLOWED_ID_ATTRIBUTES.includes(attribute.name));
   if (attributes.every(isBreakdownAttribute)) {
     const isIdAttribute = (attributes[0] as AttributeDefinition & { format: string }).format === 'id';
     return { aggregationField: field, resolveEntities: isIdAttribute };
@@ -961,6 +971,8 @@ type TimeSeriesBreakdownArgs = {
   field: string;
   dateAttribute?: string | null;
   limit?: number | null;
+  order?: 'asc' | 'desc' | null;
+  includeOther?: boolean | null;
   onlyInferred?: boolean | null;
   startDate: Date;
   endDate: Date;
@@ -978,45 +990,72 @@ const timeSeriesBreakdown = async (
   const { startDate, endDate, interval, limit = TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT } = args;
   const { aggregationField, resolveEntities } = breakdownField;
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
+  const isAscending = args.order === 'asc';
+  const withOther = args.includeOther === true;
   const intervalsCount = countTimeSeriesIntervals(startDate, endDate, interval);
-  if (seriesLimit * intervalsCount > TIME_SERIES_BREAKDOWN_MAX_BUCKETS) {
+  // The Other series is one more series of points
+  const seriesCount = seriesLimit + (withOther ? 1 : 0);
+  if (seriesCount * intervalsCount > TIME_SERIES_BREAKDOWN_MAX_BUCKETS) {
     throw FunctionalError('Time series breakdown is too large, reduce the period, the interval or the number of series', {
-      limit: seriesLimit,
+      limit: seriesCount,
       intervalsCount,
       max: TIME_SERIES_BREAKDOWN_MAX_BUCKETS,
     });
   }
   const breakdownArgs = {
-    ...queryArgs,
+    ...R.omit(['order', 'includeOther'], queryArgs),
     field: aggregationField,
     // Same inclusive bounds as the histogram below, so both requests see the same entities
     intervalInclude: true,
   };
   // 1. Discover the candidate values over the whole period. Vocabulary and enum values keep their raw form.
-  const candidates = await elAggregationCount(context, user, indices, { ...breakdownArgs, convertEntityTypeLabel: true, normalizeLabel: false });
-  const sortedCandidates = R.sortWith([R.descend(R.prop('value'))], candidates.filter((c) => c.key !== BREAKDOWN_UNKNOWN_KEY));
+  // In asc, the terms aggregation itself is ordered ascending, so its capped page holds the lowest values
+  const candidates = await elAggregationCount(context, user, indices, {
+    ...breakdownArgs,
+    convertEntityTypeLabel: true,
+    normalizeLabel: false,
+    order: isAscending ? 'asc' : undefined,
+  });
+  // desc keeps the values with the highest total over the period, asc the lowest ones
+  const sortedCandidates = R.sortWith(
+    [isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))],
+    candidates.filter((c) => c.key !== BREAKDOWN_UNKNOWN_KEY),
+  );
   // 2. Drop unresolvable values (like the SYSTEM user) before applying the limit, so the limit is honored
   const usableCandidates = resolveEntities
     ? await resolveAggregateDistributions(context, user, sortedCandidates)
     : sortedCandidates.map((candidate) => ({ ...candidate, entity: null }));
   const selected = R.take(seriesLimit, usableCandidates);
   // The terms aggregation is capped: a full candidates page means some values may never have been seen
+  // (in asc, the true lowest values may be among them)
   const truncated = usableCandidates.length > seriesLimit || candidates.length >= MAX_AGGREGATION_SIZE;
-  if (selected.length === 0) {
+  if (selected.length === 0 && !withOther) {
     return { truncated, series: [] };
   }
-  // 3. Count every selected value over time in a single query
+  // 3. Count every selected value, and the entities carrying none of them, over time in a single query
   const histograms = await elHistogramBreakdownCount(context, user, indices, {
     ...breakdownArgs,
     interval,
     keys: selected.map((candidate) => candidate.key),
+    withOther,
   });
   const series = selected.map(({ label, value, entity, key }) => ({
     label,
     value,
     entity,
+    isOther: false,
     data: fillTimeSeries(startDate, endDate, interval, histograms.get(key) ?? []),
   }));
+  if (withOther) {
+    const otherPoints = histograms.get(HISTOGRAM_BREAKDOWN_OTHER_KEY) ?? [];
+    series.push({
+      label: BREAKDOWN_OTHER_LABEL,
+      value: otherPoints.reduce((total, point) => total + point.value, 0),
+      entity: null,
+      isOther: true,
+      data: fillTimeSeries(startDate, endDate, interval, otherPoints),
+    });
+  }
   return { truncated, series };
 };
 const checkTimeSeriesBreakdownLimit = (limit: number | null | undefined) => {

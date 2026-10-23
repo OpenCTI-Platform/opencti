@@ -25533,8 +25533,10 @@ export type QueryAuditsTimeSeriesBreakdownArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   field: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
+  includeOther?: InputMaybe<Scalars['Boolean']['input']>;
   interval: Scalars['String']['input'];
   limit?: InputMaybe<Scalars['Int']['input']>;
+  order?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -27750,9 +27752,11 @@ export type QueryStixCoreObjectsTimeSeriesBreakdownArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   field: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
+  includeOther?: InputMaybe<Scalars['Boolean']['input']>;
   interval: Scalars['String']['input'];
   limit?: InputMaybe<Scalars['Int']['input']>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  order?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -28228,9 +28232,11 @@ export type QueryStixRelationshipsTimeSeriesBreakdownArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   field: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
+  includeOther?: InputMaybe<Scalars['Boolean']['input']>;
   interval: Scalars['String']['input'];
   limit?: InputMaybe<Scalars['Int']['input']>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  order?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<Scalars['String']['input']>>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
@@ -36650,6 +36656,7 @@ export type TimeSeriesBreakdownSerie = {
   __typename?: 'TimeSeriesBreakdownSerie';
   data?: Maybe<Array<Maybe<TimeSeries>>>;
   entity?: Maybe<StixObjectOrStixRelationshipOrCreator>;
+  isOther: Scalars['Boolean']['output'];
   label: Scalars['String']['output'];
   value?: Maybe<Scalars['Int']['output']>;
 };
@@ -54210,6 +54217,7 @@ export type TimeSeriesBreakdownResolvers<ContextType = any, ParentType extends R
 export type TimeSeriesBreakdownSerieResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeriesBreakdownSerie'] = ResolversParentTypes['TimeSeriesBreakdownSerie']> = ResolversObject<{
   data?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType>;
   entity?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
+  isOther?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
 }>;

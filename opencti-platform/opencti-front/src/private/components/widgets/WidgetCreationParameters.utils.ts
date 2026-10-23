@@ -15,7 +15,7 @@ export const applyBreakdownCompatibility = <T extends ConfiguredWidget>(widget: 
   }
   return {
     ...widget,
-    parameters: { ...widget.parameters, breakdownBy: null, breakdownLimit: null },
+    parameters: { ...widget.parameters, breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
   };
 };
 

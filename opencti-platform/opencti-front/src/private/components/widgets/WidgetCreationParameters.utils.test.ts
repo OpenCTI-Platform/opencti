@@ -147,18 +147,19 @@ describe('applyBreakdownCompatibility', () => {
     type: 'line',
     perspective: 'entities' as const,
     dataSelection: [selection],
-    parameters: { breakdownBy: 'entity_type' as const, breakdownLimit: 20 },
+    parameters: { breakdownBy: 'entity_type' as const, breakdownLimit: 20, breakdownOrder: 'asc' as const, breakdownOther: true },
   };
 
   it('keeps the breakdown of every entities time series visualization', () => {
     ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
-      expect(applyBreakdownCompatibility({ ...brokenDownLine, type }, workspace).parameters.breakdownBy).toEqual('entity_type');
+      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, type }, workspace);
+      expect(parameters).toEqual(brokenDownLine.parameters);
     });
   });
 
-  it('drops the breakdown and its limit for a non time series visualization', () => {
+  it('drops the breakdown and its settings for a non time series visualization', () => {
     const widget = applyBreakdownCompatibility({ ...brokenDownLine, type: 'donut' }, workspace);
-    expect(widget.parameters).toEqual({ breakdownBy: null, breakdownLimit: null });
+    expect(widget.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
   });
 
   it('drops the breakdown for the relationships perspective, several datasets or another host', () => {
@@ -166,6 +167,8 @@ describe('applyBreakdownCompatibility', () => {
     expect(applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace).parameters.breakdownBy).toBeNull();
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
     expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters.breakdownBy).toBeNull();
+    const severalDatasets = applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace);
+    expect(severalDatasets.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
   });
 
   it('returns the widget untouched without breakdown', () => {

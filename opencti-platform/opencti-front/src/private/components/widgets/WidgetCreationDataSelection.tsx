@@ -11,9 +11,8 @@ import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
-import { Icon, IconButton as FdsIconButton, Input, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { isBreakdownField } from '../../../utils/widget/widgetBreakdown';
-import WidgetBreakdownSelection from './WidgetBreakdownSelection';
+import { Alert as FdsAlert, Icon, IconButton as FdsIconButton, Input, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { isBreakdownField, isWidgetBreakdownEligible } from '../../../utils/widget/widgetBreakdown';
 
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
@@ -50,7 +49,7 @@ const StepContainer = ({ perspective, children, id }: StepContainerProps) => {
 
 const WidgetCreationDataSelection = () => {
   const { t_i18n } = useFormatter();
-  const { config, setStep, setDataSelection, setDataSelectionWithIndex } = useWidgetConfigContext();
+  const { config, setStep, setDataSelection, setDataSelectionWithIndex, host } = useWidgetConfigContext();
   const { type, dataSelection, perspective, parameters } = config.widget;
 
   const [itemIds, setItemIds] = useState<string[]>(() => dataSelection.map(() => uuidv4()));
@@ -106,6 +105,7 @@ const WidgetCreationDataSelection = () => {
   const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
   // A breakdown generates its series from a single dataset
   const isBreakdownActive = isBreakdownField(parameters?.breakdownBy);
+  const isBreakdownEligible = isWidgetBreakdownEligible(config.widget, host);
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -175,7 +175,13 @@ const WidgetCreationDataSelection = () => {
         })
       }
 
-      <WidgetBreakdownSelection />
+      {isBreakdownEligible && (
+        <FdsAlert
+          severity="info"
+          title={t_i18n('You can break this dataset down into one series per field value in the Parameters step.')}
+          style={{ marginTop: 20 }}
+        />
+      )}
 
       {perspective === 'entities' && canAddDataSelection && (
         <div style={{ display: 'flex' }}>
@@ -183,6 +189,7 @@ const WidgetCreationDataSelection = () => {
             <Tooltip>
               <TooltipTrigger asChild>
                 {/* A disabled button gets no pointer events: the wrapper carries the tooltip */}
+                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
                 <span style={{ display: 'flex', flex: 1 }} tabIndex={0}>
                   <IconButton
                     aria-label={t_i18n('Add')}

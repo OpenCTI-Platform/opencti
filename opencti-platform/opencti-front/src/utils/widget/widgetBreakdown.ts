@@ -3,15 +3,23 @@ import { getCurrentCategory } from './widgetUtils';
 import { isDraftWorkspaceFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FilterDefinition } from '../hooks/useAuth';
+import { daysAgo, monthsAgo } from '../Time';
 
 export const BREAKDOWN_LIMIT_OPTIONS = [5, 10, 20, 50];
 export const DEFAULT_BREAKDOWN_LIMIT = 10;
 
 const ENTITY_TYPE_FIELD = 'entity_type';
 const DEFAULT_ENTITY_TYPE = 'Stix-Core-Object';
-// Relation refs and id attributes (authors, labels, markings, assignees, creators, statuses...),
-// vocabularies and enums: values with a small, stable cardinality
-const BREAKDOWN_FILTER_TYPES = ['id', 'vocabulary', 'enum'];
+// Relation refs and id attributes with a small, stable cardinality. Vocabularies and enums are
+// always allowed, whatever their key. The backend enforces the same fields, split in three
+// (opencti-graphql/src/database/middleware.ts): BREAKDOWN_ALLOWED_REFS for the relation refs,
+// BREAKDOWN_ALLOWED_ID_ATTRIBUTES for creator_id, and a special case for entity_type. Keep them in sync.
+// entity_type is not listed: getBreakdownFieldOptions adds it only when the dataset has several types.
+export const BREAKDOWN_ALLOWED_REFS = ['createdBy', 'objectLabel', 'objectMarking', 'objectAssignee', 'objectParticipant', 'creator_id'];
+const BREAKDOWN_VALUE_FILTER_TYPES = ['vocabulary', 'enum'];
+const isBreakdownAllowedKey = (key: string, type: string) => {
+  return BREAKDOWN_ALLOWED_REFS.includes(key) || BREAKDOWN_VALUE_FILTER_TYPES.includes(type);
+};
 // Filter keys computed at query time, not stored on the entities: the API refuses them
 const COMPUTED_FILTER_KEYS = ['computed_reliability', 'workflow_id', 'workflowInstanceCurrentState', 'connectedToId', 'ids', 'id'];
 // Only set inside drafts, where breakdowns are not available: every value would be empty
@@ -39,8 +47,9 @@ export const getBreakdownEntityTypes = (filters?: FilterGroup | null): string[] 
 };
 
 /**
- * Fields the dataset can be broken down by: with a single entity type, any of its fields;
- * with several types, the fields they have in common, plus the entity type itself.
+ * Fields the dataset can be broken down by: with a single entity type, its allowed fields
+ * (BREAKDOWN_ALLOWED_REFS, vocabularies and enums); with several types, the ones they have in common,
+ * plus the entity type itself.
  */
 export const getBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
@@ -52,7 +61,7 @@ export const getBreakdownFieldOptions = (
   schemas[0].forEach((definition, key) => {
     // Abstract types also list the keys of some of their sub types: keep the keys of the type itself
     const isCommon = types.every((type, index) => schemas[index].get(key)?.subEntityTypes.includes(type));
-    if (isCommon && BREAKDOWN_FILTER_TYPES.includes(definition.type) && !COMPUTED_FILTER_KEYS.includes(key) && !DRAFT_FILTER_KEYS.includes(key)) {
+    if (isCommon && isBreakdownAllowedKey(key, definition.type) && !COMPUTED_FILTER_KEYS.includes(key) && !DRAFT_FILTER_KEYS.includes(key)) {
       options.push({ key, label: definition.label });
     }
   });
@@ -64,6 +73,22 @@ export const getBreakdownFieldOptions = (
 
 export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) => {
   return parameters?.breakdownLimit ?? DEFAULT_BREAKDOWN_LIMIT;
+};
+
+export const getWidgetBreakdownOrder = (parameters?: WidgetParameters | null): 'asc' | 'desc' => {
+  return parameters?.breakdownOrder === 'asc' ? 'asc' : 'desc';
+};
+
+export const getWidgetBreakdownOther = (parameters?: WidgetParameters | null) => {
+  return parameters?.breakdownOther ?? false;
+};
+
+/**
+ * Start date used when the dashboard sets none: a daily breakdown over the default 12 months
+ * would draw too many bars, so it only looks back 30 days.
+ */
+export const getBreakdownDefaultStartDate = (interval: string) => {
+  return interval === 'day' ? daysAgo(30) : monthsAgo(12);
 };
 
 type BreakdownWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'>;

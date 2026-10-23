@@ -44,6 +44,7 @@ import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableW
 import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidgetColumns';
 import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 'src/utils/customFields';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
+import WidgetBreakdownSelection from './WidgetBreakdownSelection';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -447,6 +448,7 @@ const WidgetCreationParameters = () => {
           </SelectContent>
         </Select>
       )}
+      <WidgetBreakdownSelection />
       {uniqueParameterEnabled(dataSelection[0].perspective, type) && dataSelection.length > 1 && (
         <Grid container sx={{ pt: 4 }} spacing={4}>
           <Grid size={1.5}>

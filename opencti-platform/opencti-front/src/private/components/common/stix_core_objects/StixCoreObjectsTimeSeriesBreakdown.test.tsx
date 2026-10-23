@@ -2,6 +2,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
+import { daysAgo, monthsAgo } from '../../../../utils/Time';
 
 const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
@@ -19,7 +20,7 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: (args: unknown) => {
     mocks.dashboardViz(args);
-    return { isMissingHostEntity: false, isMissingSavedFilters: false, isPreviewMode: false, queryRef: {} };
+    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {} };
   },
 }));
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
@@ -110,10 +111,39 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       endDate: config.endDate,
       interval: 'week',
       limit: 20,
+      order: 'desc',
+      includeOther: false,
       // the dataset filters on reports: the API validates the field against this type
       types: ['Report'],
     });
     expect(JSON.stringify(variables.filters)).toContain('Report');
+  });
+
+  it('sends the order and the other serie options of the widget', () => {
+    respond([]);
+    render(makeWidget('line', { breakdownBy: 'objectLabel', breakdownOrder: 'asc', breakdownOther: true }));
+
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.calls[0][0];
+    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ order: 'asc', includeOther: true });
+  });
+
+  it('keeps the dashboard dates, and defaults a daily breakdown to the last 30 days', () => {
+    respond([]);
+    render(makeWidget('line', { breakdownBy: 'objectLabel', interval: 'day' }));
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.calls[0][0];
+
+    const explicit = buildQueryVariables(dataSelection, config, parameters);
+    expect(explicit.startDate).toEqual(config.startDate);
+    expect(explicit.endDate).toEqual(config.endDate);
+
+    const withoutDates = buildQueryVariables(dataSelection, {}, parameters);
+    expect(withoutDates.startDate).toEqual(daysAgo(30));
+    expect(withoutDates.endDate).toBeTruthy();
+    // the default start date also restricts the entities the top values are computed on
+    expect(JSON.stringify(withoutDates.filters)).toContain(daysAgo(30));
+
+    const weekly = buildQueryVariables(dataSelection, {}, { ...parameters, interval: 'week' });
+    expect(weekly.startDate).toEqual(monthsAgo(12));
   });
 
   it('names the series after the entity, or the translated entity type', () => {
@@ -133,6 +163,19 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const names = mocks.areas.mock.calls[0][0].series.map((serie: { name: string }) => serie.name);
     expect(names[0]).not.toEqual('entity_Report');
     expect(names[1]).toEqual('Not-A-Translated-Type');
+  });
+
+  it('names the other serie and makes it grey, keeping the order of the API', () => {
+    respond([
+      { label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, data: dailyData(3) },
+      { label: 'Other', isOther: true, entity: null, data: dailyData(3) },
+    ]);
+    render(makeWidget('line', { breakdownBy: 'creator' }));
+    const names = mocks.lines.mock.calls[0][0].series.map((serie: { name: string }) => serie.name);
+    expect(names).toEqual(['Alice', 'Other']);
+    const [alice, other] = mocks.lines.mock.calls[0][0].series;
+    expect(alice.color).toBeUndefined();
+    expect(other.color).toBeTruthy();
   });
 
   it('keeps the requested interval for lines and heatmaps', () => {
@@ -173,6 +216,12 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     respond([{ label: 'Report', entity: null, data: dailyData(3) }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5 }));
     expect(getByTestId('widget-warning').textContent).toContain('5');
+  });
+
+  it('warns that only the lowest values are displayed when ordered by lowest values', () => {
+    respond([{ label: 'Report', entity: null, data: dailyData(3) }], true);
+    const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5, breakdownOrder: 'asc' }));
+    expect(getByTestId('widget-warning').textContent).toContain('Only the 5 lowest values are displayed.');
   });
 
   it('shows the no data state without any series', () => {

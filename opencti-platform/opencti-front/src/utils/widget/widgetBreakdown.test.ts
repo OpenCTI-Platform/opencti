@@ -2,11 +2,16 @@ import { describe, expect, it } from 'vitest';
 import type { Widget } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
+import { daysAgo, monthsAgo } from '../Time';
 import {
+  BREAKDOWN_ALLOWED_REFS,
   coarsenSeriesForRendering,
   getBreakdownEntityTypes,
+  getBreakdownDefaultStartDate,
   getBreakdownFieldOptions,
   getWidgetBreakdownLimit,
+  getWidgetBreakdownOrder,
+  getWidgetBreakdownOther,
   hasWidgetBreakdown,
   isWidgetBreakdownActive,
   isWidgetBreakdownEligible,
@@ -67,6 +72,27 @@ describe('widget breakdown eligibility', () => {
     expect(getWidgetBreakdownLimit({})).toEqual(10);
     expect(getWidgetBreakdownLimit({ breakdownLimit: 50 })).toEqual(50);
   });
+
+  it('orders by highest values and leaves the other series out by default', () => {
+    expect(getWidgetBreakdownOrder({})).toEqual('desc');
+    expect(getWidgetBreakdownOrder({ breakdownOrder: null })).toEqual('desc');
+    expect(getWidgetBreakdownOrder({ breakdownOrder: 'asc' })).toEqual('asc');
+    expect(getWidgetBreakdownOther(undefined)).toBe(false);
+    expect(getWidgetBreakdownOther({ breakdownOther: null })).toBe(false);
+    expect(getWidgetBreakdownOther({ breakdownOther: true })).toBe(true);
+  });
+});
+
+describe('getBreakdownDefaultStartDate', () => {
+  it('only looks back 30 days for a daily breakdown', () => {
+    expect(getBreakdownDefaultStartDate('day')).toEqual(daysAgo(30));
+  });
+
+  it('looks back 12 months for the other intervals', () => {
+    ['week', 'month', 'quarter', 'year'].forEach((interval) => {
+      expect(getBreakdownDefaultStartDate(interval)).toEqual(monthsAgo(12));
+    });
+  });
 });
 
 describe('getBreakdownEntityTypes', () => {
@@ -97,10 +123,14 @@ describe('getBreakdownFieldOptions', () => {
   });
   const schema = new Map<string, Map<string, FilterDefinition>>([
     ['Report', new Map([
+      ['entity_type', definition('entity_type', 'string', 'Entity type', ['Report'])],
       ['createdBy', definition('createdBy', 'id', 'Author', ['Report'])],
       ['objectLabel', definition('objectLabel', 'id', 'Label', ['Report'])],
       ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
       ['name', definition('name', 'string', 'Name', ['Report'])],
+      ['objects', definition('objects', 'id', 'Contains', ['Report'])],
+      ['externalReferences', definition('externalReferences', 'id', 'External reference', ['Report'])],
+      ['killChainPhases', definition('killChainPhases', 'id', 'Kill chain phase', ['Report'])],
       ['published', definition('published', 'date', 'Publication date', ['Report'])],
       ['computed_reliability', definition('computed_reliability', 'vocabulary', 'Reliability', ['Report'])],
       ['draft_change.draft_operation', definition('draft_change.draft_operation', 'enum', 'Draft operation', ['Report'])],
@@ -111,6 +141,8 @@ describe('getBreakdownFieldOptions', () => {
       ['malware_types', definition('malware_types', 'vocabulary', 'Malware types', ['Malware'])],
     ])],
     ['Stix-Core-Object', new Map([
+      // the schema lists the entity type itself: it must be offered once
+      ['entity_type', definition('entity_type', 'string', 'Entity type', ['Stix-Core-Object', 'Report', 'Malware'])],
       ['createdBy', definition('createdBy', 'id', 'Author', ['Stix-Core-Object', 'Report', 'Malware'])],
       // only some sub types carry report types
       ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
@@ -120,6 +152,15 @@ describe('getBreakdownFieldOptions', () => {
 
   it('offers every field of a single type that can be broken down', () => {
     expect(keys(['Report'])).toEqual(['createdBy', 'objectLabel', 'report_types']);
+  });
+
+  it('only offers the allowed references, vocabularies and enums', () => {
+    const options = keys(['Report']);
+    BREAKDOWN_ALLOWED_REFS.forEach((key) => {
+      if (schema.get('Report')?.has(key)) expect(options).toContain(key);
+    });
+    expect(options).toContain('report_types');
+    ['objects', 'externalReferences', 'killChainPhases'].forEach((key) => expect(options).not.toContain(key));
   });
 
   it('offers the fields shared by several types, and the entity type', () => {

@@ -1,6 +1,8 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -12,9 +14,19 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeStartEndDates, computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
-import { ANIMATION_BAR_THRESHOLD, coarsenSeriesForRendering, getBreakdownEntityTypes, getWidgetBreakdownLimit, isBreakdownField } from 'src/utils/widget/widgetBreakdown';
+import {
+  ANIMATION_BAR_THRESHOLD,
+  coarsenSeriesForRendering,
+  getBreakdownDefaultStartDate,
+  getBreakdownEntityTypes,
+  getWidgetBreakdownLimit,
+  getWidgetBreakdownOrder,
+  getWidgetBreakdownOther,
+  isBreakdownField,
+} from 'src/utils/widget/widgetBreakdown';
+import { now } from '../../../../utils/Time';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { StixCoreObjectsTimeSeriesBreakdownQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsTimeSeriesBreakdownQuery.graphql';
 
@@ -26,6 +38,8 @@ const stixCoreObjectsTimeSeriesBreakdownQuery = graphql`
     $endDate: DateTime
     $interval: String!
     $limit: Int
+    $order: OrderingMode
+    $includeOther: Boolean
     $types: [String]
     $filters: FilterGroup
   ) {
@@ -36,12 +50,15 @@ const stixCoreObjectsTimeSeriesBreakdownQuery = graphql`
       endDate: $endDate
       interval: $interval
       limit: $limit
+      order: $order
+      includeOther: $includeOther
       types: $types
       filters: $filters
     ) {
       truncated
       series {
         label
+        isOther
         entity {
           ... on BasicObject {
             id
@@ -79,10 +96,18 @@ const buildQueryVariables = (
     throw Error('Missing breakdown field');
   }
   const [selection] = resolvedDataSelection;
+  const interval = getWidgetInterval(parameters);
+  // Dates set on the dashboard are kept as is. Without a start date, a daily breakdown only looks
+  // back a short while: the default 12 months would draw too many bars.
+  const configuredDates = computeStartEndDates(config);
   const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
     selection,
-    config,
-    { fallbackToDefaultDates: true },
+    {
+      ...config,
+      relativeDate: null,
+      startDate: configuredDates.startDate ?? getBreakdownDefaultStartDate(interval),
+      endDate: configuredDates.endDate ?? now(),
+    },
   );
   // The API checks the field against these types: send the ones the filters restrict to
   const entityTypes = getBreakdownEntityTypes(selection?.filters);
@@ -91,8 +116,10 @@ const buildQueryVariables = (
     dateAttribute,
     startDate,
     endDate,
-    interval: getWidgetInterval(parameters),
+    interval,
     limit: getWidgetBreakdownLimit(parameters),
+    order: getWidgetBreakdownOrder(parameters),
+    includeOther: getWidgetBreakdownOther(parameters),
     types: entityTypes.length > 0 ? entityTypes : DATA_SELECTION_TYPES,
     filters,
   };
@@ -114,27 +141,35 @@ const StixCoreObjectsTimeSeriesBreakdownComponent = ({
   onWarningChange,
 }: StixCoreObjectsTimeSeriesBreakdownComponentProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { stixCoreObjectsTimeSeriesBreakdown } = usePreloadedQuery(
     stixCoreObjectsTimeSeriesBreakdownQuery,
     queryRef,
   );
   const interval = getWidgetInterval(parameters);
 
-  const series = useMemo(() => (stixCoreObjectsTimeSeriesBreakdown?.series ?? []).map((serie) => {
-    let name = serie.label;
-    if (parameters.breakdownBy === 'entity_type') {
-      const translated = t_i18n(`entity_${serie.label}`);
-      name = translated !== `entity_${serie.label}` ? translated : serie.label;
-    } else if (serie.entity) {
-      name = getMainRepresentative(serie.entity) || serie.label;
-    }
-    return {
-      name,
-      data: (serie.data ?? [])
-        .filter((entry): entry is NonNullable<typeof entry> => !!entry)
-        .map((entry) => ({ x: new Date(entry.date), y: entry.value })),
-    };
-  }), [stixCoreObjectsTimeSeriesBreakdown, parameters.breakdownBy, t_i18n]);
+  const series = useMemo(() => {
+    // The API already returns the "Other" serie last
+    return (stixCoreObjectsTimeSeriesBreakdown?.series ?? []).map((serie) => {
+      let name = serie.label;
+      if (serie.isOther) {
+        name = t_i18n('Other');
+      } else if (parameters.breakdownBy === 'entity_type') {
+        const translated = t_i18n(`entity_${serie.label}`);
+        name = translated !== `entity_${serie.label}` ? translated : serie.label;
+      } else if (serie.entity) {
+        name = getMainRepresentative(serie.entity) || serie.label;
+      }
+      return {
+        name,
+        // The "Other" serie gets a neutral color instead of one of the palette
+        ...(serie.isOther ? { color: theme.palette.common?.grey } : {}),
+        data: (serie.data ?? [])
+          .filter((entry): entry is NonNullable<typeof entry> => !!entry)
+          .map((entry) => ({ x: new Date(entry.date), y: entry.value })),
+      };
+    });
+  }, [stixCoreObjectsTimeSeriesBreakdown, parameters.breakdownBy, t_i18n, theme]);
 
   // Bars are the only chart whose cost explodes with the number of points: sum them into coarser
   // intervals when needed. Lines, areas and heatmaps keep the requested interval.
@@ -145,11 +180,14 @@ const StixCoreObjectsTimeSeriesBreakdownComponent = ({
 
   const truncated = stixCoreObjectsTimeSeriesBreakdown?.truncated ?? false;
   const limit = getWidgetBreakdownLimit(parameters);
+  const order = getWidgetBreakdownOrder(parameters);
   const coarsenedInterval = bars && bars.interval !== interval ? bars.interval : undefined;
   useEffect(() => {
     const warnings = [];
     if (truncated) {
-      warnings.push(t_i18n('Only the top {limit} values are displayed.', { values: { limit } }));
+      warnings.push(order === 'asc'
+        ? t_i18n('Only the {limit} lowest values are displayed.', { values: { limit } })
+        : t_i18n('Only the top {limit} values are displayed.', { values: { limit } }));
     }
     if (coarsenedInterval) {
       warnings.push(t_i18n('Interval adjusted to {interval} to keep the chart responsive.', {
@@ -157,7 +195,7 @@ const StixCoreObjectsTimeSeriesBreakdownComponent = ({
       }));
     }
     onWarningChange(warnings.length > 0 ? warnings.join(' ') : undefined);
-  }, [truncated, limit, coarsenedInterval, onWarningChange, t_i18n]);
+  }, [truncated, limit, order, coarsenedInterval, onWarningChange, t_i18n]);
 
   if (series.length === 0) {
     return <WidgetNoData />;
@@ -230,7 +268,7 @@ const StixCoreObjectsTimeSeriesBreakdown = ({
   const [chart, setChart] = useState<ApexCharts>();
   const [warning, setWarning] = useState<string>();
   const parameters = widget.parameters ?? {};
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimeSeriesBreakdownQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimeSeriesBreakdownQuery>({
     perspective: 'entities',
     dataSelection: widget.dataSelection,
     host,
@@ -251,8 +289,7 @@ const StixCoreObjectsTimeSeriesBreakdown = ({
       warning={warning}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

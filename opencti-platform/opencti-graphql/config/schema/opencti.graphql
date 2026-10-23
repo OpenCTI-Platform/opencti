@@ -427,6 +427,7 @@ type TimeSeriesBreakdownSerie {
   label: String!
   entity: StixObjectOrStixRelationshipOrCreator
   value: Int
+  isOther: Boolean!
   data: [TimeSeries]
 }
 type TimeSeriesBreakdown {
@@ -14089,6 +14090,8 @@ type Query {
     endDate: DateTime
     interval: String!
     limit: Int
+    order: OrderingMode
+    includeOther: Boolean
     types: [String]
     filters: FilterGroup
     search: String
@@ -14337,6 +14340,8 @@ type Query {
     endDate: DateTime
     interval: String!
     limit: Int
+    order: OrderingMode
+    includeOther: Boolean
     onlyInferred: Boolean
     types: [String]
     filters: FilterGroup
@@ -14934,6 +14939,8 @@ type Query {
     endDate: DateTime
     interval: String!
     limit: Int
+    order: OrderingMode
+    includeOther: Boolean
     onlyInferred: Boolean
     relationship_type: [String!]
     filters: FilterGroup
