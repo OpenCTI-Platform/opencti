@@ -3,11 +3,16 @@ import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
+import FormControlLabel from '@mui/material/FormControlLabel';
+// fds:keep-mui moved unchanged from DataTableToolBar.jsx by the toolbar refactoring, the conversion is left to the design-system migration
+import Switch from '@mui/material/Switch';
+// fds:keep-mui moved unchanged from DataTableToolBar.jsx by the toolbar refactoring, the conversion is left to the design-system migration
+import TextField from '@mui/material/TextField';
 import makeStyles from '@mui/styles/makeStyles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AddOutlined, CancelOutlined, CenterFocusStrong, LanguageOutlined } from '@mui/icons-material';
 import { LabelOutline } from 'mdi-material-ui';
-import { Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch, type ComboboxValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, type ComboboxValue } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
@@ -343,9 +348,11 @@ const BulkUpdateDrawer = ({
       case 'x_opencti_score':
       case 'confidence':
         return (
-          <Input
+          <TextField
+            variant="outlined"
             disabled={disabled}
             label={t_i18n('Values')}
+            fullWidth={true}
             type="number"
             onChange={(event) => changeValues(i, event.target.value)}
           />
@@ -367,10 +374,15 @@ const BulkUpdateDrawer = ({
         );
       case 'x_opencti_detection':
         return (
-          <Switch
-            name={`actions-${i}-value`}
+          <FormControlLabel
+            control={(
+              <Switch
+                onChange={(event) => setSteps((current) => setStepSwitchValue(current, i, 'values', event.target.checked))}
+                name={`actions-${i}-value`}
+                color="primary"
+              />
+            )}
             label={t_i18n('Value')}
-            onCheckedChange={(checked) => setSteps((current) => setStepSwitchValue(current, i, 'values', checked))}
           />
         );
       case 'organizations':
@@ -442,9 +454,11 @@ const BulkUpdateDrawer = ({
         );
       default:
         return (
-          <Input
+          <TextField
+            variant="outlined"
             disabled={disabled}
             label={t_i18n('Values')}
+            fullWidth={true}
             onChange={(event) => changeValues(i, event.target.value)}
           />
         );

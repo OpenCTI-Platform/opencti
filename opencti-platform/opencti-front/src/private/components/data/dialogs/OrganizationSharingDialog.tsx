@@ -12,8 +12,8 @@ import {
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
-  IconButton as FdsIconButton,
-  Tooltip as FdsTooltip,
+  IconButton,
+  Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@filigran/design-system';
@@ -142,9 +142,9 @@ const OrganizationSharingDialog = ({
         <ComboboxLabel>{t_i18n('Values')}</ComboboxLabel>
         {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
         <ComboboxField adornment={canCreate ? (
-          <FdsTooltip>
+          <Tooltip>
             <TooltipTrigger asChild>
-              <FdsIconButton
+              <IconButton
                 size="sm"
                 priority="tertiary"
                 aria-label={t_i18n('Create organization')}
@@ -153,7 +153,7 @@ const OrganizationSharingDialog = ({
               />
             </TooltipTrigger>
             <TooltipContent>{t_i18n('Create organization')}</TooltipContent>
-          </FdsTooltip>
+          </Tooltip>
         ) : undefined}
         >
           <ComboboxChips aria-label={t_i18n('Values')} />

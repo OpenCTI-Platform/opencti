@@ -6,7 +6,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { CloudRefreshOutline } from 'mdi-material-ui';
-import { Switch } from '@filigran/design-system';
+// fds:keep-mui moved unchanged from DataTableToolBar.jsx by the toolbar refactoring, the conversion is left to the design-system migration
+import Switch from '@mui/material/Switch';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -67,8 +68,8 @@ const EnrichmentDrawer = ({ open, onClose, connectors, onLaunch }: EnrichmentDra
               secondaryAction={(
                 <Switch
                   checked={selectedIds.includes(connector.id)}
-                  onCheckedChange={() => toggleConnector(connector.id)}
-                  aria-label={connector.name}
+                  onChange={() => toggleConnector(connector.id)}
+                  inputProps={{ 'aria-label': 'controlled' }}
                 />
               )}
             >

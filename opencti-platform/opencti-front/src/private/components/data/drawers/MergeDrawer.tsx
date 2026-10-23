@@ -5,7 +5,9 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { Chip as FdsChip, Radio, RadioGroup } from '@filigran/design-system';
+import { Chip } from '@filigran/design-system';
+// fds:keep-mui moved unchanged from DataTableToolBar.jsx by the toolbar refactoring, the conversion is left to the design-system migration
+import Radio from '@mui/material/Radio';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -66,53 +68,49 @@ const MergeDrawer = ({
         >
           {t_i18n('Selected entities')}
         </Typography>
-        <RadioGroup
-          aria-label={t_i18n('Merged entity')}
-          name="keptEntityID"
-          value={keptElement?.id ?? ''}
-          onValueChange={onKeptEntityIdChange}
-        >
-          <List>
-            {elements.map((element) => (
-              <ListItem
-                key={element.id}
-                dense={true}
-                divider={true}
-                secondaryAction={(
-                  <Radio
-                    value={element.id}
-                    aria-label={getMainRepresentative(element)}
-                  />
-                )}
-              >
-                <ListItemIcon>
-                  <ItemIcon type={element.entity_type} />
-                </ListItemIcon>
-                <ListItemText
-                  sx={{
-                    '.MuiListItemText-primary': {
-                      overflowX: 'hidden',
-                      textOverflow: 'ellipsis',
-                    },
-                  }}
-                  primary={getMainRepresentative(element)}
-                  secondary={truncate(
-                    element.description
-                    || element.x_opencti_description
-                    || '',
-                    60,
-                  )}
+        <List>
+          {elements.map((element) => (
+            <ListItem
+              key={element.id}
+              dense={true}
+              divider={true}
+              secondaryAction={(
+                <Radio
+                  checked={keptEntityId ? keptEntityId === element.id : elements[0]?.id === element.id}
+                  onChange={() => onKeptEntityIdChange(element.id)}
+                  value={element.id}
+                  name="keptEntityID"
+                  inputProps={{ 'aria-label': 'keptEntityID' }}
                 />
-                <div style={{ marginRight: 50 }}>
-                  {element.createdBy?.name ?? EMPTY_VALUE}
-                </div>
-                <div style={{ marginRight: 50 }}>
-                  <ItemMarkings markingDefinitions={element.objectMarking ?? []} />
-                </div>
-              </ListItem>
-            ))}
-          </List>
-        </RadioGroup>
+              )}
+            >
+              <ListItemIcon>
+                <ItemIcon type={element.entity_type} />
+              </ListItemIcon>
+              <ListItemText
+                sx={{
+                  '.MuiListItemText-primary': {
+                    overflowX: 'hidden',
+                    textOverflow: 'ellipsis',
+                  },
+                }}
+                primary={getMainRepresentative(element)}
+                secondary={truncate(
+                  element.description
+                  || element.x_opencti_description
+                  || '',
+                  60,
+                )}
+              />
+              <div style={{ marginRight: 50 }}>
+                {element.createdBy?.name ?? EMPTY_VALUE}
+              </div>
+              <div style={{ marginRight: 50 }}>
+                <ItemMarkings markingDefinitions={element.objectMarking ?? []} />
+              </div>
+            </ListItem>
+          ))}
+        </List>
         <Typography
           variant="h4"
           gutterBottom={true}
@@ -126,7 +124,7 @@ const MergeDrawer = ({
         </div>
         {subtitle(t_i18n('Aliases'))}
         {newAliases.map((label) => (
-          <FdsChip key={label} label={label} />
+          <Chip key={label} label={label} />
         ))}
         {noAuthor !== true && (
           <>

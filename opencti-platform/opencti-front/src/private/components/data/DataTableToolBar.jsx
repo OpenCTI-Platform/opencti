@@ -1,8 +1,5 @@
-import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Dialog from '@common/dialog/Dialog';
 import {
-  AddOutlined,
   AutoFixHighOutlined,
   BrushOutlined,
   CheckCircleOutlined,
@@ -19,34 +16,7 @@ import {
   TransformOutlined,
   UnpublishedOutlined,
 } from '@mui/icons-material';
-import { Box } from '@mui/material';
-import Alert from '@mui/material/Alert';
-import {
-  Checkbox,
-  Chip as FdsChip,
-  Combobox,
-  ComboboxChips,
-  ComboboxClear,
-  ComboboxContent,
-  ComboboxControls,
-  ComboboxField,
-  ComboboxInput,
-  ComboboxLabel,
-  ComboboxTrigger,
-  IconButton as FdsIconButton,
-  Tooltip as FdsTooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@filigran/design-system';
-import Chip from '@mui/material/Chip';
-import DialogActions from '@mui/material/DialogActions';
 import Slide from '@mui/material/Slide';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -58,13 +28,9 @@ import * as R from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
-import ItemIcon from '../../../components/ItemIcon';
-import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import { truncate } from '../../../utils/String';
-import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import {
@@ -81,16 +47,18 @@ import {
 } from '../../../utils/hooks/useGranted';
 
 import EETooltip from '../common/entreprise_edition/EETooltip';
-import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import { isBulkActionAllowed, isBulkActionDisabled } from './dataTableToolBarActionRules';
-import { buildUpdateActions, setStepInputValue, setStepOption, setStepValues } from './dataTableToolBarUpdateSteps';
-import { fetchContainerOptions, toUserOptions } from './dataTableToolBarStepOptions';
+import { buildUpdateActions } from './dataTableToolBarUpdateSteps';
+import { toUserOptions } from './dataTableToolBarStepOptions';
 import EnrichmentDrawer from './drawers/EnrichmentDrawer';
 import MergeDrawer from './drawers/MergeDrawer';
 import RuleRescanDrawer from './drawers/RuleRescanDrawer';
 import BulkUpdateDrawer from './drawers/BulkUpdateDrawer';
+import AddInContainerDialog from './dialogs/AddInContainerDialog';
+import BackgroundTaskDialog from './dialogs/BackgroundTaskDialog';
+import { buildTaskActions } from './dataTableToolBarTask';
 import OrganizationSharingDialog from './dialogs/OrganizationSharingDialog';
 import useCustomFieldDefinitions from '../common/custom_fields/useCustomFieldDefinitions';
 import { getCustomFieldDefinitionsOfTypes, getTaskTargetedTypes } from '../../../utils/customFields';
@@ -287,15 +255,13 @@ class DataTableToolBar extends Component {
       displayPromote: false,
       displayEnrollPlaybook: false,
       displaySendEmail: false,
-      containerCreation: false,
       actions: [],
       scope: undefined,
-      actionsInputs: [{}],
+      addInContainerStep: {},
       keptEntityId: null,
       mergingElement: null,
       description: '',
       processing: false,
-      containers: [],
       enrichConnectors: [],
       organizationInput: '',
       shareOrganizations: [],
@@ -344,7 +310,8 @@ class DataTableToolBar extends Component {
   }
 
   handleCloseUpdate() {
-    this.setState({ displayUpdate: false, actionsInputs: [{}] });
+    // Kept from the steps shared with the update drawer: closing it also clears the container step
+    this.setState({ displayUpdate: false, addInContainerStep: {} });
   }
 
   handleOpenMerge() {
@@ -435,33 +402,22 @@ class DataTableToolBar extends Component {
     this.setState({ displayMerge: false });
   }
 
-  handleLaunchUpdate() {
-    const actions = buildUpdateActions(this.state.actionsInputs);
-    this.setState({ actions }, () => {
+  // Event last and optional: the library reports it on ComboboxChangeMeta.
+  handleLaunchAddInContainer() {
+    const step = { ...this.state.addInContainerStep, type: 'ADD', fieldType: 'ATTRIBUTE', field: 'container-object' };
+    const actions = buildUpdateActions([step]);
+    this.setState({ displayAddInContainer: false, actions }, () => {
       this.handleCloseUpdate();
       this.handleOpenTask();
     });
   }
 
-  // Event last and optional: the library reports it on ComboboxChangeMeta.
   handleLaunchUpdateSteps(steps) {
     const actions = buildUpdateActions(steps);
     this.setState({ actions }, () => {
       this.handleCloseUpdate();
       this.handleOpenTask();
     });
-  }
-
-  handleChangeActionInputValues(i, value, event) {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepValues(actionsInputs, i, value) }));
-  }
-
-  handleChangeActionInputOptions(i, key, checked) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepOption(actionsInputs, i, key, checked) }));
   }
 
   handleLaunchRead(read) {
@@ -589,43 +545,6 @@ class DataTableToolBar extends Component {
     return t('Copy to clipboard');
   }
 
-  static getActionType(type, field) {
-    if (type === 'ADD' && field === 'groups') return 'ADD_GROUPS';
-    if (type === 'ADD' && field === 'organizations') return 'ADD_ORGANIZATIONS';
-
-    if (type === 'REMOVE' && field === 'groups') return 'REMOVE_GROUPS';
-    if (type === 'REMOVE' && field === 'organizations') return 'REMOVE_ORGANIZATIONS';
-
-    return type;
-  }
-
-  static normalizeActionValue(element) {
-    if (element?.id) return element.id;
-    if (element?.value) return element.value;
-    if (typeof element?.toISOString === 'function') return element.toISOString();
-    return element;
-  }
-
-  static displayActionValue(element) {
-    if (typeof element === 'string') return element;
-    if (typeof element?.toISOString === 'function') return element.toISOString();
-    return getMainRepresentative(element);
-  }
-
-  getUserDatatableFinalActions(actions) {
-    return actions.map((action) => {
-      const currentType = this.constructor.getActionType(action.type, action.context.field);
-      return {
-        type: currentType,
-        context: {
-          ...action.context,
-          values: action.context.values.map((element) => this.constructor.normalizeActionValue(element)),
-        },
-        containerId: null,
-      };
-    });
-  }
-
   submitTask(availableFilterKeys, isInDraft) {
     this.setState({ processing: true });
     const { description, actions, mergingElement, promoteToContainer } = this.state;
@@ -647,20 +566,7 @@ class DataTableToolBar extends Component {
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
-    const finalActions = taskScope === 'USER'
-      ? this.getUserDatatableFinalActions(actions)
-      : actions.map(
-          (n) => ({
-            type: n.type,
-            context: n.context
-              ? {
-                  ...n.context,
-                  values: n.context.values.map((o) => this.constructor.normalizeActionValue(o)),
-                }
-              : null,
-            containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-          }),
-        );
+    const finalActions = buildTaskActions(actions, { taskScope, promoteToContainer, containerId: container?.id });
 
     if (selectAll) {
       commitMutation({
@@ -723,19 +629,6 @@ class DataTableToolBar extends Component {
     }
   }
 
-  // Stores the typed text in the step, then loads the options of its field.
-  // Some fields keep the options already loaded and add the new ones.
-  searchStepOptions(i, newValue, optionsKey, loadOptions, keepPrevious = false) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    loadOptions(newValue && newValue.length > 0 ? newValue : '').then((options) => {
-      this.setState((state) => ({ [optionsKey]: keepPrevious ? R.union(state[optionsKey], options) : options }));
-    });
-  }
-
-  searchContainers(i, newValue) {
-    this.searchStepOptions(i, newValue, 'containers', fetchContainerOptions);
-  }
-
   togglePromoteToContainer() {
     this.setState((prevState) => ({ promoteToContainer: !prevState.promoteToContainer }));
   }
@@ -764,7 +657,6 @@ class DataTableToolBar extends Component {
   render() {
     const {
       t,
-      n,
       classes,
       numberOfSelectedElements,
       handleClearSelectedElements,
@@ -772,7 +664,6 @@ class DataTableToolBar extends Component {
       selectAll,
       filters,
       search,
-      theme,
       container,
       noAuthor,
       noMarking,
@@ -791,7 +682,6 @@ class DataTableToolBar extends Component {
     const {
       actions,
       mergingElement,
-      actionsInputs,
       promoteToContainer,
       displayEditButtons,
     } = this.state;
@@ -1244,156 +1134,21 @@ class DataTableToolBar extends Component {
                   </div>
                 )}
               </Toolbar>
-              <Dialog
+              <BackgroundTaskDialog
                 open={this.state.displayTask}
                 onClose={this.handleCloseTask.bind(this)}
-                data-testid="background-task-popup"
-                title={(
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <span>{t('Launch a background task')}</span>
-                    <Typography variant="body1" color="textSecondary">
-                      {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
-                    </Typography>
-                  </Box>
-                )}
-              >
-                {numberOfSelectedElements > 1000 && (
-                  <Alert severity="warning">
-                    {t(
-                      'You\'re targeting more than 1000 entities with this background task, be sure of what you\'re doing!',
-                    )}
-                  </Alert>
-                )}
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>#</TableCell>
-                        <TableCell>{t('Step')}</TableCell>
-                        <TableCell>{t('Field')}</TableCell>
-                        <TableCell>{t('Values')}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          {' '}
-                          <span
-                            style={{
-                              padding: '2px 5px 2px 5px',
-                              marginRight: 5,
-                              color:
-                                  theme.palette.mode === 'dark'
-                                    ? '#000000'
-                                    : '#ffffff',
-                              backgroundColor: theme.palette.primary.main,
-                            }}
-                          >
-                            1
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <FdsChip label="SCOPE" />
-                        </TableCell>
-                        <TableCell>{t('N/A')}</TableCell>
-                        <TableCell>
-                          {selectAll ? (
-                            <div className={classes.filters}>
-                              {search && search.length > 0 && (
-                                <span>
-                                  <Chip
-                                    classes={{ root: classes.filter }}
-                                    label={(
-                                      <div>
-                                        <strong>{t('Search')}</strong>: {search}
-                                      </div>
-                                    )}
-                                  />
-                                  {filters.filters.length > 0 && (
-                                    <FdsChip label={t('AND')} />
-                                  )}
-                                </span>
-                              )}
-                              <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
-                            </div>
-                          ) : (
-                            <span>
-                              {mergingElement
-                                ? truncate(
-                                    R.join(', ', [
-                                      getMainRepresentative(mergingElement),
-                                    ]),
-                                    80,
-                                  )
-                                : truncate(
-                                    selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
-                                    80,
-                                  )}
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                      {R.map((o) => {
-                        const number = actions.indexOf(o);
-                        return (
-                          <TableRow key={o.type}>
-                            <TableCell>
-                              {' '}
-                              <span
-                                style={{
-                                  padding: '2px 5px 2px 5px',
-                                  marginRight: 5,
-                                  color:
-                                      theme.palette.mode === 'dark'
-                                        ? '#000000'
-                                        : '#ffffff',
-                                  backgroundColor: theme.palette.primary.main,
-                                }}
-                              >
-                                {number + 2}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <FdsChip label={o.type} />
-                            </TableCell>
-                            <TableCell>
-                              {(this.props.customFieldDefinitions ?? []).find((d) => d.name === o.context?.field)?.label
-                                ?? R.pathOr(t('N/A'), ['context', 'field'], o)}
-                            </TableCell>
-                            <TableCell>
-                              {truncate(
-                                R.join(
-                                  ', ',
-                                  R.map(
-                                    (p) => this.constructor.displayActionValue(p),
-                                    R.pathOr([], ['context', 'values'], o),
-                                  ),
-                                ),
-                                80,
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      }, actions)}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseTask.bind(this)}
-                    disabled={this.state.processing}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={this.submitTask.bind(this, availableFilterKeys, isInDraft)}
-                    disabled={this.state.processing}
-                  >
-                    {t('Launch')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
+                onLaunch={this.submitTask.bind(this, availableFilterKeys, isInDraft)}
+                processing={this.state.processing}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                search={search}
+                filters={filters}
+                entityTypes={entityTypes}
+                selectedElementsList={selectedElementsList}
+                mergingElement={mergingElement}
+                actions={actions}
+                customFieldDefinitions={this.props.customFieldDefinitions ?? []}
+              />
               <BulkUpdateDrawer
                 open={this.state.displayUpdate}
                 onClose={this.handleCloseUpdate.bind(this)}
@@ -1439,128 +1194,13 @@ class DataTableToolBar extends Component {
                 onClose={this.handleCloseRescan.bind(this)}
                 onLaunch={this.handleLaunchRescan.bind(this)}
               />
-              <Dialog
+              <AddInContainerDialog
                 open={this.state.displayAddInContainer}
                 onClose={() => this.setState({ displayAddInContainer: false })}
-                title={t('Add in container')}
-              >
-                <StixDomainObjectCreation
-                  inputValue={actionsInputs[0]?.inputValue || ''}
-                  open={this.state.containerCreation}
-                  display={true}
-                  speeddial={true}
-                  stixDomainObjectTypes={['Container']}
-                  handleClose={() => this.setState({ containerCreation: false })
-                  }
-                  creationCallback={(data) => {
-                    const element = {
-                      label: data.name,
-                      value: data.id,
-                      type: data.entity_type,
-                    };
-                    this.setState(({ containers }) => ({
-                      containers: [...(containers ?? []), element],
-                    }));
-                    this.handleChangeActionInputValues(0, null, [
-                      ...(actionsInputs[0]?.values ?? []),
-                      element,
-                    ]);
-                  }}
-                />
-                <Combobox
-                  selectOnFocus={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')}
-                  value={actionsInputs[0]?.values || []}
-                  multiple={true}
-                  closeOnSelect
-                  options={this.state.containers}
-                  inputValue={actionsInputs[0]?.inputValue || ''}
-                  onInputChange={(newValue, meta) => {
-                    if (meta.cause === 'type') (this.searchContainers.bind(this, 0))(newValue);
-                  }}
-                  onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, 0))(next, meta.event)}
-                  renderOption={(option) => (
-                    <>
-                      <div className={classes.icon}>
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </>
-                  )}
-                  disableClearable
-                >
-                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
-                  {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
-                  <ComboboxField adornment={(
-                    <FdsTooltip>
-                      <TooltipTrigger asChild>
-                        <FdsIconButton
-                          size="sm"
-                          priority="tertiary"
-                          aria-label={t('Create container')}
-                          onClick={() => this.setState({ containerCreation: true })}
-                          icon={<AddOutlined fontSize="small" />}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>{t('Create container')}</TooltipContent>
-                    </FdsTooltip>
-                  )}
-                  >
-                    <ComboboxChips aria-label={t('Values')} />
-                    <ComboboxInput onFocus={() => (this.searchContainers.bind(this, 0))('')} />
-                    <ComboboxControls>
-                      <ComboboxClear />
-                      <ComboboxTrigger />
-                    </ComboboxControls>
-                  </ComboboxField>
-                  <ComboboxContent
-                    emptyMessage={t('No available options')}
-                    listAriaLabel={t('Values')}
-                  />
-                </Combobox>
-                <div style={{ marginTop: 20 }}>
-                  <Checkbox
-                    checked={
-                      actionsInputs[0]?.options?.includeNeighbours || false
-                    }
-                    onCheckedChange={this.handleChangeActionInputOptions.bind(
-                      this,
-                      0,
-                      'includeNeighbours',
-                    )}
-                    label={t('Also include first neighbours')}
-                  />
-                </div>
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={() => this.setState({ displayAddInContainer: false })
-                    }
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      this.setState(
-                        {
-                          displayAddInContainer: false,
-                          actionsInputs: [
-                            {
-                              ...actionsInputs[0],
-                              type: 'ADD',
-                              fieldType: 'ATTRIBUTE',
-                              field: 'container-object',
-                            },
-                          ],
-                        },
-                        this.handleLaunchUpdate.bind(this),
-                      );
-                    }}
-                  >
-                    {t('Add')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
+                step={this.state.addInContainerStep}
+                onStepChange={(update) => this.setState(({ addInContainerStep }) => ({ addInContainerStep: update(addInContainerStep) }))}
+                onLaunch={this.handleLaunchAddInContainer.bind(this)}
+              />
               <OrganizationSharingDialog
                 mode="share"
                 open={this.state.displayShare}
