@@ -3710,6 +3710,41 @@ export const elAggregationsList = async (
   });
 };
 
+/**
+ * Every distinct value of a keyword field among the elements matching the options (types, filters, search...).
+ * Unlike a terms aggregation, which returns a bounded number of buckets, a composite aggregation pages through all
+ * the values with its after_key, pageSize values per request.
+ */
+export const elAggregationDistinctValues = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string,
+  field: string,
+  opts: QueryBodyBuilderOpts & { pageSize?: number } = {},
+): Promise<string[]> => {
+  const { pageSize = 1000, ...queryOpts } = opts;
+  const { query } = await elQueryBodyBuilder(context, user, { ...queryOpts, noSize: true, noSort: true });
+  const values: string[] = [];
+  let after: Record<string, string> | undefined;
+  do {
+    const composite = { size: pageSize, sources: [{ value: { terms: { field } } }], ...(after ? { after } : {}) };
+    const searchQuery = {
+      index: getIndicesToQuery(context, user, indexName),
+      track_total_hits: false,
+      _source: false,
+      body: { size: 0, query, aggs: { distinct: { composite } } },
+    };
+    const data = await elRawSearch(context, user, `Distinct values (${field})`, searchQuery).catch((err) => {
+      throw wrapEngineError('Distinct values aggregation fail', err, { query: JSON.stringify(searchQuery) });
+    });
+    const { buckets, after_key } = data.aggregations.distinct;
+    values.push(...buckets.map((bucket: { key: { value: string } }) => bucket.key.value));
+    // A page shorter than requested is the last one
+    after = buckets.length === pageSize ? after_key : undefined;
+  } while (after);
+  return values;
+};
+
 const buildRegardingOfFilter = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,

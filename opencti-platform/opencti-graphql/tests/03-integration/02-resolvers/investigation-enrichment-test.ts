@@ -9,7 +9,9 @@ import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { deleteElementById, mergeEntities } from '../../../src/database/middleware';
 import { deleteWork, loadWorkById, reportExpectation, updateExpectationsNumber } from '../../../src/domain/work';
 import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
+import { elAggregationDistinctValues } from '../../../src/database/engine';
+import { READ_INDEX_HISTORY } from '../../../src/database/utils';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { ConnectorType } from '../../../src/generated/graphql';
 
@@ -409,6 +411,19 @@ describe('Enrichments linked to an investigation', () => {
         // Even when asked for, an entity outside of the investigation is ignored
         const outside = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: narrowId, first: 50, entityIds: [other.id] } });
         expect(outside.data?.workspace.enrichmentWorks.edges).toEqual([]);
+      });
+
+      it('should aggregate every distinct source of the works, page after page', async () => {
+        const filters = { mode: 'and', filters: [{ key: ['investigation_id'], values: [investigationId] }], filterGroups: [] } as any;
+        // One value per page: the two sources need several composite pages
+        const sources = await elAggregationDistinctValues(
+          testContext,
+          ADMIN_USER,
+          READ_INDEX_HISTORY,
+          'event_source_id.keyword',
+          { types: [ENTITY_TYPE_WORK], filters, pageSize: 1 },
+        );
+        expect(sources.sort()).toEqual([enriched.standard_id, other.standard_id].sort());
       });
 
       it('should list no work when no given entity can be loaded', async () => {

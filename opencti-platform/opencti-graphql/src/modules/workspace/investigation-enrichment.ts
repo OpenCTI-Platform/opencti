@@ -1,14 +1,14 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { fullEntitiesList, internalFindByIdsMapped } from '../../database/middleware-loader';
+import { internalFindByIdsMapped } from '../../database/middleware-loader';
+import { elAggregationDistinctValues } from '../../database/engine';
 import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, validateUserAccessOperation } from '../../utils/access';
 import { ForbiddenAccess } from '../../config/errors';
 import type { BasicStoreEntityWorkspace } from './workspace-types';
 import { findInvestigationById } from './workspace-domain';
 import { findWorkPaginated } from '../../domain/work';
-import { emptyPaginationResult, isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
+import { emptyPaginationResult, READ_INDEX_HISTORY } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { WorkspaceEnrichmentWorksArgs } from '../../generated/graphql';
-import type { BasicStoreEntity } from '../../types/store';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
 import { xOpenctiStixIds } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
@@ -42,7 +42,7 @@ export const validateEnrichmentInvestigation = async (
  * By default it returns the works of all the entities of the investigation, but a list of entity ids (internal
  * or standard) can be given: only the works of those entities, among the entities of the investigation, are returned.
  *
- * The works are first listed to collect their sources (event_source_id), then those sources are loaded as the user and
+ * The distinct sources of the works (event_source_id) are first aggregated, then those sources are loaded as the user and
  * only the ones that are entities of the investigation (and of the selection) are kept. The final filter so holds at
  * most one id per enriched entity, instead of all the ids of all the entities of the investigation, which could
  * exceed the elastic terms limit on large investigations.
@@ -69,19 +69,14 @@ export const findInvestigationEnrichmentWorks = async (
   const { entityIds, ...paginationArgs } = args;
   const investigationFilters = addFilter(args.filters, 'investigation_id', workspace.id);
 
-  // 01. Collect the sources of the works of the investigation, reading only that field
-  const works = await fullEntitiesList<BasicStoreEntity & { event_source_id?: string }>(
+  // 01. Collect the distinct sources of the works of the investigation, without reading the works
+  const sourceIds = await elAggregationDistinctValues(
     context,
     user,
-    [ENTITY_TYPE_WORK],
-    {
-      indices: [READ_INDEX_HISTORY],
-      filters: investigationFilters,
-      baseData: true,
-      baseFields: ['event_source_id'],
-    },
+    READ_INDEX_HISTORY,
+    'event_source_id.keyword',
+    { types: [ENTITY_TYPE_WORK], filters: investigationFilters },
   );
-  const sourceIds = [...new Set(works.map((work) => work.event_source_id).filter(isNotEmptyField))];
   if (sourceIds.length === 0) {
     return emptyPaginationResult();
   }
