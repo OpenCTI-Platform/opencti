@@ -398,14 +398,15 @@ export const upsertLockFree = async (
   basePatch: Record<string, any>,
   counters: Counters,
   opts: WriteOptions & Record<string, any> = {},
+  preloaded?: { raw: RawDoc; withRefs: any }, // the target as the chunk read it, for the first attempt
 ) => {
   const patch = { ...basePatch };
   let imagesRewritten = false;
   for (let attempt = 0; attempt < 50; attempt += 1) {
-    const raw = (await mgetRaw([target])).get(target.id);
+    const read = attempt === 0 ? preloaded : undefined;
+    const raw = read?.raw ?? (await mgetRaw([target])).get(target.id);
     if (!raw) return { status: 'missing' as const };
-    const [element] = await toElements([raw]);
-    const resolvedElement = await loadWithRefs(context, user, element);
+    const resolvedElement = read?.withRefs ?? await loadWithRefs(context, user, (await toElements([raw]))[0]);
     const attemptPatch: Record<string, any> = { ...patch };
     if (resolvedElement.decay_exclusion_applied_rule) {
       if (attemptPatch.decay_applied_rule) {

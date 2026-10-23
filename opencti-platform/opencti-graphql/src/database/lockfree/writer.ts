@@ -51,7 +51,7 @@ import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../../modules/s
 import { ACTION_TYPE_SHARE } from '../../domain/backgroundTask-common';
 import { now } from '../../utils/format';
 import { claimKeys, deterministicId, type Owner, setKeys } from './identity';
-import { findUnknownBySearch, liveOwners, mgetRaw, toElements } from './load';
+import { ChunkReads, findUnknownBySearch, liveOwners, mgetRaw, toElements } from './load';
 import { addPending } from './pending';
 import { pool } from './context';
 import { benchTimer } from '../../utils/bench-timing';
@@ -240,13 +240,18 @@ export const writeEntityChunk = async (
   const toCreate: any[] = [];
   const merges: Merge[] = [];
   const firstTarget = new Map<number, Owner>(); // where each group's first input ended up
-  for (const group of groupByKeys(work, (w) => w.keys)) {
+  const groups = groupByKeys(work, (w) => w.keys);
+  const liveOf = (w: any) => R.uniqBy((o: Owner) => o.owner_id, w.keys.map((k: string) => owners.get(k)).filter((o: any) => o?.state === 'live')) as Owner[];
+  // The existing objects of every group, read once for the chunk
+  const candidates = await loadWithAccessFields(R.uniq(groups.flatMap(([first]) => liveOf(first).map((o) => o.owner_id))));
+  const candidateById = new Map(candidates.map((e: any) => [e.internal_id, e]));
+  for (const group of groups) {
     const [first, ...rest] = group;
-    const live = R.uniqBy((o: Owner) => o.owner_id, first.keys.map((k: string) => owners.get(k)).filter((o: any) => o?.state === 'live')) as Owner[];
+    const live = liveOf(first);
     try {
       if (live.length === 0) toCreate.push(first);
       else {
-        const decision = await existingEntityTarget(context, user, first, live);
+        const decision = await existingEntityTarget(context, user, first, live.map((o) => candidateById.get(o.owner_id)).filter(Boolean));
         merges.push(decision);
         firstTarget.set(first.i, decision.target as Owner);
       }
@@ -334,6 +339,10 @@ export const writeEntityChunk = async (
   bench.step('after_create');
   // 4. Merges, after the creations they may target: in order for one target, targets in parallel
   const mergeGroups = Object.values(R.groupBy((m: Merge) => (m.target ?? firstTarget.get(m.follow?.i))?.owner_id ?? `none-${m.w.i}`, merges));
+  const reads = new ChunkReads();
+  await reads.load(R.uniqBy((t) => t.id, merges.map((m) => m.target ?? firstTarget.get(m.follow?.i)).filter((t): t is Owner => !!t)
+    .map((t) => ({ index: t.owner_index, id: t.owner_id }))));
+  bench.step('merges.read');
   await pool(mergeGroups, 16, async (group) => {
     for (const m of group ?? []) {
       const target = m.target ?? firstTarget.get(m.follow?.i);
@@ -341,10 +350,11 @@ export const writeEntityChunk = async (
         if (!target) throw FunctionalError('No object to merge into');
         // Where today merges matching objects during the create, merge them now, before the upsert, as today
         if ((m.reconcile ?? []).length > 0) {
+          reads.written(target.owner_id);
           if (m.inline) add(counters, 'entities_reconciled', await reconcileEntities(m.reconcile ?? [], target, { context, user }));
           else await enqueue((m.reconcile ?? []).map((loser) => ({ kind: 'reconcile', loser, winner: target } as Task)));
         }
-        const merged = await mergeEntityWithRetry(context, user, target, m.w, m.patch ?? m.w.resolvedInput, counters, opts);
+        const merged = await mergeEntityWithRetry(context, user, target, m.w, m.patch ?? m.w.resolvedInput, counters, opts, reads);
         if (!(m.reconcile ?? []).length || results[m.w.i] === undefined) results[m.w.i] = merged;
       } catch (e) {
         results[m.w.i] = errorResult(e);
@@ -386,8 +396,7 @@ const resolveContested = async (b: any, mine: any[]): Promise<{ target?: Owner; 
 };
 
 // Today's choice of target among the existing objects matching an input (internalCreateEntityRaw)
-const existingEntityTarget = async (context: AuthContext, user: AuthUser, w: any, live: Owner[]): Promise<Merge> => {
-  const existing = await loadWithAccessFields(live.map((o) => o.owner_id));
+const existingEntityTarget = async (context: AuthContext, user: AuthUser, w: any, existing: any[]): Promise<Merge> => {
   const filtered: any[] = await userFilterStoreElements(context, user, existing);
   if (filtered.length === 0) throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
   if (filtered.length === 1) return { w, target: ownerOf(filtered[0]), patch: w.resolvedInput };
@@ -417,12 +426,13 @@ const existingEntityTarget = async (context: AuthContext, user: AuthUser, w: any
 
 // createEntityRaw's retry: an insufficient confidence stops merging objects, then the input is upserted as is
 const mergeEntityWithRetry = async (
-  context: AuthContext, user: AuthUser, target: Owner, w: any, patch: Record<string, any>, counters: Counters, opts: WriteOptions,
+  context: AuthContext, user: AuthUser, target: Owner, w: any, patch: Record<string, any>, counters: Counters, opts: WriteOptions, reads: ChunkReads,
 ): Promise<ItemResult> => {
   const run = async (p: Record<string, any>): Promise<ItemResult> => {
-    const result: any = await upsertLockFree(context, user, { index: target.owner_index, id: target.owner_id }, w.type, p, counters, opts);
+    const result: any = await upsertLockFree(context, user, { index: target.owner_index, id: target.owner_id }, w.type, p, counters, opts, await reads.take(target.owner_id));
     if (result.status === 'missing') throw FunctionalError('Cant find element to resolve', { id: target.owner_id });
     if (result.status === 'merged') {
+      reads.written(target.owner_id);
       add(counters, 'entities_merged');
       if (result.event) await triggerEntityUpdateAutoEnrichment(context, user, result.element);
       if (result.workflowStatusChanged && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
@@ -600,15 +610,20 @@ export const writeRelationChunk = async (
   const targetOf = (m: any) => m.target
     ?? (m.after?.element ? { id: m.after.element.internal_id, index: m.after.element._index ?? inferIndexFromConceptType(m.w.type) } : undefined);
   const relationMergeGroups = Object.values(R.groupBy((m: any) => targetOf(m)?.id ?? `none-${m.w.i}`, merges));
+  const reads = new ChunkReads();
+  await reads.load(R.uniqBy((t: any) => t.id, merges.map(targetOf).filter(Boolean)));
+  bench.step('merges.read');
   await pool(relationMergeGroups, 16, async (group) => {
     for (const m of group ?? []) {
       try {
         const target = m.target ?? (m.after?.element ? { id: m.after.element.internal_id, index: m.after.element._index ?? inferIndexFromConceptType(m.w.type) } : undefined);
         if (!target) throw FunctionalError('No relationship to merge into');
-        const existing = await loadWithAccessFields([target.id]);
+        const read = await reads.take(target.id);
+        const existing = read ? [read.element].filter(() => reads.isLive(target.id)) : await loadWithAccessFields([target.id]);
         if ((await userFilterStoreElements(context, user, existing)).length === 0) throw UnsupportedError('Restricted relation already exists');
-        const result: any = await upsertLockFree(context, user, target, m.w.type, m.w.resolvedInput, counters, opts);
+        const result: any = await upsertLockFree(context, user, target, m.w.type, m.w.resolvedInput, counters, opts, read);
         if (result.status === 'missing') throw FunctionalError('Cant find element to resolve', { id: target.id });
+        if (result.status === 'merged') reads.written(target.id);
         add(counters, result.status === 'merged' ? 'relations_merged' : 'relations_unchanged');
         results[m.w.i] = { status: result.status, id: target.id };
       } catch (e) {
