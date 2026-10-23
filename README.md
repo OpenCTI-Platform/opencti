@@ -4,7 +4,7 @@
 <p align="center">
   <a href="https://opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
   <a href="https://docs.opencti.io" alt="Documentation"><img src="https://img.shields.io/badge/documentation-latest-orange.svg" /></a>
-  <a href="https://community.filigran.io" alt="Slack"><img src="https://img.shields.io/badge/slack-6K%2B%20members-4A154B" /></a>
+  <a href="https://community.filigran.io" alt="Slack"><img src="https://img.shields.io/badge/slack-7K%2B%20members-4A154B" /></a>
   <a href="https://drone.filigran.io/OpenCTI-Platform/opencti"><img src="https://drone.filigran.io/api/badges/OpenCTI-Platform/opencti/status.svg" /></a>
   <a href="https://codecov.io/gh/OpenCTI-Platform/opencti"><img src="https://codecov.io/gh/OpenCTI-Platform/opencti/graph/badge.svg" /></a>
   <a href="https://deepscan.io/dashboard#view=project&tid=4926&pid=6716&bid=57311"><img src="https://deepscan.io/api/teams/4926/projects/6716/branches/57311/badge/grade.svg" alt="DeepScan grade"></a>
