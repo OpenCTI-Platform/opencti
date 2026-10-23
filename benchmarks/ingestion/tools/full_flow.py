@@ -367,7 +367,7 @@ def stored_counts(client, tag, expected, timeout=60):
 def run_feed(client, profile, n, resend):
     """A feed's bundles pushed to a connector queue one after the other, as its connector sends them (one work per
     bundle), imported by the running worker(s) until every work is complete; then, with resend, the same bundles
-    again, all of them already stored"""
+    twice again, all of them already stored, as a feed that sends its full lists on every run"""
     from feeds import FEEDS, distinct_counts
 
     connector_id = register_connector(client)
@@ -382,7 +382,8 @@ def run_feed(client, profile, n, resend):
         "objects_distinct": sum(expected.values()),
         "expected": expected,
     }
-    for name in ["fresh", "resend"] if resend else ["fresh"]:
+    phases = ["fresh", "resend", "resend_again"] if resend else ["fresh"]
+    for name in phases:
         start = time.perf_counter()
         work_ids = []
         for i, bundle in enumerate(bundles):
@@ -412,11 +413,10 @@ def run_feed(client, profile, n, resend):
     results["checks"] = {
         "works_complete": all(
             results[p]["works_complete"] == len(bundles)
-            for p in ("fresh", "resend")
-            if p in results
+            for p in phases
         ),
         "no_errors": all(
-            results[p]["errors"] == 0 for p in ("fresh", "resend") if p in results
+            results[p]["errors"] == 0 for p in phases
         ),
         "stored": all(
             results["stored"][k] == expected.get(k, 0) for k in results["stored"]
@@ -450,7 +450,7 @@ def main():
         "--resend",
         action="store_true",
         default=os.environ.get("BENCH_RESEND") == "true",
-        help="with --profile: send the same bundles again once stored",
+        help="with --profile: send the same bundles twice again once stored",
     )
     args = parser.parse_args()
     client = OpenCTIApiClient(
