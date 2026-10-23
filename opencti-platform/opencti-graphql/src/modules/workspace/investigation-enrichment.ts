@@ -1,15 +1,17 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { internalFindByIds } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIdsMapped } from '../../database/middleware-loader';
 import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, validateUserAccessOperation } from '../../utils/access';
 import { ForbiddenAccess } from '../../config/errors';
 import type { BasicStoreEntityWorkspace } from './workspace-types';
 import { findInvestigationById } from './workspace-domain';
 import { findWorkPaginated } from '../../domain/work';
-import { emptyPaginationResult } from '../../database/utils';
+import { emptyPaginationResult, isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { WorkspaceEnrichmentWorksArgs } from '../../generated/graphql';
-import type { BasicStoreBase } from '../../types/store';
+import type { BasicStoreEntity } from '../../types/store';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
+import { xOpenctiStixIds } from '../../schema/attribute-definition';
+import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
 
 const INVESTIGATION_UPDATE_CAPABILITY = 'INVESTIGATION_INUPDATE';
 
@@ -35,14 +37,25 @@ export const validateEnrichmentInvestigation = async (
 };
 
 /**
- * The caller filters are nested under a top level AND with the investigation filter:
- * they can narrow the result, never reach works of another investigation.
- * A workspace that is not an investigation has no enrichment works.
- * Only the works of the entities of the investigation are returned, or of the given entityIds among them,
- * matched on their current standard id: like the entity jobs, the works of an entity merged into another one or whose
- * standard id changed are not found, nor those of an entity removed from the investigation.
- * The entities are loaded as the reader, so that the works of entities hidden by markings or organization sharing
- * (or deleted) are filtered before the pagination: they are not counted in the pageInfo either.
+ * Retrieves the works of the enrichment connectors started from the given investigation.
+ *
+ * By default it returns the works of all the entities of the investigation, but a list of entity ids (internal
+ * or standard) can be given: only the works of those entities, among the entities of the investigation, are returned.
+ *
+ * The works are first listed to collect their sources (event_source_id), then those sources are loaded as the user and
+ * only the ones that are entities of the investigation (and of the selection) are kept. The final filter so holds at
+ * most one id per enriched entity, instead of all the ids of all the entities of the investigation, which could
+ * exceed the elastic terms limit on large investigations.
+ *
+ * Remark-1: a work stores in event_source_id the standard id its entity had when the enrichment started. The sources
+ * are matched on all the stix ids of the entities (standard_id and x_opencti_stix_ids), so the works of an entity
+ * merged into an entity of the investigation, or of an observable whose standard id was upgraded, are still found:
+ * both keep the previous standard id in their stix ids. The renaming of a domain object does not keep its previous
+ * standard id, nor does a merge update the entities of the investigation: those works are not found.
+ *
+ * Remark-2: the sources are loaded as the user, to benefit from our internal mechanisms of markings, organization
+ * sharing, etc.: a work concerning an entity the user cannot see is filtered before the pagination, so it is neither
+ * returned nor counted in the pageInfo.
  */
 export const findInvestigationEnrichmentWorks = async (
   context: AuthContext,
@@ -54,24 +67,52 @@ export const findInvestigationEnrichmentWorks = async (
     return emptyPaginationResult();
   }
   const { entityIds, ...paginationArgs } = args;
-  const investigatedIds = new Set(workspace.investigated_entities_ids ?? []);
-  const entities = await internalFindByIds(
+  const investigationFilters = addFilter(args.filters, 'investigation_id', workspace.id);
+
+  // 01. Collect the sources of the works of the investigation, reading only that field
+  const works = await fullEntitiesList<BasicStoreEntity & { event_source_id?: string }>(
     context,
     user,
-    entityIds ?? [...investigatedIds],
-    { type: [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], baseData: true },
-  ) as BasicStoreBase[];
-  // An enrichment work stores the standard id of its entity, as matched by the entity jobs
-  const standardIds = entities
-    .filter((entity) => investigatedIds.has(entity.internal_id))
-    .map((entity) => entity.standard_id);
-  if (standardIds.length === 0) {
+    [ENTITY_TYPE_WORK],
+    {
+      indices: [READ_INDEX_HISTORY],
+      filters: investigationFilters,
+      baseData: true,
+      baseFields: ['event_source_id'],
+    },
+  );
+  const sourceIds = [...new Set(works.map((work) => work.event_source_id).filter(isNotEmptyField))];
+  if (sourceIds.length === 0) {
     return emptyPaginationResult();
   }
-  const filters = addFilter(
-    addFilter(args.filters, 'investigation_id', workspace.id),
-    'event_source_id',
-    standardIds,
+
+  // 02. Load the sources as the user, keyed by all their ids (see Remark-1)
+  const sources = await internalFindByIdsMapped(
+    context,
+    user,
+    sourceIds,
+    {
+      type: [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP],
+      baseData: true,
+      baseFields: [xOpenctiStixIds.name],
+      mapWithAllIds: true,
+    },
   );
+
+  // 03. Keep the sources that are entities of the investigation, and of the selection when given
+  const investigatedIds = new Set(workspace.investigated_entities_ids ?? []);
+  const selectedIds = entityIds ? new Set(entityIds) : undefined;
+  const allowedSourceIds = sourceIds.filter((sourceId) => {
+    const entity = sources[sourceId];
+    return !!entity
+      && investigatedIds.has(entity.internal_id)
+      && (!selectedIds || selectedIds.has(entity.internal_id) || selectedIds.has(entity.standard_id));
+  });
+  if (allowedSourceIds.length === 0) {
+    return emptyPaginationResult();
+  }
+
+  // 04. Paginate the works of the kept sources only
+  const filters = addFilter(investigationFilters, 'event_source_id', allowedSourceIds);
   return findWorkPaginated(context, user, { ...paginationArgs, filters });
 };
