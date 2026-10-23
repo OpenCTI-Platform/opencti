@@ -68,7 +68,9 @@ Global options: `--prefix` (default `bench`, see [Isolation](#isolation)), `--es
 | `lockfree-processes` | The lock-free path from 1, 2 and 4 platform processes at once, as the nodes of a cluster: entities with refs, then relationships with refs from all of them to one hub; `--processes 1,2` picks the counts | 16,000 per case | ~2 min |
 | `full-flow` | A connector-shaped bundle (author, marking, labels, attack patterns with kill chain phases and external references, intrusion sets on one malware, observables, one report containing everything) pushed to a connector queue and imported by a real worker started by the scenario, lock-free; then pycti one object per request against batch mode; checks the stored data is the same | 2,403 objects per run | ~1 min |
 | `full-flow-today` | The same bundle through the queue and the worker, today's flow (lock-free off) | 2,403 objects | ~1.5 min |
-| `lockfree-behaviours` | Correctness of the lock-free path: parity with today's path (stored documents, meta relationships and stream events of the same steps written both ways) and 28 checks over concurrency, races, out-of-order arrival, deletes, renames, access, restarts, drafts, backfill | 50 per case | ~1.5 min |
+| `feeds` | Feed-shaped bundles (`tools/feeds.py`: AlienVault pulses, Recorded Future risk list chunks, MISP events) pushed to a connector queue one work per bundle, as the connectors send them, and imported by 4 real workers; each feed is sent fresh, then twice again once stored; times each pass until every work is complete, and reports errors and what was stored; lock-free | 10,000 objects per feed | ~2.5 min |
+| `feeds-today` | The same feeds through the queue and 4 workers, today's flow | 10,000 objects per feed | ~20 min |
+| `lockfree-behaviours` | Correctness of the lock-free path: parity with today's path (stored documents, meta relationships and stream events of the same steps written both ways) and 30 checks over concurrency, races, out-of-order arrival, deletes, renames, access, restarts, drafts, backfill, known no-op merges | 50 per case | ~1.5 min |
 
 \* On a recent laptop, including the ~15 s platform start of each scenario.
 
@@ -194,7 +196,8 @@ writes differ.
 | `load.ts` | Realtime reads in the platform's store shape (`elConvertHits`), refs resolved as `storeLoadByIdWithRefs` does, and the finder handed to `inputResolveRefs` (same contract as `internalFindByIds`, access filter included). |
 | `pairs.ts` | Relationship duplicates: one document per (type, from, to) lists the pair's relationships; candidates are matched with today's `buildRelationDeduplicationFilters` (window, per-type overrides, created-by), evaluated in memory. Entries of relationships deleted since (by today's path, from the interface) are dropped, so the relationship is created again, as today. |
 | `writer.ts` | Write path per chunk (steps timed as `lf_entity.*` / `lf_relation.*`): prepare and resolve as today, match, then create in bulk. New entities claim their keys before being created, so two writers never both create one object: the one that loses a key waits for the holder and merges into it. New relationships get an id from type, ends and time; a duplicate created at the same moment by another writer is caught when it is recorded in its pair. Relationships whose ends do not exist yet go to the pending store. Drafts, file uploads, explicit ref relationships and single-ref replacements go to today's path, unchanged. |
-| `upsert.ts` | Merges: today's rules on the object read by id, written back with `if_seq_no` and recomputed when someone wrote in between; meta relationships with ids derived from their ends; update events in today's format. |
+| `upsert.ts` | Merges: today's rules on the object read by id, written back with `if_seq_no` and recomputed when someone wrote in between; meta relationships with ids derived from their ends; update events in today's format. The objects a chunk merges into, and their refs, are read once per chunk (`ChunkReads` in `load.ts`). |
+| `unchanged.ts` | Known no-op merges: a merge that left an object as it was is remembered in the identity index with the object's version (`_seq_no`, `_primary_term`) and a fingerprint of the prepared input, the user, the request's synchro flags and the platform (version, Enterprise Edition, platform organization, marking definitions, workflow statuses, entity settings). The same merge on the same version is answered "unchanged" without being computed; any write to the object gives it a new version. Merges that read other objects (alias owners, individuals linked to users), move files or carry `upsertOperations` are not remembered. |
 | `queue.ts` | Durable settler queue: Redis streams split by entity id, read through a consumer group; tasks are acknowledged once applied, and tasks a stopped settler left are taken over after `claimIdleMs`. |
 | `settler.ts` | Applies the queued work: one update per entity for its `rel_*` lists (one entry per relationship, as today, recorded per relationship so a redelivered task is not applied twice), today's `mergeEntities` for duplicates found after creation, merges of relationship duplicates, removal of relationships whose end was deleted, and the pending relationships whose ends now exist. |
 | `pending.ts` | Relationships waiting for an end, in their own index, invisible to reads; written through the normal path when the ends exist, refused when an end was deleted (as today), dropped after their time to live. |
@@ -269,14 +272,15 @@ Each scenario fails if its checks fail, so a fast but wrong result never reads a
   dates, sightings, copies with higher and lower confidence, new aliases, labels, a marking upgrade, an alias
   match, two existing objects matched by one input, relationship copies inside and outside the duplicate window,
   and a report with its objects. The stored documents, the meta relationships and the stream events must be the
-  same, ids replaced by names. Then 28 checks cover what parity cannot show: the same relationship or entity sent
+  same, ids replaced by names. Then 30 checks cover what parity cannot show: the same relationship or entity sent
   twice at the same moment, an alias race (no duplicate visible, even before settling), relationships before
   their ends (waiting invisibly, then written), pending expiry, deletes (later references refused, relationships
   the platform's delete missed removed), re-creation of a deleted entity and of a relationship deleted by today's
   path, rename, marking access and confidence capping as today, a
   settler stopping mid-run (another one finishes its work), partitioned settlers, `waitForSearch` visibility,
-  drafts (today's path), backfill of existing data and of keys left by vanished objects, and platform reads of
-  lock-free objects. It runs on a freshly initialized platform, where only the backfill knows the markings.
+  drafts (today's path), backfill of existing data and of keys left by vanished objects, platform reads of
+  lock-free objects, a third identical send answered from known no-op merges, and an edit by hand between two
+  sends giving the same result as today's path. It runs on a freshly initialized platform, where only the backfill knows the markings.
 - **Refs.** In `feed-shaped`, a relationship loaded back has its created-by, marking and 3 labels, the
   indicator lists its 24 `indicates`, and the attack pattern lists none (that side is not impacted).
 
@@ -464,6 +468,35 @@ chunked messages); a message holding several objects was imported one by one whe
 references took today's path, two forced refreshes each, 200 at a time; and labels created by pycti were unknown
 to the identity index, so every import first failed on a missing reference and was retried.
 
+### Feeds end to end (`feeds`, `feeds-today`)
+
+Feed-shaped bundles through the connector queue and 4 real workers, until every work is complete, on the
+benchmark platform (managers on), 23 October 2026. Objects per second over the whole pass, objects sent (the
+connector splitter drops duplicate ids within a bundle); two lock-free runs:
+
+| Feed (bundles, objects) | Pass | Today | Lock-free |
+|---|---|---|---|
+| AlienVault-like (19 pulses, 9,861) | fresh | 39/s, 49 relationships lost | 679 to 825/s |
+| | sent again | 103/s | 1,028 to 1,231/s |
+| Recorded Future-like (9 chunks, 10,467) | fresh | 78/s, 7 lost | 602 to 727/s |
+| | sent again | 122/s | 1,061 to 1,165/s |
+| MISP-like (73 events, 10,001) | fresh | 24/s, 98 lost | 445/s |
+| | sent again | 81/s | 637 to 745/s |
+
+Today's flow loses relationships whose end another worker is still importing (`MISSING_REFERENCE_ERROR` after its
+retries); the lock-free flow sends them back through the queue and lost none. Every work completed in every run.
+
+Known no-op merges (`unchanged.ts`), the second re-send, one run each:
+
+| Feed | Without | With |
+|---|---|---|
+| AlienVault-like | 1,250/s | 2,294/s |
+| Recorded Future-like | 1,206/s | 1,784/s |
+| MISP-like | 657/s | 1,115/s |
+
+The first re-send is what records them (1,044 to 1,314/s either way). Fresh passes vary by up to 40% between runs
+on this laptop.
+
 ### Live connectors (demo platform)
 
 Real connectors deployed through the integration manager on a platform with the switch on, one platform process
@@ -534,6 +567,8 @@ with refs all on one entity, settled, best configuration of each step:
 | 9 | Two platform processes, 2 writers each | 3,088/s |
 | 10 | `lockfreeImport` over HTTP, chunks of 500, 4 clients | 2,030 to 2,240/s |
 | 11 | The full flow, a mixed connector bundle through queue and worker (all object kinds, not only relationships on one entity) | 729 to 801/s (today 38 to 41/s) |
+| 12 | Merge targets and their refs read once per chunk; light notifications (ids of the user only, no raw document or `rel_*` lists); deferred messages not yet due no longer hold their batch | re-sends 490 to 1,000/s (in process); feeds, 4 workers: 445 to 825/s fresh |
+| 13 | Known no-op merges answered without computing them | feeds sent a third time: 1,115 to 2,294/s |
 
 Step 3 showed the limit had moved into the Node process (100-170% CPU while Elasticsearch used 17-35% of its
 cores); `lockfree-profile` and `tools/cpu_profile.py` found the hot spots fixed in steps 4 and 5. Step 5 raised
@@ -577,8 +612,10 @@ relationships with refs from 1,254 to 1,481/s.
 - The lock-free throughput scenarios use intrusion sets, malware and `uses` relationships; `full-flow` times a
   mixed bundle (observables, attack patterns, external references, a report); sightings and files are checked
   for parity in `lockfree-behaviours`, not timed.
-- One worker and one connector queue in `full-flow`; several workers on one queue were measured only on live
-  connectors (above), not in a repeatable scenario.
+- The feeds are synthetic, shaped after what three connectors stored on the demo platform; real feeds differ in
+  their mix and in how their bundles arrive over time.
+- Known no-op merges are never cleaned up: one small document per object and input stays in the identity index.
+  An object written to all the time (a malware many relationships point to) changes version too often to benefit.
 - Elasticsearch's defaults size its search pool from its CPUs and queue 1,000 searches: on a small node, lock-free
   imports from several workers fill that queue in bursts. The live runs used 10 CPUs and a queue of 5,000.
 - The worker-path scenario times the client side only; its platform phases are not recorded.
