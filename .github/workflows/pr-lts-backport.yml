@@ -1,0 +1,76 @@
+name: LTS backport management
+# Automation dedicated to LTS backport management.
+# Note: with pull_request_target, the workflow definition is read from the PR base branch,
+# so this file must be present on master and on each lts/* branch to take effect there.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited, synchronize]
+
+jobs:
+  add-backport-label:
+    name: Add backport label on PR targeting an LTS branch
+    # 'edited' is only relevant when the base branch was changed to an lts/* branch
+    if: >-
+      ${{ startsWith(github.event.pull_request.base.ref, 'lts/')
+      && (github.event.action == 'opened' || github.event.action == 'reopened'
+      || (github.event.action == 'edited' && github.event.changes.base != null)) }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add backport label
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          echo "PR #$PR_NUMBER targets $BASE_REF, adding 'backport' label"
+          gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "backport"
+
+  add-backport-candidate-label:
+    name: Add backport candidate label on PR closing a security or critical issue
+    # Runs on master PRs: at opening, and on each edit / push so that an issue linked afterwards is detected.
+    if: >-
+      ${{ github.event.pull_request.base.ref == 'master'
+      && !contains(github.event.pull_request.labels.*.name, 'backport candidate') }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+      pull-requests: write
+    steps:
+      - name: Check closing issues labels and add backport candidate label
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          OWNER: ${{ github.repository_owner }}
+          NAME: ${{ github.event.repository.name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # closingIssuesReferences covers both closing keywords in the body and issues linked from the Development panel
+          MATCHING_ISSUES=$(gh api graphql \
+            -F owner="$OWNER" -F name="$NAME" -F number="$PR_NUMBER" \
+            -f query='
+              query($owner: String!, $name: String!, $number: Int!) {
+                repository(owner: $owner, name: $name) {
+                  pullRequest(number: $number) {
+                    closingIssuesReferences(first: 50) {
+                      nodes { url labels(first: 100) { nodes { name } } }
+                    }
+                  }
+                }
+              }' \
+            --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[]
+                  | select([.labels.nodes[].name | ascii_downcase] | any(. == "security" or . == "critical"))
+                  | .url')
+
+          if [ -n "$MATCHING_ISSUES" ]; then
+            echo "PR closes security/critical issue(s):"
+            echo "$MATCHING_ISSUES"
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "backport candidate"
+          else
+            echo "No closing issue labeled 'security' or 'critical'"
+          fi
