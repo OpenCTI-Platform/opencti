@@ -17,6 +17,7 @@ import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../
 import { insertNode } from '../../../../utils/store';
 import { CustomFieldDefinitionAddInput } from './__generated__/CustomFieldCreationMutation.graphql';
 import { CustomFieldsLinesPaginationQuery$variables } from './__generated__/CustomFieldsLinesPaginationQuery.graphql';
+import { areCustomFieldAliasesValid, buildCustomFieldNameSuffix } from '../../../../utils/customFields';
 
 export const CUSTOM_FIELD_NAME_PREFIX = 'x_opencti_cf_';
 
@@ -49,9 +50,10 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       .required(t_i18n('This field is required'))
       .matches(/^[a-z][a-z0-9_]*$/, t_i18n('Only lowercase letters, numbers and underscores, starting with a letter')),
     label: Yup.string().required(t_i18n('This field is required')),
-    aliases: Yup.array().of(Yup.string()),
+    aliases: Yup.array().of(Yup.string())
+      .test('alias-format', t_i18n('An alias must start with x_ and contain only lowercase letters, numbers and underscores'), (aliases) => areCustomFieldAliasesValid(aliases)),
     field_type: Yup.string().required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
+    description: Yup.string().trim().required(t_i18n('This field is required')),
     min_value: Yup.number().nullable(),
     max_value: Yup.number().nullable()
       .when('min_value', ([minValue], schema) => (minValue != null
@@ -65,6 +67,9 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
 
   const initialValues = {
     nameSuffix: '',
+    // The technical name follows the label until it is edited manually. Kept in the form values (never sent),
+    // so that any new form starts over, whatever the way the drawer was closed.
+    isNameSuffixEdited: false,
     label: '',
     aliases: [] as string[],
     field_type: '',
@@ -87,7 +92,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       label: values.label,
       aliases: values.aliases,
       field_type: values.field_type,
-      description: values.description || undefined,
+      description: values.description,
       min_value: values.field_type === 'integer' && values.min_value !== null && String(values.min_value) !== '' ? Number(values.min_value) : undefined,
       max_value: values.field_type === 'integer' && values.max_value !== null && String(values.max_value) !== '' ? Number(values.max_value) : undefined,
       select_options: (values.field_type === 'select' || values.field_type === 'multi_select') ? values.select_options : undefined,
@@ -156,6 +161,9 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     label={t_i18n('Label')}
                     fullWidth={true}
                     className="mt-5"
+                    onChange={(_: string, value: string) => {
+                      if (!values.isNameSuffixEdited) setFieldValue('nameSuffix', buildCustomFieldNameSuffix(value));
+                    }}
                   />
                   <Field
                     component={TextField}
@@ -163,6 +171,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     name="nameSuffix"
                     label={t_i18n('Technical name')}
                     fullWidth={true}
+                    onChange={() => setFieldValue('isNameSuffixEdited', true)}
                     style={{ marginTop: 20 }}
                     helperText={`${t_i18n('Full technical name')}: ${CUSTOM_FIELD_NAME_PREFIX}${values.nameSuffix || '...'}`}
                     startAdornment={(
@@ -178,6 +187,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     allowCustomValue
                     createValueFromInput={(input: string) => input}
                     placeholder={t_i18n('Type and press Enter to add items')}
+                    helperText={t_i18n('When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create')}
                     className="mt-5"
                   />
                   {values.field_type === 'integer' && (

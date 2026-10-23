@@ -9,6 +9,8 @@
   "- Unsupported": "- Sin soporte",
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- ya no pertenecerá a la organización de la plataforma principal a menos que se le haya concedido acceso específico a la organización.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- su usuario pertenecerá a la organización de la plataforma principal, además de a cualquier organización a la que pertenezca el usuario actual",
+  "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "Un alias debe empezar por x_ y contener solo letras minúsculas, números y guiones bajos",
+  "When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create": "Cuando una entidad ingerida contiene el campo alias, se utiliza para rellenar el valor del campo personalizado que crea",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "«Sí, siempre» guarda una preferencia por ti. A partir de ese momento, esa herramienta se ejecutará sin preguntar —incluso en ejecuciones programadas que nadie supervisa— hasta que la revoques.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Haga clic para ver todos los nuevos recursos en el Hub",
   "(no output)": "(sin salida)",

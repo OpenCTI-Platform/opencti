@@ -17705,7 +17705,9 @@ input CustomFieldDefinitionAddInput {
   field_type: String!
   entity_types: [String!]
   multiple: Boolean
-  description: String
+
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
+  description: String!
   created: DateTime
   min_value: Int
   max_value: Int

@@ -28,6 +28,29 @@ import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias,
  */
 const CUSTOM_FIELD_NAME_REGEX = /^x_opencti_cf_[a-z][a-z0-9_]*$/;
 
+/**
+ * An alias matches a STIX custom property at ingestion, the only properties read being the ones
+ * starting with "x_": it must be "x_" followed by lowercase letters, numbers and underscores.
+ */
+const CUSTOM_FIELD_ALIAS_REGEX = /^x_[a-z0-9_]+$/;
+
+const checkCustomFieldAliasesFormat = (aliases: string[] | null | undefined) => {
+  const invalidAliases = (aliases ?? []).filter((alias) => !CUSTOM_FIELD_ALIAS_REGEX.test(alias));
+  if (invalidAliases.length > 0) {
+    throw ValidationError(
+      'An alias must start with "x_" and contain only lowercase letters, numbers and underscores',
+      'aliases',
+      { aliases: invalidAliases },
+    );
+  }
+};
+
+const checkCustomFieldDescription = (description: string | null | undefined) => {
+  if (!description || description.trim().length === 0) {
+    throw ValidationError('The description of a custom field is required', 'description');
+  }
+};
+
 // ----- Domain CRUD operations -----
 
 export const findById: DomainFindById<BasicStoreEntityCustomFieldDefinition> = (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
@@ -67,6 +90,8 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
       { name: input.name },
     );
   }
+  checkCustomFieldAliasesFormat(input.aliases);
+  checkCustomFieldDescription(input.description);
   // Validate the technical name, label and aliases are unique among all custom fields (single cache read)
   const existingDefinitions = await getCustomFieldDefinitions(context, user);
   for (let i = 0; i < existingDefinitions.length; i++) {
@@ -175,9 +200,15 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
       throw ValidationError('A custom field with this label already exists', 'label', { label: newLabel });
     }
   }
-  // Validate the aliases stay unique among all custom fields
+  // Validate the description stays set
+  const descriptionEdit = input.find((i) => i.key === 'description');
+  if (descriptionEdit) {
+    checkCustomFieldDescription(Array.isArray(descriptionEdit.value) ? descriptionEdit.value[0] : descriptionEdit.value);
+  }
+  // Validate the aliases stay well formed and unique among all custom fields
   const aliasesEdit = input.find((i) => i.key === 'aliases');
   if (aliasesEdit && aliasesEdit.operation !== EditOperation.Remove) {
+    checkCustomFieldAliasesFormat(aliasesEdit.value);
     for (let i = 0; i < aliasesEdit.value.length; i++) {
       const aliasEditValue = aliasesEdit.value[i];
       const existing = await getCustomFieldDefinitionByNameOrAlias(context, user, aliasEditValue);

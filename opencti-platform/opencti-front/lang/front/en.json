@@ -9,6 +9,8 @@
   "- Unsupported": "- Unsupported",
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to",
+  "An alias must start with x_ and contain only lowercase letters, numbers and underscores": "An alias must start with x_ and contain only lowercase letters, numbers and underscores",
+  "When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create": "When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Click to view all the new resources on the Hub",
   "(no output)": "(no output)",
