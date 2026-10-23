@@ -133,7 +133,7 @@
     "https-proxy-agent": "9.1.0",
     "ioredis": "5.11.1",
     "ipaddr.js": "2.5.0",
-    "jose": "6.2.12",
+    "jose": "6.2.13",
     "js-deep-equals": "2.1.1",
     "jsonpath-plus": "11.2.1",
     "jwt-decode": "4.0.0",
