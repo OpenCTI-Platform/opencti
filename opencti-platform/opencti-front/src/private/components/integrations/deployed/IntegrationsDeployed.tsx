@@ -1,79 +1,47 @@
-import React, {
-  ChangeEvent,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { createPortal } from "react-dom";
-import { Link, useSearchParams } from "react-router";
-import {
-  Box,
-  MenuItem,
-  Stack,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-} from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import { useTheme } from "@mui/material/styles";
-import { ViewListOutlined, ViewModuleOutlined } from "@mui/icons-material";
-import { useQueryLoader } from "react-relay";
-import { interval } from "rxjs";
-import Button from "@common/button/Button";
-import ConnectorsList, {
-  connectorsListQuery,
-} from "@components/data/connectors/ConnectorsList";
-import ConnectorsLogos, {
-  connectorsLogosQuery,
-} from "@components/data/connectors/ConnectorsLogos";
-import ConnectorsState, {
-  connectorsStateQuery,
-} from "@components/data/connectors/ConnectorsState";
-import { ConnectorsListQuery } from "@components/data/connectors/__generated__/ConnectorsListQuery.graphql";
-import { ConnectorsLogosQuery } from "@components/data/connectors/__generated__/ConnectorsLogosQuery.graphql";
-import { ConnectorsStateQuery } from "@components/data/connectors/__generated__/ConnectorsStateQuery.graphql";
-import DeployedFacetSidebar, {
-  useDeployedTypeMetadata,
-} from "@components/integrations/deployed/DeployedFacetSidebar";
-import DeployedIntegrationCard from "@components/integrations/deployed/DeployedIntegrationCard";
-import IntegrationsHealthAlerts from "@components/integrations/deployed/IntegrationsHealthAlerts";
-import DeployedIntegrationLine, {
-  DeployedIntegrationLinesHeader,
-} from "@components/integrations/deployed/DeployedIntegrationLine";
-import useDeployedIntegrations from "@components/integrations/deployed/useDeployedIntegrations";
-import useDeployedIntegrationsFilters, {
-  DeployedSection,
-  DeployedSortMode,
-} from "@components/integrations/deployed/useDeployedIntegrationsFilters";
-import {
-  MarketplaceEmptyState,
-  MarketplaceSectionHeader,
-  ResultCountChip,
-} from "@components/integrations/components/MarketplaceUi";
-import useProgressiveReveal from "@components/integrations/components/useProgressiveReveal";
-import { IntegrationsData } from "@components/integrations/Integrations";
-import { useFormatter } from "../../../../components/i18n";
-import Loader, { LoaderVariant } from "../../../../components/Loader";
-import SearchInput from "../../../../components/SearchInput";
-import useGranted, { MODULES } from "../../../../utils/hooks/useGranted";
-import useHelper from "../../../../utils/hooks/useHelper";
-import { FIVE_SECONDS } from "../../../../utils/Time";
-import { paperBg, paperBorder } from "../paperSurface";
+import React, { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Link, useSearchParams } from 'react-router';
+import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import Grid from '@mui/material/Grid2';
+import { useTheme } from '@mui/material/styles';
+import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { useQueryLoader } from 'react-relay';
+import { interval } from 'rxjs';
+import Button from '@common/button/Button';
+import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
+import ConnectorsLogos, { connectorsLogosQuery } from '@components/data/connectors/ConnectorsLogos';
+import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
+import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
+import { ConnectorsLogosQuery } from '@components/data/connectors/__generated__/ConnectorsLogosQuery.graphql';
+import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
+import DeployedFacetSidebar, { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import DeployedIntegrationCard from '@components/integrations/deployed/DeployedIntegrationCard';
+import IntegrationsHealthAlerts from '@components/integrations/deployed/IntegrationsHealthAlerts';
+import DeployedIntegrationLine, { DeployedIntegrationLinesHeader } from '@components/integrations/deployed/DeployedIntegrationLine';
+import useDeployedIntegrations from '@components/integrations/deployed/useDeployedIntegrations';
+import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
+import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
+import useProgressiveReveal from '@components/integrations/components/useProgressiveReveal';
+import { IntegrationsData } from '@components/integrations/Integrations';
+import { useFormatter } from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import SearchInput from '../../../../components/SearchInput';
+import useGranted, { MODULES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import { paperBg, paperBorder } from '../paperSurface';
 
 const interval$ = interval(FIVE_SECONDS);
 
-type DeployedViewMode = "cards" | "lines";
+type DeployedViewMode = 'cards' | 'lines';
 
 // Persisted so dense fleets keep the compact view across navigations.
-const VIEW_STORAGE_KEY = "integrations_deployed_view";
+const VIEW_STORAGE_KEY = 'integrations_deployed_view';
 
 interface IntegrationsDeployedContentProps {
   data: IntegrationsData;
-  connectorsListData: ConnectorsListQuery["response"] | null;
-  connectorsStateData: ConnectorsStateQuery["response"] | null;
+  connectorsListData: ConnectorsListQuery['response'] | null;
+  connectorsStateData: ConnectorsStateQuery['response'] | null;
   logosBySlug: Map<string, string>;
   onConnectorsChange: () => void;
   alertsSlot?: HTMLElement | null;
@@ -92,8 +60,8 @@ const IntegrationsDeployedContent = ({
   const [searchParams] = useSearchParams();
   const typeMetadata = useDeployedTypeMetadata();
   const { isFeatureEnable } = useHelper();
-  const isConnectorUpdateEnabled = isFeatureEnable("DECOUPLING_VERSIONS");
-  const isIngestionHealthEnabled = isFeatureEnable("INGESTION_HEALTH");
+  const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
+  const isIngestionHealthEnabled = isFeatureEnable('INGESTION_HEALTH');
   const { feedsData, formsData, refetchFeeds, refetchForms } = data;
 
   const items = useDeployedIntegrations({
@@ -125,7 +93,7 @@ const IntegrationsDeployedContent = ({
   const [searchInput, setSearchInput] = useState(filters.search);
 
   const [view, setView] = useState<DeployedViewMode>(() =>
-    localStorage.getItem(VIEW_STORAGE_KEY) === "lines" ? "lines" : "cards",
+    localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards',
   );
   const handleViewChange = (
     _: React.MouseEvent,
@@ -153,12 +121,12 @@ const IntegrationsDeployedContent = ({
     const { value } = event.currentTarget;
     setSearchInput(value);
     if (!value) {
-      setFilters((prev) => ({ ...prev, search: "" }));
+      setFilters((prev) => ({ ...prev, search: '' }));
     }
   };
 
   const handleResetFilters = () => {
-    setSearchInput("");
+    setSearchInput('');
     clearAllFilters();
   };
 
@@ -194,14 +162,14 @@ const IntegrationsDeployedContent = ({
   return (
     <Stack sx={{ gap: 2 }}>
       {/* Above the tabs, where the page leaves a slot: the items and the filters live in this component */}
-      {alertsSlot &&
-        createPortal(
+      {alertsSlot
+        && createPortal(
           <IntegrationsHealthAlerts
             items={items}
             onShowIssue={(health) => {
-              setSearchInput("");
+              setSearchInput('');
               setFilters({
-                search: "",
+                search: '',
                 types: [],
                 statuses: [],
                 kinds: [],
@@ -233,8 +201,8 @@ const IntegrationsDeployedContent = ({
           sx={{
             flex: 1,
             minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
+            display: 'flex',
+            flexDirection: 'column',
             gap: 2,
           }}
         >
@@ -255,17 +223,17 @@ const IntegrationsDeployedContent = ({
               select
               size="small"
               variant="outlined"
-              label={t_i18n("Sort by")}
+              label={t_i18n('Sort by')}
               value={sort}
               onChange={(event) =>
                 setSort(event.target.value as DeployedSortMode)
               }
               sx={{ width: 200, backgroundColor: paperBg(theme) }}
             >
-              <MenuItem value="name">{t_i18n("Name (A-Z)")}</MenuItem>
-              <MenuItem value="status">{t_i18n("Status")}</MenuItem>
-              <MenuItem value="lastRun">{t_i18n("Last run")}</MenuItem>
-              <MenuItem value="messages">{t_i18n("Queued messages")}</MenuItem>
+              <MenuItem value="name">{t_i18n('Name (A-Z)')}</MenuItem>
+              <MenuItem value="status">{t_i18n('Status')}</MenuItem>
+              <MenuItem value="lastRun">{t_i18n('Last run')}</MenuItem>
+              <MenuItem value="messages">{t_i18n('Queued messages')}</MenuItem>
             </TextField>
             <ResultCountChip count={filteredItems.length} />
             <ToggleButtonGroup
@@ -280,7 +248,7 @@ const IntegrationsDeployedContent = ({
                 aria-label="cards"
                 data-testid="integrations-view-cards"
               >
-                <Tooltip title={t_i18n("Cards view")}>
+                <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>
@@ -289,7 +257,7 @@ const IntegrationsDeployedContent = ({
                 aria-label="lines"
                 data-testid="integrations-view-lines"
               >
-                <Tooltip title={t_i18n("Lines view")}>
+                <Tooltip title={t_i18n('Lines view')}>
                   <ViewListOutlined fontSize="small" />
                 </Tooltip>
               </ToggleButton>
@@ -300,18 +268,18 @@ const IntegrationsDeployedContent = ({
             <MarketplaceEmptyState
               hasActiveFilters={hasActiveFilters}
               onResetFilters={handleResetFilters}
-              extraAction={
+              extraAction={(
                 <Button component={Link} to="/dashboard/integrations/available">
-                  {t_i18n("Browse the catalog")}
+                  {t_i18n('Browse the catalog')}
                 </Button>
-              }
+              )}
             />
           ) : (
             <Box
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: view === "lines" ? 3 : 4,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: view === 'lines' ? 3 : 4,
               }}
             >
               {visibleSections.map((section) => {
@@ -337,13 +305,13 @@ const IntegrationsDeployedContent = ({
                       count={section.totalCount}
                       onToggleCollapse={() => toggleSection(section.key)}
                     />
-                    {view === "lines" ? (
+                    {view === 'lines' ? (
                       <Box
                         sx={{
                           borderRadius: 1,
                           border: `1px solid ${paperBorder(theme)}`,
                           backgroundColor: paperBg(theme),
-                          overflow: "hidden",
+                          overflow: 'hidden',
                         }}
                       >
                         <DeployedIntegrationLinesHeader />
@@ -396,24 +364,24 @@ const IntegrationsDeployed = ({
 }: IntegrationsDeployedProps) => {
   const isConnectorReader = useGranted([MODULES]);
 
-  const [connectorsListRef, loadConnectorsList] =
-    useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
-  const [connectorsStateRef, loadConnectorsState] =
-    useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
-  const [connectorsLogosRef, loadConnectorsLogos] =
-    useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
+  const [connectorsListRef, loadConnectorsList]
+    = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
+  const [connectorsStateRef, loadConnectorsState]
+    = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
+  const [connectorsLogosRef, loadConnectorsLogos]
+    = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
   const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(
     new Map(),
   );
 
   useEffect(() => {
     if (!isConnectorReader) return undefined;
-    loadConnectorsList({}, { fetchPolicy: "store-and-network" });
-    loadConnectorsState({}, { fetchPolicy: "store-and-network" });
-    loadConnectorsLogos({}, { fetchPolicy: "store-and-network" });
+    loadConnectorsList({}, { fetchPolicy: 'store-and-network' });
+    loadConnectorsState({}, { fetchPolicy: 'store-and-network' });
+    loadConnectorsLogos({}, { fetchPolicy: 'store-and-network' });
     // Live state refresh, as on the legacy monitoring screen.
     const subscription = interval$.subscribe(() => {
-      loadConnectorsState({}, { fetchPolicy: "store-and-network" });
+      loadConnectorsState({}, { fetchPolicy: 'store-and-network' });
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -421,13 +389,13 @@ const IntegrationsDeployed = ({
   const onConnectorsChange = useCallback(() => {
     if (!isConnectorReader) return;
     // store-and-network keeps the current cards rendered while refreshing.
-    loadConnectorsList({}, { fetchPolicy: "store-and-network" });
-    loadConnectorsState({}, { fetchPolicy: "store-and-network" });
+    loadConnectorsList({}, { fetchPolicy: 'store-and-network' });
+    loadConnectorsState({}, { fetchPolicy: 'store-and-network' });
   }, [isConnectorReader]);
 
   const renderContent = (
-    connectorsListData: ConnectorsListQuery["response"] | null,
-    connectorsStateData: ConnectorsStateQuery["response"] | null,
+    connectorsListData: ConnectorsListQuery['response'] | null,
+    connectorsStateData: ConnectorsStateQuery['response'] | null,
   ) => (
     <IntegrationsDeployedContent
       data={data}

@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../../../src/database/redis';
 import {
   buildHealthTransitionMessage,
   buildIngestionHealthContext,
@@ -24,6 +25,11 @@ import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/co
 import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
 import { HealthTransition, type IngestionHealthFields, type StoredHealthCheck, type StoredIngestionHealth } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
+
+vi.mock('../../../../src/database/redis', async (importActual) => ({
+  ...(await importActual<typeof import('../../../../src/database/redis')>()),
+  redisGetIngestionLogHistory: vi.fn(),
+}));
 
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
@@ -239,41 +245,54 @@ describe('isRuntimeCheckEnabled', () => {
     expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
   });
 
-  it('should be true for feeds and syncs, whose last execution is checked', () => {
-    expect(isRuntimeCheckEnabled(FEED, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
-    expect(isRuntimeCheckEnabled(SYNC, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
+  it('should be true for feeds and syncs whose last execution failed: the details of the failure are read', () => {
+    expect(isRuntimeCheckEnabled({ ...FEED, last_execution_status: 'error' }, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
+    expect(isRuntimeCheckEnabled({ ...SYNC, last_execution_status: 'error' }, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
+  });
+
+  it('should be false for feeds and syncs whose last execution did not fail: nothing to read', () => {
+    expect(isRuntimeCheckEnabled({ ...FEED, last_execution_status: 'success' }, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
+    expect(isRuntimeCheckEnabled(FEED, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
+    expect(isRuntimeCheckEnabled(SYNC, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
   });
 });
 
 describe('execution failed check', () => {
   const NOT_FOUND = { http_status: 404, http_status_text: 'Not Found', error_code: 'ERR_BAD_REQUEST' };
-  const FEEDS_AND_SYNC_OUTCOME_TIMESTAMP = Date.parse(EVALUATED_AT);
-  const failedWith = (meta?: Record<string, unknown>) => ({ ...CONTEXT, ...NOT_PINGING, runtimeData: { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: { timestamp: FEEDS_AND_SYNC_OUTCOME_TIMESTAMP, level: 'error' as const, meta } } });
-  const messageOf = (meta?: Record<string, unknown>, ingestor = FEED) => {
+  const FAILED_FEED = { ...FEED, last_execution_status: 'error' };
+  const FAILED_SYNC = { ...SYNC, last_execution_status: 'error' };
+  // The details of the failure, read from the ingestion logs: absent when they hold none
+  const failedWith = (meta?: Record<string, unknown>) => ({ ...CONTEXT, ...NOT_PINGING, runtimeData: meta ? { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: meta } : {} });
+  const messageOf = (meta?: Record<string, unknown>, ingestor = FAILED_FEED) => {
     return toGraphqlHealthChecks(computeIngestionHealthChecks(ingestor, failedWith(meta)), ingestor.entity_type)[0]?.health_check_message;
   };
 
   it('should flag a feed or sync whose last execution failed, with the details of the failure', () => {
-    expect(computeIngestionHealthChecks(FEED, failedWith(NOT_FOUND)))
+    expect(computeIngestionHealthChecks(FAILED_FEED, failedWith(NOT_FOUND)))
       .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: NOT_FOUND }]);
   });
 
+  it('should flag it without details when the logs hold none', () => {
+    expect(computeIngestionHealthChecks(FAILED_FEED, failedWith()))
+      .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: {} }]);
+  });
+
   it.each(['IngestionRss', 'IngestionCsv', 'IngestionJson', 'IngestionTaxii', 'Sync'])('should evaluate %s', (entityType) => {
-    expect(computeIngestionHealthChecks({ ...FEED, entity_type: entityType }, failedWith(NOT_FOUND))).toHaveLength(1);
+    expect(computeIngestionHealthChecks({ ...FAILED_FEED, entity_type: entityType }, failedWith(NOT_FOUND))).toHaveLength(1);
   });
 
   it.each(['IngestionTaxiiCollection', 'Connector'])('should not evaluate %s, not executed by the ingestion or sync manager', (entityType) => {
-    expect(computeIngestionHealthChecks({ ...FEED, entity_type: entityType }, failedWith(NOT_FOUND))).toEqual([]);
+    expect(computeIngestionHealthChecks({ ...FAILED_FEED, entity_type: entityType }, failedWith(NOT_FOUND))).toEqual([]);
   });
 
-  it('should not flag a feed or sync whose last execution succeeded, or that has no execution logged', () => {
-    const checksContext = { ...CONTEXT, ...NOT_PINGING };
-    expect(computeIngestionHealthChecks(FEED, { ...checksContext, runtimeData: { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: { timestamp: FEEDS_AND_SYNC_OUTCOME_TIMESTAMP, level: 'success' } } })).toEqual([]);
-    expect(computeIngestionHealthChecks(FEED, { ...checksContext, runtimeData: {} })).toEqual([]);
+  it('should not flag a feed or sync whose last execution succeeded, or never ran, whatever the logs hold', () => {
+    expect(computeIngestionHealthChecks({ ...FEED, last_execution_status: 'success' }, failedWith(NOT_FOUND))).toEqual([]);
+    expect(computeIngestionHealthChecks(FEED, failedWith(NOT_FOUND))).toEqual([]);
+    expect(computeIngestionHealthChecks({ ...FEED, last_execution_status: null }, failedWith(NOT_FOUND))).toEqual([]);
   });
 
   it('should give a critical status', () => {
-    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(FEED, failedWith(NOT_FOUND)), CONTEXT);
+    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(FAILED_FEED, failedWith(NOT_FOUND)), CONTEXT);
     expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
   });
 
@@ -289,8 +308,40 @@ describe('execution failed check', () => {
   });
 
   it('should name a sync in the message', () => {
-    expect(messageOf(NOT_FOUND, SYNC)).toBe('Sync execution failed: HTTP 404 Not Found');
-    expect(messageOf(undefined, SYNC)).toBe('Sync execution failed');
+    expect(messageOf(NOT_FOUND, FAILED_SYNC)).toBe('Sync execution failed: HTTP 404 Not Found');
+    expect(messageOf(undefined, FAILED_SYNC)).toBe('Sync execution failed');
+  });
+});
+
+describe('execution failed check details', () => {
+  const readDetails = HEALTH_CHECK_REGISTRY[HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED].getRuntimeData;
+  const entry = (level: IngestionLogEntry['level'], meta: Record<string, unknown> = {}): IngestionLogEntry => (
+    { timestamp: 1, level, type: 'rss', identifier: 'feed', message: 'm', meta }
+  );
+  const historiesOf = (histories: Record<string, IngestionLogEntry[]>) => {
+    vi.mocked(redisGetIngestionLogHistory).mockImplementation(async (id: string) => histories[id] ?? []);
+  };
+
+  it('should read the details of the last outcome when it is a failure, skipping the progress entries', async () => {
+    // Most recent first
+    historiesOf({ failed: [entry('info'), entry('warn'), entry('error', { http_status: 404 }), entry('error', { http_status: 500 })] });
+    expect(await readDetails(['failed'])).toEqual(new Map([['failed', { http_status: 404 }]]));
+  });
+
+  it('should omit a feed whose last outcome is a success, even when an older failure is still logged', async () => {
+    historiesOf({ recovered: [entry('info'), entry('success'), entry('error', { http_status: 404 })] });
+    expect((await readDetails(['recovered'])).has('recovered')).toBe(false);
+  });
+
+  it('should omit a feed whose logs hold no outcome, or no log at all: the failure is reported without details', async () => {
+    historiesOf({ progress: [entry('info'), entry('warn')] });
+    const details = await readDetails(['progress', 'empty']);
+    expect(details.size).toBe(0);
+  });
+
+  it('should not hide a read failure', async () => {
+    vi.mocked(redisGetIngestionLogHistory).mockRejectedValue(new Error('redis unavailable'));
+    await expect(readDetails(['failed'])).rejects.toThrow('redis unavailable');
   });
 });
 

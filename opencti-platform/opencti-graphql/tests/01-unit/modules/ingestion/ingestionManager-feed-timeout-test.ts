@@ -322,8 +322,7 @@ describe('Ingestion manager feed timeout behavior', () => {
 
     await expect(rssExecutor({} as any, new TurndownService())).resolves.toBeDefined();
 
-    // The success logger forwards its options: none for a feed, whose outcome is not retried by its caller
-    expect(redisPushIngestionLogMock).toHaveBeenCalledWith('internal--ok', expect.objectContaining({ level: 'success' }), undefined);
+    expect(redisPushIngestionLogMock).toHaveBeenCalledWith('internal--ok', expect.objectContaining({ level: 'success' }));
     expect(redisPushIngestionLogMock).not.toHaveBeenCalledWith('internal--ok', expect.objectContaining({ level: 'error' }));
     expect(patchRssIngestionMock).not.toHaveBeenCalledWith(
       expect.anything(),
