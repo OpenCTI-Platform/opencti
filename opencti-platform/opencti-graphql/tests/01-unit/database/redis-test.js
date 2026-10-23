@@ -179,3 +179,12 @@ describe('removeResolvedRefs', () => {
     expect(removeResolvedRefs(instance)).toEqual(instance);
   });
 });
+
+describe('Redis events', () => {
+  it('should publish only the ids of the user of an event', async () => {
+    const { eventUser } = await import('../../../src/database/redis');
+    const user = { id: 'user-id', internal_id: 'user-id', name: 'connector', capabilities: [{ name: 'KNOWLEDGE' }], allowed_marking: [{ id: 'm' }] };
+    expect(eventUser(user)).toEqual({ id: 'user-id', internal_id: 'user-id' });
+    expect(eventUser(undefined)).toBeUndefined();
+  });
+});

@@ -336,6 +336,10 @@ export const publishCacheResetEvent = async (entityType: string) => {
   await getClientPubSub().publish(CACHE_RESET_TOPIC, { entityType });
 };
 
+// The user of an event as its subscribers read it (they compare its id): not the whole user with its capabilities,
+// markings and groups, tens of KB serialized and parsed again for every event
+export const eventUser = (user: AuthUser | undefined) => (user ? { id: user.id, internal_id: user.internal_id } : user);
+
 /* v8 ignore next */
 export const notify = async (topic: string, instance: any, user: AuthUser) => {
   // Instance can be empty if user is currently looking for a deleted instance
@@ -351,7 +355,7 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     // Direct refresh the current instance cache
     await refreshLocalCacheForEntity(topic, data as unknown as BasicStoreCommon);
     // Dispatch the event for cluster refresh
-    await getClientPubSub().publish(topic, { instance: data, user });
+    await getClientPubSub().publish(topic, { instance: data, user: eventUser(user) });
   }
   return instance;
 };
