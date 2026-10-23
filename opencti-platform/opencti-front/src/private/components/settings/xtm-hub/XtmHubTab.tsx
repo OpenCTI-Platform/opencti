@@ -7,6 +7,7 @@ import ConfirmationDialog from './ConfirmationDialog';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useExternalTab from './useExternalTab';
+import { getXtmHubOrigin } from '../../../../utils/xtm-hub-client';
 import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
@@ -164,6 +165,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const { openTab, closeTab, focusTab } = useExternalTab({
     url: isRegistered ? unregistrationUrl : registrationUrl,
     tabName: isRegistered ? 'xtmhub-unregistration' : 'xtmhub-registration',
+    expectedOrigin: getXtmHubOrigin(registrationHubUrl),
     onMessage: handleTabMessage,
     onClosingTab: handleClosingTab,
   });
