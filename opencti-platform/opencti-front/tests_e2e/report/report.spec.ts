@@ -240,7 +240,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   // endregion
 
   await reportDetailsPage.getEditButton().click();
-  await reportForm.publicationDateField.fill('2023-12-25 18:00 PM');
+  await reportForm.publicationDateField.fill('2023-12-25 06:00:00 PM');
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
   publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'December 25, 2023');

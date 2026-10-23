@@ -37,19 +37,34 @@ export default class DateFieldPageModel {
   }
 
   /**
-   * Types each part of the input ("2023-12-05 12:00 AM": 2023, 12, 05, 12, 00, AM) in its own
-   * section, in the order of the field's format.
+   * Enters each part of the input ("2023-12-05 12:00 AM": 2023, 12, 05, 12, 00, AM) in its own
+   * section, in the order of the field's format, from an empty field.
    *
-   * A full section moves to the next one by itself, but only once the field has rendered: on a
-   * slow runner the next keys still reach the full section, which starts over (a year typed as
-   * "2023-12-05" ends as 0005). Clicking each section first does not depend on that timing.
+   * Typed keys are not reliable here. A full section moves to the next one only once the field
+   * has rendered, so on a slow runner the next keys still reached it and it started over (a year
+   * typed as "2023-12-05" ended as 0005). A field showing an error also keeps the keys typed
+   * before it lost the focus, and the first keys typed in a section after that were lost (2023
+   * became 0023). Each part is pasted instead: the field sets a selected section to a pasted value
+   * in one event, and forgets the keys typed before.
+   *
+   * Clearing leaves every section selected, edited as one element with no section in it: a click
+   * on the field gives them back. They are then targeted by their index, since a spinbutton role
+   * is not always exposed.
    */
   async fill(input: string) {
     const parts = input.split(/[^0-9a-z]+/i).filter((part) => part.length > 0);
-    const sections = this.fieldLocator.getByRole('spinbutton');
+    await this.clear();
+    await this.fieldLocator.click();
     for (const [index, part] of parts.entries()) {
-      await sections.nth(index).click();
-      await this.page.keyboard.type(part, { delay: 100 });
+      const section = this.fieldLocator.locator(
+        `.MuiPickersSectionList-section[data-sectionindex="${index}"] .MuiPickersSectionList-sectionContent`,
+      );
+      await section.click();
+      await section.evaluate((element, text) => {
+        const clipboardData = new DataTransfer();
+        clipboardData.setData('text', text);
+        element.dispatchEvent(new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true }));
+      }, part);
     }
   }
 

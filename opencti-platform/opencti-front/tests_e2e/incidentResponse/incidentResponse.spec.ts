@@ -199,7 +199,7 @@ test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
   await incidentResponseUpdateForm.getCloseButton().click();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseUpdateForm.incidentDateField.fill('2023-12-25 18:00 PM');
+  await incidentResponseUpdateForm.incidentDateField.fill('2023-12-25 06:00 PM');
   await incidentResponseUpdateForm.getUpdateTitle().click();
   await incidentResponseUpdateForm.getCloseButton().click();
   originalCreationDate = incidentResponseDetailsPage.getTextForHeading('Original creation date', 'December 25, 2023');
