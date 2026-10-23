@@ -10,7 +10,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { resolveIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-settings';
 import type { BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS } from '../utils/access';
+import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS, isUserHasCapability } from '../utils/access';
 import { now } from '../utils/format';
 import type { CachedConnector } from '../modules/connector/connector-types';
 import {
@@ -191,7 +191,9 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     }
     const internal = userId in INTERNAL_USERS;
     const authUser = internal ? INTERNAL_USERS[userId] : users.get(userId); // Ensure userID exist in user list or INTERNAL_USERS
-    return authUser ? { internal, user_service_account: authUser.user_service_account === true } : undefined;
+    return authUser
+      ? { internal, user_service_account: authUser.user_service_account === true, hasCapability: (capability) => isUserHasCapability(authUser, capability) }
+      : undefined;
   };
   const settings = await getEntityFromCache<BasicStoreSettings>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_SETTINGS);
   const { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks } = resolveIngestionHealthSettings(settings);
