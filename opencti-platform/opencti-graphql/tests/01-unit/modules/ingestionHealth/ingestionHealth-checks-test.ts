@@ -19,6 +19,7 @@ import {
   HEALTH_CHECK_USER_MISSING,
   HEALTH_CHECK_USER_MISSING_CAPABILITY,
   HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
+  type HealthCheckCode,
   type HealthCheckIngestor,
   type HealthCheckUser,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
