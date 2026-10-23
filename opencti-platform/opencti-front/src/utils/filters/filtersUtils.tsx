@@ -254,7 +254,7 @@ const customFieldStixFilterKeysQuery = graphql`
  * Returns an empty array while loading, or if the CUSTOM_FIELDS feature flag is disabled
  * (the underlying query field would otherwise throw server-side).
  */
-const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
+export const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
   const { isFeatureEnable } = useHelper();
   const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
   const [customFieldFilterKeys, setCustomFieldFilterKeys] = useState<string[]>([]);
