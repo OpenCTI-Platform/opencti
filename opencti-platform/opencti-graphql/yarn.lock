@@ -10379,7 +10379,7 @@ __metadata:
     turndown: "npm:7.2.4"
     typescript: "npm:6.0.3"
     typescript-eslint: "npm:8.71.2"
-    undici: "npm:8.12.2"
+    undici: "npm:8.12.3"
     unzipper: "npm:0.12.5"
     uuid: "npm:14.0.3"
     uuid-time: "npm:1.0.0"
@@ -12711,10 +12711,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:8.12.2":
-  version: 8.12.2
-  resolution: "undici@npm:8.12.2"
-  checksum: 10c0/25b0e0a69585b2b2e2678fdcd07942bbe15b14c6686d496712b0ee37ce15753af90ab7335ee42c8e65ec60b72bf3a21adc72bbabf86c1eaca74f27a3779532de
+"undici@npm:8.12.3":
+  version: 8.12.3
+  resolution: "undici@npm:8.12.3"
+  checksum: 10c0/714919e62b4160eea195fb35c7f5c4907235741e47bfde8a014ac58f6d24df13434e23400d7f48e2c455fd2b259d27f07fce514f04a5b4e99936ba62cbc4bb71
   languageName: node
   linkType: hard
 
