@@ -2,7 +2,7 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Formik, Form } from 'formik';
 import Button from '@common/button/Button';
 import FiligranIcon from '@components/common/FiligranIcon';

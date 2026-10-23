@@ -1,7 +1,7 @@
 import Grid from '@mui/material/Grid';
 import CardHeader from '@mui/material/CardHeader';
 import Avatar from '@mui/material/Avatar';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ItemIcon from '../ItemIcon';
 import { resolveLink } from '../../utils/Entity';
 import { useFormatter } from '../i18n';

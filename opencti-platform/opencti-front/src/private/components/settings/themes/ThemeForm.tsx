@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
 import { Stack, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { Field, Form, useFormikContext } from 'formik';
 import { FunctionComponent, useRef, useState } from 'react';

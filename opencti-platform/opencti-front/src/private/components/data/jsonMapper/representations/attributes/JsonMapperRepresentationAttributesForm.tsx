@@ -9,7 +9,7 @@ import {
   JsonMapperRepresentationAttributesForm_allSchemaAttributes$key,
 } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useJsonMappersData } from '../../jsonMappers.data';
 import { useFormatter } from '../../../../../../components/i18n';
 import TextField from '../../../../../../components/TextField';

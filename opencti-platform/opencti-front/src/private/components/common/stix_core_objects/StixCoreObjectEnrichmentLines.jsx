@@ -12,7 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
 import { ListItemButton } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';

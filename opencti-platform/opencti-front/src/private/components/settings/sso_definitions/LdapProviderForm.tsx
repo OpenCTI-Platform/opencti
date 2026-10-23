@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Typography from '@mui/material/Typography';
 import Accordion from '@mui/material/Accordion';

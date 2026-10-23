@@ -10,7 +10,7 @@ import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMa
 import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;

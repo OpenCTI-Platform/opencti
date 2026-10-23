@@ -1,5 +1,5 @@
 import { SimplePaletteColorOptions } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, MutableRefObject, useEffect, useRef } from 'react';
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';

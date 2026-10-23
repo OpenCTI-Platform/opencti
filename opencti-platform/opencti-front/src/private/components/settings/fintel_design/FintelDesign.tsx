@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router';
 import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
 import Grid from '@mui/material/Grid';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
 import FintelDesignFormDrawer, { FintelDesignEditData } from '@components/settings/fintel_design/FintelDesignFormDrawer';

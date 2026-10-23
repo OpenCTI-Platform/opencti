@@ -1,6 +1,6 @@
 import { Handle, NodeProps, Position, useReactFlow } from 'reactflow';
 import { useFormatter } from '../../../../../../components/i18n';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { CommentMode, HIGHLIGHT_LABEL_SHADOW, NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';

@@ -1,7 +1,7 @@
 import Markdown, { Options as MarkdownProps, defaultUrlTransform } from 'react-markdown';
 import remarkParse from 'remark-parse';
 import remarkFlexibleMarkers from 'remark-flexible-markers';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { FunctionComponent, SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import remarkGfm from 'remark-gfm';
 import { APP_BASE_PATH } from '../../relay/environment';

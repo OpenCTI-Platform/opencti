@@ -13,7 +13,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FunctionComponent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { EMPTY_VALUE } from '../../../../utils/String';

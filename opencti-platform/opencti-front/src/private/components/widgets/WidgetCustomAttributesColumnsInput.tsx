@@ -5,7 +5,7 @@ import Alert from '@mui/material/Alert';
 import { Checkbox, IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import type { Theme } from 'src/components/Theme';
 import { useFormatter } from 'src/components/i18n';

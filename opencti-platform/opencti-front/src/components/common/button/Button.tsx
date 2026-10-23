@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
 import { Button as LibButton } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { ButtonColorKey, ButtonIntent, ButtonSize, GradientVariant } from './Button.types';
 import { getColorDefinitions, getGradientColors, getSizeConfig } from './Button.utils';
 import type { Theme } from '../../Theme';
