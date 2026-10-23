@@ -117,6 +117,8 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                             : remoteNode.name
                         }
                         secondary={t(`entity_${remoteNode.entity_type}`)}
+                        // Long names (hashes, urls...) are cut with an ellipsis instead of overflowing the card
+                        slotProps={{ primary: { noWrap: true } }}
                       />
                     </ListItemButton>
                   </ListItem>

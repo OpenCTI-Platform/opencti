@@ -12,8 +12,7 @@ import {
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import ContainerStixCoreObjectsMapping from '@components/common/containers/ContainerStixCoreObjectsMapping';
-import { ContainerAddStixCoreObjectsLine_node$data } from '@components/common/containers/__generated__/ContainerAddStixCoreObjectsLine_node.graphql';
-import ContainerAddStixCoreObjects from '@components/common/containers/ContainerAddStixCoreObjects';
+import ContainerAddStixCoreObjects, { ContainerAddStixCoreObjectsLine } from '@components/common/containers/ContainerAddStixCoreObjects';
 import {
   ContainerMappingContent_container$data,
   ContainerMappingContent_container$key,
@@ -202,7 +201,7 @@ const ContainerMappingContentComponent: FunctionComponent<
   const LOCAL_STORAGE_KEY = `container-${containerData.id}-mapping`;
   const {
     paginationOptions,
-  } = usePaginationLocalStorage(
+  } = usePaginationLocalStorage<Record<string, unknown>>(
     LOCAL_STORAGE_KEY,
     {
       id: containerData.id,
@@ -391,7 +390,7 @@ const ContainerMappingContentComponent: FunctionComponent<
     }
   };
 
-  const addMapping = (stixCoreObject: ContainerAddStixCoreObjectsLine_node$data) => {
+  const addMapping = (stixCoreObject: ContainerAddStixCoreObjectsLine) => {
     const newMappingData = {
       ...contentMappingData,
       [selectedText.toLowerCase()]: stixCoreObject.standard_id,
@@ -517,7 +516,7 @@ const ContainerMappingContentComponent: FunctionComponent<
         paginationOptions={paginationOptions}
         onAdd={addMapping}
         enableReferences={enableReferences}
-        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c } }))}
+        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c as string } }))}
       />
     </>
   );
