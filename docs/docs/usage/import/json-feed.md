@@ -1,127 +1,146 @@
 # JSON Feeds
 
-JSON feed ingester enables users to import any Web JSON API.
+JSON Feeds periodically call a JSON web API and convert its response to STIX objects with a JSON mapper. They support simple endpoints, stateful pagination, custom headers, and GET or POST requests.
 
-<a id="best-practices-section"></a>
+## Prerequisites and permissions
+
+Creating and managing JSON Feeds requires **Manage ingestion**. Create a compatible [JSON mapper](../../administration/json-mappers.md) before configuring the feed; JSON Feeds do not provide an inline mapper editor.
+
+## Create a JSON Feed
+
+1. Go to **Integrations > Available**.
+2. Select **Built-in ingestion**, then find **JSON Feed**.
+3. Select **Create**.
+4. Enter a name, schedule, URL, and HTTP verb.
+5. Configure the request body, headers, pagination, and authentication as required.
+6. Select the JSON mapper and creator.
+7. Select **Verify** to test the request and mapping.
+8. After a successful test, select **Create**, then start the feed from **Integrations > Deployed**.
+
+## Basic configuration
+
+| Setting | Description |
+| --- | --- |
+| Name | Required name displayed for the integration. |
+| Description | Optional purpose or source information. |
+| Schedule period | Platform default of approximately 30 seconds, or 5, 15, or 30 minutes; 1, 6, or 12 hours; or 24 hours. |
+| HTTP JSON URL | Required API URL. It can reference pagination variables. |
+| HTTP VERB | GET by default, or POST. |
+| HTTP BODY POST | Request body displayed for POST requests. It can reference pagination variables. |
+| User responsible for data creation | Local creator assigned to imported objects. Empty uses System. |
+| JSON mapper | Required mapper used to convert the response. |
+| Marking definition levels | Displayed when the mapper lets the ingestion user choose markings. |
+| Verify SSL certificate | Validates the source certificate. Enabled by default. |
+
+Unlike OpenCTI Stream, TAXII Feed, RSS Feed, and CSV Feed creation, JSON Feed does not automatically create a service account.
+
+## Configure authentication
+
+| Mode | Required values |
+| --- | --- |
+| None | No credentials |
+| Basic | Username and password |
+| Bearer token | Token |
+| Client certificate | Base64-encoded certificate, private key, and certificate authority certificate |
+
+Authentication defaults to None.
+
+## Configure pagination
+
+Use variables in the URL, POST body, or headers to carry state between requests. A variable named `offset`, for example, can be referenced as `${offset}`:
+
+```text
+https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=20&startIndex=${offset}
+```
+
+For a POST request:
+
+```json
+{
+  "page": "${offset}"
+}
+```
+
+Each query attribute defines how OpenCTI obtains and updates a variable:
+
+| Setting | Description |
+| --- | --- |
+| Resolve from | Read the value from response Data or Header. |
+| Exposed attribute to | Insert the next value into the request Body, Query parameter, or Header. |
+| Resolve operation | Use the resolved Data or its Count. |
+| State operation | Replace the previous value or add to it with Sum. |
+| Get from path | JSON path used to extract the response value, such as `$.vulnerabilities`. |
+| To attribute name | Variable name referenced by the next request. |
+| Default value | Initial value before the first request. |
+
+![JSON Feed pagination configuration](../assets/json-feed-paginated.png)
+
+### Sub-pagination
+
+Enable **Sub pagination** when the response provides another URI that must be followed before advancing the main state, as with some Trino APIs.
+
+Configure:
+
+- Sub-pagination HTTP verb: GET or POST.
+- Attribute path used to retrieve the next URI.
+
+Sub-pagination is disabled by default.
+
+![JSON Feed sub-pagination configuration](../assets/json-feed-sub.png)
+
+## Configure headers
+
+Add request headers for API-specific values or pagination state. Do not duplicate credentials in custom headers when an authentication mode already supplies them.
+
+![JSON Feed custom headers](../assets/json-feed-headers.png)
+
+## Verify the feed
+
+Verification requires a URL and JSON mapper. It retrieves up to the first 50 response items and displays:
+
+- Mapped entity and relationship counts.
+- The computed pagination state.
+- Generated STIX objects.
+- Request or mapping errors.
+
+The feed can be created only when verification returns at least one entity. Updates, duplicates, and imports must also pass verification.
+
+![JSON Feed verification result](../assets/json-feed-verify.png)
+
+## Manage and monitor a JSON Feed
+
+The detail action menu provides:
+
+- **Start** and **Stop**
+- **Update**
+- **Duplicate**
+- **Export**
+- **Reset state**
+- **Delete**
+
+Duplication opens a prefilled `<name> - copy` configuration. Reset state clears the stored pagination state, causing processing to resume from its configured defaults.
+
+The detail page provides the feed overview and technical connector Works when the user can access them. JSON Feeds do not have an ingestion Logs tab.
+
+## Import and export
+
+Export downloads a dated JSON configuration containing the feed and embedded mapper settings.
+
+To import:
+
+1. Open **Integrations > Available** and find **JSON Feed**.
+2. Select the file-import action and choose the JSON configuration.
+3. Review the imported mapper and request settings.
+4. Re-enter credentials and choose the local creator and markings.
+5. Verify, create, and start the feed.
+
+JSON Feed supports configuration-file import but not **Import from Hub**.
+
 ## Best practices
 
-In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
-
-Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
-
-1. Create a dedicated user for each source: Generate a user specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the user to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
-2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
-
-By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
-
-## Configuration
-
-Configuring a JSON feed will be simple or complex depending on the needs of pagination.
-So we will show by example of its different and how to configure it in the two cases.
-
-### Simple API
-
-Here's a step-by-step guide to configure JSON ingesters:
-
-1. Schedule period: As the API is not paginated, its recommended to configure a longer polling period
-2. HTTP JSON URL: Provide the URL of the JSON API from which items will be imported.
-3. HTTP Verb: Provide the type of verb that will be GET by default.
-4. JSON Mappers: Choose the JSON mapper to be used to import the data.
-5. Authentication type (if necessary): Enter the authentication type.
-
-### Paginated API
-
-For paginated APIs, it's more difficult to configure the JSON feed. You have more elements.
-
-#### Verb and variables
-
-You need to start to configure the verb to use and the variables.
-
-**GET**
-
-When you use a GET API, a majority of cases will use query parameters to be able to setup variables for the pagination.
-For example lets take an api where the get command need to specify the page number to consume.
-There is a part of the URI that need to be dynamic.
-
-```https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=20&startIndex=$offset```
-
-You can see in this example that the page query parameter need to be associated with the pagination.
-
-So to be able to do this, you have to configure this parameter as a variable, here **${offset}**
-
-**POST**
-
-When you use a POST API, you need to specify the body of the post. Depending on the API it could be JSON or any other body content.
-
-Like the previous example in the get, you can specify variables in the body configuration.
-
-``` { "page": "$offset" }```
-
-or for example this kind of command for a Trino query that define a $created variable.
-
-```SELECT * FROM observables WHERE created_at > TIMESTAMP '$created' ORDER BY created_at ASC LIMIT 10```
-
-#### Query attributes
-
-The query attribute will be the definition of how to setup the required variable.
-
-Let's take the previous example with the GET uri.
-
-```https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=20&startIndex=$offset```
-
-For the uri of the GET example, we need to configure the **offset** variables.
-
-![Data import and workbenches panel](../assets/json-feed-paginated.png)
-Lets describe each configuration:
-- Resolve from: **Data**
-
-Where the variable will be parsed from. You can choose between Header and Data.
-
-- Exposed attribute to: **Query parameter**
-
-How the attribute will be exposed in the next http call. You can choose between Body / Query parameter and Header
-
-- Resolve operation: **Count**
-
-Apply an operation on the resolved data. You can choose between Data and Count.
-
-- State operation: **Sum**
-
-How to compute the state for the next execution. You can choose between Replace and Sum.
-
-- Get from path: **$.vulnerabilities**
-
-How to extract the data from the data result. 
-
-- To attribute name: **offset**
-
-The name of the attribute that will contain the value and so **to use in the query / body or headers**
-
-- Default value: **0**
-
-The default value for the target attribute.
-
-#### Headers
-
-If your API require some specific headers, you can simply add some.
-
-![JSON feed headers](../assets/json-feed-headers.png)
-
-#### Sub pagination
-
-This one is a very specific option that will be used in some really rare use case. For example Trino is a system that require sub pagination to get the data.
-
-![JSON sub pagination option](../assets/json-feed-sub.png)
-
-#### Mapper and verify
-
-With the correct mapper configured you can click on the verify button to get an idea of what you can get.
-
-![JSON feed verify](../assets/json-feed-verify.png)
-
-In the result you will be able to see the result of the query parameters computing (state) and the data mapped to STIX (objects). 
-
-The state is a json object that represent information that will be injected in the parameters / body or headers for the next execution.
-
-You need to be careful and really take the time to adapt your configuration to obtain the expected mapping.
-
+- Test pagination with a small response before enabling a short schedule.
+- Use explicit default values for every pagination variable.
+- Choose a dedicated creator rather than System when source traceability is important.
+- Keep SSL verification enabled for trusted production APIs.
+- Review the computed state during verification and before resetting a running feed.
+- Update the mapper when the upstream response structure changes.
