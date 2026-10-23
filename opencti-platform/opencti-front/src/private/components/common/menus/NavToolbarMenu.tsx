@@ -14,6 +14,7 @@ import { useSettingsMessagesBannerHeight } from '../../settings/settings_message
 import { Theme } from '../../../../components/Theme';
 import { useTheme } from '@mui/styles';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
+import useVisibleEntries from './useVisibleEntries';
 
 const StyledDrawer = styled(Drawer)(() => ({
   '& .MuiDrawer-paper': {
@@ -36,7 +37,18 @@ export interface MenuEntry {
   path: string;
   label: string;
   icon?: ReactElement;
+  /** Visible for everyone, with an EE chip (the page itself shows the EE lock). */
   isEE?: boolean;
+  /** Entry hidden unless the platform has a valid Enterprise Edition licence. */
+  requiresEE?: boolean;
+  /** Extra words matching this entry in the main search (aliases, CTI jargon...). */
+  keywords?: string[];
+  /** Entry hidden if the user has none of these capabilities: ANY one is enough (never "all of"). */
+  requiredCapabilities?: string[];
+  /** Also granted if the user has one of these capabilities in a draft (see `useGranted` options). */
+  capabilitiesInDraft?: string[];
+  /** Entry hidden if this feature flag is off. */
+  featureFlag?: string;
 }
 
 const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
@@ -70,7 +82,8 @@ const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ child
   return content;
 };
 
-const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }) => {
+const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries: allEntries }) => {
+  const entries = useVisibleEntries(allEntries);
   const { t_i18n } = useFormatter();
   const location = useLocation();
   const { bannerSettings } = useAuth();

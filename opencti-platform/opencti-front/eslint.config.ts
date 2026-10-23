@@ -210,6 +210,27 @@ export default defineConfig([
     },
   },
 
+  // `*.entries.ts(x)` files are imported eagerly by the pages search (import.meta.glob), so any
+  // component or module-heavy import in them drags that code into the main bundle. Whitelist only.
+  {
+    files: ['**/*.entries.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              // Regex, not gitignore globs: a glob cannot re-include a path whose parent dir is matched.
+              regex: '^(?!(react|mdi-material-ui|@mui/icons-material|(\\.{1,2}/)+utils/hooks/capabilities)$)',
+              allowTypeImports: true,
+              message: '*.entries.ts(x) are eagerly loaded by the pages search: only type imports, capability constants (utils/hooks/capabilities) and icons are allowed.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // Playwright fixtures and the maintenance scripts run in Node, not in a browser, so
   // they see Node's globals rather than the browser ones the app code is checked against.
   {

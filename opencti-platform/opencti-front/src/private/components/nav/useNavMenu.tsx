@@ -106,6 +106,8 @@ export interface NavSubItem {
   exact?: boolean;
   type?: string;
   granted?: boolean;
+  /** Extra words matching this entry in the main pages search. */
+  keywords?: string[];
 }
 
 export interface NavItem {
@@ -308,7 +310,7 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'Malware', link: '/dashboard/arsenal/malwares', label: t_i18n('Malwares'), icon: <Biohazard fontSize="small" /> },
             { type: 'Channel', link: '/dashboard/arsenal/channels', label: t_i18n('Channels'), icon: <SurroundSoundOutlined fontSize="small" /> },
             { type: 'Tool', link: '/dashboard/arsenal/tools', label: t_i18n('Tools'), icon: <WebAssetOutlined fontSize="small" /> },
-            { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: t_i18n('Vulnerabilities'), icon: <BugReportOutlined fontSize="small" /> },
+            { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: t_i18n('Vulnerabilities'), keywords: ['cve', 'cvss', 'exploit', 'weakness'], icon: <BugReportOutlined fontSize="small" /> },
           ],
         },
         !hideTechniques && {
