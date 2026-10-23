@@ -238,6 +238,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
             }}
           >
             <SearchInput
+              data-testid="integrations-search-input"
               value={searchInput}
               onSubmit={handleSearchInputSubmit}
               onChange={handleSearchInputChange}

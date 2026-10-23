@@ -21,6 +21,7 @@ const PlaceholderNode = ({ id }: NodeProps) => {
       />
       <Chip
         key={id}
+        data-testid={`workflow-placeholder-node-${id}`}
         style={{
           fontSize: 12,
           height: NODE_SIZE.height,
