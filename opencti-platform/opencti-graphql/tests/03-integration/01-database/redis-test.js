@@ -414,6 +414,22 @@ describe('Redis ingestion logs', () => {
     expect(outcomes.has(feedId)).toBe(false);
   });
 
+  it('should omit an outcome that does not parse and still return the others', async () => {
+    const corruptFeedId = `ingestion-${uuid()}`;
+    const feedId = `ingestion-${uuid()}`;
+    await getClientBase().hset('feeds_and_sync_last_outcomes', corruptFeedId, 'this is not json');
+    await redisPushIngestionLog(feedId, { level: 'error', type: 'taxii', identifier: feedId, message: 'Feed fetch failed', meta: {} });
+
+    try {
+      const outcomes = await redisGetFeedsAndSyncLastOutcomes([corruptFeedId, feedId]);
+      expect(outcomes.has(corruptFeedId)).toBe(false);
+      expect(outcomes.get(feedId)?.level).toBe('error');
+    } finally {
+      await redisDeleteIngestionLogHistory(corruptFeedId);
+      await redisDeleteIngestionLogHistory(feedId);
+    }
+  });
+
   it('should delete ingestion logs history', async () => {
     const feedId = `ingestion-${uuid()}`;
     await redisDeleteIngestionLogHistory(feedId);

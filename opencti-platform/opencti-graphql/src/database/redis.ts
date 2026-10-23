@@ -1014,6 +1014,7 @@ export const redisGetIngestionLogHistory = async (feedId: string): Promise<Inges
 };
 
 // Feeds without any outcome recorded are omitted
+// An outcome that does not parse is omitted too: one corrupt entry must not fail the read of all the others
 export const redisGetFeedsAndSyncLastOutcomes = async (feedIds: string[]): Promise<Map<string, FeedsAndSyncLastOutcome>> => {
   const outcomes = new Map<string, FeedsAndSyncLastOutcome>();
   if (feedIds.length === 0) {
@@ -1022,7 +1023,11 @@ export const redisGetFeedsAndSyncLastOutcomes = async (feedIds: string[]): Promi
   const rawOutcomes = await getClientBase().hmget(FEEDS_AND_SYNC_LAST_OUTCOMES_KEY, ...feedIds);
   rawOutcomes.forEach((rawOutcome, index) => {
     if (rawOutcome) {
-      outcomes.set(feedIds[index], JSON.parse(rawOutcome) as FeedsAndSyncLastOutcome);
+      try {
+        outcomes.set(feedIds[index], JSON.parse(rawOutcome) as FeedsAndSyncLastOutcome);
+      } catch {
+        // Ignored: omitted like a feed without outcome
+      }
     }
   });
   return outcomes;
