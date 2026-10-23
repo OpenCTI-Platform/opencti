@@ -31,7 +31,6 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { FeedCreationAllTypesQuery$data } from '@components/data/feeds/__generated__/FeedCreationAllTypesQuery.graphql';
 import { FeedAttributeMappingInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
@@ -67,7 +66,7 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import useAuth, { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { getRelationshipTypesForEntityType, getTargetTypesForRelationship } from '../../../../utils/Relation';
 
 export const feedCreationAllTypesQuery = graphql`
@@ -90,44 +89,12 @@ export const feedCreationAllTypesQuery = graphql`
         }
     }
 `;
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme: Theme) => ({
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  container: {
-    padding: '10px 28px 20px 0',
-  },
-  step: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.background.accent}`,
-    borderRadius: 4,
-    display: 'flex',
-  },
-  stepCloseButton: {
-    position: 'absolute',
-    // Offsets resolve against the padding box; the 1px border sits outside it.
-    top: -1,
-    right: -29,
-  },
-  buttonAdd: {
-    width: '100%',
-  },
-  alert: {
-    width: '100%',
-    marginTop: 20,
-  },
-  message: {
-    width: '100%',
-    // The library paints the focus ring outside the box; hidden clipped it.
-    overflow: 'visible',
-  },
-}));
+const StepCloseButton = styled(IconButton)({
+  position: 'absolute',
+  // Offsets resolve against the padding box; the 1px border sits outside it.
+  top: -1,
+  right: -29,
+});
 
 const feedCreationMutation = graphql`
     mutation FeedCreationMutation($input: FeedAddInput!) {
@@ -180,9 +147,8 @@ const CreateFeedControlledDial = (props: DrawerControlledDialProps) => (
 
 const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const { schema } = useAuth();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
@@ -499,7 +465,16 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                       />
                       <Alert
                         icon={false}
-                        classes={{ root: classes.alert, message: classes.message }}
+                        sx={{ width: '100%', marginTop: '20px' }}
+                        slotProps={{
+                          message: {
+                            sx: {
+                              width: '100%',
+                              // The library paints the focus ring outside the box; hidden clipped it.
+                              overflow: 'visible',
+                            },
+                          },
+                        }}
                         severity="warning"
                         variant="outlined"
                         style={{ position: 'relative' }}
@@ -620,8 +595,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         searchContext={{ entityTypes: selectedTypes }}
                       />
                       {selectedTypes.length > 0 && (
-                        <div
-                          className={classes.container}
+                        <Box
+                          sx={{ padding: '10px 28px 20px 0' }}
                           style={{ marginTop: 20 }}
                         >
                           {Object.keys(feedAttributes).map((i) => {
@@ -629,15 +604,26 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                               (m) => !!m?.relationship_type,
                             );
                             return (
-                              <div key={i} className={classes.step}>
-                                <IconButton
+                              <Box
+                                key={i}
+                                sx={{
+                                  position: 'relative',
+                                  width: '100%',
+                                  margin: '0 0 20px 0',
+                                  padding: '15px',
+                                  verticalAlign: 'middle',
+                                  border: `1px solid ${theme.palette.background.accent}`,
+                                  borderRadius: '4px',
+                                  display: 'flex',
+                                }}
+                              >
+                                <StepCloseButton
                                   disabled={feedAttributes.length === 1}
                                   aria-label="Delete"
-                                  className={classes.stepCloseButton}
                                   onClick={() => handleRemoveAttribute(i)}
                                 >
                                   <CancelOutlined sx={{ fontSize: 16 }} />
-                                </IconButton>
+                                </StepCloseButton>
                                 <Box sx={{ width: '100%' }}>
                                   <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', mb: 2 }}>
                                     <Box sx={{ flex: 1 }}>
@@ -832,10 +818,10 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                     );
                                   })}
                                 </Box>
-                              </div>
+                              </Box>
                             );
                           })}
-                          <div className={classes.buttonAdd}>
+                          <Box sx={{ width: '100%' }}>
                             <IconButton
                               aria-label={t_i18n('Add')}
                               disabled={selectedTypes.length === 0}
@@ -846,8 +832,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                             >
                               <AddOutlined sx={{ fontSize: 16 }} />
                             </IconButton>
-                          </div>
-                        </div>
+                          </Box>
+                        </Box>
                       )}
                       <div className="clearfix" />
                       <FormButtonContainer>

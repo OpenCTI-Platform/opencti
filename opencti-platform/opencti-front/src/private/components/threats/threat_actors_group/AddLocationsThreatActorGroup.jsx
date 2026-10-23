@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '../../common/drawer/Drawer';
@@ -11,13 +9,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import LocationCreation from '../../common/location/LocationCreation';
 import AddLocationsThreatActorGroupLines, { addLocationsThreatActorGroupLinesQuery } from './AddLocationsThreatActorGroupLines';
 import { insertNode } from '../../../../utils/store';
-
-const styles = () => ({
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
-});
 
 class AddLocationsThreatActorGroup extends Component {
   constructor(props) {
@@ -106,11 +97,7 @@ class AddLocationsThreatActorGroup extends Component {
 AddLocationsThreatActorGroup.propTypes = {
   threatActorGroup: PropTypes.object,
   threatActorGroupLocations: PropTypes.array,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddLocationsThreatActorGroup);
+export default inject18n(AddLocationsThreatActorGroup);

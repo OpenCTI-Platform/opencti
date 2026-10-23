@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pipe, map, assoc } from 'ramda';
-import withTheme from '@mui/styles/withTheme';
+import { pipe, map, assoc } from 'ramda';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
@@ -583,7 +583,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-export default compose(
-  inject18n,
-  withTheme,
-)(StixDomainObjectTimeline);
+const StixDomainObjectTimelineWithTheme = (props) => {
+  const theme = useTheme();
+  return <StixDomainObjectTimeline {...props} theme={theme} />;
+};
+
+export default inject18n(StixDomainObjectTimelineWithTheme);

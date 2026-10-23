@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import { FileDelimitedOutline } from 'mdi-material-ui';
-import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import FeedPopover from './FeedPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -24,45 +23,29 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 40,
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  filtersItem: {
-    height: 40,
-    display: 'flex',
-    alignItems: 'center',
-    float: 'left',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
+const BodyItem = styled('div')({
+  height: 40,
+  display: 'flex',
+  alignItems: 'center',
+  fontSize: 13,
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+});
+
+const FiltersItem = styled('div')({
+  height: 40,
+  display: 'flex',
+  alignItems: 'center',
+  float: 'left',
+  paddingRight: 10,
 });
 
 class FeedLineLineComponent extends Component {
   render() {
-    const { classes, node, dataColumns, paginationOptions, t } = this.props;
+    const { node, dataColumns, paginationOptions, t } = this.props;
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
@@ -75,44 +58,39 @@ class FeedLineLineComponent extends Component {
         )}
       >
         <ListItemButton
-          classes={{ root: classes.item }}
+          sx={{ paddingLeft: '10px', height: 50 }}
           component="a"
           href={`/feeds/${node.id}`}
           target="_blank" // open in new tab
 
         >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
             <FileDelimitedOutline />
           </ListItemIcon>
           <ListItemText
             primary={(
               <>
-                <div
-                  className={classes.bodyItem}
+                <BodyItem
                   style={{ width: dataColumns.name.width }}
                 >
                   {node.name}
-                </div>
-                <div
-                  className={classes.bodyItem}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.feed_types.width }}
                 >
                   {node.feed_types.map((type) => t(`entity_${type}`)).join(', ')}
-                </div>
-                <div
-                  className={classes.bodyItem}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.rolling_time.width }}
                 >
                   <code>{node.rolling_time}</code>
-                </div>
-                <div
-                  className={classes.bodyItem}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.columns.width }}
                 >
                   {node.feed_attributes.map((n) => n.attribute).join(`${node.separator} `)}
-                </div>
-                <div
-                  className={classes.filtersItem}
+                </BodyItem>
+                <FiltersItem
                   style={{ width: dataColumns.filters.width }}
                 >
                   {isFilterGroupNotEmpty(filters)
@@ -124,7 +102,7 @@ class FeedLineLineComponent extends Component {
                         />
                       )
                     : EMPTY_VALUE}
-                </div>
+                </FiltersItem>
               </>
             )}
           />
@@ -139,7 +117,6 @@ FeedLineLineComponent.propTypes = {
   node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
-  classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
 };
@@ -169,21 +146,18 @@ const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
   `,
 });
 
-export const FeedLine = compose(
-  inject18n,
-  withStyles(styles),
-)(FeedLineFragment);
+export const FeedLine = inject18n(FeedLineFragment);
 
 class FeedDummyComponent extends Component {
   render() {
-    const { classes, dataColumns } = this.props;
+    const { dataColumns } = this.props;
     return (
       <ListItem
-        classes={{ root: classes.item }}
+        sx={{ paddingLeft: '10px', height: 50 }}
         divider={true}
-        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+        secondaryAction={<MoreVert />}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
           <Skeleton
             animation="wave"
             variant="circular"
@@ -194,8 +168,7 @@ class FeedDummyComponent extends Component {
         <ListItemText
           primary={(
             <>
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.name.width }}
               >
                 <Skeleton
@@ -204,9 +177,8 @@ class FeedDummyComponent extends Component {
                   width="90%"
                   height="50%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.feed_types.width }}
               >
                 <Skeleton
@@ -215,9 +187,8 @@ class FeedDummyComponent extends Component {
                   width="90%"
                   height="50%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.rolling_time.width }}
               >
                 <Skeleton
@@ -226,9 +197,8 @@ class FeedDummyComponent extends Component {
                   width="90%"
                   height="50%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.columns.width }}
               >
                 <Skeleton
@@ -237,9 +207,8 @@ class FeedDummyComponent extends Component {
                   width="90%"
                   height="50%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.filters.width }}
               >
                 <Skeleton
@@ -248,7 +217,7 @@ class FeedDummyComponent extends Component {
                   width="90%"
                   height="50%"
                 />
-              </div>
+              </BodyItem>
             </>
           )}
         />
@@ -259,10 +228,6 @@ class FeedDummyComponent extends Component {
 
 FeedDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
-  classes: PropTypes.object,
 };
 
-export const FeedLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(FeedDummyComponent);
+export const FeedLineDummy = inject18n(FeedDummyComponent);

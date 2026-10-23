@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
+import { useTheme } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 import * as R from 'ramda';
 import Chart from '../../common/charts/Chart';
@@ -13,18 +11,6 @@ import { donutChartOptions } from '../../../../utils/Charts';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 import Card from '../../../../components/common/card/Card';
-
-const styles = (theme) => ({
-  paper: {
-    height: '100%',
-    marginTop: theme.spacing(1),
-    borderRadius: 4,
-  },
-  updateButton: {
-    float: 'right',
-    margin: '7px 10px 0 0',
-  },
-});
 
 const entityStixSightingRelationshipsDonutStixSightingRelationshipsDistributionQuery = graphql`
   query EntityStixSightingRelationshipsDonutStixSightingRelationshipsDistributionQuery(
@@ -298,15 +284,15 @@ EntityStixSightingRelationshipsDonut.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   field: PropTypes.string,
-  classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   toTypes: PropTypes.array,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(EntityStixSightingRelationshipsDonut);
+const EntityStixSightingRelationshipsDonutWithTheme = (props) => {
+  const theme = useTheme();
+  return <EntityStixSightingRelationshipsDonut {...props} theme={theme} />;
+};
+
+export default inject18n(EntityStixSightingRelationshipsDonutWithTheme);

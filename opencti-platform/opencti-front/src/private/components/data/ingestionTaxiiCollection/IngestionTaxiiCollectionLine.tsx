@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import { AccessPoint } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { IngestionTaxiiCollectionLine_node$key } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLine_node.graphql';
 import {
   IngestionTaxiiCollectionLinesPaginationQuery$variables,
@@ -16,26 +16,13 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
-import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import IngestionTaxiiCollectionPopover from './IngestionTaxiiCollectionPopover';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface IngestionTaxiiCollectionLineProps {
   node: IngestionTaxiiCollectionLine_node$key;
@@ -59,12 +46,11 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const data = useFragment(ingestionTaxiiCollectionLineFragment, node);
 
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
@@ -76,33 +62,30 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
         </Security>
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
         <AccessPoint />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.id.width, paddingRight: 10 }}
             >
               <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine" />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.ingestion_running.width }}
             >
               <ItemBoolean
                 label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
                 status={!!data.ingestion_running}
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
@@ -111,14 +94,13 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
 };
 
 export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+      secondaryAction={<MoreVert />}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -129,16 +111,15 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
       <ListItemText
         primary={(
           <div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+            <BodyItem style={{ width: dataColumns.name.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.ingestion_running.width }}
             >
               <Skeleton
@@ -147,7 +128,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
                 width="90%"
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

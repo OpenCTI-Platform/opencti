@@ -12,8 +12,6 @@ import Security from '../../utils/Security';
 import ItemIcon from '../../components/ItemIcon';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
 export const dashboardSettingsDashboardsQuery = graphql`

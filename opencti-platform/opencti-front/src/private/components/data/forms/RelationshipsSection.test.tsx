@@ -1,7 +1,6 @@
 import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { createTheme } from '@mui/material/styles';
-import MuiThemeProvider from '../../../../components/MuiThemeProvider';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import type { ThemeOptions } from '@mui/material/styles';
 import { describe, expect, it, vi } from 'vitest';
 import ThemeDark from '../../../../components/ThemeDark';
@@ -84,9 +83,9 @@ const renderSection = (
     ...overrides,
   };
   render(
-    <MuiThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
+    <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
       <RelationshipsSection {...props} />
-    </MuiThemeProvider>,
+    </ThemeProvider>,
   );
   return props;
 };

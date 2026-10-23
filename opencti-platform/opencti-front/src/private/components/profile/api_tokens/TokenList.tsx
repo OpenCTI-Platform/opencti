@@ -1,36 +1,29 @@
 import { Delete } from '@mui/icons-material';
-import { Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import { Alert, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
 import { IconButton, Paper } from '@filigran/design-system';
 // MIXED FILE, declared as such: the <Paper> tag is the library's, but `TableContainer
 // component=` has to stay MUI's Paper — a component passed to MUI as a prop receives MUI props
 // (`variant`, `sx`) that the library Paper does not understand.
 import MuiPaper from '@mui/material/Paper';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import useGranted, { APIACCESS_USETOKEN } from '../../../../utils/hooks/useGranted';
 import { TokenList_node$data } from './__generated__/TokenList_node.graphql';
 import TokenDeleteDialog from './TokenDeleteDialog';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  empty: {
-    textAlign: 'center',
-    padding: 20,
-    color: theme.palette.text?.secondary,
-  },
-  warning: {
-    color: '#faa05a', // Orange/Yellow manually or use theme warning if available
-    fontWeight: 'bold',
-  },
-  error: {
-    color: '#f44336',
-    fontWeight: 'bold',
-  },
-}));
+const WarningLabel = styled('span')({
+  color: '#faa05a', // Orange/Yellow manually or use theme warning if available
+  fontWeight: 'bold',
+});
+
+const ErrorLabel = styled('span')({
+  color: '#f44336',
+  fontWeight: 'bold',
+});
 
 const tokenListRevokeMutation = graphql`
   mutation TokenListRevokeMutation($id: ID!) {
@@ -43,7 +36,6 @@ interface TokenListProps {
 }
 
 export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
-  const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
   const [deletingToken, setDeletingToken] = useState<{ id: string; name: string } | null>(null);
   const hasAccessTokenCapability = useGranted([APIACCESS_USETOKEN]);
@@ -66,10 +58,10 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return <span className={classes.error}>{t_i18n('Expired')}</span>;
+      return <ErrorLabel>{t_i18n('Expired')}</ErrorLabel>;
     }
     if (diffDays <= 7) {
-      return <span className={classes.warning}>{t_i18n('Expires soon')}</span>;
+      return <WarningLabel>{t_i18n('Expires soon')}</WarningLabel>;
     }
     return null;
   };
@@ -117,9 +109,15 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
   if (tokens.length === 0) {
     return (
       <Paper padding={0}>
-        <div className={classes.empty}>
+        <Box
+          sx={{
+            textAlign: 'center',
+            padding: '20px',
+            color: (theme) => theme.palette.text?.secondary,
+          }}
+        >
           {t_i18n('No tokens found. Click "Generate Token" to create one.')}
-        </div>
+        </Box>
       </Paper>
     );
   }

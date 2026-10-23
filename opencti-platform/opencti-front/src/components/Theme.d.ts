@@ -44,6 +44,10 @@ declare module '@mui/material/Alert' {
 }
 
 declare module '@mui/material/styles' {
+  interface TypeBackground {
+    nav: string;
+  }
+
   interface Palette {
     border: {
       main: string;
@@ -60,6 +64,7 @@ declare module '@mui/material/styles' {
       contrastText: string;
       light?: string;
       dark?: string;
+      background?: string;
     };
     background: {
       paper: string;

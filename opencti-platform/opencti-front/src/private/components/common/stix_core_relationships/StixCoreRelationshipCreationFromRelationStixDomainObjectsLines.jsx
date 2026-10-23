@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { map, keys, groupBy, assoc, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { map, keys, groupBy, assoc } from 'ramda';
+import { styled } from '@mui/material/styles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -18,66 +18,70 @@ import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 
-const styles = (theme) => ({
-  container: {
-    padding: '20px 0 0 0',
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  list: {
-    width: '100%',
-  },
-  item: {
-    minHeight: 48,
-    paddingTop: theme.spacing(0.5),
-    paddingBottom: theme.spacing(0.5),
-  },
-  // The icon keeps the summary title's left edge; only the name track moves in.
-  itemIcon: {
-    minWidth: 'auto',
-    marginRight: theme.spacing(2),
-  },
-  // Shrink-to-fit, so the labels follow the name instead of a far column.
-  itemText: {
-    flex: '0 1 auto',
-    minWidth: 0,
-    margin: 0,
-    marginRight: theme.spacing(2),
-    '& .MuiListItemText-primary, & .MuiListItemText-secondary': {
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    },
-  },
-  // Without a shrinkable track of their own the labels win the row and the
-  // name is the one that gets cut; they fold to `+N` instead.
-  itemLabels: {
-    flex: '0 1 auto',
-    minWidth: 0,
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-  noResult: {
-    top: 95,
-    left: 16,
-    right: 0,
-    position: 'absolute',
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    zIndex: -5,
-  },
+const Container = styled('div')({
+  padding: '20px 0 0 0',
 });
+
+const Heading = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.pxToRem(15),
+  flexBasis: '33.33%',
+  flexShrink: 0,
+}));
+
+const SecondaryHeading = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.pxToRem(15),
+  color: theme.palette.text.secondary,
+}));
+
+const PanelContent = styled(AccordionDetails)({
+  padding: 0,
+});
+
+const EntityList = styled(List)({
+  width: '100%',
+});
+
+const Item = styled(ListItemButton)(({ theme }) => ({
+  minHeight: 48,
+  paddingTop: theme.spacing(0.5),
+  paddingBottom: theme.spacing(0.5),
+}));
+
+// The icon keeps the summary title's left edge; only the name track moves in.
+const ItemIconContainer = styled(ListItemIcon)(({ theme }) => ({
+  minWidth: 'auto',
+  marginRight: theme.spacing(2),
+}));
+
+// Shrink-to-fit, so the labels follow the name instead of a far column.
+const ItemText = styled(ListItemText)(({ theme }) => ({
+  flex: '0 1 auto',
+  minWidth: 0,
+  margin: 0,
+  marginRight: theme.spacing(2),
+  '& .MuiListItemText-primary, & .MuiListItemText-secondary': {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+}));
+
+// Without a shrinkable track of their own the labels win the row and the
+// name is the one that gets cut; they fold to `+N` instead.
+const ItemLabels = styled('div')({
+  flex: '0 1 auto',
+  minWidth: 0,
+});
+
+const NoResult = styled('div')(({ theme }) => ({
+  top: 95,
+  left: 16,
+  right: 0,
+  position: 'absolute',
+  color: theme.palette.text.primary,
+  fontSize: 15,
+  zIndex: -5,
+}));
 
 class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
   constructor(props) {
@@ -102,7 +106,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
   }
 
   render() {
-    const { t, classes, data, handleSelect } = this.props;
+    const { t, data, handleSelect } = this.props;
     const stixDomainObjectsNodes = map(
       (n) => n.node,
       data.stixDomainObjects.edges,
@@ -112,7 +116,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
     const stixDomainObjectsTypes = keys(stixDomainObjects);
 
     return (
-      <div className={classes.container}>
+      <Container>
         {stixDomainObjectsTypes.length > 0 ? (
           stixDomainObjectsTypes.map((type) => {
             return (
@@ -130,53 +134,49 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                 sx={{ backgroundColor: 'var(--bg-input-default)' }}
               >
                 <AccordionSummary expandIcon={<ExpandMore />}>
-                  <Typography className={classes.heading}>
+                  <Heading>
                     {t(`entity_${type}`)}
-                  </Typography>
-                  <Typography className={classes.secondaryHeading}>
+                  </Heading>
+                  <SecondaryHeading>
                     {stixDomainObjects[type].length} {t('entitie(s)')}
-                  </Typography>
+                  </SecondaryHeading>
                 </AccordionSummary>
-                <AccordionDetails
-                  classes={{ root: classes.expansionPanelContent }}
-                >
-                  <List classes={{ root: classes.list }}>
+                <PanelContent>
+                  <EntityList>
                     {stixDomainObjects[type].map((stixDomainObject) => (
-                      <ListItemButton
+                      <Item
                         key={stixDomainObject.id}
-                        classes={{ root: classes.item }}
                         divider={true}
                         onClick={handleSelect.bind(this, stixDomainObject)}
                       >
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <ItemIconContainer>
                           <ItemIcon type={type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          classes={{ root: classes.itemText }}
+                        </ItemIconContainer>
+                        <ItemText
                           primary={truncate(getMainRepresentative(stixDomainObject), 100)}
                           secondary={truncate(stixDomainObject.description, 100)}
                         />
-                        <div className={classes.itemLabels}>
+                        <ItemLabels>
                           <StixCoreObjectLabels
                             variant="inList"
                             labels={stixDomainObject.objectLabel}
                             revoked={stixDomainObject.revoked}
                             defaultValueIfEmpty=""
                           />
-                        </div>
-                      </ListItemButton>
+                        </ItemLabels>
+                      </Item>
                     ))}
-                  </List>
-                </AccordionDetails>
+                  </EntityList>
+                </PanelContent>
               </Accordion>
             );
           })
         ) : (
-          <div className={classes.noResult}>
+          <NoResult>
             {t('No entities were found for this search.')}
-          </div>
+          </NoResult>
         )}
-      </div>
+      </Container>
     );
   }
 }
@@ -185,7 +185,6 @@ StixCoreRelationshipCreationFromRelationLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -395,7 +394,4 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipCreationFromRelationStixDomainObjectsLines);
+export default inject18n(StixCoreRelationshipCreationFromRelationStixDomainObjectsLines);

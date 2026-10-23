@@ -1,4 +1,4 @@
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React from 'react';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -13,14 +13,10 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 const LOCAL_STORAGE_KEY_CASE_TEMPLATES = 'case-templates';
 
@@ -28,7 +24,6 @@ const CaseTemplates = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Case Templates | Taxonomies | Settings'));
-  const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTemplateLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TEMPLATES,
     {
@@ -108,10 +103,10 @@ const CaseTemplates = () => {
   };
 
   return (
-    <div className={classes.container} data-testid="case-template-page">
+    <Container data-testid="case-template-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Case templates'), current: true }]} />
       {renderLines()}
-    </div>
+    </Container>
   );
 };
 

@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import withTheme from '@mui/styles/withTheme';
+import { useTheme } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@common/card/Card';
 import Chart from '../../common/charts/Chart';
@@ -39,7 +38,7 @@ const stixCoreObjectReportsHorizontalBarDistributionQuery = graphql`
   }
 `;
 
-class StixCoreObjectReportsHorizontalBar extends Component {
+class StixCoreObjectReportsHorizontalBarComponent extends Component {
   renderContent() {
     const { t, stixCoreObjectId, field, theme } = this.props;
     const reportsDistributionVariables = {
@@ -133,7 +132,7 @@ class StixCoreObjectReportsHorizontalBar extends Component {
   }
 }
 
-StixCoreObjectReportsHorizontalBar.propTypes = {
+StixCoreObjectReportsHorizontalBarComponent.propTypes = {
   stixCoreObjectId: PropTypes.string,
   title: PropTypes.string,
   field: PropTypes.string,
@@ -141,7 +140,9 @@ StixCoreObjectReportsHorizontalBar.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-)(StixCoreObjectReportsHorizontalBar);
+const StixCoreObjectReportsHorizontalBar = (props) => {
+  const theme = useTheme();
+  return <StixCoreObjectReportsHorizontalBarComponent {...props} theme={theme} />;
+};
+
+export default inject18n(StixCoreObjectReportsHorizontalBar);

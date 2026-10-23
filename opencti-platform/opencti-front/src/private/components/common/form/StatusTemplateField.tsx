@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
 import { Label } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import { ComboboxChangeMeta } from '@filigran/design-system';
@@ -12,19 +12,16 @@ import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTempl
 import { StatusTemplateCreationContextualMutation$data } from '../../settings/status_templates/__generated__/StatusTemplateCreationContextualMutation.graphql';
 import { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface StatusTemplateFieldProps {
   name: string;
@@ -58,7 +55,6 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   required = false,
   label,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [statusTemplateCreation, setStatusTemplateCreation] = useState<boolean>(false);
@@ -133,10 +129,10 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         openCreate={handleOpenStatusTemplateCreation}
         renderOption={(option: { color: string; label: string }) => (
           <>
-            <div className={classes.icon} style={{ color: option.color }}>
+            <OptionIcon style={{ color: option.color }}>
               <Label />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

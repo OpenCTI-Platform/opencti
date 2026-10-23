@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { compose, map } from 'ramda';
+import { map } from 'ramda';
 import List from '@mui/material/List';
 import { ListItemButton } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
@@ -14,77 +14,66 @@ import { DraftChip } from '../../common/draft/DraftChip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
-const styles = (theme) => ({
-  item: {},
-  itemNested: {
-    paddingLeft: theme.spacing(4),
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  name: {
-    width: '20%',
-    lineHeight: '28px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  description: {
-    width: '70%',
-    lineHeight: '28px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-    fontSize: 12,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '.6em',
-    backgroundColor: theme.palette.grey[700],
-  },
+const Name = styled('div')({
+  width: '20%',
+  lineHeight: '28px',
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 });
+
+const Description = styled('div')({
+  width: '70%',
+  lineHeight: '28px',
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  color: '#a5a5a5',
+  fontSize: 12,
+});
+
+const itemIconSx = {
+  color: (theme) => theme.palette.primary.main,
+};
+
+const goIconSx = {
+  position: 'absolute',
+  right: -10,
+};
 
 class SectorLineComponent extends Component {
   render() {
-    const { classes, subSectors, node, isSubSector, t } = this.props;
+    const { subSectors, node, isSubSector, t } = this.props;
     return (
       <div>
         <ListItemButton
-          classes={{ root: isSubSector ? classes.itemNested : classes.item }}
+          sx={isSubSector ? { paddingLeft: 4 } : undefined}
           divider={true}
           component={Link}
           to={`/dashboard/entities/sectors/${node.id}`}
         >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ListItemIcon sx={itemIconSx}>
             <ItemIcon type="Sector" size={isSubSector ? 'small' : 'medium'} />
           </ListItemIcon>
           <ListItemText
             sx={{ margin: 0, height: '28px' }}
             primary={(
               <div>
-                <div className={classes.name}>
+                <Name>
                   {node.name}
                   {node.draftVersion && (<DraftChip style={{ verticalAlign: 1 }} />)}
-                </div>
-                <div className={classes.description}>
+                </Name>
+                <Description>
                   {node.description?.length > 0
                     ? node.description
                     : t('This sector does not have any description.')}
-                </div>
+                </Description>
               </div>
             )}
           />
-          <ListItemIcon classes={{ root: classes.goIcon }}>
+          <ListItemIcon sx={goIconSx}>
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
         </ListItemButton>
@@ -112,21 +101,16 @@ SectorLineComponent.propTypes = {
   node: PropTypes.object,
   isSubSector: PropTypes.bool,
   subSectors: PropTypes.array,
-  classes: PropTypes.object,
   fd: PropTypes.func,
 };
 
-export const SectorLine = compose(
-  inject18n,
-  withStyles(styles),
-)(SectorLineComponent);
+export const SectorLine = inject18n(SectorLineComponent);
 
 class SectorLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItem divider={true}>
+        <ListItemIcon sx={itemIconSx}>
           <Skeleton
             animation="wave"
             variant="circular"
@@ -144,7 +128,7 @@ class SectorLineDummyComponent extends Component {
             />
           )}
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemIcon sx={goIconSx}>
           <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
@@ -152,11 +136,4 @@ class SectorLineDummyComponent extends Component {
   }
 }
 
-SectorLineDummyComponent.propTypes = {
-  classes: PropTypes.object,
-};
-
-export const SectorLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(SectorLineDummyComponent);
+export const SectorLineDummy = inject18n(SectorLineDummyComponent);
