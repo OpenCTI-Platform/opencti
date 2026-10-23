@@ -6,6 +6,7 @@ import {
   isTransitoryError,
   isTransitoryNonCircuitBreakingError,
   prepareElementForIndexing,
+  prepareIndexingElement,
 } from '../../../src/database/engine';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
@@ -33,6 +34,21 @@ describe('prepareElementForIndexing testing', () => {
     const now = new Date();
     const element = await prepareElementForIndexing({ date: now });
     expect(element.date).toEqual(now);
+  });
+  it('should prepare the objects of an array, and keep an empty one as it is', async () => {
+    const empty = {};
+    const element = await prepareElementForIndexing({ test: [{ value: '  trim  ' }, empty, '  text '] });
+    expect(element.test).toEqual([{ value: 'trim' }, {}, 'text']);
+    expect(element.test[1]).toBe(empty);
+  });
+});
+
+describe('prepareIndexingElement testing', () => {
+  it('should index an entity without its relations fields, the rest prepared', async () => {
+    const entity = { base_type: 'ENTITY', entity_type: 'Malware', name: '  name  ', i_relations_from: { a: 1 }, i_relations_to: { b: 2 } };
+    const element = await prepareIndexingElement(entity);
+    expect(element).toEqual({ base_type: 'ENTITY', entity_type: 'Malware', name: 'name' });
+    expect(entity.i_relations_from).toEqual({ a: 1 }); // the given element is not changed
   });
 });
 

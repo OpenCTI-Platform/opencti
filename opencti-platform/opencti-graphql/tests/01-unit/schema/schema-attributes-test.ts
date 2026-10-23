@@ -132,3 +132,25 @@ describe.each([
     expect(type).toThrow(TYPE_ERROR);
   });
 });
+
+describe('Schema attributes type of one attribute', () => {
+  it('should answer as the check with several types', () => {
+    schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_USER, [
+      date('test_type_date'),
+      boolean('test_type_boolean'),
+      integer('test_type_integer'),
+      short('test_type_short'),
+      standard('test_type_object', [integer('test_type_count'), date('test_type_seen')]),
+      flat('test_type_flat'),
+    ]);
+    const names = ['test_type_date', 'test_type_boolean', 'test_type_integer', 'test_type_short', 'test_type_object.test_type_count',
+      'test_type_object.test_type_seen', 'test_type_flat.anything', 'test_type_object.*', 'test_type_unknown'];
+    for (const name of names) {
+      for (const type of ['date', 'boolean', 'numeric'] as const) {
+        expect(schemaAttributesDefinition.isTypeAttribute(name, type), `${name} ${type}`).toBe(schemaAttributesDefinition.isSpecificTypeAttribute(name, type));
+      }
+    }
+    expect(schemaAttributesDefinition.isTypeAttribute('test_type_object.test_type_seen', 'date')).toBe(true);
+    expect(schemaAttributesDefinition.isTypeAttribute('test_type_integer', 'numeric')).toBe(true);
+  });
+});

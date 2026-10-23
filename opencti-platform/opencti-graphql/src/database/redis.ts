@@ -356,9 +356,20 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
   return instance;
 };
 
+// The ref input names are fixed once read: their set is built once, not for every instance notified
+let refInputNamesCache: { names: string[]; set: Set<string> } | undefined;
 export const removeResolvedRefs = (instance: any) => {
-  const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
-  return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
+  const names = schemaRelationsRefDefinition.getAllInputNames();
+  if (refInputNamesCache?.names !== names) {
+    refInputNamesCache = { names, set: new Set([INPUT_OBJECTS, ...names]) };
+  }
+  const refInputNames = refInputNamesCache.set;
+  const kept: Record<string, any> = {};
+  const keys = Object.keys(instance);
+  for (let index = 0; index < keys.length; index += 1) {
+    if (!refInputNames.has(keys[index])) kept[keys[index]] = instance[keys[index]];
+  }
+  return kept;
 };
 
 // region user context (clientContext)

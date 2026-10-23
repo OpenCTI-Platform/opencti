@@ -1224,17 +1224,26 @@ export const getVocabulariesCategories = (): VocabularyDefinition[] => {
     .sort();
 };
 
+// The vocabulary definitions are static: the categories of a field of a type are computed once
+const fieldCategories = new Map<string, [string, VocabularyDefinition][]>();
+const categoriesOfField = (fieldName: string, entityType: string) => {
+  const cacheKey = `${entityType}|${fieldName}`;
+  let categories = fieldCategories.get(cacheKey);
+  if (!categories) {
+    categories = Object.entries(vocabularyDefinitions)
+      .filter(([, { entity_types }]) => entity_types.includes(entityType))
+      .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName));
+    fieldCategories.set(cacheKey, categories);
+  }
+  return categories;
+};
+
 export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: string) => {
-  return Object.entries(vocabularyDefinitions)
-    .filter(([, { entity_types }]) => entity_types.includes(entityType))
-    .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName)).length > 0;
+  return categoriesOfField(fieldName, entityType).length > 0;
 };
 
 export const getVocabularyCategoryForField = (fieldName: string, entityType: string) => {
-  const definitions = Object.entries(vocabularyDefinitions)
-    .filter(([, { entity_types }]) => entity_types.includes(entityType))
-    .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName))
-    .map(([cat, def]) => ({ cat, def }));
+  const definitions = categoriesOfField(fieldName, entityType).map(([cat, def]) => ({ cat, def }));
   if (definitions.length === 1) {
     const { def, cat } = definitions[0];
     const field = def.fields.find(({ key }) => key === fieldName);

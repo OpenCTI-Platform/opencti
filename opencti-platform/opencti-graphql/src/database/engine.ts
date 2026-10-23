@@ -4656,7 +4656,7 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
             preparedArray.push(valueElement);
           } else if (R.is(String, valueElement)) { // For string, trim by default
             preparedArray.push(valueElement.trim());
-          } else if (R.is(Object, valueElement) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
+          } else if (R.is(Object, valueElement) && Object.keys(valueElement).length > 0) { // For complex object, prepare inner elements
             const complexPrepared = await prepareElementForIndexing(valueElement);
             preparedArray.push(complexPrepared);
           } else {
@@ -4732,8 +4732,14 @@ const prepareRelation = (thing: Record<string, any>) => {
   prepared.connections = connections;
   return prepared;
 };
+// One copy without the from/to fields (R.dissoc copied the document once per field)
 const prepareEntity = (thing: Record<string, any>) => {
-  return R.pipe(R.dissoc(INTERNAL_TO_FIELD), R.dissoc(INTERNAL_FROM_FIELD))(thing);
+  const prepared: Record<string, any> = {};
+  const keys = Object.keys(thing);
+  for (let index = 0; index < keys.length; index += 1) {
+    if (keys[index] !== INTERNAL_TO_FIELD && keys[index] !== INTERNAL_FROM_FIELD) prepared[keys[index]] = thing[keys[index]];
+  }
+  return prepared;
 };
 export const prepareIndexingElement = async (thing: Record<string, any>) => {
   if (thing.base_type === BASE_TYPE_RELATION) {

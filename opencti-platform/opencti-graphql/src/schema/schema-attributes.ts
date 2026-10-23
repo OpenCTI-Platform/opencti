@@ -270,6 +270,15 @@ export const schemaAttributesDefinition = {
     return attributeType.reduce((r, fn) => this.attributesByTypes[fn].has(attributeName) || r, false);
   },
 
+  // One type (called for every key of every document indexed): no list of types built per call
+  isTypeAttribute(attributeName: string, attributeType: AttrType): boolean {
+    if (attributeName.includes('.') && !attributeName.endsWith('*')) {
+      return this.isSpecificTypeAttribute(attributeName, attributeType);
+    }
+    usageProtection = true;
+    return this.attributesByTypes[attributeType].has(attributeName);
+  },
+
   getAttributeMappingFromPath(path: string): MappingDefinition {
     const pathTokens = path.split('.');
     const schemaDef = this.getAttributeByName(pathTokens[0]);
@@ -282,13 +291,13 @@ export const schemaAttributesDefinition = {
 
 // -- TYPE --
 export const isBooleanAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'boolean')
+  schemaAttributesDefinition.isTypeAttribute(k, 'boolean')
 );
 export const isDateAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date')
+  schemaAttributesDefinition.isTypeAttribute(k, 'date')
 );
 export const isNumericAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'numeric')
+  schemaAttributesDefinition.isTypeAttribute(k, 'numeric')
 );
 export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean')
