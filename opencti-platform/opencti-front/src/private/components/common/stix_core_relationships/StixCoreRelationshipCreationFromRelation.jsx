@@ -3,10 +3,10 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import { Add } from '@mui/icons-material';
+import { Add, ChevronRightOutlined } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Stack } from '@mui/material';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
@@ -16,6 +16,7 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment,
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
@@ -233,43 +234,56 @@ const StixCoreRelationshipCreationFromRelationSelectEntity = ({
   targetTypes,
   setNumberOfElements,
   createButton,
-  onSelect,
+  numberOfSelectedElements,
+  onContinue,
 }) => {
+  const { t_i18n } = useFormatter();
   const [tableRootRef, setTableRootRef] = useState(null);
   const queryRef = useQueryLoading(
     stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
     { ...searchPaginationOptions, count: 25 },
   );
   return (
-    <div style={{ flex: '1 0 0', overflow: 'hidden' }} ref={setTableRootRef}>
-      {queryRef && (
-        <DataTable
-          disableToolBar
-          disableNavigation
-          disableLineSelection
-          hideSavedFilters
-          variant={DataTableVariant.inline}
-          rootRef={tableRootRef ?? undefined}
-          dataColumns={dataColumns}
-          resolvePath={(data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
-          storageKey={storageKey}
-          lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
-          initialValues={initialValues}
-          contextFilters={contextFilters}
-          preloadedPaginationProps={{
-            linesQuery: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
-            linesFragment: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
-            queryRef,
-            nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
-            setNumberOfElements,
-          }}
-          entityTypes={targetTypes}
-          availableEntityTypes={targetTypes}
-          createButton={createButton}
-          onLineClick={onSelect}
-        />
-      )}
-    </div>
+    <>
+      <div style={{ flex: '1 0 0', overflow: 'hidden' }} ref={setTableRootRef}>
+        {queryRef && (
+          <DataTable
+            disableToolBar
+            disableNavigation
+            removeSelectAll
+            selectOnLineClick
+            hideSavedFilters
+            variant={DataTableVariant.inline}
+            rootRef={tableRootRef ?? undefined}
+            dataColumns={dataColumns}
+            resolvePath={(data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
+            storageKey={storageKey}
+            lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
+            initialValues={initialValues}
+            contextFilters={contextFilters}
+            preloadedPaginationProps={{
+              linesQuery: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
+              linesFragment: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
+              queryRef,
+              nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
+              setNumberOfElements,
+            }}
+            entityTypes={targetTypes}
+            availableEntityTypes={targetTypes}
+            createButton={createButton}
+          />
+        )}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16 }}>
+        <Button
+          disabled={numberOfSelectedElements < 1}
+          onClick={onContinue}
+          endIcon={<ChevronRightOutlined />}
+        >
+          {t_i18n('Continue')}
+        </Button>
+      </div>
+    </>
   );
 };
 
@@ -287,7 +301,6 @@ const StixCoreRelationshipCreationFromRelation = ({
   } = useAuth();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [targetEntity, setTargetEntity] = useState(null);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
 
@@ -309,6 +322,13 @@ const StixCoreRelationshipCreationFromRelation = ({
     initialValues,
     true,
   );
+  // Selection of the list, shared with the DataTable through its storage key
+  const {
+    selectedElements,
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+  } = useEntityToggle(storageKey);
+  const targetEntities = Object.values(selectedElements);
   const {
     sortBy,
     orderAsc,
@@ -353,35 +373,23 @@ const StixCoreRelationshipCreationFromRelation = ({
 
   const handleOpen = () => setOpen(true);
 
-  const handleClose = () => {
+  // Going back to the list remounts it with an empty selection
+  const handleResetSelection = () => {
     setStep(0);
-    setTargetEntity(null);
+    handleClearSelectedElements();
+  };
+
+  const handleClose = () => {
+    handleResetSelection();
     setOpen(false);
   };
 
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
-    const toEntityId = isRelationReversed ? entityId : targetEntity.id;
-    const finalValues = R.pipe(
-      R.assoc('confidence', parseInt(values.confidence, 10)),
-      R.assoc('fromId', fromEntityId),
-      R.assoc('toId', toEntityId),
-      R.assoc('start_time', formatDate(values.start_time)),
-      R.assoc('stop_time', formatDate(values.stop_time)),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc(
-        'externalReferences',
-        R.pluck('value', values.externalReferences),
-      ),
-    )(values);
+  const commit = (input) => new Promise((resolve, reject) => {
     commitMutation({
       mutation: isRelationReversed
         ? stixCoreRelationshipCreationFromRelationToMutation
         : stixCoreRelationshipCreationFromRelationFromMutation,
-      variables: { input: finalValues },
+      variables: { input },
       updater: (store) => {
         insertNode(
           store,
@@ -390,23 +398,41 @@ const StixCoreRelationshipCreationFromRelation = ({
           'stixCoreRelationshipAdd',
         );
       },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        handleClose();
-      },
+      onError: reject,
+      onCompleted: resolve,
     });
-  };
+  });
 
-  const handleResetSelection = () => {
-    setStep(0);
-    setTargetEntity(null);
-  };
-
-  const handleSelectEntity = (stixCoreObject) => {
-    setStep(1);
-    setTargetEntity(stixCoreObject);
+  const onSubmit = async (values, { setSubmitting, setErrors, resetForm }) => {
+    setSubmitting(true);
+    for (const targetEntity of targetEntities) {
+      const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
+      const toEntityId = isRelationReversed ? entityId : targetEntity.id;
+      const finalValues = R.pipe(
+        R.assoc('confidence', parseInt(values.confidence, 10)),
+        R.assoc('fromId', fromEntityId),
+        R.assoc('toId', toEntityId),
+        R.assoc('start_time', formatDate(values.start_time)),
+        R.assoc('stop_time', formatDate(values.stop_time)),
+        R.assoc('createdBy', values.createdBy?.value),
+        R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+        R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+        R.assoc(
+          'externalReferences',
+          R.pluck('value', values.externalReferences),
+        ),
+      )(values);
+      try {
+        await commit(finalValues);
+      } catch (error) {
+        setSubmitting(false);
+        return handleErrorInForm(error, setErrors);
+      }
+    }
+    setSubmitting(false);
+    resetForm();
+    handleClose();
+    return true;
   };
 
   // Mounted in the drawer header, as in the 'Add entities' panel, and opened by the buttons of the list
@@ -472,36 +498,44 @@ const StixCoreRelationshipCreationFromRelation = ({
       targetTypes={targetTypes}
       setNumberOfElements={helpers.handleSetNumberOfElements}
       createButton={creationButtons}
-      onSelect={handleSelectEntity}
+      numberOfSelectedElements={numberOfSelectedElements}
+      onContinue={() => setStep(1)}
     />
   );
 
   const renderForm = (sourceEntity) => {
-    let fromEntity = sourceEntity;
-    let toEntity = targetEntity;
+    let fromEntities = [sourceEntity];
+    let toEntities = targetEntities;
     if (isRelationReversed) {
-      fromEntity = targetEntity;
-      toEntity = sourceEntity;
+      fromEntities = targetEntities;
+      toEntities = [sourceEntity];
     }
 
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const relationshipTypes = R.uniq(resolveRelationsTypes(
+          const resolvePairRelationsTypes = (fromEntity, toEntity) => resolveRelationsTypes(
             fromEntity.parent_types.includes('Stix-Cyber-Observable')
               ? 'observable'
               : fromEntity.entity_type,
             toEntity.entity_type,
             schema.schemaRelationsTypesMapping,
-          ).filter(
-            (n) => R.isNil(allowedRelationshipTypes)
-              || allowedRelationshipTypes.length === 0
-              || allowedRelationshipTypes.includes(n),
-          ));
+          );
+          // Only the types valid for every selected entity, as the same type is used for all relationships
+          const relationshipTypes = R.uniq(targetEntities
+            .map((targetEntity) => (isRelationReversed
+              ? resolvePairRelationsTypes(targetEntity, sourceEntity)
+              : resolvePairRelationsTypes(sourceEntity, targetEntity)))
+            .reduce((acc, types) => R.intersection(acc, types))
+            .filter(
+              (n) => R.isNil(allowedRelationshipTypes)
+                || allowedRelationshipTypes.length === 0
+                || allowedRelationshipTypes.includes(n),
+            ));
           return (
             <StixCoreRelationshipCreationForm
-              fromEntities={[fromEntity]}
-              toEntities={[toEntity]}
+              fromEntities={fromEntities}
+              toEntities={toEntities}
               relationshipTypes={relationshipTypes}
               handleResetSelection={handleResetSelection}
               onSubmit={onSubmit}
