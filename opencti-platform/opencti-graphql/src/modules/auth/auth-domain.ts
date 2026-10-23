@@ -162,6 +162,9 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const { hashedOtp, email, mfa_activated, mfa_validated, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+  if (!hashedOtp) {
+    throw UnsupportedError('Password reset code expired or not found. Please request a new one.');
+  }
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
   const isStateMfaValid = !mfa_activated || (mfa_activated && mfa_validated);
   if (!isMatch || !isStateMfaValid) {
