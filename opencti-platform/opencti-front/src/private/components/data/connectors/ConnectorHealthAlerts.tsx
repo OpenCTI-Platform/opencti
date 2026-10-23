@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Stack } from '@mui/material';
-import { Alert } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
+import IngestionHealthBanner from '@components/data/connectors/IngestionHealthBanner';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import type { ConnectorHealthAlerts_ingestionHealth$key } from './__generated__/ConnectorHealthAlerts_ingestionHealth.graphql';
 
 const connectorHealthAlertsFragment = graphql`
   fragment ConnectorHealthAlerts_ingestionHealth on IngestionHealth {
+    status
+    status_since
     healthChecks {
       health_check_code
       health_check_message
@@ -21,23 +23,32 @@ const connectorHealthAlertsFragment = graphql`
 interface HealthAlertProps {
   severity: 'critical' | 'degraded';
   messages: string[];
+  // Since when the connector has this status: only known for the severity of its status
+  since: string | null;
 }
 
 // One banner per severity: the first issue is always shown, the others are folded behind a button
-const HealthAlert = ({ severity, messages }: HealthAlertProps) => {
-  const { t_i18n } = useFormatter();
+const HealthAlert = ({ severity, messages, since }: HealthAlertProps) => {
+  const { t_i18n, nsdt } = useFormatter();
   const [expanded, setExpanded] = useState(false);
   const isCritical = severity === 'critical';
   const [first, ...others] = messages;
+  let title: string;
+  if (isCritical) {
+    title = since
+      ? t_i18n('This connector is not working since {date}', { values: { date: nsdt(since) } })
+      : t_i18n('This connector is not working');
+  } else {
+    title = since
+      ? t_i18n('This connector is degraded since {date}', { values: { date: nsdt(since) } })
+      : t_i18n('This connector is degraded');
+  }
   return (
-    <Alert
+    <IngestionHealthBanner
       data-testid={`connector-health-alert-${severity}`}
-      severity={isCritical ? 'error' : 'warning'}
-      title={`${isCritical ? t_i18n('This connector is not working') : t_i18n('This connector is degraded')}:`}
-      // The check is the key information: same typography as the title (the description is a <p>, hence spans)
-      description={[first, ...(expanded ? others : [])].map((message, index) => (
-        <span key={`${index}-${message}`} className="title-xs" style={{ display: 'block' }}>{others.length > 0 ? `- ${message}` : message}</span>
-      ))}
+      severity={severity}
+      title={title}
+      lines={[first, ...(expanded ? others : [])].map((message) => (others.length > 0 ? `- ${message}` : message))}
       action={others.length > 0 && (
         <Button variant="secondary" size="small" onClick={() => setExpanded((value) => !value)}>
           {expanded ? t_i18n('Show less') : t_i18n('Show {count} more', { values: { count: others.length } })}
@@ -49,9 +60,11 @@ const HealthAlert = ({ severity, messages }: HealthAlertProps) => {
 
 // Health issues of one connector, split by severity (critical, then degraded)
 const ConnectorHealthAlerts = ({ ingestionHealth }: { ingestionHealth?: ConnectorHealthAlerts_ingestionHealth$key | null }) => {
+  const theme = useTheme();
   const { isFeatureEnable } = useHelper();
   const data = useFragment(connectorHealthAlertsFragment, ingestionHealth ?? null);
-  if (!isFeatureEnable('INGESTION_HEALTH') || !data) return null;
+  // Nothing to flag: not evaluated yet, healthy or unknown. The checks of an unknown status are not issues of this platform version
+  if (!isFeatureEnable('INGESTION_HEALTH') || !data || (data.status !== 'critical' && data.status !== 'degraded')) return null;
 
   // Same rule as the backend status: only a blocking runtime check is critical
   const critical: string[] = [];
@@ -63,20 +76,10 @@ const ConnectorHealthAlerts = ({ ingestionHealth }: { ingestionHealth?: Connecto
   if (critical.length === 0 && degraded.length === 0) return null;
 
   return (
-    <Stack
-      gap={1}
-      sx={{
-        marginBottom: 2,
-        '& p': { margin: 0 },
-        // No bold: title and checks share the regular weight
-        '& [role] p, & [role] p span': { fontWeight: 'normal' },
-        '& [role]': { padding: 2 },
-        '& [role] > div:first-of-type': { alignItems: 'center' },
-      }}
-    >
-      {critical.length > 0 && <HealthAlert severity="critical" messages={critical} />}
-      {degraded.length > 0 && <HealthAlert severity="degraded" messages={degraded} />}
-    </Stack>
+    <div className="flex flex-col" style={{ gap: theme.spacing(1), marginBottom: theme.spacing(2) }}>
+      {critical.length > 0 && <HealthAlert severity="critical" messages={critical} since={data.status === 'critical' ? data.status_since : null} />}
+      {degraded.length > 0 && <HealthAlert severity="degraded" messages={degraded} since={data.status === 'degraded' ? data.status_since : null} />}
+    </div>
   );
 };
 
