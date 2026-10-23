@@ -308,10 +308,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const connectorOverviewContent = useMemo(() => (
     <>
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Type')}
                 </Label>
@@ -320,13 +320,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   label={connector.connector_type ?? ''}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Last seen')}
                 </Label>
                 {nsdt(connector.last_seen_at)}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Only contextual')}
                 </Label>
@@ -335,7 +335,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   label={connectorOnlyContextualStatus.label}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Automatic trigger')}
                 </Label>
@@ -344,7 +344,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   label={connectorTriggerStatus.label}
                 />
               </Grid>
-              <Grid item xs={connectorFiltersEnabled ? 6 : 12}>
+              <Grid size={connectorFiltersEnabled ? 6 : 12}>
                 <Label>
                   {t_i18n('Scope')}
                 </Label>
@@ -358,7 +358,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Box>
               </Grid>
               {connectorFiltersEnabled && (
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label action={(
                     <Tooltip
                       title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}
@@ -397,7 +397,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               )}
               <Security needs={[SETTINGS_SETACCESSES]}>
                 <>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Associated user')}
                     </Label>
@@ -418,7 +418,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
                     )}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Max confidence level')}
                     </Label>
@@ -430,7 +430,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
                     )}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n("User's roles")}
                     </Label>
@@ -464,7 +464,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
                     )}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n("User's groups")}
                     </Label>
@@ -503,7 +503,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )}
                   </Grid>
 
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n("User's organizations")}
                     </Label>
@@ -538,11 +538,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Details')}>
             <Grid container={true} spacing={2}>
               {connector.connector_info?.buffering && (
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1 }}>
                     <Alert
                       severity="warning"
@@ -558,7 +558,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Grid>
               )}
 
-              <Grid item={true} xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Version')}
                 </Label>
@@ -574,7 +574,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 )}
               </Grid>
 
-              <Grid item={true} xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('State')}
                 </Label>
@@ -588,7 +588,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </FieldOrEmpty>
               </Grid>
 
-              <Grid item xs={6}>
+              <Grid size={6}>
                 {!connector.connector_info && (
                   connector.connector_state
                   && connectorStateConverted !== null
@@ -647,7 +647,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
                 )}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Next run')}
                 </Label>
@@ -677,13 +677,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               </Grid>
 
               {connector.is_managed && (
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>{t_i18n('Instance name')}</Label>
                   <Typography component="div" variant="body1">{connector.name}</Typography>
                 </Grid>
               )}
 
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Server capacity')}
                 </Label>
@@ -701,7 +701,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 }
               </Grid>
               {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime != null && (
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t_i18n('Uptime')}
                   </Label>

@@ -83,12 +83,12 @@ const Role = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Description')}
                 </Label>
@@ -97,7 +97,7 @@ const Role = ({
                   limit={400}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Groups using this role')}
                 </Label>
@@ -121,11 +121,11 @@ const Role = ({
             </Grid>
           </Card>
         </Grid>
-        <Grid container={true} item xs={12} spacing={3}>
-          <Grid item xs={6}>
+        <Grid container={true} spacing={3} size={12}>
+          <Grid size={6}>
             <Card title={t_i18n('Capabilities')}>
               <Grid container={true} spacing={3}>
-                <Grid item xs={12} style={{ paddingTop: 10 }}>
+                <Grid style={{ marginTop: -14 }} size={12}>
                   {queryRef && (
                     <React.Suspense>
                       <CapabilitiesList queryRef={queryRef} role={role} />
@@ -135,7 +135,7 @@ const Role = ({
               </Grid>
             </Card>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Card title={(
               <>
                 {t_i18n('Capabilities in Draft')}
@@ -144,7 +144,7 @@ const Role = ({
             )}
             >
               <Grid container={true} spacing={3}>
-                <Grid item xs={12} style={{ paddingTop: 10 }}>
+                <Grid style={{ marginTop: -14 }} size={12}>
                   {queryRef && (
                     <React.Suspense>
                       <CapabilitiesList queryRef={queryRef} role={role} isCapabilitiesInDraft />

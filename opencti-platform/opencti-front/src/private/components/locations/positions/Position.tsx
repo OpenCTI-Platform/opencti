@@ -47,9 +47,9 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
-        <Grid item xs={4}>
+        <Grid size={4}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -58,33 +58,33 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
             </React.Suspense>
           )}
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <LocationMiniMap
             zoom={8}
             location={position}
             locationType="position"
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <StixDomainObjectOverview
             stixDomainObject={position}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={position.id}
             stixObjectOrStixRelationshipLink={`/dashboard/locations/positions/${position.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={position.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={position.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={position.id} />
         </Grid>
       </Grid>

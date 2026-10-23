@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
-import { createTheme, ThemeProvider, ThemeOptions } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import MuiThemeProvider from '../../../../components/MuiThemeProvider';
 import AppIntlProvider from '../../../../components/AppIntlProvider';
 import ThemeDark from '../../../../components/ThemeDark';
 import { LoginContextProvider } from '../loginContext';
@@ -28,11 +29,11 @@ const renderWithLoginContext = (ui: React.ReactNode) => {
   const result = render(
     <BrowserRouter useTransitions={false}>
       <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
-        <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
+        <MuiThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
           <LoginContextProvider>
             {ui}
           </LoginContextProvider>
-        </ThemeProvider>
+        </MuiThemeProvider>
       </AppIntlProvider>
     </BrowserRouter>,
   );

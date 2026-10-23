@@ -37,8 +37,11 @@ const GAP = 8;
 export const GRAPH_TOOLBAR_HEIGHT = 54;
 export const GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE = 134;
 
-/** Floating panels over the canvas: view controls, legend, details panel. */
-export const GRAPH_PANEL_SELECTOR = '[data-graph-panel], .MuiDrawer-paperAnchorRight';
+/**
+ * Floating panels over the canvas: view controls, legend, details panel. Material UI puts the
+ * anchor class of a drawer on its root, not on its paper.
+ */
+export const GRAPH_PANEL_SELECTOR = '[data-graph-panel], .MuiDrawer-anchorRight .MuiDrawer-paper';
 
 /** A panel is cleared by keeping the nodes beside it or by keeping them above or below it. */
 const clearancesOf = (panel: ScreenRect, size: { width: number; height: number }): Partial<FrameInsets>[] => {

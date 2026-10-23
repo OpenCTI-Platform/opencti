@@ -1,7 +1,8 @@
 import React, { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import MuiThemeProvider from '../../../../../components/MuiThemeProvider';
 import { TooltipProvider } from '@filigran/design-system';
 import GlobalWorkflowSettingsCard from './GlobalWorkflowSettingsCard';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
@@ -12,11 +13,11 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 // The card's help tooltip is the library one, and it throws outside a
 // `TooltipProvider` -- the app mounts one in `private/Index.tsx`.
 const renderWithTheme = (component: React.ReactElement) => render(
-  <ThemeProvider theme={testTheme}>
+  <MuiThemeProvider theme={testTheme}>
     <TooltipProvider>
       {component}
     </TooltipProvider>
-  </ThemeProvider>,
+  </MuiThemeProvider>,
 );
 
 vi.mock('@common/card/Card', () => ({
@@ -119,7 +120,7 @@ describe('GlobalWorkflowSettingsCard', () => {
 
     renderWithTheme(<GlobalWorkflowSettingsCard />);
 
-    expect(screen.getByRole('checkbox')).toBeDisabled();
+    expect(screen.getByRole('switch')).toBeDisabled();
   });
 
   it('toggles sync_workflow_status_by_name via the generic entitySettingsFieldPatch mutation', () => {
@@ -130,7 +131,7 @@ describe('GlobalWorkflowSettingsCard', () => {
 
     renderWithTheme(<GlobalWorkflowSettingsCard />);
 
-    const switchInput = screen.getByRole('checkbox');
+    const switchInput = screen.getByRole('switch');
     expect(switchInput).not.toBeDisabled();
     expect(switchInput).not.toBeChecked();
 

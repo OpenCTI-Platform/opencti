@@ -107,14 +107,14 @@ describe('DraftDefaultsSection', () => {
       />,
     );
 
-    expect(screen.getByRole('checkbox', { name: 'Create as draft by default' })).toBeChecked();
+    expect(screen.getByRole('switch', { name: 'Create as draft by default' })).toBeChecked();
   });
 
   it('calls handleFieldChange with the correct path when the draft-by-default toggle is switched', () => {
     const handleFieldChange = vi.fn();
     testRender(<DraftDefaultsSection formData={baseFormData} handleFieldChange={handleFieldChange} />);
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Create as draft by default' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Create as draft by default' }));
 
     expect(handleFieldChange).toHaveBeenCalledWith('isDraftByDefault', true);
   });
@@ -127,14 +127,14 @@ describe('DraftDefaultsSection', () => {
       />,
     );
 
-    expect(screen.getByRole('checkbox', { name: 'Allow users to uncheck draft mode' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Allow users to uncheck draft mode' })).toBeInTheDocument();
     expect(screen.getByText('Advanced Draft Settings')).toBeInTheDocument();
   });
 
   it('does not render draft override but keeps advanced settings when drafts are not enabled by default', () => {
     testRender(<DraftDefaultsSection formData={baseFormData} handleFieldChange={vi.fn()} />);
 
-    expect(screen.queryByRole('checkbox', { name: 'Allow users to uncheck draft mode' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: 'Allow users to uncheck draft mode' })).not.toBeInTheDocument();
     expect(screen.getByText('Advanced Draft Settings')).toBeInTheDocument();
   });
 
@@ -143,7 +143,7 @@ describe('DraftDefaultsSection', () => {
       testRender(<DraftDefaultsSection formData={baseFormData} handleFieldChange={vi.fn()} />);
       expandAdvancedSettings();
 
-      const requiredSwitches = screen.queryAllByRole('checkbox', { name: 'Required' });
+      const requiredSwitches = screen.queryAllByRole('switch', { name: 'Required' });
       expect(requiredSwitches).toHaveLength(0);
     });
 
@@ -160,7 +160,7 @@ describe('DraftDefaultsSection', () => {
       );
       expandAdvancedSettings();
 
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Required' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Required' }));
 
       expect(handleFieldChange).toHaveBeenCalledWith('draftDefaults.name.isRequired', true);
     });
@@ -190,7 +190,7 @@ describe('DraftDefaultsSection', () => {
       );
       expandAdvancedSettings();
 
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Required' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Required' }));
 
       expect(handleFieldChange).toHaveBeenCalledWith('draftDefaults.description.isRequired', true);
     });
@@ -223,7 +223,7 @@ describe('DraftDefaultsSection', () => {
       );
       expandAdvancedSettings();
 
-      const editableSwitches = screen.getAllByRole('checkbox', { name: 'Editable by end user' });
+      const editableSwitches = screen.getAllByRole('switch', { name: 'Editable by end user' });
       expect(editableSwitches[2]).toBeChecked();
       handleFieldChange.mockClear();
 
@@ -306,7 +306,7 @@ describe('DraftDefaultsSection', () => {
       );
       expandAdvancedSettings();
 
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Required' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Required' }));
 
       expect(handleFieldChange).toHaveBeenCalledWith('draftDefaults.author.isRequired', true);
     });
@@ -318,7 +318,7 @@ describe('DraftDefaultsSection', () => {
       testRender(<DraftDefaultsSection formData={baseFormData} handleFieldChange={handleFieldChange} />);
       expandAdvancedSettings();
 
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Activate access restriction' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Activate access restriction' }));
 
       expect(handleFieldChange).toHaveBeenCalledWith('draftDefaults.authorizedMembers.enabled', true);
       expect(handleFieldChange).toHaveBeenCalledWith('draftDefaults.authorizedMembers.defaults', [{
@@ -349,7 +349,7 @@ describe('DraftDefaultsSection', () => {
       );
       expandAdvancedSettings();
 
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Activate access restriction' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Activate access restriction' }));
 
       expect(handleFieldChange).toHaveBeenCalledWith('draftDefaults.authorizedMembers.enabled', true);
       expect(handleFieldChange).not.toHaveBeenCalledWith('draftDefaults.authorizedMembers.defaults', expect.anything());
@@ -400,7 +400,7 @@ describe('DraftDefaultsSection', () => {
       );
       expandAdvancedSettings();
 
-      const editableSwitches = screen.getAllByRole('checkbox', { name: 'Editable by end user' });
+      const editableSwitches = screen.getAllByRole('switch', { name: 'Editable by end user' });
       fireEvent.click(editableSwitches[editableSwitches.length - 1]);
 
       expect(handleFieldChange).toHaveBeenCalledWith('draftDefaults.authorizedMembers.isEditable', true);

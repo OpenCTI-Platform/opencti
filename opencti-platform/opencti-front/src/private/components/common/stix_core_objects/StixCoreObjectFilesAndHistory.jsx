@@ -283,7 +283,7 @@ const StixCoreObjectFilesAndHistory = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
         <FileImportViewer
           entity={entity}
@@ -305,7 +305,7 @@ const StixCoreObjectFilesAndHistory = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
-        <Grid item xs={12} style={{ paddingTop: 14 }}>
+        <Grid style={{ marginTop: -10 }} size={12}>
           <StixCoreObjectHistory
             stixCoreObjectId={id}
             withoutRelations={withoutRelations}

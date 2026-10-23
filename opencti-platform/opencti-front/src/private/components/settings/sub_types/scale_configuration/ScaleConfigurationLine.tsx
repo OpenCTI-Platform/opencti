@@ -54,9 +54,9 @@ const ScaleConfigurationLine: FunctionComponent<
     >
       {({ validateForm }) => {
         return (
-          <Form style={{ marginTop: noMargin ? 0 : 15 }}>
+          <Form style={{ marginTop: noMargin ? -24 : 15 }}>
             <Grid container spacing={3} columns={13}>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={4}>
                 <Field
                   component={TextField}
                   type="number"
@@ -67,7 +67,7 @@ const ScaleConfigurationLine: FunctionComponent<
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value !== '' ? Number.parseInt(value, 10) : '')}
                 />
               </Grid>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={4}>
                 <Field
                   component={ColorPickerField}
                   variant="outlined"
@@ -77,7 +77,7 @@ const ScaleConfigurationLine: FunctionComponent<
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
                 />
               </Grid>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={4}>
                 <Field
                   component={TextField}
                   variant="outlined"
@@ -88,7 +88,7 @@ const ScaleConfigurationLine: FunctionComponent<
                 />
               </Grid>
               {deleteEnabled && (
-                <Grid item xs={1} style={{ paddingTop: noMargin ? 0 : 24 }}>
+                <Grid size={1}>
                   <div className={classes.button}>
                     {handleDelete && (
                       <IconButton aria-label={t_i18n('Delete')} onClick={() => handleDelete()}>

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router';
 import { Box, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { ViewListOutlined, ViewModuleOutlined, WidgetsOutlined } from '@mui/icons-material';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
 import { useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import IngestionCatalogCard from '@components/integrations/catalog/IngestionCatalogCard';

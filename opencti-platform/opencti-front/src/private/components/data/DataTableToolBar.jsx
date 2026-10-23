@@ -1558,11 +1558,14 @@ class DataTableToolBar extends Component {
     if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
       return;
     }
-    actionsInputs[i] = R.assoc(
-      'values',
-      Array.isArray(newValue) ? newValue : [newValue],
-      actionsInputs[i] || {},
-    );
+    // A typed date that does not exist (2023-02-30) is accepted as an invalid date. It empties
+    // the step, so the update stays disabled rather than sending the last valid date typed.
+    const isInvalidDate = newValue instanceof Date && Number.isNaN(newValue.getTime());
+    let values = Array.isArray(newValue) ? newValue : [newValue];
+    if (isInvalidDate) {
+      values = [];
+    }
+    actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
     this.setState({ actionsInputs });
   }
 
@@ -3004,8 +3007,8 @@ class DataTableToolBar extends Component {
                         >
                           <CancelOutlined fontSize="small" />
                         </IconButton>
-                        <Grid container={true} spacing={3}>
-                          <Grid item xs={3}>
+                        <Grid container={true} spacing={3} sx={{ flex: 1 }}>
+                          <Grid size={3}>
                             <FormControl className={classes.formControl}>
                               <Select
                                 value={actionsInputs[i]?.type ?? ''}
@@ -3029,16 +3032,16 @@ class DataTableToolBar extends Component {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid item xs={3}>
+                          <Grid size={3}>
                             <FormControl className={classes.formControl}>
                               {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, customFieldDefinitionsOfTypes)}
                             </FormControl>
                           </Grid>
-                          <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
+                          <Grid style={{ display: 'flex', flexDirection: 'column-reverse' }} size={6}>
                             {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
                           </Grid>
                           {['start_time', 'stop_time'].includes(actionsInputs[i]?.field) && actionsInputs[i]?.type !== 'REMOVE' && (
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                               <Alert
                                 severity="info"
                                 variant="outlined"

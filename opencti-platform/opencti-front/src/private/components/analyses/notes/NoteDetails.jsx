@@ -36,7 +36,7 @@ class NoteDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Entity details')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={9}>
+            <Grid size={9}>
               <Label>
                 {t('Abstract')}
               </Label>
@@ -57,7 +57,7 @@ class NoteDetailsComponent extends Component {
                 resolveImageUrl={noteImageResolver}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid size={3}>
               <Label>
                 {t('Note types')}
               </Label>
