@@ -18,6 +18,11 @@ vi.mock('../../../../relay/environment', async () => {
   };
 });
 
+const NoLabelHarness = () => (
+  // the wiring of SubTypeWorkflowStatusAdd / SubTypeWorkflowStatusEdit: no label prop
+  <StatusTemplateField name="statusTemplate" setFieldValue={() => {}} helpertext="" />
+);
+
 const Harness = () => {
   const { setFieldValue } = useFormikContext<Record<string, unknown>>();
   return (
@@ -52,5 +57,24 @@ describe('StatusTemplateField', () => {
     await waitFor(() => expect(screen.getByText('In progress')).toBeInTheDocument());
     await userEvent.click(screen.getByText('In progress'));
     expect((input as HTMLInputElement).value).toBe('In progress');
+  });
+
+  it('renders no label when none is passed', () => {
+    testRender(
+      <Formik initialValues={{ statusTemplate: null }} onSubmit={() => {}}>
+        <Form><NoLabelHarness /></Form>
+      </Formik>,
+    );
+    expect(screen.getByRole('combobox')).not.toHaveAccessibleName();
+    expect(screen.queryByText('Name')).not.toBeInTheDocument();
+  });
+
+  it('shows the label passed by StatusForm', () => {
+    testRender(
+      <Formik initialValues={{ statusTemplate: null }} onSubmit={() => {}}>
+        <Form><Harness /></Form>
+      </Formik>,
+    );
+    expect(screen.getByRole('combobox')).toHaveAccessibleName('Status');
   });
 });
