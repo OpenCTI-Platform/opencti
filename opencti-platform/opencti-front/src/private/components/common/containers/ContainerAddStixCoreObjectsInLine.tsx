@@ -163,7 +163,6 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     orderAsc,
     searchTerm,
     filters,
-    numberOfElements,
   } = viewStorage;
   const [containerRef, setRef] = useState<HTMLDivElement | null>(null);
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
@@ -308,7 +307,6 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         disableCards={true}
         filters={filters}
         paginationOptions={searchPaginationOptions}
-        numberOfElements={numberOfElements}
         iconExtension={true}
         parametersWithPadding={true}
         disableExport={true}
