@@ -38,42 +38,66 @@ export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
-const initActivityManager = () => {
-  const activityReadCache = new LRUCache({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
-  const cleanInputData = (obj: any) => {
-    const stack = [obj];
-    while (stack.length > 0) {
-      const currentObj = stack.pop() as any;
-      Object.keys(currentObj).forEach((key) => {
-        if (LOGS_SENSITIVE_FIELDS.includes(key)) {
-          currentObj[key] = REDACTED_INFORMATION;
-        }
-        // Need special case to clean inputs
-        if (key === 'input' && Array.isArray(currentObj[key])) {
-          const preparedElements = [];
-          for (let index = 0; index < currentObj[key].length; index += 1) {
-            const currentObjElementElement = currentObj[key][index];
-            if (currentObjElementElement.key && currentObjElementElement.value && LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)) {
-              preparedElements.push({ [currentObjElementElement.key]: REDACTED_INFORMATION });
-            } else {
-              preparedElements.push(currentObjElementElement);
-            }
-          }
-          currentObj[key] = preparedElements;
-        }
-        if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
-          if (key === 'input') {
-            // remove unsupported props in input like sort, _id that cause errors for old databases.
-            UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
-              delete currentObj[key][prop];
-            });
-          }
-          stack.push(currentObj[key]);
-        }
+// Filter structures are stored as JSON strings, legacy activity indices can map them as text.
+const SERIALIZED_FILTERS_PROPS = ['filters', 'dynamicFrom', 'dynamicTo'];
+
+const isPlainObject = (value: any) => {
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+};
+
+// Special case to clean inputs given as a list of { key, value } patches
+const redactInputElements = (elements: any[]) => elements.map((element) => {
+  if (element?.key && element.value && LOGS_SENSITIVE_FIELDS.includes(element.key)) {
+    return { [element.key]: REDACTED_INFORMATION };
+  }
+  return element;
+});
+
+// Build a cleaned copy of the data, the original object can still be used by the caller (resolver args for example).
+const sanitizeActivityData = (value: any, serializeFilters: boolean): any => {
+  if (Array.isArray(value)) {
+    return value.map((element) => sanitizeActivityData(element, serializeFilters));
+  }
+  if (!isPlainObject(value)) {
+    return value;
+  }
+  const sanitized: Record<string, any> = {};
+  Object.keys(value).forEach((key) => {
+    if (LOGS_SENSITIVE_FIELDS.includes(key)) {
+      sanitized[key] = REDACTED_INFORMATION;
+      return;
+    }
+    const isFiltersProp = serializeFilters && SERIALIZED_FILTERS_PROPS.includes(key);
+    const element = key === 'input' && Array.isArray(value[key]) ? redactInputElements(value[key]) : value[key];
+    // Nested filter groups are part of the serialized structure, they must not be serialized separately.
+    const cleanedElement = sanitizeActivityData(element, serializeFilters && !isFiltersProp);
+    if (key === 'input' && isPlainObject(cleanedElement)) {
+      // remove unsupported props in input like sort, _id that cause errors for old databases.
+      UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
+        delete cleanedElement[prop];
       });
     }
-    return obj;
-  };
+    if (isFiltersProp && typeof cleanedElement === 'object' && cleanedElement !== null) {
+      try {
+        sanitized[key] = JSON.stringify(cleanedElement);
+      } catch {
+        // Unserializable filters are not kept in the activity
+      }
+      return;
+    }
+    sanitized[key] = cleanedElement;
+  });
+  return sanitized;
+};
+
+export const cleanInputData = (obj: any) => sanitizeActivityData(obj, true);
+
+const initActivityManager = () => {
+  const activityReadCache = new LRUCache({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
   const buildActivityStreamEvent = (action: UserAction, message: string): ActivityStreamEvent => {
     const data = cleanInputData(action.context_data ?? {});
     return {
