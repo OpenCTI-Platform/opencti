@@ -2,8 +2,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { createTheme } from '@mui/material/styles';
-import MuiThemeProvider from '../../MuiThemeProvider';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import DataTableBody from './DataTableBody';
 import { useDataTableContext } from './DataTableContext';
 import { useDataTable } from '../dataTableHooks';
@@ -27,7 +26,7 @@ const theme = createTheme();
 
 const tableBody = (pageStart = 1, emptyStateMessage?: string) => (
   <MemoryRouter>
-    <MuiThemeProvider theme={theme}>
+    <ThemeProvider theme={theme}>
       <DataTableBody
         pageStart={pageStart}
         pageSize={1}
@@ -35,7 +34,7 @@ const tableBody = (pageStart = 1, emptyStateMessage?: string) => (
         hideHeaders={true}
         emptyStateMessage={emptyStateMessage}
       />
-    </MuiThemeProvider>
+    </ThemeProvider>
   </MemoryRouter>
 );
 

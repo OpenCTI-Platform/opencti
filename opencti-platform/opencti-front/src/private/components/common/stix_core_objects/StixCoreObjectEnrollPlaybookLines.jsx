@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import * as R from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { PlayCircleOutlined } from '@mui/icons-material';
-import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { AUTOMATION } from '../../../../utils/hooks/useGranted';
@@ -30,25 +29,9 @@ const stixCoreObjectEnrollPlaybookLinesPlaybookExecute = graphql`
   }
 `;
 
-const styles = (theme) => ({
-  noResult: {
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  tooltip: {
-    maxWidth: 600,
-  },
-});
-
 const StixCoreObjectEnrollPlaybook = ({
   id,
   playbooksForEntity,
-  classes,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t_i18n } = useFormatter();
@@ -76,7 +59,6 @@ const StixCoreObjectEnrollPlaybook = ({
               <div key={playbook.id}>
                 <ListItem
                   divider={true}
-                  classes={{ root: classes.item }}
                   secondaryAction={(
                     <Security needs={[AUTOMATION]}>
                       <div style={{ right: 0 }}>
@@ -93,7 +75,7 @@ const StixCoreObjectEnrollPlaybook = ({
                     </Security>
                   )}
                 >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
                     <ItemIcon type="Playbook" />
                   </ListItemIcon>
                   <ListItemText primary={playbook.name} />
@@ -102,9 +84,16 @@ const StixCoreObjectEnrollPlaybook = ({
             );
           })
         ) : (
-          <div className={classes.noResult}>
+          <Box
+            sx={{
+              color: (theme) => theme.palette.text.primary,
+              fontSize: 15,
+              textAlign: 'center',
+              marginTop: '20px',
+            }}
+          >
             {t_i18n('No available playbooks for this entity')}
-          </div>
+          </Box>
         )}
       </List>
     </>
@@ -126,7 +115,4 @@ const StixCoreObjectEnrollPlaybookLinesFragment = createRefetchContainer(
   stixCoreObjectEnrollPlaybookLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectEnrollPlaybookLinesFragment);
+export default inject18n(StixCoreObjectEnrollPlaybookLinesFragment);

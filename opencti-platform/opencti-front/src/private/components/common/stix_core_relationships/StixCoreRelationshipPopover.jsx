@@ -7,9 +7,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
@@ -18,21 +17,8 @@ import { deleteNodeFromContainer } from '../../../../utils/store';
 import { KnowledgeBarRefreshEvent } from '../bulk/useForceUpdate';
 import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -121,9 +107,9 @@ class StixCoreRelationshipPopover extends Component {
   }
 
   render() {
-    const { classes, t, stixCoreRelationshipId, disabled, isCoverage } = this.props;
+    const { t, stixCoreRelationshipId, disabled, isCoverage } = this.props;
     return (
-      <div className={classes.container}>
+      <Container>
         <IconButton
           aria-label={t('Open menu')}
           onClick={this.handleOpen.bind(this)}
@@ -179,7 +165,7 @@ class StixCoreRelationshipPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
@@ -188,14 +174,10 @@ StixCoreRelationshipPopover.propTypes = {
   stixCoreRelationshipId: PropTypes.string,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   onDelete: PropTypes.func,
   connectionKey: PropTypes.string,
   objectId: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipPopover);
+export default inject18n(StixCoreRelationshipPopover);

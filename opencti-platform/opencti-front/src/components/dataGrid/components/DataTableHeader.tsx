@@ -2,68 +2,63 @@ import React, { FunctionComponent, MouseEvent, RefObject, useRef } from 'react';
 import { ArrowDropDown, ArrowDropUp, MoreVert } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import SimpleDraggable from 'react-draggable';
-import makeStyles from '@mui/styles/makeStyles';
-import { createStyles } from '@mui/styles';
-import { Theme as MuiTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { DataTableColumn, DataTableHeaderProps, DataTableVariant } from '../dataTableTypes';
+import { DataTableHeaderProps, DataTableVariant } from '../dataTableTypes';
 import { useDataTableContext } from './DataTableContext';
 
 export const SELECT_COLUMN_SIZE = 42;
 export const ICON_COLUMN_SIZE = 56;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => createStyles({
-  headerContainer: {
-    flex: '0 0 auto',
-    position: 'relative',
-    display: 'flex',
-    fontWeight: 'bold',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    '& .react-draggable-dragging': {
+const HeaderContainer = styled('div')(({ theme }) => ({
+  flex: '0 0 auto',
+  position: 'relative',
+  display: 'flex',
+  fontWeight: 'bold',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  '& .react-draggable-dragging': {
+    backgroundColor: theme.palette.primary.main,
+  },
+  '&:hover': {
+    '& .react-draggable': {
       backgroundColor: theme.palette.primary.main,
     },
-    '&:hover': {
-      '& $draggable': {
-        backgroundColor: theme.palette.primary.main,
-      },
-      '& $icon': {
-        visibility: 'visible',
-      },
+    '& .MuiButton-root': {
+      visibility: 'visible',
     },
   },
-  label: {
-    background: 'none',
-    border: 'none',
-    color: theme.palette.text.primary,
-    fontWeight: 700,
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-    display: 'flex',
-    alignItems: 'center',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    fontSize: '12px',
-    width: '100%',
-    cursor: ({ column: { isSortable } }) => (isSortable ? 'pointer' : 'unset'),
-  },
-  draggable: {
-    position: 'absolute',
-    top: '8px',
-    right: 3,
-    height: theme.spacing(4),
-    width: 10,
-    paddingLeft: 4,
-    paddingRight: 4,
-    backgroundClip: 'content-box',
-    borderRadius: 2,
-    cursor: 'col-resize',
-  },
-  icon: {
-    visibility: 'hidden',
-  },
+}));
+
+const Label = styled('button', {
+  shouldForwardProp: (prop) => prop !== 'sortable',
+})<{ sortable?: boolean }>(({ theme, sortable }) => ({
+  background: 'none',
+  border: 'none',
+  color: theme.palette.text.primary,
+  fontWeight: 700,
+  paddingLeft: theme.spacing(1),
+  paddingRight: theme.spacing(1),
+  display: 'flex',
+  alignItems: 'center',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  fontSize: '12px',
+  width: '100%',
+  cursor: sortable ? 'pointer' : 'unset',
+}));
+
+const Draggable = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  top: '8px',
+  right: 3,
+  height: theme.spacing(4),
+  width: 10,
+  paddingLeft: 4,
+  paddingRight: 4,
+  backgroundClip: 'content-box',
+  borderRadius: 2,
+  cursor: 'col-resize',
 }));
 
 const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
@@ -76,7 +71,6 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
   orderAsc,
 }) => {
   const draggableRef = useRef<HTMLDivElement>(null);
-  const classes = useStyles({ column });
 
   const {
     columns,
@@ -106,29 +100,28 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
   const cellWidth = Math.round(tableWidth * (column.percentWidth / 100));
 
   return (
-    <div
+    <HeaderContainer
       key={column.id}
-      className={classes.headerContainer}
       style={{ width: cellWidth }}
     >
       <div style={{ overflow: 'hidden', flex: 1 }} role="columnheader" aria-sort={sortBy ? (orderAsc ? 'ascending' : 'descending') : 'none'}>
-        <button type="button" className={classes.label} onClick={throttleSortColumn} disabled={!column.isSortable}>
+        <Label type="button" sortable={column.isSortable} onClick={throttleSortColumn} disabled={!column.isSortable}>
           <Tooltip title={t_i18n(column.label)}>
             <span>{t_i18n(column.label)}</span>
           </Tooltip>
           {sortBy && column.isSortable && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
-        </button>
+        </Label>
       </div>
       {hasColumnMenu && (
         <IconButton
           disableRipple
           aria-label={t_i18n('View more')}
-          className={classes.icon}
           onClick={openColumnMenu}
           style={{
             visibility: isActive ? 'visible' : undefined,
           }}
           sx={{
+            visibility: 'hidden',
             marginRight: 1,
             opacity: 0.5,
             width: 24,
@@ -141,7 +134,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
         </IconButton>
       )}
 
-      <div className={classes.aligner} />
+      <div />
 
       {variant !== DataTableVariant.inline && variant !== DataTableVariant.widget && (
         <SimpleDraggable
@@ -181,10 +174,10 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
             }
           }}
         >
-          <div ref={draggableRef} className={classes.draggable} />
+          <Draggable ref={draggableRef} />
         </SimpleDraggable>
       )}
-    </div>
+    </HeaderContainer>
   );
 };
 

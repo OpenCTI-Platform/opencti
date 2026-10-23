@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import ComboboxField, { ComboboxFieldProps } from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -11,19 +11,16 @@ import { DashboardFieldQuery } from './__generated__/DashboardFieldQuery.graphql
 import ItemIcon from '../../../../components/ItemIcon';
 import { GenericContext } from '../model/GenericContextModel';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface DashboardFieldProps {
   onChange: (name: string, value: string) => void;
@@ -49,7 +46,6 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
   context,
   queryRef,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { workspaces } = usePreloadedQuery<DashboardFieldQuery>(
     workspaceQuery,
@@ -74,10 +70,10 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
       style={fieldSpacingContainerStyle}
       renderOption={(option) => (
         <>
-          <div className={classes.icon} style={{ color: option.color }}>
+          <OptionIcon style={{ color: option.color }}>
             <ItemIcon type={option.type} />
-          </div>
-          <div className={classes.text}>{option.label}</div>
+          </OptionIcon>
+          <OptionText>{option.label}</OptionText>
         </>
       )}
     />

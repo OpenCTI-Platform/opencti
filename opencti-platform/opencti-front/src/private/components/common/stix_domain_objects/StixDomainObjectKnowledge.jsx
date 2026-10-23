@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
-import withStyles from '@mui/styles/withStyles';
+import { useTheme } from '@mui/material/styles';
 import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
 import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
@@ -14,46 +13,6 @@ import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsHorizontalBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import EntityStixSightingRelationshipsDonut from '../../events/stix_sighting_relationships/EntityStixSightingRelationshipsDonut';
 import CardNumber from '../../../../components/common/card/CardNumber';
-import { withTheme } from '@mui/styles';
-
-const styles = (theme) => ({
-  card: {
-    width: '100%',
-    marginBottom: 20,
-    borderRadius: 4,
-    position: 'relative',
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  itemIconSecondary: {
-    marginRight: 0,
-    color: theme.palette.secondary.main,
-  },
-  number: {
-    marginTop: 10,
-    float: 'left',
-    fontSize: 30,
-  },
-  title: {
-    marginTop: 5,
-    textTransform: 'uppercase',
-    fontSize: 12,
-    fontWeight: 500,
-    color: '#a8a8a8',
-  },
-  icon: {
-    position: 'absolute',
-    color: theme.palette.primary.main,
-    top: 35,
-    right: 20,
-  },
-  paper: {
-    margin: '10px 0 70px 0',
-    padding: '15px 15px 15px 15px',
-    borderRadius: 4,
-  },
-});
 
 const stixDomainObjectKnowledgeReportsNumberQuery = graphql`
   query StixDomainObjectKnowledgeReportsNumberQuery(
@@ -90,7 +49,7 @@ const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   }
 `;
 
-class StixDomainObjectKnowledge extends Component {
+class StixDomainObjectKnowledgeComponent extends Component {
   render() {
     const { t, n, stixDomainObjectId, theme } = this.props;
     return (
@@ -253,16 +212,16 @@ class StixDomainObjectKnowledge extends Component {
   }
 }
 
-StixDomainObjectKnowledge.propTypes = {
+StixDomainObjectKnowledgeComponent.propTypes = {
   stixDomainObjectId: PropTypes.string,
   stixDomainObjectType: PropTypes.string,
-  classes: PropTypes.object,
   t: PropTypes.func,
   theme: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixDomainObjectKnowledge);
+const StixDomainObjectKnowledge = (props) => {
+  const theme = useTheme();
+  return <StixDomainObjectKnowledgeComponent {...props} theme={theme} />;
+};
+
+export default inject18n(StixDomainObjectKnowledge);

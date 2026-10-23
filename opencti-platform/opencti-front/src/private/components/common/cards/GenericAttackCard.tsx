@@ -3,10 +3,9 @@ import * as R from 'ramda';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
 import { CardActions, Stack } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
@@ -18,30 +17,15 @@ import Card from '../../../../components/common/card/Card';
 import BookmarkToggle from '../../../../components/common/bookmark/BookmarkToggle';
 import { getFileUri } from '../../../../utils/utils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  header: {
-    height: 55,
-    paddingBottom: 0,
-    marginBottom: 0,
-  },
-  contentDummy: {
-    width: '100%',
-    height: 200,
-    marginTop: 20,
-    padding: 0,
-  },
-  description: {
-    marginTop: 5,
-    height: 90,
-    display: '-webkit-box',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    '-webkit-line-clamp': 4,
-    '-webkit-box-orient': 'vertical',
-  },
-}));
+const Description = styled('div')({
+  marginTop: 5,
+  height: 90,
+  display: '-webkit-box',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  WebkitLineClamp: 4,
+  WebkitBoxOrient: 'vertical',
+});
 
 interface toEdges {
   edges: ReadonlyArray<{ node: { to: { name?: string } | null } }>;
@@ -87,7 +71,6 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   onLabelClick,
   bookmarksIds,
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n, fld } = useFormatter();
 
@@ -196,7 +179,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           )}
         </Stack>
 
-        <div className={classes.description}>
+        <Description>
           <MarkdownDisplay
             content={cardData.description}
             remarkGfmPlugin={true}
@@ -206,7 +189,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             limit={260}
             resolveImageUrl={resolveEmbeddedImageUrl}
           />
-        </div>
+        </Description>
         <div style={{ paddingTop: 12 }}>
           <Info
             title={t_i18n('Known as')}
@@ -249,12 +232,10 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
 };
 
 export const GenericAttackCardDummy = () => {
-  const classes = useStyles();
   return (
     <Card>
       <CardHeader
-        sx={{ padding: 0 }}
-        classes={{ root: classes.header }}
+        sx={{ padding: 0, height: 55, paddingBottom: 0, marginBottom: 0 }}
         title={(
           <Skeleton
             animation="wave"
@@ -275,8 +256,8 @@ export const GenericAttackCardDummy = () => {
           title: { color: 'inherit' },
         }}
       />
-      <CardContent classes={{ root: classes.contentDummy }}>
-        <div className={classes.description}>
+      <CardContent sx={{ width: '100%', height: 200, marginTop: '20px', padding: 0 }}>
+        <Description>
           <Skeleton
             animation="wave"
             variant="rectangular"
@@ -295,7 +276,7 @@ export const GenericAttackCardDummy = () => {
             width="90%"
             style={{ marginBottom: 10 }}
           />
-        </div>
+        </Description>
         <div>
           <Skeleton
             animation="wave"

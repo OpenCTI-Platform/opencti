@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { CountryFieldSearchQuery$data } from '@components/common/form/__generated__/CountryFieldSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
@@ -9,20 +9,16 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Field, { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
 
-}));
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface CountryFieldProps {
   id: string;
@@ -56,7 +52,6 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
   helpertext,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [countries, setCountries] = useState<FieldOption[]>([]);
 
@@ -106,10 +101,10 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
         onFocusInput={() => searchCountries('')}
         renderOption={(option) => (
           <>
-            <div className={classes.icon} style={{ color: option.color }}>
+            <OptionIcon style={{ color: option.color }}>
               <ItemIcon type="Country" />
-            </div>
-            <div className={classes.text}>{option.label ?? ''}</div>
+            </OptionIcon>
+            <OptionText>{option.label ?? ''}</OptionText>
           </>
         )}
       />

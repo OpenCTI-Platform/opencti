@@ -7,31 +7,15 @@ import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import { Link } from 'react-router';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import { SubTypesLine_node$key } from './__generated__/SubTypesLine_node.graphql';
 import { Checkbox } from '@filigran/design-system';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const subTypesLinesFragment = graphql`
   fragment SubTypesLine_node on SubType {
@@ -83,7 +67,6 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
   onToggleShiftEntity,
   index,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const nodeSubType = useFragment(subTypesLinesFragment, node);
 
@@ -114,7 +97,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
     <ListItemButton
       key={nodeSubType.id}
       divider={true}
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       component={Link}
       to={`/dashboard/settings/customization/entity_types/${nodeSubType.id}`}
     >
@@ -123,7 +106,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
           ? onToggleShiftEntity(index, { id: nodeSubType.id }, event)
           : onToggleEntity({ id: nodeSubType.id }, event))
         }
-        classes={{ root: classes.itemIcon }}
+        sx={{ color: (theme) => theme.palette.primary.main }}
         style={{ minWidth: 40 }}
       >
         <Checkbox
@@ -133,46 +116,41 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
           }
         />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
         <ItemIcon type={nodeSubType.id} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               {t_i18n(`entity_${nodeSubType.label}`)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.workflow_status.width }}
             >
               {renderWorkflowStatus()}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.enforce_reference.width }}
             >
               {renderOptionIcon('enforce_reference')}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.automatic_references.width }}
             >
               {renderOptionIcon('platform_entity_files_ref')}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.hidden.width }}
             >
               {renderOptionIcon('platform_hidden_type')}
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
@@ -186,9 +164,8 @@ export const SubTypeLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
-    <ListItem divider={true} classes={{ root: classes.item }}>
+    <ListItem divider={true} sx={{ paddingLeft: '10px', height: 50 }}>
       <ListItemIcon style={{ minWidth: 40 }}>
         <Checkbox
           disabled={true}
@@ -206,9 +183,8 @@ export const SubTypeLineDummy = ({
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 <Skeleton
@@ -217,7 +193,7 @@ export const SubTypeLineDummy = ({
                   width="90%"
                   height={20}
                 />
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}

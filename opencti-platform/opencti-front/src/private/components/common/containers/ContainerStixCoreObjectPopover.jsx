@@ -7,12 +7,10 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import { styled, useTheme } from '@mui/material/styles';
 import { Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose } from 'ramda';
 import { Component } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
@@ -25,21 +23,8 @@ import { deleteElementByValue } from '../../../../utils/utils';
 import CommitMessage from '../form/CommitMessage';
 import stopEvent from '../../../../utils/domEvent';
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 export const containerStixCoreObjectPopoverRemoveMutation = graphql`
@@ -89,7 +74,7 @@ export const containerStixCoreObjectPopoverDeleteMutation = graphql`
   }
 `;
 
-class ContainerStixCoreObjectPopover extends Component {
+class ContainerStixCoreObjectPopoverComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -274,10 +259,10 @@ class ContainerStixCoreObjectPopover extends Component {
   }
 
   render() {
-    const { classes, t, theme, contentMappingData, mapping, containerId, enableReferences } = this.props;
+    const { t, theme, contentMappingData, mapping, containerId, enableReferences } = this.props;
     const { referenceDialogOpened } = this.state;
     return (
-      <div className={classes.container}>
+      <Container>
         <IconButton
           aria-label={t('Open menu')}
           color="primary"
@@ -422,19 +407,18 @@ class ContainerStixCoreObjectPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
 
-ContainerStixCoreObjectPopover.propTypes = {
+ContainerStixCoreObjectPopoverComponent.propTypes = {
   containerId: PropTypes.string,
   toId: PropTypes.string,
   toStandardId: PropTypes.string,
   relationshipType: PropTypes.string,
   paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   selectedElements: PropTypes.object,
   setSelectedElements: PropTypes.func,
@@ -443,8 +427,9 @@ ContainerStixCoreObjectPopover.propTypes = {
   enableReferences: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(ContainerStixCoreObjectPopover);
+const ContainerStixCoreObjectPopover = (props) => {
+  const theme = useTheme();
+  return <ContainerStixCoreObjectPopoverComponent {...props} theme={theme} />;
+};
+
+export default inject18n(ContainerStixCoreObjectPopover);

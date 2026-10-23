@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import InfrastructureDetails from './InfrastructureDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -11,14 +10,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import { Infrastructure_infrastructure$key } from './__generated__/Infrastructure_infrastructure.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const infrastructureFragment = graphql`
   fragment Infrastructure_infrastructure on Infrastructure {
@@ -80,7 +71,6 @@ const Infrastructure = ({
 }) => {
   useInitCreateRelationshipContext();
 
-  const classes = useStyles();
   const infrastructureData = useFragment<Infrastructure_infrastructure$key>(
     infrastructureFragment,
     data,
@@ -90,7 +80,7 @@ const Infrastructure = ({
       <Grid
         container={true}
         spacing={3}
-        className={classes.gridContainer}
+        sx={{ marginBottom: '20px' }}
       >
         <Grid size={6}>
           <InfrastructureDetails infrastructure={infrastructureData} />

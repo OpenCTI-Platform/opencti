@@ -1,13 +1,12 @@
 import { useFragment } from 'react-relay';
 import { FunctionComponent, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { React } from 'mdi-material-ui';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { NorthEastOutlined } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { ListItemButton } from '@mui/material';
-import type { Theme } from '../../../../components/Theme';
 import { getFileUri } from '../../../../utils/utils';
 import { DataColumns } from '../../../../components/list_lines';
 import PictureManagementEdition from './PictureManagementEdition';
@@ -16,32 +15,17 @@ import { PictureManagementUtils_node$key } from './__generated__/PictureManageme
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    display: 'flex',
-    alignItems: 'center',
-    height: 40,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const BodyItem = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  height: 40,
+  fontSize: 13,
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+});
 
 interface PictureLineComponentProps {
   picture: PictureManagementUtils_node$key;
@@ -54,7 +38,6 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
   dataColumns,
   entityId,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const data = useFragment(pictureManagementUtilsFragment, picture);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
@@ -63,11 +46,11 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
   return (
     <>
       <ListItemButton
-        classes={{ root: classes.item }}
+        sx={{ paddingLeft: '10px', height: 50 }}
         divider={true}
         onClick={handleOpenUpdate}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <img
             style={{ height: 33, width: 33, borderRadius: 4 }}
             src={getFileUri(data.id)}
@@ -77,31 +60,28 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
         <ListItemText
           primary={(
             <>
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.description.width }}
               >
                 {data.metaData?.description}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.order.width }}
               >
                 {data.metaData?.order}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.inCarousel.width }}
               >
                 <ItemBoolean
                   status={data.metaData?.inCarousel === true}
                   label={data.metaData?.inCarousel ? t_i18n('Yes') : t_i18n('No')}
                 />
-              </div>
+              </BodyItem>
             </>
           )}
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
           <NorthEastOutlined fontSize="small" />
         </ListItemIcon>
       </ListItemButton>

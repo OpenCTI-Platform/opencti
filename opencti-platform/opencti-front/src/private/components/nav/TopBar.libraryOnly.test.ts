@@ -30,7 +30,6 @@ const ALLOWED: Record<string, string> = {
   // Retired by: the product dropping the legacy MUI theme. The bar reads the
   // palette to build its own gradient; it renders nothing with it.
   useTheme: 'palette read, renders nothing',
-  makeStyles: 'paints the Suspense fallback only',
   // Retired by: a library Header skeleton. The fallback keeps `background.nav`
   // unchanged by arbitration, and is not the rendered bar.
   AppBar: 'Suspense fallback only',

@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '../../common/drawer/Drawer';
@@ -11,13 +9,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import AddLocationsLines, { addLocationsLinesQuery } from './AddLocationsLines';
 import LocationCreation from '../../common/location/LocationCreation';
 import { insertNode } from '../../../../utils/store';
-
-const styles = () => ({
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
-});
 
 class AddLocations extends Component {
   constructor(props) {
@@ -105,8 +96,7 @@ class AddLocations extends Component {
 AddLocations.propTypes = {
   intrusionSet: PropTypes.object,
   intrusionSetLocations: PropTypes.array,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(AddLocations);
+export default inject18n(AddLocations);

@@ -1,4 +1,4 @@
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, ReactNode, useState } from 'react';
 import ListItem from '@mui/material/ListItem';
@@ -14,28 +14,13 @@ import TableViewIcon from '@mui/icons-material/TableView';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface IngestionCsvLineProps {
   node: IngestionCsvLine_node$key;
@@ -61,17 +46,16 @@ interface CellProps {
   withTooltip?: boolean;
 }
 const Cell = ({ width, children, withTooltip = true }: CellProps) => {
-  const classes = useStyles();
   return withTooltip ? (
     <Tooltip title={children}>
-      <div className={classes.bodyItem} style={{ width }}>
+      <BodyItem style={{ width }}>
         {children}
-      </div>
+      </BodyItem>
     </Tooltip>
   ) : (
-    <div className={classes.bodyItem} style={{ width }}>
+    <BodyItem style={{ width }}>
       {children}
-    </div>
+    </BodyItem>
   );
 };
 
@@ -80,13 +64,12 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   node,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
   const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : EMPTY_VALUE);
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
@@ -99,7 +82,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
         </Security>
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
@@ -131,14 +114,13 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
 };
 
 export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+      secondaryAction={<MoreVert />}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -149,8 +131,7 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -159,9 +140,8 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.uri.width }}
             >
               <Skeleton
@@ -170,9 +150,8 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.ingestion_running.width }}
             >
               <Skeleton
@@ -181,9 +160,8 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.current_state_hash.width }}
             >
               <Skeleton
@@ -192,17 +170,15 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
                 width={100}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
-            >
+            </BodyItem>
+            <BodyItem>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={100}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

@@ -2,8 +2,7 @@ import React, { FunctionComponent, useState, useEffect } from 'react';
 import Button from '@common/button/Button';
 import { Link } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { ShieldCheckOutline } from 'mdi-material-ui';
@@ -16,16 +15,6 @@ import { isEmptyField } from '../../../../utils/utils';
 import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/security_coverage_creation/SecurityCoverageCreation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  simulationResults: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  },
-}));
 
 interface SecurityCoverage {
   id: string;
@@ -78,7 +67,6 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
   onCoverageCreated,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const [open, setOpen] = useState(false);
@@ -129,7 +117,7 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
 
   return (
     <>
-      <div className={classes.simulationResults}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         {isEmptyField(coverage) && (
           <Tooltip title={t_i18n('Create a coverage')}>
             <Button
@@ -160,7 +148,7 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
             <SecurityCoverageScores coverage_information={coverage?.coverage_information} />
           </Button>
         )}
-      </div>
+      </Box>
       <Drawer
         title={t_i18n('Create a security coverage')}
         open={open}

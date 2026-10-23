@@ -2,14 +2,13 @@ import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import Dialog from '@common/dialog/Dialog';
 import { ArrowRightAlt } from '@mui/icons-material';
-import { alpha, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import { Chip } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import { styled } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Component } from 'react';
@@ -41,114 +40,61 @@ import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLat
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-    position: 'relative',
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  editButtonWithPadding: {
-    position: 'fixed',
-    bottom: 30,
-    right: 220,
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 10,
-  },
-  itemHeader: {
-    padding: '10px 0 10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    padding: '0 10px 0 10px',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-    wordBreak: 'break-word',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  },
-  middle: {
-    margin: '0 auto',
-    paddingTop: 20,
-    width: 200,
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  paperWithoutPadding: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-  paperReports: {
-    minHeight: '100%',
-    marginTop: theme.spacing(1),
-    padding: '25px 15px 15px 15px',
-    borderRadius: 4,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  number: {
-    color: theme.palette.secondary.main,
-    fontSize: 16,
-    fontWeight: 800,
-  },
-  positive: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
-    color: theme.palette.error.main,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  negative: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: alpha(theme.palette.success.main, 0.08),
-    color: theme.palette.success.main,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  chipInList: {
-    fontSize: 15,
-    height: 30,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
+const Container = styled('div')({
+  margin: 0,
+  position: 'relative',
 });
+
+const Item = styled('div')({
+  position: 'absolute',
+  width: 180,
+  height: 80,
+  borderRadius: 10,
+});
+
+const ItemHeader = styled('div')({
+  padding: '10px 0 10px 0',
+});
+
+const IconContainer = styled('div')({
+  position: 'absolute',
+  top: 8,
+  left: 5,
+  fontSize: 8,
+});
+
+const Type = styled('div')(({ theme }) => ({
+  width: '100%',
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+  fontSize: 11,
+}));
+
+const Content = styled('div')(({ theme }) => ({
+  width: '100%',
+  padding: '0 10px 0 10px',
+  height: 40,
+  maxHeight: 40,
+  lineHeight: '40px',
+  color: theme.palette.text.primary,
+  textAlign: 'center',
+  wordBreak: 'break-word',
+}));
+
+const Name = styled('span')({
+  display: 'inline-block',
+  lineHeight: 1,
+  fontSize: 12,
+  verticalAlign: 'middle',
+});
+
+const Middle = styled('div')(({ theme }) => ({
+  margin: '0 auto',
+  paddingTop: 20,
+  width: 200,
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+}));
 
 class StixSightingRelationshipContainer extends Component {
   constructor(props) {
@@ -206,7 +152,6 @@ class StixSightingRelationshipContainer extends Component {
       n,
       fldt,
       nsdt,
-      classes,
       stixSightingRelationship,
     } = this.props;
     const { from } = stixSightingRelationship;
@@ -230,17 +175,16 @@ class StixSightingRelationshipContainer extends Component {
         : resolveLink(to.entity_type)
       : '';
     return (
-      <div className={classes.container}>
+      <Container>
         <Grid
           container={true}
           spacing={3}
-          className={classes.gridContainer}
+          sx={{ marginBottom: '20px' }}
         >
           <Grid size={6}>
             <Card title={t('Relationship')}>
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
-                <div
-                  className={classes.item}
+                <Item
                   style={{
                     border: `2px solid ${itemColor(
                       !fromRestricted ? from.entity_type : 'Restricted',
@@ -249,15 +193,14 @@ class StixSightingRelationshipContainer extends Component {
                     left: 20,
                   }}
                 >
-                  <div
-                    className={classes.itemHeader}
+                  <ItemHeader
                     style={{
                       borderBottom: `1px solid ${itemColor(
                         !fromRestricted ? from.entity_type : 'Restricted',
                       )}`,
                     }}
                   >
-                    <div className={classes.icon}>
+                    <IconContainer>
                       <ItemIcon
                         type={!fromRestricted ? from.entity_type : 'Restricted'}
                         color={itemColor(
@@ -265,18 +208,18 @@ class StixSightingRelationshipContainer extends Component {
                         )}
                         size="small"
                       />
-                    </div>
-                    <div className={classes.type}>
+                    </IconContainer>
+                    <Type>
                       { }
                       {!fromRestricted
                         ? from.relationship_type
                           ? t('Relationship')
                           : t(`entity_${from.entity_type}`)
                         : t('Restricted')}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
+                    </Type>
+                  </ItemHeader>
+                  <Content>
+                    <Name>
                       {!fromRestricted
                         ? truncate(
                             from.name
@@ -287,21 +230,20 @@ class StixSightingRelationshipContainer extends Component {
                             50,
                           )
                         : t('Restricted')}
-                    </span>
-                  </div>
-                </div>
+                    </Name>
+                  </Content>
+                </Item>
               </Link>
-              <div className={classes.middle}>
+              <Middle>
                 <ArrowRightAlt fontSize="large" />
                 <br />
                 <Chip
                   severity="info"
                   label={t('sighted in/at')}
                 />
-              </div>
+              </Middle>
               <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
-                <div
-                  className={classes.item}
+                <Item
                   style={{
                     border: `2px solid ${itemColor(
                       !toRestricted ? to.entity_type : 'Restricted',
@@ -310,15 +252,14 @@ class StixSightingRelationshipContainer extends Component {
                     right: 20,
                   }}
                 >
-                  <div
-                    className={classes.itemHeader}
+                  <ItemHeader
                     style={{
                       borderBottom: `1px solid ${itemColor(
                         !toRestricted ? to.entity_type : 'Restricted',
                       )}`,
                     }}
                   >
-                    <div className={classes.icon}>
+                    <IconContainer>
                       <ItemIcon
                         type={!toRestricted ? to.entity_type : 'Unknown'}
                         color={itemColor(
@@ -326,18 +267,18 @@ class StixSightingRelationshipContainer extends Component {
                         )}
                         size="small"
                       />
-                    </div>
-                    <div className={classes.type}>
+                    </IconContainer>
+                    <Type>
                       { }
                       {!toRestricted
                         ? to.relationship_type
                           ? t('Relationship')
                           : t(`entity_${to.entity_type}`)
                         : 'Restricted'}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
+                    </Type>
+                  </ItemHeader>
+                  <Content>
+                    <Name>
                       {!toRestricted
                         ? truncate(
                             to.name
@@ -348,9 +289,9 @@ class StixSightingRelationshipContainer extends Component {
                             50,
                           )
                         : t('Restricted')}
-                    </span>
-                  </div>
-                </div>
+                    </Name>
+                  </Content>
+                </Item>
               </Link>
               <Divider sx={{ my: 2 }} />
               <Stack sx={{
@@ -566,7 +507,7 @@ class StixSightingRelationshipContainer extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
@@ -574,7 +515,6 @@ class StixSightingRelationshipContainer extends Component {
 StixSightingRelationshipContainer.propTypes = {
   stixSightingRelationship: PropTypes.object,
   paddingRight: PropTypes.bool,
-  classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
   navigate: PropTypes.func,
@@ -3343,6 +3283,4 @@ const StixSightingRelationshipOverview = createFragmentContainer(
 export default R.compose(
   inject18n,
   withRouter,
-  withTheme,
-  withStyles(styles),
 )(StixSightingRelationshipOverview);

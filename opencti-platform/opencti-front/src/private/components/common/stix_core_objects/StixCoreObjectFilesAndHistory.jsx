@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
-import withStyles from '@mui/styles/withStyles';
 import MenuItem from '@mui/material/MenuItem';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -39,21 +38,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import { Stack } from '@mui/material';
-
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-});
+import { Box, Stack } from '@mui/material';
 
 export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
   mutation StixCoreObjectFilesAndHistoryAskJobImportMutation(
@@ -140,7 +125,6 @@ const importValidation = (t_i18n, configurations) => {
 const StixCoreObjectFilesAndHistory = ({
   id,
   entity,
-  classes,
   connectorsExport,
   connectorsImport,
   withoutRelations,
@@ -279,11 +263,11 @@ const StixCoreObjectFilesAndHistory = ({
     authorized_members: undefined,
   });
   return (
-    <div className={classes.container} data-testid="sco-data-file-and-history">
+    <Box sx={{ margin: 0 }} data-testid="sco-data-file-and-history">
       <Grid
         container={true}
         spacing={3}
-        className={classes.gridContainer}
+        sx={{ marginBottom: '20px' }}
       >
         <FileImportViewer
           entity={entity}
@@ -572,7 +556,7 @@ const StixCoreObjectFilesAndHistory = ({
           )}
         </Formik>
       </div>
-    </div>
+    </Box>
   );
 };
 
@@ -618,7 +602,4 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectFilesAndHistoryFragment);
+export default inject18n(StixCoreObjectFilesAndHistoryFragment);

@@ -17,7 +17,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { Delete } from 'mdi-material-ui';
 import * as R from 'ramda';
 import React, { useState } from 'react';
@@ -35,15 +34,6 @@ import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFr
 import { deserializeFilterGroupForFrontend, isStringifiedFilterGroupFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { deleteNode } from '../../../../utils/store';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  progress: {
-    borderRadius: 4,
-    height: 10,
-  },
-}));
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -158,7 +148,6 @@ const TasksListFragment = graphql`
   }
 `;
 const TasksList = ({ data, options }) => {
-  const classes = useStyles();
   const { t_i18n, nsdt, n } = useFormatter();
   const [displayMessages, setDisplayMessages] = useState(false);
   const [displayErrors, setDisplayErrors] = useState(false);
@@ -423,7 +412,10 @@ const TasksList = ({ data, options }) => {
                         {progressFullText}
                       </Typography>
                       <LinearProgress
-                        classes={{ root: classes.progress }}
+                        sx={{
+                          borderRadius: '4px',
+                          height: 10,
+                        }}
                         variant="determinate"
                         value={progressValue}
                       />
@@ -480,7 +472,7 @@ const TasksList = ({ data, options }) => {
         <DialogContentText>
           <Paper padding={0}>
             <TableContainer>
-              <Table className={classes.table} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>{t_i18n('Timestamp')}</TableCell>
@@ -516,7 +508,7 @@ const TasksList = ({ data, options }) => {
         <DialogContentText>
           <Paper padding={0}>
             <TableContainer>
-              <Table className={classes.table} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>{t_i18n('Timestamp')}</TableCell>
