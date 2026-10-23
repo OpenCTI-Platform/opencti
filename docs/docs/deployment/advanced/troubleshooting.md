@@ -57,14 +57,20 @@ The workers can have more or less verbose outputs:
 
 !!! warning "Execution timeout, too many concurrent call on the same entities"
     
-	The platform supports multi workers and multiple parallel creation but different parameters can lead to some locking timeout in the execution. 
+    The platform supports multiple workers and parallel creation, but different
+    parameters can lead to locking timeouts during execution.
 
-	* Throughput capacity of your ElasticSearch
-	* Number of workers started at the same time
-	* Dependencies between data
-	* Merging capacity of OpenCTI
+    * Throughput capacity of your ElasticSearch / OpenSearch cluster
+    * Disk I/O performance of the ElasticSearch / OpenSearch storage
+    * Number of workers started at the same time
+    * Dependencies between data
+    * Merging capacity of OpenCTI
 
-	If you have this kind of error, limit the number of workers deployed. Try to find the right balance of the number of workers, connectors and elasticsearch sizing.
+    If this error appears while ingestion queues keep growing and adding workers
+    does not drain them, check ElasticSearch / OpenSearch sizing and storage
+    performance first. Slow disks or slow network-attached storage can make
+    indexing disk-bound. In that case, reducing the number of workers can lower
+    contention, but the long-term fix is to move the cluster to faster storage.
 
 
 ### Ingestion functional errors
