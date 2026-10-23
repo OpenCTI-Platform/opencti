@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { createEntity, createRelation, deleteElementById, storeLoadByIdWithRefs } from '../../../src/database/middleware';
+import { createEntity, createRelation, deleteElementById, storeLoadByIdWithRefs, updateAttribute } from '../../../src/database/middleware';
 import { fullRelationsList, storeLoadById } from '../../../src/database/middleware-loader';
 import { elRawSearch, elRefreshIndices } from '../../../src/database/engine';
 import {
@@ -436,6 +436,38 @@ describe('Lock-free behaviours scenario', () => {
     const listed = await fullRelationsList(testContext, ADMIN_USER, RELATION_USES, { toId: idOf(ENTITY_TYPE_MALWARE, lateHub) } as any);
     check('platform_lists_relationships', listed.length === N);
     check('alias_keys_resolve', (await lookupKeys([sid(ENTITY_TYPE_MALWARE, raceD[0].input.name).toLowerCase()])).size === 1);
+
+    // Sent again unchanged: once a merge is known to change nothing on an object's version, the same merge is
+    // answered without being computed; any write to the object in between makes it computed again, as today
+    const knownHub = `bench-${RUN_ID}-b-known-hub`;
+    const knownEntities = [malware(knownHub), ...range(N).map((i) => malware(`bench-${RUN_ID}-b-known-${i}`, { ...refs, confidence: 50 }))];
+    const knownRelations = range(N).map((i) => uses(srcStd(i), sid(ENTITY_TYPE_MALWARE, knownHub), { ...refs, confidence: 50 }));
+    const sendKnown = async () => {
+      const entities = await writeEntities(knownEntities, chunked);
+      const relations = await writeRelations(knownRelations, chunked);
+      return { entities: entities.statuses, relations: relations.statuses, known: (entities.writer.unchanged_known ?? 0) + (relations.writer.unchanged_known ?? 0) };
+    };
+    await sendKnown();
+    const knownSecond = await sendKnown();
+    const knownThird = await sendKnown();
+    check('unchanged_known_answered', knownSecond.known === 0 && knownThird.known === knownEntities.length + knownRelations.length
+    && knownThird.entities.unchanged === knownEntities.length && knownThird.relations.unchanged === knownRelations.length, { second: knownSecond, third: knownThird });
+    const editCase = async (world: 'today' | 'lockfree') => {
+      const name = `bench-${RUN_ID}-b-${world}-edited`;
+      const input = { name, is_family: true, description: 'from the feed', confidence: 50 };
+      const send = () => (world === 'today' ? createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_MALWARE).then(() => 0) : writeEntities([ent(ENTITY_TYPE_MALWARE, name, input)], chunked).then((w) => w.writer.unchanged_known ?? 0));
+      await send();
+      await send();
+      await send();
+      const [stored] = await named([name]);
+      await updateAttribute(testContext, ADMIN_USER, stored.internal_id, ENTITY_TYPE_MALWARE, [{ key: 'description', value: ['edited by an analyst'] }]);
+      const known = await send();
+      const [after] = await named([name]);
+      return { description: after?.description, known };
+    };
+    const editedToday = await editCase('today');
+    const editedLockFree = await editCase('lockfree');
+    check('unchanged_known_edited_as_today', editedLockFree.known === 0 && editedLockFree.description === editedToday.description, { today: editedToday, lockfree: editedLockFree });
 
     results.failures = failures;
     writeResults('lockfree-behaviours', results);
