@@ -271,12 +271,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   stixCoreObjectToggled(stixCoreObject) {
-    const { enableReferences, onSelect } = this.props;
-    // Pick mode: the line is only selected, no container is modified
-    if (typeof onSelect === 'function') {
-      onSelect(stixCoreObject);
-      return;
-    }
+    const { enableReferences } = this.props;
     if (enableReferences) {
       this.setState({ referenceDialogOpened: true });
       this.setState({ currentlyToggledCoreObject: stixCoreObject });
@@ -297,7 +292,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   render() {
-    const { initialLoading, dataColumns, relay, enableReferences, containerId, onSelect } = this.props;
+    const { initialLoading, dataColumns, relay, enableReferences, containerId } = this.props;
     const { addedStixCoreObjects, referenceDialogOpened } = this.state;
     const dataList = R.pathOr([], ['stixCoreObjects', 'edges'], this.props.data);
     const computedAddedStixCoreObjects = {};
@@ -323,9 +318,8 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           dataList={dataList}
           globalCount={this.props.data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
           onLabelClick={this.props.onLabelClick}
-          // Pick mode selects a single line: no checkbox to tick
-          LineComponent={<ContainerAddStixCoreObjectsLine hideCheckbox={typeof onSelect === 'function'} />}
-          DummyLineComponent={<ContainerAddStixCoreObjecstLineDummy hideCheckbox={typeof onSelect === 'function'} />}
+          LineComponent={<ContainerAddStixCoreObjectsLine />}
+          DummyLineComponent={<ContainerAddStixCoreObjecstLineDummy />}
           dataColumns={dataColumns}
           nbOfRowsToLoad={nbOfRowsToLoad}
           addedElements={computedAddedStixCoreObjects}
@@ -378,7 +372,6 @@ ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   mapping: PropTypes.bool,
   enableReferences: PropTypes.bool,
   onLabelClick: PropTypes.func,
-  onSelect: PropTypes.func,
 };
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
