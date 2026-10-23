@@ -223,7 +223,8 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
             open={isDatePickerOpen}
             onClose={() => setIsDatePickerOpen(false)}
             onAccept={handleChangeAbsoluteDateFilter}
-            value={isValidDate(draft) ? new Date(draft) : null}
+            // Uncontrolled: a controlled value without onChange would discard the picked day.
+            defaultValue={isValidDate(draft) ? new Date(draft) : null}
             slotProps={{
               textField: { tabIndex: -1 },
               popper: { anchorEl: fieldContainerRef.current },

@@ -102,6 +102,30 @@ describe('Component: RelativeDateInput', () => {
     expect(screen.getByRole('grid')).toBeInTheDocument();
   });
 
+  it('applies the day picked in the calendar opened from a relative value', async () => {
+    const helpers = makeHelpers();
+
+    const { user } = testRender(
+      <RelativeDateInput
+        filterKey="created_at"
+        helpers={helpers}
+        label="From"
+        valueOrder={0}
+        dateInput={['now-1d', 'now']}
+        setDateInput={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /open date picker/i }));
+    await user.click(screen.getByRole('gridcell', { name: '15' }));
+    await user.click(screen.getByRole('button', { name: 'OK' }));
+
+    // The free-text field commits its draft when the calendar takes the focus, then the picked day.
+    const [, [from, to]] = vi.mocked(helpers.handleReplaceFilterValues).mock.lastCall!;
+    expect(new Date(from as string).getDate()).toBe(15);
+    expect(to).toBe('now');
+  });
+
   it('focuses the "From" field on open, so a value can be typed right after the operator', () => {
     testRender(
       <>
