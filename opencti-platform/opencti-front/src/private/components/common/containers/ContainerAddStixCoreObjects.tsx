@@ -6,6 +6,7 @@ import IconButton from '@common/button/IconButton';
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Add } from '@mui/icons-material';
 import type { SxProps, Theme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -102,6 +103,7 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
   onDelete,
   enableReferences,
 }) => {
+  const theme = useTheme<Theme>();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
   const [referenceDialogOpened, setReferenceDialogOpened] = useState(false);
   const [currentlyToggledCoreObject, setCurrentlyToggledCoreObject] = useState<ContainerAddStixCoreObjectsLine | null>(null);
@@ -232,7 +234,7 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
   } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery>;
 
   return (
-    <div style={{ flex: '1 0 0', overflow: 'hidden' }} ref={setTableRootRef}>
+    <div style={{ flex: '1 0 0', overflow: 'hidden', paddingTop: theme.spacing(2) }} ref={setTableRootRef}>
       {queryRef && (
         <DataTable
           disableToolBar
