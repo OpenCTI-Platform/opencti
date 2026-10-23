@@ -6,7 +6,7 @@ import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../d
 import type { BasicStoreEntityForm, FormSchemaDefinition, StoreEntityForm } from './form-types';
 import { ENTITY_TYPE_FORM, FormFieldType, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { FunctionalError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { logApp } from '../../config/conf';
@@ -14,13 +14,22 @@ import { pushBundleToWorker } from '../../database/rabbitmq';
 import { createWork } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, type DraftWorkspaceAddInput, FilterMode, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
+import { BYPASS, isUserHasCapability, SETTINGS_SETLABELS, SYSTEM_USER } from '../../utils/access';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { validateFormSubmission } from './form-validation';
+import {
+  countPendingLabels,
+  getPendingMainEntityAuthor,
+  getPendingUploadCopies,
+  readUploads,
+  resolvePendingFieldRefs,
+  validatePendingPayload,
+  validatePendingRoots,
+} from './form-pending';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from './form-bundle-builder';
 
 export { completeEntity } from './form-entity-builder';
@@ -244,6 +253,7 @@ export const resolveMainEntityAuthorFromValues = (
     resolveIn(values)
     || resolveIn(values.mainEntityFields)
     || resolveIn(Array.isArray(values.mainEntityGroups) ? values.mainEntityGroups[0] : undefined)
+    || getPendingMainEntityAuthor(values)
     || null
   );
 };
@@ -479,6 +489,11 @@ export const buildDraftPlan = (
   return { draftInput };
 };
 
+const canCreateLabels = (user: AuthUser, isDraft: boolean): boolean => {
+  return isUserHasCapability(user, SETTINGS_SETLABELS)
+    || (isDraft && (user.capabilitiesInDraft ?? []).some((capability) => capability.name === SETTINGS_SETLABELS));
+};
+
 export type SubmissionPlan
   = | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: true; draftPlan: DraftPlan }
     | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: false; draftPlan: null };
@@ -517,6 +532,14 @@ export const planSubmission = async (
 
   const isBypass = isUserHasCapability(user, BYPASS);
   validateFormSubmission(schema, values, isBypass);
+  validatePendingPayload(values, input.files?.length ?? 0);
+  validatePendingRoots(schema, values);
+  // The import creates the labels of the form as the submitter: creating a label needs its own right, in the destination scope
+  if (!isBypass && countPendingLabels(values) > 0 && !canCreateLabels(user, finalIsDraft)) {
+    throw ForbiddenAccess('You are not allowed to create labels.', { capability: SETTINGS_SETLABELS });
+  }
+  const uploads = await readUploads(input.files, getPendingUploadCopies(values));
+  values = resolvePendingFieldRefs(values, schema, uploads);
   const bundle: any = {
     type: 'bundle',
     id: `bundle--${uuidv4()}`,
@@ -525,8 +548,8 @@ export const planSubmission = async (
   };
 
   const { mainEntityType } = schema;
-  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass);
-  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
+  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass, uploads);
+  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass, uploads);
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
 
@@ -566,7 +589,7 @@ export const commitSubmission = async (
 ): Promise<SubmissionResult> => {
   const { bundle, mainEntityStixId, finalIsDraft, draftPlan } = plan;
   try {
-    logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
+    logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length });
     const connectorId = connectorIdFromIngestId(formId);
     const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
     const workName = `Form submission @ ${now()}`;

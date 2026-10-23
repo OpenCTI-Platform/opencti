@@ -46,6 +46,7 @@ input FormAddInput {
 input FormSubmissionInput {
   formId: String!
   values: String! # JSON string of the submitted values
+  files: [Upload!] # files of the deferred-creation objects, referenced by index from the values
 }
 
 type FormSubmissionResponse {
