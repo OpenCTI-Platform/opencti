@@ -29,6 +29,8 @@ import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingCustomFieldsAddDialog from './EntitySettingCustomFieldsAddDialog';
 import { EntitySettingCustomFieldsQuery, EntitySettingCustomFieldsQuery$data } from './__generated__/EntitySettingCustomFieldsQuery.graphql';
 import { Input } from '@filigran/design-system';
+import EEChip from '../../../common/entreprise_edition/EEChip';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
 export const entitySettingCustomFieldsQuery = graphql`
   query EntitySettingCustomFieldsQuery {
@@ -101,6 +103,7 @@ interface EntitySettingCustomFieldsTableProps {
   queryRef: PreloadedQuery<EntitySettingCustomFieldsQuery>;
   entityType: string;
   refresh: () => void;
+  canManage: boolean;
 }
 
 const getEntityTypeSetting = (cf: CustomFieldDefinitionNode, entityType: string) => (cf.entity_type_settings ?? []).find((setting) => setting.entity_type === entityType);
@@ -269,6 +272,7 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
   queryRef,
   entityType,
   refresh,
+  canManage,
 }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(entitySettingCustomFieldsQuery, queryRef);
@@ -324,10 +328,10 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
               <TableCell>{setting?.mandatory ? t_i18n('Yes') : t_i18n('No')}</TableCell>
               <TableCell>{setting?.default_value ?? '-'}</TableCell>
               <TableCell align="right">
-                <IconButton onClick={() => setEditing(cf)} aria-label={t_i18n('Update')}>
+                <IconButton onClick={() => setEditing(cf)} aria-label={t_i18n('Update')} disabled={!canManage}>
                   <EditOutlined fontSize="small" />
                 </IconButton>
-                <IconButton onClick={() => openRemove(cf.id)} aria-label={t_i18n('Remove')}>
+                <IconButton onClick={() => openRemove(cf.id)} aria-label={t_i18n('Remove')} disabled={!canManage}>
                   <DeleteOutlined fontSize="small" />
                 </IconButton>
               </TableCell>
@@ -371,6 +375,8 @@ const EntitySettingCustomFields = () => {
   const { subType } = useSubTypeOutletContext();
   const entityType = subType.id;
   const [addOpen, setAddOpen] = useState(false);
+  // Managing the custom field definitions is an Enterprise Edition feature: in Community, they are only listed
+  const isEnterpriseEdition = useEnterpriseEdition();
   const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<EntitySettingCustomFieldsQuery>(
     entitySettingCustomFieldsQuery,
     {},
@@ -380,11 +386,11 @@ const EntitySettingCustomFields = () => {
   return (
     <div style={{ marginTop: 24 }}>
       <Card
-        title={t_i18n('Custom fields')}
+        title={<>{t_i18n('Custom fields')} <EEChip feature={t_i18n('Custom fields')} /></>}
         titleSx={{ alignItems: 'end' }}
         sx={{ paddingTop: 0, paddingBottom: 0 }}
         action={(
-          <Button onClick={() => setAddOpen(true)}>
+          <Button onClick={() => setAddOpen(true)} disabled={!isEnterpriseEdition}>
             {t_i18n('Add custom field')}
           </Button>
         )}
@@ -396,6 +402,7 @@ const EntitySettingCustomFields = () => {
                 queryRef={queryRef}
                 entityType={entityType}
                 refresh={refresh}
+                canManage={isEnterpriseEdition}
               />
             </Suspense>
             <Suspense fallback={null}>

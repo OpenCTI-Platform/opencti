@@ -1,10 +1,11 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../../../utils/testQueryHelper';
 import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
 import type { StixDomainObject } from '../../../../../src/types/stix-2-1-common';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../../src/modules/playbook/components/manipulate-knowledge-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
+import * as enterpriseEdition from '../../../../../src/enterprise-edition/ee';
 
 const CUSTOM_FIELD_ADD = gql`
   mutation PlaybookCustomFieldAdd($input: CustomFieldDefinitionAddInput!) {
@@ -46,6 +47,14 @@ const MALWARE_NAME = 'Playbook custom fields malware';
 const toCustomFieldValues = (extension: Record<string, any>) => Object.entries(extension)
   .filter(([key]) => key.startsWith('x_opencti_cf_'))
   .map(([field_name, value]) => ({ field_name, value: Array.isArray(value) ? value : [value] }));
+
+// Managing the custom field definitions is an Enterprise Edition feature
+beforeAll(() => {
+  vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+});
+afterAll(() => {
+  vi.restoreAllMocks();
+});
 
 describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT with custom fields', () => {
   const definitionIds: string[] = [];
