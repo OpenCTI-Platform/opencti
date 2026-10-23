@@ -4,7 +4,7 @@ import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../connector/connector-typ
 import { durationInMs } from '../../utils/format';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../ingestion/ingestion-types';
 import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
-import { redisGetFeedsAndSyncLastOutcomes } from '../../database/redis';
+import { redisGetIngestionLogHistory } from '../../database/redis';
 
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
 export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
@@ -33,6 +33,8 @@ export interface HealthCheckIngestor {
   connector_user_id?: string | null;
   // The user of a feed or a sync
   user_id?: string | null;
+  // The outcome of the last execution of a feed or a sync, patched by the ingestion manager or the sync manager
+  last_execution_status?: string | null;
 }
 
 // Computed once at the beginning of each period of the ingestion health manager, shared by the evaluation of every ingestion.
@@ -118,6 +120,30 @@ interface FeedAndSyncExecutionFailure {
 }
 
 /**
+ * Reads the details of the last failed execution of each feed or sync, from its ingestion logs.
+ * The logs also hold the progress of an execution (started, buffering...): the last outcome is the most recent success or error,
+ * and only a failure has details.
+ *
+ * Details only: that the execution failed is known from the feed or sync itself (last_execution_status).
+ * They may be missing, the logs being bounded: the failure is then reported without them.
+ *
+ * @param ingestionIds the feeds and syncs to read
+ * @returns the metadata of the failure by ingestion id, ingestions whose last outcome logged is not a failure are omitted
+ */
+const getFeedsAndSyncsLastFailureDetails = async (ingestionIds: string[]): Promise<Map<string, FeedAndSyncExecutionFailure>> => {
+  const histories = await Promise.all(ingestionIds.map((ingestionId) => redisGetIngestionLogHistory(ingestionId)));
+  const details = new Map<string, FeedAndSyncExecutionFailure>();
+  histories.forEach((history, index) => {
+    // Most recent first
+    const lastOutcome = history.find((entry) => entry.level === 'success' || entry.level === 'error');
+    if (lastOutcome?.level === 'error') {
+      details.set(ingestionIds[index], { ...lastOutcome.meta });
+    }
+  });
+  return details;
+};
+
+/**
  * Short description of a failed feed or sync execution, from its ingestion log metadata.
  * The HTTP status (with Cloudflare detail when present) when the source answered, else the error code or raw error.
  * Undefined when the metadata carries none of them.
@@ -172,8 +198,8 @@ export const HEALTH_CHECK_REGISTRY = {
     getRuntimeData: redisGetConnectorsHeartbeats,
     getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : {}),
   }),
-  // Any failure of the last execution of a feed or a sync, logged by the ingestion manager or the sync manager
-  // (source unreachable, not found, unauthorized, invalid data...): nothing is ingested until it succeeds again
+  // Any failure of the last execution of a feed or a sync (source unreachable, not found, unauthorized, invalid data...):
+  // nothing is ingested until it succeeds again. Known from the feed or sync itself, the next success clears it
   [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
     severity: IngestionHealthCheckSeverity.Blocking,
@@ -182,10 +208,10 @@ export const HEALTH_CHECK_REGISTRY = {
       const executionFailed = entityType === ENTITY_TYPE_SYNC ? 'Sync execution failed' : 'Feed execution failed';
       return failure ? `${executionFailed}: ${failure}` : executionFailed;
     },
-    isEnabled: (ingestor) => FEED_AND_SYNC_ENTITY_TYPES.includes(ingestor.entity_type),
-    // Recorded apart from the bounded ingestion logs, whose progress entries (buffering...) would push it out
-    getRuntimeData: redisGetFeedsAndSyncLastOutcomes,
-    // The next success clears it. The log date is not kept: the metadata must stay the same while the failure lasts
-    getFailure: (feedAndSyncLastExecutionOutcome) => (feedAndSyncLastExecutionOutcome?.level === 'error' ? { ...feedAndSyncLastExecutionOutcome.meta } : null),
+    // Only the failing ones: nothing is read for the others
+    isEnabled: (ingestor) => FEED_AND_SYNC_ENTITY_TYPES.includes(ingestor.entity_type) && ingestor.last_execution_status === 'error',
+    getRuntimeData: getFeedsAndSyncsLastFailureDetails,
+    // The details are not always known: the failure is reported without them. They are not dated: the metadata must stay the same while the failure lasts
+    getFailure: (details) => ({ ...details }),
   }),
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
