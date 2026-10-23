@@ -169,6 +169,7 @@ import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
 import { verifyXtmJwt, isOwnIssuer } from '../../domain/xtm-auth';
 import { getSettings } from '../../domain/settings';
+import { clearLocalAuthLockout, isLocalAuthLockedError, loadLocalAuthLockout } from '../../domain/local-auth-lockout';
 import {
   EnvStrategyType,
   getConfigurationAdminEmail,
@@ -1345,6 +1346,10 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
   const { element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, opts);
+  // Setting an account back to Active also lifts its local authentication lockout
+  if (inputs.some((i) => i.key === 'account_status' && R.head(i.value) === ACCOUNT_STATUS_ACTIVE)) {
+    await clearLocalAuthLockout(element.user_email);
+  }
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
@@ -1834,12 +1839,24 @@ export const getUserByEmail = async (email: string) => {
   return await elLoadBy<BasicStoreEntityUser>(context, SYSTEM_USER, 'user_email', normalizeEmail(email), ENTITY_TYPE_USER);
 };
 
+const isAccountDisabled = (user: BasicStoreEntityUser) => {
+  if (user.account_status !== ACCOUNT_STATUS_ACTIVE) return true;
+  return !!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date));
+};
+
 export const login = async (email: string, password: string) => {
+  // Undefined when the local authentication lockout is disabled
+  const lockout = await loadLocalAuthLockout(email);
+  // The attempt is counted before the password is checked, and during a lock the password is not even checked
+  const failure = await lockout?.recordAttempt() ?? AuthenticationFailure();
   const user = await getUserByEmail(email);
-  if (!user) throw AuthenticationFailure();
-  const dbPassword = user.password;
-  const match = bcrypt.compareSync(password, dbPassword);
-  if (!match) throw AuthenticationFailure();
+  // With the lockout, an inactive or expired account is rejected without checking its password.
+  // The failure is counted like a wrong password, so that the account cannot be told apart from an unknown email.
+  const isPasswordChecked = !!user && !(lockout && isAccountDisabled(user));
+  if (!user || !isPasswordChecked || !bcrypt.compareSync(password, user.password)) {
+    throw failure;
+  }
+  // The caller clears the lockout once the login is fully accepted (IP whitelist, local auth enabled, API access)
   return user;
 };
 
@@ -1958,22 +1975,28 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     if (user) {
       await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
+      // The local lockout never blocks other providers. The session clears the lockout of the user email,
+      // but the counter is keyed on what was typed, which can be another identifier (LDAP uid)
+      await clearLocalAuthLockout(input.email);
       break;
     }
   }
   // Try local is activated
+  const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
+  // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
+  const isLocalAuthEnabled = isLocalAuthForcedEnabledFromEnv() || !!settings.local_auth?.enabled;
+  let localError: unknown;
   if (!loggedUser) {
-    const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
     const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
       passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
+        localError = err;
         if (err || info) {
           logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
         }
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
       })({ body });
     });
-    // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
-    if (user && (isLocalAuthForcedEnabledFromEnv() || settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
+    if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
       await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
     }
@@ -2001,6 +2024,11 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   });
   // User cannot be authenticated in any providers
   logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
+  // A local lock is returned as is, so that the login form can show the remaining minutes.
+  // Only when the local auth is the only form login: otherwise the email can belong to another provider, never blocked by the local lock
+  if (isLocalAuthEnabled && formProviders.length === 0 && isLocalAuthLockedError(localError)) {
+    throw localError;
+  }
   throw AuthenticationFailure();
 };
 
@@ -2228,6 +2256,7 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
     if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
       throw ForbiddenAccess('You are not allowed to use API basic auth');
     }
+    await clearLocalAuthLockout(basicAuth.username);
     return internalAuthenticateUser(context, req, user);
   }
   throw FunctionalError('Cannot identify user with basic auth');
@@ -2392,6 +2421,8 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged!, settings, { skipForcePasswordCheck: true });
+  // Any accepted session login (local, LDAP, SSO, certificate or headers) resets the local lockout
+  await clearLocalAuthLockout(logged!.user_email);
   const numberOfKilledSessions = await killUserSessionsOverLimit(logged!.id, settings.platform_session_max_concurrent);
   // Regenerate the session id before binding the identity, preventing session fixation.
   // The referer is kept as the auth callback still reads it from the session as a redirect fallback

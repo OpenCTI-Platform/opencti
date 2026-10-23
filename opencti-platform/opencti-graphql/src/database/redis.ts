@@ -763,6 +763,67 @@ export const redisDelForgotPassword = async (id: string, email: string) => {
 
 // endregion - forgot password handling
 
+// region - local authentication lockout
+// The keys of an email share a hash tag, so that the lockout script can run on a Redis cluster
+export const localAuthLockoutKeys = (emailHash: string) => ({
+  failures: `local_auth_lockout:{${emailHash}}:failures`,
+  lock: `local_auth_lockout:{${emailHash}}:lock`,
+  level: `local_auth_lockout:{${emailHash}}:level`,
+});
+
+export type LocalAuthLockoutTimings = { maxAttempts: number; windowMs: number; durationMs: number; maxDurationMs: number };
+
+// Records an attempt as a failure before its password is checked, in one atomic step with the lock check,
+// so that concurrent attempts never check more passwords than the max attempts. A successful login clears it.
+// - The failure window starts on the first failure and is never extended.
+// - The lock level outlives each lock by a full window, so that the next lock doubles even with a short window.
+// - Once locked, the next failure while the level lives locks again with a doubled duration, up to the max duration.
+// Returns [allowed, remainingMs]:
+// - [0, remaining]: the account is locked, the password must not be checked
+// - [1, 0]: the attempt is counted, the password can be checked
+// - [1, duration]: the attempt is counted and locks the account, its password is still checked
+const LOCAL_AUTH_LOCKOUT_ATTEMPT_SCRIPT = `
+local lockRemaining = redis.call('PTTL', KEYS[2])
+if lockRemaining > 0 then
+  return {0, lockRemaining}
+end
+local failures = redis.call('INCR', KEYS[1])
+if failures == 1 then
+  redis.call('PEXPIRE', KEYS[1], ARGV[1])
+end
+local level = tonumber(redis.call('GET', KEYS[3]) or '0')
+if level == 0 and failures < tonumber(ARGV[2]) then
+  return {1, 0}
+end
+local duration = math.floor(math.min(tonumber(ARGV[3]) * (2 ^ level), tonumber(ARGV[4])))
+redis.call('SET', KEYS[2], '1', 'PX', duration)
+redis.call('INCR', KEYS[3])
+redis.call('PEXPIRE', KEYS[3], duration + tonumber(ARGV[1]))
+return {1, duration}
+`;
+
+export const redisRecordLocalAuthAttempt = async (emailHash: string, timings: LocalAuthLockoutTimings) => {
+  const keys = localAuthLockoutKeys(emailHash);
+  const [allowed, remainingMs] = await getClientBase().eval(
+    LOCAL_AUTH_LOCKOUT_ATTEMPT_SCRIPT,
+    3,
+    keys.failures,
+    keys.lock,
+    keys.level,
+    timings.windowMs,
+    timings.maxAttempts,
+    timings.durationMs,
+    timings.maxDurationMs,
+  ) as [number, number];
+  return { allowed: Number(allowed) === 1, remainingMs: Number(remainingMs) };
+};
+
+export const redisClearLocalAuthLockout = async (emailHash: string) => {
+  const keys = localAuthLockoutKeys(emailHash);
+  await getClientBase().del(keys.failures, keys.lock, keys.level);
+};
+// endregion - local authentication lockout
+
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**

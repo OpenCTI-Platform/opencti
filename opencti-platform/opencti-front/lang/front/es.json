@@ -5999,6 +5999,7 @@
   "You will find here the result in JSON format.": "Aquí encontrará el resultado en formato JSON.",
   "you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "ya no pertenecerá a la organización de la plataforma principal a menos que se le haya concedido acceso específico a la organización.",
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "¡Estás seleccionando más de 1000 entidades en esta tarea en segundo plano así que estáte seguro de que sabes lo que haces!",
+  "Your account has been locked for security reasons. Please try again in {minutes} minutes.": "Su cuenta ha sido bloqueada por motivos de seguridad. Vuelva a intentarlo dentro de {minutes} minutos.",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "Su cuenta ha expirado. Si desea reactivar su cuenta, comuníquese con su administrador.",
   "Your answer is ready": "Tu respuesta está lista",
   "Your confidence level is insufficient to edit this object.": "Tu nivel de confianza es insuficiente para editar este objeto.",
