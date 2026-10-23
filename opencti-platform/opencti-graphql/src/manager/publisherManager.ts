@@ -262,6 +262,17 @@ export async function handleSimplifiedEmailNotification(
   }
 }
 
+// Header names are typed by users, often copied from a curl command ("Authorization:"),
+// node rejects such names as invalid HTTP tokens.
+export const normalizeWebhookHeaderName = (name: string) => (name ?? '').trim().replace(/:+$/, '').trim();
+
+// Values are often pasted with a trailing new line, node rejects them as invalid header content.
+export const normalizeWebhookHeaders = (headers: NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE['headers'] | undefined) => {
+  return (headers ?? [])
+    .map((header) => ({ attribute: normalizeWebhookHeaderName(header.attribute), value: (header.value ?? '').trim() }))
+    .filter((header) => header.attribute);
+};
+
 export async function handleWebhookNotification(configurationString: string | undefined, templateData: object) {
   const { url, template, verb, params, headers } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
 
@@ -271,13 +282,14 @@ export async function handleWebhookNotification(configurationString: string | un
   });
   const webhookPayload = JSON.parse(renderedWebhookTemplate);
 
-  const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
+  const headersObject = Object.fromEntries(normalizeWebhookHeaders(headers).map((header) => [header.attribute, header.value]));
   const paramsObject = Object.fromEntries((params ?? []).map((param) => [param.attribute, param.value]));
 
   const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject, timeout: WEBHOOK_TIMEOUT };
   const httpClient = getHttpClient(httpClientOptions);
 
-  await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });
+  // Notifiers saved before the verb enum was fixed can hold ' DELETE'
+  await httpClient.call({ url, method: verb.trim(), params: paramsObject, data: webhookPayload });
 }
 
 export const internalProcessNotification = async (

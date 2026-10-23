@@ -4,8 +4,8 @@ import * as redis from '../../../../src/database/redis';
 import * as userActionListener from '../../../../src/listener/UserActionListener';
 import * as uriDenyListConfig from '../../../../src/config/uriDenyList';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import type { EditInput } from '../../../../src/generated/graphql';
-import { notifierEdit } from '../../../../src/modules/notifier/notifier-domain';
+import type { EditInput, NotifierAddInput } from '../../../../src/generated/graphql';
+import { addNotifier, notifierEdit } from '../../../../src/modules/notifier/notifier-domain';
 import { NOTIFIER_CONNECTOR_WEBHOOK } from '../../../../src/modules/notifier/notifier-statics';
 
 const mockContext = { id: 'context' } as unknown as AuthContext;
@@ -103,5 +103,87 @@ describe('notifierEdit', () => {
 
     await expect(notifierEdit(mockContext, mockUser, notifierId, baseInput))
       .resolves.not.toThrow();
+  });
+
+  it('should store webhook headers normalized', async () => {
+    const configuration = {
+      url: 'https://example.com/webhook',
+      verb: 'DELETE',
+      template: '{}',
+      headers: [
+        { attribute: 'Authorization : ', value: 'Bearer token\n' },
+        { attribute: ' X-API-Key', value: ' key ' },
+      ],
+    };
+    const inputWithHeaders: EditInput[] = [
+      ...baseInput.filter((i) => i.key !== 'notifier_configuration'),
+      { key: 'notifier_configuration', value: [JSON.stringify(configuration)] },
+    ];
+
+    await notifierEdit(mockContext, mockUser, notifierId, inputWithHeaders);
+
+    const finalInput: EditInput[] = (middleware.updateAttribute as any).mock.calls[0][4];
+    const storedConfiguration = finalInput.find((i) => i.key === 'notifier_configuration')?.value[0];
+    expect(JSON.parse(storedConfiguration)).toEqual({
+      ...configuration,
+      headers: [
+        { attribute: 'Authorization', value: 'Bearer token' },
+        { attribute: 'X-API-Key', value: 'key' },
+      ],
+    });
+  });
+
+  it.each([
+    ['a name with a space', { attribute: 'X API Key', value: 'key' }],
+    ['a name without any character', { attribute: ' : ', value: 'key' }],
+    ['a value with a new line', { attribute: 'X-API-Key', value: 'first\nsecond' }],
+    ['a value with a character out of latin-1', { attribute: 'X-API-Key', value: 'k€y' }],
+  ])('should reject a webhook header with %s', async (_, header) => {
+    const inputWithInvalidHeader: EditInput[] = [
+      ...baseInput.filter((i) => i.key !== 'notifier_configuration'),
+      { key: 'notifier_configuration', value: [JSON.stringify({ url: 'https://example.com/webhook', verb: 'POST', template: '{}', headers: [header] })] },
+    ];
+
+    await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithInvalidHeader))
+      .rejects.toThrow('This configuration is invalid');
+    expect(middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+});
+
+describe('addNotifier', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(middleware, 'createEntity').mockImplementation(async (_context, _user, input) => ({ id: notifierId, ...input }) as any);
+    vi.spyOn(redis, 'notify').mockImplementation(async (_topic, instance) => instance as any);
+    vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue([] as any);
+  });
+
+  it('should store webhook headers normalized', async () => {
+    const notifier: NotifierAddInput = {
+      name: 'My Notifier',
+      notifier_connector_id: NOTIFIER_CONNECTOR_WEBHOOK,
+      notifier_configuration: JSON.stringify({
+        url: 'https://example.com/webhook',
+        verb: 'POST',
+        template: '{}',
+        headers: [{ attribute: 'Authorization:', value: 'Bearer token' }],
+      }),
+    };
+
+    const created = await addNotifier(mockContext, mockUser, notifier);
+
+    expect(JSON.parse(created.notifier_configuration).headers).toEqual([{ attribute: 'Authorization', value: 'Bearer token' }]);
+  });
+
+  it('should keep a configuration without headers untouched', async () => {
+    const notifier: NotifierAddInput = {
+      name: 'My Notifier',
+      notifier_connector_id: NOTIFIER_CONNECTOR_WEBHOOK,
+      notifier_configuration: validConfiguration,
+    };
+
+    const created = await addNotifier(mockContext, mockUser, notifier);
+
+    expect(created.notifier_configuration).toBe(validConfiguration);
   });
 });
