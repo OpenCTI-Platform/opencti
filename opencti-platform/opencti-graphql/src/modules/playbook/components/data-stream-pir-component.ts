@@ -10,6 +10,18 @@ export interface PirStreamConfiguration {
   filters: string;
 }
 
+// The configuration is stored as free JSON and never validated against the schema,
+// so inPirFilters may be missing, null, '' (untouched form field), a single option or bare ids.
+export const normalizeInPirFilters = (inPirFilters: unknown): { value: string }[] => {
+  if (inPirFilters === null || inPirFilters === undefined || inPirFilters === '') return [];
+  const list: unknown[] = Array.isArray(inPirFilters) ? inPirFilters : [inPirFilters];
+  return list.flatMap((item) => {
+    if (typeof item === 'string') return item ? [{ value: item }] : [];
+    const value = (item as { value?: unknown } | null)?.value;
+    return typeof value === 'string' && value ? [{ value }] : [];
+  });
+};
+
 const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = {
   type: 'object',
   properties: {
