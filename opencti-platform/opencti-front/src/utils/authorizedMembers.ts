@@ -84,8 +84,15 @@ export const authorizedMembersToOptions = (
 
 export interface MemberAccessInput {
   id: string;
-  access_right: AccessRight;
+  access_right: string;
   groups_restriction_ids?: string[];
+}
+
+// Only what the conversion reads: some forms type their members without label or with a plain string access right
+interface AuthorizedMemberInputSource {
+  value: string;
+  accessRight: string;
+  groupsRestriction?: ReadonlyArray<{ value: string }> | null;
 }
 
 /**
@@ -96,7 +103,7 @@ export interface MemberAccessInput {
  * @param authorizedMembers Value of the Formik field.
  */
 export const authorizedMembersToInput = (
-  authorizedMembers: AuthorizedMemberOption[] | null | undefined,
+  authorizedMembers: ReadonlyArray<AuthorizedMemberInputSource> | null | undefined,
 ): MemberAccessInput[] => {
   return (authorizedMembers ?? [])
     .filter((member) => member.accessRight !== 'none')
@@ -104,7 +111,7 @@ export const authorizedMembersToInput = (
       return {
         id: member.value,
         access_right: member.accessRight,
-        groups_restriction_ids: member.groupsRestriction?.length > 0
+        groups_restriction_ids: member.groupsRestriction && member.groupsRestriction.length > 0
           ? member.groupsRestriction.map((group) => group.value)
           : undefined,
       };
