@@ -344,10 +344,15 @@ const toolBarConnectorsQuery = graphql`
 
 export const maxNumberOfObservablesToCopy = 1000;
 
+// Without a page size the backend returns 500 full containers, which can exhaust Elasticsearch memory.
+const containersSearchFirst = 25;
+const containersSearchDebounceMs = 300;
+
 const toolBarContainersQuery = graphql`
-  query DataTableToolBarContainersQuery($search: String) {
+  query DataTableToolBarContainersQuery($search: String, $first: Int) {
     containers(
       search: $search
+      first: $first
       filters: {
         mode: and
         filters: [{ key: "entity_type", values: ["Container"] }]
@@ -479,6 +484,7 @@ class DataTableToolBar extends Component {
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
+    clearTimeout(this.searchContainersTimeout);
   }
 
   handleOpenTask() {
@@ -1153,17 +1159,23 @@ class DataTableToolBar extends Component {
 
   searchContainers(i, newValue) {
     const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'inputValue',
-      newValue && newValue.length > 0 ? newValue : '',
-      actionsInputs[i],
-    );
+    const search = newValue && newValue.length > 0 ? newValue : '';
+    actionsInputs[i] = R.assoc('inputValue', search, actionsInputs[i]);
     this.setState({ actionsInputs });
-    fetchQuery(toolBarContainersQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-    })
+    // Any running search is stale as soon as the input changes, even before the new query is sent.
+    this.containersSearchId = (this.containersSearchId ?? 0) + 1;
+    const searchId = this.containersSearchId;
+    // Send one query once the user stops typing, instead of one per keystroke.
+    clearTimeout(this.searchContainersTimeout);
+    this.searchContainersTimeout = setTimeout(() => this.fetchContainers(search, searchId), containersSearchDebounceMs);
+  }
+
+  fetchContainers(search, searchId) {
+    fetchQuery(toolBarContainersQuery, { search, first: containersSearchFirst })
       .toPromise()
       .then((data) => {
+        // The input changed while this search was running: drop the stale results.
+        if (searchId !== this.containersSearchId) return;
         const elements = data.containers.edges.map((e) => e.node);
         const containers = elements
           .map((n) => ({
