@@ -3,10 +3,9 @@ import * as R from 'ramda';
 import { Form, Formik, FormikConfig } from 'formik';
 import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
 import IconButton from '@common/button/IconButton';
-import { Checkbox } from '@filigran/design-system';
+import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Add } from '@mui/icons-material';
 import type { SxProps, Theme } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -226,6 +225,12 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
     sendStixCoreObjectModification(currentlyToggledCoreObject, values.message, references, setSubmitting, resetForm);
   };
 
+  const preloadedPaginationProps = {
+    linesQuery: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
+    linesFragment: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
+    queryRef,
+  } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery>;
+
   return (
     <div style={{ flex: '1 0 0', overflow: 'hidden' }} ref={setTableRootRef}>
       {queryRef && (
@@ -243,11 +248,7 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
           lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
           initialValues={initialValues}
           contextFilters={contextFilters}
-          preloadedPaginationProps={{
-            linesQuery: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
-            linesFragment: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
-            queryRef,
-          } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery>}
+          preloadedPaginationProps={preloadedPaginationProps}
           entityTypes={targetTypes}
           availableEntityTypes={targetTypes}
           additionalFilterKeys={['entity_type']}
@@ -567,15 +568,20 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
   const renderButton = () => {
     if (knowledgeGraph) {
       return (
-        <Tooltip title={t_i18n('Add an entity to this container')}>
-          <IconButton
-            onClick={() => setOpen(true)}
-            variant="tertiary"
-            size="small"
-            aria-label={t_i18n('Add an entity to this container')}
-          >
-            <Add />
-          </IconButton>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <IconButton
+                onClick={() => setOpen(true)}
+                variant="tertiary"
+                size="small"
+                aria-label={t_i18n('Add an entity to this container')}
+              >
+                <Add />
+              </IconButton>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{t_i18n('Add an entity to this container')}</TooltipContent>
         </Tooltip>
       );
     }
