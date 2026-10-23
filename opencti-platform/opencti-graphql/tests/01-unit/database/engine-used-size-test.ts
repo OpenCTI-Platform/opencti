@@ -20,7 +20,7 @@ const { elkStats, openStats, FakeElkClient, FakeOpenClient } = vi.hoisted(() => 
   return { elkStats: elkStatsFn, openStats: openStatsFn, FakeElkClient: ElkClientStub, FakeOpenClient: OpenClientStub };
 });
 
-vi.mock('@elastic/elasticsearch', () => ({ Client: FakeElkClient }));
+vi.mock('@elastic/elasticsearch', () => ({ Client: FakeElkClient, SniffingTransport: class {} }));
 vi.mock('@opensearch-project/opensearch', () => ({ Client: FakeOpenClient }));
 vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() => ({})) }));
 

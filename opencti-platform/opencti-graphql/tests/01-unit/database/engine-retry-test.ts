@@ -27,7 +27,7 @@ vi.mock('@elastic/elasticsearch', () => {
     // eslint-disable-next-line no-useless-constructor
     constructor(_config: unknown) {}
   }
-  return { Client: MockElkClient };
+  return { Client: MockElkClient, SniffingTransport: class {} };
 });
 
 vi.mock('@opensearch-project/opensearch', () => {
