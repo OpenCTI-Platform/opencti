@@ -1,8 +1,14 @@
-import { describe, expect, it } from 'vitest';
-import { askSendOtp, generateOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
-import { testContext } from '../../utils/testQuery';
-import { validate as uuidValidate } from 'uuid';
-import { OTP_TTL, redisGetForgotPasswordOtp } from '../../../src/database/redis';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import bcrypt from 'bcryptjs';
+import { askSendOtp, changePassword, forgotPasswordActor, generateOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { SYSTEM_USER } from '../../../src/utils/access';
+import { v4 as uuid, validate as uuidValidate } from 'uuid';
+import { OTP_TTL, redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../../src/database/redis';
+import { addUser, userDelete } from '../../../src/modules/user/user-domain';
+import { getSettingsFromDatabase } from '../../../src/domain/settings';
+import { updateLocalAuth } from '../../../src/domain/setting-auth';
+import type { BasicStoreSettings } from '../../../src/types/settings';
 
 describe('getLocalProviderUser', () => {
   it('Should be able to return a user with an email', async () => {
@@ -41,5 +47,76 @@ describe('askSendOtp', () => {
   it('Should return an uuid with an wrong email', async () => {
     const result = await askSendOtp(testContext, { email: 'noResul@opencti.io' });
     expect(uuidValidate(result)).toBeTruthy();
+  });
+});
+
+describe('changePassword with password history', () => {
+  const email = 'reset_password_history@opencti.io';
+  const otp = '12345678';
+  let settings: BasicStoreSettings;
+  let userId: string;
+
+  const setHistoryCount = (count: number) => updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+    enabled: true,
+    password_policy_max_length: 0,
+    password_policy_min_length: 0,
+    password_policy_min_lowercase: 0,
+    password_policy_min_numbers: 0,
+    password_policy_min_symbols: 0,
+    password_policy_min_uppercase: 0,
+    password_policy_min_words: 0,
+    password_policy_validity_days: 0,
+    password_policy_history_count: count,
+  });
+
+  // The transaction askSendOtp would create, with a code known to the test
+  const startReset = async () => {
+    const transactionId = uuid();
+    await redisSetForgotPasswordOtp(transactionId, { hashedOtp: bcrypt.hashSync(otp), email, mfa_activated: false, mfa_validated: false, userId });
+    return transactionId;
+  };
+
+  beforeAll(async () => {
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    const user = await addUser(testContext, ADMIN_USER, { name: 'Reset password history', user_email: email, password: 'Reset-History-1!' } as any);
+    userId = user.id;
+    await setHistoryCount(2);
+  });
+
+  afterAll(async () => {
+    await setHistoryCount(0);
+    await userDelete(testContext, ADMIN_USER, userId);
+  });
+
+  it('Should refuse a reused password with PASSWORD_REUSED and keep the transaction for a retry', async () => {
+    const transactionId = await startReset();
+    await expect(changePassword(testContext, { transactionId, otp, newPassword: 'Reset-History-1!' }))
+      .rejects.toMatchObject({ extensions: { code: 'PASSWORD_REUSED' } });
+    const key = await redisGetForgotPasswordOtp(transactionId);
+    expect(key.hashedOtp).toBeTypeOf('string');
+    // Same transaction and code, a new password: the change goes through
+    expect(await changePassword(testContext, { transactionId, otp, newPassword: 'Reset-History-2!' })).toBe(true);
+  });
+
+  it('Should report an expired code with its own code, which the screen explains', async () => {
+    await expect(changePassword(testContext, { transactionId: uuid(), otp, newPassword: 'Reset-History-3!' }))
+      .rejects.toMatchObject({
+        message: 'Password reset code expired or not found. Please request a new one.',
+        extensions: { code: 'PASSWORD_RESET_EXPIRED' },
+      });
+  });
+});
+
+describe('forgotPasswordActor', () => {
+  it('records the origin of the request on the SYSTEM user, since nobody is logged in', () => {
+    const req = { ip: '203.0.113.7', headers: { 'user-agent': 'reset-test' }, header: (name: string) => (name === 'user-agent' ? 'reset-test' : undefined) };
+    const actor = forgotPasswordActor({ ...testContext, req } as any);
+    expect(actor.id).toEqual(SYSTEM_USER.id);
+    expect(actor.origin).toMatchObject({ ip: '203.0.113.7', socket: 'query' });
+    expect(actor.origin.user_metadata).toMatchObject({ 'user-agent': 'reset-test' });
+  });
+
+  it('falls back to the SYSTEM user outside of a request', () => {
+    expect(forgotPasswordActor(testContext)).toBe(SYSTEM_USER);
   });
 });
