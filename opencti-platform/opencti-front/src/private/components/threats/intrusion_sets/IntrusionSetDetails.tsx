@@ -69,7 +69,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
           container
           spacing={2}
           sx={{
-            mt: 0,
+            mt: 2,
           }}
         >
           <Grid size={6}>

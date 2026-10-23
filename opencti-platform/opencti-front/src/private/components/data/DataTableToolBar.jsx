@@ -3004,7 +3004,7 @@ class DataTableToolBar extends Component {
                         >
                           <CancelOutlined fontSize="small" />
                         </IconButton>
-                        <Grid container={true} spacing={3}>
+                        <Grid container={true} spacing={3} sx={{ flex: 1 }}>
                           <Grid size={3}>
                             <FormControl className={classes.formControl}>
                               <Select
