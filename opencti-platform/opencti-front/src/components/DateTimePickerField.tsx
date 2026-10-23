@@ -51,9 +51,14 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
     required = false,
   } = props;
   const intl = useIntl();
-  const [field, meta] = useField(name);
+  const [, meta] = useField(name);
   const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
   const defaultEmpty = null;
+  // Set when blurring a partly typed field. The picker then keeps a null value, since an
+  // invalid one coming from outside would rebuild its sections and erase what was typed.
+  const partlyTypedRef = React.useRef(false);
+  const isInvalidDate = parsedValue instanceof Date && Number.isNaN(parsedValue.getTime());
+  const pickerValue = partlyTypedRef.current && isInvalidDate ? null : parsedValue;
   const internalOnAccept = React.useCallback(
     (date: Date, context: PickerChangeHandlerContext<unknown>) => {
       // Typed values are applied on blur.
@@ -69,6 +74,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   );
   const internalOnChange = React.useCallback(
     (date: Date | null) => {
+      partlyTypedRef.current = false;
       setFieldValue(name, date ?? defaultEmpty);
       if (typeof onChange === 'function') {
         onChange(name, date ?? defaultEmpty);
@@ -81,16 +87,25 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
       onFocus(name);
     }
   }, [onFocus, name]);
-  const internalOnBlur = React.useCallback(() => {
-    setFieldTouched(name, true);
+  const internalOnBlur = React.useCallback((event: React.FocusEvent<HTMLElement>) => {
+    // An empty field publishes no value until every section is typed. A partly typed date is
+    // kept as an invalid one, so validation reports its format rather than a missing value.
+    // Only that change validates: a validation run by the touch would read the previous value.
+    const isPartlyTyped = !value && !!event.currentTarget.querySelector('[role="spinbutton"][aria-valuenow]');
+    setFieldTouched(name, true, !isPartlyTyped);
+    if (isPartlyTyped) {
+      partlyTypedRef.current = true;
+      setFieldValue(name, new Date(NaN));
+    }
     if (typeof onSubmit === 'function') {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
-  }, [setFieldTouched, onSubmit, name, field]);
+  }, [setFieldValue, setFieldTouched, onSubmit, name, value]);
 
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
 
   const internalOnClear = React.useCallback(() => {
+    partlyTypedRef.current = false;
     setFieldValue(name, defaultEmpty);
     if (typeof onChange === 'function') {
       onChange(name, defaultEmpty);
@@ -101,7 +116,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
     return (
       <DateTimePicker
         {...fieldToDateTimePicker(props)}
-        value={parsedValue}
+        value={pickerValue}
         variant="inline"
         required={required}
         disableToolbar={false}
@@ -130,7 +145,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   return (
     <DateTimePicker
       {...fieldToDateTimePicker(props)}
-      value={parsedValue} // Ensuring Date type
+      value={pickerValue} // Ensuring Date type
       variant="inline"
       required={required}
       disableToolbar={false}
