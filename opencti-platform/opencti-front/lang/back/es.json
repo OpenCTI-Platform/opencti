@@ -479,7 +479,7 @@
   "Health check code": "Código de comprobación de estado",
   "Health check metadata": "Metadatos de comprobación de estado",
   "Health checks": "Comprobaciones de estado",
-  "Health last event date": "Fecha del último evento sobre salud",
+  "Health last failure event date": "Fecha del último evento de fallo de salud",
   "Health status": "Estado de salud",
   "Health status since": "Estado de salud desde",
   "Height": "Altura",

@@ -38,11 +38,12 @@ const FEED = { internal_id: 'feed-id', entity_type: 'IngestionRss' };
 const SYNC = { internal_id: 'sync-id', entity_type: 'Sync' };
 const PINGING = { pingingConnectorsIds: new Set([CONNECTOR.internal_id]) };
 const NOT_PINGING = { pingingConnectorsIds: new Set<string>() };
+// No proof of life nor failure on the first evaluation: unknown is stored since this evaluation
+const UNKNOWN_PATCH = { ingestion_health: { status: IngestionHealthStatus.Unknown, status_since: EVALUATED_AT, health_checks: [] } };
 
 describe('computeIngestionHealthPatch', () => {
-  it('should write nothing with no check since on the first evaluation', () => {
-    const patch = computeIngestionHealthPatch({}, [], CONTEXT);
-    expect(patch).toEqual(null);
+  it('should write unknown and set since with no check on the first evaluation', () => {
+    expect(computeIngestionHealthPatch({}, [], CONTEXT)).toEqual(UNKNOWN_PATCH);
   });
 
   it('should write degraded with the check and set since when the user is missing on the first evaluation', () => {
@@ -81,8 +82,8 @@ describe('computeIngestionHealthPatch', () => {
     });
   });
 
-  it('should write nothing when ingestion_health is already absent and no status can be computed', () => {
-    expect(computeIngestionHealthPatch({ ingestion_health: null }, [], CONTEXT)).toBeNull();
+  it('should write unknown when ingestion_health is removed and no status can be computed', () => {
+    expect(computeIngestionHealthPatch({ ingestion_health: null }, [], CONTEXT)).toEqual(UNKNOWN_PATCH);
   });
 
   it('should treat a stored check without metadata as a check with empty metadata', () => {
@@ -128,16 +129,18 @@ describe('computeIngestionHealthPatch with runtime data', () => {
     });
   });
 
-  it('should stay unknown with no check and no heartbeat', () => {
-    expect(computeIngestionHealthPatch({}, [], CONTEXT)).toBeNull();
+  it('should be unknown with no check and no heartbeat', () => {
+    expect(computeIngestionHealthPatch({}, [], CONTEXT)).toEqual(UNKNOWN_PATCH);
   });
 
   it('should not be healthy when a check fails, whatever the heartbeat', () => {
     expect(computeIngestionHealthPatch({}, [USER_MISSING], ALIVE)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
   });
 
-  it('should not be healthy with a check unknown to this platform version', () => {
-    expect(computeIngestionHealthPatch({}, [OTHER_CHECK], ALIVE)).toBeNull();
+  it('should be unknown, keeping the check, with a check unknown to this platform version', () => {
+    expect(computeIngestionHealthPatch({}, [OTHER_CHECK], ALIVE)).toEqual({
+      ingestion_health: { status: IngestionHealthStatus.Unknown, status_since: EVALUATED_AT, health_checks: [OTHER_CHECK] },
+    });
   });
 
   it('should go back to unknown when the heartbeat expires', () => {
@@ -152,9 +155,9 @@ describe('computeIngestionHealthPatch with runtime data', () => {
     expect(computeIngestionHealthPatch(current, [], CONTEXT)).toBeNull();
   });
 
-  it('should not be healthy on a stale heartbeat', () => {
+  it('should be unknown, not healthy, on a stale heartbeat', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, 'ms').toISOString();
-    expect(computeIngestionHealthPatch({}, [], { ...CONTEXT, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat } })).toBeNull();
+    expect(computeIngestionHealthPatch({}, [], { ...CONTEXT, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat } })).toEqual(UNKNOWN_PATCH);
   });
 
   it('should keep since while the ingestion stays healthy', () => {
@@ -209,9 +212,9 @@ describe('heartbeat check', () => {
     expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, context), context)?.ingestion_health?.status).toBe(IngestionHealthStatus.Healthy);
   });
 
-  it('should give no status with a fresh heartbeat when the connector does not ping continuously, such as after a run and terminate run', () => {
+  it('should give an unknown status with a fresh heartbeat when the connector does not ping continuously, such as after a run and terminate run', () => {
     const context = buildIngestionHealthContext(input, { ...CONTEXT, ...NOT_PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } });
-    expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, context), context)).toBeNull();
+    expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, context), context)).toEqual(UNKNOWN_PATCH);
   });
 
   it('should give a critical status with the check message', () => {

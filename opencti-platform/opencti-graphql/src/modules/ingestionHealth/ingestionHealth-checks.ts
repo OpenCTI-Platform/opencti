@@ -103,7 +103,7 @@ const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[]
 
 // Returns the fields to write, or null when neither the status nor the checks changed.
 // The write replaces the whole ingestion_health object, so it carries the unchanged since.
-// Unknown is stored once an ingestion had another status: since moves, and its recovery is notified after the delay like any status.
+// Unknown is stored like any status, from the first evaluation: since moves, and its recovery is notified after the delay like any status.
 export const computeIngestionHealthPatch = (
   current: IngestionHealthFields,
   checks: StoredHealthCheck[],
@@ -151,7 +151,7 @@ const isStatusNotified = (health: StoredIngestionHealth) => !!health.last_event_
  *
  * A stopped ingestion is not evaluated: its health is removed and nothing is reported.
  *
- * @param health health after the write of this period, absent when never evaluated with a status or stopped
+ * @param health health after the write of this period, absent when never evaluated or stopped
  * @param evaluatedAt date of the evaluation period
  * @returns the transition to publish, or null when nothing is due
  */

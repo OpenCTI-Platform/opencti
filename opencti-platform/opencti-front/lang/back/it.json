@@ -479,7 +479,7 @@
   "Health check code": "Codice del controllo di integrità",
   "Health check metadata": "Metadati del controllo di integrità",
   "Health checks": "Controlli di integrità",
-  "Health last event date": "Data dell'ultimo evento relativo alla salute",
+  "Health last failure event date": "Data dell'ultimo evento di errore relativo alla salute",
   "Health status": "Stato di integrità",
   "Health status since": "Stato di integrità dal",
   "Height": "Altezza",

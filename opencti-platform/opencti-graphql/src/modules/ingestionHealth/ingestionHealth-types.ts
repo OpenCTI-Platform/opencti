@@ -25,7 +25,7 @@ export interface StoredIngestionHealth {
   health_checks?: StoredHealthCheck[];
 }
 
-// ingestion_health is absent until the manager first evaluates the ingestion with a status, and removed (null in a patch) when it is stopped
+// ingestion_health is absent until the manager first evaluates the ingestion, and removed (null in a patch) when it is stopped
 export interface IngestionHealthFields {
   ingestion_health?: StoredIngestionHealth | null;
 }
