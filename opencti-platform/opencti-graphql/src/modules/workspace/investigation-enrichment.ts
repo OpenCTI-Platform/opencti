@@ -13,7 +13,8 @@ import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/g
 const INVESTIGATION_UPDATE_CAPABILITY = 'INVESTIGATION_INUPDATE';
 
 /**
- * Tagging an enrichment with an investigation requires to be allowed to edit that investigation.
+ * Tagging an enrichment with an investigation requires to be allowed to enrich and to edit that investigation.
+ * The enrichment capability is checked here for every caller: the bulk enrichment tasks are not guarded by it otherwise.
  * A non member of a restricted investigation cannot load it, so it is reported as not found.
  * Capabilities are checked before the load so that the error does not reveal whether the id exists.
  */
@@ -21,12 +22,8 @@ export const validateEnrichmentInvestigation = async (
   context: AuthContext,
   user: AuthUser,
   investigationId: string,
-  opts: { checkEnrichmentCapability?: boolean } = {},
 ) => {
-  if (
-    (opts.checkEnrichmentCapability && !isUserHasCapability(user, KNOWLEDGE_KNENRICHMENT))
-    || !isUserHasCapability(user, INVESTIGATION_UPDATE_CAPABILITY)
-  ) {
+  if (!isUserHasCapability(user, KNOWLEDGE_KNENRICHMENT) || !isUserHasCapability(user, INVESTIGATION_UPDATE_CAPABILITY)) {
     throw ForbiddenAccess();
   }
   const investigation = await storeLoadById<BasicStoreEntityWorkspace>(context, user, investigationId, ENTITY_TYPE_WORKSPACE);
