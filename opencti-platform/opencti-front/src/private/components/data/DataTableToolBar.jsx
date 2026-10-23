@@ -69,7 +69,6 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
@@ -97,18 +96,9 @@ import {
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
 
-import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import Drawer from '../common/drawer/Drawer';
 import EETooltip from '../common/entreprise_edition/EETooltip';
-import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
-import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
-import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
-import { vocabularyQuery } from '../common/form/OpenVocabField';
-import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
-import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
-import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
-import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import { isBulkActionAllowed, isBulkActionDisabled } from './dataTableToolBarActionRules';
@@ -124,6 +114,20 @@ import {
   setStepSwitchValue,
   setStepValues,
 } from './dataTableToolBarUpdateSteps';
+import {
+  fetchAssigneeOptions,
+  fetchContainerOptions,
+  fetchExternalReferenceOptions,
+  fetchGroupOptions,
+  fetchIdentityOptions,
+  fetchKillChainPhaseOptions,
+  fetchLabelOptions,
+  fetchMarkingOptions,
+  fetchParticipantOptions,
+  fetchStatusOptions,
+  fetchVocabularyOptions,
+  toUserOptions,
+} from './dataTableToolBarStepOptions';
 import EnrichmentDrawer from './drawers/EnrichmentDrawer';
 import MergeDrawer from './drawers/MergeDrawer';
 import RuleRescanDrawer from './drawers/RuleRescanDrawer';
@@ -345,43 +349,6 @@ const toolBarConnectorsQuery = graphql`
 `;
 
 export const maxNumberOfObservablesToCopy = 1000;
-
-const toolBarContainersQuery = graphql`
-  query DataTableToolBarContainersQuery($search: String) {
-    containers(
-      search: $search
-      filters: {
-        mode: and
-        filters: [{ key: "entity_type", values: ["Container"] }]
-        filterGroups: []
-      }
-    ) {
-      edges {
-        node {
-          id
-          entity_type
-          representative {
-            main
-          }
-        }
-      }
-    }
-  }
-`;
-
-const toolbarGroupsQuery = graphql`
-    query DataTableToolBarGroupsQuery($search: String) {
-      groups(search: $search) {
-        edges {
-          node {
-            id
-            name
-            entity_type
-          }
-        }
-      }
-    }
-`;
 
 export const toolBarUsersLinesSearchQuery = graphql`
     query  DataTableToolBarUsersLinesSearchQuery(
@@ -1023,138 +990,41 @@ class DataTableToolBar extends Component {
     );
   }
 
-  searchContainers(i, newValue) {
+  // Stores the typed text in the step, then loads the options of its field.
+  // Some fields keep the options already loaded and add the new ones.
+  searchStepOptions(i, newValue, optionsKey, loadOptions, keepPrevious = false) {
     this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(toolBarContainersQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const elements = data.containers.edges.map((e) => e.node);
-        const containers = elements
-          .map((n) => ({
-            label: n.representative.main,
-            type: n.entity_type,
-            value: n.id,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label))
-          .sort((a, b) => a.type.localeCompare(b.type));
-        this.setState({ containers });
-      });
+    loadOptions(newValue && newValue.length > 0 ? newValue : '').then((options) => {
+      this.setState((state) => ({ [optionsKey]: keepPrevious ? R.union(state[optionsKey], options) : options }));
+    });
   }
 
-  fetchOrganizations(newValue) {
-    fetchOrganizationOptions(newValue && newValue.length > 0 ? newValue : '')
-      .then((organizations) => this.setState({ organizations }));
+  searchContainers(i, newValue) {
+    this.searchStepOptions(i, newValue, 'containers', fetchContainerOptions);
   }
 
   searchGroups(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-
-    fetchQuery(toolbarGroupsQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const elements = data.groups.edges.map((e) => e.node);
-        const groups = elements.map((element) => ({
-          label: element.name,
-          type: element.entity_type,
-          value: element.id,
-        }))
-          .sort((a, b) => a.label.localeCompare(b.label))
-          .sort((a, b) => a.type.localeCompare(b.type));
-        this.setState({ groups });
-      });
+    this.searchStepOptions(i, newValue, 'groups', fetchGroupOptions);
   }
 
   searchActionInputOrganizations(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    this.fetchOrganizations(newValue);
+    this.searchStepOptions(i, newValue, 'organizations', fetchOrganizationOptions);
   }
 
   searchMarkingDefinitions(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(objectMarkingFieldAllowedMarkingsQuery)
-      .toPromise()
-      .then((data) => {
-        const markingDefinitions = (data?.me?.allowed_marking ?? [])
-          .map((n) => ({
-            label: n.definition,
-            value: n.id,
-            color: n.x_opencti_color,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-        this.setState({ markingDefinitions });
-      });
+    this.searchStepOptions(i, newValue, 'markingDefinitions', fetchMarkingOptions);
   }
 
   searchLabels(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(labelsSearchQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const labels = (data?.labels?.edges ?? [])
-          .map((n) => ({
-            label: n.node.value,
-            value: n.node.id,
-            color: n.node.color,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-        this.setState({
-          labels: R.union(this.state.labels, labels),
-        });
-      });
+    this.searchStepOptions(i, newValue, 'labels', fetchLabelOptions, true);
   }
 
   searchExternalReferences(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(externalReferencesQueriesSearchQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const externalReferences = (data?.externalReferences?.edges ?? [])
-          .map((n) => ({
-            label: `[${n.node.source_name}] ${truncate(
-              n.node.description || n.node.external_id,
-              150,
-            )} ${n.node.url && `(${n.node.url})`}`,
-            value: n.node.id,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-        this.setState({
-          externalReferences: R.union(
-            this.state.externalReferences,
-            externalReferences,
-          ),
-        });
-      });
+    this.searchStepOptions(i, newValue, 'externalReferences', fetchExternalReferenceOptions, true);
   }
 
   searchIdentities(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(identitySearchIdentitiesSearchQuery, {
-      types: ['Individual', 'Organization', 'System'],
-      search: newValue && newValue.length > 0 ? newValue : '',
-      first: 100,
-    })
-      .toPromise()
-      .then((data) => {
-        const identities = (data?.identities?.edges ?? [])
-          .map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-            type: n.node.entity_type,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label))
-          .sort((a, b) => a.type.localeCompare(b.type));
-        this.setState({
-          identities: R.union(this.state.identities, identities),
-        });
-      });
+    this.searchStepOptions(i, newValue, 'identities', fetchIdentityOptions, true);
   }
 
   searchAccountStatus(i, newValue) {
@@ -1162,147 +1032,42 @@ class DataTableToolBar extends Component {
   }
 
   searchStatuses(i, selectedTypes, newValue) {
-    let selectedType;
-    if (selectedTypes.length === 1) {
-      [selectedType] = selectedTypes;
-    } else {
+    if (selectedTypes.length !== 1) {
       throw Error('It is not possible to bulk edit statuses if more than one entity type is selected.');
     }
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(statusFieldStatusesSearchQuery, {
-      first: 100,
-      filters: {
-        mode: 'and',
-        filterGroups: [],
-        filters: [{ key: 'type', values: [selectedType] }],
-      },
-      orderBy: 'order',
-      orderMode: 'asc',
-      search: newValue && newValue.length > 0 ? newValue : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const statuses = (data?.statuses?.edges ?? [])
-          .map((n) => ({
-            label: n.node.template.name,
-            value: n.node.id,
-            order: n.node.order,
-            color: n.node.template.color,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label))
-          .sort((a, b) => a.order - b.order);
-        this.setState({ statuses: R.union(this.state.statuses, statuses) });
-      });
+    this.searchStepOptions(i, newValue, 'statuses', (search) => fetchStatusOptions(selectedTypes[0], search), true);
   }
 
   searchVocabulary(i, category, newValue) {
     this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(vocabularyQuery, {
-      category,
-      orderBy: 'name',
-      orderMode: 'asc',
-    })
-      .toPromise()
-      .then((data) => {
-        const vocabularies = (data.vocabularies.edges ?? []).map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-        }));
-        this.setState((prevState) => ({
-          vocabularies: R.assoc(
-            category,
-            R.union(prevState.vocabularies[category] || [], vocabularies),
-            prevState.vocabularies,
-          ),
-        }));
-      });
+    fetchVocabularyOptions(category).then((vocabularies) => {
+      this.setState((prevState) => ({
+        vocabularies: R.assoc(
+          category,
+          R.union(prevState.vocabularies[category] || [], vocabularies),
+          prevState.vocabularies,
+        ),
+      }));
+    });
   }
 
   searchParticipants(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(objectParticipantFieldMembersSearchQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-      entityTypes: ['User'],
-      first: 10,
-    })
-      .toPromise()
-      .then((data) => {
-        const participants = (data.members?.edges ?? []).map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-          type: n.node.entity_type,
-        })).sort((a, b) => a.label.localeCompare(b.label));
-        this.setState({
-          participants: R.union(this.state.participants, participants),
-        });
-      });
+    this.searchStepOptions(i, newValue, 'participants', fetchParticipantOptions, true);
   }
 
   searchAssignees(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(objectAssigneeFieldMembersSearchQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-      entityTypes: ['User'],
-      first: 10,
-    })
-      .toPromise()
-      .then((data) => {
-        const assignees = pipe(
-          pathOr([], ['members', 'edges']),
-          map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-            type: n.node.entity_type,
-            entity: n.node,
-          })),
-        )(data);
-        this.setState({
-          assignees: R.union(this.state.assignees, assignees),
-        });
-      });
+    this.searchStepOptions(i, newValue, 'assignees', fetchAssigneeOptions, true);
   }
 
   searchUsers(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(toolBarUsersLinesSearchQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-      first: 100,
-    })
+    const loadUsers = (search) => fetchQuery(toolBarUsersLinesSearchQuery, { search, first: 100 })
       .toPromise()
-      .then((data) => {
-        const users = (data?.users?.edges ?? [])
-          .map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-            type: n.node.entity_type,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label))
-          .sort((a, b) => a.type.localeCompare(b.type));
-        this.setState({
-          users: R.union(this.state.users, users),
-        });
-      });
+      .then(toUserOptions);
+    this.searchStepOptions(i, newValue, 'users', loadUsers, true);
   }
 
   searchKillChains(i, newValue) {
-    this.setState(({ actionsInputs }) => ({ actionsInputs: setStepInputValue(actionsInputs, i, newValue) }));
-    fetchQuery(killChainPhasesSearchQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const killChainPhases = pipe(
-          pathOr([], ['killChainPhases', 'edges']),
-          sortWith([ascend(path(['node', 'x_opencti_order']))]),
-          map((n) => ({
-            label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-            value: n.node.id,
-          })),
-        )(data);
-        this.setState({
-          killChainPhases: union(this.state.killChainPhases, killChainPhases),
-        });
-      });
+    this.searchStepOptions(i, newValue, 'killChainPhases', fetchKillChainPhaseOptions, true);
   }
 
   static getUserStatusOptionList(userStatuses) {
