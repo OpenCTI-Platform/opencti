@@ -65,7 +65,13 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             {fldt(intrusionSet.last_seen)}
           </Grid>
         </Grid>
-        <Grid container spacing={2} mt={0}>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            mt: 0,
+          }}
+        >
           <Grid item xs={6}>
             <Label>
               {t_i18n('Resource level')}

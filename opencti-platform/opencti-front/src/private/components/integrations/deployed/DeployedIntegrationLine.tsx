@@ -149,7 +149,15 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       }}
     >
       {/* Name column: logo, name and managed flag. */}
-      <Stack direction="row" alignItems="center" gap={1.5} sx={{ flex: 1, minWidth: 0 }}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1.5,
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
         <Box
           sx={{
             height: 32,
@@ -287,7 +295,13 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
             // Neutralize the global tooltip lowercasing: this is a sentence.
             slotProps={{ popper: { sx: { textTransform: 'none' } } }}
           >
-            <Stack direction="row" alignItems="center" gap={0.5}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
               <ScheduleOutlined sx={{ fontSize: 13, color: theme.palette.text.secondary }} />
               <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary, whiteSpace: 'nowrap' }}>
                 {rd(lastDate)}
@@ -302,7 +316,13 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       </Box>
       {/* Status column. */}
       <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
-        <Stack direction="column" alignItems="flex-start" gap={0.5}>
+        <Stack
+          direction="column"
+          sx={{
+            alignItems: 'flex-start',
+            gap: 0.5,
+          }}
+        >
           {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
           {item.status === 'processing'
             ? <ItemBoolean status={undefined} label={statusText} />

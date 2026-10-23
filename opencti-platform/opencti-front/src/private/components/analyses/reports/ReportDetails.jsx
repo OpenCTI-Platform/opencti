@@ -94,7 +94,13 @@ const ReportDetails = ({ report }) => {
           <Grid item xs={6} ref={ref}>
             <Label>{t_i18n('Report types')}</Label>
             <FieldOrEmpty source={reportData.report_types}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {reportData.report_types?.map((reportType) => (
                   <Tag
                     key={reportType}

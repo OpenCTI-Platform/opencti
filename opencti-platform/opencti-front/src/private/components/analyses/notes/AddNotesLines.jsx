@@ -1,4 +1,4 @@
-import { WorkOutline } from '@mui/icons-material';
+import { WorkOutlined } from '@mui/icons-material';
 import ListItemButton from '@mui/material/ListItemButton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -148,7 +148,7 @@ class AddNotesLinesContainer extends Component {
                   <TableCell sx={{ width: 80, paddingY: 1, paddingX: 2 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                       <Checkbox checked={alreadyAdded} />
-                      <WorkOutline />
+                      <WorkOutlined />
                     </div>
                   </TableCell>
                   <TableCell sx={{ paddingY: 1, paddingX: 2 }}>

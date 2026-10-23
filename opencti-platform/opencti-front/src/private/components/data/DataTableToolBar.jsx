@@ -2477,8 +2477,10 @@ class DataTableToolBar extends Component {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
                     className={classes.title}
-                    color="inherit"
                     variant="subtitle1"
+                    sx={{
+                      color: 'inherit',
+                    }}
                   >
                     <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
                   </Typography>
@@ -3103,7 +3105,9 @@ class DataTableToolBar extends Component {
                             )}
                             value={element.id}
                             name="keptEntityID"
-                            inputProps={{ 'aria-label': 'keptEntityID' }}
+                            slotProps={{
+                              input: { 'aria-label': 'keptEntityID' },
+                            }}
                           />
                         )}
                       >
@@ -3243,7 +3247,9 @@ class DataTableToolBar extends Component {
                               this,
                               connector.id,
                             )}
-                            inputProps={{ 'aria-label': 'controlled' }}
+                            slotProps={{
+                              input: { 'aria-label': 'controlled' },
+                            }}
                           />
                         )}
                       >

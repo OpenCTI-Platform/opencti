@@ -111,7 +111,13 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               {t_i18n('Incident response type')}
             </Label>
             <FieldOrEmpty source={responseTypes}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {responseTypes.map((responseType) => (
                   <Tag
                     key={responseType}

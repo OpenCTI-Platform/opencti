@@ -438,9 +438,11 @@ const ContainerMappingContentComponent: FunctionComponent<
     <>
       <Grid
         container
-        alignItems="stretch"
         columnSpacing={2}
-        mb={2}
+        sx={{
+          alignItems: 'stretch',
+          mb: 2,
+        }}
       >
         <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
           <StixCoreObjectMappableContent

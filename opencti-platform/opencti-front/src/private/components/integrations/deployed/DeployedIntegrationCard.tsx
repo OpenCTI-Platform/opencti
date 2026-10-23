@@ -129,7 +129,14 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
           alignItems: 'stretch',
         }}
       >
-        <Stack direction="row" gap={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1.5,
+            alignItems: 'flex-start',
+            width: '100%',
+          }}
+        >
           <Box
             sx={{
               height: 48,
@@ -159,7 +166,13 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             )}
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               {/* Sentence case: the V7 design language avoids all-caps text. */}
               <Typography
                 variant="body2"
@@ -223,16 +236,22 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
 
         <Stack
           direction="row"
-          alignItems="flex-end"
-          justifyContent="space-between"
-          gap={1.5}
           sx={{
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: 1.5,
             width: '100%',
             paddingTop: 1.5,
             borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.05)}`,
           }}
         >
-          <Stack direction="row" gap={2.5} sx={{ minWidth: 0 }}>
+          <Stack
+            direction="row"
+            sx={{
+              gap: 2.5,
+              minWidth: 0,
+            }}
+          >
             {item.messagesCount != null && (
               <Metric label={t_i18n('Messages')} value={n(item.messagesCount)} />
             )}
@@ -249,7 +268,15 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               <Metric label={t_i18n('User')} value={item.userName} />
             )}
           </Stack>
-          <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+          <Stack
+            direction="column"
+            onClick={stopLinkNavigation}
+            onAuxClick={stopLinkNavigation}
+            sx={{
+              alignItems: 'flex-end',
+              gap: 0.75,
+            }}
+          >
             {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
             {statusChip}
             {item.kind !== 'form' && (

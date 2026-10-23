@@ -142,7 +142,13 @@ const SettingsOrganization = ({
     .includes(organization.id);
   return (
     <div className={classes.container}>
-      <Stack direction="row" alignItems="center" marginBottom={3}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          marginBottom: 3,
+        }}
+      >
         <TitleMainEntity sx={{ flex: 1 }}>
           {organization.name}
         </TitleMainEntity>

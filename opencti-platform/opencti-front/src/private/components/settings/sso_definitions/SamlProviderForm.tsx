@@ -512,8 +512,8 @@ const SamlProviderForm = ({
                             />
                           )}
                           label={t_i18n('Override identifier')}
-                          componentsProps={{ typography: { variant: 'body2' } }}
                           sx={{ m: 0 }}
+                          slotProps={{ typography: { variant: 'body2' } }}
                         />
                         <Field
                           component={TextField}
@@ -521,7 +521,7 @@ const SamlProviderForm = ({
                           name="identifier_override"
                           label={t_i18n('Provider identifier')}
                           placeholder={slugifyIdentifier(values.name) || undefined}
-                          InputLabelProps={{ shrink: true }}
+                          slotProps={{ inputLabel: { shrink: true } }}
                           fullWidth
                           size="small"
                           disabled={!overrideIdentifier}
@@ -535,8 +535,8 @@ const SamlProviderForm = ({
                             />
                           )}
                           label={t_i18n('Override callback URL')}
-                          componentsProps={{ typography: { variant: 'body2' } }}
                           sx={{ m: 0 }}
+                          slotProps={{ typography: { variant: 'body2' } }}
                         />
                         {overrideCallbackUrl ? (
                           <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>

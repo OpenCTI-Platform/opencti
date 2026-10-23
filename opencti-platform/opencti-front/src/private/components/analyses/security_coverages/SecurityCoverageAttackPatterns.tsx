@@ -97,7 +97,13 @@ const SecurityCoverageAttackPatternsComponent = ({
   return (
     <Card
       title={(
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <span>{t_i18n('Attack patterns coverage')}</span>
           <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />

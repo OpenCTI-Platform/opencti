@@ -220,7 +220,12 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                           divider={true}
                           disablePadding
                           secondaryAction={(
-                            <Stack direction="row" gap={1}>
+                            <Stack
+                              direction="row"
+                              sx={{
+                                gap: 1,
+                              }}
+                            >
                               <Tooltip title={t('Browse the link')}>
                                 <IconButton
                                   onClick={this.handleOpenExternalLink.bind(

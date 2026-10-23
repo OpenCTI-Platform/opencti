@@ -314,7 +314,10 @@ const EntityDetailsComponent: FunctionComponent<
   }
   const entityDescription = stixCoreObject.description || stixCoreObject.x_opencti_description;
   return (
-    <Stack gap={2}>
+    <Stack sx={{
+      gap: 2,
+    }}
+    >
       {stixCoreObject.entity_type !== 'StixFile' && (
         <div style={{ marginTop: 20 }}>
           <Label>

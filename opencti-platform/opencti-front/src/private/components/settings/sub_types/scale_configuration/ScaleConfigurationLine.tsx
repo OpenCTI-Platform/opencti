@@ -1,7 +1,7 @@
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { DeleteOutline } from '@mui/icons-material';
+import { DeleteOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import IconButton from '@common/button/IconButton';
 import { ObjectSchema } from 'yup';
@@ -92,7 +92,7 @@ const ScaleConfigurationLine: FunctionComponent<
                   <div className={classes.button}>
                     {handleDelete && (
                       <IconButton aria-label={t_i18n('Delete')} onClick={() => handleDelete()}>
-                        <DeleteOutline fontSize="small" style={{ color: '#00b1ff' }} />
+                        <DeleteOutlined fontSize="small" style={{ color: '#00b1ff' }} />
                       </IconButton>
                     )}
                   </div>

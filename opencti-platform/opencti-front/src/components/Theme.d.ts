@@ -1,5 +1,4 @@
-import { CommonColors, PaletteColorOptions, PaletteMode, PaletteOptions, TypeBackground, TypeText } from '@mui/material/styles/createPalette';
-import { Theme as MuiTheme, ThemeOptions } from '@mui/material/styles/createTheme';
+import { CommonColors, PaletteColorOptions, PaletteMode, PaletteOptions, Theme as MuiTheme, ThemeOptions, TypeBackground, TypeText } from '@mui/material/styles';
 
 declare module '@mui/material/IconButton' {
   interface IconButtonPropsColorOverrides {

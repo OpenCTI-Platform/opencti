@@ -142,7 +142,13 @@ const IntegrationsDeployedContent = ({
   // Below md the sidebar stacks full-width above the cards instead of
   // squeezing them against a fixed 250px column.
   return (
-    <Stack direction={{ xs: 'column', md: 'row' }} gap={2} alignItems={{ xs: 'stretch', md: 'flex-start' }}>
+    <Stack
+      direction={{ xs: 'column', md: 'row' }}
+      sx={{
+        gap: 2,
+        alignItems: { xs: 'stretch', md: 'flex-start' },
+      }}
+    >
       <DeployedFacetSidebar
         filters={filters}
         onFiltersChange={setFilters}
@@ -153,7 +159,14 @@ const IntegrationsDeployedContent = ({
       />
 
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Stack direction="row" alignItems="center" flexWrap="wrap" gap={2}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2,
+          }}
+        >
           <SearchInput
             value={searchInput}
             onSubmit={handleSearchInputSubmit}

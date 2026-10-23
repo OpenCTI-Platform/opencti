@@ -48,7 +48,12 @@ const makeScoreRenderer = (scoreKey: string, severityKey?: string) => {
       ? getField<string>(data, severityKey)
       : getCvssCriticity(score ?? null) ?? undefined;
     return (
-      <Stack direction="row" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          gap: 1,
+        }}
+      >
         <ItemCvssScore score={score ?? 0} />
         <ItemSeverity severity={severity ?? null} label={severity ?? null} variant="high" />
       </Stack>

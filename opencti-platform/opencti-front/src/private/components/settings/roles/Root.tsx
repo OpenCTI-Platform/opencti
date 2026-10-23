@@ -86,7 +86,14 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
               { label: role.name, current: true },
             ]}
           />
-          <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              paddingRight: '200px',
+              marginBottom: 3,
+            }}
+          >
             <TitleMainEntity sx={{ flex: 1 }}>
               {role.name}
             </TitleMainEntity>

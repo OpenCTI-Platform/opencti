@@ -131,7 +131,13 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
   return (
     <Card
       title={(
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <span>{t_i18n('Tested entities')}</span>
           <Tooltip title={t_i18n('Total count of entities tested in Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />

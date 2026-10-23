@@ -117,8 +117,23 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             { label: `${fintelDesign.name}`, current: true },
           ]}
         />
-        <Stack direction="row" mb={3} alignItems="center">
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0, mr: 1 }}>
+        <Stack
+          direction="row"
+          sx={{
+            mb: 3,
+            alignItems: 'center',
+          }}
+        >
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: 'center',
+              flex: 1,
+              minWidth: 0,
+              mr: 1,
+            }}
+          >
             <TitleMainEntity>
               {fintelDesign.name}
             </TitleMainEntity>
@@ -129,7 +144,13 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               />
             )}
           </Stack>
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: 'center',
+            }}
+          >
             <FintelDesignPopover
               fintelDesignId={fintelDesign.id}
               isDefault={!!fintelDesign.default}

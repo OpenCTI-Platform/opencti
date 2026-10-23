@@ -165,11 +165,9 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                     helperText={`${t_i18n('Full technical name')}: ${CUSTOM_FIELD_NAME_PREFIX}${values.nameSuffix || '...'}`}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">{CUSTOM_FIELD_NAME_PREFIX}</InputAdornment>
-                      ),
-                    }}
+                    startAdornment={(
+                      <InputAdornment position="start">{CUSTOM_FIELD_NAME_PREFIX}</InputAdornment>
+                    )}
                   />
                   <Field
                     component={ComboboxFieldComponent<string>}

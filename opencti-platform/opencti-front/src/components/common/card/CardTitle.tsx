@@ -1,11 +1,12 @@
-import { PropsWithChildren, ReactNode } from 'react';
-import { Stack, StackProps, SxProps, Typography } from '@mui/material';
+import { CSSProperties, PropsWithChildren, ReactNode } from 'react';
+import { Stack, SxProps, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../Theme';
+import { mergeSx } from '../../../utils/sx';
 
 interface CardTitleProps extends PropsWithChildren {
   action?: ReactNode;
-  alignItems?: StackProps['alignItems'];
+  alignItems?: CSSProperties['alignItems'];
   sx?: SxProps;
 }
 
@@ -37,14 +38,20 @@ const CardTitle = ({
   return (
     <Stack
       direction="row"
-      justifyContent="space-between"
-      alignItems={alignItems}
-      sx={containerSx}
+      sx={mergeSx({
+        justifyContent: 'space-between',
+        alignItems: alignItems,
+      }, containerSx)}
     >
       <Typography variant="h5" sx={titleSx}>
         {children}
       </Typography>
-      <Stack direction="row" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          gap: 1,
+        }}
+      >
         {action}
       </Stack>
     </Stack>

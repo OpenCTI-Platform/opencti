@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import IconButton from '@common/button/IconButton';

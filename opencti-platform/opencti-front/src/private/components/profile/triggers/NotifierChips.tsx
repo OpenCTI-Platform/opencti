@@ -11,7 +11,14 @@ const NotifierChips: FunctionComponent<NotifierChipsProps> = ({ notifiers }) => 
   <FieldOrEmpty source={notifiers}>
     <Tooltip>
       <TooltipTrigger asChild>
-        <Stack direction="row" gap={1} flexWrap="nowrap" overflow="hidden">
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            flexWrap: 'nowrap',
+            overflow: 'hidden',
+          }}
+        >
           {(notifiers ?? []).map((n) => (
             <Chip key={n.id} label={n.name} />
           ))}

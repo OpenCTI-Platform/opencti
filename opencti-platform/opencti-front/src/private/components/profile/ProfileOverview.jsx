@@ -278,8 +278,11 @@ const ProfileOverviewComponent = (props) => {
 
   return (
     <Stack
-      gap={2}
-      sx={{ width: 900, margin: '0 auto' }}
+      sx={{
+        gap: 2,
+        width: 900,
+        margin: '0 auto',
+      }}
     >
       <TokenCreationDrawer
         userId={me.id}
@@ -521,7 +524,10 @@ const ProfileOverviewComponent = (props) => {
           >
             {({ submitForm, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Stack gap={2}>
+                <Stack sx={{
+                  gap: 2,
+                }}
+                >
                   <Field
                     component={TextField}
                     variant="outlined"
@@ -570,8 +576,17 @@ const ProfileOverviewComponent = (props) => {
         <div>
           <Label>{t('OpenCTI version')}</Label>
           <pre>{about.version}</pre>
-          <Stack gap={2}>
-            <Stack direction="row" justifyContent="flex-end" gap={1}>
+          <Stack sx={{
+            gap: 2,
+          }}
+          >
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: 'flex-end',
+                gap: 1,
+              }}
+            >
               {hasAccessTokenCapability && isPlaygroundEnable() && (
                 <Button
                   variant="secondary"
