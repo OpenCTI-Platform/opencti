@@ -27,8 +27,8 @@ describe('Merge drawer preview', () => {
     expect(preview.newAliases).toEqual(['J. Doe', 'Johnny', 'JD']);
   });
 
-  it('should return an empty preview when the chosen element is not selected anymore', () => {
+  it('should keep no element when the chosen element is not selected anymore', () => {
     const preview = computeMergePreview([apt28, fancyBear], 'id-unknown');
-    expect(preview).toEqual({ keptElement: undefined, mergedElements: [], newAliases: [] });
+    expect(preview).toEqual({ keptElement: undefined, mergedElements: [apt28, fancyBear], newAliases: [] });
   });
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import DialogActions from '@mui/material/DialogActions';
 import { AddOutlined } from '@mui/icons-material';
@@ -66,34 +66,38 @@ interface OrganizationSharingDialogProps {
   mode: OrganizationSharingMode;
   open: boolean;
   onClose: () => void;
+  selected: OrganizationOption[];
+  onSelectedChange: (organizations: OrganizationOption[]) => void;
+  inputValue: string;
+  onInputValueChange: (value: string) => void;
   onLaunch: (organizations: OrganizationOption[]) => void;
 }
 
-const OrganizationSharingDialog = ({ mode, open, onClose, onLaunch }: OrganizationSharingDialogProps) => {
+// The selection and the search text are owned by the caller: the share and unshare dialogs use the same ones
+const OrganizationSharingDialog = ({
+  mode,
+  open,
+  onClose,
+  selected,
+  onSelectedChange,
+  inputValue,
+  onInputValueChange,
+  onLaunch,
+}: OrganizationSharingDialogProps) => {
   const { t_i18n } = useFormatter();
   const [options, setOptions] = useState<OrganizationOption[]>([]);
-  const [selected, setSelected] = useState<OrganizationOption[]>([]);
-  const [inputValue, setInputValue] = useState('');
   const [creationOpen, setCreationOpen] = useState(false);
   const canCreate = mode === 'share';
 
-  // Every opening starts with no organization selected
-  useEffect(() => {
-    if (open) {
-      setSelected([]);
-      setInputValue('');
-    }
-  }, [open]);
-
   const search = (value: string) => {
-    setInputValue(value);
+    onInputValueChange(value);
     fetchOrganizationOptions(value).then(setOptions);
   };
 
   const handleCreated = (data: { id: string; name: string; entity_type: string }) => {
     const element = { label: data.name, value: data.id, type: data.entity_type };
     setOptions((current) => [...current, element]);
-    setSelected((current) => [...current, element]);
+    onSelectedChange([...selected, element]);
   };
 
   return (
@@ -124,7 +128,7 @@ const OrganizationSharingDialog = ({ mode, open, onClose, onLaunch }: Organizati
         onInputChange={(newValue, meta) => {
           if (meta.cause === 'type') search(newValue);
         }}
-        onValueChange={(next: OrganizationOption[]) => setSelected(next)}
+        onValueChange={(next: OrganizationOption[]) => onSelectedChange(next)}
         renderOption={(option: OrganizationOption) => (
           <>
             <div style={{ paddingTop: 4, display: 'inline-block' }}>

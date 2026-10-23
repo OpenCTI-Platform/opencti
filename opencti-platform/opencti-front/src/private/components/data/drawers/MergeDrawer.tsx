@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Alert from '@mui/material/Alert';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -20,21 +20,26 @@ interface MergeDrawerProps {
   open: boolean;
   onClose: () => void;
   elements: MergeElement[];
-  onLaunch: (keptElement: MergeElement, mergedElements: MergeElement[]) => void;
+  keptEntityId: string | null;
+  onKeptEntityIdChange: (entityId: string) => void;
+  onLaunch: (keptElement: MergeElement | undefined, mergedElements: MergeElement[]) => void;
   noAuthor?: boolean;
   noMarking?: boolean;
   noWarning?: boolean;
 }
 
-const MergeDrawer = ({ open, onClose, elements, onLaunch, noAuthor, noMarking, noWarning }: MergeDrawerProps) => {
+const MergeDrawer = ({
+  open,
+  onClose,
+  elements,
+  keptEntityId,
+  onKeptEntityIdChange,
+  onLaunch,
+  noAuthor,
+  noMarking,
+  noWarning,
+}: MergeDrawerProps) => {
   const { t_i18n } = useFormatter();
-  const [keptEntityId, setKeptEntityId] = useState<string | null>(null);
-
-  // Every opening starts with the first selected element as the kept one
-  useEffect(() => {
-    if (open) setKeptEntityId(null);
-  }, [open]);
-
   const { keptElement, mergedElements, newAliases } = computeMergePreview(elements, keptEntityId);
 
   const subtitle = (text: string) => (
@@ -65,7 +70,7 @@ const MergeDrawer = ({ open, onClose, elements, onLaunch, noAuthor, noMarking, n
           aria-label={t_i18n('Merged entity')}
           name="keptEntityID"
           value={keptElement?.id ?? ''}
-          onValueChange={(value) => setKeptEntityId(value)}
+          onValueChange={onKeptEntityIdChange}
         >
           <List>
             {elements.map((element) => (
@@ -141,10 +146,7 @@ const MergeDrawer = ({ open, onClose, elements, onLaunch, noAuthor, noMarking, n
           </Alert>
         )}
         <FormButtonContainer>
-          <Button
-            disabled={!keptElement}
-            onClick={() => keptElement && onLaunch(keptElement, mergedElements)}
-          >
+          <Button onClick={() => onLaunch(keptElement, mergedElements)}>
             {t_i18n('Merge')}
           </Button>
         </FormButtonContainer>

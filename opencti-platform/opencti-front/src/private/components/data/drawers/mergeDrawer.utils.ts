@@ -22,10 +22,12 @@ export const computeMergePreview = (elements: MergeElement[], keptEntityId: stri
   const keptElement = keptEntityId
     ? elements.find((element) => element.id === keptEntityId)
     : elements[0];
+  const mergedElements = keptEntityId
+    ? elements.filter((element) => element.id !== keptEntityId)
+    : elements.slice(1);
   if (!keptElement) {
-    return { keptElement, mergedElements: [], newAliases: [] };
+    return { keptElement, mergedElements, newAliases: [] };
   }
-  const mergedElements = elements.filter((element) => element.id !== keptElement.id);
   const names = elements
     .map((element) => element.name)
     .filter((name) => name !== keptElement.name);

@@ -409,6 +409,7 @@ class DataTableToolBar extends Component {
       actions: [],
       scope: undefined,
       actionsInputs: [{}],
+      keptEntityId: null,
       mergingElement: null,
       description: '',
       processing: false,
@@ -421,6 +422,8 @@ class DataTableToolBar extends Component {
       statuses: [],
       externalReferences: [],
       enrichConnectors: [],
+      organizationInput: '',
+      shareOrganizations: [],
       selectedCategory: '',
       vocabularies: {
         case_severity_ov: [],
@@ -459,6 +462,7 @@ class DataTableToolBar extends Component {
       displayTask: false,
       actions: [],
       scope: undefined,
+      keptEntityId: null,
       mergingElement: null,
       processing: false,
       description: '',
@@ -2981,6 +2985,8 @@ class DataTableToolBar extends Component {
                 open={this.state.displayMerge}
                 onClose={this.handleCloseMerge.bind(this)}
                 elements={selectedElementsList}
+                keptEntityId={this.state.keptEntityId}
+                onKeptEntityIdChange={(keptEntityId) => this.setState({ keptEntityId })}
                 onLaunch={this.handleLaunchMerge.bind(this)}
                 noAuthor={noAuthor}
                 noMarking={noMarking}
@@ -3132,12 +3138,20 @@ class DataTableToolBar extends Component {
                 mode="share"
                 open={this.state.displayShare}
                 onClose={this.handleCloseShare.bind(this)}
+                selected={this.state.shareOrganizations}
+                onSelectedChange={(shareOrganizations) => this.setState({ shareOrganizations })}
+                inputValue={this.state.organizationInput}
+                onInputValueChange={(organizationInput) => this.setState({ organizationInput })}
                 onLaunch={this.handleLaunchSharing.bind(this, 'share')}
               />
               <OrganizationSharingDialog
                 mode="unshare"
                 open={this.state.displayUnshare}
                 onClose={this.handleCloseUnshare.bind(this)}
+                selected={this.state.shareOrganizations}
+                onSelectedChange={(shareOrganizations) => this.setState({ shareOrganizations })}
+                inputValue={this.state.organizationInput}
+                onInputValueChange={(organizationInput) => this.setState({ organizationInput })}
                 onLaunch={this.handleLaunchSharing.bind(this, 'unshare')}
               />
               <EnrollPlaybookDrawer
