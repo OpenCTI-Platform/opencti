@@ -74,6 +74,22 @@ describe('Retention Manager tests ', () => {
     }
   `;
 
+  const CREATE_DRAFT_WORKSPACE_QUERY = gql`
+      mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
+          draftWorkspaceAdd(input: $input) {
+              id
+              standard_id
+              entity_id
+              name
+              draft_status
+              created_at
+              validationWork {
+                  id
+              }
+          }
+      }
+  `;
+
   const emptyStringFilters = JSON.stringify(emptyFilterGroup);
   beforeAll(async () => {
     // create a file not modified since '2023-01-01T00:00:00.000Z'
@@ -256,6 +272,15 @@ describe('Retention Manager tests ', () => {
         filters: emptyStringFilters,
       },
     };
+    const draftRule_toCreate = {
+      input: {
+        name: 'Draft rule',
+        max_retention: 2,
+        retention_unit: 'days',
+        scope: 'draft',
+        filters: emptyStringFilters,
+      },
+    };
     const knowledgeRuleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,
       variables: knowledgeRule_toCreate,
@@ -274,6 +299,15 @@ describe('Retention Manager tests ', () => {
     expect(fileRule.scope).toEqual('file');
     expect(fileRule.max_retention).toEqual(2);
     expect(fileRule.id).not.toBeNull();
+    const draftRuleQuery = await queryAsAdmin({
+      query: CREATE_RETENTION_QUERY,
+      variables: draftRule_toCreate,
+    });
+    const draftRule = draftRuleQuery.data?.retentionRuleAdd;
+    expect(draftRule.name).toEqual('Draft rule');
+    expect(draftRule.scope).toEqual('draft');
+    expect(draftRule.max_retention).toEqual(2);
+    expect(draftRule.id).not.toBeNull();
     // delete retention rules
     const knowledgeRuleDeletion = await queryAsAdmin({
       query: DELETE_RETENTION_QUERY,
@@ -285,6 +319,11 @@ describe('Retention Manager tests ', () => {
       variables: { id: fileRule.id },
     });
     expect(fileRuleDeletion.data?.retentionRuleEdit.delete).toEqual(fileRule.id);
+    const draftRuleDeletion = await queryAsAdmin({
+      query: DELETE_RETENTION_QUERY,
+      variables: { id: draftRule.id },
+    });
+    expect(draftRuleDeletion.data?.retentionRuleEdit.delete).toEqual(draftRule.id);
   });
   it('should fetch the correct files to be deleted by a retention rule on files', async () => {
     // check the number of files imported in Data/import
@@ -661,5 +700,63 @@ describe('Retention Manager tests ', () => {
     expect(updatedRule?.last_deleted_count).toBe(0);
     // Cleanup
     await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
+  });
+
+  it('should execute processing for draft scope with no elements: rule patched with 0 deleted', async () => {
+    // Create an draft retention rule with a window far in the past (no entries)
+    const ruleQuery = await queryAsAdmin({
+      query: CREATE_RETENTION_QUERY,
+      variables: {
+        input: {
+          name: '[Test] Draft rule no deletion',
+          max_retention: 36500, // 100 years → nothing older than that
+          retention_unit: 'days',
+          scope: 'draft',
+          filters: emptyStringFilters,
+        },
+      },
+    });
+    const rule = ruleQuery.data?.retentionRuleAdd;
+    expect(rule).toBeDefined();
+    // Run executeProcessing — nothing should be deleted
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'draft',
+      max_retention: 36500,
+      retention_unit: 'days',
+      filters: emptyStringFilters,
+      active: true,
+    } as any);
+    // Rule should be patched but with 0 deletions
+    const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
+    expect(updatedRule?.last_execution_date).toBeDefined();
+    expect(updatedRule?.last_deleted_count).toBe(0);
+    // Cleanup
+    await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
+  });
+  it('should not delete recent draft and should delete old draft using deleteElement with draft scope', async () => {
+    // Create a draft
+    const draftName = 'testDraft';
+    const draftEntityId = 'testId';
+    const createdDraft = await queryAsAdmin({
+      query: CREATE_DRAFT_WORKSPACE_QUERY,
+      variables: { input: { name: draftName, entity_id: draftEntityId } },
+    });
+    expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
+    const draftId = createdDraft.data?.draftWorkspaceAdd.id;
+    // A date far in the past → draft should be too recent for deletion
+    const beforeThePlatformExisted = utcDate('2000-01-01T00:00:00.000Z');
+    const draftElementRecent = await getElementsToDelete(context, 'draft', beforeThePlatformExisted);
+    expect(draftElementRecent.edges.length).toBe(0);
+    // A date that results in making the draft old enough to require deletion
+    const before = utcDate();
+    const draftElementOld = await getElementsToDelete(context, 'draft', before);
+    expect(draftElementOld.edges.length).toBeGreaterThan(0);
+    // Delete it via the retention manager
+    await deleteElement(context, 'draft', draftId, { forceRefresh: true });
+    // Verify it is no longer findable
+    const deleted = await elLoadById(testContext, ADMIN_USER, draftId, { indices: READ_INDEX_INTERNAL_OBJECTS });
+    expect(deleted).toBeUndefined();
   });
 });
