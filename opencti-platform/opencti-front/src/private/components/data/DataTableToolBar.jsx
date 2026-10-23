@@ -52,15 +52,7 @@ import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-
-import Radio from '@mui/material/Radio';
-
 import Slide from '@mui/material/Slide';
-import MuiSwitch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -82,14 +74,13 @@ import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
 import ItemIcon from '../../../components/ItemIcon';
-import ItemMarkings from '../../../components/ItemMarkings';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import inject18n from '../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { hexToRGB } from '../../../utils/Colors';
 import Security from '../../../utils/Security';
-import { EMPTY_VALUE, truncate } from '../../../utils/String';
+import { truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
@@ -121,6 +112,10 @@ import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
 import { isBulkActionAllowed, isBulkActionDisabled } from './dataTableToolBarActionRules';
+import EnrichmentDrawer from './drawers/EnrichmentDrawer';
+import MergeDrawer from './drawers/MergeDrawer';
+import RuleRescanDrawer from './drawers/RuleRescanDrawer';
+import OrganizationSharingDialog, { fetchOrganizationOptions } from './dialogs/OrganizationSharingDialog';
 import { CustomFieldInput } from '../common/custom_fields/CustomFieldsInput';
 import useCustomFieldDefinitions from '../common/custom_fields/useCustomFieldDefinitions';
 import {
@@ -362,22 +357,6 @@ const toolBarContainersQuery = graphql`
   }
 `;
 
-const toolBarOrganizationsQuery = graphql`
-  query DataTableToolBarOrganizationsQuery($search: String) {
-    organizations(search: $search) {
-      edges {
-        node {
-          id
-          entity_type
-          representative {
-            main
-          }
-        }
-      }
-    }
-  }
-`;
-
 const toolbarGroupsQuery = graphql`
     query DataTableToolBarGroupsQuery($search: String) {
       groups(search: $search) {
@@ -427,11 +406,9 @@ class DataTableToolBar extends Component {
       displayEnrollPlaybook: false,
       displaySendEmail: false,
       containerCreation: false,
-      organizationCreation: false,
       actions: [],
       scope: undefined,
       actionsInputs: [{}],
-      keptEntityId: null,
       mergingElement: null,
       description: '',
       processing: false,
@@ -444,9 +421,6 @@ class DataTableToolBar extends Component {
       statuses: [],
       externalReferences: [],
       enrichConnectors: [],
-      enrichSelected: [],
-      organizationInput: '',
-      shareOrganizations: [],
       selectedCategory: '',
       vocabularies: {
         case_severity_ov: [],
@@ -485,7 +459,6 @@ class DataTableToolBar extends Component {
       displayTask: false,
       actions: [],
       scope: undefined,
-      keptEntityId: null,
       mergingElement: null,
       processing: false,
       description: '',
@@ -584,7 +557,6 @@ class DataTableToolBar extends Component {
         this.setState({
           displayEnrichment: true,
           enrichConnectors: data.enrichmentConnectors ?? [],
-          enrichSelected: [],
         });
       });
   }
@@ -798,23 +770,6 @@ class DataTableToolBar extends Component {
     });
   }
 
-  handleChangeKeptEntityId(entityId) {
-    this.setState({ keptEntityId: entityId });
-  }
-
-  handleChangeEnrichSelected(connectorId) {
-    if (this.state.enrichSelected.includes(connectorId)) {
-      const filtered = this.state.enrichSelected.filter(
-        (e) => e !== connectorId,
-      );
-      this.setState({ enrichSelected: filtered });
-    } else {
-      this.setState({
-        enrichSelected: [...this.state.enrichSelected, connectorId],
-      });
-    }
-  }
-
   handleLaunchRescan() {
     const actions = [{ type: 'RULE_ELEMENT_RESCAN' }];
     this.setState({ actions }, () => {
@@ -831,9 +786,9 @@ class DataTableToolBar extends Component {
     });
   }
 
-  handleLaunchEnrichment() {
+  handleLaunchEnrichment(connectorIds) {
     const actions = [
-      { type: 'ENRICHMENT', context: { values: this.state.enrichSelected } },
+      { type: 'ENRICHMENT', context: { values: connectorIds } },
     ];
     this.setState({ actions }, () => {
       this.handleCloseEnrichment();
@@ -841,24 +796,28 @@ class DataTableToolBar extends Component {
     });
   }
 
-  handleLaunchMerge() {
-    const { selectedElements } = this.props;
-    const { keptEntityId } = this.state;
-    const selectedElementsList = R.values(selectedElements);
-    const keptElement = keptEntityId
-      ? R.head(R.filter((n) => n.id === keptEntityId, selectedElementsList))
-      : R.head(selectedElementsList);
-    const filteredStixDomainObjects = keptEntityId
-      ? R.filter((n) => n.id !== keptEntityId, selectedElementsList)
-      : R.tail(selectedElementsList);
+  handleLaunchMerge(keptElement, mergedElements) {
     const actions = [
       {
         type: 'MERGE',
-        context: { values: filteredStixDomainObjects },
+        context: { values: mergedElements },
       },
     ];
     this.setState({ actions, mergingElement: keptElement }, () => {
       this.handleCloseMerge();
+      this.handleOpenTask();
+    });
+  }
+
+  handleLaunchSharing(mode, organizations) {
+    const actions = [
+      { type: mode === 'share' ? 'SHARE_MULTIPLE' : 'UNSHARE_MULTIPLE', context: { values: organizations } },
+    ];
+    const orgaNames = organizations.map((o) => o.label).join('|');
+    const description = `${mode === 'share' ? 'SHARE' : 'UNSHARE'} with organizations ${orgaNames}`;
+    this.setState({ description, actions }, () => {
+      if (mode === 'share') this.handleCloseShare();
+      else this.handleCloseUnshare();
       this.handleOpenTask();
     });
   }
@@ -1173,22 +1132,8 @@ class DataTableToolBar extends Component {
   }
 
   fetchOrganizations(newValue) {
-    fetchQuery(toolBarOrganizationsQuery, {
-      search: newValue && newValue.length > 0 ? newValue : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const elements = data.organizations.edges.map((e) => e.node);
-        const organizations = elements
-          .map((n) => ({
-            label: n.representative.main,
-            type: n.entity_type,
-            value: n.id,
-          }))
-          .sort((a, b) => a.label.localeCompare(b.label))
-          .sort((a, b) => a.type.localeCompare(b.type));
-        this.setState({ organizations });
-      });
+    fetchOrganizationOptions(newValue && newValue.length > 0 ? newValue : '')
+      .then((organizations) => this.setState({ organizations }));
   }
 
   searchGroups(i, newValue) {
@@ -1225,11 +1170,6 @@ class DataTableToolBar extends Component {
       actionsInputs[i],
     );
     this.setState({ actionsInputs });
-    this.fetchOrganizations(newValue);
-  }
-
-  searchOrganizations(newValue) {
-    this.setState({ organizationInput: newValue && newValue.length > 0 ? newValue : '' });
     this.fetchOrganizations(newValue);
   }
 
@@ -2345,7 +2285,6 @@ class DataTableToolBar extends Component {
     } = this.props;
     const {
       actions,
-      keptEntityId,
       mergingElement,
       actionsInputs,
       promoteToContainer,
@@ -2401,29 +2340,6 @@ class DataTableToolBar extends Component {
             || (entityTypeFilterValues.length === 1
               && !isBulkActionAllowed('scan', entityTypeFilterValues[0]));
           const titleCopy = this.titleCopy();
-          let keptElement = null;
-          let newAliases = [];
-          if (!typesAreNotMergable && !typesAreDifferent) {
-            keptElement = keptEntityId
-              ? selectedElementsList.find((o) => o.id === keptEntityId)
-              : selectedElementsList[0];
-            if (keptElement) {
-              const names = selectedElementsList
-                .map((el) => el.name)
-                .filter((name) => name !== keptElement.name);
-              const aliases = keptElement.aliases !== null
-                ? selectedElementsList
-                    .map((el) => el.aliases)
-                    .flat()
-                    .filter((alias) => alias !== null && alias !== undefined)
-                : selectedElementsList
-                    .map((el) => el.x_opencti_aliases)
-                    .flat()
-                    .filter((alias) => alias !== null && alias !== undefined);
-
-              newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
-            }
-          }
           // endregion
           // region EE
           const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
@@ -3061,202 +2977,21 @@ class DataTableToolBar extends Component {
                   </FormButtonContainer>
                 </div>
               </Drawer>
-              <Drawer
-                title={t('Merge entities')}
+              <MergeDrawer
                 open={this.state.displayMerge}
                 onClose={this.handleCloseMerge.bind(this)}
-              >
-                <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Selected entities')}
-                  </Typography>
-                  <List>
-                    {selectedElementsList.map((element) => (
-                      <ListItem
-                        key={element.id}
-                        dense={true}
-                        divider={true}
-                        secondaryAction={(
-                          <Radio
-                            checked={
-                              keptEntityId
-                                ? keptEntityId === element.id
-                                : R.head(selectedElementsList).id === element.id
-                            }
-                            onChange={this.handleChangeKeptEntityId.bind(
-                              this,
-                              element.id,
-                            )}
-                            value={element.id}
-                            name="keptEntityID"
-                            inputProps={{ 'aria-label': 'keptEntityID' }}
-                          />
-                        )}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type={element.entity_type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          sx={{
-                            '.MuiListItemText-primary': {
-                              overflowX: 'hidden',
-                              textOverflow: 'ellipsis',
-                            },
-                          }}
-                          primary={getMainRepresentative(element)}
-                          secondary={truncate(
-                            element.description
-                            || element.x_opencti_description
-                            || '',
-                            60,
-                          )}
-                        />
-                        <div style={{ marginRight: 50 }}>
-                          {element.createdBy?.name ?? EMPTY_VALUE}
-                        </div>
-                        <div style={{ marginRight: 50 }}>
-                          <ItemMarkings
-                            variant="inList"
-                            markingDefinitions={element.objectMarking ?? []}
-                          />
-                        </div>
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Merged entity')}
-                  </Typography>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Name')}
-                  </Typography>
-                  <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
-                    {getMainRepresentative(keptElement)}
-                  </div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Aliases')}
-                  </Typography>
-                  {newAliases.map((label) => (label.length > 0 ? (
-                    <FdsChip key={label} label={label} />
-                  ) : (
-                    ''
-                  )))}
-                  {noAuthor !== true && (
-                    <>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Author')}
-                      </Typography>
-                      {keptElement?.createdBy?.name ?? EMPTY_VALUE}
-                    </>
-                  )}
-                  {noMarking !== true && (
-                    <>
-                      <Typography
-                        variant="h3"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Marking')}
-                      </Typography>
-                      <ItemMarkings
-                        markingDefinitions={keptElement?.objectMarking || []}
-                      />
-                    </>
-                  )}
-                  {noWarning !== true && (
-                    <>
-                      <Alert severity="warning" style={{ marginTop: 20 }}>
-                        {t(
-                          'The relations attached to selected entities will be copied to the merged entity.',
-                        )}
-                      </Alert>
-                    </>
-                  )}
-                  <FormButtonContainer>
-                    <Button
-                      onClick={this.handleLaunchMerge.bind(this)}
-                    >
-                      {t('Merge')}
-                    </Button>
-                  </FormButtonContainer>
-                </div>
-              </Drawer>
-              <Drawer
-                title={t('Entity enrichment')}
+                elements={selectedElementsList}
+                onLaunch={this.handleLaunchMerge.bind(this)}
+                noAuthor={noAuthor}
+                noMarking={noMarking}
+                noWarning={noWarning}
+              />
+              <EnrichmentDrawer
                 open={this.state.displayEnrichment}
                 onClose={this.handleCloseEnrichment.bind(this)}
-              >
-                <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Selected connectors')}
-                  </Typography>
-                  <List>
-                    {this.state.enrichConnectors.length === 0 && (
-                      <Alert severity="warning">
-                        {t('No connector available for the selected entities.')}
-                      </Alert>
-                    )}
-                    {this.state.enrichConnectors.map((connector) => (
-                      <ListItem
-                        key={connector.id}
-                        dense={true}
-                        divider={true}
-                        secondaryAction={(
-                          <MuiSwitch
-                            checked={this.state.enrichSelected.includes(
-                              connector.id,
-                            )}
-                            onChange={this.handleChangeEnrichSelected.bind(
-                              this,
-                              connector.id,
-                            )}
-                            inputProps={{ 'aria-label': 'controlled' }}
-                          />
-                        )}
-                      >
-                        <ListItemIcon>
-                          <CloudRefreshOutline />
-                        </ListItemIcon>
-                        <ListItemText primary={connector.name} />
-                      </ListItem>
-                    ))}
-                  </List>
-                  <FormButtonContainer>
-                    <Button
-                      disabled={
-                        this.state.enrichConnectors.length === 0
-                        || this.state.enrichSelected.length === 0
-                      }
-                      onClick={this.handleLaunchEnrichment.bind(this)}
-                    >
-                      {t('Enrich')}
-                    </Button>
-                  </FormButtonContainer>
-                </div>
-              </Drawer>
+                connectors={this.state.enrichConnectors}
+                onLaunch={this.handleLaunchEnrichment.bind(this)}
+              />
               <PromoteDrawer
                 isOpen={this.state.displayPromote}
                 onClose={this.handleClosePromote.bind(this)}
@@ -3266,33 +3001,11 @@ class DataTableToolBar extends Component {
                 promoteToContainer={promoteToContainer}
                 togglePromoteToContainer={this.togglePromoteToContainer.bind(this)}
               />
-              <Drawer
-                title={t('Rule entity rescan')}
+              <RuleRescanDrawer
                 open={this.state.displayRescan}
                 onClose={this.handleCloseRescan.bind(this)}
-              >
-                <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Selected rules')}
-                  </Typography>
-                  <Alert severity="warning" style={{ marginTop: 20 }}>
-                    {t(
-                      'Element will be rescan with all compatible activated rules',
-                    )}
-                  </Alert>
-                  <FormButtonContainer>
-                    <Button
-                      onClick={this.handleLaunchRescan.bind(this)}
-                    >
-                      {t('Rescan')}
-                    </Button>
-                  </FormButtonContainer>
-                </div>
-              </Drawer>
+                onLaunch={this.handleLaunchRescan.bind(this)}
+              />
               <Dialog
                 open={this.state.displayAddInContainer}
                 onClose={() => this.setState({ displayAddInContainer: false })}
@@ -3415,171 +3128,18 @@ class DataTableToolBar extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
-              <Dialog
+              <OrganizationSharingDialog
+                mode="share"
                 open={this.state.displayShare}
-                onClose={() => this.setState({ displayShare: false })}
-                title={t('Share with organizations')}
-              >
-                <StixDomainObjectCreation
-                  inputValue={this.state.organizationInput}
-                  open={this.state.organizationCreation}
-                  display={true}
-                  speeddial={true}
-                  stixDomainObjectTypes={['Organization']}
-                  handleClose={() => this.setState({ organizationCreation: false })}
-                  creationCallback={(data) => {
-                    const element = {
-                      label: data.name,
-                      value: data.id,
-                      type: data.entity_type,
-                    };
-                    this.setState(({ organizations }) => ({
-                      organizations: [...(organizations ?? []), element],
-                    }));
-                    this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
-                  }}
-                />
-                <Combobox
-                  selectOnFocus={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')}
-                  value={this.state.shareOrganizations}
-                  multiple={true}
-                  closeOnSelect
-                  options={this.state.organizations}
-                  inputValue={this.state.organizationInput}
-                  onInputChange={(newValue, meta) => {
-                    if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
-                  }}
-                  onValueChange={(next) => this.setState({ shareOrganizations: next })}
-                  renderOption={(option) => (
-                    <>
-                      <div className={classes.icon}>
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </>
-                  )}
-                  disableClearable
-                >
-                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
-                  {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
-                  <ComboboxField adornment={(
-                    <FdsTooltip>
-                      <TooltipTrigger asChild>
-                        <FdsIconButton
-                          size="sm"
-                          priority="tertiary"
-                          aria-label={t('Create organization')}
-                          onClick={() => this.setState({ organizationCreation: true })}
-                          icon={<AddOutlined fontSize="small" />}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>{t('Create organization')}</TooltipContent>
-                    </FdsTooltip>
-                  )}
-                  >
-                    <ComboboxChips aria-label={t('Values')} />
-                    <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
-                    <ComboboxControls>
-                      <ComboboxClear />
-                      <ComboboxTrigger />
-                    </ComboboxControls>
-                  </ComboboxField>
-                  <ComboboxContent
-                    emptyMessage={t('No available options')}
-                    listAriaLabel={t('Values')}
-                  />
-                </Combobox>
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseShare.bind(this)}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      const shareActions = [
-                        { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
-                      ];
-                      const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
-                      const sharingDescription = `SHARE with organizations ${orgaNames}`;
-                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
-                        this.handleCloseShare();
-                        this.handleOpenTask();
-                      });
-                    }}
-                  >
-                    {t('Share')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-              <Dialog
+                onClose={this.handleCloseShare.bind(this)}
+                onLaunch={this.handleLaunchSharing.bind(this, 'share')}
+              />
+              <OrganizationSharingDialog
+                mode="unshare"
                 open={this.state.displayUnshare}
-                onClose={() => this.setState({ displayUnshare: false })}
-                title={t('Unshare with organizations')}
-              >
-                <Combobox
-                  selectOnFocus={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')}
-                  value={this.state.shareOrganizations}
-                  multiple={true}
-                  closeOnSelect
-                  options={this.state.organizations}
-                  inputValue={this.state.organizationInput}
-                  onInputChange={(newValue, meta) => {
-                    if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
-                  }}
-                  onValueChange={(next) => this.setState({ shareOrganizations: next })}
-                  renderOption={(option) => (
-                    <>
-                      <div className={classes.icon}>
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </>
-                  )}
-                  disableClearable
-                >
-                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
-                  <ComboboxField>
-                    <ComboboxChips aria-label={t('Values')} />
-                    <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
-                    <ComboboxControls>
-                      <ComboboxClear />
-                      <ComboboxTrigger />
-                    </ComboboxControls>
-                  </ComboboxField>
-                  <ComboboxContent
-                    emptyMessage={t('No available options')}
-                    listAriaLabel={t('Values')}
-                  />
-                </Combobox>
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseUnshare.bind(this)}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={() => {
-                      const shareActions = [
-                        { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
-                      ];
-                      const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
-                      const sharingDescription = `UNSHARE with organizations ${orgaNames}`;
-                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
-                        this.handleCloseUnshare();
-                        this.handleOpenTask();
-                      });
-                    }}
-                  >
-                    {t('Unshare')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
+                onClose={this.handleCloseUnshare.bind(this)}
+                onLaunch={this.handleLaunchSharing.bind(this, 'unshare')}
+              />
               <EnrollPlaybookDrawer
                 open={this.state.displayEnrollPlaybook}
                 onClose={this.handleCloseEnrollPlaybook.bind(this)}
