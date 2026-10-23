@@ -1,11 +1,10 @@
 import { HttpClientError } from '../../utils/http-client';
-import { type PushIngestionLogOptions, redisPushIngestionLog } from '../../database/redis';
+import { redisPushIngestionLog } from '../../database/redis';
 import { logApp } from '../../config/conf';
 
 export interface IngestionLogger {
   info: (message: string, meta?: Record<string, unknown>) => void;
-  // options.strictOutcome: rejects when the last outcome cannot be recorded, for a caller that retries it itself
-  success: (message: string, meta?: Record<string, unknown>, options?: PushIngestionLogOptions) => Promise<void>;
+  success: (message: string, meta?: Record<string, unknown>) => Promise<void>;
   warn: (message: string, meta?: Record<string, unknown>) => void;
   error: (message: string, meta?: Record<string, unknown>) => Promise<void>;
 }
@@ -19,9 +18,9 @@ export const createIngestionLogger = (feedId: string, feedName: string, feedType
         logApp.warn(`${logPrefix}Failed to push info log to Redis`, { cause: err });
       });
     },
-    success: async (message, meta = {}, options) => {
+    success: async (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, feedName } });
-      await redisPushIngestionLog(feedId, { level: 'success', type: feedType, identifier: feedName, message, meta }, options);
+      await redisPushIngestionLog(feedId, { level: 'success', type: feedType, identifier: feedName, message, meta });
     },
     warn: (message, meta = {}) => {
       logApp.warn(`${logPrefix}${message}`, { meta: { ...meta, feedName } });

@@ -1,21 +1,21 @@
-import React from "react";
-import { Link } from "react-router";
-import { Stack, Tooltip, Typography } from "@mui/material";
-import Box from "@mui/material/Box";
-import { alpha, useTheme } from "@mui/material/styles";
-import { DeveloperBoardOutlined, ScheduleOutlined } from "@mui/icons-material";
-import { useHealthIssueDisplay } from "@components/integrations/deployed/IngestionHealthSummary";
-import { useDeployedTypeMetadata } from "@components/integrations/deployed/DeployedFacetSidebar";
-import ConnectorUpdateChip from "@components/integrations/deployed/ConnectorUpdateChip";
-import IngestionHealthChip from "@components/data/connectors/IngestionHealthChip";
-import DeployedIntegrationPopover from "@components/integrations/deployed/DeployedIntegrationPopover";
-import { DeployedIntegrationItem } from "@components/integrations/deployed/useDeployedIntegrations";
-import { useFormatter } from "../../../../components/i18n";
-import useHelper from "../../../../utils/hooks/useHelper";
-import ItemBoolean from "../../../../components/ItemBoolean";
-import { capitalizeFirstLetter, EMPTY_VALUE } from "../../../../utils/String";
-import { stopLinkNavigation } from "../../../../utils/domEvent";
-import { paperBorder } from "../paperSurface";
+import React from 'react';
+import { Link } from 'react-router';
+import { Stack, Tooltip, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import { alpha, useTheme } from '@mui/material/styles';
+import { DeveloperBoardOutlined, ScheduleOutlined } from '@mui/icons-material';
+import { useHealthIssueDisplay } from '@components/integrations/deployed/IngestionHealthSummary';
+import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
+import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
+import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import { capitalizeFirstLetter, EMPTY_VALUE } from '../../../../utils/String';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
+import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -23,33 +23,33 @@ import { paperBorder } from "../paperSurface";
 // the rest. Metric columns collapse on small screens instead of squeezing
 // the names. Every data column, header included, is aligned on the left.
 const COLUMNS = {
-  type: { width: "13%", minWidth: 110, display: { xs: "none", sm: "flex" } },
-  description: { width: "18%", display: { xs: "none", lg: "flex" } },
-  messages: { width: "8%", minWidth: 72, display: { xs: "none", sm: "flex" } },
+  type: { width: '13%', minWidth: 110, display: { xs: 'none', sm: 'flex' } },
+  description: { width: '18%', display: { xs: 'none', lg: 'flex' } },
+  messages: { width: '8%', minWidth: 72, display: { xs: 'none', sm: 'flex' } },
   throughput: {
-    width: "9%",
+    width: '9%',
     minWidth: 84,
-    display: { xs: "none", md: "flex" },
+    display: { xs: 'none', md: 'flex' },
   },
-  date: { width: "12%", minWidth: 130, display: { xs: "none", md: "flex" } },
-  status: { width: "9%", minWidth: 84, display: "flex" },
-  healthStatus: { width: "9%", minWidth: 84, display: "flex" },
-  actions: { width: 34, display: "flex", justifyContent: "center" },
+  date: { width: '12%', minWidth: 130, display: { xs: 'none', md: 'flex' } },
+  status: { width: '9%', minWidth: 84, display: 'flex' },
+  healthStatus: { width: '9%', minWidth: 84, display: 'flex' },
+  actions: { width: 34, display: 'flex', justifyContent: 'center' },
 } as const;
 
 // The name column keeps room for the name and the health message. Name and description share the space left by
 // the fixed columns (5 to 2, from a zero basis): the description gives way first but never disappears, and header
 // and rows stay aligned whatever their content.
-const NAME_COLUMN_SX = { flex: "5 1 0", minWidth: 260 } as const;
+const NAME_COLUMN_SX = { flex: '5 1 0', minWidth: 260 } as const;
 
 const cellSx = (column: keyof typeof COLUMNS) => ({
-  justifyContent: "flex-start",
+  justifyContent: 'flex-start',
   ...COLUMNS[column],
   flexShrink: 0,
-  alignItems: "center",
-  ...(column === "description" && {
-    width: "auto",
-    flex: "2 1 0",
+  alignItems: 'center',
+  ...(column === 'description' && {
+    width: 'auto',
+    flex: '2 1 0',
     minWidth: 100,
   }),
 });
@@ -62,7 +62,7 @@ export const DeployedIntegrationLinesHeader = () => {
   const headerCellSx = {
     fontSize: 10,
     fontWeight: 600,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     letterSpacing: 0.5,
     color: theme.palette.text.secondary,
     lineHeight: 1,
@@ -70,8 +70,8 @@ export const DeployedIntegrationLinesHeader = () => {
   return (
     <Box
       sx={{
-        display: "flex",
-        alignItems: "center",
+        display: 'flex',
+        alignItems: 'center',
         gap: 1.5,
         paddingInline: 1.5,
         paddingBlock: 1,
@@ -80,44 +80,44 @@ export const DeployedIntegrationLinesHeader = () => {
       }}
     >
       <Typography component="div" sx={{ ...headerCellSx, ...NAME_COLUMN_SX }}>
-        {t_i18n("Name")}
+        {t_i18n('Name')}
       </Typography>
-      <Typography component="div" sx={{ ...headerCellSx, ...cellSx("type") }}>
-        {t_i18n("Type")}
-      </Typography>
-      <Typography
-        component="div"
-        sx={{ ...headerCellSx, ...cellSx("description") }}
-      >
-        {t_i18n("Description")}
+      <Typography component="div" sx={{ ...headerCellSx, ...cellSx('type') }}>
+        {t_i18n('Type')}
       </Typography>
       <Typography
         component="div"
-        sx={{ ...headerCellSx, ...cellSx("messages") }}
+        sx={{ ...headerCellSx, ...cellSx('description') }}
       >
-        {t_i18n("Messages")}
+        {t_i18n('Description')}
       </Typography>
       <Typography
         component="div"
-        sx={{ ...headerCellSx, ...cellSx("throughput") }}
+        sx={{ ...headerCellSx, ...cellSx('messages') }}
       >
-        {t_i18n("Throughput")}
+        {t_i18n('Messages')}
       </Typography>
-      <Typography component="div" sx={{ ...headerCellSx, ...cellSx("date") }}>
-        {t_i18n("Last activity")}
+      <Typography
+        component="div"
+        sx={{ ...headerCellSx, ...cellSx('throughput') }}
+      >
+        {t_i18n('Throughput')}
       </Typography>
-      <Typography component="div" sx={{ ...headerCellSx, ...cellSx("status") }}>
-        {t_i18n("Status")}
+      <Typography component="div" sx={{ ...headerCellSx, ...cellSx('date') }}>
+        {t_i18n('Last activity')}
       </Typography>
-      {isFeatureEnable("INGESTION_HEALTH") && (
+      <Typography component="div" sx={{ ...headerCellSx, ...cellSx('status') }}>
+        {t_i18n('Status')}
+      </Typography>
+      {isFeatureEnable('INGESTION_HEALTH') && (
         <Typography
           component="div"
-          sx={{ ...headerCellSx, ...cellSx("healthStatus") }}
+          sx={{ ...headerCellSx, ...cellSx('healthStatus') }}
         >
-          {t_i18n("Health status")}
+          {t_i18n('Health status')}
         </Typography>
       )}
-      <Box sx={cellSx("actions")} />
+      <Box sx={cellSx('actions')} />
     </Box>
   );
 };
@@ -140,26 +140,26 @@ const DeployedIntegrationLine = ({
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
   const statusText = (() => {
-    if (item.status === "processing") return t_i18n("Processing");
-    if (item.status === "active") return t_i18n("Active");
-    return t_i18n("Inactive");
+    if (item.status === 'processing') return t_i18n('Processing');
+    if (item.status === 'active') return t_i18n('Active');
+    return t_i18n('Inactive');
   })();
 
   const lastDate = item.lastRunDate ?? item.lastSeenAt ?? item.updatedAt;
   const lastDateLabel = (() => {
-    if (item.lastRunDate) return t_i18n("Last run");
-    if (item.lastSeenAt) return t_i18n("Last seen");
-    return t_i18n("Modified");
+    if (item.lastRunDate) return t_i18n('Last run');
+    if (item.lastSeenAt) return t_i18n('Last seen');
+    return t_i18n('Modified');
   })();
 
-  const hasQueuedMessages =
-    item.messagesCount != null && item.messagesCount > 0;
+  const hasQueuedMessages
+    = item.messagesCount != null && item.messagesCount > 0;
 
-  const healthIssue = isFeatureEnable("INGESTION_HEALTH")
+  const healthIssue = isFeatureEnable('INGESTION_HEALTH')
     ? item.healthIssue
     : null;
   const { color: healthColor, Icon: HealthIcon } = useHealthIssueDisplay(
-    healthIssue?.severity ?? "critical",
+    healthIssue?.severity ?? 'critical',
   );
 
   return (
@@ -169,21 +169,21 @@ const DeployedIntegrationLine = ({
       component={Link}
       to={item.detailUrl}
       sx={{
-        display: "flex",
-        alignItems: "center",
+        display: 'flex',
+        alignItems: 'center',
         gap: 1.5,
         paddingInline: 1.5,
         paddingBlock: 0.75,
-        cursor: "pointer",
-        textDecoration: "none",
-        color: "inherit",
-        transition: "background-color 0.2s ease-in-out",
+        cursor: 'pointer',
+        textDecoration: 'none',
+        color: 'inherit',
+        transition: 'background-color 0.2s ease-in-out',
         // Severity rule on the left edge of the row
         ...(healthIssue && { boxShadow: `inset 3px 0 0 ${healthColor}` }),
-        "&:hover": {
+        '&:hover': {
           backgroundColor: theme.palette.action.hover,
         },
-        "& + &": {
+        '& + &': {
           borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.05)}`,
         },
       }}
@@ -202,9 +202,9 @@ const DeployedIntegrationLine = ({
             height: 32,
             width: 32,
             flexShrink: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             borderRadius: 1,
             border: `1px solid ${alpha(theme.palette.text.primary, 0.1)}`,
             backgroundColor: alpha(theme.palette.text.primary, 0.04),
@@ -215,7 +215,7 @@ const DeployedIntegrationLine = ({
               style={{
                 height: 24,
                 width: 24,
-                objectFit: "contain",
+                objectFit: 'contain',
                 borderRadius: 3,
               }}
               src={item.logo}
@@ -243,16 +243,16 @@ const DeployedIntegrationLine = ({
                   // Allow the flex child to shrink so long names truncate with an
                   // ellipsis instead of pushing the other columns.
                   minWidth: 0,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
                 {item.name}
               </Typography>
             </Tooltip>
             {item.isManaged && (
-              <Tooltip title={t_i18n("Managed by the connector manager")}>
+              <Tooltip title={t_i18n('Managed by the connector manager')}>
                 <DeveloperBoardOutlined
                   sx={{
                     fontSize: 14,
@@ -276,62 +276,62 @@ const DeployedIntegrationLine = ({
               <Typography
                 sx={{
                   fontSize: 12,
-                  color: "inherit",
+                  color: 'inherit',
                   minWidth: 0,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
-                {healthIssue.message ??
-                  t_i18n(capitalizeFirstLetter(healthIssue.severity))}
+                {healthIssue.message
+                  ?? t_i18n(capitalizeFirstLetter(healthIssue.severity))}
               </Typography>
             </Stack>
           )}
         </Box>
       </Stack>
       {/* Type column. */}
-      <Box sx={cellSx("type")}>
+      <Box sx={cellSx('type')}>
         <Typography
           sx={{
             fontSize: 12,
             color: theme.palette.primary.main,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {typeLabel}
         </Typography>
       </Box>
       {/* Description column. */}
-      <Box sx={cellSx("description")}>
+      <Box sx={cellSx('description')}>
         <Typography
           sx={{
             fontSize: 12,
             color: theme.palette.text.secondary,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           }}
         >
           {item.description || EMPTY_VALUE}
         </Typography>
       </Box>
       {/* Messages column: queued messages badge. */}
-      <Box sx={cellSx("messages")}>
+      <Box sx={cellSx('messages')}>
         {item.messagesCount != null ? (
-          <Tooltip title={t_i18n("Queued messages")}>
+          <Tooltip title={t_i18n('Queued messages')}>
             <Box
               component="span"
               sx={{
                 paddingInline: 0.75,
-                paddingBlock: "2px",
+                paddingBlock: '2px',
                 borderRadius: 1,
                 fontSize: 12,
                 fontWeight: 600,
-                fontVariantNumeric: "tabular-nums",
-                lineHeight: "16px",
+                fontVariantNumeric: 'tabular-nums',
+                lineHeight: '16px',
                 ...(hasQueuedMessages
                   ? {
                       color: theme.palette.primary.main,
@@ -357,14 +357,14 @@ const DeployedIntegrationLine = ({
         )}
       </Box>
       {/* Throughput column: live bundles/second from the queue ack rate. */}
-      <Box sx={cellSx("throughput")}>
+      <Box sx={cellSx('throughput')}>
         {item.throughputRate != null ? (
-          <Tooltip title={t_i18n("Bundles processed")}>
+          <Tooltip title={t_i18n('Bundles processed')}>
             <Typography
               sx={{
                 fontSize: 12,
-                fontVariantNumeric: "tabular-nums",
-                whiteSpace: "nowrap",
+                fontVariantNumeric: 'tabular-nums',
+                whiteSpace: 'nowrap',
                 color:
                   item.throughputRate > 0
                     ? theme.palette.text.primary
@@ -383,12 +383,12 @@ const DeployedIntegrationLine = ({
         )}
       </Box>
       {/* Last activity column: relative time, exact datetime in the tooltip. */}
-      <Box sx={cellSx("date")}>
+      <Box sx={cellSx('date')}>
         {lastDate ? (
           <Tooltip
             title={`${lastDateLabel}: ${ftdt(lastDate)}`}
             // Neutralize the global tooltip lowercasing: this is a sentence.
-            slotProps={{ popper: { sx: { textTransform: "none" } } }}
+            slotProps={{ popper: { sx: { textTransform: 'none' } } }}
           >
             <Stack
               direction="row"
@@ -404,7 +404,7 @@ const DeployedIntegrationLine = ({
                 sx={{
                   fontSize: 12,
                   color: theme.palette.text.secondary,
-                  whiteSpace: "nowrap",
+                  whiteSpace: 'nowrap',
                 }}
               >
                 {rd(lastDate)}
@@ -423,7 +423,7 @@ const DeployedIntegrationLine = ({
       <Box
         onClick={stopLinkNavigation}
         onAuxClick={stopLinkNavigation}
-        sx={cellSx("status")}
+        sx={cellSx('status')}
       >
         <Stack
           direction="column"
@@ -438,25 +438,25 @@ const DeployedIntegrationLine = ({
               hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion}
             />
           )}
-          {item.status === "processing" && (
+          {item.status === 'processing' && (
             <ItemBoolean status={undefined} label={statusText} />
           )}
-          {item.status === "active" && (
+          {item.status === 'active' && (
             <ItemBoolean status label={statusText} />
           )}
-          {item.status === "inactive" && (
+          {item.status === 'inactive' && (
             <ItemBoolean status={null} neutralLabel={statusText} />
           )}
         </Stack>
       </Box>
       {/* Health status column: forms are not ingestions, they have no health. Only a failure is shown */}
-      {isFeatureEnable("INGESTION_HEALTH") && (
+      {isFeatureEnable('INGESTION_HEALTH') && (
         <Box
           onClick={stopLinkNavigation}
           onAuxClick={stopLinkNavigation}
-          sx={cellSx("healthStatus")}
+          sx={cellSx('healthStatus')}
         >
-          {item.kind !== "form" && item.healthIssue ? (
+          {item.kind !== 'form' && item.healthIssue ? (
             <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
           ) : (
             <Typography
@@ -468,7 +468,7 @@ const DeployedIntegrationLine = ({
         </Box>
       )}
       {/* Actions column. */}
-      <Box sx={cellSx("actions")}>
+      <Box sx={cellSx('actions')}>
         <DeployedIntegrationPopover item={item} onChange={onChange} />
       </Box>
     </Box>
