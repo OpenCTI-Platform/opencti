@@ -599,8 +599,10 @@ const ThemeDark = (
         },
         sectionsContainer: {
           padding: '8px 8px 8px 12px',
-          // The width of the <input> it replaces; MUI's own 182px widens every date field.
-          width: 150,
+          // MUI's own 182px widens every date field. Short formats keep 150px, long ones grow
+          // with their text instead of being cut by the container's overflow: hidden.
+          width: 'auto',
+          minWidth: 150,
         },
       },
     },
