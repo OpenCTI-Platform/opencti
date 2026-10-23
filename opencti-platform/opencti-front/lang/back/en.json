@@ -1207,6 +1207,7 @@
   "User is": "User is",
   "User is missing": "User is missing",
   "User is not a service account": "User is not a service account",
+  "User lacks required capability": "User lacks required capability",
   "User lastname": "User lastname",
   "User service account": "User service account",
   "User_id": "User_id",
