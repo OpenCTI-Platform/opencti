@@ -580,8 +580,8 @@ describe('computeHealthTransition', () => {
 
     it('should report nothing when healthy becomes unknown, even right after the recovery of a notified failure', () => {
       expect(run([...minutes(0, 10, Healthy), ...minutes(11, 30, Unknown)])).toEqual([]);
-      // The recovery removed the failure reported: unknown has nothing left to recover from
-      expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, Healthy), ...minutes(21, 40, Unknown)])).toEqual([
+      // The recovery removed the failure reported: unknown, then healthy again, have nothing left to recover from
+      expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, Healthy), ...minutes(21, 40, Unknown), ...minutes(41, 60, Healthy)])).toEqual([
         [DELAY_MINUTES, HealthTransition.Critical],
         [11 + DELAY_MINUTES, HealthTransition.Recovered],
       ]);
@@ -591,6 +591,15 @@ describe('computeHealthTransition', () => {
       expect(run([...minutes(0, 10, Critical), [11, Healthy], ...minutes(12, 30, Critical)])).toEqual([
         [DELAY_MINUTES, HealthTransition.Critical],
         [12 + DELAY_MINUTES, HealthTransition.Critical],
+      ]);
+    });
+
+    it('should report a recovery for each failure notified', () => {
+      expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, Healthy), ...minutes(21, 30, Critical), ...minutes(31, 50, Healthy)])).toEqual([
+        [DELAY_MINUTES, HealthTransition.Critical],
+        [11 + DELAY_MINUTES, HealthTransition.Recovered],
+        [21 + DELAY_MINUTES, HealthTransition.Critical],
+        [31 + DELAY_MINUTES, HealthTransition.Recovered],
       ]);
     });
 
