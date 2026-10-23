@@ -4,7 +4,7 @@
 // reference are done, with those references (the client's placeholders) replaced by the real ids. Their creates
 // do not write one by one: the collector holds them until every running operation waits on one, then writes them
 // as one lock-free chunk, as a DataLoader batches loads.
-import { type DocumentNode, execute, type GraphQLSchema, parse, validate } from 'graphql';
+import { type DocumentNode, execute, type GraphQLSchema, Kind, parse, validate } from 'graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { inferIndexFromConceptType } from '../utils';
 import { FunctionalError } from '../../config/errors';
@@ -17,11 +17,14 @@ const FLUSHES_AT_ONCE = 4; // chunk writes in flight, as parallel writers
 
 interface Waiting { user: AuthUser; type: string; input: Record<string, any>; resolve: (element: any) => void; reject: (error: unknown) => void }
 
-// The elements as stored, read by id in one realtime get, as createEntity / createRelation return them
+// The elements as stored, read by id in one realtime get, as createEntity / createRelation return them: without
+// the rel_* lists, as today's loads (a busy object lists thousands of ids there), and without the raw document the
+// lock-free reads attach (both would go out with every notification of the element)
 const storedElements = async (results: ItemResult[], types: string[]) => {
   const refs = results.map((r, i) => (r.id ? { id: r.id, index: inferIndexFromConceptType(types[i]) } : null)).filter(Boolean) as { id: string; index: string }[];
-  const raws = await mgetRaw(refs);
+  const raws = await mgetRaw(refs, { light: true });
   const found = await toElements([...raws.values()]);
+  found.forEach((e: any) => delete e.i_raw);
   const byId = new Map(found.map((e: any) => [e.internal_id, e]));
   return results.map((r, i) => {
     if (r.status === 'error') return { error: r.cause };
@@ -118,6 +121,22 @@ export class WriteCollector {
 export interface Operation { ref?: string | null; query: string; variables?: Record<string, any> | null }
 export interface OperationResult { status: 'done' | 'error'; id?: string; error?: string; code?: string }
 
+// A batch reads only the id of what an operation created: a create mutation (`...Add`) runs with only `id`
+// selected, instead of resolving for nothing the author, markings, labels... of every object it answers (searches
+// for each of them). The mutation itself runs the same. Any other shape, or a rewrite the schema refuses, runs as sent.
+export const idOnlyDocument = (schema: GraphQLSchema, document: DocumentNode): DocumentNode => {
+  const definition: any = document.definitions[0];
+  const field = definition?.selectionSet?.selections?.[0];
+  if (document.definitions.length !== 1 || definition.selectionSet.selections.length !== 1 || !field?.selectionSet
+    || !field.name?.value?.endsWith('Add')) {
+    return document;
+  }
+  const idOnly = { kind: Kind.SELECTION_SET, selections: [{ kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'id' } }] };
+  const selectionSet = { ...definition.selectionSet, selections: [{ ...field, selectionSet: idOnly }] };
+  const rewritten = { ...document, definitions: [{ ...definition, selectionSet }] } as DocumentNode;
+  return validate(schema, rewritten).length === 0 ? rewritten : document;
+};
+
 const documents = new Map<string, { document: DocumentNode; field: string } | { invalid: string }>();
 const documentOf = (schema: GraphQLSchema, query: string) => {
   let entry = documents.get(query);
@@ -130,7 +149,7 @@ const documentOf = (schema: GraphQLSchema, query: string) => {
       if (errors.length > 0 || definition?.operation !== 'mutation' || !field) {
         entry = { invalid: errors[0]?.message ?? 'Only mutations are accepted' };
       } else {
-        entry = { document, field };
+        entry = { document: idOnlyDocument(schema, document), field };
       }
     } catch (e: any) {
       entry = { invalid: e.message };

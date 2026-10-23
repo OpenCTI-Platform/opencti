@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { dependenciesOf, replaceStrings } from '../../../src/database/lockfree/batch';
+import { buildSchema, parse, print } from 'graphql';
+import { dependenciesOf, idOnlyDocument, replaceStrings } from '../../../src/database/lockfree/batch';
 
 const op = (ref: string | null, variables: Record<string, any> = {}) => ({ ref, query: 'mutation { x }', variables });
 
@@ -34,5 +35,27 @@ describe('Lock-free batch import: operations order', () => {
     expect(replaceStrings(variables, ids)).toEqual({
       input: { createdBy: 'uuid-a', objectLabel: ['uuid-b', 'other'], nested: [{ x: 'uuid-a' }], count: 3, flag: true },
     });
+  });
+});
+
+describe('Lock-free batch import: what an operation answers', () => {
+  const schema = buildSchema(`
+    type Query { thing: Thing }
+    type Thing { id: ID, name: String, createdBy: Thing }
+    type ThingEditMutations { relationAdd(toId: ID): Thing }
+    type Mutation { thingAdd(name: String): Thing, thingEdit(id: ID): ThingEditMutations }
+  `);
+  const rewrite = (query: string) => print(idOnlyDocument(schema, parse(query)));
+
+  it('selects only the id of what a create mutation answers', () => {
+    expect(rewrite('mutation Add($name: String) { thingAdd(name: $name) { id name createdBy { id name } } }'))
+      .toEqual(print(parse('mutation Add($name: String) { thingAdd(name: $name) { id } }')));
+  });
+
+  it('runs any other shape as sent', () => {
+    const edit = 'mutation { thingEdit(id: "a") { relationAdd(toId: "b") { id name } } }';
+    expect(rewrite(edit)).toEqual(print(parse(edit)));
+    const withFragment = 'mutation { thingAdd(name: "a") { ...F } } fragment F on Thing { id name }';
+    expect(rewrite(withFragment)).toEqual(print(parse(withFragment)));
   });
 });
