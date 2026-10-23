@@ -124,6 +124,7 @@ import {
   buildWorkflowTransitionAction,
   isFieldOptionDisabled,
   isTransitionInputValid,
+  setTransitionInputs,
   WORKFLOW_TRANSITION_FIELD,
   withWorkflowBypassOptions,
 } from '../common/workflow/workflowMassActions';
@@ -728,7 +729,7 @@ class DataTableToolBar extends Component {
 
   handleChangeActionInputTransitionInputs(i, inputs) {
     const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc('options', inputs, actionsInputs[i] || {});
+    actionsInputs[i] = setTransitionInputs(actionsInputs[i] || {}, inputs);
     this.setState({ actionsInputs });
   }
 
