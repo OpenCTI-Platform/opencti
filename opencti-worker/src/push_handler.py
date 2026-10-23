@@ -170,21 +170,30 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             + MISSING_REF_DEFERRAL_DELAYS[deferrals - 1],
             "no_split": True,
         }
-        bundle = {"type": "bundle", "id": f"bundle--{uuid.uuid4()}", "objects": items}
+        self.send_to_queue_end([(message, items)])
+
+    def send_to_queue_end(self, messages: List[tuple]) -> None:
+        """Publish (message data, objects) pairs at the end of the push queue, each as one bundle message."""
         with pika.BlockingConnection(self.pika_parameters) as push_pika_connection:
             with push_pika_connection.channel() as push_channel:
                 try:
                     push_channel.confirm_delivery()
                 except Exception as err:  # pylint: disable=broad-except
                     self.logger.warning(str(err))
-                self.send_bundle_to_specific_queue(
-                    push_channel,
-                    self.push_exchange,
-                    self.push_routing,
-                    message,
-                    bundle,
-                    True,
-                )
+                for data, objects in messages:
+                    bundle = {
+                        "type": "bundle",
+                        "id": f"bundle--{uuid.uuid4()}",
+                        "objects": objects,
+                    }
+                    self.send_bundle_to_specific_queue(
+                        push_channel,
+                        self.push_exchange,
+                        self.push_routing,
+                        data,
+                        bundle,
+                        True,
+                    )
 
     @staticmethod
     def wait_for_retry(messages: List[Dict[str, Any]]) -> None:
@@ -214,6 +223,33 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 parsed.append((key, data, objects))
             except Exception:  # pylint: disable=broad-except
                 parsed.append((None, None, None))
+        # Messages sent again for a missing reference and not due yet: when others of the batch are, the others are
+        # imported now and these go back to the end of the queue as they are, instead of holding the whole batch
+        # until their delay. A batch with nothing due waits for it (the queue has nothing else to give).
+        now = time.time()
+        not_due = [
+            i
+            for i, (_, data, _) in enumerate(parsed)
+            if data and (data.get("missing_ref_retry_at") or 0) > now
+        ]
+        if 0 < len(not_due) < len(parsed):
+            self.send_to_queue_end(
+                [(dict(parsed[i][1]), parsed[i][2]) for i in not_due]
+            )
+            due = [i for i in range(len(parsed)) if i not in set(not_due)]
+            due_results = self._handle_groups(
+                [bodies[i] for i in due], [parsed[i] for i in due]
+            )
+            results: List[Literal["ack", "nack", "requeue"]] = ["ack"] * len(parsed)
+            for i, result in zip(due, due_results):
+                results[i] = result
+            return results
+        return self._handle_groups(bodies, parsed)
+
+    def _handle_groups(
+        self, bodies: List[str], parsed: List[tuple]
+    ) -> List[Literal["ack", "nack", "requeue"]]:
+        """Import consecutive messages sharing their context as one group, every other message on its own."""
         results: List[Literal["ack", "nack", "requeue"]] = []
         index = 0
         while index < len(bodies):

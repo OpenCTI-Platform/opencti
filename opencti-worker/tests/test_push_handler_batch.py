@@ -189,6 +189,34 @@ class TestMissingReferenceDeferral:
         )
         assert slept == []  # its delay has passed: no wait
 
+    def test_messages_not_due_go_back_to_the_queue_when_others_are_due(
+        self, monkeypatch
+    ):
+        slept = []
+        monkeypatch.setattr("push_handler.time.sleep", slept.append)
+        handler = self.handler_with_queue()
+        monkeypatch.setattr("push_handler.pika.BlockingConnection", MagicMock())
+        handler.api.stix2.last_batch_deferred = []
+        retry_at = time.time() + 8
+        results = handler.handle_batch(
+            [
+                message([malware(0)]),
+                message(
+                    [malware(1)], missing_ref_deferrals=3, missing_ref_retry_at=retry_at
+                ),
+                message([malware(2)]),
+            ]
+        )
+        assert slept == []  # the new messages do not wait for the one sent again
+        assert results == ["ack", "ack", "ack"]
+        imported = handler.api.stix2.import_bundle.call_args.args[0]["objects"]
+        assert [o["id"] for o in imported] == ["malware--0", "malware--2"]
+        handler.send_bundle_to_specific_queue.assert_called_once()
+        _, _, _, data, bundle, _ = handler.send_bundle_to_specific_queue.call_args.args
+        assert data["missing_ref_deferrals"] == 3
+        assert data["missing_ref_retry_at"] == retry_at  # as it was: not one more round
+        assert [o["id"] for o in bundle["objects"]] == ["malware--1"]
+
     def test_a_single_item_sent_again_is_imported_in_batch_mode(self):
         handler = make_push_handler()
         handler.batch_import_supported = MagicMock(return_value=True)
