@@ -7,12 +7,14 @@ import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
 import { redisGetIngestionLogHistory } from '../../database/redis';
 
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
+export const HEALTH_CHECK_USER_MISSING_CAPABILITY = 'USER_MISSING_CAPABILITY';
 export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
 export const HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT = 'USER_NOT_SERVICE_ACCOUNT';
 export const HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED = 'FEED_AND_SYNC_EXECUTION_FAILED';
 
 // Every check of the registry: adding a check adds its code here
 export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
+  | typeof HEALTH_CHECK_USER_MISSING_CAPABILITY
   | typeof HEALTH_CHECK_HEARTBEAT_MISSING
   | typeof HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT
   | typeof HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED;
@@ -53,6 +55,8 @@ export interface HealthCheckUser {
   // Platform internal user (system...): not a user account an admin manages
   internal: boolean;
   user_service_account: boolean;
+  // Same rule as the platform authorization (bypass, parent capabilities)
+  hasCapability: (capability: string) => boolean;
 }
 
 // What the evaluation looks at, besides the configuration of the ingestion: whether a check applies, whether it fails, the status.
@@ -112,6 +116,12 @@ const isUserRequired = (ingestor: HealthCheckIngestor) => ingestor.entity_type =
 
 export const getIngestorUserId = (ingestor: HealthCheckIngestor) => {
   return ingestor.entity_type === ENTITY_TYPE_CONNECTOR ? ingestor.connector_user_id : ingestor.user_id;
+};
+
+// The capability the platform requires from the user of an ingestor, by entity type: a connector registers and pings with CONNECTORAPI.
+// Feeds and syncs enforce none: absent, the check does not apply
+const REQUIRED_CAPABILITY_BY_ENTITY_TYPE: Record<string, string> = {
+  [ENTITY_TYPE_CONNECTOR]: 'CONNECTORAPI',
 };
 
 // Executed by the ingestion manager (feeds) or the sync manager (syncs), which log the outcome of each execution
@@ -185,6 +195,19 @@ export const HEALTH_CHECK_REGISTRY = {
     // A required user, or an optional one that was set: it must exist
     isEnabled: (ingestor) => isUserRequired(ingestor) || !!getIngestorUserId(ingestor),
     getFailure: (_, { user }) => (user ? null : {}),
+  },
+  // Without it the platform refuses what the ingestor does (a connector cannot register nor ping)
+  [HEALTH_CHECK_USER_MISSING_CAPABILITY]: {
+    kind: IngestionHealthCheckKind.Configuration,
+    label: 'User lacks required capability',
+    severity: IngestionHealthCheckSeverity.Blocking,
+    message: ({ capability }) => `User lacks required capability: ${capability}`,
+    // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
+    isEnabled: (ingestor, { user }) => !!user && !user.internal && ingestor.entity_type in REQUIRED_CAPABILITY_BY_ENTITY_TYPE,
+    getFailure: (ingestor, { user }) => {
+      const capability = REQUIRED_CAPABILITY_BY_ENTITY_TYPE[ingestor.entity_type];
+      return user?.hasCapability(capability) ? null : { capability };
+    },
   },
   // An ingestion should not depend on a person: a regular user leaving or changing rights breaks it
   [HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT]: {
