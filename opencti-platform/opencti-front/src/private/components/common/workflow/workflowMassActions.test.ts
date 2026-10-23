@@ -5,6 +5,7 @@ import {
   buildWorkflowTransitionAction,
   isFieldOptionDisabled,
   isTransitionInputValid,
+  setTransitionInputs,
   withWorkflowBypassOptions,
 } from './workflowMassActions';
 
@@ -31,23 +32,19 @@ describe('buildWorkflowTransitionAction', () => {
     const [option] = buildTransitionOptions([
       { event: 'approve', toState: 'approved', comment: 'required', requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false },
     ]);
-    const action = buildWorkflowTransitionAction({
-      type: 'REPLACE',
-      values: [option],
-      options: {
-        comment: '  Checked  ',
-        shareOrganizations: [{ value: 'org-1', label: 'Org 1' }],
-        unshareOrganizations: [{ value: 'org-2', label: 'Org 2' }],
-        inputsValid: true,
-      },
-    });
+    const action = buildWorkflowTransitionAction(setTransitionInputs({ type: 'REPLACE', values: [option] }, {
+      comment: '  Checked  ',
+      shareOrganizations: [{ value: 'org-1', label: 'Org 1' }],
+      unshareOrganizations: [{ value: 'org-2', label: 'Org 2' }],
+      inputsValid: true,
+    }));
 
     expect(action.context.options).toEqual({ eventName: 'approve', comment: 'Checked', shareOrganizationIds: ['org-1'] });
   });
 
   it('should send no comment for a transition without one, even if one was typed for another transition', () => {
     const [option] = buildTransitionOptions([{ event: 'approve', toState: 'approved', comment: 'disabled' }]);
-    const action = buildWorkflowTransitionAction({ type: 'REPLACE', values: [option], options: { comment: 'Left over' } });
+    const action = buildWorkflowTransitionAction(setTransitionInputs({ type: 'REPLACE', values: [option] }, { comment: 'Left over' }));
 
     expect(action.context.options).toEqual({ eventName: 'approve' });
   });
@@ -61,9 +58,20 @@ describe('buildWorkflowTransitionAction', () => {
 
 describe('isTransitionInputValid', () => {
   it('should wait for the transition inputs to be reported complete', () => {
-    expect(isTransitionInputValid({ type: 'REPLACE', values: [] })).toBe(false);
-    expect(isTransitionInputValid({ type: 'REPLACE', values: [], options: { inputsValid: false } })).toBe(false);
-    expect(isTransitionInputValid({ type: 'REPLACE', values: [], options: { inputsValid: true } })).toBe(true);
+    const row = { type: 'REPLACE', values: [] };
+    expect(isTransitionInputValid(row)).toBe(false);
+    expect(isTransitionInputValid(setTransitionInputs(row, { inputsValid: false }))).toBe(false);
+    expect(isTransitionInputValid(setTransitionInputs(row, { inputsValid: true }))).toBe(true);
+  });
+});
+
+describe('setTransitionInputs', () => {
+  it('should keep the transition inputs out of the options sent to the backend, for when the row switches to another field', () => {
+    const row = { type: 'REPLACE', field: 'x_opencti_workflow_id', values: [], options: { applyTransitionActions: false } };
+
+    const updated = setTransitionInputs(row, { comment: 'Checked', shareOrganizations: [{ value: 'org-1' }], unshareOrganizations: [], inputsValid: true });
+
+    expect(updated.options).toEqual({ applyTransitionActions: false });
   });
 });
 

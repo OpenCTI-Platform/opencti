@@ -17,8 +17,11 @@ interface WorkflowActionInput {
   type: string;
   fieldType?: string;
   values: TransitionOption[];
-  options?: MassTransitionInputs;
+  transitionInputs?: MassTransitionInputs;
 }
+
+// The inputs live beside the row options, which are sent to the backend as they are whatever the row's field becomes
+export const setTransitionInputs = <T extends object>(row: T, inputs: MassTransitionInputs) => ({ ...row, transitionInputs: inputs });
 
 interface MassTransition {
   event: string;
@@ -55,7 +58,7 @@ const NO_REQUIREMENTS: TransitionInputRequirements = { requiresShareOrg: false, 
 
 export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => {
   const requirements = input.values[0]?.requirements ?? NO_REQUIREMENTS;
-  const inputs = { ...EMPTY_TRANSITION_INPUT_VALUES, ...input.options };
+  const inputs = { ...EMPTY_TRANSITION_INPUT_VALUES, ...input.transitionInputs };
   const comment = hasTransitionComment(requirements.commentMode) ? inputs.comment.trim() : '';
   return {
     type: input.type,
@@ -74,7 +77,7 @@ export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => {
 };
 
 // A transition step is complete once its comment and organizations are
-export const isTransitionInputValid = (input: WorkflowActionInput) => input.options?.inputsValid === true;
+export const isTransitionInputValid = (input: Pick<WorkflowActionInput, 'transitionInputs'>) => input.transitionInputs?.inputsValid === true;
 
 // For a bypass user, a status update goes through the workflow engine, with the transition actions by default
 export const withWorkflowBypassOptions = (options?: { applyTransitionActions?: boolean }) => ({
