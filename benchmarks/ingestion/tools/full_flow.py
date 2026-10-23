@@ -161,9 +161,13 @@ def stored_shape(client, tag):
     )
     a_set = client.intrusion_set.read(filters=name_filter(f"ff-{tag}-set-0"))
     malware = client.malware.read(filters=name_filter(f"ff-{tag}-malware"))
-    rel_count = client.stix_core_relationship.list(
-        fromOrToId=malware["id"], first=1, withPagination=True
-    )["pagination"]["globalCount"]
+    rel_count = (
+        client.stix_core_relationship.list(
+            fromOrToId=malware["id"], first=1, withPagination=True
+        )["pagination"]["globalCount"]
+        if malware
+        else 0
+    )
     return {
         "intrusion_sets": count(client.intrusion_set, f"ff-{tag}-set-"),
         "attack_patterns": len(techniques),
@@ -181,6 +185,18 @@ def stored_shape(client, tag):
             "labels": len(a_set.get("objectLabel") or []) if a_set else 0,
         },
     }
+
+
+def settled_shape(client, tag, report_objects, timeout=30):
+    """The stored shape once the report lists every object: lock-free writes are searchable at the next refresh
+    (about 1 s, longer when Elasticsearch is busy), not when the write returns"""
+    deadline = time.time() + timeout
+    while True:
+        shape = stored_shape(client, tag)
+        settled = shape["report_objects"] >= report_objects and shape["relationships_of_malware"] > 0
+        if settled or time.time() > deadline:
+            return shape
+        time.sleep(1)
 
 
 def run(client, connector_id, n, batch):
@@ -204,7 +220,6 @@ def run(client, connector_id, n, batch):
         if work["status"] == "complete" or time.time() > deadline:
             break
         time.sleep(0.5)
-    time.sleep(1.5)  # the last writes searchable (refresh) and listed (settler)
     return {
         "objects": len(bundle["objects"]),
         "seconds": round(elapsed, 2),
@@ -217,7 +232,7 @@ def run(client, connector_id, n, batch):
             **(work.get("tracking") or {}),
             "errors": len(work.get("errors") or []),
         },
-        "stored": stored_shape(client, tag),
+        "stored": settled_shape(client, tag, len(bundle["objects"]) - 2),
     }
 
 
@@ -263,7 +278,6 @@ def run_queue(client, n):
             raise SystemExit(f"Queue import timed out: {work.get('tracking')}")
         time.sleep(0.2)
     elapsed = time.perf_counter() - start
-    time.sleep(1.5)
     return {
         "objects": len(bundle["objects"]),
         "seconds": round(elapsed, 2),
@@ -273,7 +287,7 @@ def run_queue(client, n):
             **(work.get("tracking") or {}),
             "errors": len(work.get("errors") or []),
         },
-        "stored": stored_shape(client, tag),
+        "stored": settled_shape(client, tag, len(bundle["objects"]) - 2),
     }
 
 

@@ -53,7 +53,7 @@ describe('Full flow scenario', () => {
       const queue = await run(python, [script, '--queue', '--out', `${out}.queue.json`], env);
       if (queue.code !== 0) throw new Error(`Queue flow failed:\n${queue.stderr.slice(-4000)}`);
       Object.assign(results, JSON.parse(readFileSync(`${out}.queue.json`, 'utf-8')));
-      if (LOCKFREE) {
+      if (LOCKFREE && process.env.BENCH_MODES !== 'false') { // BENCH_MODES=false: the queue flow only
         const modes = await run(python, [script, '--out', `${out}.modes.json`], env);
         if (modes.code !== 0) throw new Error(`pycti modes failed:\n${modes.stderr.slice(-4000)}`);
         Object.assign(results, JSON.parse(readFileSync(`${out}.modes.json`, 'utf-8')));
