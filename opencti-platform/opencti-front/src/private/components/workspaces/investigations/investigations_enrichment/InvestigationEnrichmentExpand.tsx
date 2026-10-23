@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Dialog, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogTitle, Stack } from '@mui/material';
+import { Button, Text } from '@filigran/design-system';
 import { graphql } from 'react-relay';
 import { fdsLayerClass, layerInputVars, SURFACE_LAYER } from '../../../../../utils/fdsLayer';
 import InvestigationExpandForm, { InvestigationExpandFormProps } from '../InvestigationExpandForm';
@@ -169,6 +170,8 @@ const InvestigationEnrichmentExpand = ({
     };
   }, [work, graphIds]);
 
+  const hasNothingToAdd = targets.length === 0 && relationships.length === 0;
+
   /**
    * Adds to the graph the touched entities of a ticked type, and the touched
    * relationships of a ticked type with their ends, then marks the work as reviewed.
@@ -255,13 +258,41 @@ const InvestigationEnrichmentExpand = ({
       <DialogTitle>
         {t_i18n('Enrichment Results')} - {getMainRepresentative(work?.eventSource)}
       </DialogTitle>
-      <InvestigationExpandForm
-        onReset={onClose}
-        onSubmit={onSubmitExpand}
-        onDismiss={() => onDismiss(work!.id)}
-        targets={targets}
-        relationships={relationships}
-      />
+      {hasNothingToAdd ? (
+        <Stack spacing={3} sx={{ p: 3 }}>
+          <Stack gap={1}>
+            <Text variant="content-base-bold">
+              {t_i18n('Nothing to add to the graph')}
+            </Text>
+            <Text variant="content-compact">
+              {t_i18n('Everything this enrichment touched is already in the graph, or it touched nothing that can be drawn.')}
+            </Text>
+          </Stack>
+
+          <DialogActions>
+            <Button
+              priority="secondary"
+              onClick={onClose}
+            >
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              priority="primary"
+              onClick={() => onDismiss(work!.id)}
+            >
+              {t_i18n('Dismiss')}
+            </Button>
+          </DialogActions>
+        </Stack>
+      ) : (
+        <InvestigationExpandForm
+          onReset={onClose}
+          onSubmit={onSubmitExpand}
+          onDismiss={() => onDismiss(work!.id)}
+          targets={targets}
+          relationships={relationships}
+        />
+      )}
     </Dialog>
   );
 };
