@@ -115,7 +115,7 @@ const AuthorizedMembersFieldListItem = ({
                         icon={<InfoOutlined fontSize="small" />}
                       />
                     </TooltipTrigger>
-                    <TooltipContent>{`Groups restriction: ${groupsLabel}`}</TooltipContent>
+                    <TooltipContent>{`${t_i18n('Groups restriction')}: ${groupsLabel}`}</TooltipContent>
                   </Tooltip>
                 </span>
               </>
