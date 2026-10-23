@@ -159,11 +159,12 @@ export const resetLockFreeState = async () => {
   await elDeleteIndices([IDENTITY_INDEX, PENDING_INDEX]);
   await clearQueue();
   const client = getClientBase() as any;
-  await client.del(`${REDIS_PREFIX}lockfree:backfill:done`);
+  await client.del('lockfree:backfill:done');
   let cursor = '0';
   do {
+    // SCAN matches and returns full key names; DEL adds the prefix again
     const [next, keys] = await client.scan(cursor, 'MATCH', `${REDIS_PREFIX}lockfree:applied:*`, 'COUNT', 1000);
-    if (keys.length > 0) await client.del(...keys);
+    if (keys.length > 0) await client.del(...keys.map((key: string) => key.slice(REDIS_PREFIX.length)));
     cursor = next;
   } while (cursor !== '0');
 };

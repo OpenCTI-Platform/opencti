@@ -4,7 +4,7 @@
 // path and keeps the identity index in step through the sync functions, called where the platform stores its
 // create, update, merge and delete events.
 import * as R from 'ramda';
-import { booleanConf, logApp, REDIS_PREFIX } from '../../config/conf';
+import { booleanConf, logApp } from '../../config/conf';
 import { getClientBase } from '../redis';
 import { inferIndexFromConceptType } from '../utils';
 import { getDraftContext } from '../../utils/draftContext';
@@ -27,7 +27,7 @@ import { executeOperations, type Operation, type WriteCollector } from './batch'
 import type { GraphQLSchema } from 'graphql';
 
 export const LOCKFREE_INGESTION_ENABLED = booleanConf('app:lockfree_ingestion:enabled', false);
-const BACKFILL_DONE_KEY = `${REDIS_PREFIX}lockfree:backfill:done`;
+const BACKFILL_DONE_KEY = 'lockfree:backfill:done'; // prefixed by the client
 
 // The backfill marker, read at most every 5 seconds until it is set
 let backfillDone = false;

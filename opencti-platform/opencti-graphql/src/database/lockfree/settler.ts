@@ -19,7 +19,6 @@ import { now } from '../../utils/format';
 import { benchTimer } from '../../utils/bench-timing';
 import { pool } from './context';
 import { getClientBase } from '../../database/redis';
-import { REDIS_PREFIX } from '../../config/conf';
 import { lookupKeys } from './identity';
 import { loadWithRefs, mgetRaw, toElements } from './load';
 import { processPending } from './pending';
@@ -33,7 +32,7 @@ const appliedKey = (t: EndpointTask) => `${t.op}|${t.endpoint}|${t.relation_type
 const APPLIED_TTL_SECONDS = 7 * 24 * 3600;
 // A task delivered again after it was applied (the settler stopped before acknowledging) is skipped.
 // Checked before applying, recorded after: a stop between the two can apply a task twice, never lose one.
-const appliedSetKey = (t: EndpointTask) => `${REDIS_PREFIX}lockfree:applied:${t.endpoint}`;
+const appliedSetKey = (t: EndpointTask) => `lockfree:applied:${t.endpoint}`; // prefixed by the client
 const findApplied = async (tasks: EndpointTask[]) => {
   const already = new Set<string>();
   if (tasks.length === 0) return already;

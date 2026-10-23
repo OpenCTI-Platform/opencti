@@ -8,7 +8,8 @@ import type { Owner } from './identity';
 
 export const PARTITIONS = 4;
 const GROUP = 'settlers';
-export const streamName = (partition: number) => `${REDIS_PREFIX}lockfree:settle:${partition}`;
+// The client adds the platform's key prefix (ioredis keyPrefix)
+export const streamName = (partition: number) => `lockfree:settle:${partition}`;
 
 // Add or remove `other` in the rel_<relation_type> list of `endpoint`; `relation` is the relationship it comes from
 export interface EndpointTask { kind: 'endpoint'; op: 'add' | 'remove'; endpoint: string; index: string; type: string; relation_type: string; other: string; side: string; relation?: string; relation_index?: string }
@@ -30,7 +31,8 @@ const ensuredGroups = new Set<number>();
 const ensureGroup = async (partition: number) => {
   if (ensuredGroups.has(partition)) return;
   try {
-    await getClientBase().call('XGROUP', 'CREATE', streamName(partition), GROUP, '0', 'MKSTREAM');
+    // keyPrefix is not applied to XGROUP: Redis declares its key on the CREATE subcommand, which ioredis does not model
+    await getClientBase().call('XGROUP', 'CREATE', `${REDIS_PREFIX}${streamName(partition)}`, GROUP, '0', 'MKSTREAM');
   } catch (e: any) {
     if (!String(e?.message).includes('BUSYGROUP')) throw e;
   }
