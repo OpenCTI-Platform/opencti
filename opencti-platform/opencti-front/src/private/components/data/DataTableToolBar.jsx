@@ -1558,11 +1558,14 @@ class DataTableToolBar extends Component {
     if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
       return;
     }
-    actionsInputs[i] = R.assoc(
-      'values',
-      Array.isArray(newValue) ? newValue : [newValue],
-      actionsInputs[i] || {},
-    );
+    // A typed date that does not exist (2023-02-30) is accepted as an invalid date. It empties
+    // the step, so the update stays disabled rather than sending the last valid date typed.
+    const isInvalidDate = newValue instanceof Date && Number.isNaN(newValue.getTime());
+    let values = Array.isArray(newValue) ? newValue : [newValue];
+    if (isInvalidDate) {
+      values = [];
+    }
+    actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
     this.setState({ actionsInputs });
   }
 
