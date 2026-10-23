@@ -36,15 +36,21 @@ export default class DateFieldPageModel {
     return this.page.keyboard.press('Backspace');
   }
 
+  /**
+   * Types each part of the input ("2023-12-05 12:00 AM": 2023, 12, 05, 12, 00, AM) in its own
+   * section, in the order of the field's format.
+   *
+   * A full section moves to the next one by itself, but only once the field has rendered: on a
+   * slow runner the next keys still reach the full section, which starts over (a year typed as
+   * "2023-12-05" ends as 0005). Clicking each section first does not depend on that timing.
+   */
   async fill(input: string) {
-    await this.fieldLocator.click();
-    // The field is split in date sections and a click puts the caret on the section under
-    // the pointer, so the typing would start on an arbitrary one. Selecting every section
-    // first makes it always start on the first section, whatever the locale order.
-    await this.page.keyboard.press('ControlOrMeta+A');
-    // A section moves to the next one by itself once full, and ignores the separators, but
-    // reads a space as a 0: "05 12:00" would set the hour to 00, then 01.
-    await this.page.keyboard.type(input.replace(/\s+/g, ''), { delay: 100 });
+    const parts = input.split(/[^0-9a-z]+/i).filter((part) => part.length > 0);
+    const sections = this.fieldLocator.getByRole('spinbutton');
+    for (const [index, part] of parts.entries()) {
+      await sections.nth(index).click();
+      await this.page.keyboard.type(part, { delay: 100 });
+    }
   }
 
   /**
