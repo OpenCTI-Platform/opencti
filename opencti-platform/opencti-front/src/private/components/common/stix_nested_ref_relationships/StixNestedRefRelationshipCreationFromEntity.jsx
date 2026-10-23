@@ -13,7 +13,7 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -33,104 +33,75 @@ import { emptyFilterGroup, normalizeFilterGroupForBackend } from '../../../../ut
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import Drawer from '../drawer/Drawer';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1001,
-  },
-  container: {
-    padding: '15px 0 0 15px',
-    height: '100%',
-    width: '100%',
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 10,
-  },
-  itemHeader: {
-    padding: '10px 0 10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  },
-  relation: {
-    position: 'relative',
-    height: 100,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-    padding: 10,
-    marginBottom: 10,
-  },
-  relationCreate: {
-    position: 'relative',
-    height: 100,
-  },
-  middle: {
-    margin: '0 auto',
-    width: 200,
-    textAlign: 'center',
-    padding: 0,
-    color: theme.palette.text.primary,
-  },
-  buttonBack: {
-    marginTop: 20,
-    textAlign: 'left',
-    float: 'left',
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-    float: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  speedDial: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  speedDialButton: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
+const Item = styled('div')({
+  position: 'absolute',
+  width: 180,
+  height: 80,
+  borderRadius: 10,
+});
+
+const ItemHeader = styled('div')({
+  padding: '10px 0 10px 0',
+});
+
+const Icon = styled('div')({
+  position: 'absolute',
+  top: 8,
+  left: 5,
+  fontSize: 8,
+});
+
+const Type = styled('div')(({ theme }) => ({
+  width: '100%',
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+  fontSize: 11,
 }));
+
+const Content = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: 40,
+  maxHeight: 40,
+  lineHeight: '40px',
+  color: theme.palette.text.primary,
+  textAlign: 'center',
+}));
+
+const Name = styled('span')({
+  display: 'inline-block',
+  lineHeight: 1,
+  fontSize: 12,
+  verticalAlign: 'middle',
+});
+
+const RelationCreate = styled('div')({
+  position: 'relative',
+  height: 100,
+});
+
+const Middle = styled('div')(({ theme }) => ({
+  margin: '0 auto',
+  width: 200,
+  textAlign: 'center',
+  padding: 0,
+  color: theme.palette.text.primary,
+}));
+
+const ButtonBack = styled('div')({
+  marginTop: 20,
+  textAlign: 'left',
+  float: 'left',
+});
+
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+  float: 'right',
+});
+
+const buttonSx = {
+  marginLeft: (theme) => theme.spacing(2),
+};
 
 const stixNestedRefRelationshipResolveTypes = graphql`
   query StixNestedRefRelationshipCreationFromEntityResolveQuery($id: String!, $toType: String!) {
@@ -296,7 +267,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   entityType,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [open, setOpen] = useState(false);
@@ -570,7 +540,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         {targetEntities.length === 0 && (
           <>
             <SpeedDial
-              className={classes.createButton}
+              sx={{ position: 'fixed', bottom: 30, right: 30, zIndex: 1001 }}
               ariaLabel="Create"
               icon={<SpeedDialIcon />}
               onClose={handleCloseSpeedDial}
@@ -582,18 +552,12 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 icon={<HexagonOutline />}
                 tooltipTitle={t_i18n('Create an observable')}
                 onClick={handleOpenCreateObservable}
-                FabProps={{
-                  classes: { root: classes.speedDialButton },
-                }}
               />
               <SpeedDialAction
                 title={t_i18n('Create an entity')}
                 icon={<GlobeModel />}
                 tooltipTitle={t_i18n('Create an entity')}
                 onClick={handleOpenCreateEntity}
-                FabProps={{
-                  classes: { root: classes.speedDialButton },
-                }}
               />
             </SpeedDial>
             <StixDomainObjectCreation
@@ -682,81 +646,77 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       >
         {({ submitForm, handleReset, isSubmitting }) => (
           <Form>
-            <div className={classes.containerRelation}>
-              <div className={classes.relationCreate}>
-                <div
-                  className={classes.item}
+            <div>
+              <RelationCreate>
+                <Item
                   style={{
                     border: `2px solid ${itemColor(fromEntityType)}`,
                     top: 10,
                     left: 0,
                   }}
                 >
-                  <div
-                    className={classes.itemHeader}
+                  <ItemHeader
                     style={{
                       borderBottom: `1px solid ${itemColor(
                         fromEntityType,
                       )}`,
                     }}
                   >
-                    <div className={classes.icon}>
+                    <Icon>
                       <ItemIcon
                         type={fromEntityType}
                         color={itemColor(fromEntityType)}
                         size="small"
                       />
-                    </div>
-                    <div className={classes.type}>
+                    </Icon>
+                    <Type>
                       {t_i18n(`entity_${fromEntityType}`)}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
+                    </Type>
+                  </ItemHeader>
+                  <Content>
+                    <Name>
                       {truncate(getMainRepresentative(isReversedRelation ? fromEntity[0] : fromEntity), 20)}
-                    </span>
-                  </div>
-                </div>
-                <div className={classes.middle} style={{ paddingTop: 25 }}>
+                    </Name>
+                  </Content>
+                </Item>
+                <Middle style={{ paddingTop: 25 }}>
                   <ArrowRightAlt fontSize="large" />
-                </div>
-                <div
-                  className={classes.item}
+                </Middle>
+                <Item
                   style={{
                     border: `2px solid ${itemColor(toEntityType)}`,
                     top: 10,
                     right: 0,
                   }}
                 >
-                  <div
-                    className={classes.itemHeader}
+                  <ItemHeader
                     style={{
                       borderBottom: `1px solid ${itemColor(
                         toEntityType,
                       )}`,
                     }}
                   >
-                    <div className={classes.icon}>
+                    <Icon>
                       <ItemIcon
                         type={toEntityType}
                         color={itemColor(toEntityType)}
                         size="small"
                       />
-                    </div>
-                    <div className={classes.type}>
+                    </Icon>
+                    <Type>
                       {t_i18n(`entity_${toEntityType}`)}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
+                    </Type>
+                  </ItemHeader>
+                  <Content>
+                    <Name>
                       {isMultipleTo
                         ? (<em>{t_i18n('Multiple entities selected')}</em>)
                         : (truncate(getMainRepresentative(isReversedRelation ? toEntities : toEntities[0]), 20))
                       }
-                    </span>
-                  </div>
-                </div>
-              </div>
+                    </Name>
+                  </Content>
+                </Item>
+              </RelationCreate>
               <Field
                 component={SelectFieldFds}
                 variant="outlined"
@@ -794,7 +754,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   style: { marginTop: 20 },
                 }}
               />
-              <div className={classes.buttonBack}>
+              <ButtonBack>
                 <Button
                   variant="secondary"
                   onClick={handleResetSelection}
@@ -802,24 +762,24 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 >
                   {t_i18n('Back')}
                 </Button>
-              </div>
-              <div className={classes.buttons}>
+              </ButtonBack>
+              <Buttons>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  sx={buttonSx}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  sx={buttonSx}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </Buttons>
             </div>
           </Form>
         )}

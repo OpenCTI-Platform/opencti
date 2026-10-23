@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { FileDownloadOutlined } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';

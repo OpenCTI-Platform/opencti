@@ -4,7 +4,7 @@ import { DeleteOutlined, StorageOutlined } from '@mui/icons-material';
 import { Avatar, DialogActions, Tooltip } from '@mui/material';
 import { IconButton } from '@filigran/design-system';
 import { deepOrange, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { LinkVariantPlus, LinkVariantRemove, Merge, VectorRadius } from 'mdi-material-ui';
 import { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';

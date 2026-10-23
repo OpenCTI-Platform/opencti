@@ -8,7 +8,7 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import { FormikConfig } from 'formik/dist/types';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { WorkbenchCreationMutation } from '@components/common/files/workbench/__generated__/WorkbenchCreationMutation.graphql';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { WorkbenchFileCreatorStixCoreObjectQuery$data } from '@components/common/files/workbench/__generated__/WorkbenchFileCreatorStixCoreObjectQuery.graphql';
 import { v4 as uuid } from 'uuid';
 import { workbenchFileCreatorStixCoreObjectQuery } from '@components/common/files/workbench/WorkbenchFileCreator';

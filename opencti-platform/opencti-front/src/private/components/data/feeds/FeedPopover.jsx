@@ -7,9 +7,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
@@ -18,10 +17,8 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import FeedCreation from './FeedCreation';
 import FeedEdition from './FeedEdition';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -127,9 +124,9 @@ class FeedPopover extends Component {
   }
 
   render() {
-    const { classes, t, feedId } = this.props;
+    const { t, feedId } = this.props;
     return (
-      <div className={classes.container}>
+      <Container>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-label={t('Open menu')}
@@ -215,7 +212,7 @@ class FeedPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
@@ -223,8 +220,7 @@ class FeedPopover extends Component {
 FeedPopover.propTypes = {
   feedId: PropTypes.string,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(FeedPopover);
+export default inject18n(FeedPopover);

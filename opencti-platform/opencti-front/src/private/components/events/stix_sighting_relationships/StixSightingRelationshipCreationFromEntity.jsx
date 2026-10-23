@@ -8,7 +8,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import * as R from 'ramda';
 import { assoc, pipe, pluck } from 'ramda';
 import { useState } from 'react';
@@ -27,16 +27,12 @@ import StixSightingRelationshipCreationFromEntityStixCyberObservablesLines, {
 } from './StixSightingRelationshipCreationFromEntityStixCyberObservablesLines';
 import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1001,
-  },
-}));
+const CreateButton = styled(IconButton)({
+  position: 'fixed',
+  bottom: 30,
+  right: 30,
+  zIndex: 1001,
+});
 
 const stixSightingRelationshipCreationFromEntityQuery = graphql`
   query StixSightingRelationshipCreationFromEntityQuery($id: String!) {
@@ -134,7 +130,6 @@ const StixSightingRelationshipCreationFromEntity = ({
   targetStixCyberObservableTypes,
   paddingRight,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [targetEntity, setTargetEntity] = useState(null);
   const [open, setOpen] = useState(false);
@@ -321,7 +316,6 @@ const StixSightingRelationshipCreationFromEntity = ({
           <Alert
             severity="info"
             variant="outlined"
-            classes={{ message: classes.info }}
           >
             {t_i18n(
               'This panel shows by default the latest created entities, use the search to find more.',
@@ -390,15 +384,14 @@ const StixSightingRelationshipCreationFromEntity = ({
         );
       default:
         return (
-          <IconButton
+          <CreateButton
             onClick={handleOpen}
             color="secondary"
             aria-label="Add"
-            className={classes.createButton}
             style={{ right: paddingRight || 30 }}
           >
             <Add />
-          </IconButton>
+          </CreateButton>
         );
     }
   };

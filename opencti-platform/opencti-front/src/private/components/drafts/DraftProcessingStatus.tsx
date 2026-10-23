@@ -6,7 +6,7 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import DraftWorks from './DraftWorks';
 import DraftTasks from './DraftTasks';
 import Tag from '../../../components/common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../../components/Theme';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 

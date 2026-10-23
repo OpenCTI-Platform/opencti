@@ -19,7 +19,7 @@ import ListItemText from '@mui/material/ListItemText';
 
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
@@ -61,16 +61,6 @@ interface InstanceTriggerEditionFormValues {
   filters: string | null;
 }
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  nested: {
-    margin: `0 ${theme.spacing(1)}`,
-    width: 'auto',
-    backgroundColor: theme.palette.background.nav,
-  },
-}));
-
 interface StixCoreObjectQuickSubscriptionContentProps {
   triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data;
   paginationOptions: stixCoreObjectTriggersUtilsPaginationQuery$variables;
@@ -92,7 +82,6 @@ const NOTIFIER_IDS = {
 const StixCoreObjectQuickSubscription: FunctionComponent<
   StixCoreObjectQuickSubscriptionContentProps
 > = ({ triggerData, instanceId, paginationOptions, instanceName, title }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
@@ -540,7 +529,11 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                 )}
               >
                 <ListItemButton
-                  classes={{ root: classes.nested }}
+                  sx={{
+                    margin: `0 ${theme.spacing(1)}`,
+                    width: 'auto',
+                    backgroundColor: theme.palette.background.nav,
+                  }}
                   onClick={handleToggleLine}
                 >
                   <ListItemText

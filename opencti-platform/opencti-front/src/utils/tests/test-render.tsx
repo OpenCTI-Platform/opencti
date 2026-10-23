@@ -1,5 +1,4 @@
-import { createTheme, ThemeOptions } from '@mui/material/styles';
-import MuiThemeProvider from '../../components/MuiThemeProvider';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { RelayEnvironmentProvider } from 'react-relay';
 import React, { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router';
@@ -89,7 +88,7 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
     <BrowserRouter useTransitions={false}>
       <RelayEnvironmentProvider environment={relayEnv}>
         <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
-          <MuiThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
+          <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
             {/* The private app root provides one, so tests must too — a library
                 Tooltip throws without it. */}
             <TooltipProvider>
@@ -97,7 +96,7 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
                 {children}
               </UserContext.Provider>
             </TooltipProvider>
-          </MuiThemeProvider>
+          </ThemeProvider>
         </AppIntlProvider>
       </RelayEnvironmentProvider>
     </BrowserRouter>

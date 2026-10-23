@@ -1,5 +1,5 @@
 import React, { BaseSyntheticEvent, Suspense, useRef, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import CsvMapperLines from '@components/data/csvMapper/CsvMapperLines';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
 import { CsvMapperLine_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
@@ -20,18 +20,13 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import type { Theme } from '../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 
 export const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    paddingRight: '200px',
-  },
-}));
+const Container = styled('div')({
+  paddingRight: '200px',
+});
 
 export const csvMappersImportQuery = graphql`
   query CsvMappersImportQuery($file: Upload!) {
@@ -74,7 +69,6 @@ export const csvMappersImportQuery = graphql`
 `;
 
 const CsvMappers = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('CSV Mappers | Processing | Data'));
@@ -149,7 +143,7 @@ const CsvMappers = () => {
           mappersQueryRef={queryRefMappers}
           schemaAttributesQueryRef={queryRefSchemaAttributes}
         >
-          <div className={classes.container} data-testid="csv-mapper-page">
+          <Container data-testid="csv-mapper-page">
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV Mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines
@@ -221,7 +215,7 @@ const CsvMappers = () => {
                   />
                 )
             }
-          </div>
+          </Container>
         </CsvMappersProvider>
       </Suspense>
     );

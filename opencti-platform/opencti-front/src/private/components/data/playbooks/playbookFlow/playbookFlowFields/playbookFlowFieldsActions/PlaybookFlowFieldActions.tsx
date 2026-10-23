@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import IconButton from '@common/button/IconButton';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { Grid, Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, FieldArray, useFormikContext } from 'formik';
 import type { Theme } from '../../../../../../../components/Theme';
 import ComboboxField from '../../../../../../../components/ComboboxField';

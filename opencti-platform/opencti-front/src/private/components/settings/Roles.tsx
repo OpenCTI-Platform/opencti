@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../components/i18n';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -14,13 +14,6 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 
 const LOCAL_STORAGE_KEY = 'roles';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
-
 const Role = () => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -32,7 +25,6 @@ const Role = () => {
     location,
     LOCAL_STORAGE_KEY,
   ) as { orderAsc?: boolean; searchTerm?: string; view?: string; sortBy?: string };
-  const classes = useStyles();
   const [rolesState, setRolesState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
@@ -123,10 +115,10 @@ const Role = () => {
     orderMode: rolesState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
-    <div className={classes.container} data-testid="roles-settings-page">
+    <Box sx={{ margin: 0, padding: '0 200px 50px 0' }} data-testid="roles-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Roles'), current: true }]} />
       {rolesState.view === 'lines' ? renderLines(paginationOptions) : ''}
-    </div>
+    </Box>
   );
 };
 

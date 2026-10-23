@@ -6,6 +6,6 @@
 > enforces it.
 
 - Stick to the theme provided by OpenCTI.
-- **New MUI code**: prefer the `sx` prop for inline styles or `styled()` for reusable styled components.
-- **Legacy code**: many files still use `makeStyles` from `@mui/styles` — leave it in place when editing those files, do not migrate.
+- Use the `sx` prop for inline styles or `styled()` from `@mui/material/styles` for reusable styled components.
+- Read the theme with `useTheme` from `@mui/material/styles`.
 - Ensure dark mode compatibility (OpenCTI is heavily dark-mode focused).

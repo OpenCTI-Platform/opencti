@@ -10,7 +10,6 @@ import FormControl from '@mui/material/FormControl';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import {
   StixDomainObjectThreatKnowledgeContainersNumberQuery$data,
@@ -49,23 +48,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import CardNumber from '../../../../components/common/card/CardNumber';
-import { useTheme } from '@mui/styles';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    width: 300,
-    padding: 20,
-  },
-  filters: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 5,
-    flexWrap: 'wrap',
-    marginBottom: 5,
-  },
-}));
+import { useTheme } from '@mui/material/styles';
 
 const THREAT_KNOWLEDGE_FILTER_KEYS = [
   'elementWithTargetTypes',
@@ -131,7 +114,6 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
   it could be interesting to use the relay provider and rework the uses of graphql queries
 */
 > = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, displayObservablesStats }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [viewType, setViewType] = useState('diamond');
@@ -446,7 +428,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
           <TabsTrigger value="killchain">{t_i18n('Global kill chain')}</TabsTrigger>
         </TabsList>
         {viewType !== 'diamond' && (
-          <div className={classes.filters}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', marginBottom: '5px' }}>
             <Filters
               helpers={helpers}
               availableFilterKeys={THREAT_KNOWLEDGE_FILTER_KEYS}
@@ -462,7 +444,6 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
               <SettingsOutlined fontSize="small" />
             </IconButton>
             <Popover
-              classes={{ paper: classes.container }}
               open={openTimeField}
               anchorEl={anchorEl}
               onClose={handleCloseTimeField}
@@ -475,6 +456,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                 horizontal: 'center',
               }}
               elevation={1}
+              slotProps={{ paper: { sx: { width: 300, padding: '20px' } } }}
             >
               <FormControl style={{ width: '100%' }}>
                 <Select
@@ -504,7 +486,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                 label={t_i18n('Display nested relationships')}
               />
             </Popover>
-          </div>
+          </Box>
         )}
         {viewType !== 'diamond' && (
           <Box sx={{

@@ -2,7 +2,7 @@ import MuiAlert from '@mui/material/Alert';
 import type { AlertProps as MuiAlertProps } from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import React, { CSSProperties, ReactNode } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from './Theme';
 
 type AlertProps = {

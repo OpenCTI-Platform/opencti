@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { Field, Form, Formik } from 'formik';
@@ -8,25 +8,12 @@ import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import ObjectMembersField from '@components/common/form/ObjectMembersField';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SettingsMessagesLine_settingsMessage$data } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: theme.spacing(2),
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const settingsMessageEditionPatch = graphql`
   mutation SettingsMessageFormPatchMutation(
@@ -72,7 +59,6 @@ const SettingsMessageForm = ({
   open?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [commit] = useApiMutation(settingsMessageEditionPatch);
   const onSubmit: FormikConfig<SettingsMessageInput>['onSubmit'] = (
     values,
@@ -163,23 +149,23 @@ const SettingsMessageForm = ({
                 label={t_i18n('Dismissible')}
                 containerstyle={{ marginTop: 10 }}
               />
-              <div className={classes.buttons}>
+              <Box sx={{ marginTop: 2, textAlign: 'right' }}>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  sx={{ marginLeft: 2 }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting || !isValid}
-                  classes={{ root: classes.button }}
+                  sx={{ marginLeft: 2 }}
                 >
                   {creation ? `${t_i18n('Create')}` : `${t_i18n('Update')}`}
                 </Button>
-              </div>
+              </Box>
             </Form>
           )}
         </Formik>

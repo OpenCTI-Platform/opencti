@@ -8,7 +8,7 @@ import {
   StixCoreObjectKnowledgeBar_stixCoreObject$key,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectKnowledgeBar_stixCoreObject.graphql';
 import { StixCoreObjectKnowledgeBarRefreshQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectKnowledgeBarRefreshQuery.graphql';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { KnowledgeBarRefreshEvent } from '@components/common/bulk/useForceUpdate';
 import { useFormatter } from '../../../../components/i18n';

@@ -7,8 +7,7 @@ import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { StixCoreRelationshipCreationQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import {
@@ -33,85 +32,90 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    padding: 0,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
+const Header = styled('div')(({ theme }) => ({
+  backgroundColor: theme.palette.background.nav,
+  padding: '20px 20px 20px 60px',
+}));
+
+const CloseButton = styled(IconButton)({
+  '&&': {
     position: 'absolute',
     top: 12,
     left: 5,
     color: 'inherit',
   },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 10,
+});
+
+const Item = styled('div')({
+  position: 'absolute',
+  width: 180,
+  height: 80,
+  borderRadius: 10,
+});
+
+const ItemHeader = styled('div')({
+  padding: '10px 0 10px 0',
+});
+
+const ItemIconContainer = styled('div')({
+  position: 'absolute',
+  top: 8,
+  left: 5,
+  fontSize: 8,
+});
+
+const ItemType = styled('div')(({ theme }) => ({
+  width: '100%',
+  textAlign: 'center',
+  color: theme.palette.text?.primary,
+  fontSize: 11,
+}));
+
+const ItemContent = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: 40,
+  maxHeight: 40,
+  lineHeight: '40px',
+  color: theme.palette.text?.primary,
+  textAlign: 'center',
+}));
+
+const ItemName = styled('span')({
+  display: 'inline-block',
+  lineHeight: 1,
+  fontSize: 12,
+  verticalAlign: 'middle',
+});
+
+const Relation = styled(ListItemButton)({
+  position: 'relative',
+  height: 100,
+  transition: 'background-color 0.1s ease',
+  cursor: 'pointer',
+  '&:hover': {
+    background: 'rgba(0, 0, 0, 0.1)',
   },
-  itemHeader: {
-    padding: '10px 0 10px 0',
+  padding: 10,
+  marginBottom: 10,
+});
+
+const RelationCreation = styled(ListItemButton)({
+  position: 'relative',
+  height: 100,
+  transition: 'background-color 0.1s ease',
+  cursor: 'pointer',
+  '&:hover': {
+    background: 'rgba(0, 0, 0, 0.1)',
   },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text?.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
-    color: theme.palette.text?.primary,
-    textAlign: 'center',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  },
-  relation: {
-    position: 'relative',
-    height: 100,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-    padding: 10,
-    marginBottom: 10,
-  },
-  relationCreation: {
-    position: 'relative',
-    height: 100,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-    padding: 10,
-  },
-  middle: {
-    margin: '0 auto',
-    width: 200,
-    textAlign: 'center',
-    padding: 0,
-    color: theme.palette.text?.primary,
-  },
+  padding: 10,
+});
+
+const Middle = styled('div')(({ theme }) => ({
+  margin: '0 auto',
+  width: 200,
+  textAlign: 'center',
+  padding: 0,
+  color: theme.palette.text?.primary,
 }));
 
 export const stixCoreRelationshipCreationQuery = graphql`
@@ -302,7 +306,6 @@ const StixCoreRelationshipCreation = ({
   defaultMarkingDefinitions,
   open,
 }: StixCoreRelationshipCreationProps) => {
-  const classes = useStyles();
   const { t_i18n, fsd } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -436,16 +439,15 @@ const StixCoreRelationshipCreation = ({
           ));
           return (
             <>
-              <div className={classes.header}>
-                <IconButton
+              <Header>
+                <CloseButton
                   aria-label="Close"
-                  className={classes.closeButton}
                   onClick={handleClose}
                 >
                   <Close fontSize="small" color="primary" />
-                </IconButton>
+                </CloseButton>
                 <Typography id="drawer-title" variant="h6">{t_i18n('Create a relationship')}</Typography>
-              </div>
+              </Header>
               <StixCoreRelationshipCreationForm
                 fromEntities={fromObjects}
                 toEntities={toObjects}
@@ -470,64 +472,60 @@ const StixCoreRelationshipCreation = ({
   const renderSelectRelation = () => {
     return (
       <div>
-        <div className={classes.header}>
-          <IconButton
+        <Header>
+          <CloseButton
             aria-label="Close"
-            className={classes.closeButton}
             onClick={handleClose}
           >
             <Close fontSize="small" color="primary" />
-          </IconButton>
+          </CloseButton>
           <Typography id="drawer-title" variant="h6">{t_i18n('Select a relationship')}</Typography>
-        </div>
+        </Header>
         <List component="div" style={{ padding: '10px 20px 20px 20px' }}>
           {existingRelations.map((relation) => (
-            <ListItemButton
+            <Relation
               focusVisibleClassName="focus-visible"
               key={relation.node.id}
-              className={classes.relation}
               onClick={() => handleSelectRelation(relation.node as unknown as ObjectToParse)}
             >
-              <div
-                className={classes.item}
+              <Item
                 style={{
                   border: `2px solid ${itemColor(fromObjects[0].entity_type)}`,
                   top: 10,
                   left: 10,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(
                       fromObjects[0].entity_type,
                     )}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <ItemIconContainer>
                     <ItemIcon
                       type={fromObjects[0].entity_type}
                       color={itemColor(fromObjects[0].entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </ItemIconContainer>
+                  <ItemType>
                     {fromObjects[0].relationship_type
                       ? t_i18n('Relationship')
                       : t_i18n(`entity_${fromObjects[0].entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </ItemType>
+                </ItemHeader>
+                <ItemContent>
+                  <ItemName>
                     {fromObjects.length > 1 ? (
                       <em>{t_i18n('Multiple entities selected')}</em>
                     ) : (
                       truncate(fromObjects[0].name, 20)
                     )}
-                  </span>
-                </div>
-              </div>
-              <div className={classes.middle}>
+                  </ItemName>
+                </ItemContent>
+              </Item>
+              <Middle>
                 <ArrowRightAlt fontSize="small" />
                 <br />
                 <Tooltip
@@ -551,85 +549,80 @@ const StixCoreRelationshipCreation = ({
                     {t_i18n('Stop time')} {fsd(relation.node.stop_time)}
                   </div>
                 </Tooltip>
-              </div>
-              <div
-                className={classes.item}
+              </Middle>
+              <Item
                 style={{
                   border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
                   top: 10,
                   right: 10,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(
                       toObjects[0].entity_type,
                     )}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <ItemIconContainer>
                     <ItemIcon
                       type={toObjects[0].entity_type}
                       color={itemColor(toObjects[0].entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </ItemIconContainer>
+                  <ItemType>
                     {toObjects[0].relationship_type
                       ? t_i18n('Relationship')
                       : t_i18n(`entity_${toObjects[0].entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </ItemType>
+                </ItemHeader>
+                <ItemContent>
+                  <ItemName>
                     {truncate(toObjects[0].name, 20)}
-                  </span>
-                </div>
-              </div>
+                  </ItemName>
+                </ItemContent>
+              </Item>
               <div className="clearfix" />
-            </ListItemButton>
+            </Relation>
           ))}
-          <ListItemButton
+          <RelationCreation
             focusVisibleClassName="focus-visible"
-            className={classes.relationCreation}
             onClick={handleChangeStep}
           >
-            <div
-              className={classes.item}
+            <Item
               style={{
                 backgroundColor: theme.palette.background.accent,
                 top: 10,
                 left: 10,
               }}
             >
-              <div
-                className={classes.itemHeader}
+              <ItemHeader
                 style={{
                   borderBottom: '1px solid #ffffff',
                 }}
               >
-                <div className={classes.icon}>
+                <ItemIconContainer>
                   <ItemIcon
                     type={fromObjects[0].entity_type}
                     color="#263238"
                     size="small"
                   />
-                </div>
-                <div className={classes.type}>
+                </ItemIconContainer>
+                <ItemType>
                   {t_i18n(`entity_${fromObjects[0].entity_type}`)}
-                </div>
-              </div>
-              <div className={classes.content}>
-                <span className={classes.name}>
+                </ItemType>
+              </ItemHeader>
+              <ItemContent>
+                <ItemName>
                   {fromObjects.length > 1
                     ? <em>{t_i18n('Multiple entities selected')}</em>
                     : <span>{truncate(fromObjects[0].name)}</span>
                   }
-                </span>
-              </div>
-            </div>
-            <div className={classes.middle} style={{ paddingTop: 15 }}>
+                </ItemName>
+              </ItemContent>
+            </Item>
+            <Middle style={{ paddingTop: 15 }}>
               <ArrowRightAlt fontSize="small" />
               <br />
               <div
@@ -643,44 +636,42 @@ const StixCoreRelationshipCreation = ({
               >
                 {t_i18n('Create a relationship')}
               </div>
-            </div>
-            <div
-              className={classes.item}
+            </Middle>
+            <Item
               style={{
                 backgroundColor: theme.palette.background.accent,
                 top: 10,
                 right: 10,
               }}
             >
-              <div
-                className={classes.itemHeader}
+              <ItemHeader
                 style={{
                   borderBottom: '1px solid #ffffff',
                 }}
               >
-                <div className={classes.icon}>
+                <ItemIconContainer>
                   <ItemIcon
                     type={toObjects[0].entity_type}
                     color="#263238"
                     size="small"
                   />
-                </div>
-                <div className={classes.type}>
+                </ItemIconContainer>
+                <ItemType>
                   {t_i18n(`entity_${toObjects[0].entity_type}`)}
-                </div>
-              </div>
-              <div className={classes.content}>
-                <span className={classes.name}>
+                </ItemType>
+              </ItemHeader>
+              <ItemContent>
+                <ItemName>
                   {toObjects.length > 1 ? (
                     <em>{t_i18n('Multiple entities selected')}</em>
                   ) : (
                     truncate(toObjects[0].name, 20)
                   )}
-                </span>
-              </div>
-            </div>
+                </ItemName>
+              </ItemContent>
+            </Item>
             <div className="clearfix" />
-          </ListItemButton>
+          </RelationCreation>
         </List>
       </div>
     );
@@ -717,11 +708,10 @@ const StixCoreRelationshipCreation = ({
             'aria-labelledby': step > 0 ? 'drawer-title' : undefined,
             role: 'dialog',
             className: fdsLayerClass(SURFACE_LAYER),
-            sx: { ...layerInputVars },
+            sx: { ...layerInputVars, minHeight: '100vh', width: '50%', padding: 0 },
           },
         }}
         sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
         {step === 0

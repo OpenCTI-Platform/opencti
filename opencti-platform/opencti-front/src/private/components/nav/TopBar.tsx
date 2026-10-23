@@ -2,8 +2,7 @@ import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants
 import { AccountCircleOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/material/styles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { Link, useLocation, useNavigate } from 'react-router';
@@ -35,21 +34,6 @@ import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import { useAINLQ } from '../common/ai/AINLQ';
 import TopBarIconLink from './TopBarIconLink';
 import { TOP_BAR_SEARCH_MAX_WIDTH, TOP_BAR_SEARCH_MIN_WIDTH } from './topBarConstants';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  appBar: {
-    zIndex: theme.zIndex.drawer - 1,
-    background: 0,
-    backgroundColor: theme.palette.background.nav,
-    paddingTop: theme.spacing(0.2),
-    borderLeft: 0,
-    borderRight: 0,
-    borderTop: 0,
-    color: theme.palette.text?.primary,
-  },
-}));
 
 const topBarNotificationNumberSubscription = graphql`
   subscription TopBarNotificationNumberSubscription {
@@ -360,7 +344,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
 
 const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = () => {
   const queryRef = useQueryLoading<TopBarQuery>(topBarQuery, {});
-  const classes = useStyles();
   return (
     <>
       {queryRef && (
@@ -368,7 +351,16 @@ const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = () => {
           fallback={(
             <AppBar
               position="fixed"
-              className={classes.appBar}
+              sx={(theme) => ({
+                zIndex: theme.zIndex.drawer - 1,
+                background: 0,
+                backgroundColor: theme.palette.background.nav,
+                paddingTop: theme.spacing(0.2),
+                borderLeft: '0',
+                borderRight: '0',
+                borderTop: '0',
+                color: theme.palette.text?.primary,
+              })}
               variant="elevation"
               elevation={1}
             />

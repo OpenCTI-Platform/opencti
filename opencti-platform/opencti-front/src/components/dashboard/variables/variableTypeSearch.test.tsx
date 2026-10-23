@@ -51,7 +51,10 @@ vi.mock('../../../utils/hooks/useAttributes', () => ({
   containerTypes: ['Report'],
 }));
 
-vi.mock('@mui/styles', () => ({ useTheme: () => ({ palette: { mode: 'light', primary: { main: '#1976d2' } } }) }));
+vi.mock('@mui/material/styles', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mui/material/styles')>()),
+  useTheme: () => ({ palette: { mode: 'light', primary: { main: '#1976d2' } } }),
+}));
 
 vi.mock('../../../utils/hooks/useGranted', () => ({
   default: () => false,

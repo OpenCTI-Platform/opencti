@@ -5,7 +5,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { BackupTableOutlined, CampaignOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../../components/Theme';
 import Box from '@mui/material/Box';
 import IconButton from '@common/button/IconButton';
@@ -21,29 +20,11 @@ import { EMPTY_VALUE } from '../../../../../utils/String';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import Tag from '@common/tag/Tag';
 import NotifierChips from '@components/profile/triggers/NotifierChips';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface AlertingLineProps {
   node: AlertingLine_node$key;
@@ -79,7 +60,6 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
   node,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n, nt } = useFormatter();
   const data = useFragment(alertingLineFragment, node);
@@ -92,7 +72,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
     ? new Date(`2000-01-01T${currentTime[1]}`)
     : new Date(`2000-01-01T${currentTime[0]}`);
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
       <ListItemIcon>
         {data.trigger_type === 'live' ? (
           <CampaignOutlined color="warning" />
@@ -103,8 +83,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.trigger_type.width }}
             >
               <Tag
@@ -115,19 +94,17 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                     : t_i18n('Regular digest')
                 }
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.notifiers.width }}
             >
               <NotifierChips notifiers={data.notifiers} />
-            </div>
+            </BodyItem>
             {data.trigger_type === 'live' && (
               isFilterGroupNotEmpty(filters)
                 ? (
@@ -139,12 +116,11 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                     />
                   )
                 : (
-                    <div
-                      className={classes.bodyItem}
+                    <BodyItem
                       style={{ width: dataColumns.filters.width }}
                     >
                       {EMPTY_VALUE}
-                    </div>
+                    </BodyItem>
                   )
             )}
             {data.trigger_type === 'digest' && (
@@ -175,7 +151,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <AlertingPopover data={data} paginationOptions={paginationOptions} />
       </ListItemIcon>
     </ListItem>
@@ -187,30 +163,28 @@ export const AlertingLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       secondaryAction={(
-        <Box sx={{ root: classes.itemIconDisabled }}>
+        <Box>
           <IconButton aria-label={t_i18n('Open menu')} disabled={true}>
             <MoreVert />
           </IconButton>
         </Box>
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 <Skeleton
@@ -219,7 +193,7 @@ export const AlertingLineDummy = ({
                   width="90%"
                   height={20}
                 />
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}

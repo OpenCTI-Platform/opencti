@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
+import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -21,95 +20,68 @@ import StixSightingRelationshipCreationForm from './StixSightingRelationshipCrea
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
+const Header = styled('div')(({ theme }) => ({
+  backgroundColor: theme.palette.background.nav,
+  padding: '20px 20px 20px 60px',
+}));
+
+const CloseButton = styled(IconButton)({
+  position: 'absolute',
+  top: 12,
+  left: 5,
+  '&&': {
     color: 'inherit',
   },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 10,
-  },
-  itemHeader: {
-    padding: '10px 0 10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  },
-  relation: {
-    position: 'relative',
-    height: 100,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-    padding: 10,
-    marginBottom: 10,
-  },
-  relationCreation: {
-    position: 'relative',
-    height: 100,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-    padding: 10,
-  },
-  middle: {
-    margin: '0 auto',
-    width: 200,
-    textAlign: 'center',
-    padding: 0,
-    color: theme.palette.text.primary,
-  },
 });
+
+const Item = styled('div')({
+  position: 'absolute',
+  width: 180,
+  height: 80,
+  borderRadius: 10,
+});
+
+const ItemHeader = styled('div')({
+  padding: '10px 0 10px 0',
+});
+
+const IconContainer = styled('div')({
+  position: 'absolute',
+  top: 8,
+  left: 5,
+  fontSize: 8,
+});
+
+const Type = styled('div')(({ theme }) => ({
+  width: '100%',
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+  fontSize: 11,
+}));
+
+const Content = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: 40,
+  maxHeight: 40,
+  lineHeight: '40px',
+  color: theme.palette.text.primary,
+  textAlign: 'center',
+}));
+
+const Name = styled('span')({
+  display: 'inline-block',
+  lineHeight: 1,
+  fontSize: 12,
+  verticalAlign: 'middle',
+});
+
+const Middle = styled('div')(({ theme }) => ({
+  margin: '0 auto',
+  width: 200,
+  textAlign: 'center',
+  padding: 0,
+  color: theme.palette.text.primary,
+}));
 
 export const stixSightingRelationshipCreationQuery = graphql`
   query StixSightingRelationshipCreationQuery(
@@ -348,7 +320,6 @@ class StixSightingRelationshipCreation extends Component {
   renderForm() {
     const {
       t,
-      classes,
       fromObjects,
       toObjects,
       confidence,
@@ -362,16 +333,15 @@ class StixSightingRelationshipCreation extends Component {
     const defaultLastSeen = !isNone(lastSeen) ? lastSeen : null;
     return (
       <>
-        <div className={classes.header}>
-          <IconButton
+        <Header>
+          <CloseButton
             aria-label="Close"
-            className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
           >
             <Close fontSize="small" color="primary" />
-          </IconButton>
+          </CloseButton>
           <Typography id="drawer-title" variant="h6">{t('Create a sighting')}</Typography>
-        </div>
+        </Header>
         <StixSightingRelationshipCreationForm
           fromEntities={fromObjects}
           toEntities={toObjects}
@@ -389,68 +359,75 @@ class StixSightingRelationshipCreation extends Component {
   }
 
   renderSelectSighting() {
-    const { fsd, t, classes, fromObjects, toObjects, theme } = this.props;
+    const { fsd, t, fromObjects, toObjects, theme } = this.props;
     const { existingSightings } = this.state;
     return (
       <div>
-        <div className={classes.header}>
-          <IconButton
+        <Header>
+          <CloseButton
             aria-label="Close"
-            className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
           >
             <Close fontSize="small" color="primary" />
-          </IconButton>
+          </CloseButton>
           <Typography id="drawer-title" variant="h6">{t('Select a sighting')}</Typography>
-        </div>
-        <List component="div" className={classes.container}>
+        </Header>
+        <List component="div" sx={{ padding: '10px 20px 20px 20px' }}>
           {existingSightings.map((sighting) => (
             <ListItemButton
               focusVisibleClassName="focus-visible"
               key={sighting.node.id}
-              className={classes.relation}
+              sx={{
+                position: 'relative',
+                height: 100,
+                transition: 'background-color 0.1s ease',
+                cursor: 'pointer',
+                '&:hover': {
+                  background: 'rgba(0, 0, 0, 0.1)',
+                },
+                padding: '10px',
+                marginBottom: '10px',
+              }}
               onClick={this.handleSelectSighting.bind(this, sighting.node)}
             >
-              <div
-                className={classes.item}
+              <Item
                 style={{
                   border: `2px solid ${itemColor(fromObjects[0].entity_type)}`,
                   top: 10,
                   left: 10,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(
                       fromObjects[0].entity_type,
                     )}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <IconContainer>
                     <ItemIcon
                       type={fromObjects[0].entity_type}
                       color={itemColor(fromObjects[0].entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </IconContainer>
+                  <Type>
                     {fromObjects[0].relationship_type
                       ? t('Relationship')
                       : t(`entity_${fromObjects[0].entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </Type>
+                </ItemHeader>
+                <Content>
+                  <Name>
                     {fromObjects.length > 1 ? (
                       <em>{t('Multiple entities selected')}</em>
                     ) : (
                       truncate(fromObjects[0].name, 20)
                     )}
-                  </span>
-                </div>
-              </div>
-              <div className={classes.middle}>
+                  </Name>
+                </Content>
+              </Item>
+              <Middle>
                 <ArrowRightAlt fontSize="small" />
                 <br />
                 <Tooltip
@@ -474,86 +451,91 @@ class StixSightingRelationshipCreation extends Component {
                     {t('Last obs.')} {fsd(sighting.node.last_seen)}
                   </div>
                 </Tooltip>
-              </div>
-              <div
-                className={classes.item}
+              </Middle>
+              <Item
                 style={{
                   border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
                   top: 10,
                   right: 10,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(
                       toObjects[0].entity_type,
                     )}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <IconContainer>
                     <ItemIcon
                       type={toObjects[0].entity_type}
                       color={itemColor(toObjects[0].entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </IconContainer>
+                  <Type>
                     {toObjects[0].relationship_type
                       ? t('Relationship')
                       : t(`entity_${toObjects[0].entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </Type>
+                </ItemHeader>
+                <Content>
+                  <Name>
                     {truncate(getMainRepresentative(toObjects[0]), 20)}
-                  </span>
-                </div>
-              </div>
+                  </Name>
+                </Content>
+              </Item>
               <div className="clearfix" />
             </ListItemButton>
           ))}
           <ListItemButton
             focusVisibleClassName="focus-visible"
-            className={classes.relationCreation}
+            sx={{
+              position: 'relative',
+              height: 100,
+              transition: 'background-color 0.1s ease',
+              cursor: 'pointer',
+              '&:hover': {
+                background: 'rgba(0, 0, 0, 0.1)',
+              },
+              padding: '10px',
+            }}
             onClick={this.handleChangeStep.bind(this)}
           >
-            <div
-              className={classes.item}
+            <Item
               style={{
                 backgroundColor: theme.palette.background.accent,
                 top: 10,
                 left: 10,
               }}
             >
-              <div
-                className={classes.itemHeader}
+              <ItemHeader
                 style={{
                   borderBottom: '1px solid #ffffff',
                 }}
               >
-                <div className={classes.icon}>
+                <IconContainer>
                   <ItemIcon
                     type={fromObjects[0].entity_type}
                     color="#263238"
                     size="small"
                   />
-                </div>
-                <div className={classes.type}>
+                </IconContainer>
+                <Type>
                   {t(`entity_${fromObjects[0].entity_type}`)}
-                </div>
-              </div>
-              <div className={classes.content}>
-                <span className={classes.name}>
+                </Type>
+              </ItemHeader>
+              <Content>
+                <Name>
                   {fromObjects.length > 1 ? (
                     <em>{t('Multiple entities selected')}</em>
                   ) : (
                     truncate(getMainRepresentative(fromObjects[0]))
                   )}
-                </span>
-              </div>
-            </div>
-            <div className={classes.middle} style={{ paddingTop: 15 }}>
+                </Name>
+              </Content>
+            </Item>
+            <Middle style={{ paddingTop: 15 }}>
               <ArrowRightAlt fontSize="small" />
               <br />
               <div
@@ -567,42 +549,40 @@ class StixSightingRelationshipCreation extends Component {
               >
                 {t('Create a sighting')}
               </div>
-            </div>
-            <div
-              className={classes.item}
+            </Middle>
+            <Item
               style={{
                 backgroundColor: theme.palette.background.accent,
                 top: 10,
                 right: 10,
               }}
             >
-              <div
-                className={classes.itemHeader}
+              <ItemHeader
                 style={{
                   borderBottom: '1px solid #ffffff',
                 }}
               >
-                <div className={classes.icon}>
+                <IconContainer>
                   <ItemIcon
                     type={toObjects[0].entity_type}
                     color="#263238"
                     size="small"
                   />
-                </div>
-                <div className={classes.type}>
+                </IconContainer>
+                <Type>
                   {t(`entity_${toObjects[0].entity_type}`)}
-                </div>
-              </div>
-              <div className={classes.content}>
-                <span className={classes.name}>
+                </Type>
+              </ItemHeader>
+              <Content>
+                <Name>
                   {toObjects.length > 1 ? (
                     <em>{t('Multiple entities selected')}</em>
                   ) : (
                     truncate(toObjects[0].name, 20)
                   )}
-                </span>
-              </div>
-            </div>
+                </Name>
+              </Content>
+            </Item>
             <div className="clearfix" />
           </ListItemButton>
         </List>
@@ -627,7 +607,7 @@ class StixSightingRelationshipCreation extends Component {
   }
 
   render() {
-    const { open, fromObject, toObjects, classes } = this.props;
+    const { open, fromObject, toObjects } = this.props;
     const { step } = this.state;
     return (
       <Drawer
@@ -643,10 +623,14 @@ class StixSightingRelationshipCreation extends Component {
             'aria-modal': 'true',
             role: 'dialog',
             className: fdsLayerClass(SURFACE_LAYER),
-            sx: { ...layerInputVars } },
+            sx: {
+              ...layerInputVars,
+              minHeight: '100vh',
+              width: '50%',
+              padding: 0,
+            } },
         }}
         sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}
       >
         {step === 0
@@ -667,7 +651,6 @@ StixSightingRelationshipCreation.propTypes = {
   fromObjects: PropTypes.array,
   toObjects: PropTypes.array,
   handleResult: PropTypes.func,
-  classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
@@ -680,8 +663,9 @@ StixSightingRelationshipCreation.propTypes = {
   handleReverseSighting: PropTypes.func,
 };
 
-export default R.compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixSightingRelationshipCreation);
+const StixSightingRelationshipCreationWithTheme = (props) => {
+  const theme = useTheme();
+  return <StixSightingRelationshipCreation {...props} theme={theme} />;
+};
+
+export default inject18n(StixSightingRelationshipCreationWithTheme);

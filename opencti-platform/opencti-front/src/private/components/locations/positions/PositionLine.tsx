@@ -6,32 +6,16 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { CountryLine_node$key } from '../countries/__generated__/CountryLine_node.graphql';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface PositionLineProps {
   dataColumns: DataColumns;
@@ -67,45 +51,41 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
   dataColumns,
   node,
 }) => {
-  const classes = useStyles();
   const { fd } = useFormatter();
   const data = useFragment(positionLineFragment, node);
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       component={Link}
       to={`/dashboard/locations/positions/${data.id}`}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
         <ItemIcon type="Position" />
       </ListItemIcon>
       <ListItemText
         primary={(
           <>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
               {data.draftVersion && (<DraftChip />)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created.width }}
             >
               {fd(data.created)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.modified.width }}
             >
               {fd(data.modified)}
-            </div>
+            </BodyItem>
           </>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
@@ -119,17 +99,15 @@ interface PositionLineDummyProps {
 export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
   dataColumns,
 }) => {
-  const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+    <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
+      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns?.name.width }}
             >
               <Skeleton
@@ -138,9 +116,8 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns?.created.width }}
             >
               <Skeleton
@@ -149,9 +126,8 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns?.modified.width }}
             >
               <Skeleton
@@ -160,11 +136,11 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
                 width={140}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined color="disabled" />
       </ListItemIcon>
     </ListItem>

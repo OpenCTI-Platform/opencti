@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createTheme, ThemeOptions } from '@mui/material/styles';
-import MuiThemeProvider from '../../../../../components/MuiThemeProvider';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import Workflow from './Workflow';
 import useWorkflowLayout from './hooks/useWorkflowLayout';
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
@@ -25,9 +24,9 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 // Helper to render with theme
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
-    <MuiThemeProvider theme={testTheme}>
+    <ThemeProvider theme={testTheme}>
       {component}
-    </MuiThemeProvider>,
+    </ThemeProvider>,
   );
 };
 
@@ -391,11 +390,11 @@ describe('Workflow Component', () => {
       expect(lastSaved()).toBe('S');
       // Delete S: R becomes the initial state.
       mockNodes = [status('R')];
-      rerender(<MuiThemeProvider theme={testTheme}>{workflow()}</MuiThemeProvider>);
+      rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
       expect(lastSaved()).toBe('R');
       // Add S back: R stays initial, and the layout draws R on top.
       mockNodes = [status('S'), status('R')];
-      rerender(<MuiThemeProvider theme={testTheme}>{workflow()}</MuiThemeProvider>);
+      rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
       expect(lastSaved()).toBe('R');
       expect(lastLayoutOptions()).toEqual(expect.objectContaining({ initialStatusId: 'R' }));
     });
@@ -418,13 +417,13 @@ describe('Workflow Component', () => {
         // Delete S and t: R becomes the initial state.
         mockNodes = [published.initialNodes[2]];
         mockEdges = [];
-        rerender(<MuiThemeProvider theme={testTheme}>{workflow()}</MuiThemeProvider>);
+        rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
         expect(JSON.parse(mockSaveWorkflowDefinition.mock.calls.at(-1)![0].variables.definition).initialState).toBe('R');
         const saves = mockSaveWorkflowDefinition.mock.calls.length;
 
         await user.click(screen.getByTestId('restore-button'));
         act(() => mockRestoreWorkflowDefinition.mock.calls[0][0].onCompleted());
-        rerender(<MuiThemeProvider theme={testTheme}>{workflow()}</MuiThemeProvider>);
+        rerender(<ThemeProvider theme={testTheme}>{workflow()}</ThemeProvider>);
 
         // The restored graph is the saved one: nothing to send, and S is on top again.
         expect(mockSaveWorkflowDefinition.mock.calls.length).toBe(saves);
@@ -631,7 +630,7 @@ describe('Workflow Component', () => {
       expect(mockNotifyError).toHaveBeenCalled();
       const toastElement = mockNotifyError.mock.calls[0][0];
       const { getByText } = render(
-        <MuiThemeProvider theme={testTheme}>{toastElement}</MuiThemeProvider>,
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
       );
       expect(getByText(/Cannot publish workflow/)).toBeInTheDocument();
     });
@@ -661,7 +660,7 @@ describe('Workflow Component', () => {
 
       const toastElement = mockNotifyError.mock.calls[0][0];
       const { getByText } = render(
-        <MuiThemeProvider theme={testTheme}>{toastElement}</MuiThemeProvider>,
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
       );
       // 'status-1' should resolve to 'Open' via statusTemplateMap
       expect(getByText(/Open/)).toBeInTheDocument();
@@ -685,7 +684,7 @@ describe('Workflow Component', () => {
 
       const toastElement = mockNotifyError.mock.calls[0][0];
       const { getByText } = render(
-        <MuiThemeProvider theme={testTheme}>{toastElement}</MuiThemeProvider>,
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
       );
       expect(getByText(/unknown-status-id/)).toBeInTheDocument();
     });

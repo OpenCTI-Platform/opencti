@@ -7,9 +7,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
@@ -17,10 +16,8 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import RetentionEdition from './RetentionEdition';
 
-const styles = () => ({
-  container: {
-    margin: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -132,9 +129,9 @@ class RetentionPopover extends Component {
   }
 
   render() {
-    const { classes, t, retentionRuleId } = this.props;
+    const { t, retentionRuleId } = this.props;
     return (
-      <div className={classes.container}>
+      <Container>
         <IconButton
           aria-label={t('Open menu')}
           onClick={this.handleOpen.bind(this)}
@@ -214,7 +211,7 @@ class RetentionPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
@@ -222,8 +219,7 @@ class RetentionPopover extends Component {
 RetentionPopover.propTypes = {
   retentionRuleId: PropTypes.string,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(RetentionPopover);
+export default inject18n(RetentionPopover);

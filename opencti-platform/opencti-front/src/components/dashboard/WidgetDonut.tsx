@@ -1,6 +1,6 @@
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { ApexOptions } from 'apexcharts';
 import { donutChartOptions } from '../../utils/Charts';
 import type { Theme } from '../Theme';

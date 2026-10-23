@@ -4,8 +4,7 @@ import { ObjectMarkingFieldAllowedMarkingQuery$data } from '@components/common/f
 import { ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldOtherUserAllowedMarkingsQuery.graphql';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import { useTheme } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { Field } from 'formik';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -20,19 +19,16 @@ import MarkingIcon from '../../../../utils/MarkingIcon';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
 import { isEmptyField } from '../../../../utils/utils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 export const objectMarkingFieldAllowedMarkingsQuery = graphql`
   query ObjectMarkingFieldAllowedMarkingsQuery {
@@ -127,7 +123,6 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   isOptionEqualToValue,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [newMarking, setNewMarking] = useState<
@@ -244,10 +239,10 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   };
   const renderOption = (option: FieldOption) => (
     <>
-      <div className={classes.icon} style={{ color: option.color }}>
+      <OptionIcon style={{ color: option.color }}>
         <MarkingIcon theme={theme} color={option.color} />
-      </div>
-      <div className={classes.text}>{option.label}</div>
+      </OptionIcon>
+      <OptionText>{option.label}</OptionText>
     </>
   );
 
