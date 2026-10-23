@@ -1,5 +1,5 @@
-import React, { MouseEvent, ReactNode, useId } from 'react';
-import { Badge, IconButton, Menu, MenuContent, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import React, { ReactNode, useId } from 'react';
+import { Badge, IconButton, IconButtonProps, Menu, MenuContent, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
 
 interface GraphToolbarItemProps {
@@ -11,7 +11,7 @@ interface GraphToolbarItemProps {
   /** Key or chord shown in the tooltip, for example `Shift+F`. */
   shortcut?: string;
   Icon: ReactNode;
-  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+  onClick?: IconButtonProps['onClick'];
   /** Menu items the tool opens, in a menu anchored to it, instead of running an action. */
   menu?: ReactNode;
   disabled?: boolean;

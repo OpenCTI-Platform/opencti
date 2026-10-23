@@ -1822,6 +1822,21 @@ export const elBatchIds = async <T extends BasicStoreBase>(
   }
   return findHits;
 };
+/**
+ * Like elBatchIds, but an element is found from any of its ids (internal id, standard id or other stix ids),
+ * for fields that store an id other than the internal one, such as a standard id that may since have moved to
+ * the stix ids (merge, observable upgrade). The type filter is the union of the requested types.
+ */
+export const elBatchAnyIds = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  elements: { id: string; type: string | string[] }[],
+) => {
+  const ids = elements.map((e) => e.id);
+  const types = R.uniq(elements.flatMap((e) => (Array.isArray(e.type) ? e.type : [e.type])));
+  const mapHits = await elFindByIds<T>(context, user, ids, { type: types, includeDeletedInDraft: true, toMap: true, mapWithAllIds: true }) as Record<string, T>;
+  return ids.map((id) => mapHits[id]);
+};
 export const elBatchIdsWithRelCount = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
@@ -3814,6 +3829,41 @@ export const elAggregationsList = async (
     const values = data.aggregations[agg].buckets?.map((b: any) => ({ label: b.key, value: b.key }));
     return { name: agg, values };
   });
+};
+
+/**
+ * Every distinct value of a keyword field among the elements matching the options (types, filters, search...).
+ * Unlike a terms aggregation, which returns a bounded number of buckets, a composite aggregation pages through all
+ * the values with its after_key, pageSize values per request.
+ */
+export const elAggregationDistinctValues = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string,
+  field: string,
+  opts: QueryBodyBuilderOpts & { pageSize?: number } = {},
+): Promise<string[]> => {
+  const { pageSize = 1000, ...queryOpts } = opts;
+  const { query } = await elQueryBodyBuilder(context, user, { ...queryOpts, noSize: true, noSort: true });
+  const values: string[] = [];
+  let after: Record<string, string> | undefined;
+  do {
+    const composite = { size: pageSize, sources: [{ value: { terms: { field } } }], ...(after ? { after } : {}) };
+    const searchQuery = {
+      index: getIndicesToQuery(context, user, indexName),
+      track_total_hits: false,
+      _source: false,
+      body: { size: 0, query, aggs: { distinct: { composite } } },
+    };
+    const data = await elRawSearch(context, user, `Distinct values (${field})`, searchQuery).catch((err) => {
+      throw wrapEngineError('Distinct values aggregation fail', err, { query: JSON.stringify(searchQuery) });
+    });
+    const { buckets, after_key } = data.aggregations.distinct;
+    values.push(...buckets.map((bucket: { key: { value: string } }) => bucket.key.value));
+    // A page shorter than requested is the last one
+    after = buckets.length === pageSize ? after_key : undefined;
+  } while (after);
+  return values;
 };
 
 const buildRegardingOfFilter = async <T extends BasicStoreBase>(

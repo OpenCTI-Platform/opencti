@@ -799,6 +799,28 @@
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/DateValueInput.tsx"
       ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Connector work list shared by the entity and external reference enrichment drawers: the connector refresh button, the connector active/disconnected icon, and each work row with its messages and errors. The work row tooltip keeps the former 600px max width (inline style over the library's 300px default) so long work messages do not wrap more than before.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/work/ConnectorWorkList.tsx"
+      ]
+    },
+    {
+      "component": "Spinner",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Connector work list: the in-progress marker of a waiting or running work, at the md tier (20px), the size of the CircularProgress it replaces.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/work/ConnectorWorkList.tsx"
+      ]
     }
   ]
 }

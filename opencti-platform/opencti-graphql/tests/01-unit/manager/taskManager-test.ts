@@ -352,6 +352,22 @@ describe('baseOperationBuilder', () => {
     expect(result.connector_ids).toEqual(['connector-1', 'connector-2']);
   });
 
+  it('should pass the investigation id of an enrichment operation', () => {
+    const operations = [{ context: { values: ['connector-1'], options: { investigationId: 'investigation-1' } } }];
+
+    const result = baseOperationBuilder(ACTION_TYPE_ENRICHMENT, operations, baseElement);
+
+    expect(result.investigation_id).toBe('investigation-1');
+  });
+
+  it('should not add an investigation id when none is given', () => {
+    const operations = [{ context: { values: ['connector-1'] } }];
+
+    const result = baseOperationBuilder(ACTION_TYPE_ENRICHMENT, operations, baseElement);
+
+    expect(result).not.toHaveProperty('investigation_id');
+  });
+
   // -- ACTION_TYPE_MERGE --
 
   it('should build merge operation with target and source ids', () => {
