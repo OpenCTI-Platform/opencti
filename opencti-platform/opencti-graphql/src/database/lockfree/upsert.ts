@@ -70,6 +70,7 @@ import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE
 import { deterministicId, setKeys } from './identity';
 import { liveOwners, loadWithRefs, mgetRaw, type RawDoc, toElements } from './load';
 import { enqueue, type Task } from './queue';
+import { versionOf } from './unchanged';
 import { add, type Counters } from './store';
 
 export interface WriteOptions {
@@ -152,19 +153,22 @@ export const bulkCreateDocs = async (docs: any[], opts: WriteOptions) => {
 // ---------------------------------------------------------------------------------------------------------------
 // updateAttributeMetaResolved, lock-free: same computation, version-checked write
 // ---------------------------------------------------------------------------------------------------------------
-type Applied = { status: 'conflict' } | { status: 'updated' | 'unchanged'; element: any; event?: any; workflowStatusChanged?: boolean };
+// `pure`: the answer depends only on the object, the inputs, the user and the platform (no other object was read)
+type Applied = { status: 'conflict' } | { status: 'updated' | 'unchanged'; element: any; event?: any; workflowStatusChanged?: boolean; pure?: boolean };
 
 const applyUpdate = async (
   context: AuthContext, user: AuthUser, initial: any, raw: RawDoc, inputs: any[], counters: Counters, opts: WriteOptions & Record<string, any>,
 ): Promise<Applied> => {
   const updates = Array.isArray(inputs) ? [...inputs] : [inputs];
   const settings = await getEntityFromCache<any>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  let pure = true;
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !opts.bypassIndividualUpdate) {
+    pure = false;
     if (await isIndividualAssociatedToUser(context, initial)) {
       throw FunctionalError('Cannot update an individual corresponding to a user', { id: initial.internal_id });
     }
   }
-  if (updates.length === 0) return { status: 'unchanged', element: initial };
+  if (updates.length === 0) return { status: 'unchanged', element: initial, pure };
   let accessOperation = AccessOperation.EDIT;
   if (updates.some((e) => e.key === authorizedMembers.name)) {
     accessOperation = AccessOperation.MANAGE_ACCESS;
@@ -193,6 +197,7 @@ const applyUpdate = async (
   if (isStixObjectAliased(initial.entity_type)) {
     const aliasedInputs = attributes.filter((input) => input.key === 'aliases' || input.key === 'x_opencti_aliases');
     if (aliasedInputs.length > 0) {
+      pure = false;
       const aliases = R.uniq(aliasedInputs.map((a) => a.value).flat().filter((a: any) => isNotEmptyField(a)).map((a: string) => a.trim()));
       const aliasesIds = generateAliasesId(aliases, initial);
       const { live } = await liveOwners(aliasesIds);
@@ -208,6 +213,7 @@ const applyUpdate = async (
     const targetStandardId = generateStandardId(initial.entity_type, updated);
     const otherIds = [...(initial[IDS_STIX] ?? []), ...(initial.i_aliases_ids ?? [])];
     if (targetStandardId !== initial.standard_id && !otherIds.includes(targetStandardId)) {
+      pure = false;
       const { live } = await liveOwners([targetStandardId]);
       const others = live.filter((o) => o.owner_id !== initial.internal_id);
       if (others.length > 0) {
@@ -315,7 +321,7 @@ const applyUpdate = async (
     impactedInputs.push({ key: iAttributes.name, value: Array.from(attributesMap.values()) });
   }
   if (updatedInputs.length === 0 && impactedInputs.length === 0 && relationsToCreate.length === 0 && relationsToDelete.length === 0) {
-    return { status: 'unchanged', element: initial };
+    return { status: 'unchanged', element: initial, pure };
   }
   // The new version: attributes as elUpdateElement stores them (replace, null removes), refs as rel_* lists
   const source = structuredClone(raw._source);
@@ -428,13 +434,14 @@ export const upsertLockFree = async (
     }
     const settings = await getEntityFromCache<any>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, isEnterpriseEditionFromSettings(settings));
-    if (inputs.length === 0) return { status: 'unchanged' as const, element: resolvedElement, event: null };
+    if (inputs.length === 0) return { status: 'unchanged' as const, element: resolvedElement, event: null, version: versionOf(raw), pure: true };
     const applied = await applyUpdate(context, user, resolvedElement, raw, inputs, counters, { ...opts, upsert: context.synchronizedUpsert !== true });
     if (applied.status === 'conflict') {
       add(counters, 'occ_retries');
       continue;
     }
-    return applied.status === 'unchanged' ? { status: 'unchanged' as const, element: applied.element, event: null } : { ...applied, status: 'merged' as const };
+    if (applied.status === 'unchanged') return { status: 'unchanged' as const, element: applied.element, event: null, version: versionOf(raw), pure: applied.pure === true };
+    return { ...applied, status: 'merged' as const };
   }
   throw new Error(`Merge of ${target.id} kept conflicting`);
 };

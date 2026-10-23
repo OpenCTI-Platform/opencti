@@ -11,6 +11,7 @@ import { internalFindByIds } from '../middleware-loader';
 import { getInstanceIds } from '../../schema/identifier';
 import { pool } from './context';
 import { lookupKeys, type Owner } from './identity';
+import { versionOf } from './unchanged';
 
 export interface RawDoc { _index: string; _id: string; _seq_no: number; _primary_term: number; _source: Record<string, any> }
 
@@ -112,21 +113,37 @@ export class ChunkReads {
   private fresh = new Map<string, any>(); // documents converted by the read and not handed out yet
 
   async load(targets: { index: string; id: string }[]) {
+    await this.loadDocuments(targets);
+    await this.loadRefs(targets.map((t) => t.id));
+  }
+
+  // The documents only: their versions, before deciding which ones need their refs
+  async loadDocuments(targets: { index: string; id: string }[]) {
     if (targets.length === 0) return;
     const [{ owners }, raws] = await Promise.all([liveOwners(targets.map((t) => t.id)), mgetRaw(targets)]);
     owners.forEach((owner, key) => this.owners.set(key, owner));
     targets.forEach((t) => this.looked.add(t.id.toLowerCase()));
-    const elements = await toElements([...raws.values()]);
-    elements.forEach((element) => {
-      this.raws.set(element.internal_id, element.i_raw);
-      this.fresh.set(element.internal_id, element);
-    });
+    raws.forEach((raw, id) => this.raws.set(id, raw));
+  }
+
+  // The refs of loaded documents, for all of them at once
+  async loadRefs(ids: string[]) {
+    const raws = ids.map((id) => this.raws.get(id)).filter((r): r is RawDoc => r !== undefined && !this.fresh.has(r._id));
+    if (raws.length === 0) return;
+    const elements = await toElements(raws);
+    elements.forEach((element) => this.fresh.set(element.internal_id, element));
     const refIds = R.uniq(elements.flatMap(refIdsOf)).map((id) => id.toLowerCase());
     const refOwners = await lookupKeys(refIds);
     refOwners.forEach((owner, key) => this.owners.set(key, owner));
     refIds.forEach((id) => this.looked.add(id));
     const live = R.uniqBy((o: Owner) => o.owner_id, [...refOwners.values()].filter((o) => o.state === 'live'));
     (await mgetRaw(live.map((o) => ({ index: o.owner_index, id: o.owner_id })), { light: true })).forEach((raw, id) => this.refRaws.set(id, raw));
+  }
+
+  // The version of the object's document as read; undefined when the chunk did not read it or wrote to it since
+  version(id: string) {
+    const raw = this.raws.get(id);
+    return raw ? versionOf(raw) : undefined;
   }
 
   // Whether the id leads to a live object, as liveOwners tells it

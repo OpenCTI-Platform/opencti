@@ -60,6 +60,7 @@ import { appendPairs, findDuplicates, pairEntryOf, type PairEntry, pairKey, read
 import { enqueue, type Task } from './queue';
 import { add, type Counters } from './store';
 import { bulkCreateDocs, metaTargetTasks, upsertLockFree, withMetaIds, type WriteOptions } from './upsert';
+import { chunkEpoch, fingerprintOf, isUnchangedOn, readUnchanged, recordUnchanged, type Version } from './unchanged';
 
 export interface EntityItem { type: string; input: Record<string, any> }
 export interface ItemResult {
@@ -338,14 +339,25 @@ export const writeEntityChunk = async (
   });
   bench.step('after_create');
   // 4. Merges, after the creations they may target: in order for one target, targets in parallel
-  const mergeGroups = Object.values(R.groupBy((m: Merge) => (m.target ?? firstTarget.get(m.follow?.i))?.owner_id ?? `none-${m.w.i}`, merges));
+  const targetOfMerge = (m: Merge) => m.target ?? firstTarget.get(m.follow?.i);
+  const mergeGroups = Object.values(R.groupBy((m: Merge) => targetOfMerge(m)?.owner_id ?? `none-${m.w.i}`, merges));
+  // A merge known to change nothing on the version read is answered without computing it (see unchanged.ts)
+  const epoch = await chunkEpoch(context, user);
+  const fingerprints = new Map(merges.filter((m) => (m.reconcile ?? []).length === 0 && targetOfMerge(m))
+    .map((m) => [m, fingerprintOf(epoch, m.w.type, m.w.entitySetting, m.patch ?? m.w.resolvedInput)]));
   const reads = new ChunkReads();
-  await reads.load(R.uniqBy((t) => t.id, merges.map((m) => m.target ?? firstTarget.get(m.follow?.i)).filter((t): t is Owner => !!t)
-    .map((t) => ({ index: t.owner_index, id: t.owner_id }))));
+  const [known] = await Promise.all([
+    readUnchanged([...fingerprints].filter(([, f]) => f).map(([m, f]) => ({ objectId: (targetOfMerge(m) as Owner).owner_id, fingerprint: f as string }))),
+    reads.loadDocuments(R.uniqBy((t) => t.id, merges.map(targetOfMerge).filter((t): t is Owner => !!t).map((t) => ({ index: t.owner_index, id: t.owner_id })))),
+  ]);
+  const isKnown = (m: Merge, target: Owner | undefined) => !!target && isUnchangedOn(known, target.owner_id, fingerprints.get(m), reads.version(target.owner_id));
+  await reads.loadRefs(mergeGroups.filter((group) => !group.every((m) => isKnown(m, targetOfMerge(m) as Owner)))
+    .map((group) => targetOfMerge(group[0])?.owner_id).filter((id): id is string => !!id));
   bench.step('merges.read');
+  const unchangedSeen: { objectId: string; fingerprint: string; version: Version }[] = [];
   await pool(mergeGroups, 16, async (group) => {
     for (const m of group ?? []) {
-      const target = m.target ?? firstTarget.get(m.follow?.i);
+      const target = targetOfMerge(m);
       try {
         if (!target) throw FunctionalError('No object to merge into');
         // Where today merges matching objects during the create, merge them now, before the upsert, as today
@@ -354,14 +366,24 @@ export const writeEntityChunk = async (
           if (m.inline) add(counters, 'entities_reconciled', await reconcileEntities(m.reconcile ?? [], target, { context, user }));
           else await enqueue((m.reconcile ?? []).map((loser) => ({ kind: 'reconcile', loser, winner: target } as Task)));
         }
-        const merged = await mergeEntityWithRetry(context, user, target, m.w, m.patch ?? m.w.resolvedInput, counters, opts, reads);
-        if (!(m.reconcile ?? []).length || results[m.w.i] === undefined) results[m.w.i] = merged;
+        const fingerprint = fingerprints.get(m);
+        if (isKnown(m, target)) {
+          add(counters, 'entities_unchanged');
+          add(counters, 'unchanged_known');
+          results[m.w.i] = { status: 'unchanged', id: target.owner_id };
+        } else {
+          const remember = fingerprint ? (version: Version) => unchangedSeen.push({ objectId: target.owner_id, fingerprint, version }) : undefined;
+          const merged = await mergeEntityWithRetry(context, user, target, m.w, m.patch ?? m.w.resolvedInput, counters, opts, reads, remember);
+          if (!(m.reconcile ?? []).length || results[m.w.i] === undefined) results[m.w.i] = merged;
+        }
       } catch (e) {
         results[m.w.i] = errorResult(e);
       }
     }
   });
   bench.step('merges');
+  await recordUnchanged(unchangedSeen);
+  bench.step('merges.remember');
   bench.total();
   return results;
 };
@@ -427,6 +449,7 @@ const existingEntityTarget = async (context: AuthContext, user: AuthUser, w: any
 // createEntityRaw's retry: an insufficient confidence stops merging objects, then the input is upserted as is
 const mergeEntityWithRetry = async (
   context: AuthContext, user: AuthUser, target: Owner, w: any, patch: Record<string, any>, counters: Counters, opts: WriteOptions, reads: ChunkReads,
+  remember?: (version: Version) => void, // called with the version on which the patch changed nothing
 ): Promise<ItemResult> => {
   const run = async (p: Record<string, any>): Promise<ItemResult> => {
     const result: any = await upsertLockFree(context, user, { index: target.owner_index, id: target.owner_id }, w.type, p, counters, opts, await reads.take(target.owner_id));
@@ -441,6 +464,7 @@ const mergeEntityWithRetry = async (
       return { status: 'merged', id: target.owner_id };
     }
     add(counters, 'entities_unchanged');
+    if (result.pure && p === patch) remember?.(result.version);
     return { status: 'unchanged', id: target.owner_id };
   };
   try {
@@ -610,20 +634,37 @@ export const writeRelationChunk = async (
   const targetOf = (m: any) => m.target
     ?? (m.after?.element ? { id: m.after.element.internal_id, index: m.after.element._index ?? inferIndexFromConceptType(m.w.type) } : undefined);
   const relationMergeGroups = Object.values(R.groupBy((m: any) => targetOf(m)?.id ?? `none-${m.w.i}`, merges));
+  const epoch = await chunkEpoch(context, user);
+  const fingerprints = new Map(merges.map((m) => [m, fingerprintOf(epoch, m.w.type, m.w.entitySetting, m.w.resolvedInput)]));
   const reads = new ChunkReads();
-  await reads.load(R.uniqBy((t: any) => t.id, merges.map(targetOf).filter(Boolean)));
+  const [known] = await Promise.all([
+    readUnchanged(merges.filter((m) => targetOf(m) && fingerprints.get(m)).map((m) => ({ objectId: targetOf(m).id, fingerprint: fingerprints.get(m) as string }))),
+    reads.loadDocuments(R.uniqBy((t: any) => t.id, merges.map(targetOf).filter(Boolean))),
+  ]);
+  const isKnown = (m: any, target: { id: string }) => reads.isLive(target.id) && isUnchangedOn(known, target.id, fingerprints.get(m), reads.version(target.id));
+  await reads.loadRefs(relationMergeGroups.filter((group) => !group.every((m: any) => targetOf(m) && isKnown(m, targetOf(m))))
+    .map((group) => targetOf(group[0])?.id).filter(Boolean));
   bench.step('merges.read');
+  const unchangedSeen: { objectId: string; fingerprint: string; version: Version }[] = [];
   await pool(relationMergeGroups, 16, async (group) => {
     for (const m of group ?? []) {
       try {
         const target = m.target ?? (m.after?.element ? { id: m.after.element.internal_id, index: m.after.element._index ?? inferIndexFromConceptType(m.w.type) } : undefined);
         if (!target) throw FunctionalError('No relationship to merge into');
+        if (isKnown(m, target)) {
+          add(counters, 'relations_unchanged');
+          add(counters, 'unchanged_known');
+          results[m.w.i] = { status: 'unchanged', id: target.id };
+          continue;
+        }
         const read = await reads.take(target.id);
         const existing = read ? [read.element].filter(() => reads.isLive(target.id)) : await loadWithAccessFields([target.id]);
         if ((await userFilterStoreElements(context, user, existing)).length === 0) throw UnsupportedError('Restricted relation already exists');
         const result: any = await upsertLockFree(context, user, target, m.w.type, m.w.resolvedInput, counters, opts, read);
         if (result.status === 'missing') throw FunctionalError('Cant find element to resolve', { id: target.id });
         if (result.status === 'merged') reads.written(target.id);
+        const fingerprint = fingerprints.get(m);
+        if (result.status === 'unchanged' && result.pure && fingerprint) unchangedSeen.push({ objectId: target.id, fingerprint, version: result.version });
         add(counters, result.status === 'merged' ? 'relations_merged' : 'relations_unchanged');
         results[m.w.i] = { status: result.status, id: target.id };
       } catch (e) {
@@ -632,6 +673,8 @@ export const writeRelationChunk = async (
     }
   });
   bench.step('merges');
+  await recordUnchanged(unchangedSeen);
+  bench.step('merges.remember');
   bench.total();
   return results;
 };
