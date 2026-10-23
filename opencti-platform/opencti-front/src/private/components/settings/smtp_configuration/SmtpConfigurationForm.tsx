@@ -10,6 +10,7 @@ import Button from '@common/button/Button';
 import SwitchField from 'src/components/fields/SwitchField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from 'src/components/TextField';
+import { fieldSpacingContainerStyle } from 'src/utils/field';
 import DateTimePickerField from 'src/components/DateTimePickerField';
 import { useFormatter } from 'src/components/i18n';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
@@ -201,6 +202,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             type="checkbox"
             name="use_db_config"
             label={t_i18n('Use this configuration instead of the platform config file')}
+            containerstyle={fieldSpacingContainerStyle}
           />
           {!values.use_db_config && (
             <Alert severity="info" variant="outlined" style={{ marginTop: 10, marginBottom: 10 }}>
@@ -237,12 +239,14 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
             type="checkbox"
             name="use_ssl"
             label={t_i18n('Use SSL/TLS')}
+            containerstyle={fieldSpacingContainerStyle}
           />
           <Field
             component={SwitchField}
             type="checkbox"
             name="reject_unauthorized"
             label={t_i18n('Reject unauthorized certificates')}
+            containerstyle={fieldSpacingContainerStyle}
           />
           <Field
             component={SelectFieldFds}
