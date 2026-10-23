@@ -199,6 +199,14 @@ describe('getHttpClient', () => {
     expect(request.body).toBe('{"key":"value"}');
   });
 
+  it('should send a PATCH with its JSON body and answer the upstream response', async () => {
+    const response = await getHttpClient({ baseURL, responseType: 'json' }).patch('/echo', { title: 'Renamed' }, { timeout: 5000 });
+
+    expect(response.status).toBe(200);
+    expect(response.data).toMatchObject({ method: 'PATCH', url: '/echo', body: '{"title":"Renamed"}' });
+    expect(lastRequest().headers['content-type']).toContain('application/json');
+  });
+
   it('should send a string body as form data unless a content type is provided', async () => {
     const client = getHttpClient({ baseURL, responseType: 'json' });
 
