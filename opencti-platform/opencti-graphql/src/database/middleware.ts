@@ -104,6 +104,7 @@ import {
 } from '../schema/identifier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
+import { isStreamPublishable } from './stream/stream-utils';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -1077,7 +1078,9 @@ export const inputResolveRefs = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
+  opts: { embeddedFromWithRefs?: boolean } = {},
 ): Promise<Record<string, any>> => {
+  const { embeddedFromWithRefs = true } = opts;
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map<string, { id: string; destKey?: string; multiple?: boolean; vocab?: { field: any; data: string } }[]>();
     const expectedIds: string[] = [];
@@ -1137,7 +1140,7 @@ export const inputResolveRefs = async (
             expectedIds.push(i);
           });
         } else { // Single
-          if (dst === 'from' && isStixRefRelationship(type)) {
+          if (dst === 'from' && isStixRefRelationship(type) && embeddedFromWithRefs) {
             // If resolution is due to embedded ref, the from must be fully resolved
             // This will be used to generated a correct stream message
             embeddedFromResolution = id;
@@ -3600,7 +3603,17 @@ export const createRelationRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, relationshipType) as BasicStoreEntityEntitySetting;
 
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  // The full from of an embedded ref (all its refs) only feeds the update event: without event, a base resolution is enough.
+  // For a container with thousands of refs, the full resolution was the main cost of each created ref.
+  // Light from = multiple ref without event: no update event is built and the returned from is the one resolved (without the new ref).
+  const isEventPublished = isStreamPublishable(opts);
+  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting, { embeddedFromWithRefs: isEventPublished });
+  // A single ref reads the current target on the fully resolved from (kept, replaced or refused below): it keeps the full resolution
+  const isSingleRef = isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType);
+  if (!isEventPublished && isSingleRef) {
+    resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  }
+  const isLightFrom = isStixRefRelationship(relationshipType) && !isEventPublished && !isSingleRef;
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
@@ -3708,20 +3721,21 @@ export const createRelationRaw = async (
     await indexCreatedElement(context, user, dataRel);
     // Push the input in the stream
     let event;
-    // In case on embedded relationship creation, we need to dispatch
-    // an update of the from entity that host this embedded ref.
-    if (isStixRefRelationship(relationshipType)) {
-      let referencesPromises;
-      if (opts.references) {
-        referencesPromises = internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) as Promise<BasicStoreBase[]>;
-      }
-      const references = referencesPromises ? await BluePromise.all(referencesPromises) : [];
+    // Commit references of an embedded ref are checked whether its event is built or not
+    let references: BasicStoreBase[] = [];
+    if (isStixRefRelationship(relationshipType) && opts.references) {
+      references = await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) as BasicStoreBase[];
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
         throw FunctionalError('Cant find element references for commit', {
           id: input.fromId,
           references: opts.references,
         });
       }
+    }
+    // In case on embedded relationship creation, we need to dispatch
+    // an update of the from entity that host this embedded ref.
+    // Light from: nothing is built, the update of the from (two STIX conversions and diffs of the whole from) would be wasted.
+    if (isStixRefRelationship(relationshipType) && !isLightFrom) {
       const previous = resolvedInput.from; // Complete resolution done by the input resolver
       const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
       const instance = { ...previous };
@@ -3747,7 +3761,7 @@ export const createRelationRaw = async (
       const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any };
       event = await storeUpdateEvent(context, user, previous, instance, changes, storeUpdateEventsOpts);
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
-    } else {
+    } else if (!isStixRefRelationship(relationshipType)) {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
