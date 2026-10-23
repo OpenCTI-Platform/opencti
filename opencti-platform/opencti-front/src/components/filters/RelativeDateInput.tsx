@@ -144,7 +144,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
             pendingDate.current = value && !Number.isNaN(value.getTime()) ? value : null;
           }}
           onAccept={(value, context) => {
-            // Typed values are applied on blur.
             if (!isAcceptedFromView(context)) {
               return;
             }

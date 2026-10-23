@@ -44,7 +44,6 @@ const TimePickerField = (props) => {
   const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
   const internalOnAccept = React.useCallback(
     (date, context) => {
-      // Typed values are applied on blur.
       if (!isAcceptedFromView(context)) {
         return;
       }

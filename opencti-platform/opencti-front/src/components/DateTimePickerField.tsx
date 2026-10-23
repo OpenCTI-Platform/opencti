@@ -61,7 +61,6 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   const pickerValue = partlyTypedRef.current && isInvalidDate ? null : parsedValue;
   const internalOnAccept = React.useCallback(
     (date: Date, context: PickerChangeHandlerContext<unknown>) => {
-      // Typed values are applied on blur.
       if (!isAcceptedFromView(context)) {
         return;
       }
