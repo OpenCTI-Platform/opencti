@@ -478,7 +478,7 @@
   "Health check code": "Code du contrôle de santé",
   "Health check metadata": "Métadonnées du contrôle de santé",
   "Health checks": "Contrôles de santé",
-  "Health last event date": "Date du dernier événement consacré à la santé",
+  "Health last failure event date": "Date du dernier incident de santé",
   "Health status": "Statut de santé",
   "Health status since": "Statut de santé depuis",
   "Height": "Taille",
