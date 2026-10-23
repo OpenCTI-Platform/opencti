@@ -120,6 +120,7 @@ import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
+import { isBulkActionAllowed, isBulkActionDisabled } from './dataTableToolBarActionRules';
 import { CustomFieldInput } from '../common/custom_fields/CustomFieldsInput';
 import useCustomFieldDefinitions from '../common/custom_fields/useCustomFieldDefinitions';
 import {
@@ -250,11 +251,6 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Playbook', 'Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
-const notAddableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
-const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
-const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
-const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const typesWithScore = [
   'Malware',
   'Stix-Cyber-Observable',
@@ -308,7 +304,6 @@ const typesWithPlatforms = ['Indicator'];
 const typesWithTemporalRange = ['stix-core-relationship'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
-const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -2381,14 +2376,10 @@ class DataTableToolBar extends Component {
           const preventMerge = selectedTypes.at(0) === 'Vocabulary'
             && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
           // region update
-          const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notUpdatableTypes.includes(entityTypeFilterValues[0]));
+          const typesAreNotUpdatable = isBulkActionDisabled('update', selectedTypes, entityTypeFilterValues);
           // endregion
           // region rules
-          const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notScannableTypes.includes(entityTypeFilterValues[0]));
+          const typesAreNotScannable = isBulkActionDisabled('scan', selectedTypes, entityTypeFilterValues);
           // endregion
           // region enrich
           const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st))).length === 1;
@@ -2396,20 +2387,19 @@ class DataTableToolBar extends Component {
             && entityTypeFilterValues.length === 1
             && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
             && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
-          const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notEnrichableTypes.includes(entityTypeFilterValues[0]))
+          const enrichDisable = isBulkActionDisabled('enrich', selectedTypes, entityTypeFilterValues)
             || (!isManualEnrichSelect && !isAllEnrichSelect);
           // endregion
           // region orgaSharing
-          const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
+          const isShareableType = isBulkActionAllowed('share', selectedTypes[0]);
           // endregion
           // region merge
-          const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
+          const typesAreNotMergable = !isBulkActionAllowed('merge', selectedTypes[0]);
           const enableMerge = !typesAreNotMergable && !mergeDisable;
-          const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
+          // The entity type filter is checked against the scan rule, not the add one (behavior kept as is)
+          const typesAreNotAddableInContainer = !isBulkActionAllowed('addInContainer', selectedTypes[0])
             || (entityTypeFilterValues.length === 1
-              && notScannableTypes.includes(entityTypeFilterValues[0]));
+              && !isBulkActionAllowed('scan', entityTypeFilterValues[0]));
           const titleCopy = this.titleCopy();
           let keptElement = null;
           let newAliases = [];
