@@ -8969,6 +8969,7 @@ type Query {
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
+  workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!
@@ -9802,6 +9803,7 @@ type Mutation {
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
   workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
+  workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false): WorkflowDefinitionMutationResult
   workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
@@ -10228,6 +10230,42 @@ type WorkflowValidationError {
 type WorkflowEntityRef {
   id: String!
   entity_type: String!
+}
+
+enum WorkflowMigrationDiagnosticType {
+  MISSING_ORDER
+  DUPLICATE_ORDER
+  DUPLICATE_TEMPLATE
+  NAME_CONFLICT
+  MISSING_TEMPLATE
+  EXISTING_WORKFLOW
+}
+
+type WorkflowMigrationDiagnostic {
+  type: WorkflowMigrationDiagnosticType!
+  message: String!
+  legacyStatusId: String
+  templateId: String
+}
+
+type WorkflowMigrationState {
+  statusId: String!
+  order: Int!
+}
+
+type WorkflowMigrationScopeResult {
+  scope: StatusScope!
+  initialState: String!
+  published: Boolean!
+  hasPublishedVersion: Boolean!
+  states: [WorkflowMigrationState!]!
+  transitions: [WorkflowSerializedTransition!]!
+  diagnostics: [WorkflowMigrationDiagnostic!]!
+}
+
+type WorkflowMigrationPreview {
+  entityType: String!
+  results: [WorkflowMigrationScopeResult!]!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
