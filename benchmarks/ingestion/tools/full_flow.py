@@ -193,7 +193,10 @@ def settled_shape(client, tag, report_objects, timeout=30):
     deadline = time.time() + timeout
     while True:
         shape = stored_shape(client, tag)
-        settled = shape["report_objects"] >= report_objects and shape["relationships_of_malware"] > 0
+        settled = (
+            shape["report_objects"] >= report_objects
+            and shape["relationships_of_malware"] > 0
+        )
         if settled or time.time() > deadline:
             return shape
         time.sleep(1)
@@ -291,6 +294,137 @@ def run_queue(client, n):
     }
 
 
+def wait_complete(client, work_ids, start, timeout=3600):
+    pending = set(work_ids)
+    works = {}
+    while pending:
+        for work_id in list(pending):
+            work = client.work.get_work(work_id)
+            if work["status"] == "complete":
+                works[work_id] = work
+                pending.discard(work_id)
+        if pending and time.perf_counter() - start > timeout:
+            raise SystemExit(f"Queue import timed out: {len(pending)} works pending")
+        if pending:
+            time.sleep(0.5)
+    return works
+
+
+def error_kinds(works):
+    """How many errors the works recorded, by message and by type of the object that failed"""
+    kinds = {}
+    for work in works:
+        for error in work.get("errors") or []:
+            try:
+                kind = json.loads(error.get("source") or "{}").get("type", "?")
+            except ValueError:
+                kind = "?"
+            message = str(error.get("message") or "")
+            for marker in (
+                "MISSING_REFERENCE_ERROR",
+                "LOCK_ERROR",
+                "Element(s) not found",
+                "DUPLICATE",
+            ):
+                if marker in message:
+                    message = marker
+                    break
+            key = f"{kind}: {message[:80]}"
+            kinds[key] = kinds.get(key, 0) + 1
+    return kinds
+
+
+def stored_counts(client, tag, expected, timeout=60):
+    """Indicators and reports the run stored (searchable at the next refresh): polled until they match"""
+
+    def count(lister, prefix):
+        page = lister.list(
+            filters={
+                "mode": "and",
+                "filters": [
+                    {"key": "name", "values": [prefix], "operator": "starts_with"}
+                ],
+                "filterGroups": [],
+            },
+            first=1,
+            withPagination=True,
+        )
+        return page["pagination"]["globalCount"]
+
+    deadline = time.time() + timeout
+    while True:
+        counts = {"indicator": count(client.indicator, f"ff-{tag}-indicator-")}
+        if expected.get("report"):
+            counts["report"] = count(client.report, f"ff-{tag}-")
+        if (
+            all(counts[k] >= expected.get(k, 0) for k in counts)
+            or time.time() > deadline
+        ):
+            return counts
+        time.sleep(1)
+
+
+def run_feed(client, profile, n, resend):
+    """A feed's bundles pushed to a connector queue one after the other, as its connector sends them (one work per
+    bundle), imported by the running worker(s) until every work is complete; then, with resend, the same bundles
+    again, all of them already stored"""
+    from feeds import FEEDS, distinct_counts
+
+    connector_id = register_connector(client)
+    tag = str(int(time.time() * 1000))[-9:]
+    bundles = FEEDS[profile](tag, n)
+    expected = distinct_counts(bundles)
+    sent = sum(len(b["objects"]) for b in bundles)
+    results = {
+        "profile": profile,
+        "bundles": len(bundles),
+        "objects_sent": sent,
+        "objects_distinct": sum(expected.values()),
+        "expected": expected,
+    }
+    for name in ["fresh", "resend"] if resend else ["fresh"]:
+        start = time.perf_counter()
+        work_ids = []
+        for i, bundle in enumerate(bundles):
+            work_id = client.work.initiate_work(
+                connector_id, f"{profile} {name} {tag} {i}"
+            )
+            client.send_bundle_to_api(
+                connector_id=connector_id, bundle=json.dumps(bundle), work_id=work_id
+            )
+            work_ids.append(work_id)
+        sent_after = time.perf_counter() - start
+        works = wait_complete(client, work_ids, start)
+        elapsed = time.perf_counter() - start
+        results[name] = {
+            "seconds": round(elapsed, 2),
+            "sending_seconds": round(sent_after, 2),
+            "throughput_per_s": round(sent / elapsed, 1),
+            "works_complete": len(works),
+            "processed": sum(
+                (w.get("tracking") or {}).get("import_processed_number") or 0
+                for w in works.values()
+            ),
+            "errors": sum(len(w.get("errors") or []) for w in works.values()),
+            "error_kinds": error_kinds(works.values()),
+        }
+    results["stored"] = stored_counts(client, tag, expected)
+    results["checks"] = {
+        "works_complete": all(
+            results[p]["works_complete"] == len(bundles)
+            for p in ("fresh", "resend")
+            if p in results
+        ),
+        "no_errors": all(
+            results[p]["errors"] == 0 for p in ("fresh", "resend") if p in results
+        ),
+        "stored": all(
+            results["stored"][k] == expected.get(k, 0) for k in results["stored"]
+        ),
+    }
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -307,12 +441,37 @@ def main():
         action="store_true",
         help="push through the queue to the running worker(s)",
     )
+    parser.add_argument(
+        "--profile",
+        default=os.environ.get("BENCH_FEED"),
+        help="with --queue: a feed-shaped list of bundles (alienvault, recorded-future, misp) instead of one bundle",
+    )
+    parser.add_argument(
+        "--resend",
+        action="store_true",
+        default=os.environ.get("BENCH_RESEND") == "true",
+        help="with --profile: send the same bundles again once stored",
+    )
     args = parser.parse_args()
     client = OpenCTIApiClient(
         args.url, args.token, log_level="error", json_logging=True
     )
     if args.register:
         register_connector(client)
+        return
+    if args.queue and args.profile:
+        results = run_feed(client, args.profile, args.n, args.resend)
+        print(json.dumps(results, indent=1))
+        if args.out:
+            with open(args.out, "w", encoding="utf-8") as output:
+                json.dump(results, output, indent=1)
+        # Errors are a result (today's flow loses objects whose reference another worker is still importing):
+        # reported, not failed on
+        failed = {
+            k: v for k, v in results["checks"].items() if k != "no_errors" and not v
+        }
+        if failed:
+            raise SystemExit(f"Feed checks failed: {failed}")
         return
     if args.queue:
         results = {"queue": run_queue(client, args.n)}
