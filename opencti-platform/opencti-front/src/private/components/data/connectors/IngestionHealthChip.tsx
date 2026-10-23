@@ -5,6 +5,7 @@ import { getHealthDisplay } from '@components/data/connectors/ingestionHealthDis
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { capitalizeFirstLetter } from '../../../../utils/String';
+import { getHealthCheckMessage } from './ingestionHealthMessage';
 import type { IngestionHealthChip_ingestionHealth$key } from './__generated__/IngestionHealthChip_ingestionHealth.graphql';
 
 // Spread in every query showing the health of a connector, a feed or a sync
@@ -15,6 +16,7 @@ const ingestionHealthFragment = graphql`
     healthChecks {
       health_check_code
       health_check_message
+      health_check_metadata
     }
   }
 `;
@@ -46,7 +48,7 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHeal
       <TooltipContent>
         <div>{`${t_i18n('Since')} ${nsdt(ingestionHealth.status_since)}`}</div>
         {checks.length > 0
-          ? checks.map((check) => <div key={check.health_check_code}>{check.health_check_message ?? check.health_check_code}</div>)
+          ? checks.map((check) => <div key={check.health_check_code}>{getHealthCheckMessage(check, t_i18n)}</div>)
           : <div>{t_i18n('No health issue detected')}</div>}
       </TooltipContent>
     </Tooltip>

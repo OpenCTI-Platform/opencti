@@ -10,6 +10,7 @@ import {
   HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_USER_MISSING,
+  HEALTH_CHECK_USER_MISSING_CAPABILITY,
   HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
   type HealthCheckCode,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
@@ -64,6 +65,7 @@ describe('toGraphqlIngestionHealthSettings', () => {
       disabled_health_checks: [],
       health_checks: [
         enabledCheck(HEALTH_CHECK_USER_MISSING, 'User is missing', IngestionHealthCheckKind.Configuration, IngestionHealthCheckSeverity.Blocking),
+        enabledCheck(HEALTH_CHECK_USER_MISSING_CAPABILITY, 'User lacks required capability', IngestionHealthCheckKind.Configuration, IngestionHealthCheckSeverity.Blocking),
         enabledCheck(HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, 'User is not a service account', IngestionHealthCheckKind.Configuration, IngestionHealthCheckSeverity.Advisory),
         enabledCheck(HEALTH_CHECK_HEARTBEAT_MISSING, 'No heartbeat received', IngestionHealthCheckKind.Runtime, IngestionHealthCheckSeverity.Blocking),
         enabledCheck(HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, 'Feed or sync execution failed', IngestionHealthCheckKind.Runtime, IngestionHealthCheckSeverity.Blocking),
@@ -76,6 +78,7 @@ describe('toGraphqlIngestionHealthSettings', () => {
     const enabledByCode = Object.fromEntries(toGraphqlIngestionHealthSettings(settings).health_checks.map((check) => [check.health_check_code, check.enabled]));
     expect(enabledByCode).toEqual({
       [HEALTH_CHECK_USER_MISSING]: true,
+      [HEALTH_CHECK_USER_MISSING_CAPABILITY]: true,
       [HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT]: true,
       [HEALTH_CHECK_HEARTBEAT_MISSING]: false,
       [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: true,
@@ -127,7 +130,7 @@ describe('validateIngestionHealthSettingsInput', () => {
     ['absent', undefined],
     ['empty', []],
     ['one check', [HEALTH_CHECK_HEARTBEAT_MISSING]],
-    ['every check', [HEALTH_CHECK_USER_MISSING, HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]],
+    ['every check', [HEALTH_CHECK_USER_MISSING, HEALTH_CHECK_USER_MISSING_CAPABILITY, HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]],
   ])('should accept disabled checks %s', (_, disabled) => {
     expect(() => validateIngestionHealthSettingsInput(input({ notification_delay: 0, disabled_health_checks: disabled }))).not.toThrow();
   });
