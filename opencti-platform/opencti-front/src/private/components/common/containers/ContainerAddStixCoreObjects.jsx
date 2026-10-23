@@ -1,23 +1,36 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import * as R from 'ramda';
+import { Form, Formik } from 'formik';
+import { ConnectionHandler } from 'relay-runtime';
 import IconButton from '@common/button/IconButton';
+import { Checkbox } from '@filigran/design-system';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
-import { QueryRenderer } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
+import { containerAddStixCoreObjectsLinesRelationAddMutation, containerAddStixCoreObjectsLinesRelationDeleteMutation } from './ContainerAddStixCoreObjectsLines';
+import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from '../../analyses/reports/ReportKnowledgeGraphQuery';
+import {
+  stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment,
+  stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
+  stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
+} from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import useAuth from '../../../../utils/hooks/useAuth';
-import ListLines from '../../../../components/list_lines/ListLines';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../drawer/Drawer';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { removeEmptyFields } from '../../../../utils/utils';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { insertNode } from '../../../../utils/store';
+import CommitMessage from '../form/CommitMessage';
 
 // Material UI 9 reads the action buttons' props from `slotProps.fab` only: `FabProps` is ignored there.
 const speedDialActionSlotProps = {
@@ -30,6 +43,196 @@ const speedDialActionSlotProps = {
       },
     },
   },
+};
+
+// Own component so that the entities are only queried once the drawer shows the list
+const ContainerAddStixCoreObjectsSelectEntities = ({
+  storageKey,
+  initialValues,
+  dataColumns,
+  searchPaginationOptions,
+  contextFilters,
+  targetTypes,
+  setNumberOfElements,
+  createButton,
+  containerId,
+  paginationOptions,
+  knowledgeGraph,
+  containerStixCoreObjects,
+  onAdd,
+  onDelete,
+  enableReferences,
+}) => {
+  const [tableRootRef, setTableRootRef] = useState(null);
+  const [referenceDialogOpened, setReferenceDialogOpened] = useState(false);
+  const [currentlyToggledCoreObject, setCurrentlyToggledCoreObject] = useState(null);
+  // The mapping view gives standard_id instead of id
+  const [addedStixCoreObjects, setAddedStixCoreObjects] = useState(() => R.indexBy(
+    R.prop('id'),
+    (containerStixCoreObjects || []).map((n) => n.node),
+  ));
+  const queryRef = useQueryLoading(
+    stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
+    { ...searchPaginationOptions, count: 25 },
+  );
+
+  const isAdded = (stixCoreObject) => stixCoreObject.id in addedStixCoreObjects
+    || stixCoreObject.standard_id in addedStixCoreObjects;
+  const markAsAdded = (stixCoreObject) => setAddedStixCoreObjects((current) => ({
+    ...current,
+    [stixCoreObject.id]: stixCoreObject,
+  }));
+  const markAsRemoved = (stixCoreObject) => setAddedStixCoreObjects((current) => R.omit(
+    [stixCoreObject.id, stixCoreObject.standard_id],
+    current,
+  ));
+  // ID is not valid pagination options, will be handled better when hooked
+  const { id: _, count: __, ...containerPaginationOptions } = paginationOptions ?? {};
+
+  const sendStixCoreObjectModification = (stixCoreObject, commitMessage = '', references = [], setSubmitting = null, resetForm = null) => {
+    const complete = (callback) => {
+      if (typeof callback === 'function') {
+        callback(stixCoreObject);
+      }
+      if (setSubmitting) setSubmitting(false);
+      if (resetForm) resetForm(true);
+    };
+    if (isAdded(stixCoreObject)) {
+      commitMutation({
+        mutation: knowledgeGraph
+          ? reportKnowledgeGraphMutationRelationDeleteMutation
+          : containerAddStixCoreObjectsLinesRelationDeleteMutation,
+        variables: {
+          id: containerId,
+          toId: stixCoreObject.id,
+          relationship_type: 'object',
+          commitMessage,
+          references,
+        },
+        updater: knowledgeGraph ? undefined : (store) => {
+          markAsRemoved(stixCoreObject);
+          const conn = ConnectionHandler.getConnection(
+            store.get(containerId),
+            'Pagination_objects',
+            containerPaginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, stixCoreObject.id);
+        },
+        onCompleted: () => {
+          markAsRemoved(stixCoreObject);
+          complete(onDelete);
+        },
+        setSubmitting,
+      });
+    } else {
+      const input = {
+        toId: stixCoreObject.id,
+        relationship_type: 'object',
+      };
+      commitMutation({
+        mutation: knowledgeGraph
+          ? reportKnowledgeGraphtMutationRelationAddMutation
+          : containerAddStixCoreObjectsLinesRelationAddMutation,
+        variables: {
+          id: containerId,
+          input,
+          commitMessage,
+          references,
+        },
+        optimisticUpdater: knowledgeGraph ? undefined : () => markAsAdded(stixCoreObject),
+        updater: knowledgeGraph ? undefined : (store) => {
+          insertNode(
+            store,
+            'Pagination_objects',
+            containerPaginationOptions,
+            'containerEdit',
+            containerId,
+            'relationAdd',
+            { input, commitMessage, references },
+            'to',
+          );
+        },
+        onCompleted: () => {
+          if (knowledgeGraph) markAsAdded(stixCoreObject);
+          complete(onAdd);
+        },
+        setSubmitting,
+      });
+    }
+  };
+
+  const handleToggle = (stixCoreObject) => {
+    if (enableReferences) {
+      setCurrentlyToggledCoreObject(stixCoreObject);
+      setReferenceDialogOpened(true);
+    } else {
+      sendStixCoreObjectModification(stixCoreObject);
+    }
+  };
+  const closeReferencesPopup = () => {
+    setReferenceDialogOpened(false);
+    setCurrentlyToggledCoreObject(null);
+  };
+  const submitReference = (values, { setSubmitting, resetForm }) => {
+    const references = R.pluck('value', values.references || []);
+    sendStixCoreObjectModification(currentlyToggledCoreObject, values.message, references, setSubmitting, resetForm);
+  };
+
+  return (
+    <div style={{ flex: '1 0 0', overflow: 'hidden' }} ref={setTableRootRef}>
+      {queryRef && (
+        <DataTable
+          disableToolBar
+          disableNavigation
+          // The checkbox tells whether the entity is in the container, not the line selection
+          disableLineSelection
+          hideSavedFilters
+          variant={DataTableVariant.inline}
+          rootRef={tableRootRef ?? undefined}
+          dataColumns={dataColumns}
+          resolvePath={(data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
+          storageKey={storageKey}
+          lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
+          initialValues={initialValues}
+          contextFilters={contextFilters}
+          preloadedPaginationProps={{
+            linesQuery: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
+            linesFragment: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
+            queryRef,
+            nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
+            setNumberOfElements,
+          }}
+          entityTypes={targetTypes}
+          availableEntityTypes={targetTypes}
+          additionalFilterKeys={['entity_type']}
+          createButton={createButton}
+          icon={(stixCoreObject) => <Checkbox checked={isAdded(stixCoreObject)} />}
+          onLineClick={handleToggle}
+        />
+      )}
+      {enableReferences && (
+        <Formik
+          initialValues={{ message: '', references: [] }}
+          onSubmit={submitReference}
+        >
+          {({ submitForm, isSubmitting, setFieldValue, values }) => (
+            <Form>
+              <CommitMessage
+                handleClose={closeReferencesPopup}
+                open={referenceDialogOpened}
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                setFieldValue={setFieldValue}
+                values={values.references}
+                id={containerId}
+                noStoreUpdate={true}
+              />
+            </Form>
+          )}
+        </Formik>
+      )}
+    </div>
+  );
 };
 
 const ContainerAddStixCoreObjects = (props) => {
@@ -98,15 +301,15 @@ const ContainerAddStixCoreObjects = (props) => {
   };
 
   const LOCAL_STORAGE_KEY = `container-${containerId}-add-${targetStixCoreObjectTypes}`;
-  const { viewStorage, helpers, paginationOptions: addObjectsPaginationOptions } = usePaginationLocalStorage(
+  const initialValues = {
+    searchTerm: '',
+    sortBy: '_score',
+    orderAsc: false,
+    filters: emptyFilterGroup,
+  };
+  const { viewStorage, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
-    {
-      searchTerm: '',
-      sortBy: '_score',
-      orderAsc: false,
-      filters: emptyFilterGroup,
-      types: [resolveAvailableTypes()],
-    },
+    initialValues,
     true,
   );
 
@@ -115,22 +318,16 @@ const ContainerAddStixCoreObjects = (props) => {
     orderAsc,
     searchTerm,
     filters,
-    numberOfElements,
   } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext(targetStixCoreObjectTypes, filters);
 
-  const [mappingSearch, setMappingSearch] = useState(null);
-  const [currentSelectedText, setCurrentSelectedText] = useState(selectedText);
-  if (currentSelectedText !== selectedText) {
-    setMappingSearch(null);
-    setCurrentSelectedText(selectedText);
-  }
-  let keyword;
-  if (!mapping) {
-    keyword = searchTerm;
-  } else {
-    keyword = !mappingSearch ? selectedText : mappingSearch;
-  }
+  // In mapping mode, the selected text of the content is searched, until the user types another search
+  useEffect(() => {
+    if (mapping && selectedText) {
+      helpers.handleSearch(selectedText);
+    }
+  }, [mapping, selectedText]);
+  const keyword = searchTerm;
   const handleOpenCreateEntity = () => {
     setOpenCreateEntity(true);
     setOpenSpeedDial(false);
@@ -267,91 +464,61 @@ const ContainerAddStixCoreObjects = (props) => {
     return {
       entity_type: {
         label: 'Type',
-        width: '15%',
+        percentWidth: 15,
         isSortable: true,
       },
       value: {
         label: 'Value',
-        width: '32%',
+        percentWidth: 33,
         isSortable: false,
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        percentWidth: 15,
         isSortable: isRuntimeFieldEnable(),
       },
       objectLabel: {
         label: 'Labels',
-        width: '22%',
+        percentWidth: 22,
         isSortable: false,
       },
       objectMarking: {
         label: 'Marking',
-        width: '15%',
+        percentWidth: 15,
         isSortable: isRuntimeFieldEnable(),
       },
     };
   };
   const renderSearchResults = (searchPaginationOptions) => {
     return (
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
+      <ContainerAddStixCoreObjectsSelectEntities
+        storageKey={LOCAL_STORAGE_KEY}
+        initialValues={initialValues}
         dataColumns={buildColumns()}
-        handleSearch={mapping ? setMappingSearch : helpers.handleSearch}
-        keyword={keyword}
-        handleSort={helpers.handleSort}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        disableCards
-        filters={filters}
-        paginationOptions={searchPaginationOptions}
-        numberOfElements={numberOfElements}
-        iconExtension
-        checkboxExtension
-        parametersWithPadding
-        disableExport
-        availableEntityTypes={targetStixCoreObjectTypes}
-        entityTypes={targetStixCoreObjectTypes}
-        additionalFilterKeys={{
-          filterKeys: ['entity_type'],
-        }}
+        searchPaginationOptions={searchPaginationOptions}
+        contextFilters={contextFilters}
+        targetTypes={targetStixCoreObjectTypes}
+        setNumberOfElements={helpers.handleSetNumberOfElements}
         createButton={renderEntityCreation(searchPaginationOptions)}
-      >
-        <QueryRenderer
-          query={containerAddStixCoreObjectsLinesQuery}
-          variables={{ count: 25, ...searchPaginationOptions }}
-          render={({ props: renderProps }) => (
-            <ContainerAddStixCoreObjectsLines
-              data={renderProps}
-              containerId={containerId}
-              paginationOptions={paginationOptions}
-              dataColumns={buildColumns()}
-              initialLoading={renderProps === null}
-              knowledgeGraph={knowledgeGraph}
-              containerStixCoreObjects={containerStixCoreObjects}
-              onAdd={onAdd}
-              onDelete={onDelete}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              mapping={mapping}
-              enableReferences={enableReferences}
-              onLabelClick={helpers.handleAddFilter}
-            />
-          )}
-        />
-      </ListLines>
+        containerId={containerId}
+        paginationOptions={paginationOptions}
+        knowledgeGraph={knowledgeGraph}
+        containerStixCoreObjects={containerStixCoreObjects}
+        onAdd={onAdd}
+        onDelete={onDelete}
+        enableReferences={enableReferences}
+      />
     );
   };
 
-  const { count: _, ...paginationOptionsNoCount } = addObjectsPaginationOptions;
-  const searchPaginationOptions = removeEmptyFields({
-    ...paginationOptionsNoCount,
+  // Also the pagination options of the creations, so that a created entity is inserted in the list
+  const searchPaginationOptions = {
+    types: [resolveAvailableTypes()],
     search: keyword,
     filters: contextFilters,
-  });
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+  };
   const renderButton = () => {
     if (knowledgeGraph) {
       return (
