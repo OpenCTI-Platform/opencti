@@ -4,7 +4,7 @@ import { Stack, Tooltip, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import { alpha, useTheme } from "@mui/material/styles";
 import { DeveloperBoardOutlined, ScheduleOutlined } from "@mui/icons-material";
-import { healthIssueDisplay } from "@components/integrations/deployed/IngestionHealthSummary";
+import { useHealthIssueDisplay } from "@components/integrations/deployed/IngestionHealthSummary";
 import { useDeployedTypeMetadata } from "@components/integrations/deployed/DeployedFacetSidebar";
 import ConnectorUpdateChip from "@components/integrations/deployed/ConnectorUpdateChip";
 import IngestionHealthChip from "@components/data/connectors/IngestionHealthChip";
@@ -158,8 +158,7 @@ const DeployedIntegrationLine = ({
   const healthIssue = isFeatureEnable("INGESTION_HEALTH")
     ? item.healthIssue
     : null;
-  const { color: healthColor, Icon: HealthIcon } = healthIssueDisplay(
-    theme,
+  const { color: healthColor, Icon: HealthIcon } = useHealthIssueDisplay(
     healthIssue?.severity ?? "critical",
   );
 

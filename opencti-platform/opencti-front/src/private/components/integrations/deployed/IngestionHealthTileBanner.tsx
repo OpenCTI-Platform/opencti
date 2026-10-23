@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { ArrowForwardOutlined } from '@mui/icons-material';
-import { healthIssueDisplay, type HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
+import { useHealthIssueDisplay, type HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
 import { useFormatter } from '../../../../components/i18n';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import { paperBorder } from '../paperSurface';
@@ -19,7 +19,7 @@ const IngestionHealthTileBanner = ({ issue, to }: IngestionHealthTileBannerProps
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const isCritical = issue.severity === 'critical';
-  const { color, Icon } = healthIssueDisplay(theme, issue.severity);
+  const { color, Icon } = useHealthIssueDisplay(issue.severity);
   return (
     <Stack
       component={Link}
