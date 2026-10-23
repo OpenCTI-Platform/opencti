@@ -989,24 +989,39 @@ export interface FeedsAndSyncLastOutcome {
   meta?: Record<string, unknown>;
 }
 
-const isFeedsAndSyncOutcome = (entry: Pick<IngestionLogEntry, 'level'>): entry is { level: FeedsAndSyncLastOutcome['level'] } => {
+const isSuccessOrErrorOutcome = (entry: Pick<IngestionLogEntry, 'level'>): entry is { level: FeedsAndSyncLastOutcome['level'] } => {
   return entry.level === 'success' || entry.level === 'error';
 };
 
-export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>) => {
+export interface PushIngestionLogOptions {
+  // The caller owns the retry of the outcome: a failure to record it rejects instead of being only logged.
+  // The history stays best-effort either way.
+  strictOutcome?: boolean;
+}
+
+export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>, { strictOutcome = false }: PushIngestionLogOptions = {}) => {
+  const timestamp = Date.now();
+  // The outcome is what the ingestion health reads: recorded first, so that a strict caller retrying after a failure
+  // writes the history once, and not for each attempt. Not in the history transaction: two keys of different slots
+  // cannot be in the same one on a cluster
+  if (isSuccessOrErrorOutcome(entry)) {
+    try {
+      const outcome: FeedsAndSyncLastOutcome = { timestamp, level: entry.level, meta: entry.meta };
+      await getClientBase().hset(FEEDS_AND_SYNC_LAST_OUTCOMES_KEY, feedId, JSON.stringify(outcome));
+    } catch (err) {
+      logApp.error('Failed to record ingestion last outcome in Redis', { cause: err });
+      if (strictOutcome) {
+        throw err;
+      }
+    }
+  }
   try {
     const key = ingestionLogListKey(feedId);
-    const timestamp = Date.now();
     const value = JSON.stringify({ timestamp, ...entry });
     await redisTx(getClientBase(), async (tx) => {
       tx.lpush(key, value);
       tx.ltrim(key, 0, INGESTION_LOG_MAX_SIZE - 1);
     });
-    // Not in the transaction: two keys of different slots cannot be in the same one on a cluster
-    if (isFeedsAndSyncOutcome(entry)) {
-      const outcome: FeedsAndSyncLastOutcome = { timestamp, level: entry.level, meta: entry.meta };
-      await getClientBase().hset(FEEDS_AND_SYNC_LAST_OUTCOMES_KEY, feedId, JSON.stringify(outcome));
-    }
   } catch (err) {
     logApp.error('Failed to push ingestion log entry to Redis', { cause: err });
   }

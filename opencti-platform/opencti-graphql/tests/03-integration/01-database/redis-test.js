@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
@@ -426,6 +426,41 @@ describe('Redis ingestion logs', () => {
       expect(outcomes.get(feedId)?.level).toBe('error');
     } finally {
       await redisDeleteIngestionLogHistory(corruptFeedId);
+      await redisDeleteIngestionLogHistory(feedId);
+    }
+  });
+
+  it('should reject a strict outcome that fails to record, keep the previous one, and record it on retry', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+    await redisPushIngestionLog(feedId, { level: 'error', type: 'sync', identifier: feedId, message: 'Feed execution failed', meta: { error: 'boom' } });
+    const success = { level: 'success', type: 'sync', identifier: feedId, message: 'Feed execution succeeded', meta: {} };
+    const hset = vi.spyOn(getClientBase(), 'hset').mockRejectedValueOnce(new Error('redis unavailable'));
+    try {
+      await expect(redisPushIngestionLog(feedId, success, { strictOutcome: true })).rejects.toThrow('redis unavailable');
+      // The failure is still the last outcome, and the attempt left nothing in the history
+      expect((await redisGetFeedsAndSyncLastOutcomes([feedId])).get(feedId)?.level).toBe('error');
+      expect((await redisGetIngestionLogHistory(feedId)).filter((log) => log.level === 'success')).toHaveLength(0);
+
+      await redisPushIngestionLog(feedId, success, { strictOutcome: true });
+      expect((await redisGetFeedsAndSyncLastOutcomes([feedId])).get(feedId)?.level).toBe('success');
+      expect((await redisGetIngestionLogHistory(feedId)).filter((log) => log.level === 'success')).toHaveLength(1);
+    } finally {
+      hset.mockRestore();
+      await redisDeleteIngestionLogHistory(feedId);
+    }
+  });
+
+  it('should only log an outcome that fails to record by default, and keep the history', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+    const hset = vi.spyOn(getClientBase(), 'hset').mockRejectedValueOnce(new Error('redis unavailable'));
+    try {
+      await expect(redisPushIngestionLog(feedId, { level: 'success', type: 'sync', identifier: feedId, message: 'ok', meta: {} })).resolves.toBeUndefined();
+      expect((await redisGetFeedsAndSyncLastOutcomes([feedId])).has(feedId)).toBe(false);
+      expect(await redisGetIngestionLogHistory(feedId)).toHaveLength(1);
+    } finally {
+      hset.mockRestore();
       await redisDeleteIngestionLogHistory(feedId);
     }
   });
