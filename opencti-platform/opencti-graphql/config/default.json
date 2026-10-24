@@ -422,8 +422,7 @@
   "elasticsearch": {
     "index_prefix": "opencti",
     "url": "http://localhost:9200",
-    "engine_selector": "auto",
-    "engine_check": true,
+    "engine_client": "auto",
     "index_creation_pattern": "-000001",
     "max_pagination_result": 5000,
     "default_pagination_result": 500,
