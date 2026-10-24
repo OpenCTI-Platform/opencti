@@ -4,6 +4,7 @@ import { Chip, Paper, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { criterionName, KIND_CHIP, ScoreBar } from './IrOutputCommon';
 import type { IrInboxQuery } from './__generated__/IrInboxQuery.graphql';
@@ -84,7 +85,10 @@ export const IrInboxItem = ({ item, criteria, onDecide, compact }: {
           {item.match && <ScoreBar score={item.match.match_score} excluded={item.match.match_excluded} />}
           <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{nsdt(item.created_at)}</Text>
         </Box>
-        <Text as="div" variant={compact ? 'content-compact-medium' : 'content-base-bold'} style={{ marginTop: 6 }}>{item.item_title}</Text>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.75 }}>
+          {item.item_entity_type && <ItemIcon type={item.item_entity_type} size="small" />}
+          <Text as="div" variant={compact ? 'content-compact-medium' : 'content-base-bold'}>{item.item_title}</Text>
+        </Box>
         {!compact && item.item_kind === 'score' && (
           <Text as="div" variant="content-caption" style={{ marginTop: 4 }}>
             {`${item.item_data.from_score ?? 0} → ${item.item_data.to_score ?? 0} · ${(item.item_data.reasons ?? []).join(' · ')}`}

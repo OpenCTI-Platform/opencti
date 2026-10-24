@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Chip, Paper, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 import { criterionName, IN_STATUSES, ScoreBar } from './IrOutputCommon';
 import { IrInboxItem } from './IrInbox';
+import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
 import type { IrOverviewQuery } from './__generated__/IrOverviewQuery.graphql';
 
 // Overview: the synthesis of the outputs (inbox to review, top entities, key intelligence questions).
@@ -28,7 +30,19 @@ const overviewQuery = graphql`
           match_entity_type
           match_entity_id
           match_criteria_ids
+          match_last_fact_at
           entity { ... on StixCoreObject { representative { main } } }
+          match_explanations {
+            criterion_id
+            kind
+            relationship_type
+            direction
+            keyword
+            field
+            anchor { representative { main } }
+            container { representative { main } }
+          }
+          match_score_breakdown { name points hit reason }
         }
       }
     }
@@ -60,7 +74,9 @@ const Kpi = ({ label, value, detail }: { label: string; value: string | number; 
 
 const IrOverview = ({ irId }: { irId: string }) => {
   const { t_i18n } = useFormatter();
-  const data = useLazyLoadQuery<IrOverviewQuery>(overviewQuery, { id: irId }, { fetchPolicy: 'network-only' });
+  const [fetchKey, setFetchKey] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const data = useLazyLoadQuery<IrOverviewQuery>(overviewQuery, { id: irId }, { fetchPolicy: 'network-only', fetchKey });
   const ir = data.intelligenceRequirement;
   const criteria = ir?.ir_scope_criteria ?? [];
   const matches = (data.intelligenceRequirementMatches?.edges ?? []).map((e) => e.node);
@@ -97,7 +113,12 @@ const IrOverview = ({ irId }: { irId: string }) => {
               <Link to={`/dashboard/intelligence_requirements/${irId}/entities`}>{t_i18n('See all')}</Link>
             </Box>
             {inRequirement.slice(0, 8).map((m) => (
-              <Box key={m.id} sx={{ display: 'grid', gridTemplateColumns: '1fr 110px', alignItems: 'center', py: 0.75, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <Box
+                key={m.id}
+                onClick={() => setSelected(m.id)}
+                sx={{ display: 'grid', gridTemplateColumns: '28px 1fr 110px', alignItems: 'center', py: 0.75, px: 0.5, cursor: 'pointer', borderBottom: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
+              >
+                <ItemIcon type={m.match_entity_type} size="small" />
                 <Box>
                   <Text as="div" variant="content-compact-medium">{m.entity?.representative.main ?? m.match_entity_id}</Text>
                   <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n(`entity_${m.match_entity_type}`)}</Text>
@@ -121,6 +142,12 @@ const IrOverview = ({ irId }: { irId: string }) => {
           </Paper>
         </Box>
       </Box>
+      <IrMatchDrawer
+        match={(matches.find((m) => m.id === selected) ?? null) as IrMatchData | null}
+        criteria={criteria}
+        onClose={() => setSelected(null)}
+        onChanged={() => setFetchKey((k) => k + 1)}
+      />
     </>
   );
 };

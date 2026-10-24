@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { criterionName, explanationText, type IrCriterionRef, type IrExplanationData, ScoreBar, StatusChip } from './IrOutputCommon';
 import type { IrMatchDrawerStatusMutation } from './__generated__/IrMatchDrawerStatusMutation.graphql';
@@ -58,6 +59,7 @@ const IrMatchDrawer = ({ match, criteria, onClose, onChanged }: IrMatchDrawerPro
       {match ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+            <ItemIcon type={match.match_entity_type} size="small" />
             <Text as="span" variant="content-caption">{t_i18n(`entity_${match.match_entity_type}`)}</Text>
             <StatusChip status={match.match_status} excluded={match.match_excluded} t={t_i18n} />
             <ScoreBar score={match.match_score} excluded={match.match_excluded} />

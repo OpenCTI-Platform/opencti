@@ -4,6 +4,7 @@ import { Paper, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 import { criterionName, explanationText, IN_STATUSES, ScoreBar, StatusChip } from './IrOutputCommon';
 import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
 import type { IrEntitiesQuery } from './__generated__/IrEntitiesQuery.graphql';
@@ -106,9 +107,12 @@ const IrEntities = ({ irId }: { irId: string }) => {
               onClick={() => setSelected(m.id)}
               sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1.6fr 1.6fr 120px 110px', gap: 2, alignItems: 'center', px: 3, py: 1.25, cursor: 'pointer', borderBottom: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
             >
-              <Box>
-                <Text as="div" variant="content-compact-medium">{m.entity?.representative.main ?? m.match_entity_id}</Text>
-                <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n(`entity_${m.match_entity_type}`)}</Text>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <ItemIcon type={m.match_entity_type} size="small" />
+                <Box>
+                  <Text as="div" variant="content-compact-medium">{m.entity?.representative.main ?? m.match_entity_id}</Text>
+                  <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n(`entity_${m.match_entity_type}`)}</Text>
+                </Box>
               </Box>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                 <StatusChip status={m.match_status} t={t_i18n} />
