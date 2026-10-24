@@ -10168,7 +10168,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.39.0, openai@npm:^7.23.0":
+"openai@npm:7.41.0":
+  version: 7.41.0
+  resolution: "openai@npm:7.41.0"
+  peerDependencies:
+    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
+    "@smithy/hash-node": ">=4.3.0 <5"
+    "@smithy/signature-v4": ">=5.4.0 <6"
+    google-auth-library: ">=9.15.1 <11"
+    undici: ">=5 <9"
+    ws: ^8.21.0
+    zod: ^3.25 || ^4.0
+  peerDependenciesMeta:
+    "@aws-sdk/credential-provider-node":
+      optional: true
+    "@smithy/hash-node":
+      optional: true
+    "@smithy/signature-v4":
+      optional: true
+    google-auth-library:
+      optional: true
+    undici:
+      optional: true
+    ws:
+      optional: true
+    zod:
+      optional: true
+  checksum: 10c0/4849796fb5bb2b9296ef79af421736df8b5b6b89b7e6f9fc7c1cb88180f92fbbf06a9b6291f3f8f94d37d2ab3308d5e9d321574763db56e1555bcd7fbf174d6c
+  languageName: node
+  linkType: hard
+
+"openai@npm:^7.23.0":
   version: 7.39.0
   resolution: "openai@npm:7.39.0"
   peerDependencies:
@@ -10339,7 +10369,7 @@ __metadata:
     node-forge: "npm:1.4.0"
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.1.7"
-    openai: "npm:7.39.0"
+    openai: "npm:7.41.0"
     openid-client: "npm:6.8.8"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
