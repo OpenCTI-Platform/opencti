@@ -32,7 +32,7 @@ services:
   minio:
     container_name: minio
     profiles: ["backend"]
-    image: pgsty/silo:latest
+    image: pgsty/silo:RELEASE.2026-10-18T00-00-00Z
     networks:
       - runner-docker-network
     ports:
@@ -51,7 +51,7 @@ services:
   rabbitmq:
     profiles: ["backend"]
     container_name: rabbitmq
-    image: rabbitmq:4.3-management
+    image: rabbitmq:4.3.6-management
     restart: unless-stopped
     networks:
       - runner-docker-network

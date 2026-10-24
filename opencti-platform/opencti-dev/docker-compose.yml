@@ -7,7 +7,7 @@ services:
       - 6379:6379
   opencti-dev-redis-insight:
     container_name: opencti-dev-redis-insight
-    image: redislabs/redisinsight:latest
+    image: redislabs/redisinsight:3.8.0
     restart: unless-stopped
     ports:
       - 8001:8001
@@ -96,7 +96,7 @@ services:
 
   opencti-dev-minio:
     container_name: opencti-dev-minio
-    image: pgsty/silo:RELEASE.2026-09-03T13-18-01Z
+    image: pgsty/silo:RELEASE.2026-10-18T00-00-00Z
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -124,7 +124,7 @@ services:
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
   opencti-dev-telemetry-pyroscope:
     container_name: opencti-dev-telemetry-pyroscope
-    image: grafana/pyroscope
+    image: grafana/pyroscope:2.4.1
     restart: unless-stopped
     ports:
       - "4040:4040"
@@ -132,7 +132,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-jaegertracing:
     container_name: opencti-dev-telemetry-jaegertracing
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/all-in-one:1.76.0
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
     ports:
@@ -164,7 +164,7 @@ services:
     profiles:
       - "telemetry"
   opencti-dev-telemetry-grafana:
-    image: grafana/grafana:13.1.0-25893932881
+    image: grafana/grafana:13.2.4
     container_name: opencti-dev-telemetry-grafana
     ports:
       - "3100:3000"
@@ -179,7 +179,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
     profiles: [keycloak]
-    image: quay.io/keycloak/keycloak:26.4.5
+    image: keycloak/keycloak:26.4.5
     volumes:
       - keycloakdata:/opt/keycloak/data
       - ./keycloak-configuration:/opt/keycloak/data/import
@@ -194,7 +194,7 @@ services:
       - "9999:8080"
 
   opencti-dev-mokapi:
-    image: mokapi/mokapi:latest
+    image: mokapi/mokapi:0.53.0
     profiles: [mokapi]
     container_name: opencti-dev-mokapi
     command: mokapi --providers.file.directory=/share
