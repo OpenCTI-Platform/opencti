@@ -2,9 +2,10 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { FilterGroup } from '../../generated/graphql';
 import type { BasicStoreEntity } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { internalFindByIds } from '../../database/middleware-loader';
-import { stixLoadById } from '../../database/middleware';
+import { fullEntitiesList, internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import { IDS_FILTER } from '../../utils/filtering/filtering-constants';
 import { getParentTypes } from '../../schema/schemaUtils';
 import type { ParsedIntelligenceRequirement, StoreIrCriterion } from './intelligenceRequirement-types';
 import type { StoreIrMatchExplanation } from './intelligenceRequirementMatch-types';
@@ -22,11 +23,10 @@ export interface IrCandidate {
 
 export interface IrEngineState {
   ir: ParsedIntelligenceRequirement;
-  listIds: Map<string, Set<string>>; // list group id -> internal and standard ids of its anchors
-  groupFilters: Map<string, FilterGroup>; // filter group id -> filters
+  listIds: Map<string, Set<string>>; // list or filter group id -> internal and standard ids of its anchors
   keywords: Map<string, string[]>; // keywords group id -> lower-cased keywords
   inRequirement: Set<string>; // internal ids of the entities already in the requirement
-  stixCache: Map<string, any>;
+  filterCache: Map<string, boolean>; // (entity, filters) -> result of the search engine
 }
 
 const activeCriteria = (ir: ParsedIntelligenceRequirement, kind: string) => ir.ir_scope_criteria.filter((c) => c.kind === kind && c.mode !== 'off');
@@ -37,7 +37,6 @@ const activeCriteria = (ir: ParsedIntelligenceRequirement, kind: string) => ir.i
  */
 export const buildEngineState = async (context: AuthContext, user: AuthUser, ir: ParsedIntelligenceRequirement): Promise<IrEngineState> => {
   const listIds = new Map<string, Set<string>>();
-  const groupFilters = new Map<string, FilterGroup>();
   const keywords = new Map<string, string[]>();
   for (let i = 0; i < ir.ir_subject_groups.length; i += 1) {
     const group = ir.ir_subject_groups[i];
@@ -50,22 +49,26 @@ export const buildEngineState = async (context: AuthContext, user: AuthUser, ir:
       });
       listIds.set(group.id, ids);
     } else if (group.kind === 'filter') {
+      // A dynamic group is resolved by the search engine: any OpenCTI filter key can be used (malware types, labels...)
       const filters = parseIrFilters(group.filters);
-      if (filters) groupFilters.set(group.id, filters);
+      const entities = filters ? await fullEntitiesList<BasicStoreEntity>(context, user, [ABSTRACT_STIX_CORE_OBJECT], { filters, baseData: true }) : [];
+      listIds.set(group.id, new Set(entities.flatMap((e) => [e.internal_id, e.standard_id])));
     } else if (group.kind === 'keywords') {
       keywords.set(group.id, group.keywords.map((k) => k.toLowerCase()));
     }
   }
   const needsContent = ir.ir_scope_criteria.some((c) => c.from_in_requirement);
   const inRequirement = needsContent ? await listInRequirementEntityIds(context, user, ir.id) : new Set<string>();
-  return { ir, listIds, groupFilters, keywords, inRequirement, stixCache: new Map() };
+  return { ir, listIds, keywords, inRequirement, filterCache: new Map() };
 };
 
-const loadStix = async (context: AuthContext, user: AuthUser, state: IrEngineState, id: string) => {
-  if (!state.stixCache.has(id)) {
-    state.stixCache.set(id, await stixLoadById(context, user, id));
-  }
-  return state.stixCache.get(id);
+/**
+ * Filters are evaluated by the search engine on the stored entity, so every OpenCTI filter key is supported.
+ */
+export const isEntityMatchingFilters = async (context: AuthContext, user: AuthUser, entityId: string, filters: FilterGroup | null) => {
+  if (!filters) return true;
+  const result = await pageEntitiesConnection(context, user, [ABSTRACT_STIX_CORE_OBJECT], { first: 1, filters: addFilter(filters, IDS_FILTER, entityId) });
+  return result.edges.length > 0;
 };
 
 export const isTypeMatching = (type: string, targetTypes: string[]) => {
@@ -76,8 +79,11 @@ export const isTypeMatching = (type: string, targetTypes: string[]) => {
 
 const matchesFilters = async (context: AuthContext, user: AuthUser, state: IrEngineState, id: string, filters: FilterGroup | null) => {
   if (!filters) return true;
-  const stix = await loadStix(context, user, state, id);
-  return stix ? isStixMatchFilterGroup(context, user, stix, filters) : false;
+  const key = `${id}|${JSON.stringify(filters)}`;
+  if (!state.filterCache.has(key)) {
+    state.filterCache.set(key, await isEntityMatchingFilters(context, user, id, filters));
+  }
+  return state.filterCache.get(key) as boolean;
 };
 
 const isAnchor = async (context: AuthContext, user: AuthUser, state: IrEngineState, criterion: StoreIrCriterion, anchorId: string) => {
@@ -85,8 +91,6 @@ const isAnchor = async (context: AuthContext, user: AuthUser, state: IrEngineSta
   for (let i = 0; i < criterion.from_group_ids.length; i += 1) {
     const groupId = criterion.from_group_ids[i];
     if (state.listIds.get(groupId)?.has(anchorId)) return true;
-    const filters = state.groupFilters.get(groupId);
-    if (filters && await matchesFilters(context, user, state, anchorId, filters)) return true;
   }
   return false;
 };
@@ -167,7 +171,6 @@ export const evaluateEntity = async (context: AuthContext, user: AuthUser, state
   const ext = stix.extensions?.[STIX_EXT_OCTI];
   if (!ext?.id || !ext?.type) return [];
   const entity = { id: ext.id, type: ext.type };
-  state.stixCache.set(entity.id, stix);
   const candidates: IrCandidate[] = [];
   const at = new Date().toISOString();
   // Attribute criteria

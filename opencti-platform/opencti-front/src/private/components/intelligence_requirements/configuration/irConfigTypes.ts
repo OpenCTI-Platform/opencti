@@ -15,13 +15,6 @@ export interface IrEntityOption {
   type: string;
 }
 
-// A condition of the simplified filter builder: one OpenCTI filter
-export interface IrCondition {
-  key: string;
-  operator: string;
-  value: string;
-}
-
 export interface IrKiqDraft {
   id: string;
   text: string;
@@ -34,7 +27,7 @@ export interface IrGroupDraft {
   kind: IrGroupKind;
   role: IrGroupRole;
   entities: IrEntityOption[];
-  conditions: IrCondition[];
+  filters: string | null; // OpenCTI filter group, backend format
   keywords: string[];
 }
 
@@ -47,7 +40,7 @@ export interface IrCriterionDraft {
   relationship_types: string[];
   direction: IrDirection;
   target_types: string[];
-  target_conditions: IrCondition[];
+  target_filters: string | null;
   keyword_fields: string[];
   mode: IrCriterionMode;
 }
@@ -64,7 +57,7 @@ export interface IrRuleDraft {
   name: string;
   applies_to_types: string[];
   applies_to_criterion_id: string | null;
-  conditions: IrCondition[];
+  filters: string | null;
   path_condition: IrPathConditionDraft | null;
   points: number;
   required: boolean;
@@ -96,12 +89,12 @@ export const emptyDraft = (): IrDraft => ({
   thresholds: '50, 80',
   rescan_days: 30,
   kiqs: [],
-  groups: [{ id: newId('g'), name: 'Subjects', kind: 'list', role: 'entry', entities: [], conditions: [], keywords: [] }],
+  groups: [{ id: newId('g'), name: 'Subjects', kind: 'list', role: 'entry', entities: [], filters: null, keywords: [] }],
   criteria: [],
   rules: [],
 });
 
-export const emptyGroup = (): IrGroupDraft => ({ id: newId('g'), name: '', kind: 'list', role: 'entry', entities: [], conditions: [], keywords: [] });
+export const emptyGroup = (): IrGroupDraft => ({ id: newId('g'), name: '', kind: 'list', role: 'entry', entities: [], filters: null, keywords: [] });
 
 export const emptyCriterion = (groups: IrGroupDraft[]): IrCriterionDraft => ({
   id: newId('c'),
@@ -112,7 +105,7 @@ export const emptyCriterion = (groups: IrGroupDraft[]): IrCriterionDraft => ({
   relationship_types: [],
   direction: 'outgoing',
   target_types: [],
-  target_conditions: [],
+  target_filters: null,
   keyword_fields: ['name', 'description', 'content'],
   mode: 'auto',
 });
@@ -122,7 +115,7 @@ export const emptyRule = (): IrRuleDraft => ({
   name: '',
   applies_to_types: [],
   applies_to_criterion_id: null,
-  conditions: [],
+  filters: null,
   path_condition: null,
   points: 10,
   required: false,
@@ -131,37 +124,14 @@ export const emptyRule = (): IrRuleDraft => ({
 
 export const emptyPathCondition = (): IrPathConditionDraft => ({ relationship_types: [], direction: 'incoming', target_relationship_type: 'targets', targets: [] });
 
-// region filters <-> conditions
-interface FilterGroupLike {
-  mode: string;
-  filters: { key: string[] | string; values: string[]; operator?: string | null; mode?: string | null }[];
-  filterGroups: unknown[];
-}
-
-export const conditionsToFilters = (conditions: IrCondition[]): FilterGroupLike | null => {
-  const valid = conditions.filter((c) => c.key && c.value !== '');
-  if (valid.length === 0) return null;
-  return {
-    mode: 'and',
-    filters: valid.map((c) => ({ key: [c.key], values: [c.value], operator: c.operator, mode: 'or' })),
-    filterGroups: [],
-  };
-};
-
-export const filtersToConditions = (filters: string | null | undefined): IrCondition[] => {
-  if (!filters) return [];
+const parseFilters = (filters: string | null) => {
+  if (!filters) return null;
   try {
-    const parsed = JSON.parse(filters) as FilterGroupLike;
-    return (parsed.filters ?? []).map((f) => ({
-      key: Array.isArray(f.key) ? f.key[0] : f.key,
-      operator: f.operator ?? 'eq',
-      value: f.values?.[0] ?? '',
-    }));
+    return JSON.parse(filters);
   } catch {
-    return [];
+    return null;
   }
 };
-// endregion
 
 export const parseThresholds = (value: string) => value
   .split(',')
@@ -186,7 +156,7 @@ export const draftToInput = (draft: IrDraft) => ({
     kind: g.kind,
     role: g.role,
     entity_ids: g.kind === 'list' ? g.entities.map((e) => e.value) : [],
-    filters: g.kind === 'filter' ? conditionsToFilters(g.conditions) : null,
+    filters: g.kind === 'filter' ? parseFilters(g.filters) : null,
     keywords: g.kind === 'keywords' ? g.keywords : [],
   })),
   ir_scope_criteria: draft.criteria.map((c) => ({
@@ -198,7 +168,7 @@ export const draftToInput = (draft: IrDraft) => ({
     relationship_types: c.kind === 'graph' ? c.relationship_types : [],
     direction: c.direction,
     target_types: c.target_types,
-    target_filters: conditionsToFilters(c.target_conditions),
+    target_filters: parseFilters(c.target_filters),
     keyword_fields: c.keyword_fields,
     mode: c.mode,
   })),
@@ -207,7 +177,7 @@ export const draftToInput = (draft: IrDraft) => ({
     name: r.name || r.id,
     applies_to_types: r.applies_to_types,
     applies_to_criterion_id: r.applies_to_criterion_id,
-    filters: conditionsToFilters(r.conditions),
+    filters: parseFilters(r.filters),
     path_condition: r.path_condition && r.path_condition.relationship_types.length > 0 ? {
       relationship_types: r.path_condition.relationship_types,
       direction: r.path_condition.direction,

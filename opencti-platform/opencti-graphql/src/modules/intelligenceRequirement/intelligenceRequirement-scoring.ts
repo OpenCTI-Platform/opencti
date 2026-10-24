@@ -1,12 +1,11 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
-import { patchAttribute, stixLoadById } from '../../database/middleware';
-import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { patchAttribute } from '../../database/middleware';
 import type { ParsedIntelligenceRequirement, StoreIrPathCondition, StoreIrRule } from './intelligenceRequirement-types';
 import { type BasicStoreEntityIntelligenceRequirementMatch, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH } from './intelligenceRequirementMatch-types';
 import { parseIrFilters } from './intelligenceRequirement-config';
-import { isTypeMatching } from './intelligenceRequirement-engine';
+import { isEntityMatchingFilters, isTypeMatching } from './intelligenceRequirement-engine';
 
 // Relevance engine: score = sum of the points of the matching rules, capped 0-100.
 // A required rule that applies but is not met excludes the entity.
@@ -65,7 +64,6 @@ export const computeMatchScore = async (
   ir: ParsedIntelligenceRequirement,
   match: BasicStoreEntityIntelligenceRequirementMatch,
 ): Promise<IrScoreResult> => {
-  const stix = await stixLoadById(context, user, match.match_entity_id);
   const breakdown: IrRuleOutcome[] = [];
   let excluded = false;
   let total = 0;
@@ -77,7 +75,7 @@ export const computeMatchScore = async (
       outcome.reason = 'not applicable';
     } else {
       const filters = parseIrFilters(rule.filters);
-      let met = filters ? (stix ? await isStixMatchFilterGroup(context, user, stix, filters) : false) : true;
+      let met = await isEntityMatchingFilters(context, user, match.match_entity_id, filters);
       if (met && rule.path_condition) {
         met = await isPathConditionMet(context, user, match.match_entity_id, rule.path_condition);
       }

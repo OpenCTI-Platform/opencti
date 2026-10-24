@@ -10,7 +10,6 @@ import {
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
-  Input,
   Select,
   SelectContent,
   SelectItem,
@@ -18,14 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@filigran/design-system';
-import Box from '@mui/material/Box';
-import IconButton from '@common/button/IconButton';
-import Button from '@common/button/Button';
-import { DeleteOutlined } from '@mui/icons-material';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import type { IrCondition, IrEntityOption } from './irConfigTypes';
-import { IR_ATTRIBUTES, IR_ENTITY_TYPES, IR_OPERATOR_LABELS } from './irConstants';
+import type { IrEntityOption } from './irConfigTypes';
 import type { IrFieldsEntitySearchQuery } from './__generated__/IrFieldsEntitySearchQuery.graphql';
 
 // Small controlled fields (no Formik) used by the configuration screen.
@@ -162,57 +156,5 @@ export const IrEntityPicker = ({ label, value, onChange, types }: {
       </ComboboxField>
       <ComboboxContent listAriaLabel={label} />
     </Combobox>
-  );
-};
-
-/**
- * Simplified filter builder: a list of OpenCTI filters on the entity (combined with AND).
- */
-export const IrConditionsEditor = ({ conditions, onChange, addLabel }: {
-  conditions: IrCondition[];
-  onChange: (conditions: IrCondition[]) => void;
-  addLabel?: string;
-}) => {
-  const { t_i18n } = useFormatter();
-  const update = (index: number, patch: Partial<IrCondition>) => onChange(conditions.map((c, i) => (i === index ? { ...c, ...patch } : c)));
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {conditions.map((condition, index) => {
-        const definition = IR_ATTRIBUTES.find((a) => a.key === condition.key) ?? IR_ATTRIBUTES[0];
-        let valueField;
-        if (definition.kind === 'number') {
-          valueField = <Input aria-label={t_i18n('Value')} type="number" value={condition.value} onChange={(e) => update(index, { value: e.target.value })} />;
-        } else {
-          const values = definition.kind === 'type' ? IR_ENTITY_TYPES : (definition.values ?? []);
-          valueField = <IrSelect value={condition.value} options={values.map((v) => ({ value: v, label: definition.kind === 'type' ? t_i18n(`entity_${v}`) : v }))} onChange={(v) => update(index, { value: v })} />;
-        }
-        return (
-          <Box key={index} sx={{ display: 'grid', gridTemplateColumns: '1.3fr 0.6fr 1fr 32px', gap: 1, alignItems: 'center' }}>
-            <IrSelect
-              value={condition.key}
-              options={IR_ATTRIBUTES.map((a) => ({ value: a.key, label: t_i18n(a.label) }))}
-              onChange={(key) => {
-                const next = IR_ATTRIBUTES.find((a) => a.key === key) ?? IR_ATTRIBUTES[0];
-                update(index, { key, operator: next.operators[0], value: next.values?.[0] ?? (next.kind === 'type' ? IR_ENTITY_TYPES[0] : '') });
-              }}
-            />
-            <IrSelect
-              value={condition.operator}
-              options={definition.operators.map((o) => ({ value: o, label: IR_OPERATOR_LABELS[o] ?? o }))}
-              onChange={(operator) => update(index, { operator })}
-            />
-            {valueField}
-            <IconButton aria-label={t_i18n('Delete')} onClick={() => onChange(conditions.filter((_, i) => i !== index))}>
-              <DeleteOutlined fontSize="small" />
-            </IconButton>
-          </Box>
-        );
-      })}
-      <div>
-        <Button variant="tertiary" size="small" onClick={() => onChange([...conditions, { key: 'x_opencti_cisa_kev', operator: 'eq', value: 'true' }])}>
-          {addLabel ?? t_i18n('Add condition')}
-        </Button>
-      </div>
-    </Box>
   );
 };

@@ -5,7 +5,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
-import { emptyDraft, filtersToConditions, type IrDraft } from './irConfigTypes';
+import { emptyDraft, type IrDraft } from './irConfigTypes';
 import type { IntelligenceRequirementConfigurationQuery, IntelligenceRequirementConfigurationQuery$data } from './__generated__/IntelligenceRequirementConfigurationQuery.graphql';
 
 const configurationQuery = graphql`
@@ -81,7 +81,7 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
     kind: g.kind,
     role: g.role,
     entities: g.entities.map(toOption),
-    conditions: filtersToConditions(g.filters),
+    filters: g.filters ?? null,
     keywords: [...g.keywords],
   })),
   criteria: ir.ir_scope_criteria.map((c) => ({
@@ -93,7 +93,7 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
     relationship_types: [...c.relationship_types],
     direction: c.direction,
     target_types: [...c.target_types],
-    target_conditions: filtersToConditions(c.target_filters),
+    target_filters: c.target_filters ?? null,
     keyword_fields: [...c.keyword_fields],
     mode: c.mode,
   })),
@@ -102,7 +102,7 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
     name: r.name,
     applies_to_types: [...r.applies_to_types],
     applies_to_criterion_id: r.applies_to_criterion_id ?? null,
-    conditions: filtersToConditions(r.filters),
+    filters: r.filters ?? null,
     path_condition: r.path_condition ? {
       relationship_types: [...r.path_condition.relationship_types],
       direction: r.path_condition.direction,

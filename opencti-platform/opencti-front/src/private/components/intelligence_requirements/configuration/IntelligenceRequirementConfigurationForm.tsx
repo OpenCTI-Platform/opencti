@@ -21,7 +21,8 @@ import {
   newId,
 } from './irConfigTypes';
 import { IR_ENTITY_TYPES, IR_KEYWORD_FIELDS, IR_RELATIONSHIP_TYPES } from './irConstants';
-import { IrConditionsEditor, IrEntityPicker, IrMultiSelect, IrSelect } from './IrFields';
+import { IrEntityPicker, IrMultiSelect, IrSelect } from './IrFields';
+import IrFilterBuilder from './IrFilterBuilder';
 import type { IntelligenceRequirementConfigurationFormAddMutation } from './__generated__/IntelligenceRequirementConfigurationFormAddMutation.graphql';
 import type { IntelligenceRequirementConfigurationFormUpdateMutation } from './__generated__/IntelligenceRequirementConfigurationFormUpdateMutation.graphql';
 
@@ -190,7 +191,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
               />
             </Row>
             {group.kind === 'list' && <IrEntityPicker label={t_i18n('Entities')} value={group.entities} onChange={(entities) => setGroup(group.id, { entities })} />}
-            {group.kind === 'filter' && <IrConditionsEditor conditions={group.conditions} onChange={(conditions) => setGroup(group.id, { conditions })} />}
+            {group.kind === 'filter' && <IrFilterBuilder value={group.filters} onChange={(filters) => setGroup(group.id, { filters })} />}
             {group.kind === 'keywords' && (
               <IrMultiSelect
                 label={t_i18n('Keywords')}
@@ -264,7 +265,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
               </Row>
             )}
             <Text as="div" variant="content-caption" style={{ marginBottom: 8, opacity: 0.8 }}>{t_i18n('Target filters (optional)')}</Text>
-            <IrConditionsEditor conditions={criterion.target_conditions} onChange={(conditions) => setCriterion(criterion.id, { target_conditions: conditions })} />
+            <IrFilterBuilder value={criterion.target_filters} onChange={(filters) => setCriterion(criterion.id, { target_filters: filters })} />
           </SubCard>
         ))}
       </Block>
@@ -299,7 +300,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
               />
             </Row>
             <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('If')}</Text>
-            <IrConditionsEditor conditions={rule.conditions} onChange={(conditions) => setRule(rule.id, { conditions })} />
+            <IrFilterBuilder value={rule.filters} onChange={(filters) => setRule(rule.id, { filters })} />
             <Box sx={{ mt: 2 }}>
               <Checkbox
                 label={t_i18n('Path condition: linked to an entity that has a relationship toward…')}
