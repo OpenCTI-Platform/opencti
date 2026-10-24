@@ -1,6 +1,6 @@
 import React from 'react';
 import { BaseEdge, EdgeLabelRenderer, EdgeProps, getBezierPath } from 'reactflow';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../../../components/Theme';
 
 function EdgeLabel({ transform, label }: { transform: string; label: string }) {

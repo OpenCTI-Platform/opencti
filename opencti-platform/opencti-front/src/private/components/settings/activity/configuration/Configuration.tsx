@@ -25,7 +25,7 @@ import { Delete } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import type { Theme } from '../../../../../components/Theme';

@@ -2,7 +2,7 @@ import React from 'react';
 import { ContentCopy, Edit, DeleteOutlined, WarningAmber } from '@mui/icons-material';
 import { ListItemText, Tooltip, Typography, ListItem } from '@mui/material';
 import { IconButton } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { renderWidgetIcon } from '../../../../../utils/widget/widgetUtils';
 import { useFormatter } from '../../../../../components/i18n';
 import { useFintelTemplateContext } from './FintelTemplateContext';

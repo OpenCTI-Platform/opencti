@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react';
 import DangerZoneBlock from './DangerZoneBlock';
 import Button, { CustomButtonProps } from '../../../../components/common/button/Button';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../../../components/Theme';
 import { SensitiveConfigType } from '../../../../utils/hooks/useSensitiveModifications';
 

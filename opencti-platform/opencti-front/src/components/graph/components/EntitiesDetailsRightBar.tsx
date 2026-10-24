@@ -3,7 +3,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';

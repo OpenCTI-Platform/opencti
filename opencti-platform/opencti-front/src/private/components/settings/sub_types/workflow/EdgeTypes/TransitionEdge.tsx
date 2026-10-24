@@ -1,6 +1,6 @@
 import { useContext, useState } from 'react';
 import { EdgeProps, getSmoothStepPath, type XYPosition } from 'reactflow';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Icon, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@filigran/design-system';
 import type { Theme } from '../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../components/i18n';

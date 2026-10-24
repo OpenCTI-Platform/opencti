@@ -14,7 +14,7 @@ import { formCreationQuery } from './FormCreation';
 import type { FormBuilderData, FormFieldAttribute } from './Form.d';
 import { convertFormBuilderDataToSchema, formatFormSchemaMappingError, normalizeDraftAuthorizedMembersDefaults, validateFormSchemaMappings } from './FormUtils';
 import Loader from '../../../../components/Loader';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Input, Textarea } from '@filigran/design-system';
 
 const useStyles = makeStyles<Theme>(() => ({

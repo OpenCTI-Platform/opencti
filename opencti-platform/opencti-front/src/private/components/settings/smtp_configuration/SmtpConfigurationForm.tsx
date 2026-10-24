@@ -5,7 +5,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import SwitchField from 'src/components/fields/SwitchField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';

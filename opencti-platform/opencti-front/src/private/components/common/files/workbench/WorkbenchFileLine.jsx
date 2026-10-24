@@ -13,7 +13,7 @@ import { Link } from 'react-router';
 import Slide from '@mui/material/Slide';
 import { Chip } from '@filigran/design-system';
 import { ListItemButton } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';

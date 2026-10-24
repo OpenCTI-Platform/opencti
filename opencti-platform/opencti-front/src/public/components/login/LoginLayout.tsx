@@ -1,5 +1,5 @@
 import { Box, Stack, SxProps } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { PropsWithChildren } from 'react';
 import { Theme } from '../../../components/Theme';
 import logoFiligranBaselineDark from '../../../static/images/logo_filigran_baseline_dark.svg';

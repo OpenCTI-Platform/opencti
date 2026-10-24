@@ -1,6 +1,7 @@
 import DrawerHeader from '@common/drawer/DrawerHeader';
 import DrawerMUI from '@mui/material/Drawer';
-import { createStyles, useTheme } from '@mui/styles';
+import { createStyles } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { fdsLayerClass, layerInputVars, SURFACE_LAYER } from '../../../../utils/fdsLayer';
 import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';

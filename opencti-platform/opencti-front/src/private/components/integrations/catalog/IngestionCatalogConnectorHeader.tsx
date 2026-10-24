@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import { GroupsOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import IngestionCatalogChip from '@components/integrations/catalog/IngestionCatalogUseCaseChip';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';

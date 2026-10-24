@@ -6,7 +6,7 @@ import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import GroupDeletionDialog from '@components/settings/groups/GroupDeletionDialog';
 import GroupEdition from '@components/settings/groups/GroupEdition';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Group from './Group';
