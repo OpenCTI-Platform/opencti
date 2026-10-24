@@ -130,6 +130,8 @@ export interface TriggerResult {
   /** Present when the transition spawned async background tasks. */
   executionStatus?: 'pending' | 'completed' | 'error';
   asyncActionSlots?: AsyncActionSlot[];
+  /** The entity was already in the target status: no action ran and no history was recorded. */
+  unchanged?: boolean;
 }
 
 // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
