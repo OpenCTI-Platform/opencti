@@ -2406,16 +2406,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.6.2":
-  version: 1.6.2
-  resolution: "@langchain/openai@npm:1.6.2"
+"@langchain/openai@npm:1.6.3":
+  version: 1.6.3
+  resolution: "@langchain/openai@npm:1.6.3"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
-    openai: "npm:^7.10.0"
+    openai: "npm:^7.23.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.14
-  checksum: 10c0/d278c03002aabd5344c3f5a9f793ed050bb8d8273549c005e401fb0e551d8c411ed4a22e5dcad0943e691a9db86e0af4621397455f5942f4065ef5cd298e9d75
+    "@langchain/core": ^1.2.20
+  checksum: 10c0/3c837b33d596e499a1e8c85703b9c54759cc889d2e43e3bec8af62f38daa6a7150d2c4c89607cde6b89b671581cd7b28dfb89f9255e0488651f51d71a0e7588a
   languageName: node
   linkType: hard
 
@@ -10163,7 +10163,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.39.0":
+"openai@npm:7.39.0, openai@npm:^7.23.0":
   version: 7.39.0
   resolution: "openai@npm:7.39.0"
   peerDependencies:
@@ -10187,33 +10187,6 @@ __metadata:
     zod:
       optional: true
   checksum: 10c0/c7881f9cb1368f2aa11610a2e492ee1163eb51ddecf8dff9db8d886008b453a54f5ab82701c42ecda12eeeafa83e046e12d344d16a7a8338f6382c7fdab49305
-  languageName: node
-  linkType: hard
-
-"openai@npm:^7.10.0":
-  version: 7.34.0
-  resolution: "openai@npm:7.34.0"
-  peerDependencies:
-    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
-    "@smithy/hash-node": ">=4.3.0 <5"
-    "@smithy/signature-v4": ">=5.4.0 <6"
-    undici: ">=5 <9"
-    ws: ^8.21.0
-    zod: ^3.25 || ^4.0
-  peerDependenciesMeta:
-    "@aws-sdk/credential-provider-node":
-      optional: true
-    "@smithy/hash-node":
-      optional: true
-    "@smithy/signature-v4":
-      optional: true
-    undici:
-      optional: true
-    ws:
-      optional: true
-    zod:
-      optional: true
-  checksum: 10c0/3ed2dd9fdd94bf1ffe8495b18c14354a21b18461a9fc5ef4558c0c3d5121d98062dd2b8721c5f894fa1411a5e4c1322ee2ae16a89003afb22011ad6697c07bc4
   languageName: node
   linkType: hard
 
@@ -10241,7 +10214,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.2.20"
     "@langchain/mistralai": "npm:1.2.0"
-    "@langchain/openai": "npm:1.6.2"
+    "@langchain/openai": "npm:1.6.3"
     "@lezer/javascript": "npm:1.5.6"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:2.7.0"
