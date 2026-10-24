@@ -39,6 +39,16 @@ export const ingestionHealthAttributes: AttributeDefinition[] = [
         isFilterable: false,
       },
       {
+        name: 'last_event_date',
+        label: 'Health last failure event date',
+        type: 'date',
+        mandatoryType: 'no',
+        editDefault: false,
+        multiple: false,
+        upsert: false,
+        isFilterable: false,
+      },
+      {
         name: 'health_checks',
         label: 'Health checks',
         type: 'object',
