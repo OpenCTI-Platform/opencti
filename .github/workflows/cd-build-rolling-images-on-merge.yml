@@ -55,18 +55,10 @@ jobs:
       - name: Build graphql production and prune devDependencies
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
-            -w /opt/opencti/opencti-graphql \
+            -v ${{ github.workspace }}:/opt/opencti \
+            -w /opt/opencti/opencti-platform/opencti-graphql \
             filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
-
-      - name: Build front production and prune devDependencies
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/opencti-platform/opencti-front:/opt/opencti/opencti-front \
-            -w /opt/opencti/opencti-front \
-            filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && yarn build && yarn workspaces focus --production"
+            sh -c "yarn workspaces focus opencti-graphql && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production opencti-graphql"
 
       - name: Install Syft
         uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
@@ -85,6 +77,14 @@ jobs:
             | .metadata.component.name = "opencti-graphql"
             | .metadata.component["bom-ref"] = "opencti-graphql"
             | .metadata.component.version = $version' sbom-opencti-graphql.cdx.json > tmp.cdx.json && mv tmp.cdx.json sbom-opencti-graphql.cdx.json
+
+      - name: Build front production and prune devDependencies
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/opt/opencti \
+            -w /opt/opencti/opencti-platform/opencti-front \
+            filigran/builder:${{ github.sha }} \
+            sh -c "yarn workspaces focus opencti-front && yarn build && yarn workspaces focus --production opencti-front"
 
       - name: Generate front SBOM
         working-directory: opencti-platform/opencti-front
