@@ -14613,6 +14613,8 @@ export type IntelligenceRequirementMatch = BasicObject & InternalObject & {
   match_excluded: Scalars['Boolean']['output'];
   match_explanations: Array<IrMatchExplanation>;
   match_last_fact_at?: Maybe<Scalars['DateTime']['output']>;
+  /** Other requirements in which the same entity is in or proposed */
+  match_other_requirements: Array<IntelligenceRequirement>;
   match_score: Scalars['Int']['output'];
   match_score_breakdown: Array<IrRuleOutcome>;
   match_status: IrMatchStatus;
@@ -15144,6 +15146,7 @@ export type IrMatchExplanation = {
   field?: Maybe<Scalars['String']['output']>;
   keyword?: Maybe<Scalars['String']['output']>;
   kind: IrCriterionKind;
+  relationship?: Maybe<StixCoreRelationship>;
   relationship_id?: Maybe<Scalars['String']['output']>;
   relationship_type?: Maybe<Scalars['String']['output']>;
 };
@@ -48595,6 +48598,7 @@ export type IntelligenceRequirementMatchResolvers<ContextType = any, ParentType 
   match_excluded?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   match_explanations?: Resolver<Array<ResolversTypes['IrMatchExplanation']>, ParentType, ContextType>;
   match_last_fact_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  match_other_requirements?: Resolver<Array<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType>;
   match_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   match_score_breakdown?: Resolver<Array<ResolversTypes['IrRuleOutcome']>, ParentType, ContextType>;
   match_status?: Resolver<ResolversTypes['IrMatchStatus'], ParentType, ContextType>;
@@ -48782,6 +48786,7 @@ export type IrMatchExplanationResolvers<ContextType = any, ParentType extends Re
   field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   keyword?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   kind?: Resolver<ResolversTypes['IrCriterionKind'], ParentType, ContextType>;
+  relationship?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType>;
   relationship_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   relationship_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;

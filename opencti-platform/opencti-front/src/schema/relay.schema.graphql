@@ -16155,6 +16155,7 @@ type IrMatchExplanation {
   anchor: StixCoreObject
   relationship_id: String
   relationship_type: String
+  relationship: StixCoreRelationship
   direction: String
   keyword: String
   field: String
@@ -16184,6 +16185,9 @@ type IntelligenceRequirementMatch implements InternalObject & BasicObject {
   match_score_breakdown: [IrRuleOutcome!]!
   match_excluded: Boolean!
   match_last_fact_at: DateTime
+
+  """Other requirements in which the same entity is in or proposed"""
+  match_other_requirements: [IntelligenceRequirement!]!
 }
 
 enum IntelligenceRequirementMatchOrdering {

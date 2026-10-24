@@ -18,7 +18,8 @@ const overviewQuery = graphql`
       id
       ir_thresholds
       ir_kiqs { id text criteria_ids }
-      ir_scope_criteria { id name kind }
+      ir_subject_groups { id name }
+      ir_scope_criteria { id name kind mode from_group_ids from_in_requirement }
     }
     intelligenceRequirementMatches(id: $id, first: 500, statuses: [auto, accepted, proposed], orderBy: match_score, orderMode: desc) {
       edges {
@@ -35,6 +36,7 @@ const overviewQuery = graphql`
           match_explanations {
             criterion_id
             kind
+            anchor_id
             relationship_type
             direction
             keyword
@@ -57,7 +59,23 @@ const overviewQuery = graphql`
           item_entity_type
           created_at
           item_data { criterion_id from_score to_score reasons }
-          match { id match_score match_excluded }
+          match {
+            id
+            match_score
+            match_excluded
+            entity { ... on StixCoreObject { representative { main } } }
+            match_explanations {
+              criterion_id
+              kind
+              anchor_id
+              relationship_type
+              direction
+              keyword
+              field
+              anchor { representative { main } }
+              container { representative { main } }
+            }
+          }
         }
       }
     }
@@ -79,6 +97,7 @@ const IrOverview = ({ irId }: { irId: string }) => {
   const data = useLazyLoadQuery<IrOverviewQuery>(overviewQuery, { id: irId }, { fetchPolicy: 'network-only', fetchKey });
   const ir = data.intelligenceRequirement;
   const criteria = ir?.ir_scope_criteria ?? [];
+  const groups = ir?.ir_subject_groups ?? [];
   const matches = (data.intelligenceRequirementMatches?.edges ?? []).map((e) => e.node);
   const inRequirement = matches.filter((m) => IN_STATUSES.includes(m.match_status) && !m.match_excluded);
   const proposed = matches.filter((m) => m.match_status === 'proposed');
@@ -103,7 +122,9 @@ const IrOverview = ({ irId }: { irId: string }) => {
             <Link to={`/dashboard/intelligence_requirements/${irId}/inbox`}>{t_i18n('Open inbox')}</Link>
           </Box>
           {items.length === 0 && <Text as="span" variant="content-base">{t_i18n('Nothing to review.')}</Text>}
-          {items.slice(0, 6).map((item) => <IrInboxItem key={item.id} item={item} criteria={criteria} compact />)}
+          {items.slice(0, 6).map((item) => (
+            <IrInboxItem key={item.id} item={item} criteria={criteria} groups={groups} matches={matches} onDetails={setSelected} compact />
+          ))}
         </Paper>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Paper padding={16}>

@@ -1,5 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import type { BasicStoreEntity } from '../../types/store';
 import { createEntity, patchAttribute } from '../../database/middleware';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { enforceEnableFeatureFlag } from '../../utils/access';
@@ -54,6 +55,15 @@ export const listMatches = async (context: AuthContext, user: AuthUser, irId: st
   return fullEntitiesList<BasicStoreEntityIntelligenceRequirementMatch>(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], {
     filters: matchFilters(irId, undefined, statuses),
   });
+};
+
+// Other requirements in which the same entity is in or proposed ("also in")
+export const listOtherRequirementsOfMatch = async (context: AuthContext, user: AuthUser, match: BasicStoreEntityIntelligenceRequirementMatch) => {
+  const filters = addFilter(addFilter(undefined, 'match_entity_id', match.match_entity_id), 'match_status', [...IR_MATCH_IN_STATUSES, 'proposed']);
+  const others = await fullEntitiesList<BasicStoreEntityIntelligenceRequirementMatch>(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], { filters });
+  const irIds = Array.from(new Set(others.map((m) => m.ir_id).filter((id) => id !== match.ir_id)));
+  if (irIds.length === 0) return [];
+  return internalFindByIds<BasicStoreEntity>(context, user, irIds);
 };
 
 // Entities that are part of the requirement (used as starting point of "second hop" criteria)

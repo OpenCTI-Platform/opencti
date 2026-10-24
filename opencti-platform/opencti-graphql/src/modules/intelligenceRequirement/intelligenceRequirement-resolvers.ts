@@ -13,7 +13,7 @@ import {
   intelligenceRequirementUpdate,
 } from './intelligenceRequirement-domain';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
-import { findMatchesPaginated, loadMatchById, parseMatchExplanations } from './intelligenceRequirementMatch-domain';
+import { findMatchesPaginated, listOtherRequirementsOfMatch, loadMatchById, parseMatchExplanations } from './intelligenceRequirementMatch-domain';
 import { findItemsPaginated, parseItemData } from './intelligenceRequirementItem-domain';
 import { decideItem, setMatchStatus } from './intelligenceRequirement-pipeline';
 
@@ -71,6 +71,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     match_excluded: (match) => match.match_excluded ?? false,
     match_score: (match) => match.match_score ?? 0,
     match_score_breakdown: (match) => parseJson(match.match_score_breakdown, []),
+    match_other_requirements: (match, _, context) => listOtherRequirementsOfMatch(context, context.user, match),
   },
   IntelligenceRequirementItem: {
     created_at: (item) => item.created_at ?? new Date(0),
@@ -83,6 +84,10 @@ const intelligenceRequirementResolvers: Resolvers = {
     anchor: (explanation, _, context) => {
       if (!explanation.anchor_id) return null;
       return context.batch.idsBatchLoader.load({ id: explanation.anchor_id, type: explanation.anchor_type });
+    },
+    relationship: (explanation, _, context) => {
+      if (!explanation.relationship_id) return null;
+      return context.batch.idsBatchLoader.load({ id: explanation.relationship_id, type: explanation.relationship_type });
     },
     container: (explanation, _, context) => {
       if (!explanation.container_id) return null;
