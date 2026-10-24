@@ -29,6 +29,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary?.main,
   },
   bodyItem: bodyItemStyle,
+  bodyItemText: {
+    width: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    '& > *': {
+      maxWidth: '100%',
+      minWidth: 0,
+    },
+  },
   goIcon: {
     position: 'absolute',
     right: -10,
@@ -131,7 +141,9 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(stixCoreObject)}
+                <div className={classes.bodyItemText}>
+                  {value.render?.(stixCoreObject)}
+                </div>
               </div>
             ))}
           </div>
