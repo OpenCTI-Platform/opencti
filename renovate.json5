@@ -81,6 +81,16 @@
       allowedVersions: '<8.7',
       description: 'Keep redis docker image at version 8.6.x',
     },
+    {
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'rabbitmq',
+      ],
+      allowedVersions: '<4.4',
+      description: 'Keep rabbitmq docker image at version 4.3.x',
+    },
     // sticks to MIT version of apexcharts
     {
       matchDepNames: [
