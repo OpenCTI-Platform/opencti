@@ -1,0 +1,139 @@
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent } from '@testing-library/react';
+import testRender from '../../../utils/tests/test-render';
+import type { FilterDefinition } from '../../../utils/hooks/useAuth';
+import type { WidgetDataSelection } from '../../../utils/widget/widget';
+
+const mocks = vi.hoisted(() => ({
+  setConfigWidget: vi.fn(),
+  widget: {} as Record<string, unknown>,
+}));
+
+const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
+  filterKey, type, label, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
+});
+
+vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../utils/hooks/useAuth')>()),
+  default: () => ({
+    schema: {
+      filterKeysSchema: new Map([
+        ['Report', new Map([
+          ['createdBy', definition('createdBy', 'id', 'Author', ['Report'])],
+          ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
+        ])],
+      ]),
+    },
+  }),
+}));
+vi.mock('./WidgetConfigContext', () => ({
+  useWidgetConfigContext: () => ({
+    config: { widget: mocks.widget },
+    setConfigWidget: mocks.setConfigWidget,
+    host: { kind: 'workspace' },
+  }),
+}));
+
+import WidgetBreakdownSelection from './WidgetBreakdownSelection';
+
+const reports = {
+  perspective: 'entities',
+  filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+} as unknown as WidgetDataSelection;
+
+const setWidget = (overrides: Record<string, unknown>) => {
+  mocks.widget = { type: 'vertical-bar', perspective: 'entities', dataSelection: [reports], parameters: {}, ...overrides };
+};
+
+describe('WidgetBreakdownSelection', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const isDisabled = (element: HTMLElement) => element.hasAttribute('disabled') || element.getAttribute('data-disabled') !== null;
+
+  it('offers the fields of the dataset types, then the series settings once a field is chosen', () => {
+    setWidget({ parameters: { breakdownBy: 'report_types' } });
+    const { getAllByRole, getByRole, getByText } = testRender(<WidgetBreakdownSelection />);
+
+    expect(getByText('Break down by')).toBeTruthy();
+    expect(getByText('Maximum number of series')).toBeTruthy();
+    expect(getByText('Order')).toBeTruthy();
+    expect(getByRole('switch').getAttribute('aria-checked')).toBe('false');
+    expect(getByText('Include Other')).toBeTruthy();
+    expect(getAllByRole('combobox')[0].textContent).toContain('Report types');
+    expect(getAllByRole('combobox')[2].textContent).toContain('Highest values');
+    expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+  });
+
+  it('shows the stored order and other series', () => {
+    setWidget({ parameters: { breakdownBy: 'report_types', breakdownOrder: 'asc', breakdownOther: true } });
+    const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
+
+    expect(getAllByRole('combobox')[2].textContent).toContain('Lowest values');
+    expect(getByRole('switch').getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('stores the other series choice', () => {
+    setWidget({ parameters: { breakdownBy: 'report_types' } });
+    const { getByRole } = testRender(<WidgetBreakdownSelection />);
+    fireEvent.click(getByRole('switch'));
+
+    expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
+      parameters: expect.objectContaining({ breakdownBy: 'report_types', breakdownOther: true }),
+    }));
+  });
+
+  it('does not offer the order and other series without a field', () => {
+    setWidget({});
+    const { queryByText, queryByRole } = testRender(<WidgetBreakdownSelection />);
+
+    expect(queryByText('Maximum number of series')).toBeNull();
+    expect(queryByText('Order')).toBeNull();
+    expect(queryByText('Include Other')).toBeNull();
+    expect(queryByRole('switch')).toBeNull();
+  });
+
+  it('cannot be chosen with several datasets', () => {
+    setWidget({ dataSelection: [reports, reports] });
+    const { getAllByRole, queryByText } = testRender(<WidgetBreakdownSelection />);
+
+    expect(isDisabled(getAllByRole('combobox')[0])).toBe(true);
+    expect(queryByText('Maximum number of series')).toBeNull();
+  });
+
+  it('disables every control with several datasets', () => {
+    setWidget({ dataSelection: [reports, reports], parameters: { breakdownBy: 'report_types' } });
+    const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
+
+    const comboboxes = getAllByRole('combobox');
+    expect(comboboxes).toHaveLength(3);
+    comboboxes.forEach((combobox) => expect(isDisabled(combobox)).toBe(true));
+    expect(isDisabled(getByRole('switch'))).toBe(true);
+  });
+
+  it('keeps showing the configured field, disabled, with several datasets', () => {
+    setWidget({ dataSelection: [reports, reports], parameters: { breakdownBy: 'report_types' } });
+    const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+
+    const [fieldSelect] = getAllByRole('combobox');
+    expect(fieldSelect.textContent).toContain('Report types');
+    expect(isDisabled(fieldSelect)).toBe(true);
+  });
+
+  it('drops a field the dataset types no longer carry, with its settings', () => {
+    setWidget({ parameters: { breakdownBy: 'malware_types', breakdownLimit: 20, breakdownOrder: 'asc', breakdownOther: true } });
+    testRender(<WidgetBreakdownSelection />);
+
+    expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
+      parameters: { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
+    }));
+  });
+
+  it('is not shown for widgets that cannot be broken down', () => {
+    setWidget({ perspective: 'relationships' });
+    const { queryByTestId } = testRender(<WidgetBreakdownSelection />);
+    expect(queryByTestId('widget-breakdown-selection')).toBeNull();
+  });
+});

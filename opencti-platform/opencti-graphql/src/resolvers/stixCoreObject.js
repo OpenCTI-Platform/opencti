@@ -41,6 +41,7 @@ import {
   stixCoreObjectsMultiDistribution,
   stixCoreObjectsMultiNumber,
   stixCoreObjectsMultiTimeSeries,
+  stixCoreObjectsTimeSeriesBreakdown,
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
@@ -80,6 +81,7 @@ const stixCoreObjectResolvers = {
       return stixCoreObjectsTimeSeries(context, context.user, args);
     },
     stixCoreObjectsMultiTimeSeries: (_, args, context) => stixCoreObjectsMultiTimeSeries(context, context.user, args),
+    stixCoreObjectsTimeSeriesBreakdown: (_, args, context) => stixCoreObjectsTimeSeriesBreakdown(context, context.user, args),
     stixCoreObjectsNumber: (_, args, context) => stixCoreObjectsNumber(context, context.user, args),
     stixCoreObjectsMultiNumber: (_, args, context) => stixCoreObjectsMultiNumber(context, context.user, args),
     stixCoreObjectsDistribution: (_, args, context) => {

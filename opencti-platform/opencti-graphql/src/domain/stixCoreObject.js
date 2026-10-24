@@ -7,6 +7,7 @@ import {
   distributionEntities,
   stixBundleByIdStringify,
   storeLoadByIdWithRefs,
+  timeSeriesBreakdownEntities,
   timeSeriesEntities,
 } from '../database/middleware';
 import {
@@ -456,6 +457,11 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
     const types = extractStixCoreObjectTypesFromArgs(timeSeriesParameter);
     return { data: timeSeriesEntities(context, user, types, { ...args, ...timeSeriesParameter }) };
   }));
+};
+
+export const stixCoreObjectsTimeSeriesBreakdown = (context, user, args) => {
+  const types = extractStixCoreObjectTypesFromArgs(args);
+  return timeSeriesBreakdownEntities(context, user, types, args);
 };
 
 export const stixCoreObjectsNumber = (context, user, args) => {

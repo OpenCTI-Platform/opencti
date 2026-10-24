@@ -423,6 +423,17 @@ type TimeSeries {
 type MultiTimeSeries {
   data: [TimeSeries]
 }
+type TimeSeriesBreakdownSerie {
+  label: String!
+  entity: StixObjectOrStixRelationshipOrCreator
+  value: Int
+  isOther: Boolean!
+  data: [TimeSeries]
+}
+type TimeSeriesBreakdown {
+  truncated: Boolean!
+  series: [TimeSeriesBreakdownSerie!]!
+}
 input AuditsTimeSeriesParameters {
   field: String!
   types: [String]
@@ -14309,6 +14320,20 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreObjectsTimeSeriesBreakdown(
+    field: String!
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int
+    order: OrderingMode
+    includeOther: Boolean
+    onlyInferred: Boolean
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]

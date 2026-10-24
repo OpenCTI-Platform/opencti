@@ -441,6 +441,19 @@ type MultiTimeSeries {
   data: [TimeSeries]
 }
 
+type TimeSeriesBreakdownSerie {
+  label: String!
+  entity: StixObjectOrStixRelationshipOrCreator
+  value: Int
+  isOther: Boolean!
+  data: [TimeSeries]
+}
+
+type TimeSeriesBreakdown {
+  truncated: Boolean!
+  series: [TimeSeriesBreakdownSerie!]!
+}
+
 input AuditsTimeSeriesParameters {
   field: String!
   types: [String]
@@ -8847,6 +8860,7 @@ type Query {
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixCoreObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   stixCoreObjectsMultiTimeSeries(startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]): [MultiTimeSeries]
+  stixCoreObjectsTimeSeriesBreakdown(field: String!, dateAttribute: String, startDate: DateTime!, endDate: DateTime, interval: String!, limit: Int, order: OrderingMode, includeOther: Boolean, onlyInferred: Boolean, types: [String], filters: FilterGroup, search: String): TimeSeriesBreakdown
   stixCoreObjectsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
   stixCoreObjectsMultiNumber(dateAttribute: String, startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, numberParameters: [StixCoreObjectsNumberParameters]): [Number]
   stixCoreObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
