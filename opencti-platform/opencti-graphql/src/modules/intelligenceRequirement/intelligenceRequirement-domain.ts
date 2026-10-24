@@ -1,0 +1,98 @@
+import { now } from 'moment';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH } from './intelligenceRequirementMatch-types';
+import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM } from './intelligenceRequirementItem-types';
+import { createEntity, internalDeleteElementById } from '../../database/middleware';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { notify } from '../../database/redis';
+import { BUS_TOPICS, INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { deleteInternalObject, editInternalObject } from '../../domain/internalObject';
+import { enforceEnableFeatureFlag, SYSTEM_USER, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import type { EditInput, IntelligenceRequirementInput } from '../../generated/graphql';
+import { FunctionalError } from '../../config/errors';
+import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, type StoreEntityIntelligenceRequirement } from './intelligenceRequirement-types';
+import { parseIntelligenceRequirement, serializeIntelligenceRequirementInput } from './intelligenceRequirement-config';
+import { rescoreRequirement } from './intelligenceRequirement-pipeline';
+
+const rescanStartEventId = (rescanDays: number) => `${now() - (rescanDays * 24 * 3600 * 1000)}-0`;
+
+export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
+  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
+  return storeLoadById<BasicStoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
+};
+
+export const findIntelligenceRequirementPaginated = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityIntelligenceRequirement>) => {
+  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
+  return pageEntitiesConnection<BasicStoreEntityIntelligenceRequirement>(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT], opts);
+};
+
+export const intelligenceRequirementAdd = async (context: AuthContext, user: AuthUser, input: IntelligenceRequirementInput) => {
+  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
+  const attributes = serializeIntelligenceRequirementInput(input);
+  const authorized_members = input.authorized_members ?? [
+    { id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN },
+    { id: MEMBER_ACCESS_ALL, access_right: MEMBER_ACCESS_RIGHT_VIEW },
+  ];
+  const finalInput = { ...attributes, lastEventId: rescanStartEventId(attributes.ir_rescan_days), authorized_members };
+  const created = await createEntity(context, user, finalInput, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
+    message: `creates intelligence requirement \`${created.name}\``,
+    context_data: { id: created.internal_id, entity_type: ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, input: attributes },
+  });
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
+};
+
+/**
+ * Replace the whole configuration of a requirement.
+ * The stream position is kept, so the engine continues from where it was.
+ */
+export const intelligenceRequirementUpdate = async (context: AuthContext, user: AuthUser, id: string, input: IntelligenceRequirementInput) => {
+  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
+  const existing = await findById(context, user, id);
+  if (!existing) throw FunctionalError('Intelligence requirement not found', { id });
+  const attributes = serializeIntelligenceRequirementInput(input);
+  const editInputs: EditInput[] = Object.entries(attributes).map(([key, value]) => ({ key, value: Array.isArray(value) ? value : [value] }));
+  const updated = await editInternalObject<StoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, editInputs);
+  // Relevance rules may have changed: rescore the entities of the requirement (threshold crossings create inbox items)
+  await rescoreRequirement(context, SYSTEM_USER, parseIntelligenceRequirement(updated as unknown as BasicStoreEntityIntelligenceRequirement));
+  return updated;
+};
+
+export const intelligenceRequirementStatusUpdate = async (context: AuthContext, user: AuthUser, id: string, status: string) => {
+  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
+  return editInternalObject<StoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, [{ key: 'ir_status', value: [status] }]);
+};
+
+export const intelligenceRequirementDelete = async (context: AuthContext, user: AuthUser, id: string) => {
+  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
+  const deleted = await deleteInternalObject(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
+  // Delete the entities and inbox items of the requirement
+  const children = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM], {
+    filters: addFilter(undefined, 'ir_id', id),
+  });
+  for (let i = 0; i < children.length; i += 1) {
+    await internalDeleteElementById(context, SYSTEM_USER, children[i].id, children[i].entity_type);
+  }
+  return deleted;
+};
+
+/**
+ * Engine side: move the stream position of a requirement without audit log.
+ */
+export const updateIntelligenceRequirementLastEventId = async (context: AuthContext, user: AuthUser, id: string, lastEventId: string) => {
+  return editInternalObject<StoreEntityIntelligenceRequirement>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_INTELLIGENCE_REQUIREMENT,
+    [{ key: 'lastEventId', value: [lastEventId] }],
+    { auditLogEnabled: false },
+  );
+};

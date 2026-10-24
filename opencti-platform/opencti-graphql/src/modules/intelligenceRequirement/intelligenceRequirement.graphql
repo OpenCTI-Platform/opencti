@@ -1,0 +1,372 @@
+# Proof of concept of a generic PIR model (feature flag INTELLIGENCE_REQUIREMENTS).
+
+enum IntelligenceRequirementPriority {
+  critical
+  high
+  medium
+  low
+}
+enum IntelligenceRequirementStatus {
+  active
+  paused
+}
+enum IrSubjectGroupKind {
+  list
+  filter
+  keywords
+}
+enum IrSubjectGroupRole {
+  entry
+  context
+  both
+}
+enum IrCriterionKind {
+  graph
+  attribute
+  keywords
+}
+enum IrCriterionMode {
+  auto
+  propose
+  off
+}
+enum IrDirection {
+  outgoing
+  incoming
+  both
+}
+
+# region configuration blocks
+type IrKiq {
+  id: String!
+  text: String!
+  criteria_ids: [String!]!
+}
+type IrSubjectGroup {
+  id: String!
+  name: String!
+  kind: IrSubjectGroupKind!
+  role: IrSubjectGroupRole!
+  entity_ids: [String!]!
+  entities: [StixCoreObject!]!
+  filters: String
+  keywords: [String!]!
+}
+type IrCriterion {
+  id: String!
+  name: String!
+  kind: IrCriterionKind!
+  from_group_ids: [String!]!
+  from_in_requirement: Boolean!
+  relationship_types: [String!]!
+  direction: IrDirection!
+  target_types: [String!]!
+  target_filters: String
+  keyword_fields: [String!]!
+  mode: IrCriterionMode!
+}
+type IrPathCondition {
+  relationship_types: [String!]!
+  direction: IrDirection!
+  target_relationship_type: String!
+  target_ids: [String!]!
+}
+type IrRule {
+  id: String!
+  name: String!
+  applies_to_types: [String!]!
+  applies_to_criterion_id: String
+  filters: String
+  path_condition: IrPathCondition
+  points: Int!
+  required: Boolean!
+  enabled: Boolean!
+}
+# endregion
+
+type IntelligenceRequirement implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  creators: [Creator!]
+  # IntelligenceRequirement
+  name: String!
+  description: String
+  ir_question: String!
+  ir_priority: IntelligenceRequirementPriority!
+  ir_status: IntelligenceRequirementStatus!
+  ir_kiqs: [IrKiq!]!
+  ir_subject_groups: [IrSubjectGroup!]!
+  ir_scope_criteria: [IrCriterion!]!
+  ir_relevance_rules: [IrRule!]!
+  ir_thresholds: [Int!]!
+  ir_rescan_days: Int!
+  lastEventId: String
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
+}
+
+enum IntelligenceRequirementOrdering {
+  name
+  created_at
+  updated_at
+  ir_priority
+  _score
+}
+
+type IntelligenceRequirementConnection {
+  pageInfo: PageInfo!
+  edges: [IntelligenceRequirementEdge!]!
+}
+type IntelligenceRequirementEdge {
+  cursor: String!
+  node: IntelligenceRequirement!
+}
+
+# region inputs
+input IrKiqInput {
+  id: String!
+  text: String!
+  criteria_ids: [String!]
+}
+input IrSubjectGroupInput {
+  id: String!
+  name: String!
+  kind: IrSubjectGroupKind!
+  role: IrSubjectGroupRole!
+  entity_ids: [String!]
+  filters: FilterGroup
+  keywords: [String!]
+}
+input IrCriterionInput {
+  id: String!
+  name: String
+  kind: IrCriterionKind!
+  from_group_ids: [String!]
+  from_in_requirement: Boolean
+  relationship_types: [String!]
+  direction: IrDirection
+  target_types: [String!]
+  target_filters: FilterGroup
+  keyword_fields: [String!]
+  mode: IrCriterionMode!
+}
+input IrPathConditionInput {
+  relationship_types: [String!]!
+  direction: IrDirection!
+  target_relationship_type: String!
+  target_ids: [String!]!
+}
+input IrRuleInput {
+  id: String!
+  name: String!
+  applies_to_types: [String!]
+  applies_to_criterion_id: String
+  filters: FilterGroup
+  path_condition: IrPathConditionInput
+  points: Int!
+  required: Boolean
+  enabled: Boolean
+}
+# The same input is used to create a requirement and to replace its whole configuration.
+input IntelligenceRequirementInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  ir_question: String!
+  ir_priority: IntelligenceRequirementPriority!
+  ir_status: IntelligenceRequirementStatus
+  ir_kiqs: [IrKiqInput!]
+  ir_subject_groups: [IrSubjectGroupInput!]!
+  ir_scope_criteria: [IrCriterionInput!]!
+  ir_relevance_rules: [IrRuleInput!]
+  ir_thresholds: [Int!]
+  ir_rescan_days: Int
+  authorized_members: [MemberAccessInput!]
+}
+# endregion
+
+type Query {
+  intelligenceRequirement(id: ID!): IntelligenceRequirement @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  intelligenceRequirements(
+    first: Int
+    after: ID
+    orderBy: IntelligenceRequirementOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): IntelligenceRequirementConnection @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+}
+
+type Mutation {
+  intelligenceRequirementAdd(input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  intelligenceRequirementUpdate(id: ID!, input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  intelligenceRequirementStatusUpdate(id: ID!, status: IntelligenceRequirementStatus!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  intelligenceRequirementDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+}
+
+# region entities of a requirement (matches)
+enum IrMatchStatus {
+  auto
+  proposed
+  accepted
+  rejected
+  removed
+}
+type IrMatchExplanation {
+  criterion_id: String!
+  kind: IrCriterionKind!
+  at: DateTime
+  anchor_id: String
+  anchor_type: String
+  anchor: StixCoreObject
+  relationship_id: String
+  relationship_type: String
+  direction: String
+  keyword: String
+  field: String
+  container_id: String
+  container_type: String
+  container: StixCoreObject
+}
+type IntelligenceRequirementMatch implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  # IntelligenceRequirementMatch
+  ir_id: String!
+  match_entity_id: String!
+  match_entity_type: String!
+  entity: StixCoreObject
+  match_status: IrMatchStatus!
+  match_criteria_ids: [String!]!
+  match_explanations: [IrMatchExplanation!]!
+  match_score: Int!
+  match_score_breakdown: [IrRuleOutcome!]!
+  match_excluded: Boolean!
+  match_last_fact_at: DateTime
+}
+enum IntelligenceRequirementMatchOrdering {
+  match_score
+  match_last_fact_at
+  created_at
+  match_entity_type
+}
+type IntelligenceRequirementMatchConnection {
+  pageInfo: PageInfo!
+  edges: [IntelligenceRequirementMatchEdge!]!
+}
+type IntelligenceRequirementMatchEdge {
+  cursor: String!
+  node: IntelligenceRequirementMatch!
+}
+extend type Query {
+  intelligenceRequirementMatches(
+    id: ID!
+    statuses: [IrMatchStatus!]
+    first: Int
+    after: ID
+    orderBy: IntelligenceRequirementMatchOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): IntelligenceRequirementMatchConnection @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+}
+# endregion
+
+type IrRuleOutcome {
+  rule_id: String!
+  name: String!
+  points: Int!
+  hit: Boolean!
+  reason: String
+}
+
+# region inbox of a requirement
+enum IrItemKind {
+  proposed
+  entered
+  score
+  health
+}
+enum IrItemStatus {
+  open
+  done
+}
+enum IrItemDecision {
+  accept
+  reject
+  acknowledge
+  remove
+}
+enum IrMatchDecisionStatus {
+  accepted
+  rejected
+  removed
+}
+type IrItemData {
+  criterion_id: String
+  from_score: Int
+  to_score: Int
+  threshold: Int
+  reasons: [String!]
+  message: String
+}
+type IntelligenceRequirementItem implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  # IntelligenceRequirementItem
+  ir_id: String!
+  item_kind: IrItemKind!
+  item_status: IrItemStatus!
+  item_title: String!
+  item_entity_id: String
+  item_entity_type: String
+  item_match_id: String
+  entity: StixCoreObject
+  match: IntelligenceRequirementMatch
+  item_data: IrItemData!
+  item_result: String
+}
+type IntelligenceRequirementItemConnection {
+  pageInfo: PageInfo!
+  edges: [IntelligenceRequirementItemEdge!]!
+}
+type IntelligenceRequirementItemEdge {
+  cursor: String!
+  node: IntelligenceRequirementItem!
+}
+extend type Query {
+  intelligenceRequirementItems(
+    id: ID!
+    statuses: [IrItemStatus!]
+    kinds: [IrItemKind!]
+    first: Int
+    after: ID
+    filters: FilterGroup
+    search: String
+  ): IntelligenceRequirementItemConnection @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+}
+extend type Mutation {
+  intelligenceRequirementItemDecide(id: ID!, decision: IrItemDecision!): IntelligenceRequirementItem @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  intelligenceRequirementMatchStatusUpdate(id: ID!, status: IrMatchDecisionStatus!): IntelligenceRequirementMatch @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+}
+# endregion
