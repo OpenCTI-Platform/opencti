@@ -70,6 +70,7 @@ type IrPathCondition {
   direction: IrDirection!
   target_relationship_type: String!
   target_ids: [String!]!
+  targets: [StixCoreObject!]!
 }
 type IrRule {
   id: String!

@@ -43,7 +43,7 @@ import type { BasicStoreEntityFintelTemplate } from '../modules/fintelTemplate/f
 import type { BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
 import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 import type { BasicStoreEntityPir } from '../modules/pir/pir-types';
-import type { BasicStoreEntityIntelligenceRequirement, StoreIrSubjectGroup, StoreIrKiq, StoreIrCriterion, StoreIrRule } from '../modules/intelligenceRequirement/intelligenceRequirement-types';
+import type { BasicStoreEntityIntelligenceRequirement, StoreIrSubjectGroup, StoreIrKiq, StoreIrCriterion, StoreIrRule, StoreIrPathCondition } from '../modules/intelligenceRequirement/intelligenceRequirement-types';
 import type { BasicStoreEntityIntelligenceRequirementMatch, StoreIrMatchExplanation } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-types';
 import type { BasicStoreEntityIntelligenceRequirementItem } from '../modules/intelligenceRequirement/intelligenceRequirementItem-types';
 import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
@@ -15162,6 +15162,7 @@ export type IrPathCondition = {
   relationship_types: Array<Scalars['String']['output']>;
   target_ids: Array<Scalars['String']['output']>;
   target_relationship_type: Scalars['String']['output'];
+  targets: Array<StixCoreObject>;
 };
 
 export type IrPathConditionInput = {
@@ -41880,7 +41881,7 @@ export type ResolversTypes = ResolversObject<{
   IrMatchDecisionStatus: IrMatchDecisionStatus;
   IrMatchExplanation: ResolverTypeWrapper<StoreIrMatchExplanation>;
   IrMatchStatus: IrMatchStatus;
-  IrPathCondition: ResolverTypeWrapper<IrPathCondition>;
+  IrPathCondition: ResolverTypeWrapper<StoreIrPathCondition>;
   IrPathConditionInput: IrPathConditionInput;
   IrRule: ResolverTypeWrapper<StoreIrRule>;
   IrRuleInput: IrRuleInput;
@@ -43030,7 +43031,7 @@ export type ResolversParentTypes = ResolversObject<{
   IrKiq: StoreIrKiq;
   IrKiqInput: IrKiqInput;
   IrMatchExplanation: StoreIrMatchExplanation;
-  IrPathCondition: IrPathCondition;
+  IrPathCondition: StoreIrPathCondition;
   IrPathConditionInput: IrPathConditionInput;
   IrRule: StoreIrRule;
   IrRuleInput: IrRuleInput;
@@ -48790,6 +48791,7 @@ export type IrPathConditionResolvers<ContextType = any, ParentType extends Resol
   relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   target_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   target_relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  targets?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
 }>;
 
 export type IrRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrRule'] = ResolversParentTypes['IrRule']> = ResolversObject<{

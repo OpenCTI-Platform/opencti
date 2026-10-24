@@ -48,6 +48,7 @@ const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 const RootPir = lazy(() => import('./components/pir/Root'));
+const RootIntelligenceRequirements = lazy(() => import('./components/intelligence_requirements/Root'));
 const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
 const ForcePasswordChange = lazy(() => import('./components/profile/ForcePasswordChange'));
 const RootNewsFeed = lazy(() => import('./components/profile/NewsFeedPage'));
@@ -154,6 +155,7 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
                   {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
                   <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
+                  <Route path="/intelligence_requirements/*" element={boundaryWrapper(RootIntelligenceRequirements)} />
                   <Route path="/news-feed" element={boundaryWrapper(RootNewsFeed)} />
                   <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
                   <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />

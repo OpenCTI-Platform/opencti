@@ -40,6 +40,8 @@ export const createItem = async (
     item_match_id: opts.matchId ?? null,
     item_data: JSON.stringify(opts.data ?? {}),
     item_result: null,
+    created_at: new Date(),
+    updated_at: new Date(),
   };
   return createEntity(context, user, input, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM);
 };

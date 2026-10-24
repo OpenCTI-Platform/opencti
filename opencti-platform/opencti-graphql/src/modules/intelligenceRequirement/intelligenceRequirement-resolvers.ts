@@ -36,6 +36,8 @@ const intelligenceRequirementResolvers: Resolvers = {
     intelligenceRequirementItems: (_, { id, ...args }, context) => findItemsPaginated(context, context.user, id, args),
   },
   IntelligenceRequirement: {
+    created_at: (ir) => ir.created_at ?? ir.updated_at ?? new Date(0),
+    updated_at: (ir) => ir.updated_at ?? ir.created_at ?? new Date(0),
     creators: (ir, _, context) => loadCreators(context, context.user, ir),
     authorizedMembers: (ir, _, context) => getAuthorizedMembers(context, context.user, ir),
     currentUserAccessRight: (ir, _, context) => getUserAccessRight(context.user, ir),
@@ -53,7 +55,16 @@ const intelligenceRequirementResolvers: Resolvers = {
       return entities as BasicStoreEntity[];
     },
   },
+  IrPathCondition: {
+    targets: async (condition, _, context) => {
+      if (!condition.target_ids?.length) return [];
+      const entities = await internalFindByIds<BasicStoreEntity>(context, context.user, condition.target_ids);
+      return entities as BasicStoreEntity[];
+    },
+  },
   IntelligenceRequirementMatch: {
+    created_at: (match) => match.created_at ?? match.match_last_fact_at ?? new Date(0),
+    updated_at: (match) => match.updated_at ?? match.match_last_fact_at ?? new Date(0),
     entity: (match, _, context) => context.batch.idsBatchLoader.load({ id: match.match_entity_id, type: match.match_entity_type }),
     match_explanations: (match) => parseMatchExplanations(match),
     match_criteria_ids: (match) => match.match_criteria_ids ?? [],
@@ -62,6 +73,8 @@ const intelligenceRequirementResolvers: Resolvers = {
     match_score_breakdown: (match) => parseJson(match.match_score_breakdown, []),
   },
   IntelligenceRequirementItem: {
+    created_at: (item) => item.created_at ?? new Date(0),
+    updated_at: (item) => item.updated_at ?? item.created_at ?? new Date(0),
     entity: (item, _, context) => (item.item_entity_id ? context.batch.idsBatchLoader.load({ id: item.item_entity_id, type: item.item_entity_type }) : null),
     match: (item, _, context) => (item.item_match_id ? loadMatchById(context, context.user, item.item_match_id) : null),
     item_data: (item) => parseItemData(item),

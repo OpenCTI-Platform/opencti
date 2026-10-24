@@ -36,7 +36,8 @@ export const intelligenceRequirementAdd = async (context: AuthContext, user: Aut
     { id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN },
     { id: MEMBER_ACCESS_ALL, access_right: MEMBER_ACCESS_RIGHT_VIEW },
   ];
-  const finalInput = { ...attributes, lastEventId: rescanStartEventId(attributes.ir_rescan_days), authorized_members };
+  const nowDate = new Date();
+  const finalInput = { ...attributes, lastEventId: rescanStartEventId(attributes.ir_rescan_days), authorized_members, created_at: nowDate, updated_at: nowDate };
   const created = await createEntity(context, user, finalInput, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
   await publishUserAction({
     user,

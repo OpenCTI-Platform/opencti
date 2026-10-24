@@ -101,6 +101,8 @@ export const upsertMatch = async (
       match_score_breakdown: '[]',
       match_excluded: false,
       match_last_fact_at: now,
+      created_at: now,
+      updated_at: now,
     };
     const created = await createEntity(context, user, input, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH);
     return { match: created as BasicStoreEntityIntelligenceRequirementMatch, created: true, previousStatus: null };

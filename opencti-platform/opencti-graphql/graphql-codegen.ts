@@ -77,6 +77,7 @@ const config: CodegenConfig = {
           IrKiq: '../modules/intelligenceRequirement/intelligenceRequirement-types#StoreIrKiq',
           IrCriterion: '../modules/intelligenceRequirement/intelligenceRequirement-types#StoreIrCriterion',
           IrRule: '../modules/intelligenceRequirement/intelligenceRequirement-types#StoreIrRule',
+          IrPathCondition: '../modules/intelligenceRequirement/intelligenceRequirement-types#StoreIrPathCondition',
           IntelligenceRequirementMatch: '../modules/intelligenceRequirement/intelligenceRequirementMatch-types#BasicStoreEntityIntelligenceRequirementMatch',
           IrMatchExplanation: '../modules/intelligenceRequirement/intelligenceRequirementMatch-types#StoreIrMatchExplanation',
           IntelligenceRequirementItem: '../modules/intelligenceRequirement/intelligenceRequirementItem-types#BasicStoreEntityIntelligenceRequirementItem',
