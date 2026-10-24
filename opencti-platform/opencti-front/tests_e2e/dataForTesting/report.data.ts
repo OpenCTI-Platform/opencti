@@ -4,6 +4,7 @@ import { graphqlQuery } from './query-utils';
 interface AddReportInput {
   name: string;
   objects?: string[];
+  objectLabel?: string[];
 }
 
 const addReportMutation = (input: AddReportInput) => `
@@ -12,6 +13,7 @@ const addReportMutation = (input: AddReportInput) => `
       name: "${input.name}",
       published: "${new Date().toISOString()}"
       ${input.objects ? `objects: [${input.objects.map((id) => `"${id}"`).join(', ')}]` : ''}
+      ${input.objectLabel ? `objectLabel: [${input.objectLabel.map((id) => `"${id}"`).join(', ')}]` : ''}
     }) {
       id
     }
