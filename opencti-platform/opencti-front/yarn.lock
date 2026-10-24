@@ -1210,11 +1210,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@filigran/design-system@npm:1.2.0"
+"@filigran/design-system@npm:1.3.0":
+  version: 1.3.0
+  resolution: "@filigran/design-system@npm:1.3.0"
   dependencies:
     "@radix-ui/react-accordion": "npm:^1.2.20"
+    "@radix-ui/react-avatar": "npm:^1.3.1"
     "@radix-ui/react-checkbox": "npm:^1.3.11"
     "@radix-ui/react-dialog": "npm:^1.1.23"
     "@radix-ui/react-dropdown-menu": "npm:^2.1.24"
@@ -1236,7 +1237,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/da4817edaf4ec9ea0e2e5ff9a46cad876354d28a389e7a6f0d080d78b25e743b5b17c6f5298d35f85837a463335e891a7a83a3a174a69e7443a3739935e11254
+  checksum: 10c0/c661f3059f65719f37f0419ca4b58b388c1f12d22b030cacf3db3cdd72970ff5d06d9ae91b797b8e663a77a53d168772a693addd9307ac780517cb48578cfd09
   languageName: node
   linkType: hard
 
@@ -3155,6 +3156,30 @@ __metadata:
     "@types/react-dom":
       optional: true
   checksum: 10c0/a9aa60553a99a0f8586ed825365c2e5e743202f8db3a6f7516ee6c1b0b23007344dc8d2dd6caa8b263dd1c04a47aa1c99d0e3d4fd83e399b3e65f159418da90c
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-avatar@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "@radix-ui/react-avatar@npm:1.3.1"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.2.0"
+    "@radix-ui/react-context": "npm:1.3.0"
+    "@radix-ui/react-primitive": "npm:2.2.0"
+    "@radix-ui/react-use-callback-ref": "npm:1.1.5"
+    "@radix-ui/react-use-is-hydrated": "npm:0.1.3"
+    "@radix-ui/react-use-layout-effect": "npm:1.1.4"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/1fbe3a03bffc65aa37be6ddbe38d816dd0ce3b551514ee93ca4f4470744d5ea4a72e9bb12a702202ce6399eae569dbb98c2e251aeba39b58d7d27ec0b19bd7f3
   languageName: node
   linkType: hard
 
@@ -12428,7 +12453,7 @@ __metadata:
     "@faker-js/faker": "npm:10.6.0"
     "@filigran/chatbot": "npm:3.14.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.2.0"
+    "@filigran/design-system": "npm:1.3.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
