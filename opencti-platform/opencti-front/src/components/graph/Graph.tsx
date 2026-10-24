@@ -28,6 +28,7 @@ import { entityTier, hasCycle, layeredLayout, radialLayout, tierLayout } from '.
 import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphLayoutEngine';
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
+import useGraphDemoLocate from './utils/useGraphDemoLocate';
 import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
 import { badgesOfNode, graphNodeActionsFor, useGraphBadgeRegistryVersion, useGraphNodeActionRegistryVersion } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
@@ -482,6 +483,8 @@ const Graph = ({
     setIsFullscreen,
     palette.background,
   );
+  // A scripted recording of the graph (`?demo=1`) locates the nodes it acts on by their label.
+  useGraphDemoLocate(graphRef2D, containerRef, shownNodes, mode3D);
 
   const selectNodes = (nodes: GraphNode[]) => {
     setSelectedLinks([]);
