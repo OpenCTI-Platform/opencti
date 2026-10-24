@@ -2,7 +2,7 @@ import React, { FunctionComponent, useContext, useEffect, useState } from 'react
 import CircularProgress from '@mui/material/CircularProgress';
 import makeStyles from '@mui/styles/makeStyles';
 import { FiligranLoader } from 'filigran-icon';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
 import { UserContext } from '../utils/hooks/useAuth';

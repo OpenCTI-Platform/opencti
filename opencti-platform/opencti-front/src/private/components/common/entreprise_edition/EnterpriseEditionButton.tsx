@@ -7,7 +7,7 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import { RocketLaunchOutlined } from '@mui/icons-material';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import classNames from 'classnames';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';

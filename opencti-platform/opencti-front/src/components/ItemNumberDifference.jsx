@@ -6,7 +6,7 @@ import { ArrowUpward, ArrowDownward, ArrowForward } from '@mui/icons-material';
 
 import inject18n from './i18n';
 import { alpha } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
 const styles = (theme) => ({
   diff: {

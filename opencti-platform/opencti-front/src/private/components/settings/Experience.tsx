@@ -14,7 +14,7 @@ import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';

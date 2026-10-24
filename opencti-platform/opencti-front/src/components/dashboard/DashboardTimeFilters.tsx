@@ -4,7 +4,7 @@ import { DateValidationError, PickerChangeHandlerContext } from '@mui/x-date-pic
 import { parse, buildDate } from '../../utils/Time';
 import { useFormatter } from '../i18n';
 import { Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../Theme';
 import { DashboardConfig } from './dashboard-types';
 import { EXPORT_KEEP_CLASS, EXPORT_REMOVE_CLASS } from '../../utils/Image';

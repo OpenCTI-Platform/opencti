@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Checkbox, Input, Text } from '@filigran/design-system';
 import { ChevronRightOutlined, DownloadOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';

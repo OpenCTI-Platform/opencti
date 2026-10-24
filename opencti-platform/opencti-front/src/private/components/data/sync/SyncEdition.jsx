@@ -23,7 +23,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import PasswordTextField from '../../../../components/PasswordTextField';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import IngestionEditionUserHandling from '../../../../private/components/data/IngestionEditionUserHandling';
 import { EMPTY_VALUE } from '../../../../utils/String';
 

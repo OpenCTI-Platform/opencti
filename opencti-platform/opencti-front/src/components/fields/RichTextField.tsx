@@ -4,7 +4,7 @@ import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
 import { FullscreenOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
 import { CSSProperties, useState } from 'react';

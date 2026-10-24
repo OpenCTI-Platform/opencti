@@ -5,7 +5,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import FormHelperText from '@mui/material/FormHelperText';
 import { UserEditionOverview_user$data } from '@components/settings/users/edition/__generated__/UserEditionOverview_user.graphql';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import TextField from '../../../../../components/TextField';
 import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import { SubscriptionFocus } from '../../../../../components/Subscription';

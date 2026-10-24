@@ -2,7 +2,7 @@ import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants
 import { AccountCircleOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';

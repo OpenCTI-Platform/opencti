@@ -6,7 +6,7 @@ import InputLabel from '@mui/material/InputLabel';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormControl from '@mui/material/FormControl';
 import { DeleteOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import * as Yup from 'yup';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { InformationOutline } from 'mdi-material-ui';

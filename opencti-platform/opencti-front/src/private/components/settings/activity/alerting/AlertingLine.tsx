@@ -21,7 +21,7 @@ import { EMPTY_VALUE } from '../../../../../utils/String';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import Tag from '@common/tag/Tag';
 import NotifierChips from '@components/profile/triggers/NotifierChips';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 

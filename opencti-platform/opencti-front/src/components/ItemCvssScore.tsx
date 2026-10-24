@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from './Theme';
 import Tag from './common/tag/Tag';
 import { EMPTY_VALUE } from '../utils/String';

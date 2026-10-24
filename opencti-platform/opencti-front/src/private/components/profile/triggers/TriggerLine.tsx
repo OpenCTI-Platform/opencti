@@ -19,7 +19,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import { EMPTY_VALUE } from '../../../../utils/String';
 import Tag from '@common/tag/Tag';
 import NotifierChips from './NotifierChips';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

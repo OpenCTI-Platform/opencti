@@ -4,7 +4,7 @@ import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Dialog from '@common/dialog/Dialog';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';

@@ -12,7 +12,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { InformationOutline } from 'mdi-material-ui';
 import { Link } from 'react-router';
 import { interval } from 'rxjs';

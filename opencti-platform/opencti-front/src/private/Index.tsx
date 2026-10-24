@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
 import TopBannersManager from '@components/TopBannersManager';

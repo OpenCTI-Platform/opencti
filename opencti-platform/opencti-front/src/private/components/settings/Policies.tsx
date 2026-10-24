@@ -5,7 +5,7 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import GroupSetDefaultGroupForIngestionUsers from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import Alert from '@mui/material/Alert';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';

@@ -1,7 +1,7 @@
 import { Chip } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { ReactNode } from 'react';
 import Card from '../../../../components/common/card/Card';
 import { useFormatter } from '../../../../components/i18n';

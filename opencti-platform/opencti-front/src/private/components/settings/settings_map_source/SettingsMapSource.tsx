@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import type { PayloadError } from 'relay-runtime';
 import { Link } from 'react-router';
 import { useIntl } from 'react-intl';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { Chip, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Text } from '@filigran/design-system';

@@ -2,7 +2,7 @@ import React, { CSSProperties, useMemo } from 'react';
 import { Skeleton, Box } from '@mui/material';
 import { Checkbox, IconButton } from '@filigran/design-system';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router';
 import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableVariant } from '../dataTableTypes';

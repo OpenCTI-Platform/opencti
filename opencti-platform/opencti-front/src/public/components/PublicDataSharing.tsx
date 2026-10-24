@@ -1,5 +1,5 @@
 import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import PublicStreamLines from '@components/data/stream/PublicStreamLines';
 import PublicTaxiiLines from '@components/data/taxii/PublicTaxiiLines';
 import PublicFeedLines from '@components/data/feeds/PublicFeedLines';

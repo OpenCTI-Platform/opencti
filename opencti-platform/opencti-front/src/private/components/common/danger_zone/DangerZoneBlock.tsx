@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import React, { cloneElement, CSSProperties, FunctionComponent, ReactElement, ReactNode } from 'react';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
