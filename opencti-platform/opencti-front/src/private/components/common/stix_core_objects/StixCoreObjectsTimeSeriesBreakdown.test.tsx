@@ -12,8 +12,10 @@ const mocks = vi.hoisted(() => ({
   lines: vi.fn(),
   areas: vi.fn(),
   heatmap: vi.fn(),
+  width: 1200,
 }));
 
+vi.mock('../../../../utils/hooks/useResizeObserver', () => ({ default: () => ({ width: mocks.width, height: 400 }) }));
 vi.mock('react-relay', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-relay')>()),
   usePreloadedQuery: () => mocks.response,
@@ -124,6 +126,7 @@ const render = (widget: Widget) => testRender(
 describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.width = 1200;
   });
 
   it('queries one breakdown with the dataset filters, date attribute and series limit', () => {
@@ -219,16 +222,39 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   });
 
   it('coarsens a large bar chart, disables its animations and says so', () => {
-    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, data: dailyData(366) }));
+    const series = Array.from({ length: 40 }, (_, i) => ({ label: `Type-${i}`, entity: null, data: dailyData(366) }));
     respond(series);
     const { getByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
 
     const props = mocks.bars.mock.lastCall?.[0];
-    expect(props.interval).toEqual('week');
-    expect(props.series).toHaveLength(20);
-    expect(props.series[0].data.length).toBeLessThan(60);
+    // 1200 px allow 600 bars: 40 weekly series are still too many
+    expect(props.interval).toEqual('month');
+    expect(props.series).toHaveLength(40);
+    expect(props.series[0].data.length).toBeLessThan(20);
     expect(props.isAnimated).toBe(false);
+    expect(props.hasHoverFilter).toBe(false);
+    expect(props.tickAmount).toEqual(20);
     expect(getByTestId('widget-warning').textContent).toContain('Interval adjusted to');
+  });
+
+  it('coarsens less on a wide chart, and more on a narrow one', () => {
+    const series = Array.from({ length: 3 }, (_, i) => ({ label: `Type-${i}`, entity: null, data: dailyData(366) }));
+    respond(series);
+    mocks.width = 2000;
+    render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect(mocks.bars.mock.lastCall?.[0].interval).toEqual('week');
+
+    mocks.width = 300;
+    render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect(mocks.bars.mock.lastCall?.[0].interval).toEqual('month');
+  });
+
+  it('does not draw the bars before the chart is measured', () => {
+    respond([{ label: 'Report', entity: null, data: dailyData(30) }]);
+    mocks.width = 0;
+    const { queryByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect(queryByTestId('bars')).toBeNull();
+    expect(mocks.bars).not.toHaveBeenCalled();
   });
 
   it('keeps a small bar chart as configured', () => {

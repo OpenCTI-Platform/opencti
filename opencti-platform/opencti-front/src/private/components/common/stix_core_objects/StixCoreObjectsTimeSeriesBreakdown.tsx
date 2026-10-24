@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
 import { useTheme } from '@mui/styles';
@@ -22,12 +22,16 @@ import {
   coarsenSeriesForRendering,
   getBreakdownDefaultStartDate,
   getBreakdownEntityTypes,
+  getBreakdownTickAmount,
+  getRenderedBarsBudget,
   getWidgetBreakdownLimit,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   isBreakdownField,
   isBreakdownFieldSupported,
+  nextBreakdownChartWidth,
 } from 'src/utils/widget/widgetBreakdown';
+import useResizeObserver from '../../../../utils/hooks/useResizeObserver';
 import { now } from '../../../../utils/Time';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { StixCoreObjectsTimeSeriesBreakdownQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsTimeSeriesBreakdownQuery.graphql';
@@ -173,11 +177,23 @@ const StixCoreObjectsTimeSeriesBreakdownComponent = ({
     });
   }, [stixCoreObjectsTimeSeriesBreakdown, parameters.breakdownBy, t_i18n, theme]);
 
+  // The bars budget and the x axis labels follow the width of the chart. The width is only updated by
+  // a large enough resize, and stays unknown until the first measure so that the chart is not drawn twice.
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const { width } = useResizeObserver(containerRef);
+  const [chartWidth, setChartWidth] = useState<number>();
+  useEffect(() => {
+    if (width > 0) {
+      setChartWidth((previous) => nextBreakdownChartWidth(previous, width));
+    }
+  }, [width]);
+  const barsBudget = chartWidth === undefined ? undefined : getRenderedBarsBudget(chartWidth);
+
   // Bars are the only chart whose cost explodes with the number of points: sum them into coarser
   // intervals when needed. Lines, areas and heatmaps keep the requested interval.
   const bars = useMemo(
-    () => (type === 'vertical-bar' ? coarsenSeriesForRendering(series, interval) : null),
-    [type, series, interval],
+    () => (type === 'vertical-bar' && barsBudget !== undefined ? coarsenSeriesForRendering(series, interval, barsBudget) : null),
+    [type, series, interval, barsBudget],
   );
 
   const truncated = stixCoreObjectsTimeSeriesBreakdown?.truncated ?? false;
@@ -199,22 +215,31 @@ const StixCoreObjectsTimeSeriesBreakdownComponent = ({
     onWarningChange(warnings.length > 0 ? warnings.join(' ') : undefined);
   }, [truncated, limit, order, coarsenedInterval, onWarningChange, t_i18n]);
 
+  // The measured container stays mounted, whatever it holds, to be observed from the first render
+  if (type === 'vertical-bar') {
+    return (
+      <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
+        {series.length === 0 && <WidgetNoData />}
+        {series.length > 0 && bars && (
+          <WidgetVerticalBars
+            series={bars.series}
+            interval={bars.interval}
+            isStacked={parameters.stacked ?? undefined}
+            hasLegend={parameters.legend ?? undefined}
+            isAnimated={bars.barsCount <= ANIMATION_BAR_THRESHOLD}
+            hasHoverFilter={false}
+            tickAmount={getBreakdownTickAmount(chartWidth ?? width)}
+            onMounted={onMounted}
+          />
+        )}
+      </div>
+    );
+  }
+
   if (series.length === 0) {
     return <WidgetNoData />;
   }
 
-  if (bars) {
-    return (
-      <WidgetVerticalBars
-        series={bars.series}
-        interval={bars.interval}
-        isStacked={parameters.stacked ?? undefined}
-        hasLegend={parameters.legend ?? undefined}
-        isAnimated={bars.barsCount <= ANIMATION_BAR_THRESHOLD}
-        onMounted={onMounted}
-      />
-    );
-  }
   if (type === 'area') {
     return (
       <WidgetMultiAreas

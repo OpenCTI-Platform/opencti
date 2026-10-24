@@ -9,6 +9,8 @@ import {
   getBreakdownEntityTypes,
   getBreakdownDefaultStartDate,
   getBreakdownFieldOptions,
+  getBreakdownTickAmount,
+  getRenderedBarsBudget,
   getWidgetBreakdownLimit,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
@@ -16,6 +18,9 @@ import {
   isBreakdownFieldSupported,
   isWidgetBreakdownActive,
   isWidgetBreakdownEligible,
+  MAX_RENDERED_BARS,
+  MIN_RENDERED_BARS,
+  nextBreakdownChartWidth,
 } from './widgetBreakdown';
 
 const workspace = { kind: 'workspace' } as const;
@@ -208,6 +213,42 @@ describe('getBreakdownFieldOptions', () => {
   });
 });
 
+describe('rendered bars budget', () => {
+  it('follows the width, within the minimum and maximum', () => {
+    expect(getRenderedBarsBudget(800)).toEqual(400);
+    expect(getRenderedBarsBudget(801)).toEqual(400);
+    expect(getRenderedBarsBudget(100)).toEqual(MIN_RENDERED_BARS);
+    expect(getRenderedBarsBudget(5000)).toEqual(MAX_RENDERED_BARS);
+  });
+
+  it('gives the maximum when the width is unknown', () => {
+    expect(getRenderedBarsBudget(0)).toEqual(MAX_RENDERED_BARS);
+    expect(getRenderedBarsBudget(-10)).toEqual(MAX_RENDERED_BARS);
+    expect(getRenderedBarsBudget(Number.NaN)).toEqual(MAX_RENDERED_BARS);
+  });
+});
+
+describe('nextBreakdownChartWidth', () => {
+  it('takes the first measured width', () => {
+    expect(nextBreakdownChartWidth(undefined, 800)).toEqual(800);
+  });
+
+  it('keeps the previous width on a small resize, and changes it from 20 %', () => {
+    expect(nextBreakdownChartWidth(800, 900)).toEqual(800); // +12.5 %
+    expect(nextBreakdownChartWidth(800, 700)).toEqual(800); // -12.5 %
+    expect(nextBreakdownChartWidth(800, 960)).toEqual(960); // +20 %
+    expect(nextBreakdownChartWidth(800, 500)).toEqual(500);
+  });
+});
+
+describe('getBreakdownTickAmount', () => {
+  it('gives a label per 60 pixels, at least 2', () => {
+    expect(getBreakdownTickAmount(1200)).toEqual(20);
+    expect(getBreakdownTickAmount(130)).toEqual(2);
+    expect(getBreakdownTickAmount(0)).toEqual(2);
+  });
+});
+
 describe('coarsenSeriesForRendering', () => {
   it('keeps the series untouched under the budget', () => {
     const series = [{ name: 'A', data: daily('2026-01-01T00:00:00.000Z', [1, 2, 3]) }];
@@ -244,6 +285,15 @@ describe('coarsenSeriesForRendering', () => {
     toMonths.series.forEach((serie) => {
       expect(serie.data.reduce((sum, point) => sum + point.y, 0)).toEqual(total);
     });
+  });
+
+  it('coarsens a week series with a smaller budget', () => {
+    const values = Array.from({ length: 366 }, (_, i) => i % 7);
+    const series = [{ name: 'A', data: daily('2025-10-01T00:00:00.000Z', values) }];
+    expect(coarsenSeriesForRendering(series, 'day', MIN_RENDERED_BARS).interval).toEqual('week');
+    const result = coarsenSeriesForRendering(series, 'week', 20);
+    expect(result.interval).toEqual('month');
+    expect(result.barsCount).toEqual(13);
   });
 
   it('never goes beyond years', () => {

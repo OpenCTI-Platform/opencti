@@ -135,9 +135,39 @@ export const isWidgetBreakdownActive = (widget: Widget, host?: WidgetHost) => {
 };
 
 // ApexCharts bar rendering cost grows with the square of the number of bars (every bar is
-// revealed again for each bar drawn), so bar charts are kept under these sizes.
-export const MAX_RENDERED_BARS = 1200;
+// revealed again for each bar drawn), so bar charts are kept under these sizes. The bar budget follows
+// the width of the chart: bars thinner than PIXELS_PER_BAR add cost without adding readable detail.
+export const MIN_RENDERED_BARS = 150;
+export const MAX_RENDERED_BARS = 600;
+export const PIXELS_PER_BAR = 2;
+export const PIXELS_PER_X_LABEL = 60;
 export const ANIMATION_BAR_THRESHOLD = 300;
+// Relative change under which a new chart width is ignored, to not redraw the chart on small resizes
+const CHART_WIDTH_HYSTERESIS = 0.2;
+
+/**
+ * Number of bars the chart can draw for a given width in pixels, an unknown width gives the maximum.
+ */
+export const getRenderedBarsBudget = (width: number) => {
+  if (!(width > 0)) return MAX_RENDERED_BARS;
+  return Math.min(MAX_RENDERED_BARS, Math.max(MIN_RENDERED_BARS, Math.floor(width / PIXELS_PER_BAR)));
+};
+
+/**
+ * Width the chart is laid out for after a resize: the previous one is kept until the new one differs
+ * by 20 % or more, so that the bars budget and the x axis labels do not change on every pixel.
+ */
+export const nextBreakdownChartWidth = (previous: number | undefined, width: number) => {
+  if (previous === undefined || !(previous > 0)) return width;
+  return Math.abs(width - previous) < previous * CHART_WIDTH_HYSTERESIS ? previous : width;
+};
+
+/**
+ * Number of labels of the x axis for a given width in pixels.
+ */
+export const getBreakdownTickAmount = (width: number) => {
+  return Math.max(2, Math.floor(width / PIXELS_PER_X_LABEL));
+};
 
 const COARSER_INTERVAL: Record<string, string> = {
   day: 'week',

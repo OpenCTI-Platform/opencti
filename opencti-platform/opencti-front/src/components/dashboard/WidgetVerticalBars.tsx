@@ -13,6 +13,8 @@ interface WidgetVerticalBarsProps {
   isStacked?: boolean;
   hasLegend?: boolean;
   isAnimated?: boolean;
+  hasHoverFilter?: boolean;
+  tickAmount?: number;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -22,6 +24,8 @@ const WidgetVerticalBars = ({
   isStacked = false,
   hasLegend = false,
   isAnimated = true,
+  hasHoverFilter = true,
+  tickAmount,
   onMounted,
 }: WidgetVerticalBarsProps) => {
   const theme = useTheme<Theme>();
@@ -33,7 +37,8 @@ const WidgetVerticalBars = ({
     // ticks to calendar boundaries and does not guarantee a tick on the last data point, which
     // dropped the label of the most recent bar. A category axis labels every bar, including the
     // most recent one, and the time-series buckets are already gap-filled and evenly spaced by
-    // the backend, so discrete categories render correctly.
+    // the backend, so discrete categories render correctly. A numeric tickAmount trades that
+    // guarantee for fewer labels: the last bar may not be labelled.
     const chartOptions = verticalBarsChartOptions(
       theme,
       formatter,
@@ -42,13 +47,14 @@ const WidgetVerticalBars = ({
       false,
       isStacked,
       hasLegend,
-      'dataPoints',
+      tickAmount ?? 'dataPoints',
+      hasHoverFilter,
     ) as ApexOptions;
     if (isAnimated) {
       return chartOptions;
     }
     return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
-  }, [theme, formatter, isStacked, hasLegend, isAnimated]);
+  }, [theme, formatter, isStacked, hasLegend, isAnimated, hasHoverFilter, tickAmount]);
 
   return (
     <Chart

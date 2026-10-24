@@ -290,6 +290,7 @@ export const areaChartOptions = (
  * @param {boolean} isStacked
  * @param {boolean} legend
  * @param {number | 'dataPoints'} tickAmount
+ * @param {boolean} hoverFilter
  */
 export const verticalBarsChartOptions = (
   theme,
@@ -300,6 +301,7 @@ export const verticalBarsChartOptions = (
   isStacked = false,
   legend = false,
   tickAmount = undefined,
+  hoverFilter = true,
 ) => ({
   chart: {
     type: 'bar',
@@ -322,10 +324,9 @@ export const verticalBarsChartOptions = (
   ],
   states: {
     hover: {
-      filter: {
-        type: 'lighten',
-        value: 0.05,
-      },
+      filter: hoverFilter
+        ? { type: 'lighten', value: 0.05 }
+        : { type: 'none' },
     },
   },
   grid: {
