@@ -7,7 +7,7 @@ import Button from '@common/button/Button';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { PRIORITY_SEVERITY } from './IntelligenceRequirements';
+import { PRIORITY_SEVERITY } from './IntelligenceRequirementsCards';
 import IrOverview from './outputs/IrOverview';
 import IrEntities from './outputs/IrEntities';
 import IrInbox from './outputs/IrInbox';

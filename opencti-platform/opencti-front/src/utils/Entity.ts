@@ -162,6 +162,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/observations/observables';
     case 'Pir':
       return '/dashboard/pirs';
+    case 'IntelligenceRequirement':
+      return '/dashboard/intelligence_requirements';
     case 'EmailTemplate':
       return '/dashboard/settings/accesses/email_templates';
     case 'SSH-Key':
