@@ -1282,7 +1282,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fastify/busboy@npm:^3.1.1":
+"@fastify/busboy@npm:^3.1.1, @fastify/busboy@npm:^3.2.3":
   version: 3.2.4
   resolution: "@fastify/busboy@npm:3.2.4"
   checksum: 10c0/c36a677bea3cfec55b8063ae9ae2f246f6faf0125aee2c7a2cfbbcf980e5341a76b4b044a4d68d6cfe3cd8e65c43436ea33c47411fa9d7f63a481481f79a3fd0
@@ -4772,14 +4772,14 @@ __metadata:
   linkType: hard
 
 "@whatwg-node/node-fetch@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "@whatwg-node/node-fetch@npm:0.9.1"
+  version: 0.9.2
+  resolution: "@whatwg-node/node-fetch@npm:0.9.2"
   dependencies:
-    "@fastify/busboy": "npm:^3.1.1"
+    "@fastify/busboy": "npm:^3.2.3"
     "@whatwg-node/disposablestack": "npm:^0.1.0"
     "@whatwg-node/promise-helpers": "npm:^2.0.0"
     tslib: "npm:^2.6.3"
-  checksum: 10c0/a670513c0446d998f45d7249280f7b376e15f17d889fbbfc417d68a5774eb8c02fc88dcef5c97149255617e11968f8a95f0b6ad4aa278d26e00cf74da84413db
+  checksum: 10c0/76b3034cfd1b81184fb3d359a365a3f89f51f4b3fc805ab292564eecb9b46e8c070a46a5b40f9525a9f47d77ba31275defa89e71d3f1cacc48bbe8b4c5588f7c
   languageName: node
   linkType: hard
 
@@ -5427,11 +5427,11 @@ __metadata:
   linkType: hard
 
 "baseline-browser-mapping@npm:^2.11.29":
-  version: 2.11.30
-  resolution: "baseline-browser-mapping@npm:2.11.30"
+  version: 2.11.31
+  resolution: "baseline-browser-mapping@npm:2.11.31"
   bin:
     baseline-browser-mapping: dist/cli.cjs
-  checksum: 10c0/9c10835aa587c66d2f017b89c1f99ac851fa18b3bd8b767891c430ee8313b5b8ed6cbfe724d6684c10c2db1345f1e1a0dd40301cea20fcc8309a77e1cb10c4cb
+  checksum: 10c0/5c86b9a1efe9db2411b6f3268ae015ca7cc5229e5e53c20263936e9dbbe9651d2fc19dc46642f7a3db8ad2b4a300c5bbc702d3b79c49e740ff0fcc97e3c55692
   languageName: node
   linkType: hard
 
