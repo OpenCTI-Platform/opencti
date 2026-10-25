@@ -6115,11 +6115,11 @@ __metadata:
   linkType: hard
 
 "baseline-browser-mapping@npm:^2.11.29":
-  version: 2.11.30
-  resolution: "baseline-browser-mapping@npm:2.11.30"
+  version: 2.11.31
+  resolution: "baseline-browser-mapping@npm:2.11.31"
   bin:
     baseline-browser-mapping: dist/cli.cjs
-  checksum: 10c0/9c10835aa587c66d2f017b89c1f99ac851fa18b3bd8b767891c430ee8313b5b8ed6cbfe724d6684c10c2db1345f1e1a0dd40301cea20fcc8309a77e1cb10c4cb
+  checksum: 10c0/5c86b9a1efe9db2411b6f3268ae015ca7cc5229e5e53c20263936e9dbbe9651d2fc19dc46642f7a3db8ad2b4a300c5bbc702d3b79c49e740ff0fcc97e3c55692
   languageName: node
   linkType: hard
 
@@ -13420,11 +13420,11 @@ __metadata:
   linkType: hard
 
 "prosemirror-transform@npm:^1.0.0, prosemirror-transform@npm:^1.1.0, prosemirror-transform@npm:^1.10.2, prosemirror-transform@npm:^1.10.5, prosemirror-transform@npm:^1.12.0, prosemirror-transform@npm:^1.7.3":
-  version: 1.12.3
-  resolution: "prosemirror-transform@npm:1.12.3"
+  version: 1.12.4
+  resolution: "prosemirror-transform@npm:1.12.4"
   dependencies:
     prosemirror-model: "npm:^1.21.0"
-  checksum: 10c0/92db522ef86bbb25a36ceaa199f86c4acf4c54a4db1fcc28412e41a0baccecd0dbded607c2a7c1220b067fd4bf4a527b403d7bad0e2f7ffc021af842d100b3ac
+  checksum: 10c0/bdf5d37f8f202786474af27c7ffbe37eb8db9aaa022156378621a7af54a2d576f3ac5aa03e8520ed224a2481e3a85d1e8b0929a07eafd0df1b0a1fbd4d8596cf
   languageName: node
   linkType: hard
 
