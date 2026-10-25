@@ -7,6 +7,7 @@ import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import IrEntityPreview from './IrEntityPreview';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { criterionName, explanationText, type IrCriterionRef, type IrExplanationData, ScoreBar, StatusChip } from './IrOutputCommon';
 import type { IrMatchDrawerStatusMutation } from './__generated__/IrMatchDrawerStatusMutation.graphql';
@@ -65,6 +66,10 @@ const IrMatchDrawer = ({ match, criteria, onClose, onChanged }: IrMatchDrawerPro
             <ScoreBar score={match.match_score} excluded={match.match_excluded} />
             <Box sx={{ flex: 1 }} />
             <Link to={`/dashboard/id/${match.match_entity_id}`}>{t_i18n('Open entity')}</Link>
+          </Box>
+          <Box>
+            <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('Entity')}</Text>
+            <IrEntityPreview entityId={match.match_entity_id} />
           </Box>
           <Box>
             <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('Why it is in this requirement (scope)')}</Text>

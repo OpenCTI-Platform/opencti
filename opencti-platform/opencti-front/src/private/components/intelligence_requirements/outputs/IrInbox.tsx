@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { Chip, Paper, Text } from '@filigran/design-system';
+import { Checkbox, Chip, Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, Paper, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,6 +20,7 @@ import {
 import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
 import type { IrInboxQuery } from './__generated__/IrInboxQuery.graphql';
 import type { IrInboxDecideMutation } from './__generated__/IrInboxDecideMutation.graphql';
+import type { IrInboxBulkDecideMutation } from './__generated__/IrInboxBulkDecideMutation.graphql';
 
 // ③ Inbox of the requirement: always the same kinds of items (proposed, entered, score threshold, health).
 
@@ -56,7 +57,7 @@ const inboxQuery = graphql`
         }
       }
     }
-    intelligenceRequirementItems(id: $id, first: 200) {
+    intelligenceRequirementItems(id: $id, first: 500) {
       edges {
         node {
           id
@@ -90,7 +91,6 @@ const inboxQuery = graphql`
                 createdBy { name }
               }
             }
-            match_other_requirements { id name }
           }
         }
       }
@@ -108,7 +108,22 @@ const decideMutation = graphql`
   }
 `;
 
+const bulkDecideMutation = graphql`
+  mutation IrInboxBulkDecideMutation($ids: [ID!]!, $decision: IrItemDecision!) {
+    intelligenceRequirementItemsDecide(ids: $ids, decision: $decision)
+  }
+`;
+
+// Decisions that apply to each kind of inbox item (same table as the backend)
+const KIND_DECISIONS: Record<string, Decision[]> = {
+  proposed: ['accept', 'reject'],
+  entered: ['acknowledge', 'remove'],
+  score: ['acknowledge'],
+  health: ['acknowledge'],
+};
+
 type Filter = 'open' | 'proposed' | 'entered' | 'score' | 'done';
+type Sort = 'newest' | 'score';
 type Decision = 'accept' | 'reject' | 'acknowledge' | 'remove';
 
 export interface IrInboxItemData {
@@ -131,13 +146,12 @@ export interface IrInboxItemData {
     readonly match_excluded: boolean;
     readonly entity?: { readonly representative: { readonly main: string } } | null;
     readonly match_explanations?: readonly IrExplanationData[];
-    readonly match_other_requirements?: readonly { readonly id: string; readonly name: string }[];
   } | null;
 }
 
 const KIND_COLORS: Record<string, string> = { proposed: '#c084fc', entered: '#42caff', score: '#e6700f', health: '#e6c20f' };
 
-export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecide, onDetails, compact }: {
+export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecide, onDetails, compact, checked, onCheck }: {
   item: IrInboxItemData;
   criteria: readonly IrCriterionRef[];
   groups?: readonly IrGroupRef[];
@@ -145,6 +159,8 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
   onDecide?: (id: string, decision: Decision) => void;
   onDetails?: (matchId: string) => void;
   compact?: boolean;
+  checked?: boolean;
+  onCheck?: (id: string, checked: boolean) => void;
 }) => {
   const { t_i18n, nsdt, fsd } = useFormatter();
   const chip = KIND_CHIP[item.item_kind] ?? KIND_CHIP.entered;
@@ -162,14 +178,13 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
   // start_time defaults to 1970 when the source did not give one: fall back on the creation date.
   const startTime = relationship?.start_time && new Date(relationship.start_time).getFullYear() > 1970 ? relationship.start_time : null;
   const factDate = startTime ?? relationship?.created;
-  const others = item.match?.match_other_requirements ?? [];
   const openDetails = item.match && onDetails ? () => onDetails(item.match!.id) : undefined;
   return (
     <Box
       onClick={compact ? openDetails : undefined}
       sx={{
         display: 'grid',
-        gridTemplateColumns: '4px 1fr auto',
+        gridTemplateColumns: onCheck ? '4px 40px 1fr auto' : '4px 1fr auto',
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 1,
@@ -181,6 +196,11 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
       }}
     >
       <Box sx={{ bgcolor: KIND_COLORS[item.item_kind] ?? '#42caff' }} />
+      {onCheck && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1.75 }}>
+          {!done && <Checkbox checked={!!checked} onCheckedChange={(value) => onCheck(item.id, value === true)} aria-label={t_i18n('Select')} />}
+        </Box>
+      )}
       <Box sx={{ px: 2, py: compact ? 1 : 1.5, display: 'flex', flexDirection: 'column', gap: compact ? 0.75 : 1 }}>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
           <Chip label={t_i18n(chip.label)} severity={chip.severity} />
@@ -223,13 +243,6 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
             {factDate && <Text as="span" variant="content-caption">{`▸ ${fsd(factDate)}`}</Text>}
           </Box>
         )}
-        {!compact && others.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n('Also in')}</Text>
-            {others.map((o) => <Chip key={o.id} label={o.name} />)}
-            <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{`(${t_i18n('triaged separately')})`}</Text>
-          </Box>
-        )}
       </Box>
       {onDecide && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, p: 1.5, minWidth: 190, justifyContent: 'center' }}>
@@ -261,8 +274,12 @@ const IrInbox = ({ irId }: { irId: string }) => {
   const [fetchKey, setFetchKey] = useState(0);
   const [filter, setFilter] = useState<Filter>('open');
   const [selected, setSelected] = useState<string | null>(null);
+  const [sort, setSort] = useState<Sort>('newest');
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [confirm, setConfirm] = useState<Decision | null>(null);
   const data = useLazyLoadQuery<IrInboxQuery>(inboxQuery, { id: irId }, { fetchPolicy: 'network-only', fetchKey });
   const [commit] = useApiMutation<IrInboxDecideMutation>(decideMutation);
+  const [commitBulk, bulkInFlight] = useApiMutation<IrInboxBulkDecideMutation>(bulkDecideMutation);
   const criteria = data.intelligenceRequirement?.ir_scope_criteria ?? [];
   const groups = data.intelligenceRequirement?.ir_subject_groups ?? [];
   const matches = (data.intelligenceRequirementMatches?.edges ?? []).map((e) => e.node);
@@ -273,12 +290,50 @@ const IrInbox = ({ irId }: { irId: string }) => {
     if (filter === 'open') return i.item_status === 'open';
     return i.item_status === 'open' && i.item_kind === filter;
   });
+  // Highest score first (excluded entities and items without entity last), newest first on ties
+  const scoreOf = (i: typeof items[number]) => (!i.match || i.match.match_excluded ? -1 : i.match.match_score);
+  const sorted = sort === 'score'
+    ? [...visible].sort((a, b) => scoreOf(b) - scoreOf(a) || b.created_at.localeCompare(a.created_at))
+    : visible;
   const refresh = () => setFetchKey((k) => k + 1);
   const decide = (id: string, decision: Decision) => {
     commit({ variables: { id, decision }, onCompleted: refresh });
   };
+  // Mass operations on the selected open items of the current view
+  const selectable = sorted.filter((i) => i.item_status === 'open');
+  const selectedItems = selectable.filter((i) => checked.has(i.id));
+  const allSelected = selectable.length > 0 && selectedItems.length === selectable.length;
+  const toggle = (id: string, value: boolean) => setChecked((previous) => {
+    const next = new Set(previous);
+    if (value) next.add(id);
+    else next.delete(id);
+    return next;
+  });
+  const applicable = (decision: Decision) => selectedItems.filter((i) => (KIND_DECISIONS[i.item_kind] ?? []).includes(decision));
+  const runBulk = (decision: Decision) => {
+    const ids = applicable(decision).map((i) => i.id);
+    setConfirm(null);
+    if (ids.length === 0) return;
+    const onCompleted = () => {
+      setChecked(new Set());
+      refresh();
+    };
+    commitBulk({ variables: { ids, decision }, onCompleted });
+  };
+  const bulkButton = (decision: Decision, label: string, variant: 'primary' | 'secondary', needsConfirm = false) => {
+    const count = applicable(decision).length;
+    return (
+      <Button size="small" variant={variant} disabled={count === 0 || bulkInFlight} onClick={() => (needsConfirm ? setConfirm(decision) : runBulk(decision))}>
+        {`${t_i18n(label)} (${count})`}
+      </Button>
+    );
+  };
+  const changeFilter = (value: Filter) => {
+    setFilter(value);
+    setChecked(new Set());
+  };
   const filterButton = (value: Filter, label: string, count: number) => (
-    <Button key={value} size="small" variant={filter === value ? 'primary' : 'secondary'} onClick={() => setFilter(value)}>{`${t_i18n(label)} (${count})`}</Button>
+    <Button key={value} size="small" variant={filter === value ? 'primary' : 'secondary'} onClick={() => changeFilter(value)}>{`${t_i18n(label)} (${count})`}</Button>
   );
   return (
     <>
@@ -288,12 +343,64 @@ const IrInbox = ({ irId }: { irId: string }) => {
         {filterButton('entered', 'Entered', open.filter((i) => i.item_kind === 'entered').length)}
         {filterButton('score', 'Score threshold', open.filter((i) => i.item_kind === 'score').length)}
         {filterButton('done', 'Done', items.length - open.length)}
+        <Box sx={{ flex: 1 }} />
+        <Text as="span" variant="content-caption" style={{ alignSelf: 'center', opacity: 0.7 }}>{t_i18n('Sort by')}</Text>
+        <Button size="small" variant={sort === 'newest' ? 'primary' : 'tertiary'} onClick={() => setSort('newest')}>{t_i18n('Newest first')}</Button>
+        <Button size="small" variant={sort === 'score' ? 'primary' : 'tertiary'} onClick={() => setSort('score')}>{t_i18n('Highest score first')}</Button>
       </Box>
+      {selectable.length > 0 && (
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', mb: 1, px: 1.5, py: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+          <Checkbox
+            checked={allSelected}
+            onCheckedChange={(value) => setChecked(value === true ? new Set(selectable.map((i) => i.id)) : new Set())}
+            label={selectedItems.length > 0 ? `${selectedItems.length} ${t_i18n('selected')}` : `${t_i18n('Select all')} (${selectable.length})`}
+          />
+          <Box sx={{ flex: 1 }} />
+          {selectedItems.length > 0 && (
+            <>
+              {bulkButton('acknowledge', 'Mark as seen', 'secondary')}
+              {bulkButton('accept', 'Accept into the requirement', 'primary')}
+              {bulkButton('reject', 'Reject', 'secondary', true)}
+              {bulkButton('remove', 'Remove from the requirement', 'secondary', true)}
+              <Button size="small" variant="tertiary" onClick={() => setChecked(new Set())}>{t_i18n('Clear selection')}</Button>
+            </>
+          )}
+        </Box>
+      )}
       {visible.length === 0
         ? <Paper padding={24}><Text as="span" variant="content-base">{t_i18n('Nothing to review.')}</Text></Paper>
-        : visible.map((item) => (
-            <IrInboxItem key={item.id} item={item} criteria={criteria} groups={groups} matches={matches} onDecide={decide} onDetails={setSelected} />
+        : sorted.map((item) => (
+            <IrInboxItem
+              key={item.id}
+              item={item}
+              criteria={criteria}
+              groups={groups}
+              matches={matches}
+              onDecide={decide}
+              onDetails={setSelected}
+              checked={checked.has(item.id)}
+              onCheck={toggle}
+            />
           ))}
+      {confirm && (
+        <Dialog
+          open
+          onOpenChange={(isOpen) => {
+            if (!isOpen) setConfirm(null);
+          }}
+        >
+          <DialogContent>
+            <DialogTitle>{t_i18n(confirm === 'reject' ? 'Reject the selected proposals?' : 'Remove the selected entities from the requirement?')}</DialogTitle>
+            <DialogDescription>
+              {`${applicable(confirm).length} ${t_i18n('items')} · ${t_i18n('a rejected or removed entity does not come back into the requirement automatically.')}`}
+            </DialogDescription>
+            <DialogFooter>
+              <Button variant="tertiary" onClick={() => setConfirm(null)}>{t_i18n('Cancel')}</Button>
+              <Button intent="destructive" onClick={() => runBulk(confirm)}>{t_i18n(confirm === 'reject' ? 'Reject' : 'Remove')}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
       <IrMatchDrawer
         match={(matches.find((m) => m.id === selected) ?? null) as IrMatchData | null}
         criteria={criteria}
