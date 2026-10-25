@@ -142,7 +142,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-dev-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.163.1@sha256:1175b03003053962012f5a231f5567f66a3e8fdb960c7835c0e48f7aa1555806
+    image: otel/opentelemetry-collector-contrib:0.163.2@sha256:7f22d2a6748110ffb6a59bc0df448bccbf501cdb667d610ede4c61d3863d5849
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -155,7 +155,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-prometheus:
     container_name: opencti-dev-telemetry-prometheus
-    image: prom/prometheus:v3.15.0@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e
+    image: prom/prometheus:v3.15.1@sha256:fa3302279710be2f21a8301ec17a8b4f2301fd829bd113839b3b6b02b6f191a2
     restart: unless-stopped
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
@@ -179,7 +179,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
     profiles: [keycloak]
-    image: keycloak/keycloak:26.4.5@sha256:653852bfdea2be6e958b9e90a976eff1c6de34edd55f2f679bdc48ef16bc528e
+    image: keycloak/keycloak:26.8.0@sha256:27b3230fbabb8c9ff3c66c864cf09dcd8a41aca82e5100679d109ef0eeb05741
     volumes:
       - keycloakdata:/opt/keycloak/data
       - ./keycloak-configuration:/opt/keycloak/data/import
