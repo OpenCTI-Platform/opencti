@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
 import { CardActions, Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
@@ -121,7 +121,13 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   };
 
   const Info = (props: { title: string; value: string }) => (
-    <Stack direction="row" gap={1} alignItems="center">
+    <Stack
+      direction="row"
+      sx={{
+        gap: 1,
+        alignItems: 'center',
+      }}
+    >
       <Typography
         variant="h4"
         sx={{
@@ -151,12 +157,14 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
     <Card to={cardLink}>
       <CardContent sx={{ p: 0 }}>
         <Stack
-          flexWrap="nowrap"
-          overflow="hidden"
           direction="row"
-          gap={1}
-          mb={2}
-          width="100%"
+          sx={{
+            flexWrap: 'nowrap',
+            overflow: 'hidden',
+            gap: 1,
+            mb: 2,
+            width: '100%',
+          }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
             {renderCardTitle(cardData)}

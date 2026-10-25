@@ -101,7 +101,7 @@ const PublishButton = ({
   return (
     <>
       <Tooltip title={mainButtonTooltip} placement="top">
-        <ButtonGroup ref={anchorRef} sx={{ display: 'flex' }}>
+        <ButtonGroup ref={anchorRef} sx={{ display: 'flex', backgroundColor: 'background.paper', borderRadius: '4px' }}>
           <Button
             startIcon={mainButtonIcon}
             variant="secondary"

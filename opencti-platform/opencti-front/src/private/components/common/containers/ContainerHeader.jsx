@@ -4,7 +4,7 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
@@ -567,7 +567,13 @@ const ContainerHeader = (props) => {
 
   return (
     <div style={containerStyle}>
-      <Stack flex={1} gap={1} sx={{ width: '100%' }}>
+      <Stack
+        sx={{
+          flex: 1,
+          gap: 1,
+          width: '100%',
+        }}
+      >
         <React.Suspense fallback={<span />}>
           <HeaderMainEntityLayout
             title={title}

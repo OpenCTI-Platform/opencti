@@ -46,7 +46,13 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
     const displayLabel = entity.label || `${t_i18n('Additional Entity')} ${index + 1}`;
 
     return (
-      <Stack key={entity.id} className={classes.entitySection} gap={2}>
+      <Stack
+        key={entity.id}
+        className={classes.entitySection}
+        sx={{
+          gap: 2,
+        }}
+      >
         <div className={classes.entityHeader}>
           <Typography variant="h6">
             {displayLabel}
@@ -343,7 +349,10 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
 
   return (
     <div className={classes.tabPanel}>
-      <Stack gap={1}>
+      <Stack sx={{
+        gap: 1,
+      }}
+      >
         {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
         <div>
           <Button

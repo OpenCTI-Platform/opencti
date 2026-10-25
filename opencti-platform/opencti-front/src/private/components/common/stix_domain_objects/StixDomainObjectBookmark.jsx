@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import CardHeader from '@mui/material/CardHeader';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import CardContent from '@mui/material/CardContent';
 import Skeleton from '@mui/material/Skeleton';
 import Card from '@common/card/Card';

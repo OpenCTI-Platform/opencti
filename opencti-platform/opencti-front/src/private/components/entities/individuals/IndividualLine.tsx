@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import { IndividualLine_node$key } from '@components/entities/individuals/__generated__/IndividualLine_node.graphql';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { ListItemButton } from '@mui/material';

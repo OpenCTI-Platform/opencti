@@ -234,9 +234,9 @@ class StixSightingRelationshipContainer extends Component {
         <Grid
           container={true}
           spacing={3}
-          classes={{ container: classes.gridContainer }}
+          className={classes.gridContainer}
         >
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Card title={t('Relationship')}>
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
@@ -353,7 +353,10 @@ class StixSightingRelationshipContainer extends Component {
                 </div>
               </Link>
               <Divider sx={{ my: 2 }} />
-              <Stack gap={2}>
+              <Stack sx={{
+                gap: 2,
+              }}
+              >
                 <div>
                   <Label>
                     {t('Description')}
@@ -368,7 +371,7 @@ class StixSightingRelationshipContainer extends Component {
                 </div>
 
                 <Grid container={true} spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t('Marking')}
                     </Label>
@@ -388,7 +391,7 @@ class StixSightingRelationshipContainer extends Component {
                     </Label>
                     {nsdt(stixSightingRelationship.last_seen)}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <div>
                       <StixSightingRelationshipSharing
                         elementId={stixSightingRelationship.id}
@@ -419,10 +422,10 @@ class StixSightingRelationshipContainer extends Component {
               </Stack>
             </Card>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Card title={t('Details')}>
               <Grid container={true} spacing={3}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t('Confidence level')}
                   </Label>
@@ -459,7 +462,7 @@ class StixSightingRelationshipContainer extends Component {
                   </Label>
                   {nsdt(stixSightingRelationship.updated_at)}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t('Processing status')}
                   </Label>
@@ -495,7 +498,7 @@ class StixSightingRelationshipContainer extends Component {
             </Card>
           </Grid>
           {stixSightingRelationship.x_opencti_inferences !== null ? (
-            <Grid item xs={12}>
+            <Grid size={12}>
               <CardTitle>
                 {t('Inference explanation')}
               </CardTitle>
@@ -512,24 +515,24 @@ class StixSightingRelationshipContainer extends Component {
             </Grid>
           ) : (
             <>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <StixCoreObjectOrStixRelationshipLastContainers
                   stixCoreObjectOrStixRelationshipId={
                     stixSightingRelationship.id
                   }
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <StixSightingRelationshipExternalReferences
                   stixSightingRelationshipId={stixSightingRelationship.id}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <StixSightingRelationshipLatestHistory
                   stixSightingRelationshipId={stixSightingRelationship.id}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <StixCoreObjectOrStixCoreRelationshipNotes
                   stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationship.id}
                   isRelationship

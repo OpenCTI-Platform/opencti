@@ -55,7 +55,7 @@ const WorkbenchFileViewerBase = ({
   };
 
   return (
-    <Grid item xs={6}>
+    <Grid size={6}>
       <div style={{ height: '100%' }}>
         <Card
           padding="horizontal"

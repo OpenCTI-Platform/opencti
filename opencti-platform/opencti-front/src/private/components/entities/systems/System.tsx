@@ -90,34 +90,31 @@ const System: React.FC<SystemProps> = ({
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <SystemDetails system={system} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixDomainObjectOverview
             stixDomainObject={system}
           />
         </Grid>
         {viewAs === 'knowledge' && (
-          <Grid item xs={6}>
+          <Grid size={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={system.id}
               stixObjectOrStixRelationshipLink={`/dashboard/entities/systems/${system.id}/knowledge`}
             />
           </Grid>
         )}
-        <Grid
-          item
-          xs={viewAs === 'knowledge' ? 6 : 12}
-        >
+        <Grid size={viewAs === 'knowledge' ? 6 : 12}>
           <StixCoreObjectOrStixRelationshipLastContainers
             {...lastReportsProps}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={system.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={system.id} />
         </Grid>
       </Grid>

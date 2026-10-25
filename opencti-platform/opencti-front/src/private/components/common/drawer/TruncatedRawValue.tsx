@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import Button from '@common/button/Button';
 import DialogActions from '@mui/material/DialogActions';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { CSSProperties, FunctionComponent, useEffect, useRef, useState } from 'react';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';

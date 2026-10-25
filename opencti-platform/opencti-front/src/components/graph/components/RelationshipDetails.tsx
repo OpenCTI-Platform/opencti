@@ -529,7 +529,10 @@ const RelationshipDetailsComponent: FunctionComponent<
   };
 
   return (
-    <Stack gap={2}>
+    <Stack sx={{
+      gap: 2,
+    }}
+    >
       <div>
         <Label>
           {t_i18n('Relation type')}

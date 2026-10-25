@@ -38,7 +38,13 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
   const focusHelper = useSubscriptionFocusHelper(editContext);
 
   const adornment = (
-    <Stack direction="row" alignItems="center" gap={1}>
+    <Stack
+      direction="row"
+      sx={{
+        alignItems: 'center',
+        gap: 1,
+      }}
+    >
       <EEChip size="sm" />
       <Tooltip
         title={(

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import { HubOutlined } from '@mui/icons-material';
 import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport';
 import IngestionTaxiiImport from '@components/data/ingestionTaxii/IngestionTaxiiImport';

@@ -42,7 +42,7 @@ const NewsFeedSettings = ({
       >
         <ListItemText
           primary={t_i18n('Enable News Feed notifications')}
-          slotProps={{ primary: { fontWeight: 'bold' } }}
+          slotProps={{ primary: { sx: { fontWeight: 'bold' } } }}
         />
         <Switch
           checked={!allUnsubscribed}

@@ -7,7 +7,7 @@ import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { StixCoreRelationshipCreationQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';

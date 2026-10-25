@@ -7,7 +7,7 @@ import { deepOrange, deepPurple, green, indigo, lightGreen, orange, pink, red, t
 import DialogActions from '@mui/material/DialogActions';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import { FunctionComponent, useState } from 'react';

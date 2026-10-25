@@ -18,7 +18,12 @@ export const renderCardTitle = (entity: EntityCard) => {
   const flagUrl = findFlagUrl(country?.x_opencti_aliases);
 
   return (
-    <Stack direction="row" gap={1}>
+    <Stack
+      direction="row"
+      sx={{
+        gap: 1,
+      }}
+    >
       <Typography
         variant="h3"
         sx={{

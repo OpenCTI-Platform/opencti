@@ -4,7 +4,7 @@ import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Dialog from '@common/dialog/Dialog';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
@@ -278,8 +278,11 @@ const ProfileOverviewComponent = (props) => {
 
   return (
     <Stack
-      gap={2}
-      sx={{ width: 900, margin: '0 auto' }}
+      sx={{
+        gap: 2,
+        width: 900,
+        margin: '0 auto',
+      }}
     >
       <TokenCreationDrawer
         userId={me.id}
@@ -521,7 +524,10 @@ const ProfileOverviewComponent = (props) => {
           >
             {({ submitForm, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Stack gap={2}>
+                <Stack sx={{
+                  gap: 2,
+                }}
+                >
                   <Field
                     component={TextField}
                     variant="outlined"
@@ -570,8 +576,17 @@ const ProfileOverviewComponent = (props) => {
         <div>
           <Label>{t('OpenCTI version')}</Label>
           <pre>{about.version}</pre>
-          <Stack gap={2}>
-            <Stack direction="row" justifyContent="flex-end" gap={1}>
+          <Stack sx={{
+            gap: 2,
+          }}
+          >
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: 'flex-end',
+                gap: 1,
+              }}
+            >
               {hasAccessTokenCapability && isPlaygroundEnable() && (
                 <Button
                   variant="secondary"

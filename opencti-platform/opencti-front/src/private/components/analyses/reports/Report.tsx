@@ -97,13 +97,13 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <ReportDetails report={report} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview
                       stixDomainObject={report}
                       displayAssignees
@@ -113,7 +113,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={report.id}
                     />
@@ -121,7 +121,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={report.id}
                     />
@@ -129,7 +129,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={report.id}
                       defaultMarkings={report.objectMarking ?? []}

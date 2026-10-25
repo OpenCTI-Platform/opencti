@@ -10,7 +10,7 @@ import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMappe
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';

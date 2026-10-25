@@ -2,7 +2,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import type { Theme } from '../../../../../components/Theme';
 import type { ScaleConfig } from './scale';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

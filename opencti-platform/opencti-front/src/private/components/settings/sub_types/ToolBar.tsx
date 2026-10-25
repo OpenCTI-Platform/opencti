@@ -169,20 +169,24 @@ const ToolBar: FunctionComponent<{
       variant="persistent"
       classes={{ paper: classes.bottomNav }}
       open={numberOfSelectedElements > 0 || selectAll}
-      PaperProps={{
-        variant: 'elevation',
-        elevation: 1,
-        style: {
-          paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-          bottom: bannerHeightNumber,
+      slotProps={{
+        paper: {
+          variant: 'elevation',
+          elevation: 1,
+          style: {
+            paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+            bottom: bannerHeightNumber,
+          },
         },
       }}
     >
       <Toolbar style={{ minHeight: 54 }}>
         <Typography
           className={classes.title}
-          color="inherit"
           variant="subtitle1"
+          sx={{
+            color: 'inherit',
+          }}
         >
           <span className={classes.titleNumber}>
             {numberOfSelectedElements}

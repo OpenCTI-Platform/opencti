@@ -78,7 +78,10 @@ const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewCompo
   }), [entityType]);
 
   return (
-    <Stack gap={2}>
+    <Stack sx={{
+      gap: 2,
+    }}
+    >
       <DashboardTimeFilters
         config={effectiveConfig}
         handleDateChange={handleDateChange}

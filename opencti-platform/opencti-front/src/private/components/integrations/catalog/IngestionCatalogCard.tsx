@@ -120,11 +120,13 @@ const ConnectorActions = ({
       <ConnectorUseCases useCases={connector.use_cases} />
       {shouldRenderDeploy && (
         <Stack
-          sx={{ marginLeft: '0!important' }}
           direction="row"
-          gap={1}
           onClick={stopLinkNavigation}
           onAuxClick={stopLinkNavigation}
+          sx={{
+            gap: 1,
+            marginLeft: '0!important',
+          }}
         >
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {showEnterpriseUpsell ? (
@@ -193,7 +195,14 @@ const IngestionCatalogCard = ({
           alignItems: 'stretch',
         }}
       >
-        <Stack direction="row" gap={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1.5,
+            alignItems: 'flex-start',
+            width: '100%',
+          }}
+        >
           <ConnectorLogo src={connector.logo} alt={connector.title} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {/* Sentence case: the V7 design language avoids all-caps text. */}

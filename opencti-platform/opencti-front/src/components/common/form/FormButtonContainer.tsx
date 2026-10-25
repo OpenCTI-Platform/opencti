@@ -5,8 +5,11 @@ const FormButtonContainer = ({ children }: PropsWithChildren) => {
   return (
     <Stack
       direction="row"
-      gap={1}
-      sx={{ mt: 4, justifyContent: 'flex-end' }}
+      sx={{
+        gap: 1,
+        mt: 4,
+        justifyContent: 'flex-end',
+      }}
     >
       {children}
     </Stack>

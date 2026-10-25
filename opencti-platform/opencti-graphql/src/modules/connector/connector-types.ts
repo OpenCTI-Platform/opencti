@@ -5,6 +5,9 @@ import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-
 import type { CatalogContractEntityFields } from '../catalog/catalog-types';
 import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
 
+// A running connector pings regularly: a heartbeat older than this means it is down
+export const CONNECTOR_LIVELINESS_GRACE_PERIOD_MS = 5 * 60 * 1000;
+
 export interface ConnectorInfo {
   run_and_terminate: boolean;
   buffering: boolean;
@@ -27,6 +30,7 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHe
   connector_scope: string;
   connector_state: string;
   connector_state_reset: boolean;
+  connector_state_timestamp?: string;
   connector_trigger_filters: string;
   connector_user_id: string;
   connector_info: ConnectorInfo;
@@ -41,6 +45,8 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHe
   manager_contract_configuration?: ConnectorContractConfiguration[];
   manager_contract?: ConnectorManagerContract;
   manager_upgrade_strategy?: string;
+  manager_current_status?: string;
+  manager_requested_status?: string;
   // endregion
 }
 

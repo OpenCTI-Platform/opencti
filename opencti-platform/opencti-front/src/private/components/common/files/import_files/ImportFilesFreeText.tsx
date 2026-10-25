@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Button from '@common/button/Button';
 import { Box, Stack, TextField } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import type { Theme } from '../../../../../components/Theme';
@@ -74,13 +74,20 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
               rows="10"
               variant="outlined"
               inputRef={contentInputRef}
-              InputProps={{ sx: { background: theme.palette.background.paper } }}
-              InputLabelProps={{ shrink: true }}
               slotProps={{
+                input: { sx: { background: theme.palette.background.paper } },
+                inputLabel: { shrink: true },
                 htmlInput: { style: { padding: 8 } },
               }}
             />
-            <Stack direction="row" gap={1} justifyContent="flex-end" sx={{ width: '100%' }}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+                justifyContent: 'flex-end',
+                width: '100%',
+              }}
+            >
               <Button
                 variant="secondary"
                 disabled={isSubmitting}

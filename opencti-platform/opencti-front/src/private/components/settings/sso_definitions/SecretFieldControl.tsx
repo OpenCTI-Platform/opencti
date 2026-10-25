@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 
 import FormHelperText from '@mui/material/FormHelperText';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import TextField from '../../../../components/TextField';
 import Tag from '../../../../components/common/tag/Tag';
 import { useFormatter } from '../../../../components/i18n';

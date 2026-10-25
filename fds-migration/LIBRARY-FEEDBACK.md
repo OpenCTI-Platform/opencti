@@ -2379,14 +2379,16 @@ only the menu row lacks it.
 
 **Workaround.** FDS-WORKAROUND #64 in `SettingsMapSource.tsx`: the Delete row
 sets its text colour inline from the theme's `palette.error.main`, and its icon
-takes MUI's `color="error"`.
+takes MUI's `color="error"`. Same marker on the workflow editor's edge menu
+(`workflow/EdgeTypes/TransitionEdge.tsx`): its Delete connection row sets the
+same inline colour, and its icon takes `className="text-icon-error"`.
 
 **Ask.** A `destructive` tone on `MenuItem`, covering the text, the icon slot and
 the hover state, named like the button family's.
 
-**Removal test.** At a pin where `MenuItem` takes the tone: give the Delete row
-the tone, remove its `style` colour, the icon's `color` prop and the marker, and
-confirm the row text and icon render in the library's destructive colour.
+**Removal test.** At a pin where `MenuItem` takes the tone: give both Delete rows
+the tone, remove their `style` colour, the icon's `color` prop or class and the
+markers, and confirm the row text and icon render in the library's destructive colour.
 
 ---
 

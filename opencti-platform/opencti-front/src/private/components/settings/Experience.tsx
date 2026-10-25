@@ -14,7 +14,7 @@ import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
@@ -252,7 +252,13 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         <ExperienceDetailRow
           divider={!xtmOneConfigured}
           label={(
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               <Typography variant="body2" color="textSecondary">
                 {xtmOneConfigured ? t_i18n('XTM One (Agentic AI)') : t_i18n('Agentic AI (Ariane Assistant)')}
               </Typography>
@@ -336,8 +342,15 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   return (
     <div style={{ margin: 0, padding: '0 0 50px 0' }} data-testid="experience-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Filigran Experience'), current: true }]} />
-      <Grid container={true} spacing={3} alignItems="stretch" style={{ marginBottom: 23 }}>
-        <Grid item xs={6}>
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginBottom: 23 }}
+        sx={{
+          alignItems: 'stretch',
+        }}
+      >
+        <Grid size={6}>
           <ExperienceCard
             icon={<RocketLaunchOutlined />}
             overline={t_i18n('Filigran Experience')}
@@ -384,12 +397,12 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             </DialogActions>
           </Dialog>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <XtmHubSettings />
         </Grid>
 
         {isGrantedToSupport && (
-          <Grid item xs={12} style={{ marginTop: 15 }}>
+          <Grid style={{ marginTop: 15 }} size={12}>
             <SupportPackages />
           </Grid>
         )}

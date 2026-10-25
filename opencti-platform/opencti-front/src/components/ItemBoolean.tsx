@@ -1,7 +1,7 @@
 import React from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from './i18n';
 import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';

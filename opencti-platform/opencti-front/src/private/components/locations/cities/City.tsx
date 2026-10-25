@@ -90,37 +90,37 @@ const City = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
-        <Grid item xs={4}>
+        <Grid size={4}>
           <LocationDetails locationData={city} />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <LocationMiniMap
             zoom={5}
             location={city}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <StixDomainObjectOverview
             stixDomainObject={city}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={city.id}
             stixObjectOrStixRelationshipLink={`/dashboard/locations/cities/${city.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={city.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={city.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={city.id} />
         </Grid>
       </Grid>

@@ -1,6 +1,6 @@
 import CancelIcon from '@mui/icons-material/Cancel';
 import Box from '@mui/material/Box';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { ChipOwnProps } from '@mui/material/Chip';
 import { Theme, useTheme } from '@mui/material/styles';
 import { CSSProperties, forwardRef, PropsWithChildren } from 'react';
 import { FILTER_LINE_ITEM_HEIGHT } from '../../utils/filters/filtersUtils';

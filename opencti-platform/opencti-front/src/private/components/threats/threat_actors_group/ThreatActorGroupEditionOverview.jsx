@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';

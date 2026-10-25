@@ -426,13 +426,39 @@ export const loadEntity = async <T extends BasicStoreEntity> (
 // endregion
 
 // region Loader element
+// Targets of refs relations, by internal id.
+// With objectsBaseData, the members of containers (object relations) are loaded with their base data only:
+// a container can hold tens of thousands of them, while a STIX conversion only reads their ids.
+// A member also targeted by another ref (author, marking...) keeps its full data.
+const loadRefsTargets = async (
+  context: AuthContext,
+  user: AuthUser,
+  refsRelations: BasicStoreRelation[],
+  objectsBaseData: boolean,
+): Promise<Record<string, BasicStoreBase>> => {
+  const isBaseDataRelation = (rel: BasicStoreRelation) => objectsBaseData && rel.entity_type === RELATION_OBJECT;
+  const fullRelations = refsRelations.filter((rel) => !isBaseDataRelation(rel));
+  const fullTargetIds = new Set(fullRelations.map((rel) => rel.toId));
+  const baseRelations = refsRelations.filter((rel) => isBaseDataRelation(rel) && !fullTargetIds.has(rel.toId));
+  const loadTargets = async (relations: BasicStoreRelation[], baseData: boolean) => {
+    if (relations.length === 0) {
+      return {};
+    }
+    const ids = R.uniq(relations.map((rel) => rel.toId));
+    const types = R.uniq(relations.map((rel) => rel.toType));
+    return await elFindByIds(context, user, ids, { type: types, toMap: true, baseData }) as Record<string, BasicStoreBase>;
+  };
+  const [fullTargets, baseTargets] = await Promise.all([loadTargets(fullRelations, false), loadTargets(baseRelations, true)]);
+  return Object.assign(baseTargets, fullTargets);
+};
+
 const loadElementMetaDependencies = async (
   context: AuthContext,
   user: AuthUser,
   elements: { internal_id: string; entity_type: string }[],
-  args: { onlyMarking?: boolean } = {},
+  args: { onlyMarking?: boolean; objectsBaseData?: boolean } = {},
 ): Promise<Map<string, BasicStoreBase>> => {
-  const { onlyMarking = true } = args;
+  const { onlyMarking = true, objectsBaseData = false } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
   const workingIds = Array.from(workingElementsMap.keys());
@@ -452,10 +478,7 @@ const loadElementMetaDependencies = async (
     await fullRelationsList<BasicStoreRelation>(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
   }
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
-  // Parallel resolutions
-  const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
-  const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, toMap: true }) as Record<string, BasicStoreBase>;
+  const toResolvedElements = await loadRefsTargets(context, user, refsRelations, objectsBaseData);
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map<string, BasicStoreBase>();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -508,7 +531,7 @@ export const loadElementsWithDependencies = async (
   context: AuthContext,
   user: AuthUser,
   elements: BasicStoreBase[],
-  opts: { onlyMarking?: boolean } = {},
+  opts: { onlyMarking?: boolean; objectsBaseData?: boolean } = {},
 ): Promise<BasicStoreCommon[]> => {
   const fileMarkings: string[] = [];
   const elementsToDeps: { internal_id: string; entity_type: string }[] = [...elements];
@@ -595,6 +618,8 @@ export const loadElementsWithDependencies = async (
 };
 type LoadByIdsWithDependeciesOpts = ElFindByIdsOpts & {
   onlyMarking?: boolean;
+  // Load the members of containers with their base data only, enough for a STIX conversion
+  objectsBaseData?: boolean;
 };
 const loadByIdsWithDependencies = async (
   context: AuthContext,

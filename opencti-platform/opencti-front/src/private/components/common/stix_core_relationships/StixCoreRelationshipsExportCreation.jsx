@@ -169,7 +169,13 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               onClose();
                             }}
                             title={(
-                              <Stack direction="row" alignItems="center" gap={1}>
+                              <Stack
+                                direction="row"
+                                sx={{
+                                  alignItems: 'center',
+                                  gap: 1,
+                                }}
+                              >
                                 {t('Generate an export')}
                                 <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
                                   <InfoOutlined sx={{ display: 'block' }} fontSize="medium" color="primary" />

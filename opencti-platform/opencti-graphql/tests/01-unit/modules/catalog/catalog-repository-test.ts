@@ -6,10 +6,12 @@ import {
   findAllCatalogs,
   findAllCatalogsExcluding,
   findAllCatalogsRevisions,
+  findCatalogByCatalogId,
   updateCatalogContracts,
   upsertCatalog,
 } from '../../../../src/modules/catalog/catalog-repository';
 import {
+  type BasicStoreEntityCatalog,
   type BasicStoreEntityCatalogContract,
   type CatalogContractUpdate,
   type CatalogUpsert,
@@ -66,6 +68,26 @@ describe('catalog repository', () => {
         filters: null,
       },
     );
+  });
+
+  it('should find a catalog by its exact catalog id', async () => {
+    const catalogs = [{ catalog_id: 'filigran-catalog-id' }, { catalog_id: 'custom-catalog-id' }] as BasicStoreEntityCatalog[];
+    vi.mocked(fullEntitiesList).mockResolvedValue(catalogs);
+
+    await expect(findCatalogByCatalogId(context, user, 'custom-catalog-id')).resolves.toBe(catalogs[1]);
+    await expect(findCatalogByCatalogId(context, user, 'ipinfo')).resolves.toBeUndefined();
+    await expect(findCatalogByCatalogId(context, user, 'Custom-Catalog-Id')).resolves.toBeUndefined();
+  });
+
+  it.each([
+    ['one catalog', [{ catalog_id: 'filigran-catalog-id' }]],
+    ['several catalogs', [{ catalog_id: 'filigran-catalog-id' }, { catalog_id: 'custom-catalog-id' }]],
+  ])('should not resolve the EXISTS catalog id with %s, as it is not a catalog id', async (_case, catalogs) => {
+    vi.mocked(fullEntitiesList).mockResolvedValue(catalogs as BasicStoreEntityCatalog[]);
+
+    await expect(findCatalogByCatalogId(context, user, 'EXISTS')).resolves.toBeUndefined();
+    // No filter on the catalog id: the filters compiler would turn EXISTS into a presence check
+    expect(fullEntitiesList).toHaveBeenCalledWith(context, user, [ENTITY_TYPE_CATALOG], { indices: [READ_INDEX_INTERNAL_OBJECTS], filters: null });
   });
 
   it('should find catalogs excluding the specified catalog ids', async () => {

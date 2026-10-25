@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import MuiThemeProvider from '../../../../../components/MuiThemeProvider';
 import PublishButton from './PublishButton';
 import ThemeDark from '../../../../../components/ThemeDark';
 
@@ -19,9 +20,9 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 // Helper to render with theme
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
-    <ThemeProvider theme={testTheme}>
+    <MuiThemeProvider theme={testTheme}>
       {component}
-    </ThemeProvider>,
+    </MuiThemeProvider>,
   );
 };
 

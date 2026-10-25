@@ -6,7 +6,7 @@ import { BackupTableOutlined, AlarmOnOutlined, MoreVert } from '@mui/icons-mater
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { DataColumns } from '../../../../components/list_lines';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
@@ -18,7 +18,8 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import NotifierChips from './NotifierChips';
+import { useTheme } from '@mui/material/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -150,12 +151,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.notifiers.width }}
             >
-              {(data.notifiers
-                && data.notifiers.length > 0)
-                ? data.notifiers
-                    .map<React.ReactNode>((n) => <code key={n.id} style={{ marginRight: 5 }}>{n.name}</code>)
-                : EMPTY_VALUE
-              }
+              <NotifierChips notifiers={data.notifiers} />
             </div>
             <div
               className={classes.bodyItem}
