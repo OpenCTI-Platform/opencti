@@ -1,10 +1,11 @@
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { countAllThings, type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH } from './intelligenceRequirementMatch-types';
+import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, IR_MATCH_IN_STATUSES } from './intelligenceRequirementMatch-types';
 import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM } from './intelligenceRequirementItem-types';
-import { createEntity, internalDeleteElementById } from '../../database/middleware';
+import { createEntity, internalDeleteElementById, timeSeriesEntities } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
@@ -97,3 +98,23 @@ export const updateIntelligenceRequirementLastEventId = async (context: AuthCont
     { auditLogEnabled: false },
   );
 };
+
+// region list indicators (entities in the requirement, open inbox items, activity)
+export const countRequirementEntities = async (context: AuthContext, user: AuthUser, irId: string) => {
+  const filters = addFilter(addFilter(undefined, 'ir_id', irId), 'match_status', IR_MATCH_IN_STATUSES);
+  return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+};
+
+export const countRequirementOpenItems = async (context: AuthContext, user: AuthUser, irId: string) => {
+  const filters = addFilter(addFilter(undefined, 'ir_id', irId), 'item_status', 'open');
+  return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+};
+
+// Entities entering the requirement (in or proposed) per day over the last days
+export const requirementActivity = async (context: AuthContext, user: AuthUser, irId: string, days: number) => {
+  const endDate = new Date();
+  const startDate = new Date(endDate.getTime() - Math.max(1, days) * 24 * 3600 * 1000);
+  const filters = addFilter(undefined, 'ir_id', irId);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], { filters, startDate, endDate, interval: 'day', field: 'created_at' } as any);
+};
+// endregion

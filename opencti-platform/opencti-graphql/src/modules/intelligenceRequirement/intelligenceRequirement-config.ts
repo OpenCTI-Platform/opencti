@@ -65,6 +65,7 @@ export const normalizeIntelligenceRequirementInput = (input: IntelligenceRequire
     kind: c.kind,
     from_group_ids: c.from_group_ids ?? [],
     from_in_requirement: c.from_in_requirement ?? false,
+    from_types: c.from_types ?? [],
     relationship_types: c.relationship_types ?? [],
     direction: c.direction ?? 'both',
     target_types: c.target_types ?? [],

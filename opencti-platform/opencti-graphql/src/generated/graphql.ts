@@ -14518,6 +14518,9 @@ export type IntelligenceRequirement = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ir_activity: Array<IrActivityPoint>;
+  ir_entities_count: Scalars['Int']['output'];
+  ir_inbox_open_count: Scalars['Int']['output'];
   ir_kiqs: Array<IrKiq>;
   ir_priority: IntelligenceRequirementPriority;
   ir_question: Scalars['String']['output'];
@@ -14535,6 +14538,11 @@ export type IntelligenceRequirement = BasicObject & InternalObject & {
   representative: Representative;
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+};
+
+
+export type IntelligenceRequirementIr_ActivityArgs = {
+  days?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type IntelligenceRequirementConnection = {
@@ -14613,8 +14621,6 @@ export type IntelligenceRequirementMatch = BasicObject & InternalObject & {
   match_excluded: Scalars['Boolean']['output'];
   match_explanations: Array<IrMatchExplanation>;
   match_last_fact_at?: Maybe<Scalars['DateTime']['output']>;
-  /** Other requirements in which the same entity is in or proposed */
-  match_other_requirements: Array<IntelligenceRequirement>;
   match_score: Scalars['Int']['output'];
   match_score_breakdown: Array<IrRuleOutcome>;
   match_status: IrMatchStatus;
@@ -15037,11 +15043,18 @@ export type InvestigationDuplicateInput = {
   name: Scalars['String']['input'];
 };
 
+export type IrActivityPoint = {
+  __typename?: 'IrActivityPoint';
+  date: Scalars['DateTime']['output'];
+  value: Scalars['Int']['output'];
+};
+
 export type IrCriterion = {
   __typename?: 'IrCriterion';
   direction: IrDirection;
   from_group_ids: Array<Scalars['String']['output']>;
   from_in_requirement: Scalars['Boolean']['output'];
+  from_types?: Maybe<Array<Scalars['String']['output']>>;
   id: Scalars['String']['output'];
   keyword_fields: Array<Scalars['String']['output']>;
   kind: IrCriterionKind;
@@ -15056,6 +15069,7 @@ export type IrCriterionInput = {
   direction?: InputMaybe<IrDirection>;
   from_group_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   from_in_requirement?: InputMaybe<Scalars['Boolean']['input']>;
+  from_types?: InputMaybe<Array<Scalars['String']['input']>>;
   id: Scalars['String']['input'];
   keyword_fields?: InputMaybe<Array<Scalars['String']['input']>>;
   kind: IrCriterionKind;
@@ -18006,6 +18020,8 @@ export type Mutation = {
   intelligenceRequirementAdd?: Maybe<IntelligenceRequirement>;
   intelligenceRequirementDelete?: Maybe<Scalars['ID']['output']>;
   intelligenceRequirementItemDecide?: Maybe<IntelligenceRequirementItem>;
+  /** Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided. */
+  intelligenceRequirementItemsDecide?: Maybe<Scalars['Int']['output']>;
   intelligenceRequirementMatchStatusUpdate?: Maybe<IntelligenceRequirementMatch>;
   intelligenceRequirementStatusUpdate?: Maybe<IntelligenceRequirement>;
   intelligenceRequirementUpdate?: Maybe<IntelligenceRequirement>;
@@ -19521,6 +19537,12 @@ export type MutationIntelligenceRequirementDeleteArgs = {
 export type MutationIntelligenceRequirementItemDecideArgs = {
   decision: IrItemDecision;
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationIntelligenceRequirementItemsDecideArgs = {
+  decision: IrItemDecision;
+  ids: Array<Scalars['ID']['input']>;
 };
 
 
@@ -41870,6 +41892,7 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
+  IrActivityPoint: ResolverTypeWrapper<IrActivityPoint>;
   IrCriterion: ResolverTypeWrapper<StoreIrCriterion>;
   IrCriterionInput: IrCriterionInput;
   IrCriterionKind: IrCriterionKind;
@@ -43028,6 +43051,7 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetEdge: Omit<IntrusionSetEdge, 'node'> & { node: ResolversParentTypes['IntrusionSet'] };
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
   InvestigationDuplicateInput: InvestigationDuplicateInput;
+  IrActivityPoint: IrActivityPoint;
   IrCriterion: StoreIrCriterion;
   IrCriterionInput: IrCriterionInput;
   IrItemData: IrItemData;
@@ -48522,6 +48546,9 @@ export type IntelligenceRequirementResolvers<ContextType = any, ParentType exten
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ir_activity?: Resolver<Array<ResolversTypes['IrActivityPoint']>, ParentType, ContextType, Partial<IntelligenceRequirementIr_ActivityArgs>>;
+  ir_entities_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ir_inbox_open_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ir_kiqs?: Resolver<Array<ResolversTypes['IrKiq']>, ParentType, ContextType>;
   ir_priority?: Resolver<ResolversTypes['IntelligenceRequirementPriority'], ParentType, ContextType>;
   ir_question?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48598,7 +48625,6 @@ export type IntelligenceRequirementMatchResolvers<ContextType = any, ParentType 
   match_excluded?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   match_explanations?: Resolver<Array<ResolversTypes['IrMatchExplanation']>, ParentType, ContextType>;
   match_last_fact_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  match_other_requirements?: Resolver<Array<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType>;
   match_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   match_score_breakdown?: Resolver<Array<ResolversTypes['IrRuleOutcome']>, ParentType, ContextType>;
   match_status?: Resolver<ResolversTypes['IrMatchStatus'], ParentType, ContextType>;
@@ -48744,10 +48770,16 @@ export type IntrusionSetEditMutationsResolvers<ContextType = any, ParentType ext
   relationDelete?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
 }>;
 
+export type IrActivityPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrActivityPoint'] = ResolversParentTypes['IrActivityPoint']> = ResolversObject<{
+  date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type IrCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrCriterion'] = ResolversParentTypes['IrCriterion']> = ResolversObject<{
   direction?: Resolver<ResolversTypes['IrDirection'], ParentType, ContextType>;
   from_group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   from_in_requirement?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  from_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   keyword_fields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   kind?: Resolver<ResolversTypes['IrCriterionKind'], ParentType, ContextType>;
@@ -50068,6 +50100,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   intelligenceRequirementAdd?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementAddArgs, 'input'>>;
   intelligenceRequirementDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementDeleteArgs, 'id'>>;
   intelligenceRequirementItemDecide?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItem']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemDecideArgs, 'decision' | 'id'>>;
+  intelligenceRequirementItemsDecide?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemsDecideArgs, 'decision' | 'ids'>>;
   intelligenceRequirementMatchStatusUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatch']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementMatchStatusUpdateArgs, 'id' | 'status'>>;
   intelligenceRequirementStatusUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementStatusUpdateArgs, 'id' | 'status'>>;
   intelligenceRequirementUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementUpdateArgs, 'id' | 'input'>>;
@@ -56406,6 +56439,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IntrusionSetConnection?: IntrusionSetConnectionResolvers<ContextType>;
   IntrusionSetEdge?: IntrusionSetEdgeResolvers<ContextType>;
   IntrusionSetEditMutations?: IntrusionSetEditMutationsResolvers<ContextType>;
+  IrActivityPoint?: IrActivityPointResolvers<ContextType>;
   IrCriterion?: IrCriterionResolvers<ContextType>;
   IrItemData?: IrItemDataResolvers<ContextType>;
   IrKiq?: IrKiqResolvers<ContextType>;

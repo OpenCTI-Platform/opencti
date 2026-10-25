@@ -10092,6 +10092,11 @@ type Mutation {
   intelligenceRequirementStatusUpdate(id: ID!, status: IntelligenceRequirementStatus!): IntelligenceRequirement
   intelligenceRequirementDelete(id: ID!): ID
   intelligenceRequirementItemDecide(id: ID!, decision: IrItemDecision!): IntelligenceRequirementItem
+
+  """
+  Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided.
+  """
+  intelligenceRequirementItemsDecide(ids: [ID!]!, decision: IrItemDecision!): Int
   intelligenceRequirementMatchStatusUpdate(id: ID!, status: IrMatchDecisionStatus!): IntelligenceRequirementMatch
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
@@ -16000,6 +16005,7 @@ type IrCriterion {
   kind: IrCriterionKind!
   from_group_ids: [String!]!
   from_in_requirement: Boolean!
+  from_types: [String!]
   relationship_types: [String!]!
   direction: IrDirection!
   target_types: [String!]!
@@ -16053,6 +16059,9 @@ type IntelligenceRequirement implements InternalObject & BasicObject {
   lastEventId: String
   authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
+  ir_entities_count: Int!
+  ir_inbox_open_count: Int!
+  ir_activity(days: Int): [IrActivityPoint!]!
 }
 
 enum IntelligenceRequirementOrdering {
@@ -16061,6 +16070,11 @@ enum IntelligenceRequirementOrdering {
   updated_at
   ir_priority
   _score
+}
+
+type IrActivityPoint {
+  date: DateTime!
+  value: Int!
 }
 
 type IntelligenceRequirementConnection {
@@ -16095,6 +16109,7 @@ input IrCriterionInput {
   kind: IrCriterionKind!
   from_group_ids: [String!]
   from_in_requirement: Boolean
+  from_types: [String!]
   relationship_types: [String!]
   direction: IrDirection
   target_types: [String!]
@@ -16185,9 +16200,6 @@ type IntelligenceRequirementMatch implements InternalObject & BasicObject {
   match_score_breakdown: [IrRuleOutcome!]!
   match_excluded: Boolean!
   match_last_fact_at: DateTime
-
-  """Other requirements in which the same entity is in or proposed"""
-  match_other_requirements: [IntelligenceRequirement!]!
 }
 
 enum IntelligenceRequirementMatchOrdering {

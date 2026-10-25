@@ -12,7 +12,13 @@ import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_
 import { parseIntelligenceRequirement } from '../modules/intelligenceRequirement/intelligenceRequirement-config';
 import { buildEngineState, evaluateEntity, evaluateRelationship } from '../modules/intelligenceRequirement/intelligenceRequirement-engine';
 import { listMatches, upsertMatch } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-domain';
-import { handleUpsertResult, processMatchChange, rescoreRequirement } from '../modules/intelligenceRequirement/intelligenceRequirement-pipeline';
+import {
+  backfillEnteredEntities,
+  handleUpsertResult,
+  hasEntered,
+  processMatchChange,
+  rescoreRequirement,
+} from '../modules/intelligenceRequirement/intelligenceRequirement-pipeline';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { IR_MATCH_IN_STATUSES } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-types';
 import { updateIntelligenceRequirementLastEventId } from '../modules/intelligenceRequirement/intelligenceRequirement-domain';
@@ -40,6 +46,7 @@ const processEventsForRequirement = (context: AuthContext, ir: BasicStoreEntityI
     let entered = 0;
     let updated = 0;
     let rescored = 0;
+    let backfilled = 0;
     let rescoreAll = false;
     for (let i = 0; i < streamEvents.length; i += 1) {
       const event = streamEvents[i].data;
@@ -68,6 +75,10 @@ const processEventsForRequirement = (context: AuthContext, ir: BasicStoreEntityI
             if (IR_MATCH_IN_STATUSES.includes(result.match.match_status)) state.inRequirement.add(candidate.entity.id);
             // 2. Inbox (proposed / entered) and relevance (score, thresholds)
             await handleUpsertResult(context, SYSTEM_USER, parsed, result, candidate.criterion.id);
+            // 2b. Backfill: what the entity already reaches through the second hop criteria
+            if (hasEntered(result)) {
+              backfilled += await backfillEnteredEntities(context, SYSTEM_USER, parsed, state, [candidate.entity]);
+            }
           }
         }
         // 3. Relevance: a new fact on an entity already in the requirement (e.g. it entered CISA KEV)
@@ -89,8 +100,8 @@ const processEventsForRequirement = (context: AuthContext, ir: BasicStoreEntityI
     if (rescoreAll) {
       rescored += await rescoreRequirement(context, SYSTEM_USER, parsed);
     }
-    if (entered > 0 || updated > 0 || rescored > 0) {
-      logApp.info('[OPENCTI-MODULE] Intelligence requirement processed', { manager: IR_MANAGER_ID, requirement: ir.name, entered, updated, rescored, events: streamEvents.length });
+    if (entered > 0 || updated > 0 || rescored > 0 || backfilled > 0) {
+      logApp.info('[OPENCTI-MODULE] Intelligence requirement processed', { manager: IR_MANAGER_ID, requirement: ir.name, entered, updated, rescored, backfilled, events: streamEvents.length });
     }
   };
 };

@@ -37,7 +37,8 @@ export interface StoreIrSubjectGroup {
 }
 
 // One single format for every entry criterion:
-// - graph: (entities of from_group_ids or already in the requirement) —relationship_types→ (target_types + target_filters)
+// - graph: (entities of from_group_ids or already in the requirement, of from_types) —relationship_types→ (target_types + target_filters)
+//   The relationship type "object" reads the content of containers: (report) —object→ (contained entity).
 // - attribute: (target_types + target_filters), zero hop, on entity events
 // - keywords: (keywords of from_group_ids) found in keyword_fields of an entity or a container (its contained objects are proposed)
 export interface StoreIrCriterion {
@@ -46,6 +47,7 @@ export interface StoreIrCriterion {
   kind: string; // graph | attribute | keywords
   from_group_ids: string[];
   from_in_requirement: boolean; // second hop: start from the entities already in the requirement
+  from_types?: string[]; // only start from entities of these types (empty: any type)
   relationship_types: string[];
   direction: string; // outgoing | incoming | both
   target_types: string[];

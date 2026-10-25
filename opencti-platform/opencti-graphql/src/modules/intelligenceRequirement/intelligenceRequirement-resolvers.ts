@@ -11,11 +11,14 @@ import {
   intelligenceRequirementDelete,
   intelligenceRequirementStatusUpdate,
   intelligenceRequirementUpdate,
+  countRequirementEntities,
+  countRequirementOpenItems,
+  requirementActivity,
 } from './intelligenceRequirement-domain';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
-import { findMatchesPaginated, listOtherRequirementsOfMatch, loadMatchById, parseMatchExplanations } from './intelligenceRequirementMatch-domain';
+import { findMatchesPaginated, loadMatchById, parseMatchExplanations } from './intelligenceRequirementMatch-domain';
 import { findItemsPaginated, parseItemData } from './intelligenceRequirementItem-domain';
-import { decideItem, setMatchStatus } from './intelligenceRequirement-pipeline';
+import { decideItem, decideItems, setMatchStatus } from './intelligenceRequirement-pipeline';
 
 const parseJson = <T>(value: string | null | undefined, fallback: T): T => {
   try {
@@ -41,6 +44,9 @@ const intelligenceRequirementResolvers: Resolvers = {
     creators: (ir, _, context) => loadCreators(context, context.user, ir),
     authorizedMembers: (ir, _, context) => getAuthorizedMembers(context, context.user, ir),
     currentUserAccessRight: (ir, _, context) => getUserAccessRight(context.user, ir),
+    ir_entities_count: (ir, _, context) => countRequirementEntities(context, context.user, ir.id),
+    ir_inbox_open_count: (ir, _, context) => countRequirementOpenItems(context, context.user, ir.id),
+    ir_activity: (ir, { days }, context) => requirementActivity(context, context.user, ir.id, days ?? 30),
     // Stored as serialized JSON, exposed as typed blocks
     ir_kiqs: (ir) => parsed(ir).ir_kiqs,
     ir_subject_groups: (ir) => parsed(ir).ir_subject_groups,
@@ -71,7 +77,6 @@ const intelligenceRequirementResolvers: Resolvers = {
     match_excluded: (match) => match.match_excluded ?? false,
     match_score: (match) => match.match_score ?? 0,
     match_score_breakdown: (match) => parseJson(match.match_score_breakdown, []),
-    match_other_requirements: (match, _, context) => listOtherRequirementsOfMatch(context, context.user, match),
   },
   IntelligenceRequirementItem: {
     created_at: (item) => item.created_at ?? new Date(0),
@@ -100,6 +105,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     intelligenceRequirementStatusUpdate: (_, { id, status }, context) => intelligenceRequirementStatusUpdate(context, context.user, id, status),
     intelligenceRequirementDelete: (_, { id }, context) => intelligenceRequirementDelete(context, context.user, id),
     intelligenceRequirementItemDecide: (_, { id, decision }, context) => decideItem(context, context.user, id, decision),
+    intelligenceRequirementItemsDecide: (_, { ids, decision }, context) => decideItems(context, context.user, ids, decision),
     intelligenceRequirementMatchStatusUpdate: (_, { id, status }, context) => setMatchStatus(context, context.user, id, status),
   },
 };
