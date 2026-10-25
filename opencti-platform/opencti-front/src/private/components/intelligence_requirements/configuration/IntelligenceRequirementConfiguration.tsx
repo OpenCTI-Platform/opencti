@@ -35,6 +35,7 @@ const configurationQuery = graphql`
         kind
         from_group_ids
         from_in_requirement
+        from_types
         relationship_types
         direction
         target_types
@@ -90,6 +91,7 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
     kind: c.kind,
     from_group_ids: [...c.from_group_ids],
     from_in_requirement: c.from_in_requirement,
+    from_types: [...(c.from_types ?? [])],
     relationship_types: [...c.relationship_types],
     direction: c.direction,
     target_types: [...c.target_types],

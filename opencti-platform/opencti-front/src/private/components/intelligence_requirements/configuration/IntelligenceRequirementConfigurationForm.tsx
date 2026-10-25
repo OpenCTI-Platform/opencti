@@ -91,7 +91,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
   const setRule = (id: string, patch: Partial<IrRuleDraft>) => set({ rules: draft.rules.map((r) => (r.id === id ? { ...r, ...patch } : r)) });
 
   const typeOptions = IR_ENTITY_TYPES.map((t) => ({ value: t, label: t_i18n(`entity_${t}`) }));
-  const relationshipOptions = IR_RELATIONSHIP_TYPES.map((r) => ({ value: r, label: r }));
+  const relationshipOptions = IR_RELATIONSHIP_TYPES.map((r) => ({ value: r, label: r === 'object' ? t_i18n('object (contained in a report or container)') : r }));
   const groupOptions = draft.groups.map((g) => ({ value: g.id, label: g.name || g.id }));
   const criterionOptions = draft.criteria.map((c) => ({ value: c.id, label: c.name || c.id }));
   const directionOptions = [
@@ -232,8 +232,9 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
             </Row>
             {criterion.kind === 'graph' && (
               <>
-                <Row columns="1fr 1fr">
+                <Row columns="1fr 1fr 1fr">
                   <IrMultiSelect label={t_i18n('From subject groups')} values={criterion.from_group_ids} options={groupOptions} onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })} />
+                  <IrMultiSelect label={t_i18n('From entity types (optional)')} values={criterion.from_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { from_types: v })} />
                   <Checkbox
                     label={t_i18n('Also from the entities already in the requirement (second hop)')}
                     checked={criterion.from_in_requirement}

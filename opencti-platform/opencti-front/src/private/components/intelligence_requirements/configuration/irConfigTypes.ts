@@ -37,6 +37,7 @@ export interface IrCriterionDraft {
   kind: IrCriterionKind;
   from_group_ids: string[];
   from_in_requirement: boolean;
+  from_types: string[];
   relationship_types: string[];
   direction: IrDirection;
   target_types: string[];
@@ -102,6 +103,7 @@ export const emptyCriterion = (groups: IrGroupDraft[]): IrCriterionDraft => ({
   kind: 'graph',
   from_group_ids: groups.filter((g) => g.role !== 'context').slice(0, 1).map((g) => g.id),
   from_in_requirement: false,
+  from_types: [],
   relationship_types: [],
   direction: 'outgoing',
   target_types: [],
@@ -165,6 +167,7 @@ export const draftToInput = (draft: IrDraft) => ({
     kind: c.kind,
     from_group_ids: c.kind === 'attribute' ? [] : c.from_group_ids,
     from_in_requirement: c.kind === 'graph' ? c.from_in_requirement : false,
+    from_types: c.kind === 'graph' ? c.from_types : [],
     relationship_types: c.kind === 'graph' ? c.relationship_types : [],
     direction: c.direction,
     target_types: c.target_types,

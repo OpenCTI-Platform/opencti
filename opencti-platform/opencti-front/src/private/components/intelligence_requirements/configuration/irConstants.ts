@@ -8,8 +8,8 @@ export const IR_ENTITY_TYPES = [
 ];
 
 export const IR_RELATIONSHIP_TYPES = [
-  'uses', 'targets', 'exploits', 'indicates', 'variant-of', 'related-to', 'attributed-to', 'has', 'delivers', 'drops',
-  'located-at', 'part-of', 'communicates-with', 'compromises', 'originates-from', 'impersonates', 'mitigates',
+  'uses', 'targets', 'object', 'originates-from', 'exploits', 'indicates', 'variant-of', 'related-to', 'attributed-to', 'has', 'delivers', 'drops',
+  'located-at', 'part-of', 'communicates-with', 'compromises', 'impersonates', 'mitigates',
   'remediates', 'belongs-to', 'derived-from', 'authored-by', 'hosts', 'owns', 'beacons-to', 'downloads',
 ];
 
