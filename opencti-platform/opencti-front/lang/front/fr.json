@@ -28,6 +28,8 @@
   "{count} days": "{count} jours",
   "{count} deployed": "{count} déployées",
   "{count} email address(es) extracted from pasted text": "{count} adresse(s) électronique(s) extraite(s) du texte collé",
+  "{count} enrichments have results waiting": "{count} enrichissements ont des résultats en attente",
+  "{count} enrichments ongoing": "{count} enrichissements en cours",
   "{count} instances": "{count} instances",
   "{count} iterations": "{count} itérations",
   "{count} managers": "{count} gestionnaires",

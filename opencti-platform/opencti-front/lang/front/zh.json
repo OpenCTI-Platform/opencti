@@ -28,6 +28,8 @@
   "{count} days": "{count}天",
   "{count} deployed": "已部署 {count} 个",
   "{count} email address(es) extracted from pasted text": "{count} 从粘贴的文本中提取的电子邮件地址",
+  "{count} enrichments have results waiting": "有 {count} 项信息补充结果待处理",
+  "{count} enrichments ongoing": "有 {count} 项信息补充正在进行中",
   "{count} instances": "{count} 个实例",
   "{count} iterations": "{count} 次迭代",
   "{count} managers": "{count} 个管理器",

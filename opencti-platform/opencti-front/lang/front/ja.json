@@ -28,6 +28,8 @@
   "{count} days": "{count}日",
   "{count} deployed": "{count} 件デプロイ済み",
   "{count} email address(es) extracted from pasted text": "貼り付けられたテキストから抽出された{count}メールアドレス",
+  "{count} enrichments have results waiting": "{count} 件のエンリッチメントで結果が待機中",
+  "{count} enrichments ongoing": "{count} 件のエンリッチメントが進行中",
   "{count} instances": "{count} インスタンス",
   "{count} iterations": "{count} 回の反復",
   "{count} managers": "{count} 件のマネージャ",

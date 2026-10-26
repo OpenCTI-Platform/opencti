@@ -28,6 +28,8 @@
   "{count} days": "{count} 일",
   "{count} deployed": "{count}개 배포됨",
   "{count} email address(es) extracted from pasted text": "붙여넣은 텍스트에서 추출한 {count} 이메일 주소",
+  "{count} enrichments have results waiting": "{count}개의 보강 작업에 결과가 대기 중입니다",
+  "{count} enrichments ongoing": "{count}개의 보강 작업이 진행 중입니다",
   "{count} instances": "인스턴스 {count}개",
   "{count} iterations": "{count}회 반복",
   "{count} managers": "관리자 {count}개",

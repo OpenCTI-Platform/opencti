@@ -1,13 +1,4 @@
-import {
-  CheckCircleOutlined,
-  DeleteOutlined,
-  ExtensionOutlined,
-  RefreshOutlined,
-  WarningOutlined,
-  DoNotDisturb,
-  ReviewsOutlined,
-  ControlPointDuplicate,
-} from '@mui/icons-material';
+import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined, DoNotDisturb, DataSaverOn, OpenWithOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import { Divider, Stack } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
@@ -179,7 +170,7 @@ const ConnectorWorkList = ({
                                   aria-label={t_i18n('Review results')}
                                   onClick={() => onReview?.(work.id)}
                                 >
-                                  <ReviewsOutlined fontSize="small" />
+                                  <OpenWithOutlined fontSize="small" />
                                 </IconButton>
                               )}
                               <Security needs={[]} hasAccess={canEditInvestigation}>
@@ -191,7 +182,7 @@ const ConnectorWorkList = ({
                                       aria-label={t_i18n('Add all to graph')}
                                       onClick={() => onReviewAddAll?.(work.id)}
                                     >
-                                      <ControlPointDuplicate fontSize="small" />
+                                      <DataSaverOn fontSize="small" />
                                     </IconButton>
                                   )}
                                   {onReviewDismiss && (

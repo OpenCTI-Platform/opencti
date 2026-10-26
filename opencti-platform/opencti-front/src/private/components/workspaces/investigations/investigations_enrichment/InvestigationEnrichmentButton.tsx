@@ -39,12 +39,25 @@ const InvestigationEnrichmentButton = ({
   const showBadge = hasOngoing || hasToReview || haveWorksInErrors;
 
   let badgeColor: BadgeProps['tone'] = 'error';
-  if (hasOngoing) badgeColor = 'brand';
-  if (hasToReview) badgeColor = 'success';
-
   let badgeContent: BadgeProps['content'] = undefined;
-  if (hasOngoing) badgeContent = ongoingSize;
-  if (hasToReview) badgeContent = toreviewSize;
+  let title = t_i18n('Enrichment');
+
+  if (hasOngoing) {
+    badgeColor = 'brand';
+    badgeContent = ongoingSize;
+    title = t_i18n(
+      '{count} enrichments ongoing',
+      { values: { count: ongoingSize } },
+    );
+  }
+  if (hasToReview) {
+    badgeColor = 'success';
+    badgeContent = toreviewSize;
+    title = t_i18n(
+      '{count} enrichments have results waiting',
+      { values: { count: toreviewSize } },
+    );
+  }
 
   return (
     <Badge
@@ -56,7 +69,7 @@ const InvestigationEnrichmentButton = ({
     >
       <GraphToolbarItem
         color="primary"
-        title={t_i18n('Enrichment')}
+        title={title}
         Icon={<CloudRefreshOutline />}
         disabled={disabled}
         onClick={onClick}

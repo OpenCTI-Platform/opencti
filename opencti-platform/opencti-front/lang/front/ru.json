@@ -28,6 +28,8 @@
   "{count} days": "{count} дней",
   "{count} deployed": "Развернуто: {count}",
   "{count} email address(es) extracted from pasted text": "{count} адреса электронной почты, извлеченные из вставленного текста",
+  "{count} enrichments have results waiting": "{count} расширений — результаты уже готовы",
+  "{count} enrichments ongoing": "{count} расширений — в процессе выполнения",
   "{count} instances": "{count} экземпляров",
   "{count} iterations": "{count} итераций",
   "{count} managers": "Менеджеров: {count}",
