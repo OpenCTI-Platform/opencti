@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 from .indicator.opencti_indicator_properties import (
     INDICATOR_PROPERTIES,
     INDICATOR_PROPERTIES_WITH_FILES,
@@ -294,7 +296,11 @@ class Indicator:
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
-        custom_field_values = kwargs.get("custom_field_values", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)

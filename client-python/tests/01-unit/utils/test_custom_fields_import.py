@@ -163,7 +163,7 @@ def test_import_security_coverage_result_sends_custom_field_values(
         ),
     ],
 )
-def test_create_does_not_send_stix_custom_properties_as_custom_field_values(
+def test_create_converts_stix_custom_properties_into_custom_field_values(
     local_api_client, entity, kwargs
 ):
     mock_response = MagicMock()
@@ -178,5 +178,10 @@ def test_create_does_not_send_stix_custom_properties_as_custom_field_values(
     ) as mocked_post:
         getattr(local_api_client, entity).create(**kwargs)
 
+    # Converted as for a STIX import: the platform maps each property to a custom field
+    # by name or alias, and ignores it if none matches, instead of rejecting the creation
     sent_input = mocked_post.call_args.kwargs["json"]["variables"]["input"]
-    assert sent_input["customFieldValues"] is None
+    assert sent_input["customFieldValues"] == [
+        {"field_name": key, "value": value}
+        for key, value in kwargs["custom_properties"].items()
+    ]

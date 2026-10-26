@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class StixSightingRelationship:
     """Main StixSightingRelationship class for OpenCTI
@@ -658,7 +660,11 @@ class StixSightingRelationship:
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
-        custom_field_values = kwargs.get("custom_field_values", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
 
         self.opencti.app_logger.info(
             "Creating stix_sighting", {"from_id": from_id, "to_id": to_id}
