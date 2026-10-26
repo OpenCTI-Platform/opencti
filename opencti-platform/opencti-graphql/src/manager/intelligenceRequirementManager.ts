@@ -11,7 +11,7 @@ import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT } from '../modules/intelligenceRequirement/intelligenceRequirement-types';
 import { parseIntelligenceRequirement } from '../modules/intelligenceRequirement/intelligenceRequirement-config';
 import { buildEngineState, evaluateEntity, evaluateRelationship } from '../modules/intelligenceRequirement/intelligenceRequirement-engine';
-import { listMatches, upsertMatch } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-domain';
+import { backfillMatchEntityNames, listMatches, upsertMatch } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-domain';
 import {
   backfillEnteredEntities,
   handleUpsertResult,
@@ -22,6 +22,8 @@ import {
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { IR_MATCH_IN_STATUSES } from '../modules/intelligenceRequirement/intelligenceRequirementMatch-types';
 import { updateIntelligenceRequirementLastEventId } from '../modules/intelligenceRequirement/intelligenceRequirement-domain';
+import { checkRequirementHealth } from '../modules/intelligenceRequirement/intelligenceRequirement-health';
+import { generateRequirementBrief, isBriefDue, markBriefStarted } from '../modules/intelligenceRequirement/intelligenceRequirement-brief';
 
 // Proof of concept: stream engine of the generic intelligence requirements (scope criteria → entities of the requirement).
 // It is fully independent from the PIR manager.
@@ -31,6 +33,13 @@ const IR_MANAGER_CONTEXT = 'intelligence_requirement_manager';
 const IR_MANAGER_ENABLED = booleanConf('intelligence_requirement_manager:enabled', true);
 const IR_MANAGER_LOCK_KEY = conf.get('intelligence_requirement_manager:lock_key') || 'intelligence_requirement_manager_lock';
 const IR_MANAGER_INTERVAL = conf.get('intelligence_requirement_manager:interval') || 10000;
+const IR_HEALTH_INTERVAL = conf.get('intelligence_requirement_manager:health_interval') || 3600000;
+// Last health check per requirement (this node): the checks run at most once per interval
+const lastHealthCheck = new Map<string, number>();
+// Briefs being generated (this node): an agent call takes about a minute, it must not block the stream processing
+const briefsInFlight = new Set<string>();
+// Requirements whose match names were backfilled (this node, once per start)
+const namesBackfilled = new Set<string>();
 const IR_MANAGER_STREAM_BATCH_SIZE = conf.get('intelligence_requirement_manager:stream_batch_size') || 2000;
 
 const processEventsForRequirement = (context: AuthContext, ir: BasicStoreEntityIntelligenceRequirement) => {
@@ -121,6 +130,24 @@ export const intelligenceRequirementManagerHandler = async () => {
       );
       if (lastEventId && lastEventId !== ir.lastEventId) {
         await updateIntelligenceRequirementLastEventId(context, SYSTEM_USER, ir.id, lastEventId);
+      }
+      if (!namesBackfilled.has(ir.id)) {
+        namesBackfilled.add(ir.id);
+        const named = await backfillMatchEntityNames(context, SYSTEM_USER, ir.id);
+        if (named > 0) logApp.info('[OPENCTI-MODULE] Intelligence requirement entity names backfilled', { manager: IR_MANAGER_ID, requirement: ir.name, named });
+      }
+      if (Date.now() - (lastHealthCheck.get(ir.id) ?? 0) > IR_HEALTH_INTERVAL) {
+        lastHealthCheck.set(ir.id, Date.now());
+        const raised = await checkRequirementHealth(context, SYSTEM_USER, parseIntelligenceRequirement(ir));
+        if (raised > 0) logApp.info('[OPENCTI-MODULE] Intelligence requirement health', { manager: IR_MANAGER_ID, requirement: ir.name, raised });
+      }
+      if (isBriefDue(ir) && !briefsInFlight.has(ir.id)) {
+        briefsInFlight.add(ir.id);
+        await markBriefStarted(context, SYSTEM_USER, ir.id);
+        generateRequirementBrief(context, SYSTEM_USER, ir, 'scheduled')
+          .then((item) => logApp.info('[OPENCTI-MODULE] Intelligence requirement brief', { manager: IR_MANAGER_ID, requirement: ir.name, delivered: !!item }))
+          .catch((err) => logApp.error('[OPENCTI-MODULE] Intelligence requirement brief error', { cause: err, manager: IR_MANAGER_ID, requirement: ir.id }))
+          .finally(() => briefsInFlight.delete(ir.id));
       }
     } catch (err) {
       logApp.error('[OPENCTI-MODULE] Intelligence requirement processing error', { cause: err, manager: IR_MANAGER_ID, requirement: ir.id });

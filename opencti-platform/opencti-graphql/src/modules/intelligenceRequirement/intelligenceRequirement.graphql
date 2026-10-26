@@ -10,6 +10,11 @@ enum IntelligenceRequirementStatus {
   active
   paused
 }
+enum IrBriefFrequency {
+  off
+  daily
+  weekly
+}
 enum IrSubjectGroupKind {
   list
   filter
@@ -51,6 +56,7 @@ type IrSubjectGroup {
   entities: [StixCoreObject!]!
   filters: String
   keywords: [String!]!
+  exclude_keywords: [String!]
 }
 type IrCriterion {
   id: String!
@@ -109,6 +115,8 @@ type IntelligenceRequirement implements InternalObject & BasicObject {
   ir_relevance_rules: [IrRule!]!
   ir_thresholds: [Int!]!
   ir_rescan_days: Int!
+  ir_brief_frequency: IrBriefFrequency!
+  ir_last_brief_at: DateTime
   lastEventId: String
   authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
@@ -116,6 +124,8 @@ type IntelligenceRequirement implements InternalObject & BasicObject {
   ir_entities_count: Int!
   ir_inbox_open_count: Int!
   ir_inbox_counts: IrInboxCounts!
+  "Entities of the requirement per type (quick type filters), for the given statuses and exclusion"
+  ir_entities_by_type(statuses: [IrMatchStatus!], excluded: Boolean): [IrTypeCount!]!
   "AI Insight: prompt for an XTM One agent (content of the requirement and its questions)"
   ir_ai_prompt(language: String, reference_only: Boolean): String!
   ir_activity(days: Int): [IrActivityPoint!]!
@@ -135,6 +145,7 @@ type IrInboxCounts {
   entered: Int!
   score: Int!
   health: Int!
+  brief: Int!
   done: Int!
 }
 type IrPreviewEntity {
@@ -165,6 +176,10 @@ type IrPreview {
   groups: [IrPreviewGroup!]!
   criteria: [IrPreviewCriterion!]!
 }
+type IrTypeCount {
+  entity_type: String!
+  count: Int!
+}
 type IrActivityPoint {
   date: DateTime!
   value: Int!
@@ -192,6 +207,7 @@ input IrSubjectGroupInput {
   entity_ids: [String!]
   filters: FilterGroup
   keywords: [String!]
+  exclude_keywords: [String!]
 }
 input IrCriterionInput {
   id: String!
@@ -237,6 +253,7 @@ input IntelligenceRequirementInput {
   ir_relevance_rules: [IrRuleInput!]
   ir_thresholds: [Int!]
   ir_rescan_days: Int
+  ir_brief_frequency: IrBriefFrequency
   authorized_members: [MemberAccessInput!]
 }
 # endregion
@@ -301,6 +318,7 @@ type IntelligenceRequirementMatch implements InternalObject & BasicObject {
   ir_id: String!
   match_entity_id: String!
   match_entity_type: String!
+  match_entity_name: String
   entity: StixCoreObject
   match_status: IrMatchStatus!
   match_criteria_ids: [String!]!
@@ -312,6 +330,8 @@ type IntelligenceRequirementMatch implements InternalObject & BasicObject {
 }
 enum IntelligenceRequirementMatchOrdering {
   match_score
+  match_entity_name
+  match_status
   match_last_fact_at
   created_at
   match_entity_type
@@ -352,6 +372,7 @@ enum IrItemKind {
   entered
   score
   health
+  brief
 }
 enum IrItemStatus {
   open
@@ -375,6 +396,7 @@ type IrItemData {
   threshold: Int
   reasons: [String!]
   message: String
+  content: String
 }
 type IntelligenceRequirementItem implements InternalObject & BasicObject {
   id: ID!
@@ -421,9 +443,15 @@ extend type Query {
 extend type Mutation {
   "AI Insight with the LLM configured on the platform, when XTM One is not usable"
   intelligenceRequirementAiInsight(id: ID!, language: String): String @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  "Generate the AI brief of a requirement now (XTM One agent of the cti.pir_insight intent) and add it to its inbox"
+  intelligenceRequirementBriefGenerate(id: ID!): IntelligenceRequirementItem @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  "Run the health checks of a requirement now; returns the number of health items raised"
+  intelligenceRequirementHealthCheck(id: ID!): Int @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
   intelligenceRequirementItemDecide(id: ID!, decision: IrItemDecision!): IntelligenceRequirementItem @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
   "Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided."
   intelligenceRequirementItemsDecide(ids: [ID!]!, decision: IrItemDecision!): Int @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  "Same decision on several entities of a requirement; entities the decision does not apply to are skipped. Returns the number decided."
+  intelligenceRequirementMatchesStatusUpdate(ids: [ID!]!, status: IrMatchDecisionStatus!): Int @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
   intelligenceRequirementMatchStatusUpdate(id: ID!, status: IrMatchDecisionStatus!): IntelligenceRequirementMatch @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
 }
 # endregion

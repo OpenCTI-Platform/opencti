@@ -14,12 +14,15 @@ import {
   countRequirementEntities,
   countRequirementOpenItems,
   countRequirementInbox,
+  intelligenceRequirementHealthCheck,
+  intelligenceRequirementBriefGenerate,
+  countRequirementEntitiesByType,
   requirementActivity,
 } from './intelligenceRequirement-domain';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
 import { findMatchesPaginated, loadMatchById, parseMatchExplanations } from './intelligenceRequirementMatch-domain';
 import { findItemsPaginated, parseItemData } from './intelligenceRequirementItem-domain';
-import { decideItem, decideItems, setMatchStatus } from './intelligenceRequirement-pipeline';
+import { decideItem, decideItems, setMatchesStatus, setMatchStatus } from './intelligenceRequirement-pipeline';
 import { buildRequirementAiPrompt, buildRequirementAiReference, generateRequirementAiInsight } from './intelligenceRequirement-ai';
 import { previewIntelligenceRequirement } from './intelligenceRequirement-preview';
 
@@ -43,6 +46,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     intelligenceRequirementItems: (_, { id, ...args }, context) => findItemsPaginated(context, context.user, id, args),
   },
   IntelligenceRequirement: {
+    ir_brief_frequency: (ir) => ir.ir_brief_frequency ?? 'off',
     created_at: (ir) => ir.created_at ?? ir.updated_at ?? new Date(0),
     updated_at: (ir) => ir.updated_at ?? ir.created_at ?? new Date(0),
     creators: (ir, _, context) => loadCreators(context, context.user, ir),
@@ -51,6 +55,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     ir_entities_count: (ir, _, context) => countRequirementEntities(context, context.user, ir.id),
     ir_inbox_open_count: (ir, _, context) => countRequirementOpenItems(context, context.user, ir.id),
     ir_inbox_counts: (ir, _, context) => countRequirementInbox(context, context.user, ir.id),
+    ir_entities_by_type: (ir, { statuses, excluded }, context) => countRequirementEntitiesByType(context, context.user, ir.id, statuses, excluded),
     ir_ai_prompt: (ir, { language, reference_only }, context) => (reference_only
       ? buildRequirementAiReference(context, context.user, ir, language || 'English')
       : buildRequirementAiPrompt(context, context.user, ir, language || 'English')),
@@ -114,7 +119,10 @@ const intelligenceRequirementResolvers: Resolvers = {
     intelligenceRequirementDelete: (_, { id }, context) => intelligenceRequirementDelete(context, context.user, id),
     intelligenceRequirementItemDecide: (_, { id, decision }, context) => decideItem(context, context.user, id, decision),
     intelligenceRequirementAiInsight: (_, { id, language }, context) => generateRequirementAiInsight(context, context.user, id, language || 'English'),
+    intelligenceRequirementBriefGenerate: (_, { id }, context) => intelligenceRequirementBriefGenerate(context, context.user, id),
+    intelligenceRequirementHealthCheck: (_, { id }, context) => intelligenceRequirementHealthCheck(context, context.user, id),
     intelligenceRequirementItemsDecide: (_, { ids, decision }, context) => decideItems(context, context.user, ids, decision),
+    intelligenceRequirementMatchesStatusUpdate: (_, { ids, status }, context) => setMatchesStatus(context, context.user, ids, status),
     intelligenceRequirementMatchStatusUpdate: (_, { id, status }, context) => setMatchStatus(context, context.user, id, status),
   },
 };

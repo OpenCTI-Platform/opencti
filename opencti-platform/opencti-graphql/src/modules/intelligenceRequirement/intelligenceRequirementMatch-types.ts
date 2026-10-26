@@ -30,6 +30,7 @@ interface IntelligenceRequirementMatchFields {
   ir_id: string;
   match_entity_id: string;
   match_entity_type: string;
+  match_entity_name?: string; // copied from the entity: search and sort by name
   match_status: string;
   match_criteria_ids: string[];
   match_explanations: string; // serialized StoreIrMatchExplanation[]

@@ -58,6 +58,7 @@ export const normalizeIntelligenceRequirementInput = (input: IntelligenceRequire
     entity_ids: g.entity_ids ?? [],
     filters: serializeFilters(g.filters),
     keywords: (g.keywords ?? []).map((k) => k.trim()).filter((k) => k.length > 0),
+    exclude_keywords: (g.exclude_keywords ?? []).map((k) => k.trim()).filter((k) => k.length > 0),
   }));
   const criteria: StoreIrCriterion[] = input.ir_scope_criteria.map((c) => ({
     id: c.id,
@@ -157,5 +158,6 @@ export const serializeIntelligenceRequirementInput = (input: IntelligenceRequire
     ir_relevance_rules: JSON.stringify(config.rules),
     ir_thresholds: input.ir_thresholds && input.ir_thresholds.length > 0 ? input.ir_thresholds : IR_DEFAULT_THRESHOLDS,
     ir_rescan_days: input.ir_rescan_days ?? IR_DEFAULT_RESCAN_DAYS,
+    ir_brief_frequency: input.ir_brief_frequency ?? 'off',
   };
 };

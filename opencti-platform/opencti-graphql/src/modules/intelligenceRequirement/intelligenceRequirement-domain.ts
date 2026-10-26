@@ -5,7 +5,7 @@ import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, IR_MATCH_IN_STATUSES } from './intelligenceRequirementMatch-types';
 import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM } from './intelligenceRequirementItem-types';
-import { createEntity, internalDeleteElementById, timeSeriesEntities } from '../../database/middleware';
+import { createEntity, distributionEntities, internalDeleteElementById, timeSeriesEntities } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
@@ -17,6 +17,8 @@ import { FunctionalError } from '../../config/errors';
 import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, type StoreEntityIntelligenceRequirement } from './intelligenceRequirement-types';
 import { parseIntelligenceRequirement, serializeIntelligenceRequirementInput } from './intelligenceRequirement-config';
 import { rescoreRequirement } from './intelligenceRequirement-pipeline';
+import { checkRequirementHealth } from './intelligenceRequirement-health';
+import { generateRequirementBrief, markBriefStarted } from './intelligenceRequirement-brief';
 
 const rescanStartEventId = (rescanDays: number) => `${now() - (rescanDays * 24 * 3600 * 1000)}-0`;
 
@@ -117,10 +119,10 @@ export const countRequirementInbox = async (context: AuthContext, user: AuthUser
     if (kind) filters = addFilter(filters, 'item_kind', kind);
     return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
   };
-  const [open, proposed, entered, score, health, done] = await Promise.all([
-    count('open'), count('open', 'proposed'), count('open', 'entered'), count('open', 'score'), count('open', 'health'), count('done'),
+  const [open, proposed, entered, score, health, brief, done] = await Promise.all([
+    count('open'), count('open', 'proposed'), count('open', 'entered'), count('open', 'score'), count('open', 'health'), count('open', 'brief'), count('done'),
   ]);
-  return { open, proposed, entered, score, health, done };
+  return { open, proposed, entered, score, health, brief, done };
 };
 
 // Entities entering the requirement (in or proposed) per day over the last days
@@ -131,3 +133,29 @@ export const requirementActivity = async (context: AuthContext, user: AuthUser, 
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], { filters, startDate, endDate, interval: 'day', field: 'created_at' } as any);
 };
 // endregion
+
+// Health checks on demand (they also run periodically in the manager)
+export const intelligenceRequirementHealthCheck = async (context: AuthContext, user: AuthUser, id: string) => {
+  const ir = await findById(context, user, id);
+  if (!ir) throw FunctionalError('Intelligence requirement not found', { id });
+  return checkRequirementHealth(context, user, parseIntelligenceRequirement(ir));
+};
+
+// AI brief on demand (also generated at the frequency of the requirement by the manager)
+export const intelligenceRequirementBriefGenerate = async (context: AuthContext, user: AuthUser, id: string) => {
+  const ir = await findById(context, user, id);
+  if (!ir) throw FunctionalError('Intelligence requirement not found', { id });
+  const item = await generateRequirementBrief(context, user, ir, 'manual');
+  if (!item) throw FunctionalError('The brief could not be generated: XTM One, an identity or an agent bound to the cti.pir_insight intent is missing', { id });
+  await markBriefStarted(context, user, id);
+  return item;
+};
+
+// Entities of the requirement per type, for the quick type filters of the entities list
+export const countRequirementEntitiesByType = async (context: AuthContext, user: AuthUser, irId: string, statuses?: string[] | null, excluded?: boolean | null) => {
+  let filters = addFilter(undefined, 'ir_id', irId);
+  if (statuses && statuses.length > 0) filters = addFilter(filters, 'match_status', statuses);
+  if (excluded !== null && excluded !== undefined) filters = addFilter(filters, 'match_excluded', String(excluded));
+  const distribution = await distributionEntities(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], { field: 'match_entity_type', filters, limit: 50 });
+  return distribution.map((d) => ({ entity_type: d.label, count: d.value })).sort((a, b) => b.count - a.count);
+};

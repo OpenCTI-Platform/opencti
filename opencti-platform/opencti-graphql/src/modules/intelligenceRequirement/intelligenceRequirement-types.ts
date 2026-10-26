@@ -12,6 +12,7 @@ export const ENTITY_TYPE_INTELLIGENCE_REQUIREMENT = 'IntelligenceRequirement';
 
 export const IR_PRIORITIES = ['critical', 'high', 'medium', 'low'];
 export const IR_STATUSES = ['active', 'paused'];
+export const IR_BRIEF_FREQUENCIES = ['off', 'daily', 'weekly'];
 export const IR_SUBJECT_GROUP_KINDS = ['list', 'filter', 'keywords'];
 export const IR_SUBJECT_GROUP_ROLES = ['entry', 'context', 'both'];
 export const IR_CRITERION_KINDS = ['graph', 'attribute', 'keywords'];
@@ -34,6 +35,7 @@ export interface StoreIrSubjectGroup {
   entity_ids: string[]; // kind = list
   filters: string | null; // kind = filter, serialized FilterGroup
   keywords: string[]; // kind = keywords
+  exclude_keywords?: string[]; // kind = keywords: phrases removed from the texts before the search (e.g. "targets russia")
 }
 
 // One single format for every entry criterion:
@@ -93,6 +95,8 @@ interface IntelligenceRequirementFields {
   ir_relevance_rules: string; // serialized StoreIrRule[]
   ir_thresholds: number[];
   ir_rescan_days: number;
+  ir_brief_frequency?: string; // off | daily | weekly: AI brief delivered to the inbox
+  ir_last_brief_at?: Date | string | null;
   lastEventId: string;
 }
 

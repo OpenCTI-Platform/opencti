@@ -25,6 +25,7 @@ export interface IrEngineState {
   ir: ParsedIntelligenceRequirement;
   listIds: Map<string, Set<string>>; // list or filter group id -> internal and standard ids of its anchors
   keywords: Map<string, string[]>; // keywords group id -> lower-cased keywords
+  excludedKeywords: Map<string, string[]>; // keywords group id -> lower-cased phrases removed from the texts before the search
   inRequirement: Set<string>; // internal ids of the entities already in the requirement
   filterCache: Map<string, boolean>; // (entity, filters) -> result of the search engine
 }
@@ -38,6 +39,7 @@ const activeCriteria = (ir: ParsedIntelligenceRequirement, kind: string) => ir.i
 export const buildEngineState = async (context: AuthContext, user: AuthUser, ir: ParsedIntelligenceRequirement): Promise<IrEngineState> => {
   const listIds = new Map<string, Set<string>>();
   const keywords = new Map<string, string[]>();
+  const excludedKeywords = new Map<string, string[]>();
   for (let i = 0; i < ir.ir_subject_groups.length; i += 1) {
     const group = ir.ir_subject_groups[i];
     if (group.kind === 'list') {
@@ -55,11 +57,12 @@ export const buildEngineState = async (context: AuthContext, user: AuthUser, ir:
       listIds.set(group.id, new Set(entities.flatMap((e) => [e.internal_id, e.standard_id])));
     } else if (group.kind === 'keywords') {
       keywords.set(group.id, group.keywords.map((k) => k.toLowerCase()));
+      excludedKeywords.set(group.id, (group.exclude_keywords ?? []).map((k) => k.toLowerCase()));
     }
   }
   const needsContent = ir.ir_scope_criteria.some((c) => c.from_in_requirement);
   const inRequirement = needsContent ? await listInRequirementEntityIds(context, user, ir.id) : new Set<string>();
-  return { ir, listIds, keywords, inRequirement, filterCache: new Map() };
+  return { ir, listIds, keywords, excludedKeywords, inRequirement, filterCache: new Map() };
 };
 
 /**
@@ -242,10 +245,12 @@ const KEYWORD_FIELD_EXTRACTORS: Record<string, (stix: any) => string[]> = {
  * Simple keyword search: case-insensitive substring in name (and aliases), description and content.
  * Returns the first matching keyword and field.
  */
-export const findKeyword = (stix: any, keywords: string[], fields: string[]) => {
+export const findKeyword = (stix: any, keywords: string[], fields: string[], excluded: string[] = []) => {
+  // An excluded phrase (e.g. "targets russia") is removed from the text first: the keyword must appear elsewhere
+  const strip = (text: string) => excluded.reduce((t, phrase) => (phrase ? t.split(phrase).join(' ') : t), text);
   for (let i = 0; i < fields.length; i += 1) {
     const field = fields[i];
-    const texts = (KEYWORD_FIELD_EXTRACTORS[field]?.(stix) ?? []).filter((t) => typeof t === 'string' && t.length > 0).map((t: string) => t.toLowerCase());
+    const texts = (KEYWORD_FIELD_EXTRACTORS[field]?.(stix) ?? []).filter((t) => typeof t === 'string' && t.length > 0).map((t: string) => strip(t.toLowerCase()));
     for (let j = 0; j < keywords.length; j += 1) {
       if (texts.some((t) => t.includes(keywords[j]))) return { keyword: keywords[j], field };
     }
@@ -278,7 +283,8 @@ export const evaluateEntity = async (context: AuthContext, user: AuthUser, state
   for (let i = 0; i < keywordCriteria.length; i += 1) {
     const criterion = keywordCriteria[i];
     const keywords = criterion.from_group_ids.flatMap((gid) => state.keywords.get(gid) ?? []);
-    const hit = keywords.length > 0 ? findKeyword(stix, keywords, criterion.keyword_fields) : null;
+    const excluded = criterion.from_group_ids.flatMap((gid) => state.excludedKeywords.get(gid) ?? []);
+    const hit = keywords.length > 0 ? findKeyword(stix, keywords, criterion.keyword_fields, excluded) : null;
     if (hit) {
       const objectRefs: string[] = stix.object_refs ?? [];
       if (objectRefs.length > 0) {

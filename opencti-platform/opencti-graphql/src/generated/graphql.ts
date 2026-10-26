@@ -14521,10 +14521,14 @@ export type IntelligenceRequirement = BasicObject & InternalObject & {
   ir_activity: Array<IrActivityPoint>;
   /** AI Insight: prompt for an XTM One agent (content of the requirement and its questions) */
   ir_ai_prompt: Scalars['String']['output'];
+  ir_brief_frequency: IrBriefFrequency;
+  /** Entities of the requirement per type (quick type filters), for the given statuses and exclusion */
+  ir_entities_by_type: Array<IrTypeCount>;
   ir_entities_count: Scalars['Int']['output'];
   ir_inbox_counts: IrInboxCounts;
   ir_inbox_open_count: Scalars['Int']['output'];
   ir_kiqs: Array<IrKiq>;
+  ir_last_brief_at?: Maybe<Scalars['DateTime']['output']>;
   ir_priority: IntelligenceRequirementPriority;
   ir_question: Scalars['String']['output'];
   ir_relevance_rules: Array<IrRule>;
@@ -14554,6 +14558,12 @@ export type IntelligenceRequirementIr_Ai_PromptArgs = {
   reference_only?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+
+export type IntelligenceRequirementIr_Entities_By_TypeArgs = {
+  excluded?: InputMaybe<Scalars['Boolean']['input']>;
+  statuses?: InputMaybe<Array<IrMatchStatus>>;
+};
+
 export type IntelligenceRequirementConnection = {
   __typename?: 'IntelligenceRequirementConnection';
   edges: Array<IntelligenceRequirementEdge>;
@@ -14569,6 +14579,7 @@ export type IntelligenceRequirementEdge = {
 export type IntelligenceRequirementInput = {
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
+  ir_brief_frequency?: InputMaybe<IrBriefFrequency>;
   ir_kiqs?: InputMaybe<Array<IrKiqInput>>;
   ir_priority: IntelligenceRequirementPriority;
   ir_question: Scalars['String']['input'];
@@ -14626,6 +14637,7 @@ export type IntelligenceRequirementMatch = BasicObject & InternalObject & {
   ir_id: Scalars['String']['output'];
   match_criteria_ids: Array<Scalars['String']['output']>;
   match_entity_id: Scalars['String']['output'];
+  match_entity_name?: Maybe<Scalars['String']['output']>;
   match_entity_type: Scalars['String']['output'];
   match_excluded: Scalars['Boolean']['output'];
   match_explanations: Array<IrMatchExplanation>;
@@ -14655,9 +14667,11 @@ export type IntelligenceRequirementMatchEdge = {
 
 export enum IntelligenceRequirementMatchOrdering {
   CreatedAt = 'created_at',
+  MatchEntityName = 'match_entity_name',
   MatchEntityType = 'match_entity_type',
   MatchLastFactAt = 'match_last_fact_at',
-  MatchScore = 'match_score'
+  MatchScore = 'match_score',
+  MatchStatus = 'match_status'
 }
 
 export enum IntelligenceRequirementOrdering {
@@ -15058,6 +15072,12 @@ export type IrActivityPoint = {
   value: Scalars['Int']['output'];
 };
 
+export enum IrBriefFrequency {
+  Daily = 'daily',
+  Off = 'off',
+  Weekly = 'weekly'
+}
+
 export type IrCriterion = {
   __typename?: 'IrCriterion';
   direction: IrDirection;
@@ -15109,6 +15129,7 @@ export enum IrDirection {
 
 export type IrInboxCounts = {
   __typename?: 'IrInboxCounts';
+  brief: Scalars['Int']['output'];
   done: Scalars['Int']['output'];
   entered: Scalars['Int']['output'];
   health: Scalars['Int']['output'];
@@ -15119,6 +15140,7 @@ export type IrInboxCounts = {
 
 export type IrItemData = {
   __typename?: 'IrItemData';
+  content?: Maybe<Scalars['String']['output']>;
   criterion_id?: Maybe<Scalars['String']['output']>;
   from_score?: Maybe<Scalars['Int']['output']>;
   message?: Maybe<Scalars['String']['output']>;
@@ -15135,6 +15157,7 @@ export enum IrItemDecision {
 }
 
 export enum IrItemKind {
+  Brief = 'brief',
   Entered = 'entered',
   Health = 'health',
   Proposed = 'proposed',
@@ -15282,6 +15305,7 @@ export type IrSubjectGroup = {
   __typename?: 'IrSubjectGroup';
   entities: Array<StixCoreObject>;
   entity_ids: Array<Scalars['String']['output']>;
+  exclude_keywords?: Maybe<Array<Scalars['String']['output']>>;
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   keywords: Array<Scalars['String']['output']>;
@@ -15292,6 +15316,7 @@ export type IrSubjectGroup = {
 
 export type IrSubjectGroupInput = {
   entity_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  exclude_keywords?: InputMaybe<Array<Scalars['String']['input']>>;
   filters?: InputMaybe<FilterGroup>;
   id: Scalars['String']['input'];
   keywords?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -15311,6 +15336,12 @@ export enum IrSubjectGroupRole {
   Context = 'context',
   Entry = 'entry'
 }
+
+export type IrTypeCount = {
+  __typename?: 'IrTypeCount';
+  count: Scalars['Int']['output'];
+  entity_type: Scalars['String']['output'];
+};
 
 export type JsonAttributeBasedOn = {
   __typename?: 'JsonAttributeBasedOn';
@@ -18075,11 +18106,17 @@ export type Mutation = {
   intelligenceRequirementAdd?: Maybe<IntelligenceRequirement>;
   /** AI Insight with the LLM configured on the platform, when XTM One is not usable */
   intelligenceRequirementAiInsight?: Maybe<Scalars['String']['output']>;
+  /** Generate the AI brief of a requirement now (XTM One agent of the cti.pir_insight intent) and add it to its inbox */
+  intelligenceRequirementBriefGenerate?: Maybe<IntelligenceRequirementItem>;
   intelligenceRequirementDelete?: Maybe<Scalars['ID']['output']>;
+  /** Run the health checks of a requirement now; returns the number of health items raised */
+  intelligenceRequirementHealthCheck?: Maybe<Scalars['Int']['output']>;
   intelligenceRequirementItemDecide?: Maybe<IntelligenceRequirementItem>;
   /** Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided. */
   intelligenceRequirementItemsDecide?: Maybe<Scalars['Int']['output']>;
   intelligenceRequirementMatchStatusUpdate?: Maybe<IntelligenceRequirementMatch>;
+  /** Same decision on several entities of a requirement; entities the decision does not apply to are skipped. Returns the number decided. */
+  intelligenceRequirementMatchesStatusUpdate?: Maybe<Scalars['Int']['output']>;
   intelligenceRequirementStatusUpdate?: Maybe<IntelligenceRequirement>;
   intelligenceRequirementUpdate?: Maybe<IntelligenceRequirement>;
   intrusionSetAdd?: Maybe<IntrusionSet>;
@@ -19592,7 +19629,17 @@ export type MutationIntelligenceRequirementAiInsightArgs = {
 };
 
 
+export type MutationIntelligenceRequirementBriefGenerateArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationIntelligenceRequirementDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationIntelligenceRequirementHealthCheckArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -19611,6 +19658,12 @@ export type MutationIntelligenceRequirementItemsDecideArgs = {
 
 export type MutationIntelligenceRequirementMatchStatusUpdateArgs = {
   id: Scalars['ID']['input'];
+  status: IrMatchDecisionStatus;
+};
+
+
+export type MutationIntelligenceRequirementMatchesStatusUpdateArgs = {
+  ids: Array<Scalars['ID']['input']>;
   status: IrMatchDecisionStatus;
 };
 
@@ -41963,6 +42016,7 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   IrActivityPoint: ResolverTypeWrapper<IrActivityPoint>;
+  IrBriefFrequency: IrBriefFrequency;
   IrCriterion: ResolverTypeWrapper<StoreIrCriterion>;
   IrCriterionInput: IrCriterionInput;
   IrCriterionKind: IrCriterionKind;
@@ -41991,6 +42045,7 @@ export type ResolversTypes = ResolversObject<{
   IrSubjectGroupInput: IrSubjectGroupInput;
   IrSubjectGroupKind: IrSubjectGroupKind;
   IrSubjectGroupRole: IrSubjectGroupRole;
+  IrTypeCount: ResolverTypeWrapper<IrTypeCount>;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   JsonAttributeBasedOn: ResolverTypeWrapper<JsonAttributeBasedOn>;
   JsonAttributeColumnConfiguration: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['JsonAttributeColumnConfiguration']>;
@@ -43145,6 +43200,7 @@ export type ResolversParentTypes = ResolversObject<{
   IrRuleOutcome: IrRuleOutcome;
   IrSubjectGroup: StoreIrSubjectGroup;
   IrSubjectGroupInput: IrSubjectGroupInput;
+  IrTypeCount: IrTypeCount;
   JSON: Scalars['JSON']['output'];
   JsonAttributeBasedOn: JsonAttributeBasedOn;
   JsonAttributeColumnConfiguration: ResolversInterfaceTypes<ResolversParentTypes>['JsonAttributeColumnConfiguration'];
@@ -48628,10 +48684,13 @@ export type IntelligenceRequirementResolvers<ContextType = any, ParentType exten
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ir_activity?: Resolver<Array<ResolversTypes['IrActivityPoint']>, ParentType, ContextType, Partial<IntelligenceRequirementIr_ActivityArgs>>;
   ir_ai_prompt?: Resolver<ResolversTypes['String'], ParentType, ContextType, Partial<IntelligenceRequirementIr_Ai_PromptArgs>>;
+  ir_brief_frequency?: Resolver<ResolversTypes['IrBriefFrequency'], ParentType, ContextType>;
+  ir_entities_by_type?: Resolver<Array<ResolversTypes['IrTypeCount']>, ParentType, ContextType, Partial<IntelligenceRequirementIr_Entities_By_TypeArgs>>;
   ir_entities_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ir_inbox_counts?: Resolver<ResolversTypes['IrInboxCounts'], ParentType, ContextType>;
   ir_inbox_open_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ir_kiqs?: Resolver<Array<ResolversTypes['IrKiq']>, ParentType, ContextType>;
+  ir_last_brief_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   ir_priority?: Resolver<ResolversTypes['IntelligenceRequirementPriority'], ParentType, ContextType>;
   ir_question?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   ir_relevance_rules?: Resolver<Array<ResolversTypes['IrRule']>, ParentType, ContextType>;
@@ -48703,6 +48762,7 @@ export type IntelligenceRequirementMatchResolvers<ContextType = any, ParentType 
   ir_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   match_criteria_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   match_entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  match_entity_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   match_entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   match_excluded?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   match_explanations?: Resolver<Array<ResolversTypes['IrMatchExplanation']>, ParentType, ContextType>;
@@ -48873,6 +48933,7 @@ export type IrCriterionResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type IrInboxCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrInboxCounts'] = ResolversParentTypes['IrInboxCounts']> = ResolversObject<{
+  brief?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   done?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   entered?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   health?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -48882,6 +48943,7 @@ export type IrInboxCountsResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type IrItemDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrItemData'] = ResolversParentTypes['IrItemData']> = ResolversObject<{
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   criterion_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   from_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48977,12 +49039,18 @@ export type IrRuleOutcomeResolvers<ContextType = any, ParentType extends Resolve
 export type IrSubjectGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrSubjectGroup'] = ResolversParentTypes['IrSubjectGroup']> = ResolversObject<{
   entities?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   entity_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  exclude_keywords?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   keywords?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   kind?: Resolver<ResolversTypes['IrSubjectGroupKind'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   role?: Resolver<ResolversTypes['IrSubjectGroupRole'], ParentType, ContextType>;
+}>;
+
+export type IrTypeCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrTypeCount'] = ResolversParentTypes['IrTypeCount']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
@@ -50222,10 +50290,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionTaxiiResetState?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiResetStateArgs, 'id'>>;
   intelligenceRequirementAdd?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementAddArgs, 'input'>>;
   intelligenceRequirementAiInsight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementAiInsightArgs, 'id'>>;
+  intelligenceRequirementBriefGenerate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItem']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementBriefGenerateArgs, 'id'>>;
   intelligenceRequirementDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementDeleteArgs, 'id'>>;
+  intelligenceRequirementHealthCheck?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementHealthCheckArgs, 'id'>>;
   intelligenceRequirementItemDecide?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItem']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemDecideArgs, 'decision' | 'id'>>;
   intelligenceRequirementItemsDecide?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemsDecideArgs, 'decision' | 'ids'>>;
   intelligenceRequirementMatchStatusUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatch']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementMatchStatusUpdateArgs, 'id' | 'status'>>;
+  intelligenceRequirementMatchesStatusUpdate?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementMatchesStatusUpdateArgs, 'ids' | 'status'>>;
   intelligenceRequirementStatusUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementStatusUpdateArgs, 'id' | 'status'>>;
   intelligenceRequirementUpdate?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementUpdateArgs, 'id' | 'input'>>;
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
@@ -56578,6 +56649,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IrRule?: IrRuleResolvers<ContextType>;
   IrRuleOutcome?: IrRuleOutcomeResolvers<ContextType>;
   IrSubjectGroup?: IrSubjectGroupResolvers<ContextType>;
+  IrTypeCount?: IrTypeCountResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   JsonAttributeBasedOn?: JsonAttributeBasedOnResolvers<ContextType>;
   JsonAttributeColumnConfiguration?: JsonAttributeColumnConfigurationResolvers<ContextType>;

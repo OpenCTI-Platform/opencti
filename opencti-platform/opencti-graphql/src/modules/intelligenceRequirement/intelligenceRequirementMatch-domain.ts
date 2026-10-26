@@ -12,6 +12,7 @@ import {
   type StoreIrMatchExplanation,
 } from './intelligenceRequirementMatch-types';
 import type { StoreIrCriterion } from './intelligenceRequirement-types';
+import { entityDisplayName } from './intelligenceRequirementItem-domain';
 
 const MAX_EXPLANATIONS = 20;
 
@@ -38,8 +39,10 @@ export const findMatchesPaginated = async (
   opts: EntityOptions<BasicStoreEntityIntelligenceRequirementMatch> & { statuses?: string[] | null } = {},
 ) => {
   enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
-  const { statuses, ...listOpts } = opts;
-  const filters = matchFilters(irId, undefined, statuses ?? undefined, listOpts.filters);
+  const { statuses, search, ...listOpts } = opts;
+  let filters = matchFilters(irId, undefined, statuses ?? undefined, listOpts.filters);
+  // Search by entity name (the match itself has no other text)
+  if (search) filters = addFilter(filters, 'match_entity_name', search, 'contains');
   return pageEntitiesConnection<BasicStoreEntityIntelligenceRequirementMatch>(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], { ...listOpts, filters });
 };
 
@@ -94,6 +97,7 @@ export const upsertMatch = async (
       ir_id: irId,
       match_entity_id: entity.id,
       match_entity_type: entity.type,
+      match_entity_name: await entityDisplayName(context, user, entity.id),
       match_status: criterion.mode === 'auto' ? 'auto' : 'proposed',
       match_criteria_ids: [criterion.id],
       match_explanations: JSON.stringify([explanation]),
@@ -116,6 +120,7 @@ export const upsertMatch = async (
   // A proposed entity becomes automatic if it now also matches an automatic criterion
   const status = existing.match_status === 'proposed' && criterion.mode === 'auto' ? 'auto' : existing.match_status;
   const patch = {
+    ...(existing.match_entity_name ? {} : { match_entity_name: await entityDisplayName(context, user, entity.id) }),
     match_criteria_ids: criteriaIds,
     match_explanations: JSON.stringify(isNewProof ? [explanation, ...explanations].slice(0, MAX_EXPLANATIONS) : explanations),
     match_status: status,
@@ -132,4 +137,16 @@ export const loadMatchById = async (context: AuthContext, user: AuthUser, matchI
 export const updateMatchStatus = async (context: AuthContext, user: AuthUser, matchId: string, status: string) => {
   const { element } = await patchAttribute(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { match_status: status });
   return element as unknown as BasicStoreEntityIntelligenceRequirementMatch;
+};
+
+// Entity names of the matches created before the name was stored (search and sort by name)
+export const backfillMatchEntityNames = async (context: AuthContext, user: AuthUser, irId: string) => {
+  const missing = await fullEntitiesList<BasicStoreEntityIntelligenceRequirementMatch>(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], {
+    filters: addFilter(addFilter(undefined, 'ir_id', irId), 'match_entity_name', [], 'nil'),
+  });
+  for (let i = 0; i < missing.length; i += 1) {
+    const match = missing[i];
+    await patchAttribute(context, user, match.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, { match_entity_name: await entityDisplayName(context, user, match.match_entity_id) });
+  }
+  return missing.length;
 };

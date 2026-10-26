@@ -7,6 +7,7 @@ import {
   ENTITY_TYPE_INTELLIGENCE_REQUIREMENT,
   IR_PRIORITIES,
   IR_STATUSES,
+  IR_BRIEF_FREQUENCIES,
   type StixIntelligenceRequirement,
   type StoreEntityIntelligenceRequirement,
 } from './intelligenceRequirement-types';
@@ -44,6 +45,8 @@ const INTELLIGENCE_REQUIREMENT_DEFINITION: ModuleDefinition<StoreEntityIntellige
     { name: 'ir_relevance_rules', label: 'Requirement relevance', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag },
     { name: 'ir_thresholds', label: 'Requirement score thresholds', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false, featureFlag },
     { name: 'ir_rescan_days', label: 'Requirement rescan in days', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag },
+    { name: 'ir_brief_frequency', label: 'Requirement brief frequency', type: 'string', format: 'enum', values: IR_BRIEF_FREQUENCIES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
+    { name: 'ir_last_brief_at', label: 'Requirement last brief date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag },
   ],
   relations: [],
   representative: (stix: StixIntelligenceRequirement) => stix.name,

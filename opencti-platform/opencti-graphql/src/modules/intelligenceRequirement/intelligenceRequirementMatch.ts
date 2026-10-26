@@ -46,6 +46,7 @@ const INTELLIGENCE_REQUIREMENT_MATCH_DEFINITION: ModuleDefinition<StoreEntityInt
     { ...updatedAt, featureFlag },
     { name: 'ir_id', label: 'Requirement match requirement', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
     { name: 'match_entity_id', label: 'Requirement match entity', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
+    { name: 'match_entity_name', label: 'Requirement match entity name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
     { name: 'match_entity_type', label: 'Requirement match entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag },
     { name: 'match_status', label: 'Requirement match status', type: 'string', format: 'enum', values: IR_MATCH_STATUSES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag },
     { name: 'match_criteria_ids', label: 'Requirement match criteria', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true, featureFlag },

@@ -6,7 +6,7 @@ import { FunctionalError } from '../../config/errors';
 import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, type ParsedIntelligenceRequirement } from './intelligenceRequirement-types';
 import { type BasicStoreEntityIntelligenceRequirementMatch, IR_MATCH_IN_STATUSES } from './intelligenceRequirementMatch-types';
 import { type BasicStoreEntityIntelligenceRequirementItem, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM } from './intelligenceRequirementItem-types';
-import { listMatches, loadMatchById, updateMatchStatus, upsertMatch, type UpsertMatchResult } from './intelligenceRequirementMatch-domain';
+import { listMatches, loadMatch, loadMatchById, updateMatchStatus, upsertMatch, type UpsertMatchResult } from './intelligenceRequirementMatch-domain';
 import { buildEngineState, evaluateExistingRelationships, type IrEngineState } from './intelligenceRequirement-engine';
 import { SYSTEM_USER } from '../../utils/access';
 import { rescoreMatch, topReasons } from './intelligenceRequirement-scoring';
@@ -21,6 +21,7 @@ interface MatchChange {
   previousStatus?: string | null; // status before the change (defaults to the current one)
   criterionId?: string;
   displayName?: string;
+  quiet?: boolean; // grouped entry (backfill): no per-entity "entered" / "score" item, one summary item instead
 }
 
 const isIn = (status: string) => IR_MATCH_IN_STATUSES.includes(status);
@@ -60,11 +61,11 @@ export const processMatchChange = async (
   if (change.created && status === 'proposed' && !excluded) {
     await createItem(context, user, ir.id, 'proposed', `${await getName()} proposed`, { ...itemBase, data: { criterion_id: change.criterionId } });
   }
-  if (visible && !wasVisible && status === 'auto') {
+  if (visible && !wasVisible && status === 'auto' && !change.quiet) {
     const title = !change.created && isIn(previousStatus) ? `${await getName()} now meets the required rules` : `${await getName()} entered the requirement`;
     await createItem(context, user, ir.id, 'entered', title, { ...itemBase, data: { criterion_id: change.criterionId } });
   }
-  if (visible) {
+  if (visible && !change.quiet) {
     const fromScore = wasVisible ? rescore.previousScore : 0;
     const crossed = (ir.ir_thresholds ?? []).filter((t) => fromScore < t && score >= t);
     if (crossed.length > 0) {
@@ -78,11 +79,50 @@ export const processMatchChange = async (
   return rescore;
 };
 
-export const handleUpsertResult = async (context: AuthContext, user: AuthUser, ir: ParsedIntelligenceRequirement, result: UpsertMatchResult, criterionId: string) => {
-  return processMatchChange(context, user, ir, result.match, { created: result.created, previousStatus: result.previousStatus, criterionId });
+export const handleUpsertResult = async (
+  context: AuthContext,
+  user: AuthUser,
+  ir: ParsedIntelligenceRequirement,
+  result: UpsertMatchResult,
+  criterionId: string,
+  quiet = false,
+) => {
+  return processMatchChange(context, user, ir, result.match, { created: result.created, previousStatus: result.previousStatus, criterionId, quiet });
 };
 
 const BACKFILL_MAX_ENTITIES = 2000;
+const GROUPED_TOP = 5;
+
+/**
+ * One inbox item for the entities brought in at once by an entity that entered (backfill), instead of one per entity:
+ * counts per type, how many reach the top threshold, and the best scored ones.
+ */
+const createGroupedEntryItem = async (
+  context: AuthContext,
+  user: AuthUser,
+  ir: ParsedIntelligenceRequirement,
+  root: { id: string; type: string },
+  added: { id: string; type: string; score: number; excluded: boolean }[],
+) => {
+  const visible = added.filter((a) => !a.excluded);
+  const byType = visible.reduce<Record<string, number>>((acc, a) => ({ ...acc, [a.type]: (acc[a.type] ?? 0) + 1 }), {});
+  const top = Math.max(...(ir.ir_thresholds ?? [80]));
+  const best = [...visible].sort((a, b) => b.score - a.score).slice(0, GROUPED_TOP);
+  const bestNames = await Promise.all(best.map(async (a) => `${await entityDisplayName(context, user, a.id)} (${a.score})`));
+  const rootMatch = await loadMatch(context, user, ir.id, root.id);
+  const rootName = await entityDisplayName(context, user, root.id);
+  await createItem(context, user, ir.id, 'entered', `${rootName} brought ${visible.length} entit${visible.length === 1 ? 'y' : 'ies'} into the requirement`, {
+    entityId: root.id,
+    entityType: root.type,
+    matchId: rootMatch?.id,
+    data: {
+      message: `${Object.entries(byType).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${n} ${t}`).join(', ')}`
+        + `${added.length > visible.length ? ` (${added.length - visible.length} excluded by a required rule)` : ''}`
+        + ` · ${visible.filter((a) => a.score >= top).length} with a score of ${top} or more`,
+      reasons: bestNames,
+    },
+  });
+};
 
 /**
  * True when the upsert made the entity part of the requirement (created in, or moved from proposed/out to in).
@@ -103,6 +143,7 @@ export const backfillEnteredEntities = async (
   const queue = [...entities];
   const visited = new Set(queue.map((e) => e.id));
   let entered = 0;
+  const added: { id: string; type: string; score: number; excluded: boolean }[] = [];
   while (queue.length > 0 && visited.size <= BACKFILL_MAX_ENTITIES) {
     const anchor = queue.shift()!;
     state.inRequirement.add(anchor.id);
@@ -111,9 +152,10 @@ export const backfillEnteredEntities = async (
       const candidate = candidates[i];
       const result = await upsertMatch(context, user, ir.id, candidate.entity, candidate.criterion, candidate.explanation);
       if (result) {
-        await handleUpsertResult(context, user, ir, result, candidate.criterion.id);
+        await handleUpsertResult(context, user, ir, result, candidate.criterion.id, true);
         if (hasEntered(result)) {
           entered += 1;
+          added.push({ id: candidate.entity.id, type: candidate.entity.type, score: result.match.match_score ?? 0, excluded: result.match.match_excluded ?? false });
           state.inRequirement.add(candidate.entity.id);
           if (!visited.has(candidate.entity.id)) {
             visited.add(candidate.entity.id);
@@ -123,6 +165,7 @@ export const backfillEnteredEntities = async (
       }
     }
   }
+  if (added.length > 0) await createGroupedEntryItem(context, user, ir, entities[0], added);
   return entered;
 };
 
@@ -166,6 +209,29 @@ export const setMatchStatus = async (context: AuthContext, user: AuthUser, match
   return updated;
 };
 
+// A decision applies to the entities in this status
+const MATCH_DECISION_FROM: Record<string, string[]> = {
+  accepted: ['proposed'],
+  rejected: ['proposed'],
+  removed: ['auto', 'accepted'],
+};
+
+/**
+ * Mass operation on the entities of a requirement (entities list), one after the other.
+ */
+export const setMatchesStatus = async (context: AuthContext, user: AuthUser, matchIds: string[], status: string) => {
+  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
+  let decided = 0;
+  for (let i = 0; i < matchIds.length; i += 1) {
+    const match = await loadMatchById(context, user, matchIds[i]);
+    if (match && (MATCH_DECISION_FROM[status] ?? []).includes(match.match_status)) {
+      await setMatchStatus(context, user, match.id, status);
+      decided += 1;
+    }
+  }
+  return decided;
+};
+
 const DECISION_STATUSES: Record<string, string> = { accept: 'accepted', reject: 'rejected', remove: 'removed' };
 
 export const decideItem = async (context: AuthContext, user: AuthUser, itemId: string, decision: string) => {
@@ -184,6 +250,7 @@ export const IR_ITEM_DECISIONS: Record<string, string[]> = {
   entered: ['acknowledge', 'remove'],
   score: ['acknowledge'],
   health: ['acknowledge'],
+  brief: ['acknowledge'],
 };
 
 /**

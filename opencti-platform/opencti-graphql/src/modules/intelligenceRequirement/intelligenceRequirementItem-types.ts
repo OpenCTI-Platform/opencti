@@ -15,6 +15,7 @@ export interface StoreIrItemData {
   threshold?: number;
   reasons?: string[];
   message?: string;
+  content?: string; // brief: HTML written by the agent
 }
 
 interface IntelligenceRequirementItemFields {

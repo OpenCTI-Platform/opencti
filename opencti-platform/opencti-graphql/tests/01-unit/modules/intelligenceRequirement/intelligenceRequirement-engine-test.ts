@@ -36,4 +36,11 @@ describe('Intelligence requirement engine: types', () => {
   it('should match a parent type', () => {
     expect(isTypeMatching('Malware', ['Stix-Domain-Object'])).toBe(true);
   });
+  it('ignores a keyword that only appears inside an excluded phrase', () => {
+    const northKorean = { name: 'APT43', description: 'North Korean cluster that targets Russia and South Korea.' };
+    const russian = { name: 'APT28', description: 'Russian GRU unit; it also targets Russia dissidents abroad.' };
+    expect(findKeyword(northKorean, ['russia'], ['description'], ['targets russia'])).toBeNull();
+    expect(findKeyword(russian, ['russia'], ['description'], ['targets russia'])).toEqual({ keyword: 'russia', field: 'description' });
+    expect(findKeyword(northKorean, ['russia'], ['description'])).toEqual({ keyword: 'russia', field: 'description' });
+  });
 });
