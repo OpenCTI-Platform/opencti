@@ -663,6 +663,16 @@ export const retryElOperations = async (
   }
 };
 
+// The OpenSearch client sends _source as a query string parameter, where an { includes, excludes }
+// object is lost (sent as an empty _source): it goes in the body, as the Elasticsearch client does.
+export const toOpenSearchQuery = (query: any) => {
+  const { _source, ...rest } = query;
+  if (!_source || typeof _source !== 'object' || Array.isArray(_source)) {
+    return query;
+  }
+  return { ...rest, body: { ...rest.body, _source } };
+};
+
 export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
   // Add default signal to prevent unwanted warning
   // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
@@ -671,7 +681,7 @@ export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[
     const parsedSearch = await elExecuteWithAbortSignal(
       requestAbortSignal,
       (opts) => (engine as ElkClient).search(query, opts),
-      () => (engine as OpenClient).search(query),
+      () => (engine as OpenClient).search(toOpenSearchQuery(query)),
     );
     if (parsedSearch._shards.failed > 0) {
     // We do not support response with shards failure.

@@ -10,11 +10,11 @@ on:
       run-id:
         required: true
         type: string
-      elasticsearch_versions:
-        description: "Elasticsearch majors the integration and rules tests run against, as a JSON array"
+      search_engines:
+        description: "Search engines the integration and rules tests run against, as a JSON array of elasticsearch8, elasticsearch9 and opensearch"
         type: string
         required: false
-        default: '["8"]'
+        default: '["elasticsearch8"]'
     secrets:
       CODECOV_TOKEN:
         description: "Token used to upload coverage reports to Codecov"
@@ -23,13 +23,13 @@ on:
 jobs:
   run-opencti-integration-test:
     # Elasticsearch 8 keeps the plain name: it is a required status check on master
-    name: ${{ matrix.elasticsearch == '8' && 'Integration tests' || format('Integration tests (Elasticsearch {0})', matrix.elasticsearch) }}
+    name: ${{ matrix.engine == 'elasticsearch8' && 'Integration tests' || matrix.engine == 'elasticsearch9' && 'Integration tests (Elasticsearch 9)' || 'Integration tests (OpenSearch)' }}
     runs-on: ubuntu-26.04
     strategy:
-      # A failure on one Elasticsearch major must not cancel the run on the other
+      # A failure on one search engine must not cancel the run on the others
       fail-fast: false
       matrix:
-        elasticsearch: ${{ fromJSON(inputs.elasticsearch_versions) }}
+        engine: ${{ fromJSON(inputs.search_engines) }}
 
     steps:
     - name: OpenCTI checkout
@@ -75,8 +75,10 @@ jobs:
 
     - name: Set up Docker Compose for backends and sync instances
       env:
-        # Empty for Elasticsearch 8: docker-compose.yml then keeps its default image
-        ELASTICSEARCH_IMAGE: ${{ matrix.elasticsearch == '9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
+        # Empty for Elasticsearch 8 and OpenSearch: docker-compose.yml then keeps its default image
+        ELASTICSEARCH_IMAGE: ${{ matrix.engine == 'elasticsearch9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
+        # OpenSearch: docker-compose.opensearch.yml replaces the image and the settings of the search engine service
+        COMPOSE_FILE: ${{ matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
       run: |
          set -ex
          cd scripts/ci
@@ -121,7 +123,7 @@ jobs:
 
     - name: Upload coverage to Codecov
       # Once per run, so coverage stays comparable whatever the matrix
-      if: matrix.elasticsearch == '8'
+      if: matrix.engine == 'elasticsearch8'
       uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -141,17 +143,17 @@ jobs:
       if: always()
       continue-on-error: true
       with:
-        name: backend-test-results-integration-es${{ matrix.elasticsearch }}
+        name: backend-test-results-integration-${{ matrix.engine }}
         path: ${{ github.workspace }}/opencti-platform/opencti-graphql/test-results
         retention-days: 10
 
     # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+    - name: Log backends (Minio, search engine, RabbitMQ, Redis)
       if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
-          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs search engine \n\n"; sleep 1; docker logs elasticsearch
           echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
           echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
@@ -188,13 +190,13 @@ jobs:
 
   run-opencti-rules-test:
     # Elasticsearch 8 keeps the plain name: it is a required status check on master
-    name: ${{ matrix.elasticsearch == '8' && 'Rules and Taxii tests' || format('Rules and Taxii tests (Elasticsearch {0})', matrix.elasticsearch) }}
+    name: ${{ matrix.engine == 'elasticsearch8' && 'Rules and Taxii tests' || matrix.engine == 'elasticsearch9' && 'Rules and Taxii tests (Elasticsearch 9)' || 'Rules and Taxii tests (OpenSearch)' }}
     runs-on: ubuntu-26.04
     strategy:
-      # A failure on one Elasticsearch major must not cancel the run on the other
+      # A failure on one search engine must not cancel the run on the others
       fail-fast: false
       matrix:
-        elasticsearch: ${{ fromJSON(inputs.elasticsearch_versions) }}
+        engine: ${{ fromJSON(inputs.search_engines) }}
 
     steps:
     - name: OpenCTI checkout
@@ -232,8 +234,10 @@ jobs:
 
     - name: Set up Docker Compose for backends and sync instances
       env:
-        # Empty for Elasticsearch 8: docker-compose.yml then keeps its default image
-        ELASTICSEARCH_IMAGE: ${{ matrix.elasticsearch == '9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
+        # Empty for Elasticsearch 8 and OpenSearch: docker-compose.yml then keeps its default image
+        ELASTICSEARCH_IMAGE: ${{ matrix.engine == 'elasticsearch9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
+        # OpenSearch: docker-compose.opensearch.yml replaces the image and the settings of the search engine service
+        COMPOSE_FILE: ${{ matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
       run: |
          set -eux
          cd scripts/ci
@@ -267,7 +271,7 @@ jobs:
 
     - name: Upload coverage to Codecov
       # Once per run, so coverage stays comparable whatever the matrix
-      if: matrix.elasticsearch == '8'
+      if: matrix.engine == 'elasticsearch8'
       uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -278,12 +282,12 @@ jobs:
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+    - name: Log backends (Minio, search engine, RabbitMQ, Redis)
       if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
-          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs search engine \n\n"; sleep 1; docker logs elasticsearch
           echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
           echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
