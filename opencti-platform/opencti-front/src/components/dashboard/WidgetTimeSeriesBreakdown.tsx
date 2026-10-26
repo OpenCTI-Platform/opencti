@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ApexCharts from 'apexcharts';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import WidgetNoData from './WidgetNoData';
