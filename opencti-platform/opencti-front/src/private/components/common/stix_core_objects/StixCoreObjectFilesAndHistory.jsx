@@ -40,6 +40,7 @@ import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
 import { Stack } from '@mui/material';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const styles = (theme) => ({
   container: {
@@ -204,17 +205,7 @@ const StixCoreObjectFilesAndHistory = ({
         objectAssignee: values.objectAssignee.map(({ value }) => value),
         objectParticipant: values.objectParticipant.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        authorized_members: !authorizedMembers
-          ? null
-          : authorizedMembers
-              .filter((v) => v.accessRight !== 'none')
-              .map((member) => ({
-                id: member.value,
-                access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
-              })),
+        authorized_members: authorizedMembers ? authorizedMembersToInput(authorizedMembers) : null,
       },
       onCompleted: () => {
         setSubmitting(false);
