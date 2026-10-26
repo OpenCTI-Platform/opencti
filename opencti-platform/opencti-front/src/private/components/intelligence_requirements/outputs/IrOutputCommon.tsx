@@ -140,6 +140,7 @@ export const KIND_CHIP: Record<string, { label: string; severity: 'neutral' | 'i
   entered: { label: 'Entered · for information', severity: 'neutral' },
   score: { label: 'Score threshold', severity: 'high' },
   health: { label: 'Requirement health', severity: 'medium' },
+  brief: { label: 'AI brief', severity: 'info' },
 };
 
 export const StatusChip = ({ status, excluded, t }: { status: string; excluded?: boolean; t: (s: string) => string }) => {

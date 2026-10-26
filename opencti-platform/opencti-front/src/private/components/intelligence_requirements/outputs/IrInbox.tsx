@@ -18,6 +18,12 @@ import {
   ProofChain,
 } from './IrOutputCommon';
 import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
+import { IrTriageCard, useIrTriage, useIrTriageAgent } from './IrTriage';
+import Drawer from '@components/common/drawer/Drawer';
+import XtmOneAISummaryDisplay from '@components/common/ai/XtmOneAISummaryDisplay';
+import useIrAiGate from '../useIrAiGate';
+import type { IrInboxBriefMutation } from './__generated__/IrInboxBriefMutation.graphql';
+import type { AgentOption } from '../../../../utils/ai/agentApi';
 import type { IrInboxQuery } from './__generated__/IrInboxQuery.graphql';
 import type { IrInboxDecideMutation } from './__generated__/IrInboxDecideMutation.graphql';
 import type { IrInboxBulkDecideMutation } from './__generated__/IrInboxBulkDecideMutation.graphql';
@@ -30,7 +36,7 @@ const inboxQuery = graphql`
       id
       ir_subject_groups { id name }
       ir_scope_criteria { id name kind mode from_group_ids from_in_requirement }
-      ir_inbox_counts { open proposed entered score health done }
+      ir_inbox_counts { open proposed entered score health brief done }
     }
     intelligenceRequirementMatches(id: $id, first: 2000) {
       edges {
@@ -69,9 +75,10 @@ const inboxQuery = graphql`
           item_result
           item_entity_type
           created_at
-          item_data { criterion_id from_score to_score threshold reasons message }
+          item_data { criterion_id from_score to_score threshold reasons message content }
           match {
             id
+            match_entity_id
             match_status
             match_score
             match_excluded
@@ -108,9 +115,10 @@ const inboxQuery = graphql`
           item_result
           item_entity_type
           created_at
-          item_data { criterion_id from_score to_score threshold reasons message }
+          item_data { criterion_id from_score to_score threshold reasons message content }
           match {
             id
+            match_entity_id
             match_status
             match_score
             match_excluded
@@ -155,15 +163,24 @@ const bulkDecideMutation = graphql`
   }
 `;
 
+const briefMutation = graphql`
+  mutation IrInboxBriefMutation($id: ID!) {
+    intelligenceRequirementBriefGenerate(id: $id) {
+      id
+    }
+  }
+`;
+
 // Decisions that apply to each kind of inbox item (same table as the backend)
 const KIND_DECISIONS: Record<string, Decision[]> = {
   proposed: ['accept', 'reject'],
   entered: ['acknowledge', 'remove'],
   score: ['acknowledge'],
   health: ['acknowledge'],
+  brief: ['acknowledge'],
 };
 
-type Filter = 'open' | 'proposed' | 'entered' | 'score' | 'done';
+type Filter = 'open' | 'proposed' | 'entered' | 'score' | 'health' | 'brief' | 'done';
 type Sort = 'newest' | 'score';
 type Decision = 'accept' | 'reject' | 'acknowledge' | 'remove';
 
@@ -180,9 +197,12 @@ export interface IrInboxItemData {
     readonly from_score?: number | null;
     readonly to_score?: number | null;
     readonly reasons?: readonly string[] | null;
+    readonly message?: string | null;
+    readonly content?: string | null;
   };
   readonly match?: {
     readonly id: string;
+    readonly match_entity_id?: string;
     readonly match_score: number;
     readonly match_excluded: boolean;
     readonly entity?: { readonly representative: { readonly main: string } } | null;
@@ -190,9 +210,9 @@ export interface IrInboxItemData {
   } | null;
 }
 
-const KIND_COLORS: Record<string, string> = { proposed: '#c084fc', entered: '#42caff', score: '#e6700f', health: '#e6c20f' };
+const KIND_COLORS: Record<string, string> = { proposed: '#c084fc', entered: '#42caff', score: '#e6700f', health: '#e6c20f', brief: '#00f0bc' };
 
-export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecide, onDetails, compact, checked, onCheck }: {
+export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecide, onDetails, compact, checked, onCheck, irId, triageAgent, onReadBrief }: {
   item: IrInboxItemData;
   criteria: readonly IrCriterionRef[];
   groups?: readonly IrGroupRef[];
@@ -202,6 +222,9 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
   compact?: boolean;
   checked?: boolean;
   onCheck?: (id: string, checked: boolean) => void;
+  irId?: string;
+  triageAgent?: AgentOption | null;
+  onReadBrief?: (itemId: string) => void;
 }) => {
   const { t_i18n, nsdt, fsd } = useFormatter();
   const chip = KIND_CHIP[item.item_kind] ?? KIND_CHIP.entered;
@@ -220,6 +243,7 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
   const startTime = relationship?.start_time && new Date(relationship.start_time).getFullYear() > 1970 ? relationship.start_time : null;
   const factDate = startTime ?? relationship?.created;
   const openDetails = item.match && onDetails ? () => onDetails(item.match!.id) : undefined;
+  const triage = useIrTriage(irId ?? '', item.match?.match_entity_id, triageAgent ?? null);
   return (
     <Box
       onClick={compact ? openDetails : undefined}
@@ -255,6 +279,12 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
           {item.item_entity_type && <ItemIcon type={item.item_entity_type} size="small" />}
           <Text as="div" variant={compact ? 'content-compact-medium' : 'content-base-bold'}>{item.item_title}</Text>
         </Box>
+        {!compact && item.item_data.message && (
+          <Text as="div" variant="content-caption" style={{ opacity: 0.85 }}>{item.item_data.message}</Text>
+        )}
+        {!compact && item.item_kind === 'entered' && !item.item_data.criterion_id && (item.item_data.reasons ?? []).length > 0 && (
+          <Text as="div" variant="content-caption" style={{ opacity: 0.85 }}>{`${t_i18n('Best scored')}: ${(item.item_data.reasons ?? []).join(' · ')}`}</Text>
+        )}
         {!compact && item.item_kind === 'score' && (
           <Text as="div" variant="content-caption">
             {`${item.item_data.from_score ?? 0} → ${item.item_data.to_score ?? 0} · ${(item.item_data.reasons ?? []).join(' · ')}`}
@@ -284,6 +314,7 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
             {factDate && <Text as="span" variant="content-caption">{`▸ ${fsd(factDate)}`}</Text>}
           </Box>
         )}
+        {!compact && <IrTriageCard verdict={triage.verdict} loading={triage.loading} error={triage.error} />}
       </Box>
       {onDecide && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, p: 1.5, minWidth: 190, justifyContent: 'center' }}>
@@ -300,8 +331,19 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
               <Button size="small" fullWidth variant="secondary" onClick={() => onDecide(item.id, 'remove')}>{t_i18n('Remove from the requirement')}</Button>
             </>
           )}
+          {item.item_kind === 'brief' && onReadBrief && (
+            <Button size="small" fullWidth intent="ai" variant="secondary" onClick={() => onReadBrief(item.id)}>{t_i18n('Read the brief')}</Button>
+          )}
+          {!done && item.item_kind === 'brief' && (
+            <Button size="small" fullWidth variant="tertiary" onClick={() => onDecide(item.id, 'acknowledge')}>{t_i18n('Mark as read')}</Button>
+          )}
           {!done && (item.item_kind === 'score' || item.item_kind === 'health') && (
             <Button size="small" fullWidth variant="secondary" onClick={() => onDecide(item.id, 'acknowledge')}>{t_i18n('Mark as seen')}</Button>
+          )}
+          {!done && triage.available && (
+            <Button size="small" fullWidth variant="tertiary" intent="ai" disabled={triage.loading} onClick={triage.run}>
+              {triage.verdict ? t_i18n('Ask again') : t_i18n('Why is this of interest?')}
+            </Button>
           )}
           {openDetails && <Button size="small" fullWidth variant="tertiary" onClick={openDetails}>{t_i18n('Details')}</Button>}
         </Box>
@@ -321,6 +363,11 @@ const IrInbox = ({ irId }: { irId: string }) => {
   const data = useLazyLoadQuery<IrInboxQuery>(inboxQuery, { id: irId }, { fetchPolicy: 'network-only', fetchKey });
   const [commit] = useApiMutation<IrInboxDecideMutation>(decideMutation);
   const [commitBulk, bulkInFlight] = useApiMutation<IrInboxBulkDecideMutation>(bulkDecideMutation);
+  const triageAgent = useIrTriageAgent();
+  const briefGate = useIrAiGate('AI brief');
+  const canBrief = briefGate.visible && briefGate.xtmOneConfigured && !briefGate.termsPending && !briefGate.disabledReason;
+  const [commitBrief, briefInFlight] = useApiMutation<IrInboxBriefMutation>(briefMutation);
+  const [briefId, setBriefId] = useState<string | null>(null);
   const criteria = data.intelligenceRequirement?.ir_scope_criteria ?? [];
   const groups = data.intelligenceRequirement?.ir_subject_groups ?? [];
   const matches = (data.intelligenceRequirementMatches?.edges ?? []).map((e) => e.node);
@@ -372,6 +419,14 @@ const IrInbox = ({ irId }: { irId: string }) => {
       </Button>
     );
   };
+  const generateBrief = () => {
+    const onCompleted = (response: IrInboxBriefMutation['response']) => {
+      refresh();
+      setFilter('brief');
+      setBriefId(response.intelligenceRequirementBriefGenerate?.id ?? null);
+    };
+    commitBrief({ variables: { id: irId }, onCompleted });
+  };
   const changeFilter = (value: Filter) => {
     setFilter(value);
     setChecked(new Set());
@@ -386,8 +441,15 @@ const IrInbox = ({ irId }: { irId: string }) => {
         {filterButton('proposed', 'Proposed', counts?.proposed ?? 0)}
         {filterButton('entered', 'Entered', counts?.entered ?? 0)}
         {filterButton('score', 'Score threshold', counts?.score ?? 0)}
+        {filterButton('health', 'Health', counts?.health ?? 0)}
+        {filterButton('brief', 'Briefs', counts?.brief ?? 0)}
         {filterButton('done', 'Done', counts?.done ?? 0)}
         <Box sx={{ flex: 1 }} />
+        {canBrief && (
+          <Button size="small" intent="ai" variant="secondary" disabled={briefInFlight} onClick={generateBrief}>
+            {briefInFlight ? t_i18n('Generating the brief… (about 30 s)') : t_i18n('Generate a brief now')}
+          </Button>
+        )}
         <Text as="span" variant="content-caption" style={{ alignSelf: 'center', opacity: 0.7 }}>{t_i18n('Sort by')}</Text>
         <Button size="small" variant={sort === 'newest' ? 'primary' : 'tertiary'} onClick={() => setSort('newest')}>{t_i18n('Newest first')}</Button>
         <Button size="small" variant={sort === 'score' ? 'primary' : 'tertiary'} onClick={() => setSort('score')}>{t_i18n('Highest score first')}</Button>
@@ -434,6 +496,9 @@ const IrInbox = ({ irId }: { irId: string }) => {
               onDetails={setSelected}
               checked={checked.has(item.id)}
               onCheck={toggle}
+              irId={irId}
+              triageAgent={triageAgent}
+              onReadBrief={setBriefId}
             />
           ))}
       {confirm && (
@@ -455,6 +520,16 @@ const IrInbox = ({ irId }: { irId: string }) => {
           </DialogContent>
         </Dialog>
       )}
+      <Drawer open={!!briefId} onClose={() => setBriefId(null)} title={items.find((i) => i.id === briefId)?.item_title ?? t_i18n('AI brief')} size="large">
+        <XtmOneAISummaryDisplay
+          disclaimerText={t_i18n('This brief was written by an XTM One agent from the content of the requirement. It has been generated by AI and can contain mistakes.')}
+          noAgent={false}
+          loading={false}
+          content={items.find((i) => i.id === briefId)?.item_data.content ?? ''}
+          generatedAt={items.find((i) => i.id === briefId)?.created_at ?? null}
+          onRetry={generateBrief}
+        />
+      </Drawer>
       <IrMatchDrawer
         match={(matches.find((m) => m.id === selected) ?? null) as IrMatchData | null}
         criteria={criteria}
