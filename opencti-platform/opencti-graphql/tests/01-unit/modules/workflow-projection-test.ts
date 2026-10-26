@@ -127,7 +127,7 @@ describe('projectWorkflowState', () => {
     (fullEntitiesList as any).mockRejectedValue(new Error('store unavailable'));
     const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' } as BasicStoreEntity;
 
-    await expect(projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global)).resolves.toBeUndefined();
+    await expect(projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global)).resolves.toBe(false);
     expect(updateAttribute).not.toHaveBeenCalled();
     expect(logApp.warn).toHaveBeenCalledOnce();
   });
@@ -141,7 +141,7 @@ describe('projectWorkflowState', () => {
     (updateAttribute as any).mockRejectedValue(new Error('update failed'));
     const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' } as BasicStoreEntity;
 
-    await expect(projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global)).resolves.toBeUndefined();
+    await expect(projectWorkflowState(mockContext, mockUser, entity, 'tpl-a', StatusScope.Global)).resolves.toBe(false);
     expect(updateAttribute).toHaveBeenCalledOnce();
     expect(logApp.warn).toHaveBeenCalledOnce();
   });
@@ -162,7 +162,7 @@ describe('projectWorkflowState – closing reason', () => {
   });
 
   it('should write the closing reason in the same update as the status', async () => {
-    await projectWorkflowState(mockContext, mockUser, entity, 'tpl-closed', StatusScope.Global, 'false-positive');
+    await expect(projectWorkflowState(mockContext, mockUser, entity, 'tpl-closed', StatusScope.Global, 'false-positive')).resolves.toBe(true);
 
     expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-1', 'Incident', [
       { key: 'x_opencti_workflow_id', value: ['status-closed-id'] },

@@ -50,7 +50,7 @@ import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWo
 import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
-import { appendWorkflowHistoryEntry, runWorkflowBypassActions } from './workflow-async-completion';
+import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, runWorkflowBypassActions } from './workflow-async-completion';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -1564,6 +1564,7 @@ export const triggerWorkflowEvent = async (
       event: eventName,
       ...(result.workflowCompleted ? { completed: true } : {}),
       ...(comment ? { comment } : {}),
+      ...(resolvedClosingReason.closingReason ? { closing_reason: resolvedClosingReason.closingReason } : {}),
     });
 
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -1577,7 +1578,12 @@ export const triggerWorkflowEvent = async (
     // Keep the legacy `x_opencti_workflow_id` in sync with the new state.
     // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
     const scope = resolveProjectionScope(instanceEntity.scope);
-    await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, scope, resolvedClosingReason.closingReason);
+    const projected = await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, scope, resolvedClosingReason.closingReason);
+    if (!projected && resolvedClosingReason.closingReason) {
+      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingError', value: [closingReasonNotWrittenError(resolvedClosingReason.closingReason)] },
+      ]);
+    }
 
     await lock.unlock();
     lock = undefined;

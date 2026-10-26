@@ -4593,6 +4593,18 @@ describe('triggerWorkflowEvent — closing reason', () => {
     expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, entity, toState, StatusScope.Global, expected);
   });
 
+  it('keeps the closing reason in the history and reports it when the entity write fails', async () => {
+    setup('allowed');
+    (projectWorkflowState as any).mockResolvedValueOnce(false);
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close', undefined, {}, 'duplicate');
+
+    expect(result.success).toBe(true);
+    const inputs = (updateAttribute as any).mock.calls.flatMap((call: any[]) => call[4]);
+    expect(JSON.parse(inputs.find((input: any) => input.key === 'history').value[0]).at(-1)).toMatchObject({ closing_reason: 'duplicate' });
+    expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([{ key: 'pendingError', value: [expect.stringContaining('duplicate')] }]);
+  });
+
   it('writes the vocabulary value name rather than the given spelling', async () => {
     setup('allowed');
 
