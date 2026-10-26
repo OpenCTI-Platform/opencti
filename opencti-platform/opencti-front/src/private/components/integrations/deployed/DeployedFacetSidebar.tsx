@@ -4,7 +4,7 @@ import { Box, Stack } from '@mui/material';
 import { AutorenewOutlined, ExtensionOutlined, PauseCircleOutlined, PlayCircleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { useIngestionHealthColor } from '@components/data/connectors/IngestionHealthChip';
+import { useIngestionHealthColor } from '@components/data/connectors/ingestionHealthDisplay';
 import { FacetCheckbox, FacetGroupLabel, toggleValue } from '@components/integrations/catalog/IngestionCatalogFacetSidebar';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';

@@ -1,9 +1,10 @@
 import React from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Icon, Paper, Text } from '@filigran/design-system';
+import type { HealthIssueSeverity } from '@components/data/connectors/ingestionHealthDisplay';
 
 interface IngestionHealthBannerProps {
-  severity: 'critical' | 'degraded';
+  severity: HealthIssueSeverity;
   title: string;
   // Details under the title, one per line
   lines?: string[];
@@ -15,18 +16,18 @@ interface IngestionHealthBannerProps {
 // Same look as the design system Alert (severity bar, glyph, title, details, action), built on Paper and Text:
 // the Alert renders its texts as <p> keeping the browser margins, which makes a health banner too tall
 const SEVERITY_STYLE = {
-  critical: { role: 'alert', bar: 'border-alert-error', icon: 'circle-x', iconColor: 'text-icon-error' },
-  degraded: { role: 'alert', bar: 'border-alert-warning', icon: 'triangle-alert', iconColor: 'text-icon-warning' },
+  critical: { bar: 'border-alert-error', icon: 'circle-x', iconColor: 'text-icon-error' },
+  degraded: { bar: 'border-alert-warning', icon: 'triangle-alert', iconColor: 'text-icon-warning' },
 } as const;
 
 const IngestionHealthBanner = ({ severity, title, lines = [], action, 'data-testid': testId }: IngestionHealthBannerProps) => {
   const theme = useTheme();
-  const { role, bar, icon, iconColor } = SEVERITY_STYLE[severity];
+  const { bar, icon, iconColor } = SEVERITY_STYLE[severity];
   return (
     <Paper
       elevation={2}
       padding={8}
-      role={role}
+      role="alert"
       data-testid={testId}
       // border-0 drops the Paper border, border-l-4 (later in the library CSS) brings back the left bar only
       className={`flex items-center border-0 border-l-4 ${bar}`}

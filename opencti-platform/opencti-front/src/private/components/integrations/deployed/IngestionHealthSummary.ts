@@ -1,7 +1,7 @@
 import { graphql, readInlineData } from 'react-relay';
 import { AccessTimeOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
-import { useIngestionHealthColor } from '@components/data/connectors/IngestionHealthChip';
+import { useIngestionHealthColor, type HealthIssueSeverity } from '@components/data/connectors/ingestionHealthDisplay';
 import type { IngestionHealthSummary_ingestionHealth$key } from './__generated__/IngestionHealthSummary_ingestionHealth.graphql';
 
 // Read as plain data, outside of any component: the integrations page aggregates the health of every item.
@@ -17,7 +17,7 @@ const ingestionHealthSummaryFragment = graphql`
 `;
 
 export interface HealthIssue {
-  severity: 'critical' | 'degraded';
+  severity: HealthIssueSeverity;
   // First failing check; null when the status carries none
   message: string | null;
 }
