@@ -4640,6 +4640,17 @@ describe('triggerWorkflowEvent — closing reason', () => {
     expect(projectWorkflowState).not.toHaveBeenCalled();
   });
 
+  it('answers an event not allowed from the current state with the engine error, whatever the closing reason', async () => {
+    setup('required');
+    const trigger = vi.fn().mockResolvedValue({ success: false, reason: 'Event reopen is not allowed from state open' });
+    (WorkflowFactory.getInstance as any).mockReturnValue({ start: vi.fn(), trigger, getCurrentState: vi.fn().mockReturnValue('open') });
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'reopen', undefined, {}, 'duplicate');
+
+    expect(result).toMatchObject({ success: false, reason: 'Event reopen is not allowed from state open' });
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
   it.each([undefined, 'disabled'])('rejects a closing reason when the transition mode is %s', async (mode) => {
     setup(mode);
 
