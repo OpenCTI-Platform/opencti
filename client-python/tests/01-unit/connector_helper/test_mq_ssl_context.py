@@ -29,9 +29,7 @@ def test_mq_ssl_context_skips_verification_when_disabled_by_env():
 
 @patch.dict(os.environ, {}, clear=True)
 def test_mq_ssl_context_skips_verification_when_disabled_by_config():
-    ssl_context = create_mq_ssl_context(
-        {"mq": {"use_ssl_reject_unauthorized": False}}
-    )
+    ssl_context = create_mq_ssl_context({"mq": {"use_ssl_reject_unauthorized": False}})
 
     assert ssl_context.verify_mode == ssl.CERT_NONE
 
