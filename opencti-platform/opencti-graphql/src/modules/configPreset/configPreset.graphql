@@ -64,7 +64,8 @@ input ConfigPresetSelectionInput {
     type: ID!
     # Item keys of the type; null or omitted exports every item of the type at export time, an empty list none.
     items: [ID!]
-    # With items null or omitted only: every item of the type except these.
+    # With items null or omitted only: every item of the type except these. An unknown id is ignored (a stale exclusion is harmless),
+    # unlike an unknown id in items, which fails the export.
     excluded_items: [ID!]
 }
 

@@ -142,6 +142,13 @@ describe('Config preset registry', () => {
       });
     });
 
+    it('references the default theme the dependency was computed with, even if the default changes afterwards', async () => {
+      const [item] = await findFamily('platform').resolveItems(context, user, ['platform'], []);
+      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.id }]);
+      withSettings({ platform_theme: otherCustomTheme.id });
+      expect((await item.exporter(context, user)).default_theme).toEqual({ standard_id: customTheme.standard_id, name: 'SOC night' });
+    });
+
     it('references a built-in default theme without depending on it', async () => {
       withSettings({ platform_theme: builtInTheme.id });
       const item = await findItem('platform', 'platform');
@@ -172,16 +179,35 @@ describe('Config preset registry', () => {
     });
 
     it('neither lists nor exports a message that is not set, and keeps the ones that are', async () => {
-      withSettings({ platform_banner_text: '', platform_banner_level: null, platform_no_access_message: null, platform_consent_message: null, platform_consent_confirm_text: 'I agree' });
+      withSettings({ platform_banner_text: '', platform_banner_level: null, platform_no_access_message: null, platform_consent_message: null, platform_consent_confirm_text: null });
       const messages = findFamily('messages');
-      expect((await messages.resolveItems(context, user, null, [])).map((item) => item.id)).toEqual(['login', 'consent']);
+      expect((await messages.resolveItems(context, user, null, [])).map((item) => item.id)).toEqual(['login']);
       const page = await messages.listItems(context, user, { first: 10 });
-      expect(page.edges.map(({ node }) => node.id)).toEqual(['login', 'consent']);
-      expect(page.pageInfo.globalCount).toBe(2);
-      // A message partly set is exported with its empty field
-      const consent = (await messages.resolveItems(context, user, ['consent'], []))[0];
-      expect(await consent.exporter(context, user)).toEqual({ platform_consent_message: null, platform_consent_confirm_text: 'I agree' });
+      expect(page.edges.map(({ node }) => node.id)).toEqual(['login']);
+      expect(page.pageInfo.globalCount).toBe(1);
       expect(await messages.resolveItems(context, user, ['banner'], [])).toEqual([]);
+    });
+
+    it('does not count a level or a confirm text alone as a message', async () => {
+      withSettings({ platform_login_message: null, platform_banner_text: null, platform_banner_level: 'GREEN', platform_consent_message: null, platform_consent_confirm_text: 'I agree', platform_no_access_message: '' });
+      const messages = findFamily('messages');
+      expect(await messages.resolveItems(context, user, null, [])).toEqual([]);
+      expect((await messages.listItems(context, user, { first: 10 })).edges).toEqual([]);
+      // The qualifier is exported with its message
+      withSettings({ platform_banner_text: 'Maintenance', platform_banner_level: 'GREEN' });
+      const [banner] = await messages.resolveItems(context, user, ['banner'], []);
+      expect(await banner.exporter(context, user)).toEqual({ platform_banner_text: 'Maintenance', platform_banner_level: 'GREEN' });
+    });
+
+    it('pages the messages with the cursor of the last one', async () => {
+      withSettings({ platform_banner_text: 'b', platform_login_message: 'l', platform_consent_message: 'c', platform_no_access_message: 'n' });
+      const messages = findFamily('messages');
+      const first = await messages.listItems(context, user, { first: 3 });
+      expect(first.edges.map(({ node }) => node.id)).toEqual(['banner', 'login', 'consent']);
+      expect(first.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'consent', globalCount: 4 });
+      const next = await messages.listItems(context, user, { first: 3, after: first.pageInfo.endCursor });
+      expect(next.edges.map(({ node }) => node.id)).toEqual(['noAccess']);
+      expect(next.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 4 });
     });
 
     it('has no item when no message is set', async () => {
@@ -249,14 +275,29 @@ describe('Config preset registry', () => {
       expect(page.pageInfo.globalCount).toBe(4);
     });
 
-    it('asks for at least one theme when the page holds only whitemark', async () => {
-      await branding.listItems(context, user, { first: 1 });
+    it('keeps the page size across whitemark and the themes', async () => {
+      const two = await branding.listItems(context, user, { first: 2 });
+      expect(two.edges.map(({ node }) => node.id)).toEqual(['whitemark', otherCustomTheme.id]);
+      expect(two.pageInfo).toMatchObject({ hasNextPage: true, endCursor: two.edges[1].cursor });
+      // Whitemark fills the page: only a probe of one theme tells if a next page exists
+      vi.mocked(pageEntitiesConnection).mockClear();
+      const one = await branding.listItems(context, user, { first: 1 });
+      expect(one.edges.map(({ node }) => node.id)).toEqual(['whitemark']);
+      expect(one.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'whitemark', globalCount: 4 });
       expect(vi.mocked(pageEntitiesConnection).mock.calls[0][3]).toMatchObject({ first: 1 });
     });
 
-    it('applies search, ids and excluded ids to whitemark and to the themes', async () => {
+    it('starts with the themes after a cursor on whitemark', async () => {
+      const page = await branding.listItems(context, user, { first: 1, after: 'whitemark' });
+      expect(page.edges.map(({ node }) => node.id)).toEqual([otherCustomTheme.id]);
+      expect(vi.mocked(pageEntitiesConnection).mock.calls[0][3]).toMatchObject({ first: 1, after: undefined });
+    });
+
+    it('applies search to the themes only, and ids and excluded ids to whitemark and to the themes', async () => {
+      // Whitemark is a static item the UI translates: the search does not hide it
       expect(await pageIds({ search: 'filigran' })).toEqual(['whitemark', builtInTheme.id]);
-      expect((await branding.listItems(context, user, { search: 'soc' })).pageInfo.globalCount).toBe(1);
+      expect(await pageIds({ search: 'soc' })).toEqual(['whitemark', customTheme.id]);
+      expect((await branding.listItems(context, user, { search: 'soc' })).pageInfo.globalCount).toBe(2);
       expect(await pageIds({ ids: [customTheme.id] })).toEqual([customTheme.id]);
       expect(await pageIds({ excludedIds: ['whitemark', customTheme.id] })).toEqual([otherCustomTheme.id, builtInTheme.id]);
       vi.mocked(pageEntitiesConnection).mockClear();
@@ -288,7 +329,8 @@ describe('Config preset registry', () => {
     const ids = async (args: Parameters<typeof platform.listItems>[2]) => (await platform.listItems(context, user, args)).edges.map(({ node }) => node.id);
     expect((await platform.listItems(context, user, { first: 10 })).pageInfo).toMatchObject({ hasNextPage: false, globalCount: 1 });
     expect(await ids({ search: 'CONFIG' })).toEqual(['platform']);
-    expect(await ids({ search: 'messages' })).toEqual([]);
+    // The search does not apply to static items
+    expect(await ids({ search: 'messages' })).toEqual(['platform']);
     expect(await ids({ ids: ['platform'] })).toEqual(['platform']);
     expect(await ids({ ids: [] })).toEqual([]);
     expect(await ids({ excludedIds: ['platform'] })).toEqual([]);

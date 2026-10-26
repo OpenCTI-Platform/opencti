@@ -63,7 +63,7 @@ describe('Config preset bundle storage round trip', () => {
   let settingsId: string;
   let previousMessages: Record<string, string | null>;
 
-  const patchMessages = async (values: Record<string, string>) => {
+  const patchMessages = async (values: Record<string, string | null>) => {
     const input = MESSAGES_FIELDS.map((key) => ({ key, value: [values[key]] }));
     await queryAsAdminWithSuccess({ query: SETTINGS_EDIT_MUTATION, variables: { id: settingsId, input } });
   };
@@ -80,7 +80,7 @@ describe('Config preset bundle storage round trip', () => {
 
   afterAll(async () => {
     if (settingsId) {
-      await patchMessages(Object.fromEntries(MESSAGES_FIELDS.map((key) => [key, previousMessages[key] ?? ''])));
+      await patchMessages(previousMessages);
     }
     // config_preset/ is not a root cleaned by the test teardown
     if (fileId) {

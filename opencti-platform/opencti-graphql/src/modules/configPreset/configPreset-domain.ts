@@ -242,7 +242,7 @@ const writeConfigPresetZip = async (
     return {
       entity_types: families.map((family) => family.id),
       counts,
-      // The bundle ids of the items written in the zip, in registry order
+      // The bundle ids of the items written in the zip: families in registry order; in a family, the selected items then their dependencies
       items: Object.fromEntries(families.map((family) => [family.id, family.items.map((item) => configPresetItemBundleId(item))])),
     };
   } catch (err) {

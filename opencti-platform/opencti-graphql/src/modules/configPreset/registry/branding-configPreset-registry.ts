@@ -1,10 +1,9 @@
 import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../../generated/graphql';
-import { buildPaginationFromEdges } from '../../../database/utils';
 import { getPlatformDefaultTheme, getWhitemarkConfigPresetConfiguration } from '../../../domain/settings';
 import { findAllThemes, findThemePaginated, getThemeConfigPresetConfiguration } from '../../theme/theme-domain';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
-import { matchesListArgs, platformSettingsGroup } from './common-configPreset-registry';
+import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup } from './common-configPreset-registry';
 
 export const BRANDING_FAMILY_ID = 'branding';
 
@@ -54,25 +53,30 @@ export const brandingFamily: ConfigPresetFamilyDefinition = {
   listItems: async (context, user, args) => {
     const { first, after, search, ids, excludedIds } = args;
     const matchingStatics = BRANDING_STATIC_ITEMS.filter((item) => matchesListArgs(item, args));
-    // The static items open the first page; a cursor always points to a theme
-    const statics = after ? [] : matchingStatics;
-    const staticEdges = statics.map((node) => ({ node, cursor: node.id }));
+    // The static items open the list: a cursor on a theme is after all of them, a cursor on a static item after it
+    const afterStaticIndex = matchingStatics.findIndex((item) => item.id === after);
+    let statics = matchingStatics;
+    if (after) {
+      statics = afterStaticIndex >= 0 ? matchingStatics.slice(afterStaticIndex + 1) : [];
+    }
+    const pageStatics = first ? statics.slice(0, first) : statics;
+    const staticEdges = pageStatics.map((node) => ({ node, cursor: node.id }));
+    const moreStatics = pageStatics.length < statics.length;
     const requestedThemeIds = themeIds(ids);
     // Only static ids requested: an empty filter value would match every theme
     if (requestedThemeIds?.length === 0) {
-      return buildPaginationFromEdges(undefined, null, staticEdges, matchingStatics.length);
+      return buildConfigPresetConnection(args, staticEdges, matchingStatics.length, moreStatics);
     }
-    // At least one theme, so that a page with a next one always ends on a theme cursor
-    const themesFirst = first ? Math.max(first - statics.length, 1) : first;
+    // The page size bounds the static items and the themes together: no room left for a theme, the next page starts with them
+    const themesFirst = first ? first - pageStatics.length : first;
+    const themesAfter = afterStaticIndex >= 0 ? undefined : after;
     const [page, defaultTheme] = await Promise.all([
-      findThemePaginated(context, user, { first: themesFirst, after, search, ...themesArgs(requestedThemeIds, excludedIds) }),
+      findThemePaginated(context, user, { first: themesFirst === 0 ? 1 : themesFirst, after: themesAfter, search, ...themesArgs(requestedThemeIds, excludedIds) }),
       getPlatformDefaultTheme(context, user),
     ]);
-    const edges = [
-      ...staticEdges,
-      ...page.edges.map(({ cursor, node }) => ({ cursor, node: toThemeItem(node, defaultTheme?.id) })),
-    ];
-    return { edges, pageInfo: { ...page.pageInfo, globalCount: page.pageInfo.globalCount + matchingStatics.length } };
+    const themeEdges = themesFirst === 0 ? [] : page.edges.map(({ cursor, node }) => ({ cursor, node: toThemeItem(node, defaultTheme?.id) }));
+    const hasNextPage = moreStatics || (themesFirst === 0 ? page.edges.length > 0 : page.pageInfo.hasNextPage);
+    return buildConfigPresetConnection(args, [...staticEdges, ...themeEdges], page.pageInfo.globalCount + matchingStatics.length, hasNextPage);
   },
   resolveItems: async (context, user, ids, excludedIds) => {
     const statics = BRANDING_STATIC_ITEMS.filter((item) => matchesListArgs(item, { ids, excludedIds }));

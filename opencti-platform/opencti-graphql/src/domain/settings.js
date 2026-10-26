@@ -538,6 +538,7 @@ export const getCriticalAlerts = async (context, user) => {
 // (credentials, license, providers) never leaves the platform through a preset.
 export const CONFIG_PRESET_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
 // One configuration preset item per message
+// The first field of a message is the message itself: the message is set when it is filled, the others only qualify it
 export const CONFIG_PRESET_MESSAGES_FIELDS = {
   banner: ['platform_banner_text', 'platform_banner_level'],
   login: ['platform_login_message'],
@@ -553,9 +554,10 @@ export const getPlatformDefaultTheme = async (context, user) => {
   return settings.platform_theme ? findThemeById(context, user, settings.platform_theme) : undefined;
 };
 
-// The default theme by standard id, built-in or custom (the name is only a hint for messages); null when none is set
-export const getPlatformConfigPresetConfiguration = async (context, user) => {
-  const [settings, theme] = await Promise.all([getSettingsFromDatabase(context), getPlatformDefaultTheme(context, user)]);
+// The default theme by standard id, built-in or custom (the name is only a hint for messages); null when none is set.
+// The theme can be given (the one the export depends on) so that the reference matches it even if the default changed since.
+export const getPlatformConfigPresetConfiguration = async (context, user, defaultTheme = undefined) => {
+  const [settings, theme] = await Promise.all([getSettingsFromDatabase(context), defaultTheme === undefined ? getPlatformDefaultTheme(context, user) : defaultTheme]);
   return {
     ...pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS),
     default_theme: theme ? { standard_id: theme.standard_id, name: theme.name } : null,

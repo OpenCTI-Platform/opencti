@@ -189,7 +189,11 @@ const ConfigPresetExportItems: FunctionComponent<ConfigPresetExportItemsProps> =
               label={`${filter.label} ${filter.count}`}
               severity={query.filter === filter.id ? 'info' : 'neutral'}
               aria-pressed={query.filter === filter.id}
-              onClick={() => applyQuery(query.search, filter.id)}
+              onClick={() => {
+                // A search still waiting for its delay is applied now, with the new filter
+                debouncedSearch.cancel();
+                applyQuery(searchInput, filter.id);
+              }}
             />
           ))}
         </div>

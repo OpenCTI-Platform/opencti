@@ -198,7 +198,8 @@ describe('Config preset exportable items query', () => {
     expect(connection.edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false)]);
     expect(connection.pageInfo).toMatchObject({ hasNextPage: true, globalCount: 4 });
     const searched = await queryItems({ type: 'branding', search: 'soc' });
-    expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([themeItem(customTheme, false)]);
+    // The search applies to the themes: whitemark, a static item, is always listed
+    expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(customTheme, false)]);
   });
 
   it('passes the paging, search and id filters to the family', async () => {

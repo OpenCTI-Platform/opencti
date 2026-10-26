@@ -333,6 +333,19 @@ describe('ConfigPresetExportDrawer', () => {
       expect(relayEnv.mock.getMostRecentOperation().request.variables).not.toHaveProperty('cursor', 'next');
     });
 
+    it('applies a filter chosen while a search is waiting with that search, and the search does not undo it', async () => {
+      const { user, relayEnv } = await openThemes();
+      await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
+      await user.type(screen.getByRole('searchbox', { name: 'Search' }), 'soc');
+      await user.click(screen.getByRole('button', { name: 'Excluded 1' }));
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ search: 'soc', ids: ['theme-acme'] });
+      // Past the delay of the search: the filter is still the chosen one
+      await new Promise((resolve) => {
+        setTimeout(resolve, 400);
+      });
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ search: 'soc', ids: ['theme-acme'] });
+    });
+
     it('clears the selection of the type', async () => {
       const { user } = await openThemes();
       await user.click(screen.getByRole('button', { name: 'Clear selection' }));

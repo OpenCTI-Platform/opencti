@@ -295,9 +295,10 @@ describe('Config preset export', () => {
     const unhandledRejection = vi.fn();
     process.on('unhandledRejection', unhandledRejection);
     try {
-      // The settings reads of a complete export, to check that a failed one stops earlier
+      // The reads of a complete export (settings and entity settings), to check that a failed one stops earlier
+      const reads = () => vi.mocked(topEntitiesList).mock.calls.length + vi.mocked(fullEntitiesList).mock.calls.length;
       await configPresetExport(context, bypassUser, ALL_CATEGORIES);
-      const completeExportReads = vi.mocked(topEntitiesList).mock.calls.length;
+      const completeExportReads = reads();
       vi.clearAllMocks();
       // The temporary file cannot be opened, and the exporters answer only after the stream failed,
       // with an incompressible content larger than the stream buffers so that the archive cannot be drained
@@ -318,7 +319,7 @@ describe('Config preset export', () => {
       expect(uploadToStorage).not.toHaveBeenCalled();
       expect(publishUserAction).not.toHaveBeenCalled();
       // The export stops at the first item that ends after the stream error: the next ones are not read
-      expect(vi.mocked(topEntitiesList).mock.calls.length).toBeLessThan(completeExportReads);
+      expect(reads()).toBeLessThan(completeExportReads);
     } finally {
       process.off('unhandledRejection', unhandledRejection);
     }

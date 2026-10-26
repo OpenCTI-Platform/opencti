@@ -65,6 +65,8 @@ export const isConfigPresetItemSelected = (selection: ConfigPresetSelection, typ
 };
 
 // One level: the dependencies of the selected items the dialog has loaded (the first page of each type)
+// TODO an entity type with dependencies beyond its first page, or chained ones, would show fewer forced items here
+// than the export contains (the closure of the back end stays correct): load dependsOn in the sub-view and follow the chain
 export const getConfigPresetForcedItems = (types: ReadonlyArray<ExportableType>, selection: ConfigPresetSelection): ConfigPresetForcedItems => {
   const forced: Record<string, string[]> = {};
   types.forEach((type) => type.items

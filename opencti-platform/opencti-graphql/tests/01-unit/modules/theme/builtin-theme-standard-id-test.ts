@@ -32,7 +32,7 @@ vi.mock('../../../../src/utils/access', () => ({
 
 import { addTheme, initDefaultTheme } from '../../../../src/modules/theme/theme-domain';
 import { BUILT_IN_THEME_STANDARD_IDS, FILIGRAN_DARK_THEME_NAME, FILIGRAN_LIGHT_THEME_NAME } from '../../../../src/modules/theme/theme-constants';
-import { up } from '../../../../src/migrations/1792749481409-builtin-themes-fixed-standard-id';
+import { migrateStandardIdsForConfigPreset } from '../../../../src/modules/configPreset/configPreset-migration';
 import { generateStandardId, idGenFromData } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_THEME } from '../../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -50,9 +50,7 @@ const legacyTheme = (name: string, builtIn = true): StoredTheme => ({
   built_in: builtIn,
 });
 
-const runUp = () => new Promise<void>((resolve, reject) => {
-  void up((error?: Error) => (error ? reject(error) : resolve()));
-});
+const runMigration = () => migrateStandardIdsForConfigPreset(context);
 
 const seededStandardIds = async () => {
   await initDefaultTheme(context, user);
@@ -105,7 +103,7 @@ describe('built-in themes fixed standard id', () => {
     const seeded = await seededStandardIds();
     const custom = legacyTheme('Custom', false);
     store = [legacyTheme(FILIGRAN_DARK_THEME_NAME), legacyTheme(FILIGRAN_LIGHT_THEME_NAME), custom];
-    await runUp();
+    await runMigration();
     expect(mockElReplace).toHaveBeenCalledTimes(2);
     expect(mockElReplace).toHaveBeenCalledWith(expect.anything(), 'opencti_internal_objects-000001', `internal-${FILIGRAN_DARK_THEME_NAME}`, { doc: { standard_id: seeded[FILIGRAN_DARK_THEME_NAME] } });
     expect(Object.fromEntries(store.filter((t) => t.built_in).map((t) => [t.name, t.standard_id]))).toEqual(seeded);
@@ -114,10 +112,10 @@ describe('built-in themes fixed standard id', () => {
 
   it('is idempotent', async () => {
     store = [legacyTheme(FILIGRAN_DARK_THEME_NAME), legacyTheme(FILIGRAN_LIGHT_THEME_NAME)];
-    await runUp();
+    await runMigration();
     const afterFirstRun = structuredClone(store);
     mockElReplace.mockClear();
-    await runUp();
+    await runMigration();
     expect(mockElReplace).not.toHaveBeenCalled();
     expect(store).toEqual(afterFirstRun);
   });
@@ -125,7 +123,7 @@ describe('built-in themes fixed standard id', () => {
   it('logs a missing built-in theme and migrates the other one', async () => {
     // A custom theme reusing the name of the missing built-in must not be rewritten.
     store = [legacyTheme(FILIGRAN_DARK_THEME_NAME), legacyTheme(FILIGRAN_LIGHT_THEME_NAME, false)];
-    await expect(runUp()).resolves.toBeUndefined();
+    await expect(runMigration()).resolves.toBeUndefined();
     expect(mockElReplace).toHaveBeenCalledTimes(1);
     expect(store[0].standard_id).toBe(BUILT_IN_THEME_STANDARD_IDS[FILIGRAN_DARK_THEME_NAME]);
     expect(store[1].standard_id).not.toBe(BUILT_IN_THEME_STANDARD_IDS[FILIGRAN_LIGHT_THEME_NAME]);
