@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Alert, Button, Chip } from '@filigran/design-system';
 import { Box, DialogActions, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import Dialog from '../../../../components/common/dialog/Dialog';

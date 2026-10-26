@@ -2,7 +2,6 @@ import { graphql } from 'react-relay';
 import { Text } from '@filigran/design-system';
 import ConnectorWorkList, { ConnectorWorkListItem } from '../../../common/work/ConnectorWorkList';
 import { useFormatter } from '../../../../../components/i18n';
-import { ChevronRight } from '@mui/icons-material';
 import { Accordion, AccordionSummary } from '../../../../../components/Accordion';
 import { AccordionDetails, Stack } from '@mui/material';
 import { Investigation, InvestigationEnrichmentWork } from './investigation-enrichment.types';
@@ -10,6 +9,7 @@ import useInvestigationEnrichmentRights from './useInvestigationEnrichmentRights
 import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { InvestigationEnrichmentWorkListAskEnrichment } from './__generated__/InvestigationEnrichmentWorkListAskEnrichment.graphql';
+import { ChevronRight } from '@mui/icons-material';
 
 const askEnrichMutation = graphql`
   mutation InvestigationEnrichmentWorkListAskEnrichment($id: ID!, $connectorId: ID!, $investigationId: ID) {
@@ -62,10 +62,12 @@ const InvestigationEnrichmentWorkList = ({
   if (workSize === 0) {
     return (
       <Stack
-        alignItems="center"
-        justifyContent="center"
-        sx={{ height: 100 }}
-        gap={1}
+        spacing={1}
+        sx={{
+          height: 100,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
         <Text variant="content-base-bold">
           {emptyTitle[worksType]}

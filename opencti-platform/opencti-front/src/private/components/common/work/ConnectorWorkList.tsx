@@ -4,7 +4,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { Spinner, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
