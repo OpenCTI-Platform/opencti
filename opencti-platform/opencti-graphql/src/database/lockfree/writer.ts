@@ -90,7 +90,8 @@ const loadWithAccessFields = async (ids: string[]) => {
   const refs = live.map((o) => ({ index: o.owner_index, id: o.owner_id }));
   if (refs.length === 0) return [];
   const [light, access] = await Promise.all([mgetRaw(refs, { light: true }), mgetAccess(refs)]);
-  return toElements([...light.values()].map((raw) => ({ ...raw, _source: { ...raw._source, ...(access.get(raw._id)?._source ?? {}) } })));
+  light.forEach((raw) => Object.assign(raw._source, access.get(raw._id)?._source ?? {}));
+  return toElements([...light.values()], { owned: true });
 };
 
 // The finder handed to inputResolveRefs: reads by id, remembers what it read for the chunk, filters by the user's access

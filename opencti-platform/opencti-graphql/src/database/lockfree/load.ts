@@ -50,7 +50,10 @@ export const mgetRaw = async (
 };
 
 // Store elements (the platform's shape) from raw documents; the raw document stays attached for the write back
-export const toElements = async (raws: RawDoc[]) => {
+export const toElements = async (raws: RawDoc[], opts: { owned?: boolean } = {}) => {
+  // `owned`: the documents are read only to be looked at, never written back: converted in place, without a copy
+  // and without the raw document (a container's objects can be hundreds of thousands)
+  if (opts.owned) return elConvertHits(raws) as Promise<any[]>;
   const copies = raws.map((raw) => ({ _index: raw._index, _id: raw._id, _source: structuredClone(raw._source) }));
   const elements: any[] = await elConvertHits(copies);
   return elements.map((element, i) => Object.assign(element, { i_raw: raws[i] }));
