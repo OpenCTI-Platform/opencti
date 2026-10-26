@@ -93,11 +93,13 @@ const DashboardVariableChip = ({
   return (
     <Stack
       direction="row"
-      alignItems="center"
       data-testid={`dashboard-variable-chip-${variable.name}`}
       data-unused={isUnused}
       data-invalid-default={hasInvalidDefault ? 'true' : undefined}
       style={isUnused ? { opacity: UNUSED_OPACITY } : undefined}
+      sx={{
+        alignItems: 'center',
+      }}
     >
       {tooltipText ? (
         <Tooltip>
@@ -122,7 +124,14 @@ const DashboardVariableChip = ({
             commitOn="blur"
           />
           {hasActions && (
-            <Stack direction="row" justifyContent="flex-end" gap={1} sx={{ marginTop: 2 }}>
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: 'flex-end',
+                gap: 1,
+                marginTop: 2,
+              }}
+            >
               {onEdit && (
                 <Button
                   variant="secondary"

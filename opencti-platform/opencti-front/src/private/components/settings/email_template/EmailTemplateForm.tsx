@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';

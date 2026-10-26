@@ -3,7 +3,7 @@ import Button from '@common/button/Button';
 import { Link } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { ShieldCheckOutline } from 'mdi-material-ui';

@@ -1640,9 +1640,12 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
+// Keep * as wildcard, fuzzy ~ is handled separately as it is only valid at the end of a term
 const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
-  return query.replace(/([/+|\-()^={}[\]:?!"\\])/g, '\\$1');
+  return query.replace(/([/+|\-()^~={}[\]:?!"\\])/g, '\\$1');
 };
+// Lucene fuzzy operator: a term ending with ~ and an optional edit distance of 0, 1 or 2 (lazarous~, lazarous~1)
+const LUCENE_FUZZY_TERM_REGEX = /^(.+?)(~[0-2]?)$/;
 export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
@@ -1925,6 +1928,10 @@ type ProcessSearchArgs = {
   useWildcardPrefix?: boolean;
   historyFiltering?: boolean;
 };
+type SearchConnectionsRestrictions = {
+  // When defined, the search can only match on these connected elements, verified as accessible to the user
+  allowedConnectionIds?: string[];
+};
 
 // Hard cap user-provided search input to limit normalization + query parsing cost
 const MAX_SEARCH_LENGTH = 512;
@@ -1954,13 +1961,24 @@ function processSearch(
 
   const partialSearch = remainingSearch.replace(/"/g, '')
     .trim()
-    .split(' ');
+    .split(/\s+/);
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
-    const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(partialElement);
+    // Any other ~ (inside an url, invalid edit distance, ...) is escaped, as query_string would fail parsing it as fuzziness
+    // Fuzzy terms are not analyzed: a term with special chars (apt-28, url) would never match the tokenized text, so it is searched as a regular term
+    const luceneFuzzyMatch = partialElement.match(LUCENE_FUZZY_TERM_REGEX);
+    const isSingleWordFuzzy = luceneFuzzyMatch && specialElasticCharsEscapeWithLuceneSyntax(luceneFuzzyMatch[1]) === luceneFuzzyMatch[1];
+    const fuzzyMatch = isSingleWordFuzzy ? luceneFuzzyMatch : null;
+    const term = fuzzyMatch ? fuzzyMatch[1] : partialElement;
+    const cleanElement = specialElasticCharsEscapeWithLuceneSyntax(term);
     if (isNotEmptyField(cleanElement)) {
-      querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
+      if (fuzzyMatch) {
+        // No implicit wildcard for fuzzy terms: a trailing * would be parsed as a standalone match all term
+        querySearch.push(`${cleanElement}${fuzzyMatch[2]}`);
+      } else {
+        querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}*`);
+      }
     }
   }
   return {
@@ -1968,13 +1986,54 @@ function processSearch(
     querySearch,
   };
 }
-export const elGenerateFullTextSearchShould = (search: string, args: ProcessSearchArgs = {}) => {
+// Relationships denormalize the name and id of their connected elements, without their access rights.
+// The connected elements the user cannot access must be excluded, or searching their name would reveal them.
+const buildConnectionsSearchShould = (connectionsQueries: unknown[], args: SearchConnectionsRestrictions) => {
+  const { allowedConnectionIds } = args;
+  if (connectionsQueries.length === 0 || (allowedConnectionIds && allowedConnectionIds.length === 0)) {
+    return [];
+  }
+  const bool: { should: unknown[]; minimum_should_match: number; filter?: unknown[] } = { should: connectionsQueries, minimum_should_match: 1 };
+  if (allowedConnectionIds) {
+    bool.filter = [{ terms: { 'connections.internal_id.keyword': allowedConnectionIds } }];
+  }
+  return [{ nested: { path: 'connections', query: { bool } } }];
+};
+const processFullTextSearch = (search: string, args: ProcessSearchArgs) => {
   const { exactSearch, querySearch } = processSearch(search, args);
+  const searchPhrase = R.uniq(querySearch).join(' ');
+  const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|https?:/g, '')));
+  return { searchPhrase, cleanExactSearch };
+};
+const buildConnectionsExactQuery = (exact: string) => ({
+  multi_match: {
+    type: 'phrase',
+    query: exact,
+    lenient: true,
+    fields: BASE_SEARCH_CONNECTIONS,
+  },
+});
+const buildConnectionsPhraseQuery = (searchPhrase: string) => ({
+  query_string: {
+    query: searchPhrase,
+    analyze_wildcard: true,
+    fields: BASE_SEARCH_CONNECTIONS,
+  },
+});
+// Queries matching a single connection, the same way the full text search does
+const elGenerateConnectionsSearchQueries = (search: string, args: ProcessSearchArgs) => {
+  const { searchPhrase, cleanExactSearch } = processFullTextSearch(search, args);
+  const queries: unknown[] = cleanExactSearch.map((ex) => buildConnectionsExactQuery(ex));
+  if (searchPhrase) {
+    queries.push(buildConnectionsPhraseQuery(searchPhrase));
+  }
+  return queries;
+};
+export const elGenerateFullTextSearchShould = (search: string, args: ProcessSearchArgs & SearchConnectionsRestrictions = {}) => {
   // Return the elastic search engine expected bool should terms
   // Build the search for all exact match (between double quotes)
   const shouldSearch: unknown[] = [];
-  const searchPhrase = R.uniq(querySearch).join(' ');
-  const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|https?:/g, '')));
+  const { searchPhrase, cleanExactSearch } = processFullTextSearch(search, args);
   if (args.historyFiltering) {
     pushAll(shouldSearch, cleanExactSearch.map((ex) => [
       {
@@ -2056,25 +2115,6 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
           fields: BASE_SEARCH_ATTRIBUTES,
         },
       },
-      {
-        nested: {
-          path: 'connections',
-          query: {
-            bool: {
-              must: [
-                {
-                  multi_match: {
-                    type: 'phrase',
-                    query: ex,
-                    lenient: true,
-                    fields: BASE_SEARCH_CONNECTIONS,
-                  },
-                },
-              ],
-            },
-          },
-        },
-      },
     ]).flat());
     if (searchPhrase) {
       pushAll(shouldSearch, [
@@ -2093,26 +2133,9 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
             fields: BASE_SEARCH_ATTRIBUTES,
           },
         },
-        {
-          nested: {
-            path: 'connections',
-            query: {
-              bool: {
-                must: [
-                  {
-                    query_string: {
-                      query: searchPhrase,
-                      analyze_wildcard: true,
-                      fields: BASE_SEARCH_CONNECTIONS,
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        },
       ]);
     }
+    pushAll(shouldSearch, buildConnectionsSearchShould(elGenerateConnectionsSearchQueries(search, args), args));
   }
   return shouldSearch;
 };
@@ -2848,6 +2871,101 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
     getParams: async (context: AuthContext, user: AuthUser) => getRuntimeUsers(context, user),
   },
 };
+// Connections matching the search are checked by batches.
+// Above this number of connections to check, connections are not searched at all.
+const SEARCH_CONNECTIONS_BATCH_SIZE = ES_MAX_PAGINATION;
+const MAX_SEARCH_CONNECTIONS = SEARCH_CONNECTIONS_BATCH_SIZE * 4;
+export const isSearchingRelationships = (types: string[] | null | undefined) => {
+  // Only a search restricted to objects is sure to never return relationships
+  return isEmptyField(types) || !R.flatten(types as string[]).every((type) => isBasicObject(type));
+};
+// Resolve the connected elements matching the search that the user can access.
+// Relationships must not be found by searching the name or id of any other connected element.
+const elResolveSearchConnectionsRestrictions = async (
+  context: AuthContext,
+  user: AuthUser,
+  search: string,
+  restrictions: { must: any[]; must_not: any[] },
+  relationshipsFilters: any[],
+  opts: ProcessSearchArgs & BuildDraftFilterOpts & { withDraft?: boolean },
+): Promise<SearchConnectionsRestrictions> => {
+  if (restrictions.must.length === 0 && restrictions.must_not.length === 0) {
+    return {};
+  }
+  const connectionsQueries = elGenerateConnectionsSearchQueries(search, opts);
+  if (connectionsQueries.length === 0) {
+    return {};
+  }
+  // Same live / draft scope as the search to secure
+  const { withDraft = true } = opts;
+  const draftMust = withDraft ? buildDraftFilter(context, user, opts) : [];
+  const relationshipsIndices = withDraft ? getIndicesToQuery(context, user, READ_RELATIONSHIPS_INDICES) : READ_RELATIONSHIPS_INDICES;
+  const dataIndices = withDraft ? getIndicesToQuery(context, user, READ_DATA_INDICES) : READ_DATA_INDICES;
+  const connectionsMatch = { bool: { should: connectionsQueries, minimum_should_match: 1 } };
+  // Only consider the relationships the search could return
+  const relationshipsQuery = {
+    bool: {
+      must: [...restrictions.must, ...relationshipsFilters, ...draftMust, { nested: { path: 'connections', query: connectionsMatch } }],
+      must_not: restrictions.must_not,
+    },
+  };
+  // A partial result could miss connections, nothing can be allowed from it
+  const rawSearchComplete = async (query: any) => {
+    const data = await elRawSearch(context, user, 'Search connections', query);
+    return data.timed_out ? null : data;
+  };
+  const aggregateMatchingConnections = async (aggs: any) => {
+    const data = await rawSearchComplete({
+      index: relationshipsIndices,
+      size: 0,
+      track_total_hits: false,
+      body: {
+        query: relationshipsQuery,
+        aggs: { connections: { nested: { path: 'connections' }, aggs: { matching: { filter: connectionsMatch, aggs } } } },
+      },
+    });
+    return data?.aggregations.connections.matching;
+  };
+  const field = 'connections.internal_id.keyword';
+  const counting = await aggregateMatchingConnections({ count: { cardinality: { field, precision_threshold: 40000 } } });
+  if (!counting || counting.count.value === 0 || counting.count.value > MAX_SEARCH_CONNECTIONS) {
+    return { allowedConnectionIds: [] };
+  }
+  // Cardinality is approximate, keep room in each partition
+  const numPartitions = Math.ceil((counting.count.value * 2) / SEARCH_CONNECTIONS_BATCH_SIZE);
+  const allowedConnectionIds: string[] = [];
+  for (let partition = 0; partition < numPartitions; partition += 1) {
+    const partitioning = await aggregateMatchingConnections({
+      ids: { terms: { field, size: SEARCH_CONNECTIONS_BATCH_SIZE, include: { partition, num_partitions: numPartitions } } },
+    });
+    if (!partitioning || partitioning.ids.sum_other_doc_count > 0) {
+      return { allowedConnectionIds: [] };
+    }
+    const connectionIds: string[] = partitioning.ids.buckets.map((bucket: { key: string }) => bucket.key);
+    if (connectionIds.length > 0) {
+      // Keep the ones inside the access restrictions of the user
+      const accessibleData = await rawSearchComplete({
+        index: dataIndices,
+        size: 0,
+        track_total_hits: false,
+        body: {
+          query: {
+            bool: {
+              must: [{ terms: { 'internal_id.keyword': connectionIds } }, ...restrictions.must, ...draftMust],
+              must_not: restrictions.must_not,
+            },
+          },
+          aggs: { ids: { terms: { field: 'internal_id.keyword', size: connectionIds.length } } },
+        },
+      });
+      if (!accessibleData) {
+        return { allowedConnectionIds: [] };
+      }
+      pushAll(allowedConnectionIds, accessibleData.aggregations.ids.buckets.map((bucket: { key: string }) => bucket.key));
+    }
+  }
+  return { allowedConnectionIds };
+};
 type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   ids?: string[];
   after?: string | null;
@@ -2950,7 +3068,10 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
   let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
-    const shouldSearch = elGenerateFullTextSearchShould(search, options);
+    const connectionsRestrictions = !historyFiltering && isSearchingRelationships(types)
+      ? await elResolveSearchConnectionsRestrictions(context, user, search, markingRestrictions, mustFilters, options)
+      : {};
+    const shouldSearch = elGenerateFullTextSearchShould(search, { ...options, ...connectionsRestrictions });
     const bool = {
       bool: {
         should: shouldSearch,
@@ -3800,7 +3921,8 @@ export const elAttributeValues = async (
   const markingRestrictions = await buildDataRestrictions(context, user);
   const must = [];
   if (isNotEmptyField(search) && (search as string).length > 0) {
-    const shouldSearch = elGenerateFullTextSearchShould(search as string);
+    const connectionsRestrictions = await elResolveSearchConnectionsRestrictions(context, user, search as string, markingRestrictions, [], { withDraft: false });
+    const shouldSearch = elGenerateFullTextSearchShould(search as string, connectionsRestrictions);
     const bool = {
       bool: {
         should: shouldSearch,

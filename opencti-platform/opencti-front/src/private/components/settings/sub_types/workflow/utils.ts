@@ -1,5 +1,4 @@
 import type { Node, Edge } from 'reactflow';
-import type { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
@@ -63,6 +62,10 @@ export enum WorkflowActionType {
 
 export const NODE_SIZE = { width: 160, height: 50 };
 
+// Label weight for nodes lit by a hover. A text shadow, not font-weight: a bolder label could
+// widen a status chip, and React Flow would then re-measure the node and re-run the layout.
+export const HIGHLIGHT_LABEL_SHADOW = '0 0 0.6px currentColor';
+
 const formatActions = (actions: Action[] = []) => {
   return actions.map(({ type, params }) => {
     if (type === 'updateAuthorizedMembers') {
@@ -107,10 +110,29 @@ const formatActions = (actions: Action[] = []) => {
   }).filter(Boolean);
 };
 
+// When the graph holds no status node (empty draft / reset), do NOT fall back to the
+// server's initialState: that would carry a stale value into an otherwise empty schema.
+// Use the wildcard '*' instead — the backend treats it as a neutral initial state and
+// skips state-existence checks for it. This also keeps this function's output aligned
+// between handleReset and the autosave effect, preventing a spurious follow-up mutation.
+// The backend requires the initial state to be the only status without an incoming edge
+// (ROOT_STATE_MISMATCH), so that status is the initial one. The saved initial state is kept only
+// where the backend does not decide: no root (every status is reached by a loop), or several roots
+// (MULTIPLE_ROOT_STATES) when it is one of them. Otherwise the first root takes over.
+const getInitialState = (nodes: Node[], edges: Edge[], savedInitialState: string | null | undefined) => {
+  const statusNodes = nodes.filter((node) => node.type === WorkflowNodeType.status);
+  if (statusNodes.length === 0) return '*';
+  const roots: string[] = statusNodes.filter(({ id }) => !edges.some((e) => e.target === id)).map((n) => n.data.statusTemplate.id);
+  if (roots.length === 1) return roots[0];
+  const candidates = roots.length ? roots : statusNodes.map((n) => n.data.statusTemplate?.id);
+  if (savedInitialState && candidates.includes(savedInitialState)) return savedInitialState;
+  return roots[0] || savedInitialState;
+};
+
 const transformToWorkflowDefinition = (
   nodes: Node[],
   edges: Edge[],
-  workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'],
+  workflowDefinition: { readonly id?: string; readonly name?: string; readonly initialState?: string | null } | null | undefined,
 ) => {
   // 1. Extract States
   const states = nodes.flatMap(({ type, data: { onEnter = [], onExit = [], statusTemplate } }) => {
@@ -161,17 +183,7 @@ const transformToWorkflowDefinition = (
   });
 
   // 3. Identify Initial State
-  const statusNodes = nodes.filter((node) => node.type === WorkflowNodeType.status);
-  const rootStatusNode = statusNodes.find(({ id }) => !edges.find((e) => e.target === id));
-
-  // When the graph holds no status node (empty draft / reset), do NOT fall back to the
-  // server's initialState: that would carry a stale value into an otherwise empty schema.
-  // Use the wildcard '*' instead — the backend treats it as a neutral initial state and
-  // skips state-existence checks for it. This also keeps this function's output aligned
-  // between handleReset and the autosave effect, preventing a spurious follow-up mutation.
-  const initialState = statusNodes.length === 0
-    ? '*'
-    : (nodes.find((n) => n.id === rootStatusNode?.id)?.data.statusTemplate.id || workflowDefinition?.initialState);
+  const initialState = getInitialState(nodes, edges, workflowDefinition?.initialState);
 
   return {
     id: workflowDefinition?.id,
@@ -186,6 +198,7 @@ const isElementStatus = (selectedElement: Node) => (selectedElement?.type === Wo
 const isNewElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.placeholder);
 
 export {
+  getInitialState,
   transformToWorkflowDefinition,
   isElementStatus,
   isNewElementStatus,

@@ -41,7 +41,12 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
   const { t_i18n } = useFormatter();
 
   return (
-    <Stack gap={2} className={classes.tabPanel}>
+    <Stack
+      className={classes.tabPanel}
+      sx={{
+        gap: 2,
+      }}
+    >
       <Select
         value={formData.mainEntityType}
         onValueChange={(value) => handleMainEntityTypeChange(value)}
@@ -61,7 +66,10 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
         </div>
       </Select>
 
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <FormControlLabel
           control={(
             <Switch
@@ -284,7 +292,12 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
         }
         const mainEntityFields = fieldsByEntity.main_entity || [];
         return (
-          <Stack gap={2} sx={{ mt: 1 }}>
+          <Stack
+            sx={{
+              gap: 2,
+              mt: 1,
+            }}
+          >
             <Typography variant="h6">
               {t_i18n('Main Entity Fields')}
             </Typography>

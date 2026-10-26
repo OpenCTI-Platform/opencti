@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router';
 import { Box, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { ViewListOutlined, ViewModuleOutlined, WidgetsOutlined } from '@mui/icons-material';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
 import { useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import IngestionCatalogCard from '@components/integrations/catalog/IngestionCatalogCard';
@@ -213,7 +213,13 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
     <div data-testid="catalog-page">
       {/* Below md the sidebar stacks full-width above the cards instead of
           squeezing them against a fixed 250px column. */}
-      <Stack direction={{ xs: 'column', md: 'row' }} gap={2} alignItems={{ xs: 'stretch', md: 'flex-start' }}>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        sx={{
+          gap: 2,
+          alignItems: { xs: 'stretch', md: 'flex-start' },
+        }}
+      >
         <IngestionCatalogFacetSidebar
           filters={filters}
           onFiltersChange={setFilters}
@@ -223,7 +229,14 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
         />
 
         <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Stack direction="row" alignItems="center" flexWrap="wrap" gap={2}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 2,
+            }}
+          >
             <SearchInput
               value={searchInput}
               onSubmit={handleSearchInputSubmit}

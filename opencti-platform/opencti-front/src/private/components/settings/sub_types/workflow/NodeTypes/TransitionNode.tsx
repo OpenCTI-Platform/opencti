@@ -1,10 +1,11 @@
 import { Handle, NodeProps, Position, useReactFlow } from 'reactflow';
 import { useFormatter } from '../../../../../../components/i18n';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../../components/Theme';
-import { CommentMode, NODE_SIZE } from '../utils';
+import { CommentMode, HIGHLIGHT_LABEL_SHADOW, NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 import { useMemo } from 'react';
+import { hoverFade, useNodeHighlight } from '../hoverHighlight';
 
 const generatePath = (points: number[][]) => {
   const path = points.map(([x, y]) => `${x},${y}`).join(' L');
@@ -25,35 +26,9 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const hasIncomingEdge = edges.some((edge) => edge.target === id);
   const hasOutgoingEdge = edges.some((edge) => edge.source === id);
 
-  // Detect if this is a backward transition (going back to an ancestor status)
-  const isBackwardTransition = useMemo(() => {
-    const outgoingEdge = edges.find((edge) => edge.source === id);
-    const incomingEdge = edges.find((edge) => edge.target === id);
-
-    if (!outgoingEdge || !incomingEdge) return false;
-
-    const sourceStatusId = incomingEdge.source;
-    const targetStatusId = outgoingEdge.target;
-
-    // Check if target is an ancestor of source by traversing parent relationships
-    const isAncestor = (ancestorId: string, descendantId: string): boolean => {
-      let currentId = descendantId;
-      const visited = new Set<string>();
-
-      while (currentId && !visited.has(currentId)) {
-        if (currentId === ancestorId) return true;
-        visited.add(currentId);
-
-        // Find parent by looking for incoming edges
-        const parentEdge = edges.find((e) => e.target === currentId && e.source !== id);
-        if (!parentEdge) break;
-        currentId = parentEdge.source;
-      }
-      return false;
-    };
-
-    return isAncestor(targetStatusId, sourceStatusId);
-  }, [edges, id]);
+  // useWorkflowLayout decides which transitions go back up the graph.
+  const isBackwardTransition = data.layout?.backward ?? false;
+  const { lit: highlighted, dimmed } = useNodeHighlight(id);
 
   const conditionAndActions = useMemo(() => {
     const filterCount = data.conditions?.filters?.filters?.length ?? 0;
@@ -84,7 +59,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const sourcePosition = isBackwardTransition ? Position.Top : Position.Bottom;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hoverFade(dimmed) }}>
       <Handle
         type="target"
         position={targetPosition}
@@ -95,11 +70,14 @@ const TransitionNode = ({ data, id }: NodeProps) => {
           <path
             d={hexagonPath}
             fill={theme.palette.background.paper}
-            strokeWidth={strokeWidth}
+            strokeWidth={highlighted ? 1.5 : strokeWidth}
             stroke={
-              theme.palette.mode === 'dark'
-                ? 'rgba(255, 255, 255, 0.12)'
-                : 'rgba(0, 0, 0, 0.12)'
+              // Lit by a hover: a 1.5px border in the accent colour.
+              highlighted
+                ? theme.palette.primary.main
+                : theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, 0.12)'
+                  : 'rgba(0, 0, 0, 0.12)'
             }
           />
         </g>
@@ -115,6 +93,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
             fontSize: 9,
             color: theme.palette.primary.main,
             pointerEvents: 'none',
+            textShadow: highlighted ? HIGHLIGHT_LABEL_SHADOW : undefined,
           }}
           >
             <div style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>

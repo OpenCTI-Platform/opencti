@@ -81,6 +81,26 @@
       allowedVersions: '<8.7',
       description: 'Keep redis docker image at version 8.6.x',
     },
+    {
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'rabbitmq',
+      ],
+      allowedVersions: '<4.4',
+      description: 'Keep rabbitmq docker image at version 4.3.x',
+    },
+    {
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'pgsty/silo',
+      ],
+      versioning: 'regex:^RELEASE\\.(?<patch>\\d{4})-(?<build>\\d{2})-(?<revision>\\d{2})T\\d{2}-\\d{2}-\\d{2}Z$',
+      description: 'Read the date-based RELEASE tags of the silo docker image as patch versions',
+    },
     // sticks to MIT version of apexcharts
     {
       matchDepNames: [
@@ -164,6 +184,34 @@
       ],
       // use 'auto' here so grouped PRs stay up-to-date automatically,
       // since we batch them and want them merge-ready on Monday
+      rebaseWhen: 'auto',
+    },
+    {
+      groupName: 'devDependencies (non-major)',
+      groupSlug: 'dev-dependencies-non-major',
+      description: 'Batch non-major updates of the development tooling docker images with the dev dependencies once a week on Sunday',
+      schedule: [
+        '* * * * 0',
+      ],
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'redislabs/redisinsight',
+        'grafana/pyroscope',
+        'jaegertracing/all-in-one',
+        'otel/opentelemetry-collector-contrib',
+        'prom/prometheus',
+        'grafana/grafana',
+        'keycloak/keycloak',
+        'mokapi/mokapi',
+      ],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'pin',
+        'digest',
+      ],
       rebaseWhen: 'auto',
     },
   ],

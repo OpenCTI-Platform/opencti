@@ -25,7 +25,7 @@ class OpinionDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Entity details')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Opinion')}
               </Label>

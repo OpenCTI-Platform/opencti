@@ -202,7 +202,15 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
           filter: 'blur(60px)',
         }}
       />
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2} sx={{ position: 'relative' }}>
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: 2,
+          position: 'relative',
+        }}
+      >
         <Box>
           <Typography
             variant="h1"

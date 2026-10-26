@@ -3,7 +3,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
@@ -274,7 +274,13 @@ const IngestionCatalogConnectorCreation = ({
         open={open}
         onClose={onClose}
         header={(
-          <Stack direction="row" alignItems="center" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
             <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
               <Button
                 variant="secondary"
@@ -323,7 +329,10 @@ const IngestionCatalogConnectorCreation = ({
           </Stack>
         )}
       >
-        <Stack gap={1}>
+        <Stack sx={{
+          gap: 1,
+        }}
+        >
           <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} isVerified={connector.verified} />
 
           <Formik<ManagedConnectorValues>

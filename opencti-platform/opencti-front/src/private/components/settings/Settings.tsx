@@ -9,7 +9,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import React, { ChangeEvent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
@@ -596,7 +596,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                           settings.platform_whitemark
                           && isEnterpriseEditionValid
                         }
-                        inputProps={{ 'aria-label': t_i18n('Remove Filigran logos') }}
+                        slotProps={{ input: { 'aria-label': t_i18n('Remove Filigran logos') } }}
                         onChange={(_event: ChangeEvent<HTMLInputElement>, value: boolean) => handleSubmitField(
                           'platform_whitemark',
                           value,

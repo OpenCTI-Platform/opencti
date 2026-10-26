@@ -35,7 +35,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -45,11 +45,11 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             />
           </Grid>
           {hasImages && (
-            <Grid item xs={4}>
+            <Grid size={4}>
               <ImageCarousel data={imagesCarousel} />
             </Grid>
           )}
-          <Grid item xs={hasImages ? 8 : 12}>
+          <Grid size={hasImages ? 8 : 12}>
             <IntrusionSetLocations intrusionSet={intrusionSet} />
             <Label
               sx={{ marginTop: 2 }}
@@ -65,8 +65,14 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             {fldt(intrusionSet.last_seen)}
           </Grid>
         </Grid>
-        <Grid container spacing={2} mt={0}>
-          <Grid item xs={6}>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            mt: 2,
+          }}
+        >
+          <Grid size={6}>
             <Label>
               {t_i18n('Resource level')}
             </Label>
@@ -77,13 +83,13 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Score')}
             </Label>
             <ItemScore score={intrusionSet.x_opencti_score} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Primary motivation')}
             </Label>
@@ -94,7 +100,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Goals')}
             </Label>
@@ -102,7 +108,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               list={intrusionSet.goals}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Secondary motivations')}
             </Label>

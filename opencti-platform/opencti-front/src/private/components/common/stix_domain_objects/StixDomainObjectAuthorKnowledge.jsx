@@ -146,7 +146,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, n, classes, stixDomainObjectId, th
   return (
     <div>
       <Grid container={true} spacing={3}>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}
@@ -184,7 +184,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, n, classes, stixDomainObjectId, th
             />
           </Card>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}
@@ -224,7 +224,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, n, classes, stixDomainObjectId, th
             />
           </Card>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Card
             variant="outlined"
             classes={{ root: classes.card }}
@@ -263,7 +263,7 @@ const StixDomainObjectAuthorKnowledge = ({ t, n, classes, stixDomainObjectId, th
         </Grid>
       </Grid>
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Created entities')}
           </Typography>

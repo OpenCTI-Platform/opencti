@@ -167,6 +167,7 @@ const Users = () => {
           paginationOptions={queryPaginationOptions}
           organization={organization}
           variant="controlledDial"
+          allGrantableGroups
         />
       );
     }

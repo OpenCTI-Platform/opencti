@@ -9,7 +9,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 import TextField from '../../../../../../components/TextField';
 import JsonMapperRepresentionAttributeSelectedConfigurations from './JsonMapperRepresentionAttributeSelectedConfigurations';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;

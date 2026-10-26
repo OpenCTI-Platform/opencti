@@ -57,7 +57,12 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
   return (
     <LoginLayout settings={settings}>
-      <Stack gap={1} sx={{ width: 500 }}>
+      <Stack
+        sx={{
+          gap: 1,
+          width: 500,
+        }}
+      >
         <ConsentMessage
           value={checked}
           data={settings}
@@ -72,7 +77,12 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
         {providers.length === 0 && (
           <Card>
-            <Typography textAlign="center" variant="body2">
+            <Typography
+              variant="body2"
+              sx={{
+                textAlign: 'center',
+              }}
+            >
               {t_i18n('No authentication provider available')}
             </Typography>
           </Card>
@@ -81,9 +91,9 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
         {!!loginMessage && (
           <Typography
             ref={loginMessageRef}
-            textAlign="center"
             variant="body2"
             sx={{
+              textAlign: 'center',
               maxHeight: loginMessageMaxHeight,
               overflowY: isLoginMessageOverflowing ? 'auto' : undefined,
             }}

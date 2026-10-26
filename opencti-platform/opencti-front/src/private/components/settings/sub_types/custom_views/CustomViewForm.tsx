@@ -80,7 +80,10 @@ const CustomViewForm = ({
       {({ submitForm, handleReset, isSubmitting, setSubmitting, setFieldValue }) => {
         return (
           <Form>
-            <Stack gap={1}>
+            <Stack sx={{
+              gap: 1,
+            }}
+            >
               <Field
                 component={TextField}
                 innerRef={(node: HTMLInputElement | null) => {

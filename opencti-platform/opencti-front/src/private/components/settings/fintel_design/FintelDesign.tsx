@@ -2,9 +2,9 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useNavigate, useParams } from 'react-router';
 import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
 import FintelDesignFormDrawer, { FintelDesignEditData } from '@components/settings/fintel_design/FintelDesignFormDrawer';
@@ -117,8 +117,23 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             { label: `${fintelDesign.name}`, current: true },
           ]}
         />
-        <Stack direction="row" mb={3} alignItems="center">
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0, mr: 1 }}>
+        <Stack
+          direction="row"
+          sx={{
+            mb: 3,
+            alignItems: 'center',
+          }}
+        >
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: 'center',
+              flex: 1,
+              minWidth: 0,
+              mr: 1,
+            }}
+          >
             <TitleMainEntity>
               {fintelDesign.name}
             </TitleMainEntity>
@@ -129,7 +144,13 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               />
             )}
           </Stack>
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: 'center',
+            }}
+          >
             <FintelDesignPopover
               fintelDesignId={fintelDesign.id}
               isDefault={!!fintelDesign.default}

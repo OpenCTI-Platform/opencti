@@ -307,7 +307,7 @@ const FileManager = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
         <FileImportViewer
           entity={entity}
@@ -448,7 +448,13 @@ const FileManager = ({
                 onClose={resetForm}
                 data-testid="FileManagerExportDialog"
                 title={(
-                  <Stack direction="row" alignItems="center" gap={1}>
+                  <Stack
+                    direction="row"
+                    sx={{
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     {t_i18n('Generate an export')}
                     <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
                       <InfoOutlined fontSize="small" color="primary" />

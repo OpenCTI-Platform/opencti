@@ -8,6 +8,7 @@ import { resolveMissingReferences } from '../../src/graphql/sseMiddleware';
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { queryAsAdminWithSuccess } from '../utils/testQueryHelper';
+import { MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import type { StoreObject } from '../../src/types/store';
 
 const CREATE_REPORT_QUERY = gql`
@@ -49,6 +50,22 @@ const CREATE_CASE_QUERY = gql`
           }
         }
       }
+    }
+  }
+`;
+
+const CREATE_ORGANIZATION_QUERY = gql`
+  mutation OrganizationAdd($input: OrganizationAddInput!) {
+    organizationAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const CREATE_MALWARE_QUERY = gql`
+  mutation MalwareAdd($input: MalwareAddInput!) {
+    malwareAdd(input: $input) {
+      id
     }
   }
 `;
@@ -113,24 +130,81 @@ describe('Should stream parent resolutions correctly working', () => {
     const stixReport = convertStoreToStix_2_1(reportWithRefs as StoreObject);
     const refs = stixRefsExtractor(stixReport);
     const cache = new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 });
-    const missingInstances: any[] = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache);
+    const missingInstances: any[] = [];
+    const isComplete = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache, (resolved: any[]) => {
+      missingInstances.push(...resolved);
+    });
+    expect(isComplete).toBe(true);
     expect(missingInstances.length).toBe(4);
+    const indexOf = (name: string) => missingInstances.findIndex((instance) => instance.stix.name === name);
     // REPORT01
-    expect(missingInstances[0].stix.id).toBe('report--b8c1e232-cfa4-5fe9-b7cc-b631b46d4424');
-    expect(missingInstances[0].stix.name).toBe('Report-01-Resolution');
+    const report01 = missingInstances[indexOf('Report-01-Resolution')];
+    expect(report01.stix.id).toBe('report--b8c1e232-cfa4-5fe9-b7cc-b631b46d4424');
     // INDIVIDUAL (auto created)
-    expect(missingInstances[1].stix.id).toBe('identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91');
-    expect(missingInstances[1].stix.name).toBe('admin');
-    expect(missingInstances[1].message).toBe('creates a Individual `admin`');
+    const individual = missingInstances[indexOf('admin')];
+    expect(individual.stix.id).toBe('identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91');
+    expect(individual.message).toBe('creates a Individual `admin`');
     // CASE02
-    expect(missingInstances[2].stix.name).toBe('Case-02-Resolution');
-    expect(missingInstances[2].message).toBe('creates a Case-Incident `Case-02-Resolution`');
+    expect(missingInstances[indexOf('Case-02-Resolution')].message).toBe('creates a Case-Incident `Case-02-Resolution`');
     // CASE01
-    expect(missingInstances[3].stix.name).toBe('Case-01-Resolution');
-    expect(missingInstances[3].message).toBe('creates a Case-Incident `Case-01-Resolution`');
+    expect(missingInstances[indexOf('Case-01-Resolution')].message).toBe('creates a Case-Incident `Case-01-Resolution`');
+    // Dependencies first: CASE01 needs CASE02, which needs REPORT01 (the cycle is closed by the report itself)
+    expect(indexOf('Report-01-Resolution')).toBeLessThan(indexOf('Case-02-Resolution'));
+    expect(indexOf('Case-02-Resolution')).toBeLessThan(indexOf('Case-01-Resolution'));
     // CLEANUP
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case02ResolutionId } });
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case01ResolutionId } });
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: report01ResolutionId } });
+  });
+
+  it('should load containers for the stream without hydrating their members', async () => {
+    // Self-contained data: an author, a marking and members that are neither of them
+    const author = await queryAsAdminWithSuccess({
+      query: CREATE_ORGANIZATION_QUERY,
+      variables: { input: { name: 'Organization-Base-Data-Resolution' } },
+    });
+    const authorId = author.data.organizationAdd.id;
+    const memberIds: string[] = [];
+    for (let index = 0; index < 2; index += 1) {
+      const malware = await queryAsAdminWithSuccess({
+        query: CREATE_MALWARE_QUERY,
+        variables: { input: { name: `Malware-Base-Data-Resolution-${index}` } },
+      });
+      memberIds.push(malware.data.malwareAdd.id);
+    }
+    const report = await queryAsAdminWithSuccess({
+      query: CREATE_REPORT_QUERY,
+      variables: {
+        input: {
+          name: 'Report-Base-Data-Resolution',
+          published: '2020-02-26T00:51:35.000Z',
+          createdBy: authorId,
+          objectMarking: [MARKING_TLP_GREEN],
+          objects: memberIds,
+        },
+      },
+    });
+    const reportId = report.data.reportAdd.id;
+    const full = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId) as any;
+    const base = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId, { objectsBaseData: true }) as any;
+    expect(full.objects.length).toBeGreaterThan(0);
+    expect(base.objects.length).toBe(full.objects.length);
+    // Members only keep their base data, authors and markings stay complete
+    const fullDataIds = new Set([full.createdBy?.internal_id, ...(full.objectMarking ?? []).map((m: any) => m.internal_id)]);
+    const onlyMembers = base.objects.filter((o: any) => !fullDataIds.has(o.internal_id));
+    expect(onlyMembers.length).toBeGreaterThan(0);
+    onlyMembers.forEach((member: any) => {
+      expect(member.standard_id).toBeDefined();
+      expect(member.created_at).toBeUndefined();
+    });
+    expect(base.objectMarking).toEqual(full.objectMarking);
+    // STIX conversion is unchanged
+    expect(convertStoreToStix_2_1(base as StoreObject)).toEqual(convertStoreToStix_2_1(full as StoreObject));
+    // CLEANUP
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: reportId } });
+    for (let index = 0; index < memberIds.length; index += 1) {
+      await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: memberIds[index] } });
+    }
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: authorId } });
   });
 });

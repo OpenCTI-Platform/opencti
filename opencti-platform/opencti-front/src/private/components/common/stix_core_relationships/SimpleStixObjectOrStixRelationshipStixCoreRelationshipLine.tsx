@@ -6,7 +6,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { AutoFix } from 'mdi-material-ui';
 import { graphql, useFragment } from 'react-relay';
@@ -661,9 +661,20 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <Stack direction="row" gap={0.5} alignItems="center" className={classes.bodyItemText}>
+                <Stack
+                  direction="row"
+                  className={classes.bodyItemText}
+                  sx={{
+                    gap: 0.5,
+                    alignItems: 'center',
+                  }}
+                >
                   <Tooltip title={element.representative?.main}>
-                    <Typography fontSize={13}>{element.representative?.main}</Typography>
+                    <Typography sx={{
+                      fontSize: 13,
+                    }}
+                    >{element.representative?.main}
+                    </Typography>
                   </Tooltip>
                   {element.draftVersion && (<DraftChip />)}
                 </Stack>

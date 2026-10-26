@@ -195,7 +195,12 @@ const AccordionAttackPattern = ({
           '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
         }}
       >
-        <Typography variant="body2" fontSize={10}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontSize: 10,
+          }}
+        >
           {attackPattern.name}
         </Typography>
 

@@ -4,11 +4,11 @@ import Dialog from '@common/dialog/Dialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { ListItemButton, Stack } from '@mui/material';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import PropTypes from 'prop-types';
@@ -1107,7 +1107,13 @@ const StixCyberObservableCreation = ({
           open={speeddial ? open : status.open}
           onClose={speeddial ? handleClose : localHandleClose}
           title={(
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
               {t_i18n('Create an observable')}
               {!isFromBulkRelation && status.type
                 ? (

@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useMemo } from 'react';
 import { Edge, MarkerType, Node } from 'reactflow';
 import type { Theme } from '../../../../../../components/Theme';

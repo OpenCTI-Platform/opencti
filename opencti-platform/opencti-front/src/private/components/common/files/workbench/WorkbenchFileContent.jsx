@@ -4143,7 +4143,14 @@ const WorkbenchFileContentComponent = ({
           { label: fileName, current: true },
         ]}
       />
-      <Stack direction="row" alignItems="center" gap={1} marginBottom={3}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+          marginBottom: 3,
+        }}
+      >
         <TitleMainEntity sx={{ flex: 1 }}>
           {fileName}
         </TitleMainEntity>

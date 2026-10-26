@@ -20,7 +20,8 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import { EMPTY_VALUE } from '../../../../../utils/String';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import NotifierChips from '@components/profile/triggers/NotifierChips';
+import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
@@ -125,18 +126,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.notifiers.width }}
             >
-              {data.notifiers
-                && data.notifiers.length > 0
-                && data.notifiers
-                  .map<React.ReactNode>((n) => (
-                    <div
-                      key={n.id}
-                      style={{ maxWidth: '350px', overflow: 'hidden', textOverflow: 'ellipsis' }}
-                    >
-                      <code>{n.name}</code>
-                    </div>
-                  ))
-                  .reduce((prev, curr) => [prev, ', ', curr])}
+              <NotifierChips notifiers={data.notifiers} />
             </div>
             {data.trigger_type === 'live' && (
               isFilterGroupNotEmpty(filters)
@@ -160,10 +150,12 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
             {data.trigger_type === 'digest' && (
               <Stack
                 direction="row"
-                gap={1}
-                flexWrap="nowrap"
-                overflow="hidden"
-                textOverflow="ellipsis"
+                sx={{
+                  gap: 1,
+                  flexWrap: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
               >
                 <Tag
                   label={`${t_i18n('Period: ')}${data.period}`}

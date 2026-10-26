@@ -210,6 +210,21 @@ export default defineConfig([
     },
   },
 
+  {
+    files: ['src/**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: '@mui/styles', importNames: ['useTheme'], message: 'Import useTheme from @mui/material/styles.' },
+            { name: '@mui/styles/useTheme', message: 'Import useTheme from @mui/material/styles.' },
+          ],
+        },
+      ],
+    },
+  },
+
   // Playwright fixtures and the maintenance scripts run in Node, not in a browser, so
   // they see Node's globals rather than the browser ones the app code is checked against.
   {

@@ -31,7 +31,7 @@ const TEST_PDF_PATH = fileURLToPath(new URL('assets/incidentResponse.test.pdf', 
  * Delete incident response.
  * Check deletion.
  */
-test('Incident Response Creation', { tag: ['@ce', '@group1'] }, async ({ page }) => {
+test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const cardPage = new CardPage(page);
   const leftNavigation = new LeftBarPage(page);
@@ -199,7 +199,7 @@ test('Incident Response Creation', { tag: ['@ce', '@group1'] }, async ({ page })
   await incidentResponseUpdateForm.getCloseButton().click();
 
   await incidentResponseDetailsPage.getEditButton().click();
-  await incidentResponseUpdateForm.incidentDateField.fill('2023-12-25 18:00 PM');
+  await incidentResponseUpdateForm.incidentDateField.fill('2023-12-25 06:00 PM');
   await incidentResponseUpdateForm.getUpdateTitle().click();
   await incidentResponseUpdateForm.getCloseButton().click();
   originalCreationDate = incidentResponseDetailsPage.getTextForHeading('Original creation date', 'December 25, 2023');
@@ -295,7 +295,7 @@ test('Incident Response Creation', { tag: ['@ce', '@group1'] }, async ({ page })
  * Delete incident response by background task.
  * Check deletion.
  */
-test('Incident response live entities creation and relationships', { tag: ['@ce', '@group1'] }, async ({ page }) => {
+test('Incident response live entities creation and relationships', { tag: ['@ce'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   const toolbar = new ToolbarPageModel(page);
   const incidentResponsePage = new IncidentResponsePage(page);

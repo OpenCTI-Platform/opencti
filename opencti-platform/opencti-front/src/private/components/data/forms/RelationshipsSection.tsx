@@ -104,8 +104,9 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
             aria-label={t_i18n('Delete')}
             size="sm"
             onClick={() => {
-              const updatedRelationships = [...formData.relationships];
-              updatedRelationships[relationshipIndex].fields = updatedRelationships[relationshipIndex].fields?.filter((_field, i) => i !== index);
+              const updatedRelationships = formData.relationships.map((relationship, i) => (i === relationshipIndex
+                ? { ...relationship, fields: relationship.fields?.filter((_field, fieldIndex) => fieldIndex !== index) }
+                : relationship));
               updateFormData((prev) => ({ ...prev, relationships: updatedRelationships }));
             }}
             icon={<DeleteOutlined />}
@@ -218,7 +219,13 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
     }
 
     return (
-      <Stack key={relationship.id} className={classes.relationshipGroup} gap={2}>
+      <Stack
+        key={relationship.id}
+        className={classes.relationshipGroup}
+        sx={{
+          gap: 2,
+        }}
+      >
         <div className={classes.fieldHeader}>
           <Typography className={classes.fieldTitle}>
             {t_i18n('Relationship')} {index + 1}

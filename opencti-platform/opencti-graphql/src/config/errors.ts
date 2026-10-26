@@ -190,6 +190,15 @@ export const ValidationError = (message: string, field?: string | number, data?:
   ...(data ?? {}),
 });
 
+// The caller sent an input that the platform cannot use (ex: unknown or malformed filter key).
+// It is a mistake of the client, already reported in the response: not a platform failure.
+export const BAD_USER_INPUT_ERROR = 'BAD_USER_INPUT_ERROR';
+export const BadUserInputError = (reason: string, data?: any) => error(BAD_USER_INPUT_ERROR, reason, {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const RESOURCE_NOT_FOUND_ERROR = 'RESOURCE_NOT_FOUND';
 export const ResourceNotFoundError = (reason?: string, data?: any) => error(RESOURCE_NOT_FOUND_ERROR, reason || 'Resource not found', {
   http_status: 404,
@@ -262,5 +271,10 @@ export const FUNCTIONAL_ERRORS = [
   PASSWORD_REUSED,
   PASSWORD_CHANGE_THROTTLED,
   PASSWORD_RESET_EXPIRED,
+];
+
+// Errors caused by the input of the client, already returned to it: logged at info level
+export const CLIENT_INPUT_ERRORS = [
+  BAD_USER_INPUT_ERROR,
 ];
 // endregion

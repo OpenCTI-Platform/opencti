@@ -7,11 +7,15 @@ const {
   mockUpdateAttribute,
   mockRedisGetConnectorHealthMetrics,
   mockRedisGetConnectorHeartbeat,
+  mockRedisGetConnectorsHeartbeats,
+  mockFindManagedConnectors,
 } = vi.hoisted(() => ({
   mockStoreLoadById: vi.fn(),
   mockUpdateAttribute: vi.fn(),
   mockRedisGetConnectorHealthMetrics: vi.fn(),
   mockRedisGetConnectorHeartbeat: vi.fn(),
+  mockRedisGetConnectorsHeartbeats: vi.fn(),
+  mockFindManagedConnectors: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
@@ -44,12 +48,35 @@ vi.mock('../../../../src/modules/connector/connector-redis', async (importOrigin
   ...(await importOriginal<typeof import('../../../../src/modules/connector/connector-redis')>()),
   redisGetConnectorHealthMetrics: mockRedisGetConnectorHealthMetrics,
   redisGetConnectorHeartbeat: mockRedisGetConnectorHeartbeat,
+  redisGetConnectorsHeartbeats: mockRedisGetConnectorsHeartbeats,
 }));
 
-import { connectorGetUptime, connectorTriggerUpdate, getConnectorJwks, issueConnectorJWT } from '../../../../src/modules/connector/connector-domain';
+vi.mock('../../../../src/modules/connector/connector-repository', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/connector/connector-repository')>()),
+  findManagedConnectors: mockFindManagedConnectors,
+}));
+
+import { connectorGetUptime, connectorsForManagers, connectorTriggerUpdate, getConnectorJwks, issueConnectorJWT } from '../../../../src/modules/connector/connector-domain';
 
 const context = {} as AuthContext;
 const user = { id: 'user-1' } as AuthUser;
+
+describe('connectorsForManagers', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRedisGetConnectorsHeartbeats.mockResolvedValue(new Map());
+  });
+
+  it('should not serve the managed connectors without contract snapshot', async () => {
+    mockFindManagedConnectors.mockResolvedValue([
+      { id: 'connector-1', internal_id: 'connector-1', catalog_id: 'catalog-1', manager_contract: { image: 'opencti/connector-ipinfo', contract_version: '1.2.3' } },
+      { id: 'connector-2', internal_id: 'connector-2', catalog_id: 'ipinfo' },
+    ]);
+
+    const managedConnectors = await connectorsForManagers(context, user);
+    expect(managedConnectors.map((connector) => connector.id)).toEqual(['connector-1']);
+  });
+});
 
 describe('connectorTriggerUpdate', () => {
   const importConnector = { id: 'connector-1', internal_id: 'connector-1', name: 'Import connector', connector_type: 'INTERNAL_IMPORT_FILE' };

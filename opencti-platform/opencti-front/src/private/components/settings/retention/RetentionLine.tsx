@@ -7,7 +7,7 @@ import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { Chip } from '@filigran/design-system';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { RetentionLine_node$key } from '@components/settings/retention/__generated__/RetentionLine_node.graphql';
 import { InformationOutline } from 'mdi-material-ui';

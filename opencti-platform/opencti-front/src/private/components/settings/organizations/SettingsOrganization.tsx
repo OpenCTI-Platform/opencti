@@ -142,7 +142,13 @@ const SettingsOrganization = ({
     .includes(organization.id);
   return (
     <div className={classes.container}>
-      <Stack direction="row" alignItems="center" marginBottom={3}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          marginBottom: 3,
+        }}
+      >
         <TitleMainEntity sx={{ flex: 1 }}>
           {organization.name}
         </TitleMainEntity>
@@ -157,20 +163,20 @@ const SettingsOrganization = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <SettingsOrganizationDetails settingsOrganization={organization} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('More information')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <SettingsOrganizationHiddenTypesChipList
                   organizationData={organization}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Parent organizations')}
                 </Label>
@@ -195,7 +201,7 @@ const SettingsOrganization = ({
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Child organizations')}
                 </Label>
@@ -218,7 +224,7 @@ const SettingsOrganization = ({
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Default dashboard')}
                 </Label>
@@ -255,7 +261,7 @@ const SettingsOrganization = ({
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Grantable groups by organization administrators')}
                 </Label>
@@ -322,7 +328,7 @@ const SettingsOrganization = ({
             <SettingsOrganizationUsers organization={organization} />
           </>
         ) : (
-          <Grid item xs={12}>
+          <Grid size={12}>
             <EnterpriseEdition
               feature={t_i18n('Organization sharing')}
             />
