@@ -1,4 +1,3 @@
-import { generateKeyPairSync } from 'node:crypto';
 import { once } from 'node:events';
 import http from 'node:http';
 import https from 'node:https';
@@ -6,11 +5,11 @@ import net, { type AddressInfo } from 'node:net';
 import type { TLSSocket } from 'node:tls';
 import { Readable } from 'node:stream';
 import { gzipSync } from 'node:zlib';
-import forge from 'node-forge';
 import { ProxyAgent } from 'undici';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { getPlatformHttpProxyAgent } from '../../../src/config/conf';
 import { getHttpClient, getResponseError, HttpClientError } from '../../../src/utils/http-client';
+import { buildSelfSignedCertificate } from '../../utils/selfSignedCertificate';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
@@ -108,25 +107,6 @@ const handleRequest = (req: http.IncomingMessage, res: http.ServerResponse) => {
       res.writeHead(404).end();
     }
   });
-};
-
-const buildSelfSignedCertificate = () => {
-  const { publicKey, privateKey } = generateKeyPairSync('rsa', {
-    modulusLength: 2048,
-    publicKeyEncoding: { type: 'spki', format: 'pem' },
-    privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
-  });
-  const certificate = forge.pki.createCertificate();
-  certificate.publicKey = forge.pki.publicKeyFromPem(publicKey);
-  certificate.serialNumber = '01';
-  certificate.validity.notBefore = new Date(Date.now() - 60_000);
-  certificate.validity.notAfter = new Date(Date.now() + 3_600_000);
-  const attributes = [{ name: 'commonName', value: '127.0.0.1' }];
-  certificate.setSubject(attributes);
-  certificate.setIssuer(attributes);
-  certificate.setExtensions([{ name: 'subjectAltName', altNames: [{ type: 7, ip: '127.0.0.1' }] }]);
-  certificate.sign(forge.pki.privateKeyFromPem(privateKey), forge.md.sha256.create());
-  return { key: privateKey, cert: forge.pki.certificateToPem(certificate) };
 };
 
 const startServer = async (tls?: https.ServerOptions) => {
