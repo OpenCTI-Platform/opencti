@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { discovery as oidcDiscovery, refreshTokenGrant } from 'openid-client';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, logApp, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -12,7 +12,7 @@ import { decryptSmtpSecret } from '../modules/smtpConfiguration/smtpConfiguratio
 const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
 export const ALLOW_EMAIL_REWRITE = isEmptyField(SMTP_FORCED_EMAIL);
 const USE_SSL = booleanConf('smtp:use_ssl', false);
-const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
+const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', TLS_REJECT_UNAUTHORIZED);
 const SMTP_ENABLE = booleanConf('smtp:enabled', true);
 const SMTP_TIMEOUTS = {
   connectionTimeout: Number(conf.get('smtp:connection_timeout') ?? 10000),
@@ -162,7 +162,7 @@ const buildSmtpOptionsFromDb = (dbConfig) => ({
   secure: dbConfig.use_ssl ?? false,
   ...SMTP_TIMEOUTS,
   tls: {
-    rejectUnauthorized: dbConfig.reject_unauthorized ?? false,
+    rejectUnauthorized: dbConfig.reject_unauthorized ?? TLS_REJECT_UNAUTHORIZED,
   },
 });
 

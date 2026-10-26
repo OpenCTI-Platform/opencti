@@ -73,7 +73,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             "OPENCTI_TOKEN", ["opencti", "token"], config
         )
         self.opencti_ssl_verify = get_config_variable(
-            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, default=False
+            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, default=True
         )
         self.opencti_json_logging = get_config_variable(
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, default=True
@@ -122,7 +122,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             "WORKER_LISTEN_API_SSL_VERIFY",
             ["worker", "listen_api_ssl_verify"],
             config,
-            default=False,
+            default=True,
         )
         self.listen_api_http_proxy = get_config_variable(
             "WORKER_LISTEN_API_HTTP_PROXY",

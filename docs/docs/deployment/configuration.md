@@ -63,6 +63,8 @@ Here are the configuration keys, for both containers (environment variables) and
 | http_proxy                                          | HTTP_PROXY                                             |                                                                                                                                    | Proxy URL for HTTP connection (example: http://proxy:80080)                                                                                                                                                                |
 | https_proxy                                         | HTTPS_PROXY                                            |                                                                                                                                    | Proxy URL for HTTPS connection (example: http://proxy:80080)                                                                                                                                                               |
 | no_proxy                                            | NO_PROXY                                               |                                                                                                                                    | Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io)                                                                                                                 |
+| https_proxy_reject_unauthorized                     | HTTPS_PROXY_REJECT_UNAUTHORIZED                        | Inherits `tls:reject_unauthorized`                                                                                                 | Verify the certificate of the HTTPS proxy                                                                                                                                                                                  |
+| tls:reject_unauthorized                             | TLS__REJECT_UNAUTHORIZED                               | true                                                                                                                               | Global TLS certificate verification for every outgoing connection (feeds, synchronizers, SMTP, RabbitMQ, proxy, credentials provider, Filigran services). Each specific `reject_unauthorized` / `ssl_verify` option overrides it when set |
 | trust_proxy_addresses                           | TRUST_PROXY_ADDRESSES                             | Empty list []                                                                                                                      | Array of additional trusted proxy IP addresses or CIDR ranges to add to the default ones (loopback, linklocal, uniquelocal). Used by Express `trust proxy` setting for correct client IP detection behind reverse proxies. |
 | aws:proxy_enabled                                   | AWS__PROXY_ENABLED                                     | false                                                                                                                              | When enabled, routes all AWS SDK traffic (STS and S3) through the HTTP/HTTPS proxy above.                                                                                                                                  |
 | app:https_cert:cookie_secure                        | APP__HTTPS_CERT__COOKIE_SECURE                         | false                                                                                                                              | Set the flag "secure" for session cookies                                                                                                                                                                                  |
@@ -166,7 +168,6 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | xtm:openaev_url                     | XTM__OPENAEV_URL                 |                         | OpenAEV URL                                                                                                  |
 | xtm:openaev_api_url                 | XTM__OPENAEV_API_URL             |                         | If sets, overrides the API base URL used for the OpenAEV integration                                         |
 | xtm:openaev_token                   | XTM__OPENAEV_TOKEN               |                         | OpenAEV token                                                                                                |
-| xtm:openaev_reject_unauthorized     | XTM__OPENAEV_REJECT_UNAUTHORIZED | false                   | Enable TLS certificate check                                                                                 |
 | xtm:openaev_disable_display         | XTM__OPENAEV_DISABLE_DISPLAY     | false                   | Disable OpenAEV posture in the UI                                                                            |
 | xtm:xtmhub_url                      | XTM__XTMHUB_URL                  | https://hub.filigran.io | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |
 | xtm:xtm_one_url                     | XTM__XTM_ONE_URL                 | https://common.xtm1.filigran.io | XTM One URL, as reachable from OpenCTI (an internal address such as `http://xtm-one:4000` in Docker works) |
@@ -246,11 +247,11 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | rabbitmq:use_ssl_key                        | RABBITMQ__USE_SSL_KEY             |               | Path or key content                         |
 | rabbitmq:use_ssl_pfx                        | RABBITMQ__USE_SSL_PFX             |               | Path or pfx content                         |
 | rabbitmq:use_ssl_ca                         | RABBITMQ__USE_SSL_CA              | []            | List of path(s) of the CA certificate(s)    |
-| rabbitmq:use_ssl_passphrase                 | RABBITMQ__SSL_PASSPHRASE          |               | Passphrase for the key certificate          |
-| rabbitmq:use_ssl_reject_unauthorized        | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `false`       | Reject rabbit self signed certificate       |
+| rabbitmq:use_ssl_passphrase                 | RABBITMQ__USE_SSL_PASSPHRASE      |               | Passphrase for the key certificate          |
+| rabbitmq:use_ssl_reject_unauthorized        | RABBITMQ__USE_SSL_REJECT_UNAUTHORIZED | Inherits `tls:reject_unauthorized` | Reject rabbit self signed certificate       |
 | -                                           | -                                 | -             | -                                           |
 | rabbitmq:management_ssl                     | RABBITMQ__MANAGEMENT_SSL          | `false`       | Is the Management Plugin has TLS enabled    |
-| rabbitmq:management_ssl_reject_unauthorized | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `true`        | Reject management self signed certificate   |
+| rabbitmq:management_ssl_reject_unauthorized | RABBITMQ__MANAGEMENT_SSL_REJECT_UNAUTHORIZED | Inherits `tls:reject_unauthorized` | Reject management self signed certificate   |
 
 #### S3 Bucket
 
@@ -277,7 +278,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | smtp:hostname              | SMTP__HOSTNAME              |               | SMTP Server hostname                                                                                                 |
 | smtp:port                  | SMTP__PORT                  | 465           | SMTP Port (25 or 465 for TLS)                                                                                        |
 | smtp:use_ssl               | SMTP__USE_SSL               | `false`       | SMTP over TLS                                                                                                        |
-| smtp:reject_unauthorized   | SMTP__REJECT_UNAUTHORIZED   | `false`       | Enable TLS certificate check                                                                                         |
+| smtp:reject_unauthorized   | SMTP__REJECT_UNAUTHORIZED   | Inherits `tls:reject_unauthorized` | Enable TLS certificate check                                                                                         |
 | smtp:auth_type             | SMTP__AUTH_TYPE             | `basic`       | Authentication type: `basic` or `oauth2`                                                                             |
 | smtp:username              | SMTP__USERNAME              |               | SMTP username (Basic Auth only)                                                                                      |
 | smtp:password              | SMTP__PASSWORD              |               | SMTP password (Basic Auth only)                                                                                      |
@@ -373,7 +374,7 @@ For each dependency, special configuration keys are available to ensure the plat
 
 | Parameter                                                       | Environment variable                                              | Default value | Description                         |
 |:----------------------------------------------------------------|:------------------------------------------------------------------|:--------------|:------------------------------------|
-| `{prefix}`:credentials_provider:https_cert:reject_unauthorized  | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__REJECT_UNAUTHORIZED | `false`       | Reject unauthorized TLS connection  |
+| `{prefix}`:credentials_provider:https_cert:reject_unauthorized  | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__REJECT_UNAUTHORIZED | Inherits `tls:reject_unauthorized` | Reject unauthorized TLS connection  |
 | `{prefix}`:credentials_provider:https_cert:crt                  | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__CRT                 |               | Path to the HTTPS certificate       |
 | `{prefix}`:credentials_provider:https_cert:key                  | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__KEY                 |               | Path to the HTTPS key               |
 | `{prefix}`:credentials_provider:https_cert:ca                   | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__CA                  |               | Path to the HTTPS CA certificate    |
@@ -531,13 +532,14 @@ Can be configured manually using the configuration file `config.yml` or through 
 |:-------------------------------|:-------------------------------|:--------------|:-----------------------------------------------------------|
 | opencti:url                    | OPENCTI_URL                    |               | The URL of the OpenCTI platform                            |
 | opencti:token                  | OPENCTI_TOKEN                  |               | A token of an administrator account with bypass capability |
+| opencti:ssl_verify             | OPENCTI_SSL_VERIFY             | `true`        | Verify the TLS certificate of the OpenCTI platform         |
 | -                              | -                              | -             | -                                                          |
 | mq:use_ssl                     | /                              | /             | Depending of the API configuration (fetch from API)        |
 | mq:use_ssl_ca                  | MQ_USE_SSL_CA                  |               | Path or ca content                                         |
 | mq:use_ssl_cert                | MQ_USE_SSL_CERT                |               | Path or cert content                                       |
 | mq:use_ssl_key                 | MQ_USE_SSL_KEY                 |               | Path or key content                                        |
 | mq:use_ssl_passphrase          | MQ_USE_SSL_PASSPHRASE          |               | Passphrase for the key certificate                         |
-| mq:use_ssl_reject_unauthorized | MQ_USE_SSL_REJECT_UNAUTHORIZED | `false`       | Reject rabbit self signed certificate                      |
+| mq:use_ssl_reject_unauthorized | MQ_USE_SSL_REJECT_UNAUTHORIZED | `true`        | Reject rabbit self signed certificate                      |
 
 ### Worker specific configuration
 

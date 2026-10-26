@@ -167,7 +167,7 @@ In this mode, the platform will use the workers to send the HTTP queries to the 
 
 | Parameter (yml)                           | Environment variable               | Default value | Description                                                      |
 |:------------------------------------------|:-----------------------------------|:--------------|:-----------------------------------------------------------------|
-| worker:listen_api_ssl_verify              | WORKER_LISTEN_API_SSL_VERIFY       |               | Verify SSL certificate when sending data to HTTP mode connectors |
+| worker:listen_api_ssl_verify              | WORKER_LISTEN_API_SSL_VERIFY       | `true`        | Verify SSL certificate when sending data to HTTP mode connectors |
 | worker:listen_api_http_proxy              | WORKER_LISTEN_API_HTTP_PROXY       |               | Use a proxy to send the data to HTTP mode connectors             |
 | worker:listen_api_https_proxy             | WORKER_LISTEN_API_HTTPS_PROXY      |               | Use a proxy to send the data to HTTP mode connectors (SSL).      |
 
