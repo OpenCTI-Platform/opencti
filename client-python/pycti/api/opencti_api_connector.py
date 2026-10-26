@@ -1,19 +1,19 @@
 import json
-import re
 from typing import Any, Dict, List
 
 from pycti.connector.opencti_connector import OpenCTIConnector
 
 # Wording of a platform without errors support, from graphql 16 and graphql 17
-_ERRORS_FIELD_REJECTED = re.compile(
-    r'Field "errors" is not defined by type "ConnectorInfoInput"'
-    r'|type "ConnectorInfoInput" not to include unknown field "errors"'
+_ERRORS_FIELD_REJECTED_MESSAGES = (
+    'Field "errors" is not defined by type "ConnectorInfoInput"',
+    'type "ConnectorInfoInput" not to include unknown field "errors"',
 )
 
 
 def _is_errors_field_rejected(error: ValueError) -> bool:
     # A non 200 response is raised with its raw JSON body, where quotes are escaped
-    return _ERRORS_FIELD_REJECTED.search(str(error).replace('\\"', '"')) is not None
+    reason = str(error).replace('\\"', '"')
+    return any(message in reason for message in _ERRORS_FIELD_REJECTED_MESSAGES)
 
 
 class OpenCTIApiConnector:
