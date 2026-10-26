@@ -503,6 +503,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     call: (config: HttpRequestConfig) => request(config, false),
     get: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'GET' }, true),
     post: async (url: string, data: unknown, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'POST', data }, true),
+    patch: async (url: string, data: unknown, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'PATCH', data }, true),
     delete: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'DELETE' }, true),
     head: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'HEAD' }, true),
   };

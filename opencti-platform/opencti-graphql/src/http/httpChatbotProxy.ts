@@ -295,6 +295,182 @@ export const deleteChatbotSession = async (req: Express.Request, res: Express.Re
   }
 };
 
+// ── Workspaces and conversation edits ───────────────────────────────────
+// XTM One files a user's conversations into workspaces. The chat panel lists,
+// creates, renames and deletes them, and renames a conversation or moves it
+// into (or out of) a workspace through the routes below.
+//
+// XTM One says why it refuses one of these edits in `detail` (the default
+// workspace cannot be deleted, a workspace still holds work items, ...), and
+// the panel shows that reason. So a refusal is answered, as JSON, with the
+// upstream status and the upstream JSON body whole, plus the `{ status, error }`
+// pair every other chatbot route answers with. A failure XTM One did not
+// explain (no answer at all, or a body that is not a JSON object) is answered
+// with a fixed message: an exception's text never reaches the browser.
+
+// Returns the path parameter when it has the UUID shape; answers 400 and
+// returns null otherwise.
+const readUuidParam = (req: Express.Request, res: Express.Response, param: string, label: string): string | null => {
+  const value = String(req.params[param] ?? '');
+  if (!value || !UUID_RE.test(value)) {
+    res.status(400).json({ error: `Invalid ${label} id` });
+    return null;
+  }
+  return value;
+};
+
+// Only a JSON object is forwarded. `express.json` leaves `req.body` undefined
+// for any other content type, so a form or a multipart upload stops here too.
+const readJsonObjectBody = (req: Express.Request, res: Express.Response): Record<string, unknown> | null => {
+  const { body } = req;
+  if (body === undefined || body === null) {
+    res.status(400).json({ error: 'Request body is missing' });
+    return null;
+  }
+  if (typeof body !== 'object' || Array.isArray(body)) {
+    res.status(400).json({ error: 'Request body must be a JSON object' });
+    return null;
+  }
+  return body as Record<string, unknown>;
+};
+
+// A JSON client authenticated as the calling user (cross-platform JWT).
+const getUserJsonClient = async (user: NonNullable<AuthContext['user']>) => {
+  const jwt = await issueXtmJwt(user, XTM_ONE_URL);
+  return getXtmClient('json', {
+    Authorization: `Bearer ${jwt}`,
+    'Content-Type': 'application/json',
+  });
+};
+
+// Forwards the upstream success status. An empty upstream body (a 204) is
+// ended empty, never through `sendStatus` and its textual body.
+const sendUpstreamResponse = (res: Express.Response, response: { status: number; data: unknown }) => {
+  if (response.data !== undefined && response.data !== null && response.data !== '') {
+    res.status(response.status).json(response.data);
+  } else {
+    res.status(response.status).end();
+  }
+};
+
+const XTM_ONE_UNREACHABLE = 'XTM One is unreachable';
+const XTM_ONE_REQUEST_FAILED = 'XTM One could not complete the request';
+
+const sendUpstreamError = (res: Express.Response, e: unknown) => {
+  const httpErr = getResponseError(e);
+  if (!httpErr) {
+    res.status(503).json({ status: 'error', error: XTM_ONE_UNREACHABLE });
+    return;
+  }
+  // A non-JSON upstream body (e.g. an HTML page from a reverse proxy) is not
+  // forwarded: only the status is, with the fixed message.
+  const upstream = httpErr.data && typeof httpErr.data === 'object' && !Array.isArray(httpErr.data)
+    ? httpErr.data as Record<string, unknown>
+    : {};
+  const detail = upstream.detail ?? upstream.message;
+  res.status(httpErr.status).json({ ...upstream, status: 'error', error: detailToText(detail, XTM_ONE_REQUEST_FAILED) });
+};
+
+// ── PATCH /chatbot/sessions/:conversationId ─────────────────────────────
+// Renames a conversation (`title`) and files it into a workspace
+// (`workspace_id`, `null` to take it out of every workspace). XTM One answers
+// 404 for a conversation that is not the user's.
+export const patchChatbotSession = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const conversationId = readUuidParam(req, res, 'conversationId', 'conversation');
+    if (!conversationId) return;
+    const body = readJsonObjectBody(req, res);
+    if (!body) return;
+    const httpClient = await getUserJsonClient(context.user);
+    const response = await httpClient.patch(`/api/v1/platform/chat/sessions/${conversationId}`, body, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    sendUpstreamResponse(res, response);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot session update', { cause: e });
+    sendUpstreamError(res, e);
+  }
+};
+
+// ── GET /chatbot/workspaces ─────────────────────────────────────────────
+// The user's workspaces. XTM One answers 403 when it is not licensed.
+export const getChatbotWorkspaces = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const httpClient = await getUserJsonClient(context.user);
+    const response = await httpClient.get('/api/v1/platform/chat/workspaces', {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    sendUpstreamResponse(res, response);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot workspaces list', { cause: e });
+    sendUpstreamError(res, e);
+  }
+};
+
+// ── POST /chatbot/workspaces ────────────────────────────────────────────
+// Creates a workspace (`{ name, description? }`); XTM One answers 201.
+export const postChatbotWorkspace = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const body = readJsonObjectBody(req, res);
+    if (!body) return;
+    const httpClient = await getUserJsonClient(context.user);
+    const response = await httpClient.post('/api/v1/platform/chat/workspaces', body, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    sendUpstreamResponse(res, response);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot workspace creation', { cause: e });
+    sendUpstreamError(res, e);
+  }
+};
+
+// ── PATCH /chatbot/workspaces/:workspaceId ──────────────────────────────
+// Renames a workspace or changes its description.
+export const patchChatbotWorkspace = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const workspaceId = readUuidParam(req, res, 'workspaceId', 'workspace');
+    if (!workspaceId) return;
+    const body = readJsonObjectBody(req, res);
+    if (!body) return;
+    const httpClient = await getUserJsonClient(context.user);
+    const response = await httpClient.patch(`/api/v1/platform/chat/workspaces/${workspaceId}`, body, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    sendUpstreamResponse(res, response);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot workspace update', { cause: e });
+    sendUpstreamError(res, e);
+  }
+};
+
+// ── DELETE /chatbot/workspaces/:workspaceId ─────────────────────────────
+// Deletes a workspace; XTM One answers 204, or 400 / 409 with the reason it
+// refuses (the default workspace, a workspace still holding work items).
+export const deleteChatbotWorkspace = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const workspaceId = readUuidParam(req, res, 'workspaceId', 'workspace');
+    if (!workspaceId) return;
+    const httpClient = await getUserJsonClient(context.user);
+    const response = await httpClient.delete(`/api/v1/platform/chat/workspaces/${workspaceId}`, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    sendUpstreamResponse(res, response);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot workspace delete', { cause: e });
+    sendUpstreamError(res, e);
+  }
+};
+
 // ── POST /chatbot/messages/steer ────────────────────────────────────────
 // Mid-run steering: injects a user message into the running agent loop of
 // the conversation. Upstream status codes are forwarded as-is — the
