@@ -64,6 +64,8 @@ export const resolveMappedStatusId = async (
  *
  * `closingReason` is written in the same update on domain objects: a value sets it, `null` clears
  * it, `undefined` leaves it untouched (creation and read-repair are not transitions).
+ *
+ * Returns false when the write failed, so a caller can report a closing reason that was not written.
  */
 export const projectWorkflowState = async (
   context: AuthContext,
@@ -72,7 +74,7 @@ export const projectWorkflowState = async (
   stateId: string,
   scope: StatusScope,
   closingReason?: string | null,
-): Promise<void> => {
+): Promise<boolean> => {
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
   const entityType = entity.entity_type;
@@ -90,12 +92,12 @@ export const projectWorkflowState = async (
     if (closingReason !== undefined && schemaAttributesDefinition.getAttribute(entityType, 'x_opencti_closing_reason')) {
       inputs.push({ key: 'x_opencti_closing_reason', value: [closingReason] });
     }
-    if (inputs.length === 0) {
-      return;
+    if (inputs.length > 0) {
+      await updateAttribute(executionContext, executionUser, entityId, entityType, inputs, { workflowInternalWrite: true });
     }
-
-    await updateAttribute(executionContext, executionUser, entityId, entityType, inputs, { workflowInternalWrite: true });
+    return true;
   } catch (error) {
     logApp.warn('[OPENCTI-MODULE] Failed to project workflow state onto entity', { cause: error, entityType, scope, stateId, entityId });
+    return false;
   }
 };
