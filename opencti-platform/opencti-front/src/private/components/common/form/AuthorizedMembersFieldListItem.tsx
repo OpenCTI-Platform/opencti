@@ -10,7 +10,7 @@ import { Delete, InfoOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { IconButton as LibIconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import React from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';
 import SelectField from '../../../../components/fields/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
