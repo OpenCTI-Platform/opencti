@@ -28,12 +28,6 @@ export interface Owner {
 
 type OwnerFields = Omit<Owner, 'key' | 'state'>;
 
-// A key another owner already holds: `claimant` (an owner_id) lost it to `holder`
-export interface ClaimConflict { key: string; claimant: string; holder: Owner }
-
-interface BulkCreateResult { status: number; error?: unknown }
-
-// The owner fields naming a stored element
 export const ownerFieldsOf = (element: Record<string, any>): OwnerFields => ({
   owner_id: element.internal_id,
   owner_index: element._index,
@@ -53,9 +47,7 @@ export const lookupKeys = async (keys: string[]): Promise<Map<string, Owner>> =>
   const uniqueKeys = [...new Set(keys)];
   for (let offset = 0; offset < uniqueKeys.length; offset += LOOKUP_BATCH_SIZE) {
     const batch = uniqueKeys.slice(offset, offset + LOOKUP_BATCH_SIZE);
-    const response: { docs: { found: boolean; _source: Owner }[] } = await elRawMget({
-      docs: batch.map((key) => ({ _index: IDENTITY_INDEX, _id: deterministicId(key) })),
-    });
+    const response: { docs: { found: boolean; _source: Owner }[] } = await elRawMget({ docs: batch.map((key) => ({ _index: IDENTITY_INDEX, _id: deterministicId(key) })) });
     response.docs.forEach((doc, position) => {
       if (doc.found) owners.set(batch[position], doc._source);
     });
@@ -63,8 +55,9 @@ export const lookupKeys = async (keys: string[]): Promise<Map<string, Owner>> =>
   return owners;
 };
 
-// Claim keys for an owner with `create`: returns the keys another owner already holds (a lost race)
-export const claimKeys = async (claims: { keys: string[]; owner: OwnerFields }[]): Promise<ClaimConflict[]> => {
+// Claim keys for an owner with `create`: returns the keys another owner already holds (a lost race): `claimant`
+// (an owner_id) lost `key` to `holder`
+export const claimKeys = async (claims: { keys: string[]; owner: OwnerFields }[]) => {
   // One claim per key, in the order of the bulk items
   const keyClaims = claims.flatMap(({ keys, owner }) => keys.map((key) => ({ key, owner })));
   if (keyClaims.length === 0) return [];
@@ -73,7 +66,7 @@ export const claimKeys = async (claims: { keys: string[]; owner: OwnerFields }[]
     { ...owner, key, state: 'live' },
   ]);
   const response = await elRawBulk(lockfreeContext, { refresh: false, body });
-  const results: BulkCreateResult[] = response.items.map((item: { create: BulkCreateResult }) => item.create);
+  const results: { status: number; error?: unknown }[] = response.items.map((item: any) => item.create);
   const failed = results.find((result) => result.status >= 400 && result.status !== CONFLICT);
   if (failed) throw new Error(`Identity claim failed: ${JSON.stringify(failed.error)}`);
   const conflicts = keyClaims.filter((_, position) => results[position].status === CONFLICT);

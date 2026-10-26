@@ -18,10 +18,6 @@ import { claimKeys, identityKeys, ownerFieldsOf, setKeys } from './identity';
 import { mgetRaw } from './load';
 import { appendPairs, pairEntryOf, pairKey } from './pairs';
 
-const ENTITY_INDICES = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_META_OBJECTS];
-const RELATIONSHIP_INDICES = [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
-const DEFAULT_PAGE_SIZE = 2000;
-
 type Claim = Parameters<typeof claimKeys>[0][number];
 
 // Every document of the index, page by page in internal id order (search_after); returns how many were scanned
@@ -69,17 +65,17 @@ const claimTakingOverStale = async (claims: Claim[]) => {
 };
 
 export const backfillIdentities = async (opts: { pageSize?: number } = {}) => {
-  const size = opts.pageSize ?? DEFAULT_PAGE_SIZE;
+  const size = opts.pageSize ?? 2000;
   const started = Date.now();
   let entities = 0;
   let relationships = 0;
   let staleTakenOver = 0;
-  for (const index of ENTITY_INDICES) {
+  for (const index of [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_META_OBJECTS]) {
     entities += await scan(index, size, async (elements) => {
       staleTakenOver += await claimTakingOverStale(elements.map(entityClaim));
     });
   }
-  for (const index of RELATIONSHIP_INDICES) {
+  for (const index of [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS]) {
     relationships += await scan(index, size, async (elements) => {
       staleTakenOver += await claimTakingOverStale(elements.map(relationshipClaim));
       await appendPairs(elements.map((relationship) => ({
@@ -89,6 +85,5 @@ export const backfillIdentities = async (opts: { pageSize?: number } = {}) => {
     });
   }
   const seconds = (Date.now() - started) / 1000;
-  const perSecond = Math.round((entities + relationships) / Math.max(seconds, 0.001));
-  return { entities, relationships, stale_taken_over: staleTakenOver, seconds, per_second: perSecond };
+  return { entities, relationships, stale_taken_over: staleTakenOver, seconds, per_second: Math.round((entities + relationships) / Math.max(seconds, 0.001)) };
 };

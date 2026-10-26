@@ -169,19 +169,16 @@ type Applied = { status: 'conflict' } | { status: 'updated' | 'unchanged'; eleme
 
 type ApplyOptions = WriteOptions & { upsert?: boolean; bypassIndividualUpdate?: boolean };
 
-// Meta relationships of `relationType` from the object to `toIds` to delete; `targets` are the elements they point to
-interface RefRemoval { relationType: string; toIds: string[]; targets: any[] }
-
 // The update of the object's refs: the instance and the event inputs it changes, the meta relationships it writes
+// (to delete: those of `relationType` to `toIds`, `targets` being the elements they point to)
 interface RefUpdate {
   initial: any;
   instance: Record<string, any>;
   updatedInputs: any[];
   relationsToCreate: any[];
-  relationsToDelete: RefRemoval[];
+  relationsToDelete: { relationType: string; toIds: string[]; targets: any[] }[];
 }
 
-// One multiple ref of the object, as an input changes it
 interface MultipleRefChange {
   key: string;
   relationType: string;
@@ -318,13 +315,7 @@ const applyMultipleRef = async (context: AuthContext, user: AuthUser, settings: 
   if (relationType === RELATION_OBJECT_MARKING) {
     ({ operation, refs } = await handleMarkingOperations(context, update.initial.objectMarking, refs, operation));
   }
-  const change: MultipleRefChange = {
-    key,
-    relationType,
-    refs,
-    currentObjects: update.instance[key] ?? [],
-    currentIds: [].concat(update.initial[relationType] ?? []),
-  };
+  const change: MultipleRefChange = { key, relationType, refs, currentObjects: update.instance[key] ?? [], currentIds: [].concat(update.initial[relationType] ?? []) };
   if (operation === UPDATE_OPERATION_REPLACE) replaceRefs(update, change);
   else if (operation === UPDATE_OPERATION_ADD) addRefs(update, change);
   else if (operation === UPDATE_OPERATION_REMOVE) removeRefs(update, change);
@@ -383,13 +374,6 @@ const readFullDocument = async (raw: RawDoc) => {
   return full;
 };
 
-// The entity type at the other end of a changed ref, from a created relationship or a removed target
-const refTargetType = (update: RefUpdate, relationType: string) => {
-  const created = update.relationsToCreate.find((relation) => relation.relationship_type === relationType);
-  const sample = created ?? update.relationsToDelete.find((removal) => removal.relationType === relationType)?.targets[0];
-  return sample?.to?.entity_type ?? sample?.entity_type;
-};
-
 // The new version: attributes as elUpdateElement stores them (replace, null removes), refs as rel_* lists
 const buildNewSource = async (full: RawDoc, update: RefUpdate, impactedInputs: any[]) => {
   const { initial, instance } = update;
@@ -402,8 +386,10 @@ const buildNewSource = async (full: RawDoc, update: RefUpdate, impactedInputs: a
     });
   }
   R.uniq(changedRelationTypes(update)).forEach((relationType) => {
-    const toType = refTargetType(update, relationType);
-    // Only the side that lists the relationship stores it
+    // Only the side that lists the relationship stores it; the other end's type from a created relationship or a removed target
+    const created = update.relationsToCreate.find((relation) => relation.relationship_type === relationType);
+    const sample = created ?? update.relationsToDelete.find((removal) => removal.relationType === relationType)?.targets[0];
+    const toType = sample?.to?.entity_type ?? sample?.entity_type;
     if (toType && !isImpactedTypeAndSide(relationType, initial.entity_type, toType, ROLE_FROM)) return;
     const value = instance[relationType];
     const ids = value === null || value === undefined ? [] : [].concat(value);
@@ -426,8 +412,7 @@ const writeOnReadVersion = async (raw: RawDoc, source: Record<string, any>, opts
   return true;
 };
 
-// The settler work of removed refs on their targets
-const removedRefTasks = (initial: any, relationsToDelete: RefRemoval[]): Task[] => relationsToDelete.flatMap((removal) => removal.targets
+const removedRefTasks = (initial: any, relationsToDelete: RefUpdate['relationsToDelete']): Task[] => relationsToDelete.flatMap((removal) => removal.targets
   .filter(Boolean)
   .filter((target: any) => isImpactedTypeAndSide(removal.relationType, initial.entity_type, target.entity_type, ROLE_TO))
   .map((target: any): EndpointTask => ({
@@ -441,7 +426,6 @@ const removedRefTasks = (initial: any, relationsToDelete: RefRemoval[]): Task[] 
     side: 'to',
   })));
 
-// Meta relationships of the changed refs: deleted, created, and the settler work on their targets
 const writeRefRelations = async (update: RefUpdate, counters: Counters, opts: WriteOptions) => {
   const { initial } = update;
   for (const removal of update.relationsToDelete) {
@@ -455,20 +439,6 @@ const writeRefRelations = async (update: RefUpdate, counters: Counters, opts: Wr
   await enqueue([...removedTasks, ...metaTargetTasks(metas, 'add')]);
 };
 
-const cleanupRemovedEmbeddedImages = async (context: AuthContext, user: AuthUser, initial: any, updated: any) => {
-  const removedPaths = findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, { entityType: initial.entity_type, entityId: initial.internal_id });
-  for (const storagePath of removedPaths) {
-    await deleteFile(context, user, storagePath, { forceDelete: true })
-      .catch((err: any) => logApp.warn('[LOCKFREE] Unable to cleanup removed embedded image', { storagePath, cause: err }));
-  }
-};
-
-// A security coverage follows the refs of the object it covers
-const touchSecurityCoverage = async (context: AuthContext, user: AuthUser, instance: Record<string, any>) => {
-  const { element: securityCoverage } = await updateAttribute(context, user, instance[RELATION_COVERED], ENTITY_TYPE_SECURITY_COVERAGE, [{ key: 'modified', value: [now()] }], { noEnrich: true });
-  await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage as any);
-};
-
 const applyUpdate = async (
   context: AuthContext, user: AuthUser, initial: any, raw: RawDoc, inputs: any[], counters: Counters, opts: ApplyOptions,
 ): Promise<Applied> => {
@@ -477,7 +447,6 @@ const applyUpdate = async (
   let pure = true;
   if (await checkIndividualUpdate(context, initial, opts)) pure = false;
   if (updates.length === 0) return { status: 'unchanged', element: initial, pure };
-  // Access, then embedded images moved to files, as today
   addImpliedInputs(initial, updates);
   if (!validateUserAccessOperation(user, initial, requiredAccessOperation(updates), null)) throw ForbiddenAccess();
   const markingIds = (initial.objectMarking ?? []).map((marking: any) => marking.internal_id);
@@ -509,7 +478,6 @@ const applyUpdate = async (
   if (!full) return { status: 'conflict' };
   const source = await buildNewSource(full, update, impactedInputs);
   if (!(await writeOnReadVersion(raw, source, opts))) return { status: 'conflict' };
-  // After the write: name in relationships, refs, sharing, keys, cleanup, event
   if (source.name && raw._source.name !== source.name && updatedInstance.base_type === 'ENTITY') {
     await elUpdateConnectionsOfElement(initial.internal_id, { name: source.name });
   }
@@ -521,7 +489,11 @@ const applyUpdate = async (
   const keyOwner = { owner_id: initial.internal_id, owner_index: raw._index, owner_type: initial.entity_type, owner_standard_id: updatedInstance.standard_id };
   await setKeys(newKeys.map((key: string) => ({ key, owner: keyOwner })));
   if (updatedInputs.some((input: any) => MARKDOWN_FIELD_KEY_SET.has(input.key))) {
-    await cleanupRemovedEmbeddedImages(context, user, initial, updated);
+    const removedPaths = findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, { entityType: initial.entity_type, entityId: initial.internal_id });
+    for (const storagePath of removedPaths) {
+      await deleteFile(context, user, storagePath, { forceDelete: true })
+        .catch((err: any) => logApp.warn('[LOCKFREE] Unable to cleanup removed embedded image', { storagePath, cause: err }));
+    }
   }
   if (updatedInputs.length === 0) return { status: 'updated', element: updatedInstance };
   const changes = await buildChanges(context, user, updatedInstance.entity_type, updatedInputs);
@@ -529,8 +501,10 @@ const applyUpdate = async (
   const { pir_ids } = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
   const event = await storeUpdateEvent(context, user, initial, updatedInstance as any, changes, { related_restrictions: relatedRestrictions, pir_ids } as any);
   add(counters, 'events_update');
+  // A security coverage follows the refs of the object it covers
   if (isRefUpdate && updatedInstance[RELATION_COVERED] && updatedInstance.entity_type !== ENTITY_TYPE_SECURITY_COVERAGE) {
-    await touchSecurityCoverage(context, user, updatedInstance);
+    const { element: securityCoverage } = await updateAttribute(context, user, updatedInstance[RELATION_COVERED], ENTITY_TYPE_SECURITY_COVERAGE, [{ key: 'modified', value: [now()] }], { noEnrich: true });
+    await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage as any);
   }
   const workflowStatusChanged = updatedInputs.some((input: any) => input.key === 'x_opencti_workflow_id');
   return { status: 'updated', element: updatedInstance, event, workflowStatusChanged };

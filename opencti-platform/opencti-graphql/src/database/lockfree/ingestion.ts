@@ -16,7 +16,7 @@ import { isStixSightingRelationship } from '../../schema/stixSightingRelationshi
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY } from '../../schema/stixRefRelationship';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { claimKeys, identityKeys, type Owner, setKeys } from './identity';
+import { claimKeys, identityKeys, ownerFieldsOf, setKeys } from './identity';
 import { loadByAnyIds, mgetRaw, toElements } from './load';
 import { userFilterStoreElements } from '../../utils/access';
 import { appendPairs, pairEntryOf, pairKey, removeFromPair } from './pairs';
@@ -53,8 +53,6 @@ const batchCollectorOf = (context: AuthContext): WriteCollector | undefined => (
 // Meta objects written lock-free too: plain objects with an id from their content, created with each object that
 // carries them (labels and markings keep today's path)
 const LOCKFREE_META_TYPES = [ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE];
-const isLockFreeType = (type: string) => isStixCoreObject(type) || LOCKFREE_META_TYPES.includes(type)
-  || isStixCoreRelationship(type) || isStixSightingRelationship(type);
 
 // Whether a create goes through the lock-free path: a worker import or a batch, outside drafts
 export const isLockFreeIngestion = async (context: AuthContext, user: AuthUser, type: string) => {
@@ -62,7 +60,7 @@ export const isLockFreeIngestion = async (context: AuthContext, user: AuthUser, 
   const isImport = context.workId || batchCollectorOf(context) !== undefined;
   if (!isImport || isMarked(context, 'lockfree_bypass')) return false;
   if (getDraftContext(context, user)) return false;
-  if (!isLockFreeType(type)) return false;
+  if (!isStixCoreObject(type) && !LOCKFREE_META_TYPES.includes(type) && !isStixCoreRelationship(type) && !isStixSightingRelationship(type)) return false;
   return isIdentityBackfillDone();
 };
 
@@ -129,7 +127,6 @@ export const importLockFree = async (
 };
 
 // region identity index in step with today's path
-const ownerOf = (element: any) => ({ owner_id: element.internal_id, owner_index: element._index, owner_type: element.entity_type, owner_standard_id: element.standard_id });
 const isRelationshipElement = (element: any) => isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type);
 const keysOf = (element: any): string[] => {
   if (isRelationshipElement(element)) {
@@ -163,11 +160,11 @@ export const syncIdentityOnCreate = async (context: AuthContext, user: AuthUser,
   if (!isSynced(context, user, element)) return;
   await safely('create', element, async () => {
     const isRelationship = isRelationshipElement(element);
-    const conflicts: { key: string; holder: Owner }[] = await claimKeys([{ keys: keysOf(element), owner: ownerOf(element) }]);
+    const conflicts = await claimKeys([{ keys: keysOf(element), owner: ownerFieldsOf(element) }]);
     const otherHolders = conflicts.filter((conflict) => conflict.holder.owner_id !== element.internal_id);
     const conflictPerHolder = R.uniqBy((conflict) => conflict.holder.owner_id, otherHolders);
     if (conflictPerHolder.length > 0 && !isRelationship) {
-      const loser = ownerOf(element);
+      const loser = ownerFieldsOf(element);
       await enqueue(conflictPerHolder.map((conflict): Task => ({ kind: 'reconcile', loser: { ...loser, key: conflict.key, state: 'live' }, winner: conflict.holder })));
     }
     if (isRelationship) {
@@ -180,7 +177,7 @@ export const syncIdentityOnCreate = async (context: AuthContext, user: AuthUser,
 export const syncIdentityOnUpdate = async (context: AuthContext, user: AuthUser, element: any) => {
   if (!isSynced(context, user, element)) return;
   await safely('update', element, async () => {
-    await claimKeys([{ keys: keysOf(element), owner: ownerOf(element) }]);
+    await claimKeys([{ keys: keysOf(element), owner: ownerFieldsOf(element) }]);
   });
 };
 
@@ -190,7 +187,7 @@ export const syncIdentityOnMerge = async (context: AuthContext, user: AuthUser, 
   await safely('merge', target, async () => {
     const sourceKeys = sources.flatMap((source) => keysOf({ ...source, entity_type: source.entity_type ?? target.entity_type }));
     const keys = R.uniq([...keysOf(target), ...sourceKeys]);
-    await setKeys(keys.map((key) => ({ key, owner: ownerOf(target) })));
+    await setKeys(keys.map((key) => ({ key, owner: ownerFieldsOf(target) })));
   });
 };
 
@@ -199,7 +196,7 @@ export const syncIdentityOnMerge = async (context: AuthContext, user: AuthUser, 
 export const syncIdentityOnDelete = async (context: AuthContext, user: AuthUser, element: any) => {
   if (!isSynced(context, user, element)) return;
   await safely('delete', element, async () => {
-    await setKeys(keysOf(element).map((key) => ({ key, owner: ownerOf(element), state: 'deleted' as const })));
+    await setKeys(keysOf(element).map((key) => ({ key, owner: ownerFieldsOf(element), state: 'deleted' as const })));
     if (isRelationshipElement(element) && element.fromId && element.toId) {
       await removeFromPair(pairKey(element.entity_type, element.fromId, element.toId), element.internal_id);
     }

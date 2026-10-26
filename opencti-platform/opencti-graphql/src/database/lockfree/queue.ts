@@ -25,10 +25,7 @@ export interface QueuedTask { partition: number; id: string; task: Task }
 // A stream entry as Redis returns it: [entry id, [field, value, field, value...]]
 type StreamEntry = [string, string[]];
 
-// The first 8 hex digits of the id, modulo the partition count
 const partitionOf = (id: string) => parseInt(id.replace(/-/g, '').slice(0, 8), 16) % PARTITIONS;
-
-// The entity a task works on decides its partition
 const taskPartition = (task: Task) => {
   if (task.kind === 'endpoint') return partitionOf(task.endpoint);
   if (task.kind === 'reconcile') return partitionOf(task.loser.owner_id);

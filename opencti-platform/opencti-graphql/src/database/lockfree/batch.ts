@@ -18,12 +18,10 @@ const FLUSHES_AT_ONCE = 4; // chunk writes in flight, as parallel writers
 // A create held by the collector until its chunk is written; settled with the stored element or the error
 interface PendingCreate { user: AuthUser; type: string; input: Record<string, any>; resolve: (element: any) => void; reject: (error: unknown) => void }
 
-type StoredOutcome = { element: any; error?: undefined } | { element?: undefined; error: unknown };
-
 // The elements as stored, read by id in one realtime get, as createEntity / createRelation return them: without
 // the rel_* lists, as today's loads (a busy object lists thousands of ids there), and without the raw document the
 // lock-free reads attach (both would go out with every notification of the element)
-const storedElements = async (results: ItemResult[], types: string[]): Promise<StoredOutcome[]> => {
+const storedElements = async (results: ItemResult[], types: string[]) => {
   const refs = results.flatMap((result, i) => (result.id ? [{ id: result.id, index: inferIndexFromConceptType(types[i]) }] : []));
   const raws = await mgetRaw(refs, { light: true });
   const found = await toElements([...raws.values()]);
@@ -94,20 +92,12 @@ export class WriteCollector {
     try {
       const entities = this.entities.splice(0, MAX_CHUNK);
       const relations = this.relations.splice(0, MAX_CHUNK);
-      await this.write(entities, (user, creates) => writeEntityChunk(
-        this.writeContext(),
-        user,
-        creates.map(({ type, input }) => ({ type, input })),
-        newCounters(),
-        { missingEnds: 'error' },
-      ));
-      await this.write(relations, (user, creates) => writeRelationChunk(
-        this.writeContext(),
-        user,
-        creates.map(({ input }) => input),
-        newCounters(),
-        { missingEnds: 'error' },
-      ));
+      await this.write(entities, (user, creates) => {
+        return writeEntityChunk(this.writeContext(), user, creates.map(({ type, input }) => ({ type, input })), newCounters(), { missingEnds: 'error' });
+      });
+      await this.write(relations, (user, creates) => {
+        return writeRelationChunk(this.writeContext(), user, creates.map(({ input }) => input), newCounters(), { missingEnds: 'error' });
+      });
     } finally {
       this.flushing -= 1;
     }
@@ -178,13 +168,12 @@ const parseMutation = (schema: GraphQLSchema, query: string): ParsedMutation => 
 };
 
 // Parsed mutations by query text: a batch sends the same few queries over and over
-const MAX_PARSED_MUTATIONS = 1000;
 const parsedMutations = new Map<string, ParsedMutation>();
 const mutationOf = (schema: GraphQLSchema, query: string) => {
   const cached = parsedMutations.get(query);
   if (cached) return cached;
   const parsed = parseMutation(schema, query);
-  if (parsedMutations.size > MAX_PARSED_MUTATIONS) parsedMutations.clear();
+  if (parsedMutations.size > 1000) parsedMutations.clear();
   parsedMutations.set(query, parsed);
   return parsed;
 };
@@ -238,8 +227,6 @@ const responseResult = (response: any, field: string): OperationResult => {
   return { status: 'done', id: response.data?.[field]?.id };
 };
 
-const thrownResult = (e: any): OperationResult => ({ status: 'error', error: e?.message ?? String(e), code: e?.extensions?.code ?? e?.name });
-
 export const executeOperations = async (context: AuthContext, schema: GraphQLSchema, operations: Operation[]): Promise<OperationResult[]> => {
   const collector = new WriteCollector(context);
   const batchContext = { ...context, lockfree_batch: collector } as AuthContext;
@@ -267,8 +254,8 @@ export const executeOperations = async (context: AuthContext, schema: GraphQLSch
       const result = responseResult(response, mutation.field);
       results[index] = result;
       if (operation.ref && result.id) realIds.set(operation.ref, result.id);
-    } catch (e) {
-      results[index] = thrownResult(e);
+    } catch (e: any) {
+      results[index] = { status: 'error', error: e?.message ?? String(e), code: e?.extensions?.code ?? e?.name };
     } finally {
       collector.exit();
     }

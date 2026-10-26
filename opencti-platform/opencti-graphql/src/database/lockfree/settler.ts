@@ -27,10 +27,6 @@ import { ackTasks, type EndpointTask, PARTITIONS, type QueuedTask, readTasks, ty
 import { add, type Counters, newCounters } from './store';
 import { deleteMetaRelations, upsertLockFree } from './upsert';
 
-const TASKS_PER_ROUND = 20000;
-const DEFAULT_CLAIM_IDLE_MS = 30000;
-const DEFAULT_PENDING_TTL_MS = 24 * 3600 * 1000;
-const DEFAULT_PARALLEL_BULKS = 4;
 const BULK_LINES = 2000; // lines per update bulk (two per updated document)
 const RETRY_ON_CONFLICT = 20;
 const APPLIED_TTL_SECONDS = 7 * 24 * 3600;
@@ -62,7 +58,6 @@ const recordApplied = async (tasks: EndpointTask[]) => {
   await pipeline.exec();
 };
 
-// Bulk lines removing ids from rel_* lists of one document
 const REMOVE_SCRIPT = 'for (r in params.remove) { if (ctx._source[r.field] != null) { ctx._source[r.field].removeIf(x -> r.ids.contains(x)); } }';
 const removeIdsLines = (index: string, id: string, remove: { field: string; ids: string[] }[]) => [
   { update: { _index: index, _id: id, retry_on_conflict: RETRY_ON_CONFLICT } },
@@ -93,12 +88,6 @@ const endpointUpdateLines = (index: string, endpointId: string, tasks: EndpointT
   return lines;
 };
 
-// A bulk item failed, other than on a document that no longer exists
-const isBulkFailure = (item: any) => {
-  const { status } = Object.values(item)[0] as any;
-  return status >= 300 && status !== 404;
-};
-
 // A relationship with its ends, for its stream event: the ends as stored, or rebuilt from their tombstone
 const withEnds = async (relation: any) => {
   const full = await loadWithRefs(lockfreeContext, SYSTEM_USER, relation);
@@ -112,9 +101,6 @@ const withEnds = async (relation: any) => {
   const to = full.to ?? stub(relation.toId, '_to');
   return { ...full, from, to, fromType: from.entity_type, toType: to.entity_type };
 };
-
-// Fields of a duplicate relationship not merged into the one kept: its identity, ends and raw document
-const NOT_MERGED_FIELDS = ['_index', '_id', 'id', 'internal_id', 'standard_id', 'i_raw', 'connections', 'from', 'to', 'fromId', 'toId'];
 
 interface SettlerOptions {
   partitions?: number[]; // queue partitions this settler owns (default: all)
@@ -142,7 +128,7 @@ export class Settler {
   async flush(): Promise<number> {
     const bench = benchTimer('lf_settle');
     add(this.counters, 'flushes');
-    const tasks = await readTasks(this.partitions, this.consumer, TASKS_PER_ROUND, this.opts.claimIdleMs ?? DEFAULT_CLAIM_IDLE_MS);
+    const tasks = await readTasks(this.partitions, this.consumer, 20000, this.opts.claimIdleMs ?? 30000);
     bench.step('read');
     const done = await this.applyReconcileTasks(tasks);
     bench.step('reconcile');
@@ -176,7 +162,7 @@ export class Settler {
     const outcome = await processPending(async (userId, inputs) => {
       const user = await resolveUser(userId);
       await writePending(lockfreeContext, user, inputs, this.counters);
-    }, { ttlMs: this.opts.pendingTtlMs ?? DEFAULT_PENDING_TTL_MS });
+    }, { ttlMs: this.opts.pendingTtlMs ?? 24 * 3600 * 1000 });
     add(this.counters, 'pending_resolved', outcome.resolved);
     add(this.counters, 'pending_refused_deleted', outcome.refused_deleted);
     add(this.counters, 'pending_expired', outcome.expired);
@@ -206,22 +192,21 @@ export class Settler {
       applied.push(...group);
       add(this.counters, 'endpoint_updates');
     });
-    await this.sendUpdateBulks(body);
+    await pool(R.splitEvery(BULK_LINES, body), this.opts.parallelBulks ?? 4, async (chunk) => {
+      const response: any = await elRawBulk(lockfreeContext, { refresh: false, body: chunk });
+      const failed = response.items.find((item: any) => {
+        const { status } = Object.values(item)[0] as any;
+        return status >= 300 && status !== 404; // 404: the document no longer exists
+      });
+      if (failed) throw new Error(`Settle failed: ${JSON.stringify(failed)}`);
+    });
     await recordApplied(applied.map(endpointTaskOf));
     applied.push(...await this.settleMissingEndpoints(missing));
     return applied;
   }
 
-  private async sendUpdateBulks(body: any[]) {
-    await pool(R.splitEvery(BULK_LINES, body), this.opts.parallelBulks ?? DEFAULT_PARALLEL_BULKS, async (chunk) => {
-      const response: any = await elRawBulk(lockfreeContext, { refresh: false, body: chunk });
-      const failed = response.items.find(isBulkFailure);
-      if (failed) throw new Error(`Settle failed: ${JSON.stringify(failed)}`);
-    });
-  }
-
   // Entities that do not exist: deleted (their keys are tombstones) -> remove the relationships that point to them;
-  // otherwise their tasks stay unacknowledged, for a later round. Returns the tasks settled.
+  // otherwise their tasks stay unacknowledged, for a later round
   private async settleMissingEndpoints(missing: QueuedTask[][]): Promise<QueuedTask[]> {
     if (missing.length === 0) return [];
     const owners = await lookupKeys(missing.map((group) => endpointTaskOf(group[0]).endpoint));
@@ -241,8 +226,7 @@ export class Settler {
     return settled;
   }
 
-  // A relationship whose end was deleted: its meta refs, its document, its pair entry, each end's listing of the
-  // other end, then its delete event
+  // A relationship whose end was deleted
   private async deleteRelation(id: string, index: string) {
     const raw = (await mgetRaw([{ id, index }])).get(id);
     if (!raw) return;
@@ -278,19 +262,18 @@ export class Settler {
     if (!dropRaw || !raws.get(task.keep.id)) return;
     const [dropElement] = await toElements([dropRaw]);
     const drop = await loadWithRefs(lockfreeContext, SYSTEM_USER, dropElement);
-    const patch: Record<string, any> = R.omit(NOT_MERGED_FIELDS, drop);
+    // Not merged: the duplicate's identity, ends and raw document
+    const patch: Record<string, any> = R.omit(['_index', '_id', 'id', 'internal_id', 'standard_id', 'i_raw', 'connections', 'from', 'to', 'fromId', 'toId'], drop);
     await upsertLockFree(lockfreeContext, SYSTEM_USER, task.keep, drop.entity_type, patch, this.counters);
     await this.deleteRelationKeepingEnds(drop, dropRaw._index);
     await removeFromPair(task.pair, task.drop.id);
     add(this.counters, 'relations_reconciled');
   }
 
-  // A duplicate relationship: its meta refs, its document and its delete event (its ends keep listing the pair,
-  // which the kept relationship still links)
+  // A duplicate relationship: its ends keep listing the pair, which the kept relationship still links
   private async deleteRelationKeepingEnds(relation: any, index: string) {
     for (const ref of schemaRelationsRefDefinition.getRelationsRef(relation.entity_type)) {
-      const targetIds = [].concat(relation[ref.databaseName] ?? []).map((target: any) => target.internal_id ?? target);
-      await deleteMetaRelations(relation.internal_id, ref.databaseName, targetIds);
+      await deleteMetaRelations(relation.internal_id, ref.databaseName, [].concat(relation[ref.databaseName] ?? []).map((target: any) => target.internal_id ?? target));
     }
     await elRawBulk(lockfreeContext, { refresh: false, body: [{ delete: { _index: index, _id: relation.internal_id } }] });
     await storeDeleteEvent(lockfreeContext, SYSTEM_USER, await withEnds(relation));

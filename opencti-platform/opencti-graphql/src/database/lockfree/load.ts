@@ -21,19 +21,11 @@ export interface RawDoc { _index: string; _id: string; _seq_no: number; _primary
 
 interface DocRef { index: string; id: string }
 
-interface MgetResponse { docs: (RawDoc & { found: boolean })[] }
-
-interface MgetOptions { light?: boolean; withoutLists?: boolean }
-
 const MGET_BATCH_SIZE = 1000;
 const MGET_CONCURRENCY = 4;
 
-const isDefined = <T>(value: T | undefined): value is T => value !== undefined;
-
-// Where an owner's document lives
 const documentOf = (owner: Owner): DocRef => ({ index: owner.owner_index, id: owner.owner_id });
 
-// The live owners among `owners`, each object once
 const uniqueLiveOwners = (owners: (Owner | undefined)[]): Owner[] => {
   const live = owners.filter((owner): owner is Owner => owner?.state === 'live');
   return R.uniqBy((owner) => owner.owner_id, live);
@@ -49,21 +41,17 @@ const relationshipListFields = () => {
   return relationshipLists;
 };
 
-const sourceExcludes = (opts: MgetOptions): string[] | undefined => {
-  if (opts.light) return ['rel_*'];
-  if (opts.withoutLists) return relationshipListFields();
-  return undefined;
-};
-
 // Raw documents by (index, id), realtime, keyed by _id. `light` leaves out every rel_* field; `withoutLists` only
 // the lists of relationships, keeping the refs (the document is then marked partial: written back from a full read)
-export const mgetRaw = async (refs: DocRef[], opts: MgetOptions = {}): Promise<Map<string, RawDoc>> => {
+export const mgetRaw = async (refs: DocRef[], opts: { light?: boolean; withoutLists?: boolean } = {}): Promise<Map<string, RawDoc>> => {
   const found = new Map<string, RawDoc>();
   const uniqueRefs = R.uniqBy((ref) => `${ref.index}|${ref.id}`, refs);
-  const excludes = sourceExcludes(opts);
+  let excludes: string[] | undefined;
+  if (opts.light) excludes = ['rel_*'];
+  else if (opts.withoutLists) excludes = relationshipListFields();
   const sourceFilter = excludes ? { _source: { excludes } } : {};
   await pool(R.splitEvery(MGET_BATCH_SIZE, uniqueRefs), MGET_CONCURRENCY, async (batch) => {
-    const response: MgetResponse = await elRawMget({ docs: batch.map((ref) => ({ _index: ref.index, _id: ref.id, ...sourceFilter })) });
+    const response: { docs: (RawDoc & { found: boolean })[] } = await elRawMget({ docs: batch.map((ref) => ({ _index: ref.index, _id: ref.id, ...sourceFilter })) });
     response.docs.filter((doc) => doc.found).forEach((doc) => {
       found.set(doc._id, opts.withoutLists ? { ...doc, partial: true } : doc);
     });
@@ -119,11 +107,8 @@ const attachRefs = (element: any, loaded: any[]) => {
   refs.forEach((ref) => {
     const value = element[ref.databaseName];
     if (value === undefined || value === null) return;
-    if (ref.multiple) {
-      withRefs[ref.name] = ([] as string[]).concat(value).map((id) => loadedById.get(id)).filter(Boolean);
-    } else {
-      withRefs[ref.name] = loadedById.get(value);
-    }
+    if (ref.multiple) withRefs[ref.name] = ([] as string[]).concat(value).map((id) => loadedById.get(id)).filter(Boolean);
+    else withRefs[ref.name] = loadedById.get(value);
   });
   if (element.fromId) {
     withRefs.from = loadedById.get(element.fromId);
@@ -145,20 +130,15 @@ export const loadWithRefs = async (context: AuthContext, user: AuthUser, element
 // them) instead of once per object. Each use gets its own copy, as a read of its own. A document stands for its
 // object until the chunk writes to it: once written, the object is read again, as one by one.
 export class ChunkReads {
-  // The objects' documents, without their lists of relationships, by _id
-  private documents = new Map<string, RawDoc>();
+  private documents = new Map<string, RawDoc>(); // the objects' documents, without their lists of relationships, by _id
 
-  // Owners of the documents and of their refs, by lowercased id
-  private owners = new Map<string, Owner>();
+  private owners = new Map<string, Owner>(); // owners of the documents and of their refs, by lowercased id
 
-  // Lowercased ids whose owner was looked up, found or not
-  private lookedUpIds = new Set<string>();
+  private lookedUpIds = new Set<string>(); // lowercased ids whose owner was looked up, found or not
 
-  // The refs' documents (light), by _id
-  private refDocuments = new Map<string, RawDoc>();
+  private refDocuments = new Map<string, RawDoc>(); // the refs' documents (light), by _id
 
-  // Elements converted by loadRefs and not handed out by take yet, by internal id
-  private convertedNotTaken = new Map<string, any>();
+  private convertedNotTaken = new Map<string, any>(); // elements converted by loadRefs and not handed out by take yet
 
   async load(targets: DocRef[]) {
     await this.loadDocuments(targets);
@@ -168,19 +148,14 @@ export class ChunkReads {
   // The documents only: their versions, before deciding which ones need their refs
   async loadDocuments(targets: DocRef[]) {
     if (targets.length === 0) return;
-    const [{ owners }, raws] = await Promise.all([
-      liveOwners(targets.map((target) => target.id)),
-      mgetRaw(targets, { withoutLists: true }),
-    ]);
+    const [{ owners }, raws] = await Promise.all([liveOwners(targets.map((target) => target.id)), mgetRaw(targets, { withoutLists: true })]);
     this.recordLookup(owners, targets.map((target) => target.id.toLowerCase()));
     raws.forEach((raw, id) => this.documents.set(id, raw));
   }
 
   // The refs of loaded documents, for all of them at once
   async loadRefs(ids: string[]) {
-    const raws = ids
-      .map((id) => this.documents.get(id))
-      .filter((raw): raw is RawDoc => raw !== undefined && !this.convertedNotTaken.has(raw._id));
+    const raws = ids.map((id) => this.documents.get(id)).filter((raw): raw is RawDoc => raw !== undefined && !this.convertedNotTaken.has(raw._id));
     if (raws.length === 0) return;
     const elements = await toElements(raws);
     elements.forEach((element) => this.convertedNotTaken.set(element.internal_id, element));
@@ -207,7 +182,10 @@ export class ChunkReads {
   async take(id: string) {
     const raw = this.documents.get(id);
     if (!raw) return undefined;
-    const element = await this.takeElement(id, raw);
+    // The element loadRefs converted, handed out once; otherwise a new conversion of the document
+    let element = this.convertedNotTaken.get(id);
+    this.convertedNotTaken.delete(id);
+    if (!element) [element] = await toElements([raw]);
     const refs = await this.refsOf(element);
     return { raw, element, withRefs: attachRefs(element, refs) };
   }
@@ -223,15 +201,6 @@ export class ChunkReads {
     lowercasedIds.forEach((id) => this.lookedUpIds.add(id));
   }
 
-  // The element loadRefs converted, handed out once; otherwise a new conversion of the document
-  private async takeElement(id: string, raw: RawDoc) {
-    const converted = this.convertedNotTaken.get(id);
-    this.convertedNotTaken.delete(id);
-    if (converted) return converted;
-    const [element] = await toElements([raw]);
-    return element;
-  }
-
   // The element's referenced elements: a copy of each ref loadRefs read, then a realtime load of the refs whose
   // owner the chunk never looked up
   private async refsOf(element: any) {
@@ -239,7 +208,7 @@ export class ChunkReads {
     // Both decided before any await, from what the chunk has read so far
     const notLookedUp = refIds.filter((refId) => !this.lookedUpIds.has(refId.toLowerCase()));
     const liveRefOwners = uniqueLiveOwners(refIds.map((refId) => this.owners.get(refId.toLowerCase())));
-    const readRefRaws = liveRefOwners.map((owner) => this.refDocuments.get(owner.owner_id)).filter(isDefined);
+    const readRefRaws = liveRefOwners.map((owner) => this.refDocuments.get(owner.owner_id)).filter((raw): raw is RawDoc => raw !== undefined);
     const readRefs = await toElements(readRefRaws);
     const loadedRefs = notLookedUp.length > 0 ? await loadByAnyIds(notLookedUp, { light: true }) : [];
     return [...readRefs, ...loadedRefs];

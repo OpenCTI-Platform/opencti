@@ -18,8 +18,6 @@ interface PendingItem { input: Record<string, any>; missing: string[]; user_id: 
 // A pending item as stored: `missing` lowercased, with the time it started waiting
 interface StoredPending { id: string; input: Record<string, any>; missing: string[]; user_id: string; created_at: string }
 
-type PendingOutcome = 'ready' | 'refused' | 'expired' | 'waiting';
-
 // At most this many pending items are looked at per pass
 const LIST_SIZE = 10000;
 
@@ -51,7 +49,7 @@ const listPending = async (): Promise<StoredPending[]> => {
 export const countPending = async () => (await listPending()).length;
 
 // Refused when an end is deleted, ready when every end is live, expired when past its time to live
-const outcomeOf = (item: StoredPending, owners: Map<string, Owner>, nowMs: number, ttlMs: number): PendingOutcome => {
+const outcomeOf = (item: StoredPending, owners: Map<string, Owner>, nowMs: number, ttlMs: number) => {
   const states = item.missing.map((id) => owners.get(id)?.state);
   if (states.some((state) => state === 'deleted')) return 'refused';
   if (states.every((state) => state === 'live')) return 'ready';

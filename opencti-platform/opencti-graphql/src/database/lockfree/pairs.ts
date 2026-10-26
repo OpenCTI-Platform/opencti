@@ -26,8 +26,6 @@ export interface PairEntry {
 // One of today's duplicate filters, as buildRelationDeduplicationFilters builds it
 interface DeduplicationFilter { key: string[]; values: any[]; operator?: string }
 
-interface BulkUpdateResult { status: number; error?: unknown; get?: { _source?: { relations?: PairEntry[] } } }
-
 // Concurrent appends to one pair document conflict on its version: retried by Elasticsearch
 const RETRY_ON_CONFLICT = 20;
 
@@ -42,9 +40,7 @@ export const readPairs = async (keys: string[]): Promise<Map<string, PairEntry[]
   const response: { docs: { found: boolean; _source: { relations?: PairEntry[] } }[] } = await elRawMget({
     docs: uniqueKeys.map((key) => ({ _index: IDENTITY_INDEX, _id: pairDocId(key) })),
   });
-  response.docs.forEach((doc, position) => {
-    entriesByKey.set(uniqueKeys[position], doc.found ? doc._source.relations ?? [] : []);
-  });
+  response.docs.forEach((doc, position) => entriesByKey.set(uniqueKeys[position], doc.found ? doc._source.relations ?? [] : []));
   return entriesByKey;
 };
 
@@ -65,7 +61,7 @@ export const appendPairs = async (entries: { key: string; entry: PairEntry }[]) 
     { script: { source: APPEND_SCRIPT, params: { entry } }, upsert: { kind: 'pair', key, relations: [entry] } },
   ]);
   const response = await elRawBulk(lockfreeContext, { refresh: false, body });
-  response.items.forEach((item: { update: BulkUpdateResult }, position: number) => {
+  response.items.forEach((item: any, position: number) => {
     const { key, entry } = entries[position];
     if (item.update.status >= 300) throw new Error(`Pair append failed: ${JSON.stringify(item.update.error)}`);
     // Without a source in the response, the list is taken to be the entry alone
@@ -77,10 +73,7 @@ export const appendPairs = async (entries: { key: string; entry: PairEntry }[]) 
 export const removeFromPair = async (key: string, id: string) => {
   await elRawBulk(lockfreeContext, {
     refresh: false,
-    body: [
-      { update: { _index: IDENTITY_INDEX, _id: pairDocId(key), retry_on_conflict: RETRY_ON_CONFLICT } },
-      { script: { source: REMOVE_SCRIPT, params: { id } } },
-    ],
+    body: [{ update: { _index: IDENTITY_INDEX, _id: pairDocId(key), retry_on_conflict: RETRY_ON_CONFLICT } }, { script: { source: REMOVE_SCRIPT, params: { id } } }],
   });
 };
 
@@ -120,9 +113,7 @@ const filterMatches = (entry: PairEntry, filter: DeduplicationFilter) => {
 export const findDuplicates = (input: Record<string, any>, candidates: PairEntry[]) => {
   const inputIds = new Set(getInputIds(input.relationship_type, input, false).map((id: string) => id.toLowerCase()));
   const filters = buildRelationDeduplicationFilters(input) as DeduplicationFilter[];
-  const sharesAnId = (candidate: PairEntry) => candidate.ids.some((id) => inputIds.has(id.toLowerCase()));
-  const matchesAllFilters = (candidate: PairEntry) => filters.every((filter) => filterMatches(candidate, filter));
-  return candidates.filter((candidate) => sharesAnId(candidate) || matchesAllFilters(candidate));
+  return candidates.filter((candidate) => candidate.ids.some((id) => inputIds.has(id.toLowerCase())) || filters.every((filter) => filterMatches(candidate, filter)));
 };
 
 const toIsoDate = (value: any) => (value ? new Date(value).toISOString() : undefined);
