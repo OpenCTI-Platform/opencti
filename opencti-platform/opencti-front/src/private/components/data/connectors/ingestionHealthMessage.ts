@@ -1,7 +1,7 @@
 // What the front needs to word one failing health check
 export interface HealthCheckMessageSource {
   health_check_code: string;
-  // In English, from the backend: the fallback
+  // In English, from the backend: may hold {key} placeholders filled from the metadata
   health_check_message?: string | null;
   // What describes the failure, see IngestionHealthCheck.health_check_metadata
   health_check_metadata?: unknown;
@@ -14,12 +14,32 @@ const CAPABILITY_DESCRIPTIONS: Record<string, string> = {
   CONNECTORAPI: 'Connectors API usage: register, ping, export push ...',
 };
 
-// Translated message of a failing check. A check needing translated parameters adds its case here, any other keeps the backend message
+// How a metadata value is shown in a message, by metadata key. A key absent here shows its value as is
+const METADATA_VALUE_TRANSLATIONS: Record<string, (value: string, t_i18n: Translate) => string> = {
+  capability: (capability, t_i18n) => (CAPABILITY_DESCRIPTIONS[capability] ? t_i18n(CAPABILITY_DESCRIPTIONS[capability]) : capability),
+};
+
+const PLACEHOLDER_PATTERN = /\{(\w+)\}/g;
+
+// Translated message of a failing check, its {key} placeholders filled with the values of its metadata.
+// A message without translation (computed by the backend) shows as is
 export const getHealthCheckMessage = (check: HealthCheckMessageSource, t_i18n: Translate): string => {
-  const metadata = (check.health_check_metadata ?? {}) as Record<string, unknown>;
-  if (check.health_check_code === 'USER_MISSING_CAPABILITY' && typeof metadata.capability === 'string') {
-    const description = CAPABILITY_DESCRIPTIONS[metadata.capability];
-    return t_i18n('User lacks required capability: "{capability}"', { values: { capability: description ? t_i18n(description) : metadata.capability } });
+  const message = check.health_check_message;
+  if (!message) {
+    return check.health_check_code;
   }
-  return check.health_check_message ?? check.health_check_code;
+  const keys = [...message.matchAll(PLACEHOLDER_PATTERN)].map(([, key]) => key);
+  const metadata = (check.health_check_metadata ?? {}) as Record<string, unknown>;
+  const values: Record<string, string> = {};
+  for (const key of keys) {
+    const value = metadata[key];
+    if (typeof value !== 'string' && typeof value !== 'number') {
+      // Nothing to fill the placeholder with: it stays as is, a missing value would make the translation throw
+      values[key] = `{${key}}`;
+    } else {
+      const translateValue = METADATA_VALUE_TRANSLATIONS[key];
+      values[key] = translateValue ? translateValue(String(value), t_i18n) : String(value);
+    }
+  }
+  return t_i18n(message, { values });
 };
