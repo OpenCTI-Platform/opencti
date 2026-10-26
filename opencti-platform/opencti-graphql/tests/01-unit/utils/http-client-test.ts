@@ -413,11 +413,18 @@ describe('getHttpClient', () => {
 
   it('should reject an untrusted certificate unless certificate verification is disabled', async () => {
     const verified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: true }).get('/not-json').catch((e) => e);
-    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text' }).get('/not-json');
+    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false }).get('/not-json');
 
     expect(verified).toBeInstanceOf(HttpClientError);
     expect(verified.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
     expect(unverified.data).toBe('plain text');
+  });
+
+  it.each([undefined, null])('should verify the certificate by default when rejectUnauthorized is %s', async (rejectUnauthorized) => {
+    const error = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized }).get('/not-json').catch((e) => e);
+
+    expect(error).toBeInstanceOf(HttpClientError);
+    expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
   });
 
   it('should always verify the certificate on call', async () => {

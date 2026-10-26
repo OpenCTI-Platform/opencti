@@ -492,7 +492,7 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
         ["mq", "use_ssl_reject_unauthorized"],
         config,
         False,
-        False,
+        True,
     )
     use_ssl_passphrase = get_config_variable(
         "MQ_USE_SSL_PASSPHRASE", ["mq", "use_ssl_passphrase"], config
@@ -2285,7 +2285,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 ["opencti", "ssl_verify"],
                 config,
                 False,
-                False,
+                True,
                 isBoolean=False,
             ),
             strict=False,

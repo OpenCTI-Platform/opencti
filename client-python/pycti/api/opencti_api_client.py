@@ -192,7 +192,7 @@ class OpenCTIApiClient:
         url: str,
         token: str,
         log_level: str = "info",
-        ssl_verify: Union[bool, str] = False,
+        ssl_verify: Union[bool, str] = True,
         proxies: Union[Dict[str, str], None] = None,
         json_logging: bool = False,
         bundle_send_to_queue: bool = True,
