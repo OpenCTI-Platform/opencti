@@ -1,6 +1,6 @@
 import React from 'react';
-import { useTheme } from '@mui/material/styles';
-import { Icon, Paper, Text } from '@filigran/design-system';
+import { Box } from '@mui/material';
+import { Alert } from '@filigran/design-system';
 import type { HealthIssueSeverity } from '@components/data/connectors/ingestionHealthDisplay';
 
 interface IngestionHealthBannerProps {
@@ -13,40 +13,31 @@ interface IngestionHealthBannerProps {
   'data-testid'?: string;
 }
 
-// Same look as the design system Alert (severity bar, glyph, title, details, action), built on Paper and Text:
-// the Alert renders its texts as <p> keeping the browser margins, which makes a health banner too tall
-const SEVERITY_STYLE = {
-  critical: { bar: 'border-alert-error', icon: 'circle-x', iconColor: 'text-icon-error' },
-  degraded: { bar: 'border-alert-warning', icon: 'triangle-alert', iconColor: 'text-icon-warning' },
-} as const;
+const ALERT_SEVERITY = { critical: 'error', degraded: 'warning' } as const;
 
-const IngestionHealthBanner = ({ severity, title, lines = [], action, 'data-testid': testId }: IngestionHealthBannerProps) => {
-  const theme = useTheme();
-  const { bar, icon, iconColor } = SEVERITY_STYLE[severity];
-  return (
-    <Paper
-      elevation={2}
-      padding={8}
-      role="alert"
+// The design system Alert. FDS-WORKAROUND #71: it renders title and description as <p> and the library ships no
+// preflight, so they keep the browser margins and the banner gets too tall. See fds-migration/LIBRARY-FEEDBACK.md #71
+const IngestionHealthBanner = ({ severity, title, lines = [], action, 'data-testid': testId }: IngestionHealthBannerProps) => (
+  <Box
+    sx={{
+      '& p': { margin: 0 },
+      // No bold: title and details share the regular weight
+      '& [role] p, & [role] p span': { fontWeight: 'normal' },
+      '& [role]': { padding: 2 },
+      '& [role] > div:first-of-type': { alignItems: 'center' },
+    }}
+  >
+    <Alert
       data-testid={testId}
-      // border-0 drops the Paper border, border-l-4 (later in the library CSS) brings back the left bar only
-      className={`flex items-center border-0 border-l-4 ${bar}`}
-      style={{ gap: theme.spacing(2) }}
-    >
-      <div className="flex min-w-0 flex-1 items-center" style={{ gap: theme.spacing(2), paddingLeft: theme.spacing(1) }}>
-        <span className="flex shrink-0 items-center" style={{ width: theme.spacing(2), height: theme.spacing(3) }}>
-          <Icon name={icon} size={16} className={iconColor} />
-        </span>
-        <div className="flex min-w-0 flex-1 flex-col items-start">
-          <Text variant="title-xs" className="w-full break-words text-alert">{title}</Text>
-          {lines.map((line, index) => (
-            <Text key={`${index}-${line}`} variant="content-compact" className="w-full break-words text-default-secondary">{line}</Text>
-          ))}
-        </div>
-      </div>
-      {action && <div className="flex shrink-0 items-center" style={{ gap: theme.spacing(1) }}>{action}</div>}
-    </Paper>
-  );
-};
+      severity={ALERT_SEVERITY[severity]}
+      title={title}
+      // The description is a <p>, hence spans
+      description={lines.length > 0 && lines.map((line, index) => (
+        <span key={`${index}-${line}`} style={{ display: 'block' }}>{line}</span>
+      ))}
+      action={action}
+    />
+  </Box>
+);
 
 export default IngestionHealthBanner;
