@@ -270,10 +270,12 @@ class OpenCTIApiClient:
         )
         self.session = requests.session()
         self.session_requests_timeout = requests_timeout
-        self._batch = None  # open batch import, see batch_import
+        # The open batch import, see batch_import
+        self._batch = None
         # Bundles of several items go through the lock-free batch import (set by the worker when the platform has it)
         self.batch_import_enabled = False
-        self.batch_chunk_size = 1000  # creates sent per batch import request
+        # Creates sent per batch import request
+        self.batch_chunk_size = 1000
         # In a batch import, items whose references do not exist yet are left to the caller (stix2.last_batch_deferred)
         # instead of being retried here: set by the worker, which sends them again through its queue
         self.defer_missing_references = False
@@ -655,6 +657,7 @@ class OpenCTIApiClient:
         any other request first sends what the batch kept. See :py:meth:`send_query` for the parameters.
         """
         batch = self._batch
+        # A request with its own headers or session (another thread's, such as the work reports) is never kept
         if batch is not None and headers is None and session is None:
             captured = batch.capture(query, variables)
             if captured is not None:
@@ -663,15 +666,14 @@ class OpenCTIApiClient:
         return self.send_query(query, variables, disable_impersonate, headers, session)
 
     @contextmanager
-    def batch_import(self, chunk_size: int = None):
-        """Open a batch: the create mutations sent until it closes go to the lock-free batch import together.
+    def batch_import(self):
+        """Open a batch: the create mutations sent until it closes go to the lock-free batch import together,
+        ``batch_chunk_size`` creates per request.
 
-        :param chunk_size: kept creates that trigger a send
-        :type chunk_size: int
         :return: the :py:class:`~pycti.api.opencti_api_batch.BatchImport`, whose ``failed`` maps the owner
             set on it (a bundle item) to the error of its first failed create
         """
-        batch = BatchImport(self, chunk_size or self.batch_chunk_size)
+        batch = BatchImport(self, self.batch_chunk_size)
         self._batch = batch
         try:
             yield batch
@@ -710,10 +712,9 @@ class OpenCTIApiClient:
         # Recursively extract File objects from nested dictionaries
         query_var, files_vars = self._extract_files(variables)
 
-        query_headers = (
-            headers if headers is not None else self.request_headers
-        ).copy()
-        http = session if session is not None else self.session
+        base_headers = headers if headers is not None else self.request_headers
+        query_headers = base_headers.copy()
+        http_session = session if session is not None else self.session
         if disable_impersonate and "opencti-applicant-id" in query_headers:
             del query_headers["opencti-applicant-id"]
         # If yes, transform variable (file to null) and create multipart query
@@ -778,7 +779,7 @@ class OpenCTIApiClient:
                     multipart_files.append(file_multi)
                     file_index += 1
             # Send the multipart request
-            r = http.post(
+            r = http_session.post(
                 self.api_url,
                 data=multipart_data,
                 files=multipart_files,
@@ -790,7 +791,7 @@ class OpenCTIApiClient:
             )
         # If no files, send a normal request
         else:
-            r = http.post(
+            r = http_session.post(
                 self.api_url,
                 json={"query": query, "variables": query_var},
                 headers=query_headers,

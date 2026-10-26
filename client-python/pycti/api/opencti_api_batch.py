@@ -13,6 +13,8 @@ LOCKFREE_IMPORT_QUERY = """
         }
     }
 """
+# An empty batch import: answered by a platform that has the lock-free batch import, refused by any other
+LOCKFREE_IMPORT_PROBE_QUERY = "mutation { lockfreeImport(operations: []) { status } }"
 # The single top-level field of a mutation document
 MUTATION_FIELD = re.compile(r"^\s*mutation\b[^{]*\{\s*(\w+)\s*\(", re.S)
 # Creates whose result pycti keeps across messages (by label value, kill chain phase...): sent as usual, so that
@@ -27,11 +29,52 @@ def _camel_to_type(field: str) -> str:
 
 
 def _has_files(value) -> bool:
+    """Whether the variables hold a file to upload, at any depth."""
     if isinstance(value, dict):
         return any(_has_files(v) for v in value.values())
     if isinstance(value, list):
         return any(_has_files(v) for v in value)
     return hasattr(value, "data") and hasattr(value, "mime")
+
+
+def _ref_and_type(field: str, variables: Dict) -> Tuple[Optional[str], str]:
+    """The STIX id a create is answered with (None when it has none), and the entity type of its answer."""
+    if field == "stixCyberObservableAdd":
+        return (
+            variables.get("stix_id"),
+            variables.get("type") or "Stix-Cyber-Observable",
+        )
+    create_input = variables.get("input")
+    if not isinstance(create_input, dict):
+        return None, ""
+    if field == "stixCoreRelationshipAdd":
+        return (
+            create_input.get("stix_id"),
+            create_input.get("relationship_type") or "stix-core-relationship",
+        )
+    if field == "stixSightingRelationshipAdd":
+        return create_input.get("stix_id"), "stix-sighting-relationship"
+    if field == "externalReferenceAdd":
+        ref = create_input.get("stix_id") or ExternalReference.generate_id(
+            create_input.get("url"),
+            create_input.get("source_name"),
+            create_input.get("external_id"),
+        )
+        return ref, "External-Reference"
+    entity_type = create_input.get("type") or _camel_to_type(field)
+    return create_input.get("stix_id"), entity_type
+
+
+def _placeholder_answer(field: str, ref: str, entity_type: str) -> Dict:
+    """The answer to a kept create, as the platform would shape it, with the STIX id as id."""
+    placeholder = {
+        "id": ref,
+        "standard_id": ref,
+        "entity_type": entity_type,
+        "parent_types": [],
+        "x_opencti_stix_ids": [],
+    }
+    return {"data": {field: placeholder}}
 
 
 class BatchImport:
@@ -52,37 +95,14 @@ class BatchImport:
         self.api = api
         self.chunk_size = chunk_size
         self.operations: List[Dict] = []
+        # The bundle item each kept create belongs to, at the same position as in operations
         self.owners: List[Optional[int]] = []
-        self.owner: Optional[int] = None  # the bundle item the kept creates belong to
-        self.failed: Dict[int, Tuple[str, Optional[str]]] = {}  # item -> (error, code)
-        self.unsupported = (
-            False  # the platform has no batch import: nothing more is kept
-        )
-
-    def _ref_and_type(self, field: str, variables: Dict) -> Tuple[Optional[str], str]:
-        data = (
-            variables.get("input") if isinstance(variables.get("input"), dict) else None
-        )
-        if field == "stixCyberObservableAdd":
-            return (
-                variables.get("stix_id"),
-                variables.get("type") or "Stix-Cyber-Observable",
-            )
-        if data is None:
-            return None, ""
-        if field == "stixCoreRelationshipAdd":
-            return (
-                data.get("stix_id"),
-                data.get("relationship_type") or "stix-core-relationship",
-            )
-        if field == "stixSightingRelationshipAdd":
-            return data.get("stix_id"), "stix-sighting-relationship"
-        if field == "externalReferenceAdd":
-            ref = data.get("stix_id") or ExternalReference.generate_id(
-                data.get("url"), data.get("source_name"), data.get("external_id")
-            )
-            return ref, "External-Reference"
-        return data.get("stix_id"), data.get("type") or _camel_to_type(field)
+        # The bundle item the next kept creates belong to, set by the caller
+        self.owner: Optional[int] = None
+        # Bundle item -> (error, code) of its first failed create
+        self.failed: Dict[int, Tuple[str, Optional[str]]] = {}
+        # The platform has no batch import: nothing more is kept
+        self.unsupported = False
 
     def capture(self, query: str, variables: Optional[Dict]):
         """Keeps a create and answers it with a placeholder, or returns None for a request to send now."""
@@ -95,21 +115,14 @@ class BatchImport:
         variables = variables or {}
         if not field.endswith("Add") or field in NOT_BATCHED or _has_files(variables):
             return None
-        ref, entity_type = self._ref_and_type(field, variables)
+        ref, entity_type = _ref_and_type(field, variables)
         if not ref:
             return None
         self.operations.append({"ref": ref, "query": query, "variables": variables})
         self.owners.append(self.owner)
         if len(self.operations) >= self.chunk_size:
             self.flush()
-        placeholder = {
-            "id": ref,
-            "standard_id": ref,
-            "entity_type": entity_type,
-            "parent_types": [],
-            "x_opencti_stix_ids": [],
-        }
-        return {"data": {field: placeholder}}
+        return _placeholder_answer(field, ref, entity_type)
 
     def flush(self):
         """Sends the kept creates; the bundle items with a create that failed are recorded in ``failed``."""

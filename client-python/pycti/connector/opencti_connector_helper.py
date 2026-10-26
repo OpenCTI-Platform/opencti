@@ -51,6 +51,7 @@ from jwt import PyJWKSet
 from pika.exceptions import NackError, UnroutableError
 from pydantic import TypeAdapter
 
+from pycti.api.opencti_api_batch import LOCKFREE_IMPORT_PROBE_QUERY
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector import opencti_connector_build
 from pycti.connector.opencti_connector import OpenCTIConnector
@@ -3778,15 +3779,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.metric.inc("error_count")
             raise ValueError("Nothing to import")
 
-        # Messages sent: the split bundles, in their dependency order, several objects per message when the
-        # platform imports them together (lock-free batch import)
-        messages = bundles
-        chunk_size = self._push_chunk_size() if not no_split else 1
-        if chunk_size > 1 and len(bundles) > 1:
-            messages = [
-                self._merge_split_bundles(bundles[i : i + chunk_size])
-                for i in range(0, len(bundles), chunk_size)
-            ]
+        messages = self._bundles_to_messages(bundles, no_split)
+        # Merged split bundles are not to be split again by the worker
+        messages_merged = len(messages) < len(bundles)
 
         if bundle_send_to_queue:
             if entities_types is None:
@@ -3831,7 +3826,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         sequence=sequence,
                         update=update,
                         draft_id=draft_id,
-                        no_split=no_split or len(messages) < len(bundles),
+                        no_split=no_split or messages_merged,
                     )
                 channel.close()
                 pika_connection.close()
@@ -3847,25 +3842,37 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         return bundles
 
+    def _bundles_to_messages(self, bundles: list, no_split: bool) -> list:
+        """The messages to push: the split bundles, in their dependency order, several objects per message when
+        the platform imports them together (lock-free batch import).
+        """
+        chunk_size = 1 if no_split else self._push_chunk_size()
+        if chunk_size <= 1 or len(bundles) <= 1:
+            return bundles
+        return [
+            self._merge_split_bundles(bundles[start : start + chunk_size])
+            for start in range(0, len(bundles), chunk_size)
+        ]
+
     def _push_chunk_size(self) -> int:
         """Objects per pushed message: CONNECTOR_PUSH_CHUNK_SIZE (default 500) when the platform imports a
         message's objects together (lock-free batch import), 1 otherwise. Checked once.
         """
-        if getattr(self, "_push_chunk", None) is None:
-            configured = get_config_variable(
-                "CONNECTOR_PUSH_CHUNK_SIZE",
-                ["connector", "push_chunk_size"],
-                self.config,
-                True,
-                500,
-            )
-            try:
-                self.api.send_query(
-                    "mutation { lockfreeImport(operations: []) { status } }"
-                )
-                self._push_chunk = max(1, configured)
-            except Exception:  # pylint: disable=broad-except
-                self._push_chunk = 1
+        cached_chunk_size = getattr(self, "_push_chunk", None)
+        if cached_chunk_size is not None:
+            return cached_chunk_size
+        configured = get_config_variable(
+            "CONNECTOR_PUSH_CHUNK_SIZE",
+            ["connector", "push_chunk_size"],
+            self.config,
+            True,
+            500,
+        )
+        try:
+            self.api.send_query(LOCKFREE_IMPORT_PROBE_QUERY)
+            self._push_chunk = max(1, configured)
+        except Exception:  # pylint: disable=broad-except
+            self._push_chunk = 1
         return self._push_chunk
 
     @staticmethod
@@ -3873,7 +3880,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """One bundle with the objects of several split bundles, in their order."""
         parsed = [json.loads(b) if isinstance(b, str) else b for b in bundles]
         merged = dict(parsed[0])
-        merged["objects"] = [o for b in parsed for o in b.get("objects", [])]
+        merged["objects"] = [
+            stix_object
+            for parsed_bundle in parsed
+            for stix_object in parsed_bundle.get("objects", [])
+        ]
         return json.dumps(merged)
 
     def _send_bundle(self, channel, bundle, **kwargs) -> None:

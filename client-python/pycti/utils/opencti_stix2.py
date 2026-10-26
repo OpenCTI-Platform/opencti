@@ -199,15 +199,12 @@ class OpenCTIStix2:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
-        self._defer_item_report = (
-            False  # inside a batch import, items are reported once sent
-        )
-        self.last_batch_retried = (
-            0  # items of the last batch import imported again on their own
-        )
-        self.last_batch_deferred = (
-            []
-        )  # items of the last batch import left to the caller, see defer_missing_references
+        # Inside a batch import, items are reported once their creates are sent, not by import_item
+        self._defer_item_report = False
+        # Items of the last batch import imported again on their own
+        self.last_batch_retried = 0
+        # Items of the last batch import left to the caller, see defer_missing_references
+        self.last_batch_deferred = []
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
@@ -4001,7 +3998,8 @@ class OpenCTIStix2:
         imported_elements = []
         too_large_elements_bundles = []
         self.last_batch_deferred = []
-        # (a single item too when it may be deferred: only the batch import defers)
+        # Several items go through the batch import, and a single one too when it may be deferred: only the batch
+        # import defers
         if self.opencti.batch_import_enabled and (
             sum(len(b["objects"]) for b in bundles) > 1
             or self.opencti.defer_missing_references
@@ -4060,66 +4058,37 @@ class OpenCTIStix2:
 
         :return: Tuple of (list of imported elements, list of failed/too-large elements)
         """
-        worker_logger = self.opencti.logger_class("worker")
         imported_elements = []
         rejected = []
+        # (bundle id, item): the position in this list identifies the item in the batch
         candidates = []
         for bundle in bundles:
             for item in bundle["objects"]:
-                nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
-                if 0 < objects_max_refs <= nb_refs:
-                    too_large_element_message = "Too large element in bundle"
-                    worker_logger.warning(too_large_element_message)
-                    item["rejection_info"] = {
-                        "reject_reason": "ELEMENT_TOO_LARGE",
-                        "objects_max_refs": objects_max_refs,
-                    }
-                    self.opencti.work.report_expectation(
-                        work_id,
-                        {
-                            "error": too_large_element_message,
-                            "source": "Element "
-                            + item["id"]
-                            + " is too large and couldn't be processed",
-                        },
-                    )
+                if self._reject_if_too_large(item, objects_max_refs, work_id):
                     rejected.append(item)
                 else:
                     candidates.append((bundle["id"], item))
-        converted = set()
-        with self.opencti.batch_import() as batch:
-            self._defer_item_report = True
-            try:
-                for index, (bundle_id, item) in enumerate(candidates):
-                    batch.owner = index
-                    try:
-                        self.opencti.set_retry_number(0)
-                        self.import_item(item, update, types, work_id, bundle_id)
-                        converted.add(index)
-                    except Exception:  # pylint: disable=broad-except
-                        pass  # imported again on its own below
-            finally:
-                self._defer_item_report = False
+        converted, failed = self._convert_in_batch(candidates, update, types, work_id)
+        confirmed = {index for index in converted if index not in failed}
         # A reference another worker is still importing: left to the caller, which sends the item again later,
         # instead of waiting here for it (not reported, its expectation stays open)
-        deferred = {
-            index
-            for index, (_, code) in batch.failed.items()
-            if self.opencti.defer_missing_references
-            and code == ERROR_TYPE_MISSING_REFERENCE
-        }
+        deferred = set()
+        if self.opencti.defer_missing_references:
+            deferred = {
+                index
+                for index, (_, code) in failed.items()
+                if code == ERROR_TYPE_MISSING_REFERENCE
+            }
         self.last_batch_deferred = [candidates[i][1] for i in sorted(deferred)]
-        self.last_batch_retried = len(
-            [
-                i
-                for i in range(len(candidates))
-                if (i not in converted or i in batch.failed) and i not in deferred
-            ]
+        self.last_batch_retried = sum(
+            1
+            for index in range(len(candidates))
+            if index not in confirmed and index not in deferred
         )
         for index, (bundle_id, item) in enumerate(candidates):
             if index in deferred:
                 continue
-            if index in converted and index not in batch.failed:
+            if index in confirmed:
                 if work_id is not None:
                     self.opencti.work.report_expectation_success(work_id)
                 bundles_success_counter.add(1)
@@ -4133,6 +4102,59 @@ class OpenCTIStix2:
             else:
                 imported_elements.append({"id": item["id"], "type": item["type"]})
         return imported_elements, rejected
+
+    def _reject_if_too_large(
+        self, item: Dict, objects_max_refs: int, work_id: Optional[str]
+    ) -> bool:
+        """Whether the item has too many refs to be imported; if so, it is marked and reported as rejected."""
+        nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
+        too_large = 0 < objects_max_refs <= nb_refs
+        if not too_large:
+            return False
+        too_large_element_message = "Too large element in bundle"
+        self.opencti.logger_class("worker").warning(too_large_element_message)
+        item["rejection_info"] = {
+            "reject_reason": "ELEMENT_TOO_LARGE",
+            "objects_max_refs": objects_max_refs,
+        }
+        self.opencti.work.report_expectation(
+            work_id,
+            {
+                "error": too_large_element_message,
+                "source": "Element "
+                + item["id"]
+                + " is too large and couldn't be processed",
+            },
+        )
+        return True
+
+    def _convert_in_batch(
+        self,
+        candidates: List[Tuple[str, Dict]],
+        update: bool,
+        types: List,
+        work_id: Optional[str],
+    ) -> Tuple[set, Dict[int, Tuple[str, Optional[str]]]]:
+        """Convert every item inside one batch import, which sends their creates together.
+
+        :return: Tuple of (positions of the items converted without error, position -> (error, code) of the items
+            with a failed create)
+        """
+        converted = set()
+        with self.opencti.batch_import() as batch:
+            self._defer_item_report = True
+            try:
+                for index, (bundle_id, item) in enumerate(candidates):
+                    batch.owner = index
+                    try:
+                        self.opencti.set_retry_number(0)
+                        self.import_item(item, update, types, work_id, bundle_id)
+                        converted.add(index)
+                    except Exception:  # pylint: disable=broad-except
+                        pass  # imported again on its own afterwards
+            finally:
+                self._defer_item_report = False
+        return converted, batch.failed
 
     @staticmethod
     def put_attribute_in_extension(
