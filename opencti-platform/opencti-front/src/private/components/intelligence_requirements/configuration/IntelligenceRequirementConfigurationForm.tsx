@@ -193,14 +193,24 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
             {group.kind === 'list' && <IrEntityPicker label={t_i18n('Entities')} value={group.entities} onChange={(entities) => setGroup(group.id, { entities })} />}
             {group.kind === 'filter' && <IrFilterBuilder value={group.filters} onChange={(filters) => setGroup(group.id, { filters })} />}
             {group.kind === 'keywords' && (
-              <IrMultiSelect
-                label={t_i18n('Keywords')}
-                values={group.keywords}
-                options={group.keywords.map((k) => ({ value: k, label: k }))}
-                allowCustom
-                placeholder={t_i18n('Type a keyword and press Enter')}
-                onChange={(keywords) => setGroup(group.id, { keywords })}
-              />
+              <Row columns="1fr 1fr">
+                <IrMultiSelect
+                  label={t_i18n('Keywords')}
+                  values={group.keywords}
+                  options={group.keywords.map((k) => ({ value: k, label: k }))}
+                  allowCustom
+                  placeholder={t_i18n('Type a keyword and press Enter')}
+                  onChange={(keywords) => setGroup(group.id, { keywords })}
+                />
+                <IrMultiSelect
+                  label={t_i18n('Exclusions (phrases ignored before the search, e.g. "targets russia")')}
+                  values={group.exclude_keywords}
+                  options={group.exclude_keywords.map((k) => ({ value: k, label: k }))}
+                  allowCustom
+                  placeholder={t_i18n('Type a phrase and press Enter')}
+                  onChange={(exclude_keywords) => setGroup(group.id, { exclude_keywords })}
+                />
+              </Row>
             )}
           </SubCard>
         ))}
@@ -340,9 +350,15 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
 
       {/* 5. Follow-up */}
       <Paper padding={24} style={{ marginBottom: 16 }}>
-        <Row columns="1fr 1fr 2fr">
+        <Row columns="1fr 1fr 1fr 1fr">
           <Input label={t_i18n('Score thresholds (inbox)')} value={draft.thresholds} onChange={(e) => set({ thresholds: e.target.value })} />
           <Input label={t_i18n('Rescan in days')} type="number" value={String(draft.rescan_days)} onChange={(e) => set({ rescan_days: Number.parseInt(e.target.value || '0', 10) })} disabled={!!irId} />
+          <IrSelect
+            label={t_i18n('AI brief in the inbox')}
+            value={draft.brief_frequency}
+            options={[{ value: 'off', label: t_i18n('Off') }, { value: 'daily', label: t_i18n('Daily') }, { value: 'weekly', label: t_i18n('Weekly') }]}
+            onChange={(v) => set({ brief_frequency: v as typeof draft.brief_frequency })}
+          />
           <div />
         </Row>
       </Paper>

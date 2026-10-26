@@ -29,6 +29,7 @@ export interface IrGroupDraft {
   entities: IrEntityOption[];
   filters: string | null; // OpenCTI filter group, backend format
   keywords: string[];
+  exclude_keywords: string[];
 }
 
 export interface IrCriterionDraft {
@@ -73,6 +74,7 @@ export interface IrDraft {
   status: IrStatus;
   thresholds: string; // "50, 80"
   rescan_days: number;
+  brief_frequency: 'off' | 'daily' | 'weekly';
   kiqs: IrKiqDraft[];
   groups: IrGroupDraft[];
   criteria: IrCriterionDraft[];
@@ -89,13 +91,14 @@ export const emptyDraft = (): IrDraft => ({
   status: 'active',
   thresholds: '50, 80',
   rescan_days: 30,
+  brief_frequency: 'off',
   kiqs: [],
-  groups: [{ id: newId('g'), name: 'Subjects', kind: 'list', role: 'entry', entities: [], filters: null, keywords: [] }],
+  groups: [{ id: newId('g'), name: 'Subjects', kind: 'list', role: 'entry', entities: [], filters: null, keywords: [], exclude_keywords: [] }],
   criteria: [],
   rules: [],
 });
 
-export const emptyGroup = (): IrGroupDraft => ({ id: newId('g'), name: '', kind: 'list', role: 'entry', entities: [], filters: null, keywords: [] });
+export const emptyGroup = (): IrGroupDraft => ({ id: newId('g'), name: '', kind: 'list', role: 'entry', entities: [], filters: null, keywords: [], exclude_keywords: [] });
 
 export const emptyCriterion = (groups: IrGroupDraft[]): IrCriterionDraft => ({
   id: newId('c'),
@@ -151,6 +154,7 @@ export const draftToInput = (draft: IrDraft) => ({
   ir_status: draft.status,
   ir_thresholds: parseThresholds(draft.thresholds),
   ir_rescan_days: draft.rescan_days,
+  ir_brief_frequency: draft.brief_frequency,
   ir_kiqs: draft.kiqs.filter((k) => k.text.trim()).map((k) => ({ id: k.id, text: k.text, criteria_ids: k.criteria_ids })),
   ir_subject_groups: draft.groups.map((g) => ({
     id: g.id,
@@ -160,6 +164,7 @@ export const draftToInput = (draft: IrDraft) => ({
     entity_ids: g.kind === 'list' ? g.entities.map((e) => e.value) : [],
     filters: g.kind === 'filter' ? parseFilters(g.filters) : null,
     keywords: g.kind === 'keywords' ? g.keywords : [],
+    exclude_keywords: g.kind === 'keywords' ? g.exclude_keywords : [],
   })),
   ir_scope_criteria: draft.criteria.map((c) => ({
     id: c.id,
@@ -215,6 +220,7 @@ export const inputToDraft = (input: JsonInput, entities: Map<string, IrEntityOpt
     status: input.ir_status === 'active' ? 'active' : 'paused',
     thresholds: (Array.isArray(input.ir_thresholds) && input.ir_thresholds.length > 0 ? input.ir_thresholds : [50, 80]).join(', '),
     rescan_days: Number.isInteger(input.ir_rescan_days) ? input.ir_rescan_days : 30,
+    brief_frequency: (['daily', 'weekly'].includes(input.ir_brief_frequency) ? input.ir_brief_frequency : 'off') as IrDraft['brief_frequency'],
     kiqs: (input.ir_kiqs ?? []).map((k: JsonInput) => ({ id: str(k.id, newId('k')), text: str(k.text), criteria_ids: list(k.criteria_ids) })),
     groups: (input.ir_subject_groups ?? []).map((g: JsonInput) => ({
       id: str(g.id, newId('g')),
@@ -224,6 +230,7 @@ export const inputToDraft = (input: JsonInput, entities: Map<string, IrEntityOpt
       entities: list(g.entity_ids).map(option),
       filters: filtersToString(g.filters),
       keywords: list(g.keywords),
+      exclude_keywords: list(g.exclude_keywords),
     })),
     criteria: (input.ir_scope_criteria ?? []).map((c: JsonInput) => ({
       id: str(c.id, newId('c')),

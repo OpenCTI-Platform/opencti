@@ -21,6 +21,7 @@ const configurationQuery = graphql`
       ir_status
       ir_thresholds
       ir_rescan_days
+      ir_brief_frequency
       ir_kiqs { id text criteria_ids }
       ir_subject_groups {
         id
@@ -29,6 +30,7 @@ const configurationQuery = graphql`
         role
         filters
         keywords
+        exclude_keywords
         entities { id entity_type representative { main } }
       }
       ir_scope_criteria {
@@ -77,6 +79,7 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
   status: ir.ir_status,
   thresholds: ir.ir_thresholds.join(', '),
   rescan_days: ir.ir_rescan_days,
+  brief_frequency: ir.ir_brief_frequency,
   kiqs: ir.ir_kiqs.map((k) => ({ id: k.id, text: k.text, criteria_ids: [...k.criteria_ids] })),
   groups: ir.ir_subject_groups.map((g) => ({
     id: g.id,
@@ -86,6 +89,7 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
     entities: g.entities.map(toOption),
     filters: g.filters ?? null,
     keywords: [...g.keywords],
+    exclude_keywords: [...(g.exclude_keywords ?? [])],
   })),
   criteria: ir.ir_scope_criteria.map((c) => ({
     id: c.id,
