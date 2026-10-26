@@ -68,14 +68,19 @@ export const computeIngestionHealthChecks = (
   ingestor: HealthCheckIngestor,
   context: SourceIngestionHealthContext,
 ): StoredHealthCheck[] => {
-  return (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
+  const failures = (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
     // Disabled on the platform: never evaluated, a failure stored before is dropped at this period
     if (context.disabledHealthChecks?.includes(code)) {
       return [];
     }
     const metadata = definition.isEnabled(ingestor, context) ? getHealthCheckFailure(code, definition, ingestor, context) : null;
-    return metadata ? [{ health_check_code: code, health_check_metadata: metadata }] : [];
+    return metadata ? [{ code, definition, metadata }] : [];
   });
+  // Decided once every check is evaluated. A disabled check never fails: it supersedes nothing
+  const failedCodes = new Set(failures.map(({ code }) => code));
+  return failures
+    .filter(({ definition }) => !definition.supersededBy || !failedCodes.has(definition.supersededBy))
+    .map(({ code, metadata }) => ({ health_check_code: code, health_check_metadata: metadata }));
 };
 
 // Priority: critical > degraded > healthy. A stopped ingestion is never evaluated (see the ingestion health manager).

@@ -110,6 +110,7 @@ const writeIngestionHealth = async <T extends IngestionElement>(context: AuthCon
 // Each check only reads the ingestions it is enabled for, and is not called when there is none.
 // A read failure is not hidden: it rejects, so that an unreachable storage is never read as a missing value.
 const loadRuntimeData = async (
+  context: AuthContext,
   elements: IngestionElement[],
   globalContext: GlobalIngestionHealthContext,
 ): Promise<Map<string, RuntimeData>> => {
@@ -118,8 +119,10 @@ const loadRuntimeData = async (
     .filter((entry): entry is [HealthCheckCode, RuntimeCheck] => entry[1].kind === IngestionHealthCheckKind.Runtime)
     .filter(([code]) => !globalContext.disabledHealthChecks?.includes(code));
   const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => {
-    const enabledIds = elements.filter((element) => definition.isEnabled(element, globalContext)).map((element) => element.internal_id);
-    return enabledIds.length > 0 ? definition.getRuntimeData(enabledIds) : new Map<string, unknown>();
+    const enabledElements = elements.filter((element) => definition.isEnabled(element, globalContext));
+    return enabledElements.length > 0
+      ? definition.getRuntimeData(enabledElements, { context, user: INGESTION_HEALTH_MANAGER_USER })
+      : new Map<string, unknown>();
   }));
   return new Map(elements.map((element) => {
     const runtimeData = Object.fromEntries(runtimeChecks.map(([code], index) => [code, valuesByCheck[index].get(element.internal_id)]));
@@ -230,7 +233,7 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   const runtimeIngestionIds = new Set(runtimeElements.map((element) => element.internal_id));
   let runtimeDataByIngestion: Map<string, RuntimeData> | undefined;
   try {
-    runtimeDataByIngestion = await loadRuntimeData(runtimeElements, globalContext);
+    runtimeDataByIngestion = await loadRuntimeData(context, runtimeElements, globalContext);
   } catch (e) {
     // Not read as a missing value: the ingestions needing it are skipped until the next period, the others are still evaluated
     logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER' });

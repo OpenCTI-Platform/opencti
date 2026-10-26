@@ -6,19 +6,25 @@ import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGE
 import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
 import { redisGetIngestionLogHistory } from '../../database/redis';
 import { findCapabilityDescription } from '../../database/data-initialization';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { getConclusiveWork, getWorkFailure, loadConnectorsRuntimeState } from './ingestionHealth-connectorWorks';
 
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
 export const HEALTH_CHECK_USER_MISSING_CAPABILITY = 'USER_MISSING_CAPABILITY';
 export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
 export const HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT = 'USER_NOT_SERVICE_ACCOUNT';
 export const HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED = 'FEED_AND_SYNC_EXECUTION_FAILED';
+export const HEALTH_CHECK_SOURCE_ACCESS_DENIED = 'SOURCE_ACCESS_DENIED';
+export const HEALTH_CHECK_LAST_RUN_FAILED = 'LAST_RUN_FAILED';
 
 // Every check of the registry: adding a check adds its code here
 export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
   | typeof HEALTH_CHECK_USER_MISSING_CAPABILITY
   | typeof HEALTH_CHECK_HEARTBEAT_MISSING
   | typeof HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT
-  | typeof HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED;
+  | typeof HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED
+  | typeof HEALTH_CHECK_SOURCE_ACCESS_DENIED
+  | typeof HEALTH_CHECK_LAST_RUN_FAILED;
 
 // The values read by the runtime checks for one ingestion, by check code.
 // Inferred from the registry: the type of each value is the one returned by the getRuntimeData of its check
@@ -38,6 +44,7 @@ export interface HealthCheckIngestor {
   user_id?: string | null;
   // The outcome of the last execution of a feed or a sync, patched by the ingestion manager or the sync manager
   last_execution_status?: string | null;
+  connector_type?: string | null;
 }
 
 // Computed once at the beginning of each period of the ingestion health manager, shared by the evaluation of every ingestion.
@@ -79,6 +86,9 @@ interface BaseHealthCheckDefinition {
   // Name of the check, the same for every occurrence: shown in the platform settings, translated by the front (lang/back)
   label: string;
   severity: IngestionHealthCheckSeverity;
+  // A failure of this check is dropped when the check named here also fails for the same ingestor:
+  // the other one tells the cause, this one would only repeat it less precisely
+  supersededBy?: HealthCheckCode;
   // Computed when read, never stored: the entity type of the ingestor adapts it to the kind of ingestion
   // Absent when the failure needs nothing more than the name of the check: the label is the message.
   // A {key} placeholder is filled from metadata[key]: by the front once translated, by formatHealthCheckMessage elsewhere
@@ -93,9 +103,15 @@ interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
   getFailure: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
 }
 
+// What a getRuntimeData may read through the platform, besides Redis: as the user of the ingestion health manager
+export interface RuntimeDataReadContext {
+  context: AuthContext;
+  user: AuthUser;
+}
+
 // A runtime check is judged from a value reported by the sources, read by its getRuntimeData.
-// getRuntimeData reads the values of many ingestions at once, by ingestion id: the ingestion health manager calls it at most once per period,
-// only with the active ingestions for which isEnabled is true, and not at all when there is none.
+// getRuntimeData reads the values of many ingestions at once: the ingestion health manager calls it at most once per period,
+// only with the active ingestors for which isEnabled is true, and not at all when there is none. It returns the values by internal_id.
 // It returns what was reported, as stored: what is stale is judged by getFailure. Absent ingestions are omitted.
 // A read failure must reject, never be read as a missing value.
 // The value given to getFailure is undefined when the sources reported nothing.
@@ -104,7 +120,7 @@ export interface RuntimeCheckDefinition<T> extends BaseHealthCheckDefinition {
   kind: IngestionHealthCheckKind.Runtime;
   // Whether the ingestor is evaluated for this check. Called before the runtime data is read, to know what to read
   isEnabled: (ingestor: HealthCheckIngestor, context: GlobalIngestionHealthContext) => boolean;
-  getRuntimeData: (ingestionIds: string[]) => Promise<Map<string, T>>;
+  getRuntimeData: (ingestors: HealthCheckIngestor[], read: RuntimeDataReadContext) => Promise<Map<string, T>>;
   getFailure: (value: T | undefined, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
 }
 
@@ -137,6 +153,9 @@ interface FeedAndSyncExecutionFailure {
   cloudflare?: string;
   error?: string;
 }
+
+// Only the statuses telling that the credentials are refused: a 429 or a 5xx says nothing about access
+const ACCESS_DENIED_HTTP_STATUSES: readonly number[] = [401, 402, 403];
 
 /**
  * Reads the details of the last failed execution of each feed or sync, from its ingestion logs.
@@ -174,6 +193,20 @@ const describeFeedAndSyncExecutionFailure = ({ http_status, http_status_text, er
   }
   return error_code ?? error;
 };
+
+// A work error can quote the url called, with its query string or its user and password: they may hold a secret,
+// and the error is shown to every reader of the connector, and written in the activity log.
+// The query string of any url or path, absolute or relative (urllib3 writes "with url: /v1/feed?apikey=..."),
+// up to the whitespace, quote, parenthesis or bracket ending it.
+// The path is looked for behind each "?" only, and the scheme is bounded: linear on a long error, a traceback included
+const URL_QUERY_STRING = /\?(?<=\/[^\s'"()[\]?]*\?)[^\s'")\]]*/g;
+const URL_USERINFO = /\b([a-z][a-z\d+.-]{0,30}:\/\/)[^\s/?#@'"]+@/gi;
+const MAX_WORK_ERROR_LENGTH = 200;
+
+const scrubWorkError = (message: string) => message
+  .replace(URL_USERINFO, '$1')
+  .replace(URL_QUERY_STRING, '')
+  .slice(0, MAX_WORK_ERROR_LENGTH);
 
 // Same window as the connector liveness (isConnectorActive).
 // A heartbeat in the future (clock skew between nodes) is alive
@@ -233,7 +266,8 @@ export const HEALTH_CHECK_REGISTRY = {
     severity: IngestionHealthCheckSeverity.Blocking,
     // Only the running connectors pinging continuously: the others would be missing their heartbeat between two runs
     isEnabled: (ingestor, { pingingConnectorsIds }) => pingingConnectorsIds.has(ingestor.internal_id),
-    getRuntimeData: redisGetConnectorsHeartbeats,
+    // The heartbeats of every connector are read at once: the ingestors are not needed
+    getRuntimeData: () => redisGetConnectorsHeartbeats(),
     getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : {}),
   }),
   // Any failure of the last execution of a feed or a sync (source unreachable, not found, unauthorized, invalid data...):
@@ -249,12 +283,52 @@ export const HEALTH_CHECK_REGISTRY = {
     },
     // Only the failing ones: nothing is read for the others
     isEnabled: (ingestor) => FEED_AND_SYNC_ENTITY_TYPES.includes(ingestor.entity_type) && ingestor.last_execution_status === 'error',
-    getRuntimeData: getFeedsAndSyncsLastFailureDetails,
+    getRuntimeData: (ingestors) => getFeedsAndSyncsLastFailureDetails(ingestors.map((ingestor) => ingestor.internal_id)),
+    // When the access was denied, SOURCE_ACCESS_DENIED tells the cause: only that one is reported
+    supersededBy: HEALTH_CHECK_SOURCE_ACCESS_DENIED,
     // The details are not always known: the failure is reported without them. They are not dated: the metadata must stay the same while the failure lasts.
     // Their description fills the message: stored with them, it is the same for the same details
     getFailure: (details) => {
       const failureDescription = details ? describeFeedAndSyncExecutionFailure(details) : undefined;
       return { ...details, ...(failureDescription ? { failure_description: failureDescription } : {}) };
+    },
+  }),
+  // The source refuses the credentials of the feed or the sync (HTTP 401, 402, 403): nothing is ingested until they are fixed.
+  // Read from the same details as FEED_AND_SYNC_EXECUTION_FAILED
+  [HEALTH_CHECK_SOURCE_ACCESS_DENIED]: defineRuntimeCheck({
+    kind: IngestionHealthCheckKind.Runtime,
+    label: 'Source denied access',
+    severity: IngestionHealthCheckSeverity.Blocking,
+    message: () => 'Source denied access: HTTP {http_status}',
+    // Only the failing ones: nothing is read for the others
+    isEnabled: (ingestor) => FEED_AND_SYNC_ENTITY_TYPES.includes(ingestor.entity_type) && ingestor.last_execution_status === 'error',
+    getRuntimeData: (ingestors) => getFeedsAndSyncsLastFailureDetails(ingestors.map((ingestor) => ingestor.internal_id)),
+    // Only the status: the metadata must stay the same while the failure lasts
+    getFailure: (details) => {
+      const httpStatus = details?.http_status;
+      return httpStatus !== undefined && ACCESS_DENIED_HTTP_STATUSES.includes(httpStatus) ? { http_status: httpStatus } : null;
+    },
+  }),
+  // The last run of the connector ended with an error. Advisory: the connector may still ingest, and the next successful run clears it.
+  // Another work of the connector may have succeeded since: only the last conclusive one is judged
+  [HEALTH_CHECK_LAST_RUN_FAILED]: defineRuntimeCheck({
+    kind: IngestionHealthCheckKind.Runtime,
+    label: 'Last run failed',
+    severity: IngestionHealthCheckSeverity.Advisory,
+    message: ({ error }) => (error ? 'Last run failed: {error}' : 'Last run failed'),
+    // A stream has no run. Managed or not: the work is reported by the connector itself
+    isEnabled: (ingestor) => ingestor.entity_type === ENTITY_TYPE_CONNECTOR && ingestor.connector_type !== 'STREAM',
+    getRuntimeData: (ingestors, read) => loadConnectorsRuntimeState(ingestors, read),
+    getFailure: (state) => {
+      const work = state && getConclusiveWork(state);
+      // Not messages.length: errors of the connector with a source do not make a failed work
+      const failure = work && getWorkFailure(work);
+      if (!failure?.failed) {
+        return null;
+      }
+      // The first message is the one of the connector. Not dated: the metadata must stay the same while the failure lasts
+      const message = failure.messages[0];
+      return message ? { error: scrubWorkError(message) } : {};
     },
   }),
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
