@@ -63,7 +63,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
 
   return (
     <>
-      <Field component={TextField} variant="outlined" name="event" label={t_i18n('Transition name')} fullWidth inputProps={{ 'data-testid': 'workflow-transition-name-field' }} />
+      <Field component={TextField} variant="outlined" name="event" label={t_i18n('Transition name')} fullWidth data-testid="workflow-transition-name-field" />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
         <Typography variant="h6">
