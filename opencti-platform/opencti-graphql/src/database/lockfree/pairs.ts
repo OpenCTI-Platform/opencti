@@ -23,16 +23,29 @@ export interface PairEntry {
   created_by?: string;
 }
 
+// One of today's duplicate filters, as buildRelationDeduplicationFilters builds it
+interface DeduplicationFilter { key: string[]; values: any[]; operator?: string }
+
+interface BulkUpdateResult { status: number; error?: unknown; get?: { _source?: { relations?: PairEntry[] } } }
+
+// Concurrent appends to one pair document conflict on its version: retried by Elasticsearch
+const RETRY_ON_CONFLICT = 20;
+
 export const pairKey = (type: string, fromId: string, toId: string) => `pair|${type}|${fromId}|${toId}`;
 const pairDocId = (key: string) => deterministicId(key);
 
+// Each key's entries, empty when the pair has no document yet
 export const readPairs = async (keys: string[]): Promise<Map<string, PairEntry[]>> => {
-  const out = new Map<string, PairEntry[]>();
-  const unique = [...new Set(keys)];
-  if (unique.length === 0) return out;
-  const response: any = await elRawMget({ docs: unique.map((key) => ({ _index: IDENTITY_INDEX, _id: pairDocId(key) })) });
-  response.docs.forEach((doc: any, i: number) => out.set(unique[i], doc.found ? doc._source.relations ?? [] : []));
-  return out;
+  const entriesByKey = new Map<string, PairEntry[]>();
+  const uniqueKeys = [...new Set(keys)];
+  if (uniqueKeys.length === 0) return entriesByKey;
+  const response: { docs: { found: boolean; _source: { relations?: PairEntry[] } }[] } = await elRawMget({
+    docs: uniqueKeys.map((key) => ({ _index: IDENTITY_INDEX, _id: pairDocId(key) })),
+  });
+  response.docs.forEach((doc, position) => {
+    entriesByKey.set(uniqueKeys[position], doc.found ? doc._source.relations ?? [] : []);
+  });
+  return entriesByKey;
 };
 
 const APPEND_SCRIPT = `
@@ -45,24 +58,29 @@ const REMOVE_SCRIPT = 'if (ctx._source.relations != null) { ctx._source.relation
 
 // Append entries; returns each pair's list after the append, to detect a duplicate created at the same moment
 export const appendPairs = async (entries: { key: string; entry: PairEntry }[]) => {
-  const after = new Map<string, PairEntry[]>();
-  if (entries.length === 0) return after;
+  const listsAfter = new Map<string, PairEntry[]>();
+  if (entries.length === 0) return listsAfter;
   const body = entries.flatMap(({ key, entry }) => [
-    { update: { _index: IDENTITY_INDEX, _id: pairDocId(key), retry_on_conflict: 20, _source: true } },
+    { update: { _index: IDENTITY_INDEX, _id: pairDocId(key), retry_on_conflict: RETRY_ON_CONFLICT, _source: true } },
     { script: { source: APPEND_SCRIPT, params: { entry } }, upsert: { kind: 'pair', key, relations: [entry] } },
   ]);
-  const response: any = await elRawBulk(lockfreeContext, { refresh: false, body });
-  response.items.forEach((item: any, i: number) => {
+  const response = await elRawBulk(lockfreeContext, { refresh: false, body });
+  response.items.forEach((item: { update: BulkUpdateResult }, position: number) => {
+    const { key, entry } = entries[position];
     if (item.update.status >= 300) throw new Error(`Pair append failed: ${JSON.stringify(item.update.error)}`);
-    after.set(entries[i].key, item.update.get?._source?.relations ?? [entries[i].entry]);
+    // Without a source in the response, the list is taken to be the entry alone
+    listsAfter.set(key, item.update.get?._source?.relations ?? [entry]);
   });
-  return after;
+  return listsAfter;
 };
 
 export const removeFromPair = async (key: string, id: string) => {
   await elRawBulk(lockfreeContext, {
     refresh: false,
-    body: [{ update: { _index: IDENTITY_INDEX, _id: pairDocId(key), retry_on_conflict: 20 } }, { script: { source: REMOVE_SCRIPT, params: { id } } }],
+    body: [
+      { update: { _index: IDENTITY_INDEX, _id: pairDocId(key), retry_on_conflict: RETRY_ON_CONFLICT } },
+      { script: { source: REMOVE_SCRIPT, params: { id } } },
+    ],
   });
 };
 
@@ -70,50 +88,52 @@ export const removeFromPair = async (key: string, id: string) => {
 // created before its entry is appended, so a realtime get that misses it means it was deleted. They are dropped
 // from the candidates and from the pair, so the input is created again, as today.
 export const withoutDeleted = async (pairs: Map<string, PairEntry[]>) => {
-  const entries = [...pairs.values()].flat();
-  if (entries.length === 0) return pairs;
-  const found = await mgetRaw(entries.map((e) => ({ index: e.index, id: e.id })), { light: true });
-  const out = new Map<string, PairEntry[]>();
+  const allEntries = [...pairs.values()].flat();
+  if (allEntries.length === 0) return pairs;
+  const existing = await mgetRaw(allEntries.map((entry) => ({ index: entry.index, id: entry.id })), { light: true });
+  const kept = new Map<string, PairEntry[]>();
   const gone: { key: string; id: string }[] = [];
-  pairs.forEach((list, key) => {
-    out.set(key, list.filter((e) => found.has(e.id)));
-    list.filter((e) => !found.has(e.id)).forEach((e) => gone.push({ key, id: e.id }));
+  pairs.forEach((entries, key) => {
+    kept.set(key, entries.filter((entry) => existing.has(entry.id)));
+    entries.filter((entry) => !existing.has(entry.id)).forEach((entry) => gone.push({ key, id: entry.id }));
   });
-  await Promise.all(gone.map((g) => removeFromPair(g.key, g.id)));
-  return out;
+  await Promise.all(gone.map(({ key, id }) => removeFromPair(key, id)));
+  return kept;
 };
 
 // Today's duplicate filters, evaluated on a candidate instead of in a search
-const valueOf = (entry: PairEntry, key: string) => {
-  if (key === buildRefRelationKey(RELATION_CREATED_BY)) return entry.created_by;
-  return (entry as any)[key];
+const valueOf = (entry: PairEntry, field: string) => {
+  if (field === buildRefRelationKey(RELATION_CREATED_BY)) return entry.created_by;
+  return entry[field as keyof PairEntry];
 };
-const filterMatches = (entry: PairEntry, filter: { key: string[]; values: any[]; operator?: string }) => {
+
+const filterMatches = (entry: PairEntry, filter: DeduplicationFilter) => {
   const value = valueOf(entry, filter.key[0]);
-  const expected = filter.values[0];
-  if (filter.operator === 'gt' || filter.operator === 'lt') {
-    if (value === undefined || value === null) return false;
-    const a = new Date(value).getTime();
-    const b = new Date(expected).getTime();
-    return filter.operator === 'gt' ? a > b : a < b;
-  }
-  return filter.values.includes(value);
+  if (filter.operator !== 'gt' && filter.operator !== 'lt') return filter.values.includes(value);
+  if (value === undefined || value === null) return false;
+  const entryTime = new Date(value as string).getTime();
+  const boundTime = new Date(filter.values[0]).getTime();
+  return filter.operator === 'gt' ? entryTime > boundTime : entryTime < boundTime;
 };
 
 // The existing relationships the input duplicates, oldest first (the platform takes the first one found)
 export const findDuplicates = (input: Record<string, any>, candidates: PairEntry[]) => {
   const inputIds = new Set(getInputIds(input.relationship_type, input, false).map((id: string) => id.toLowerCase()));
-  const filters = buildRelationDeduplicationFilters(input) as any[];
-  return candidates.filter((c) => c.ids.some((id) => inputIds.has(id.toLowerCase())) || filters.every((f) => filterMatches(c, f)));
+  const filters = buildRelationDeduplicationFilters(input) as DeduplicationFilter[];
+  const sharesAnId = (candidate: PairEntry) => candidate.ids.some((id) => inputIds.has(id.toLowerCase()));
+  const matchesAllFilters = (candidate: PairEntry) => filters.every((filter) => filterMatches(candidate, filter));
+  return candidates.filter((candidate) => sharesAnId(candidate) || matchesAllFilters(candidate));
 };
+
+const toIsoDate = (value: any) => (value ? new Date(value).toISOString() : undefined);
 
 export const pairEntryOf = (element: Record<string, any>, createdById?: string): PairEntry => ({
   id: element.internal_id,
   index: element._index,
   ids: [element.standard_id, ...(element.x_opencti_stix_ids ?? [])].filter(Boolean),
-  start_time: element.start_time ? new Date(element.start_time).toISOString() : undefined,
-  stop_time: element.stop_time ? new Date(element.stop_time).toISOString() : undefined,
-  first_seen: element.first_seen ? new Date(element.first_seen).toISOString() : undefined,
-  last_seen: element.last_seen ? new Date(element.last_seen).toISOString() : undefined,
+  start_time: toIsoDate(element.start_time),
+  stop_time: toIsoDate(element.stop_time),
+  first_seen: toIsoDate(element.first_seen),
+  last_seen: toIsoDate(element.last_seen),
   created_by: createdById,
 });

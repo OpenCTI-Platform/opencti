@@ -12,14 +12,19 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 const SETTLE_EVERY_MS = 250;
 const settler = new Settler({ consumer: `settler-${NODE_INSTANCE_ID}` });
 
+// The backfill lock, or nothing when another node holds it (it is running the backfill)
+const tryLockBackfill = async () => {
+  try {
+    return await lockResources(['lockfree_identity_backfill'], { retryCount: 0 });
+  } catch {
+    return undefined;
+  }
+};
+
 const ensureIdentityBackfill = async () => {
   if (await isIdentityBackfillDone()) return;
-  let lock;
-  try {
-    lock = await lockResources(['lockfree_identity_backfill'], { retryCount: 0 });
-  } catch {
-    return; // another node is running it
-  }
+  const lock = await tryLockBackfill();
+  if (!lock) return;
   try {
     if (await isIdentityBackfillDone()) return;
     logApp.info('[OPENCTI-MODULE] Lock-free ingestion: identity backfill started');

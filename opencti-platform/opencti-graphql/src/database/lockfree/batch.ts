@@ -15,32 +15,36 @@ import { type ItemResult, writeEntityChunk, writeRelationChunk } from './writer'
 const MAX_CHUNK = 500;
 const FLUSHES_AT_ONCE = 4; // chunk writes in flight, as parallel writers
 
-interface Waiting { user: AuthUser; type: string; input: Record<string, any>; resolve: (element: any) => void; reject: (error: unknown) => void }
+// A create held by the collector until its chunk is written; settled with the stored element or the error
+interface PendingCreate { user: AuthUser; type: string; input: Record<string, any>; resolve: (element: any) => void; reject: (error: unknown) => void }
+
+type StoredOutcome = { element: any; error?: undefined } | { element?: undefined; error: unknown };
 
 // The elements as stored, read by id in one realtime get, as createEntity / createRelation return them: without
 // the rel_* lists, as today's loads (a busy object lists thousands of ids there), and without the raw document the
 // lock-free reads attach (both would go out with every notification of the element)
-const storedElements = async (results: ItemResult[], types: string[]) => {
-  const refs = results.map((r, i) => (r.id ? { id: r.id, index: inferIndexFromConceptType(types[i]) } : null)).filter(Boolean) as { id: string; index: string }[];
+const storedElements = async (results: ItemResult[], types: string[]): Promise<StoredOutcome[]> => {
+  const refs = results.flatMap((result, i) => (result.id ? [{ id: result.id, index: inferIndexFromConceptType(types[i]) }] : []));
   const raws = await mgetRaw(refs, { light: true });
   const found = await toElements([...raws.values()]);
-  found.forEach((e: any) => delete e.i_raw);
-  const byId = new Map(found.map((e: any) => [e.internal_id, e]));
-  return results.map((r, i) => {
-    if (r.status === 'error') return { error: r.cause };
-    const element = r.id ? byId.get(r.id) : undefined;
-    return element ? { element } : { error: FunctionalError('Lock-free write cannot read its element', { id: r.id, type: types[i] }) };
+  found.forEach((element) => delete element.i_raw);
+  const byId = new Map(found.map((element) => [element.internal_id, element]));
+  return results.map((result, i) => {
+    if (result.status === 'error') return { error: result.cause };
+    const element = result.id ? byId.get(result.id) : undefined;
+    if (element) return { element };
+    return { error: FunctionalError('Lock-free write cannot read its element', { id: result.id, type: types[i] }) };
   });
 };
 
 export class WriteCollector {
-  private active = 0;
+  private active = 0; // operations running, not waiting on the collector
 
-  private flushing = 0;
+  private flushing = 0; // chunk writes in flight
 
-  private entities: Waiting[] = [];
+  private entities: PendingCreate[] = [];
 
-  private relations: Waiting[] = [];
+  private relations: PendingCreate[] = [];
 
   constructor(private context: AuthContext) {}
 
@@ -55,20 +59,21 @@ export class WriteCollector {
     this.maybeFlush();
   }
 
-  private wait(queue: Waiting[], user: AuthUser, type: string, input: Record<string, any>) {
-    const promise = new Promise<any>((resolve, reject) => {
-      queue.push({ user, type, input, resolve, reject });
-    });
-    this.exit();
-    return promise.finally(() => this.enter());
-  }
-
   createEntity(user: AuthUser, type: string, input: Record<string, any>) {
-    return this.wait(this.entities, user, type, input);
+    return this.hold(this.entities, user, type, input);
   }
 
   createRelation(user: AuthUser, input: Record<string, any>) {
-    return this.wait(this.relations, user, input.relationship_type, input);
+    return this.hold(this.relations, user, input.relationship_type, input);
+  }
+
+  // Holds a create for the next chunk: its operation waits on the collector until the chunk is written
+  private hold(queue: PendingCreate[], user: AuthUser, type: string, input: Record<string, any>) {
+    const written = new Promise<any>((resolve, reject) => {
+      queue.push({ user, type, input, resolve, reject });
+    });
+    this.exit();
+    return written.finally(() => this.enter());
   }
 
   // Writes what waits once every running operation waits on the collector (or a chunk is full), up to
@@ -76,18 +81,33 @@ export class WriteCollector {
   private maybeFlush() {
     while (this.flushing < FLUSHES_AT_ONCE) {
       const queued = this.entities.length + this.relations.length;
-      if (queued === 0 || (this.active > 0 && queued < MAX_CHUNK)) return;
+      if (queued === 0) return;
+      const runningMayAddMore = this.active > 0 && queued < MAX_CHUNK;
+      if (runningMayAddMore) return;
       this.flush().catch(() => {});
     }
   }
 
+  // Takes the next chunk synchronously (before the first await), so maybeFlush sees the queues shrink
   private async flush() {
     this.flushing += 1;
     try {
       const entities = this.entities.splice(0, MAX_CHUNK);
       const relations = this.relations.splice(0, MAX_CHUNK);
-      await this.write(entities, (user, items) => writeEntityChunk(this.writeContext(), user, items.map((w) => ({ type: w.type, input: w.input })), newCounters(), { missingEnds: 'error' }));
-      await this.write(relations, (user, items) => writeRelationChunk(this.writeContext(), user, items.map((w) => w.input), newCounters(), { missingEnds: 'error' }));
+      await this.write(entities, (user, creates) => writeEntityChunk(
+        this.writeContext(),
+        user,
+        creates.map(({ type, input }) => ({ type, input })),
+        newCounters(),
+        { missingEnds: 'error' },
+      ));
+      await this.write(relations, (user, creates) => writeRelationChunk(
+        this.writeContext(),
+        user,
+        creates.map(({ input }) => input),
+        newCounters(),
+        { missingEnds: 'error' },
+      ));
     } finally {
       this.flushing -= 1;
     }
@@ -98,21 +118,24 @@ export class WriteCollector {
     return { ...this.context, lockfree_write: true, lockfree_batch: undefined } as AuthContext;
   }
 
-  // Writes the waiting creates, one chunk per user, and settles each one with its element or its error
-  private async write(waiting: Waiting[], writeChunk: (user: AuthUser, items: Waiting[]) => Promise<ItemResult[]>) {
-    const byUser = new Map<string, Waiting[]>();
-    waiting.forEach((w) => {
-      const items = byUser.get(w.user.internal_id);
-      if (items) items.push(w);
-      else byUser.set(w.user.internal_id, [w]);
+  // Writes the held creates, one chunk per user, and settles each one with its element or its error
+  private async write(pending: PendingCreate[], writeChunk: (user: AuthUser, creates: PendingCreate[]) => Promise<ItemResult[]>) {
+    const byUser = new Map<string, PendingCreate[]>();
+    pending.forEach((create) => {
+      const userCreates = byUser.get(create.user.internal_id);
+      if (userCreates) userCreates.push(create);
+      else byUser.set(create.user.internal_id, [create]);
     });
-    for (const items of byUser.values()) {
+    for (const creates of byUser.values()) {
       try {
-        const results = await writeChunk(items[0].user, items);
-        const stored = await storedElements(results, items.map((w) => w.type));
-        stored.forEach((s, i) => (s.element ? items[i].resolve(s.element) : items[i].reject(s.error)));
+        const results = await writeChunk(creates[0].user, creates);
+        const outcomes = await storedElements(results, creates.map((create) => create.type));
+        outcomes.forEach((outcome, i) => {
+          if (outcome.element) creates[i].resolve(outcome.element);
+          else creates[i].reject(outcome.error);
+        });
       } catch (e) {
-        items.forEach((w) => w.reject(e));
+        creates.forEach((create) => create.reject(e));
       }
     }
   }
@@ -127,127 +150,134 @@ export interface OperationResult { status: 'done' | 'error'; id?: string; error?
 export const idOnlyDocument = (schema: GraphQLSchema, document: DocumentNode): DocumentNode => {
   const definition: any = document.definitions[0];
   const field = definition?.selectionSet?.selections?.[0];
-  if (document.definitions.length !== 1 || definition.selectionSet.selections.length !== 1 || !field?.selectionSet
-    || !field.name?.value?.endsWith('Add')) {
-    return document;
-  }
+  const isSingleCreate = document.definitions.length === 1 && definition.selectionSet.selections.length === 1
+    && field?.selectionSet && field.name?.value?.endsWith('Add');
+  if (!isSingleCreate) return document;
   const idOnly = { kind: Kind.SELECTION_SET, selections: [{ kind: Kind.FIELD, name: { kind: Kind.NAME, value: 'id' } }] };
   const selectionSet = { ...definition.selectionSet, selections: [{ ...field, selectionSet: idOnly }] };
   const rewritten = { ...document, definitions: [{ ...definition, selectionSet }] } as DocumentNode;
   return validate(schema, rewritten).length === 0 ? rewritten : document;
 };
 
-const documents = new Map<string, { document: DocumentNode; field: string } | { invalid: string }>();
-const documentOf = (schema: GraphQLSchema, query: string) => {
-  let entry = documents.get(query);
-  if (!entry) {
-    try {
-      const document = parse(query);
-      const errors = validate(schema, document);
-      const definition: any = document.definitions[0];
-      const field = definition?.selectionSet?.selections?.[0]?.name?.value;
-      if (errors.length > 0 || definition?.operation !== 'mutation' || !field) {
-        entry = { invalid: errors[0]?.message ?? 'Only mutations are accepted' };
-      } else {
-        entry = { document: idOnlyDocument(schema, document), field };
-      }
-    } catch (e: any) {
-      entry = { invalid: e.message };
+// A mutation ready to execute (with the name of its top field, whose id it answers), or why it is refused
+type ParsedMutation = { document: DocumentNode; field: string } | { invalid: string };
+
+const parseMutation = (schema: GraphQLSchema, query: string): ParsedMutation => {
+  try {
+    const document = parse(query);
+    const errors = validate(schema, document);
+    const definition: any = document.definitions[0];
+    const field = definition?.selectionSet?.selections?.[0]?.name?.value;
+    if (errors.length > 0 || definition?.operation !== 'mutation' || !field) {
+      return { invalid: errors[0]?.message ?? 'Only mutations are accepted' };
     }
-    if (documents.size > 1000) documents.clear();
-    documents.set(query, entry);
+    return { document: idOnlyDocument(schema, document), field };
+  } catch (e: any) {
+    return { invalid: e.message };
   }
-  return entry;
+};
+
+// Parsed mutations by query text: a batch sends the same few queries over and over
+const MAX_PARSED_MUTATIONS = 1000;
+const parsedMutations = new Map<string, ParsedMutation>();
+const mutationOf = (schema: GraphQLSchema, query: string) => {
+  const cached = parsedMutations.get(query);
+  if (cached) return cached;
+  const parsed = parseMutation(schema, query);
+  if (parsedMutations.size > MAX_PARSED_MUTATIONS) parsedMutations.clear();
+  parsedMutations.set(query, parsed);
+  return parsed;
 };
 
 // Every string in a value, deep
-const stringsOf = (value: any, out: Set<string>) => {
+const collectStrings = (value: any, out: Set<string>) => {
   if (typeof value === 'string') out.add(value);
-  else if (Array.isArray(value)) value.forEach((v) => stringsOf(v, out));
-  else if (value && typeof value === 'object') Object.values(value).forEach((v) => stringsOf(v, out));
+  else if (Array.isArray(value)) value.forEach((item) => collectStrings(item, out));
+  else if (value && typeof value === 'object') Object.values(value).forEach((item) => collectStrings(item, out));
   return out;
 };
 export const replaceStrings = (value: any, ids: Map<string, string>): any => {
   if (typeof value === 'string') return ids.get(value) ?? value;
-  if (Array.isArray(value)) return value.map((v) => replaceStrings(v, ids));
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, replaceStrings(v, ids)]));
+  if (Array.isArray(value)) return value.map((item) => replaceStrings(item, ids));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, replaceStrings(item, ids)]));
   return value;
 };
 
 // The references of each operation to the others; references closing a cycle are left out
 export const dependenciesOf = (operations: Operation[]) => {
-  const byRef = new Map<string, number>();
-  operations.forEach((op, i) => {
-    if (op.ref) byRef.set(op.ref, i);
+  const indexByRef = new Map<string, number>();
+  operations.forEach((operation, index) => {
+    if (operation.ref) indexByRef.set(operation.ref, index);
   });
-  const deps = operations.map((op, i) => [...stringsOf(op.variables ?? {}, new Set())]
-    .map((s) => byRef.get(s))
-    .filter((d): d is number => d !== undefined && d !== i));
-  const state = operations.map(() => 0); // 0 unseen, 1 in progress, 2 done
-  const visit = (i: number) => {
-    state[i] = 1;
-    deps[i] = deps[i].filter((d) => {
-      if (state[d] === 1) return false; // cycle: run without waiting for it
-      if (state[d] === 0) visit(d);
+  const dependencies = operations.map((operation, index) => [...collectStrings(operation.variables ?? {}, new Set())]
+    .map((value) => indexByRef.get(value))
+    .filter((dependency): dependency is number => dependency !== undefined && dependency !== index));
+  // Depth-first walk: a reference to an operation still being visited closes a cycle
+  const state: ('unseen' | 'visiting' | 'visited')[] = operations.map(() => 'unseen');
+  const visit = (index: number) => {
+    state[index] = 'visiting';
+    dependencies[index] = dependencies[index].filter((dependency) => {
+      if (state[dependency] === 'visiting') return false; // cycle: run without waiting for it
+      if (state[dependency] === 'unseen') visit(dependency);
       return true;
     });
-    state[i] = 2;
+    state[index] = 'visited';
   };
-  operations.forEach((_, i) => {
-    if (state[i] === 0) visit(i);
+  operations.forEach((_, index) => {
+    if (state[index] === 'unseen') visit(index);
   });
-  return deps;
+  return dependencies;
 };
+
+// The result of an executed mutation: its first error, or the id of what it created
+const responseResult = (response: any, field: string): OperationResult => {
+  if (response.errors?.length > 0) {
+    const [error] = response.errors;
+    return { status: 'error', error: error.message, code: error.extensions?.code ?? error.originalError?.name };
+  }
+  return { status: 'done', id: response.data?.[field]?.id };
+};
+
+const thrownResult = (e: any): OperationResult => ({ status: 'error', error: e?.message ?? String(e), code: e?.extensions?.code ?? e?.name });
 
 export const executeOperations = async (context: AuthContext, schema: GraphQLSchema, operations: Operation[]): Promise<OperationResult[]> => {
   const collector = new WriteCollector(context);
   const batchContext = { ...context, lockfree_batch: collector } as AuthContext;
-  const deps = dependenciesOf(operations);
-  const ids = new Map<string, string>(); // placeholder ref -> real id
+  const dependencies = dependenciesOf(operations);
+  const realIds = new Map<string, string>(); // placeholder ref -> real id
   const results: OperationResult[] = operations.map(() => ({ status: 'error' }));
-  const done: Promise<void>[] = [];
-  const run = async (i: number) => {
-    await Promise.all(deps[i].map((d) => done[d]));
-    const failedDep = deps[i].find((d) => results[d].status === 'error');
-    if (failedDep !== undefined) {
-      results[i] = { status: 'error', error: `Referenced object ${operations[failedDep].ref} was not imported`, code: 'MISSING_REFERENCE_ERROR' };
+  const completions: Promise<void>[] = []; // by operation index, settled once the operation is done
+  const run = async (index: number) => {
+    const operation = operations[index];
+    await Promise.all(dependencies[index].map((dependency) => completions[dependency]));
+    const failedDependency = dependencies[index].find((dependency) => results[dependency].status === 'error');
+    if (failedDependency !== undefined) {
+      results[index] = { status: 'error', error: `Referenced object ${operations[failedDependency].ref} was not imported`, code: 'MISSING_REFERENCE_ERROR' };
       return;
     }
-    const entry = documentOf(schema, operations[i].query);
-    if ('invalid' in entry) {
-      results[i] = { status: 'error', error: entry.invalid, code: 'GRAPHQL_VALIDATION_FAILED' };
+    const mutation = mutationOf(schema, operation.query);
+    if ('invalid' in mutation) {
+      results[index] = { status: 'error', error: mutation.invalid, code: 'GRAPHQL_VALIDATION_FAILED' };
       return;
     }
     collector.enter();
     try {
-      const response: any = await execute({ schema, document: entry.document, variableValues: replaceStrings(operations[i].variables ?? {}, ids), contextValue: batchContext });
-      if (response.errors?.length > 0) {
-        const error = response.errors[0];
-        results[i] = { status: 'error', error: error.message, code: error.extensions?.code ?? error.originalError?.name };
-      } else {
-        const id = response.data?.[entry.field]?.id;
-        results[i] = { status: 'done', id };
-        if (operations[i].ref && id) ids.set(operations[i].ref as string, id);
-      }
-    } catch (e: any) {
-      results[i] = { status: 'error', error: e?.message ?? String(e), code: e?.extensions?.code ?? e?.name };
+      const variableValues = replaceStrings(operation.variables ?? {}, realIds);
+      const response = await execute({ schema, document: mutation.document, variableValues, contextValue: batchContext });
+      const result = responseResult(response, mutation.field);
+      results[index] = result;
+      if (operation.ref && result.id) realIds.set(operation.ref, result.id);
+    } catch (e) {
+      results[index] = thrownResult(e);
     } finally {
       collector.exit();
     }
   };
-  // Operations are registered before any of them runs, so that every dependency's promise exists
-  const started: (() => Promise<void>)[] = operations.map((_, i) => () => run(i));
-  const gates = operations.map(() => {
-    let open = () => {};
-    const gate = new Promise<void>((resolve) => {
-      open = resolve;
-    });
-    return { gate, open };
+  // Every operation starts a microtask later, in input order, so that all the completions it awaits exist by then
+  const allRegistered = Promise.resolve();
+  operations.forEach((_, index) => {
+    completions.push(allRegistered.then(() => run(index)));
   });
-  operations.forEach((_, i) => {
-    done[i] = gates[i].gate.then(started[i]);
-  });
-  gates.forEach((g) => g.open());
-  await Promise.all(done);
+  await Promise.all(completions);
   return results;
 };

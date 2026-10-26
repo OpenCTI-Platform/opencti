@@ -33,13 +33,13 @@ const sha = (value: string) => createHash('sha256').update(value).digest('hex');
 
 // Keys sorted; a resolved ref (an element, below the top level) as what the merge reads of it
 const canonical = (value: any, depth = 0): any => {
-  if (Array.isArray(value)) return value.map((v) => canonical(v, depth + 1));
+  if (Array.isArray(value)) return value.map((item) => canonical(item, depth + 1));
   if (value instanceof Date) return value.toISOString();
   if (value && typeof value === 'object') {
     if (depth > 0 && typeof value.internal_id === 'string' && value.entity_type) {
       return [value.internal_id, value.entity_type, value.definition_type ?? null, value.x_opencti_order ?? null];
     }
-    return Object.keys(value).sort().filter((k) => value[k] !== undefined).map((k) => [k, canonical(value[k], depth + 1)]);
+    return Object.keys(value).sort().filter((key) => value[key] !== undefined).map((key) => [key, canonical(value[key], depth + 1)]);
   }
   return value;
 };
@@ -66,10 +66,10 @@ export const chunkEpoch = async (context: AuthContext, user: AuthUser) => {
     PLATFORM_VERSION,
     isEnterpriseEditionFromSettings(settings),
     settings?.platform_organization ?? null,
-    hashOnce(markings, () => sha(JSON.stringify(canonical(markings.map((m: any) => [m.internal_id, m.definition_type, m.x_opencti_order]))))),
+    hashOnce(markings, () => sha(JSON.stringify(canonical(markings.map((marking: any) => [marking.internal_id, marking.definition_type, marking.x_opencti_order]))))),
     hashOnce(statuses, () => sha(JSON.stringify(statuses))),
     hashOnce(user, () => sha(JSON.stringify(userState))),
-    (context as any).synchronizedUpsert ?? null,
+    context.synchronizedUpsert ?? null,
     context.eventId ?? null,
   ]));
 };
@@ -89,11 +89,13 @@ const entryKey = (objectId: string, fingerprint: string) => `${objectId}|${finge
 // The versions on which each (object, fingerprint) was found to change nothing
 export const readUnchanged = async (entries: { objectId: string; fingerprint: string }[]) => {
   const out = new Map<string, Version>();
-  const unique = [...new Map(entries.map((e) => [entryKey(e.objectId, e.fingerprint), e])).values()];
+  const unique = [...new Map(entries.map((entry) => [entryKey(entry.objectId, entry.fingerprint), entry])).values()];
   if (unique.length === 0) return out;
-  const response: any = await elRawMget({ docs: unique.map((e) => ({ _index: IDENTITY_INDEX, _id: docId(e.objectId, e.fingerprint) })) });
+  const response: any = await elRawMget({ docs: unique.map((entry) => ({ _index: IDENTITY_INDEX, _id: docId(entry.objectId, entry.fingerprint) })) });
   response.docs.forEach((doc: any, i: number) => {
-    if (doc.found) out.set(entryKey(unique[i].objectId, unique[i].fingerprint), { seq_no: doc._source.seq_no, primary_term: doc._source.primary_term });
+    if (!doc.found) return;
+    const { objectId, fingerprint } = unique[i];
+    out.set(entryKey(objectId, fingerprint), { seq_no: doc._source.seq_no, primary_term: doc._source.primary_term });
   });
   return out;
 };
@@ -106,9 +108,9 @@ export const isUnchangedOn = (known: Map<string, Version>, objectId: string, fin
 
 export const recordUnchanged = async (entries: { objectId: string; fingerprint: string; version: Version }[]) => {
   if (entries.length === 0) return;
-  const body = entries.flatMap((e) => [
-    { index: { _index: IDENTITY_INDEX, _id: docId(e.objectId, e.fingerprint) } },
-    { unchanged_of: e.objectId, seq_no: e.version.seq_no, primary_term: e.version.primary_term },
+  const body = entries.flatMap((entry) => [
+    { index: { _index: IDENTITY_INDEX, _id: docId(entry.objectId, entry.fingerprint) } },
+    { unchanged_of: entry.objectId, seq_no: entry.version.seq_no, primary_term: entry.version.primary_term },
   ]);
   await elRawBulk(lockfreeContext, { refresh: false, body });
 };

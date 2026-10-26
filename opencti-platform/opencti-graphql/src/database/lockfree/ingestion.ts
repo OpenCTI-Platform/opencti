@@ -4,7 +4,7 @@
 // path and keeps the identity index in step through the sync functions, called where the platform stores its
 // create, update, merge and delete events.
 import * as R from 'ramda';
-import { booleanConf, logApp } from '../../config/conf';
+import { LOCKFREE_INGESTION_ENABLED, logApp } from '../../config/conf';
 import { getClientBase } from '../redis';
 import { inferIndexFromConceptType } from '../utils';
 import { getDraftContext } from '../../utils/draftContext';
@@ -16,7 +16,7 @@ import { isStixSightingRelationship } from '../../schema/stixSightingRelationshi
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY } from '../../schema/stixRefRelationship';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { claimKeys, identityKeys, setKeys } from './identity';
+import { claimKeys, identityKeys, type Owner, setKeys } from './identity';
 import { loadByAnyIds, mgetRaw, toElements } from './load';
 import { userFilterStoreElements } from '../../utils/access';
 import { appendPairs, pairEntryOf, pairKey, removeFromPair } from './pairs';
@@ -26,15 +26,16 @@ import { type ItemResult, writeEntityChunk, writeRelationChunk } from './writer'
 import { executeOperations, type Operation, type WriteCollector } from './batch';
 import type { GraphQLSchema } from 'graphql';
 
-export const LOCKFREE_INGESTION_ENABLED = booleanConf('app:lockfree_ingestion:enabled', false);
+export { LOCKFREE_INGESTION_ENABLED };
 const BACKFILL_DONE_KEY = 'lockfree:backfill:done'; // prefixed by the client
+const BACKFILL_RECHECK_MS = 5000;
 
-// The backfill marker, read at most every 5 seconds until it is set
+// The backfill marker, read at most every BACKFILL_RECHECK_MS until it is set
 let backfillDone = false;
 let backfillCheckedAt = 0;
 export const isIdentityBackfillDone = async () => {
   if (backfillDone) return true;
-  if (Date.now() - backfillCheckedAt < 5000) return false;
+  if (Date.now() - backfillCheckedAt < BACKFILL_RECHECK_MS) return false;
   backfillCheckedAt = Date.now();
   backfillDone = (await getClientBase().get(BACKFILL_DONE_KEY)) !== null;
   return backfillDone;
@@ -44,17 +45,24 @@ export const markIdentityBackfillDone = async () => {
   backfillDone = true;
 };
 
+// Context marks set by the path itself: `lockfree_bypass` sends a write to today's path, `lockfree_write` is a
+// lock-free write (its identity keys are already in step), `lockfree_batch` the collector of a batch import
 const isMarked = (context: AuthContext, mark: 'lockfree_bypass' | 'lockfree_write') => (context as any)[mark] === true;
+const batchCollectorOf = (context: AuthContext): WriteCollector | undefined => (context as any).lockfree_batch;
+
 // Meta objects written lock-free too: plain objects with an id from their content, created with each object that
 // carries them (labels and markings keep today's path)
 const LOCKFREE_META_TYPES = [ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE];
+const isLockFreeType = (type: string) => isStixCoreObject(type) || LOCKFREE_META_TYPES.includes(type)
+  || isStixCoreRelationship(type) || isStixSightingRelationship(type);
 
-// Whether a create goes through the lock-free path
+// Whether a create goes through the lock-free path: a worker import or a batch, outside drafts
 export const isLockFreeIngestion = async (context: AuthContext, user: AuthUser, type: string) => {
-  const batch = (context as any).lockfree_batch !== undefined;
-  if (!LOCKFREE_INGESTION_ENABLED || (!context.workId && !batch) || isMarked(context, 'lockfree_bypass')) return false;
+  if (!LOCKFREE_INGESTION_ENABLED) return false;
+  const isImport = context.workId || batchCollectorOf(context) !== undefined;
+  if (!isImport || isMarked(context, 'lockfree_bypass')) return false;
   if (getDraftContext(context, user)) return false;
-  if (!isStixCoreObject(type) && !LOCKFREE_META_TYPES.includes(type) && !isStixCoreRelationship(type) && !isStixSightingRelationship(type)) return false;
+  if (!isLockFreeType(type)) return false;
   return isIdentityBackfillDone();
 };
 
@@ -78,15 +86,16 @@ export const findByIdsRealtime = async (context: AuthContext, user: AuthUser, id
 
 const lockFreeContext = (context: AuthContext): AuthContext => ({ ...context, lockfree_write: true } as AuthContext);
 
+// In a batch, the create waits for the batch's next chunk; otherwise it is written alone
 export const createEntityLockFree = async (context: AuthContext, user: AuthUser, input: Record<string, any>, type: string) => {
-  const batch: WriteCollector | undefined = (context as any).lockfree_batch;
+  const batch = batchCollectorOf(context);
   if (batch) return batch.createEntity(user, type, input);
   const [result] = await writeEntityChunk(lockFreeContext(context), user, [{ type, input }], newCounters(), { missingEnds: 'error' });
   return storedElement(result, type);
 };
 
 export const createRelationLockFree = async (context: AuthContext, user: AuthUser, input: Record<string, any>) => {
-  const batch: WriteCollector | undefined = (context as any).lockfree_batch;
+  const batch = batchCollectorOf(context);
   if (batch) return batch.createRelation(user, input);
   const [result] = await writeRelationChunk(lockFreeContext(context), user, [input], newCounters(), { missingEnds: 'error' });
   return storedElement(result, input.relationship_type);
@@ -108,9 +117,8 @@ export const importLockFree = async (
     if (getDraftContext(context, user)) throw UnsupportedError('Lock-free import does not write into drafts');
     return executeOperations(context, schema as GraphQLSchema, operations);
   }
-  const supported = (type: string) => isStixCoreObject(type);
-  const unsupported = entities.filter((e) => !supported(e.type));
-  if (unsupported.length > 0) throw UnsupportedError('Lock-free import takes STIX core objects', { types: R.uniq(unsupported.map((e) => e.type)) });
+  const unsupported = entities.filter((entity) => !isStixCoreObject(entity.type));
+  if (unsupported.length > 0) throw UnsupportedError('Lock-free import takes STIX core objects', { types: R.uniq(unsupported.map((entity) => entity.type)) });
   const writeContext = lockFreeContext(context);
   const counters = newCounters();
   const results = [
@@ -154,12 +162,15 @@ const safely = async (operation: string, element: any, fn: () => Promise<void>) 
 export const syncIdentityOnCreate = async (context: AuthContext, user: AuthUser, element: any) => {
   if (!isSynced(context, user, element)) return;
   await safely('create', element, async () => {
-    const conflicts: any[] = await claimKeys([{ keys: keysOf(element), owner: ownerOf(element) }]);
-    const holders = R.uniqBy((c: any) => c.holder.owner_id, conflicts.filter((c: any) => c.holder.owner_id !== element.internal_id));
-    if (holders.length > 0 && !isRelationshipElement(element)) {
-      await enqueue(holders.map((c: any) => ({ kind: 'reconcile', loser: { ...ownerOf(element), key: c.key, state: 'live' }, winner: c.holder } as Task)));
+    const isRelationship = isRelationshipElement(element);
+    const conflicts: { key: string; holder: Owner }[] = await claimKeys([{ keys: keysOf(element), owner: ownerOf(element) }]);
+    const otherHolders = conflicts.filter((conflict) => conflict.holder.owner_id !== element.internal_id);
+    const conflictPerHolder = R.uniqBy((conflict) => conflict.holder.owner_id, otherHolders);
+    if (conflictPerHolder.length > 0 && !isRelationship) {
+      const loser = ownerOf(element);
+      await enqueue(conflictPerHolder.map((conflict): Task => ({ kind: 'reconcile', loser: { ...loser, key: conflict.key, state: 'live' }, winner: conflict.holder })));
     }
-    if (isRelationshipElement(element)) {
+    if (isRelationship) {
       await appendPairs([{ key: pairKey(element.entity_type, element.fromId, element.toId), entry: pairEntryOf(element, createdByOf(element)) }]);
     }
   });
@@ -177,7 +188,8 @@ export const syncIdentityOnUpdate = async (context: AuthContext, user: AuthUser,
 export const syncIdentityOnMerge = async (context: AuthContext, user: AuthUser, target: any, sources: any[]) => {
   if (!isSynced(context, user, target)) return;
   await safely('merge', target, async () => {
-    const keys = R.uniq([...keysOf(target), ...sources.flatMap((s) => keysOf({ ...s, entity_type: s.entity_type ?? target.entity_type }))]);
+    const sourceKeys = sources.flatMap((source) => keysOf({ ...source, entity_type: source.entity_type ?? target.entity_type }));
+    const keys = R.uniq([...keysOf(target), ...sourceKeys]);
     await setKeys(keys.map((key) => ({ key, owner: ownerOf(target) })));
   });
 };

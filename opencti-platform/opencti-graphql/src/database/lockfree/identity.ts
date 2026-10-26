@@ -12,6 +12,9 @@ const NAMESPACE = 'a6b4c1e2-0f8d-4c5e-9b7a-3d2f1e0c9b8a';
 // Outside the platform prefix, so that no platform index template (strict mappings) applies to it
 export const IDENTITY_INDEX = `lockfree_identities_${ES_INDEX_PREFIX}`;
 
+const LOOKUP_BATCH_SIZE = 1000;
+const CONFLICT = 409;
+
 export const deterministicId = (key: string) => uuidv5(key, NAMESPACE);
 
 export interface Owner {
@@ -23,6 +26,21 @@ export interface Owner {
   state: 'live' | 'deleted';
 }
 
+type OwnerFields = Omit<Owner, 'key' | 'state'>;
+
+// A key another owner already holds: `claimant` (an owner_id) lost it to `holder`
+export interface ClaimConflict { key: string; claimant: string; holder: Owner }
+
+interface BulkCreateResult { status: number; error?: unknown }
+
+// The owner fields naming a stored element
+export const ownerFieldsOf = (element: Record<string, any>): OwnerFields => ({
+  owner_id: element.internal_id,
+  owner_index: element._index,
+  owner_type: element.entity_type,
+  owner_standard_id: element.standard_id,
+});
+
 // Every key that makes two inputs the same object, as the platform computes them for its locks and searches
 export const identityKeys = (type: string, input: Record<string, any>): string[] => {
   const ids: string[] = getInputIds(type, { ...input, entity_type: type, internal_id: undefined }, false);
@@ -32,56 +50,61 @@ export const identityKeys = (type: string, input: Record<string, any>): string[]
 // Realtime lookup of keys: key -> owner, for the keys that have one
 export const lookupKeys = async (keys: string[]): Promise<Map<string, Owner>> => {
   const owners = new Map<string, Owner>();
-  const unique = [...new Set(keys)];
-  for (let i = 0; i < unique.length; i += 1000) {
-    const slice = unique.slice(i, i + 1000);
-    const response: any = await elRawMget({ docs: slice.map((key) => ({ _index: IDENTITY_INDEX, _id: deterministicId(key) })) });
-    response.docs.forEach((doc: any, j: number) => {
-      if (doc.found) owners.set(slice[j], doc._source as Owner);
+  const uniqueKeys = [...new Set(keys)];
+  for (let offset = 0; offset < uniqueKeys.length; offset += LOOKUP_BATCH_SIZE) {
+    const batch = uniqueKeys.slice(offset, offset + LOOKUP_BATCH_SIZE);
+    const response: { docs: { found: boolean; _source: Owner }[] } = await elRawMget({
+      docs: batch.map((key) => ({ _index: IDENTITY_INDEX, _id: deterministicId(key) })),
+    });
+    response.docs.forEach((doc, position) => {
+      if (doc.found) owners.set(batch[position], doc._source);
     });
   }
   return owners;
 };
 
 // Claim keys for an owner with `create`: returns the keys another owner already holds (a lost race)
-export const claimKeys = async (claims: { keys: string[]; owner: Omit<Owner, 'key' | 'state'> }[]) => {
-  const body = claims.flatMap(({ keys, owner }) => keys.flatMap((key) => [
+export const claimKeys = async (claims: { keys: string[]; owner: OwnerFields }[]): Promise<ClaimConflict[]> => {
+  // One claim per key, in the order of the bulk items
+  const keyClaims = claims.flatMap(({ keys, owner }) => keys.map((key) => ({ key, owner })));
+  if (keyClaims.length === 0) return [];
+  const body = keyClaims.flatMap(({ key, owner }) => [
     { create: { _index: IDENTITY_INDEX, _id: deterministicId(key) } },
     { ...owner, key, state: 'live' },
-  ]));
-  if (body.length === 0) return [];
-  const response: any = await elRawBulk(lockfreeContext, { refresh: false, body });
-  const flat = claims.flatMap(({ keys, owner }) => keys.map((key) => ({ key, owner })));
-  const conflicts = response.items
-    .map((item: any, i: number) => ({ item: item.create, ...flat[i] }))
-    .filter(({ item }: any) => item.status === 409);
-  const failed = response.items.find((item: any) => item.create.status >= 400 && item.create.status !== 409);
-  if (failed) throw new Error(`Identity claim failed: ${JSON.stringify(failed.create.error)}`);
+  ]);
+  const response = await elRawBulk(lockfreeContext, { refresh: false, body });
+  const results: BulkCreateResult[] = response.items.map((item: { create: BulkCreateResult }) => item.create);
+  const failed = results.find((result) => result.status >= 400 && result.status !== CONFLICT);
+  if (failed) throw new Error(`Identity claim failed: ${JSON.stringify(failed.error)}`);
+  const conflicts = keyClaims.filter((_, position) => results[position].status === CONFLICT);
   if (conflicts.length === 0) return [];
-  // A tombstone or the same owner is not a lost race: take the key over
-  const holders = await lookupKeys(conflicts.map((c: any) => c.key));
-  const takeOver = conflicts.filter((c: any) => holders.get(c.key)?.state === 'deleted');
-  if (takeOver.length > 0) await setKeys(takeOver.map((c: any) => ({ key: c.key, owner: c.owner })));
-  return conflicts
-    .filter((c: any) => holders.get(c.key)?.state === 'live' && holders.get(c.key)?.owner_id !== c.owner.owner_id)
-    .map((c: any) => ({ key: c.key, claimant: c.owner.owner_id, holder: holders.get(c.key) as Owner }));
+  // A tombstone or the same owner is not a lost race: a tombstoned key is taken over
+  const holders = await lookupKeys(conflicts.map((conflict) => conflict.key));
+  const tombstoned = conflicts.filter((conflict) => holders.get(conflict.key)?.state === 'deleted');
+  if (tombstoned.length > 0) await setKeys(tombstoned);
+  const lostToAnother = conflicts.filter((conflict) => {
+    const holder = holders.get(conflict.key);
+    return holder?.state === 'live' && holder.owner_id !== conflict.owner.owner_id;
+  });
+  return lostToAnother.map((conflict) => ({ key: conflict.key, claimant: conflict.owner.owner_id, holder: holders.get(conflict.key) as Owner }));
 };
 
 // Overwrite keys (re-pointing after a merge of two objects, or a tombstone)
-export const setKeys = async (entries: { key: string; owner: Omit<Owner, 'key' | 'state'>; state?: Owner['state'] }[]) => {
+export const setKeys = async (entries: { key: string; owner: OwnerFields; state?: Owner['state'] }[]) => {
   const body = entries.flatMap(({ key, owner, state }) => [
     { index: { _index: IDENTITY_INDEX, _id: deterministicId(key) } },
     { ...owner, key, state: state ?? 'live' },
   ]);
   if (body.length === 0) return;
-  const response: any = await elRawBulk(lockfreeContext, { refresh: false, body });
+  const response = await elRawBulk(lockfreeContext, { refresh: false, body });
   if (response.errors) throw new Error('Identity update failed');
 };
 
 // One-time backfill for objects that exist before the lock-free path is used (markings, labels, authors...)
 export const registerExisting = async (objects: Record<string, any>[]) => {
-  await setKeys(objects.flatMap((o) => identityKeys(o.entity_type, { ...o, stix_id: o.standard_id }).concat([o.internal_id]).map((key) => ({
-    key,
-    owner: { owner_id: o.internal_id, owner_index: o._index, owner_type: o.entity_type, owner_standard_id: o.standard_id },
-  }))));
+  await setKeys(objects.flatMap((object) => {
+    const keys = identityKeys(object.entity_type, { ...object, stix_id: object.standard_id }).concat([object.internal_id]);
+    const owner = ownerFieldsOf(object);
+    return keys.map((key) => ({ key, owner }));
+  }));
 };

@@ -8,6 +8,8 @@ import type { Owner } from './identity';
 
 export const PARTITIONS = 4;
 const GROUP = 'settlers';
+// The stream field holding the serialized task
+const TASK_FIELD = 't';
 // The client adds the platform's key prefix (ioredis keyPrefix)
 export const streamName = (partition: number) => `lockfree:settle:${partition}`;
 
@@ -20,7 +22,13 @@ export interface RelationReconcileTask { kind: 'relation-reconcile'; keep: { id:
 export type Task = EndpointTask | ReconcileTask | RelationReconcileTask;
 export interface QueuedTask { partition: number; id: string; task: Task }
 
-export const partitionOf = (id: string) => parseInt(id.replace(/-/g, '').slice(0, 8), 16) % PARTITIONS;
+// A stream entry as Redis returns it: [entry id, [field, value, field, value...]]
+type StreamEntry = [string, string[]];
+
+// The first 8 hex digits of the id, modulo the partition count
+const partitionOf = (id: string) => parseInt(id.replace(/-/g, '').slice(0, 8), 16) % PARTITIONS;
+
+// The entity a task works on decides its partition
 const taskPartition = (task: Task) => {
   if (task.kind === 'endpoint') return partitionOf(task.endpoint);
   if (task.kind === 'reconcile') return partitionOf(task.loser.owner_id);
@@ -42,47 +50,52 @@ const ensureGroup = async (partition: number) => {
 export const enqueue = async (tasks: Task[]) => {
   if (tasks.length === 0) return;
   const pipeline = getClientBase().pipeline();
-  tasks.forEach((task) => pipeline.call('XADD', streamName(taskPartition(task)), '*', 't', JSON.stringify(task)));
+  tasks.forEach((task) => pipeline.call('XADD', streamName(taskPartition(task)), '*', TASK_FIELD, JSON.stringify(task)));
   const results = await pipeline.exec();
   const failed = (results ?? []).find(([error]) => error);
   if (failed) throw failed[0];
 };
 
-const parseEntries = (partition: number, entries: any[]): QueuedTask[] => (entries ?? []).map(([id, fields]: [string, string[]]) => ({
+const parseEntries = (partition: number, entries: StreamEntry[] | undefined): QueuedTask[] => (entries ?? []).map(([id, fields]) => ({
   partition,
   id,
-  task: JSON.parse(fields[fields.indexOf('t') + 1]) as Task,
+  task: JSON.parse(fields[fields.indexOf(TASK_FIELD) + 1]) as Task,
 }));
+
+// XREADGROUP replies [[stream, entries]] (or nothing), XAUTOCLAIM replies [next cursor, entries, deleted ids]
+const readGroupEntries = (reply: any): StreamEntry[] | undefined => reply?.[0]?.[1];
+const autoClaimEntries = (reply: any): StreamEntry[] | undefined => reply?.[1];
 
 // This consumer's pending items (retries), items left by stopped consumers, then new items
 export const readTasks = async (partitions: number[], consumer: string, count: number, claimIdleMs: number): Promise<QueuedTask[]> => {
   const client = getClientBase();
-  const out: QueuedTask[] = [];
+  const tasks: QueuedTask[] = [];
   for (const partition of partitions) {
     await ensureGroup(partition);
     const key = streamName(partition);
-    const own: any = await client.call('XREADGROUP', 'GROUP', GROUP, consumer, 'COUNT', count, 'STREAMS', key, '0');
-    out.push(...parseEntries(partition, own?.[0]?.[1]));
-    const claimed: any = await client.call('XAUTOCLAIM', key, GROUP, consumer, claimIdleMs, '0-0', 'COUNT', count);
-    const claimedIds = new Set(out.map((t) => t.id));
-    out.push(...parseEntries(partition, claimed?.[1]).filter((t) => !claimedIds.has(t.id)));
-    const fresh: any = await client.call('XREADGROUP', 'GROUP', GROUP, consumer, 'COUNT', count, 'STREAMS', key, '>');
-    out.push(...parseEntries(partition, fresh?.[0]?.[1]));
+    const ownPending = await client.call('XREADGROUP', 'GROUP', GROUP, consumer, 'COUNT', count, 'STREAMS', key, '0');
+    tasks.push(...parseEntries(partition, readGroupEntries(ownPending)));
+    const claimed = await client.call('XAUTOCLAIM', key, GROUP, consumer, claimIdleMs, '0-0', 'COUNT', count);
+    // An item this consumer already holds can come back from the claim: read once
+    const alreadyRead = new Set(tasks.map((task) => task.id));
+    tasks.push(...parseEntries(partition, autoClaimEntries(claimed)).filter((task) => !alreadyRead.has(task.id)));
+    const fresh = await client.call('XREADGROUP', 'GROUP', GROUP, consumer, 'COUNT', count, 'STREAMS', key, '>');
+    tasks.push(...parseEntries(partition, readGroupEntries(fresh)));
   }
-  return out;
+  return tasks;
 };
 
 // Acknowledge and drop applied items
 export const ackTasks = async (tasks: QueuedTask[]) => {
   if (tasks.length === 0) return;
   const pipeline = getClientBase().pipeline();
-  const byPartition = new Map<number, string[]>();
-  tasks.forEach((t) => {
-    const ids = byPartition.get(t.partition);
-    if (ids) ids.push(t.id);
-    else byPartition.set(t.partition, [t.id]);
+  const idsByPartition = new Map<number, string[]>();
+  tasks.forEach((task) => {
+    const ids = idsByPartition.get(task.partition);
+    if (ids) ids.push(task.id);
+    else idsByPartition.set(task.partition, [task.id]);
   });
-  byPartition.forEach((ids, partition) => {
+  idsByPartition.forEach((ids, partition) => {
     pipeline.call('XACK', streamName(partition), GROUP, ...ids);
     pipeline.call('XDEL', streamName(partition), ...ids);
   });

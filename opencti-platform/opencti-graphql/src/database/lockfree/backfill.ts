@@ -14,19 +14,28 @@ import {
 } from '../../database/utils';
 import { elConvertHits } from '../../database/engine-data-converter';
 import { SYSTEM_USER } from '../../utils/access';
-import { claimKeys, identityKeys, type Owner, setKeys } from './identity';
+import { claimKeys, identityKeys, ownerFieldsOf, setKeys } from './identity';
 import { mgetRaw } from './load';
 import { appendPairs, pairEntryOf, pairKey } from './pairs';
 
+const ENTITY_INDICES = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_META_OBJECTS];
+const RELATIONSHIP_INDICES = [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+const DEFAULT_PAGE_SIZE = 2000;
+
+type Claim = Parameters<typeof claimKeys>[0][number];
+
+// Every document of the index, page by page in internal id order (search_after); returns how many were scanned
 const scan = async (index: string, size: number, onPage: (elements: any[]) => Promise<void>) => {
   let searchAfter: any[] | undefined;
   let total = 0;
   for (;;) {
-    const response: any = await elRawSearch(lockfreeContext, SYSTEM_USER, null, {
-      index,
-      size,
-      body: { sort: [{ 'internal_id.keyword': 'asc' }], query: { match_all: {} }, _source: { excludes: ['rel_*.inferred_id'] }, ...(searchAfter ? { search_after: searchAfter } : {}) },
-    });
+    const body = {
+      sort: [{ 'internal_id.keyword': 'asc' }],
+      query: { match_all: {} },
+      _source: { excludes: ['rel_*.inferred_id'] },
+      ...(searchAfter ? { search_after: searchAfter } : {}),
+    };
+    const response: any = await elRawSearch(lockfreeContext, SYSTEM_USER, null, { index, size, body });
     const hits = response.hits.hits;
     if (hits.length === 0) return total;
     const elements = await elConvertHits(hits);
@@ -36,42 +45,50 @@ const scan = async (index: string, size: number, onPage: (elements: any[]) => Pr
   }
 };
 
-type Claim = Parameters<typeof claimKeys>[0][number];
+// An entity's keys: the ones the platform computes, plus its internal id
+const entityClaim = (entity: any): Claim => ({
+  keys: [...identityKeys(entity.entity_type, { ...entity, stix_id: entity.standard_id }), entity.internal_id],
+  owner: ownerFieldsOf(entity),
+});
 
-// Claims, then takes over the keys whose holder's document is gone
+// A relationship's keys: its own ids, lowercased
+const relationshipClaim = (relationship: any): Claim => ({
+  keys: [relationship.internal_id, relationship.standard_id, ...(relationship.x_opencti_stix_ids ?? [])].map((key: string) => key.toLowerCase()),
+  owner: ownerFieldsOf(relationship),
+});
+
+// Claims, then takes over the keys whose holder's document is gone; returns how many were taken over
 const claimTakingOverStale = async (claims: Claim[]) => {
-  const conflicts: { key: string; claimant: string; holder: Owner }[] = await claimKeys(claims);
+  const conflicts = await claimKeys(claims);
   if (conflicts.length === 0) return 0;
-  const holders = await mgetRaw(conflicts.map((c) => ({ index: c.holder.owner_index, id: c.holder.owner_id })), { light: true });
-  const stale = conflicts.filter((c) => !holders.has(c.holder.owner_id));
-  const ownerOf = new Map(claims.map((c) => [c.owner.owner_id, c.owner]));
-  await setKeys(stale.map((c) => ({ key: c.key, owner: ownerOf.get(c.claimant) as Claim['owner'] })));
+  const holderDocuments = await mgetRaw(conflicts.map(({ holder }) => ({ index: holder.owner_index, id: holder.owner_id })), { light: true });
+  const stale = conflicts.filter(({ holder }) => !holderDocuments.has(holder.owner_id));
+  const claimantOwners = new Map(claims.map((claim) => [claim.owner.owner_id, claim.owner]));
+  await setKeys(stale.map((conflict) => ({ key: conflict.key, owner: claimantOwners.get(conflict.claimant) as Claim['owner'] })));
   return stale.length;
 };
 
 export const backfillIdentities = async (opts: { pageSize?: number } = {}) => {
-  const size = opts.pageSize ?? 2000;
+  const size = opts.pageSize ?? DEFAULT_PAGE_SIZE;
   const started = Date.now();
   let entities = 0;
   let relationships = 0;
   let staleTakenOver = 0;
-  for (const index of [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_META_OBJECTS]) {
+  for (const index of ENTITY_INDICES) {
     entities += await scan(index, size, async (elements) => {
-      staleTakenOver += await claimTakingOverStale(elements.map((e: any) => ({
-        keys: [...identityKeys(e.entity_type, { ...e, stix_id: e.standard_id }), e.internal_id],
-        owner: { owner_id: e.internal_id, owner_index: e._index, owner_type: e.entity_type, owner_standard_id: e.standard_id },
-      })));
+      staleTakenOver += await claimTakingOverStale(elements.map(entityClaim));
     });
   }
-  for (const index of [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS]) {
+  for (const index of RELATIONSHIP_INDICES) {
     relationships += await scan(index, size, async (elements) => {
-      staleTakenOver += await claimTakingOverStale(elements.map((e: any) => ({
-        keys: [e.internal_id, e.standard_id, ...(e.x_opencti_stix_ids ?? [])].map((k: string) => k.toLowerCase()),
-        owner: { owner_id: e.internal_id, owner_index: e._index, owner_type: e.entity_type, owner_standard_id: e.standard_id },
+      staleTakenOver += await claimTakingOverStale(elements.map(relationshipClaim));
+      await appendPairs(elements.map((relationship) => ({
+        key: pairKey(relationship.entity_type, relationship.fromId, relationship.toId),
+        entry: pairEntryOf(relationship, (relationship['created-by'] as string) ?? undefined),
       })));
-      await appendPairs(elements.map((e: any) => ({ key: pairKey(e.entity_type, e.fromId, e.toId), entry: pairEntryOf(e, (e['created-by'] as string) ?? undefined) })));
     });
   }
   const seconds = (Date.now() - started) / 1000;
-  return { entities, relationships, stale_taken_over: staleTakenOver, seconds, per_second: Math.round((entities + relationships) / Math.max(seconds, 0.001)) };
+  const perSecond = Math.round((entities + relationships) / Math.max(seconds, 0.001));
+  return { entities, relationships, stale_taken_over: staleTakenOver, seconds, per_second: perSecond };
 };
