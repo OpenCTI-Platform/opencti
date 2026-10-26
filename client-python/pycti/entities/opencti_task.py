@@ -5,6 +5,8 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import normalize_custom_field_values_input
+
 
 class Task:
     """Main Task class for OpenCTI
@@ -545,7 +547,9 @@ class Task:
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_properties = normalize_custom_field_values_input(
+            kwargs.get("custom_properties", None), self.opencti.app_logger
+        )
 
         if name is not None:
             self.opencti.app_logger.info("Creating Task", {"name": name})

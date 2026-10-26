@@ -6,6 +6,8 @@ from typing import Union
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import normalize_custom_field_values_input
+
 
 class ThreatActorIndividual:
     """Main ThreatActorIndividual class for OpenCTI
@@ -427,7 +429,9 @@ class ThreatActorIndividual:
         """
 
         stix_id = kwargs.get("stix_id", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_properties = normalize_custom_field_values_input(
+            kwargs.get("custom_properties", None), self.opencti.app_logger
+        )
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)

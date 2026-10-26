@@ -6,6 +6,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import normalize_custom_field_values_input
+
 
 class Note:
     """Main Note class for OpenCTI
@@ -799,7 +801,9 @@ class Note:
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_properties = normalize_custom_field_values_input(
+            kwargs.get("custom_properties", None), self.opencti.app_logger
+        )
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
         object_marking = kwargs.get("objectMarking", None)

@@ -5,7 +5,7 @@ in OpenCTI, including type mappings, pattern generation, and object reference co
 """
 
 import datetime
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import datefinder
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
@@ -13,6 +13,59 @@ from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpressio
 # datefinder only catches ValueError while parsing candidates; an out-of-range date
 # raises OverflowError, which must be swallowed the same way.
 datefinder.ValueError = ValueError, OverflowError
+
+
+def normalize_custom_field_values_input(
+    custom_properties: Any, logger: Any = None
+) -> Optional[List[Dict]]:
+    """Return the custom field value inputs of the custom properties given to a create method.
+
+    ``custom_properties`` is the dict of the STIX ``x_*`` custom properties of the
+    object (the stix2 convention used by the connectors): each of them is converted
+    into a ``{"field_name", "value"}`` custom field input, as for a STIX import. The
+    platform only keeps the ones matching a custom field definition (name or alias).
+    A list of custom field inputs (the format of the STIX import) is forwarded, its
+    inputs without a name or a value being skipped with a warning, as any other value.
+
+    :param custom_properties: the ``custom_properties`` given to a create method
+    :type custom_properties: Any
+    :param logger: logger used to warn about an ignored value, defaults to None
+    :type logger: Any, optional
+    :return: the list of custom field inputs, or None if there is none
+    :rtype: Optional[List[Dict]]
+    """
+    if custom_properties is None:
+        return None
+    if isinstance(custom_properties, dict):
+        custom_field_inputs = [
+            {"field_name": key, "value": value}
+            for key, value in custom_properties.items()
+            if isinstance(key, str) and key.startswith("x_") and value is not None
+        ]
+        return custom_field_inputs if len(custom_field_inputs) > 0 else None
+    if isinstance(custom_properties, list):
+        # Each input needs a name and a value, as required by the API: an invalid one is skipped
+        custom_field_inputs = [
+            entry
+            for entry in custom_properties
+            if isinstance(entry, dict)
+            and isinstance(entry.get("field_name"), str)
+            and entry.get("value") is not None
+        ]
+        if len(custom_field_inputs) < len(custom_properties) and logger is not None:
+            logger.warning(
+                "custom_properties: custom field inputs without a field_name or a value ignored",
+                {"ignored": len(custom_properties) - len(custom_field_inputs)},
+            )
+        return custom_field_inputs
+    if logger is not None:
+        logger.warning(
+            "custom_properties ignored: a dict of STIX custom properties or a list "
+            "of custom field inputs ({field_name, value}) is expected",
+            {"type": type(custom_properties).__name__},
+        )
+    return None
+
 
 # The Unix epoch as a naive datetime. datetime.fromtimestamp(0) depends on the local
 # time zone and raises OSError on Windows when the result is before 1970, which is the
