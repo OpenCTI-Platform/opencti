@@ -18,7 +18,6 @@ interface IngestionHealthTileBannerProps {
 const IngestionHealthTileBanner = ({ issue, to }: IngestionHealthTileBannerProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const isCritical = issue.severity === 'critical';
   const { color, Icon } = useHealthIssueDisplay(issue.severity);
   return (
     <Stack
