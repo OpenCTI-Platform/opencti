@@ -47,7 +47,7 @@ const IngestionHealthTileBanner = ({ issue, to }: IngestionHealthTileBannerProps
         {issue.message ?? t_i18n(capitalizeFirstLetter(issue.severity))}
       </Typography>
       <Typography sx={{ color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', whiteSpace: 'nowrap' }}>
-        {isCritical ? t_i18n('Fix') : t_i18n('Review')}
+        {t_i18n('Review')}
       </Typography>
       <ArrowForwardOutlined sx={{ fontSize: 14 }} />
     </Stack>

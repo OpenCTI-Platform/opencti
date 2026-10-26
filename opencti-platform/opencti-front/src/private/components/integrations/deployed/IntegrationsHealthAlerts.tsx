@@ -27,18 +27,19 @@ const IntegrationsHealthAlerts = ({ items, onShowIssue }: IntegrationsHealthAler
     const affected = items.filter((item) => item.healthIssue?.severity === severity);
     if (affected.length === 0) return [];
     const count = affected.length;
+    const isSingleAlert = count === 1;
     const isCritical = severity === 'critical';
     let title: string;
     if (isCritical) {
-      title = count === 1 ? t_i18n('1 integration is not working') : t_i18n('{count} integrations are not working', { values: { count } });
+      title = isSingleAlert ? t_i18n('1 integration is not working') : t_i18n('{count} integrations are not working', { values: { count } });
     } else {
-      title = count === 1 ? t_i18n('1 integration is degraded') : t_i18n('{count} integrations are degraded', { values: { count } });
+      title = isSingleAlert ? t_i18n('1 integration is degraded') : t_i18n('{count} integrations are degraded', { values: { count } });
     }
     const names = affected.slice(0, MAX_NAMES).map((item) => item.name).join(', ');
     const more = count > MAX_NAMES ? ` +${count - MAX_NAMES}` : '';
     // A single integration says what is wrong with it
-    const message = count === 1 ? affected[0].healthIssue?.message : null;
-    const label = isCritical ? t_i18n('Fix') : t_i18n('Review');
+    const message = isSingleAlert ? affected[0].healthIssue?.message : null;
+    const label = isSingleAlert ? t_i18n('Review') : t_i18n('See all');
     return [(
       <IngestionHealthBanner
         key={severity}
@@ -46,7 +47,7 @@ const IntegrationsHealthAlerts = ({ items, onShowIssue }: IntegrationsHealthAler
         severity={severity}
         title={title}
         lines={[`${names}${more}${message ? ` — ${message}` : ''}`]}
-        action={count === 1 ? (
+        action={isSingleAlert ? (
           <Button variant="secondary" size="small" component={Link} to={affected[0].detailUrl}>{label}</Button>
         ) : (
           <Button variant="secondary" size="small" onClick={() => onShowIssue(severity)}>{label}</Button>
