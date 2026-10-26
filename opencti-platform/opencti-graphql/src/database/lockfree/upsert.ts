@@ -323,8 +323,14 @@ const applyUpdate = async (
   if (updatedInputs.length === 0 && impactedInputs.length === 0 && relationsToCreate.length === 0 && relationsToDelete.length === 0) {
     return { status: 'unchanged', element: initial, pure };
   }
-  // The new version: attributes as elUpdateElement stores them (replace, null removes), refs as rel_* lists
-  const source = structuredClone(raw._source);
+  // The new version: attributes as elUpdateElement stores them (replace, null removes), refs as rel_* lists. Built on
+  // the full document, read now if the merge read it without its relationship lists, at the same version
+  let full = raw;
+  if (raw.partial) {
+    full = (await mgetRaw([{ index: raw._index, id: raw._id }])).get(raw._id) as RawDoc;
+    if (!full || full._seq_no !== raw._seq_no || full._primary_term !== raw._primary_term) return { status: 'conflict' };
+  }
+  const source = structuredClone(full._source);
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
     const esData: any = await prepareElementForIndexing(updateAsInstance);
@@ -410,7 +416,7 @@ export const upsertLockFree = async (
   let imagesRewritten = false;
   for (let attempt = 0; attempt < 50; attempt += 1) {
     const read = attempt === 0 ? preloaded : undefined;
-    const raw = read?.raw ?? (await mgetRaw([target])).get(target.id);
+    const raw = read?.raw ?? (await mgetRaw([target], { withoutLists: true })).get(target.id);
     if (!raw) return { status: 'missing' as const };
     const resolvedElement = read?.withRefs ?? await loadWithRefs(context, user, (await toElements([raw]))[0]);
     const attemptPatch: Record<string, any> = { ...patch };

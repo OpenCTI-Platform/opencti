@@ -9,21 +9,42 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { SYSTEM_USER, userFilterStoreElements } from '../../utils/access';
 import { internalFindByIds } from '../middleware-loader';
 import { getInstanceIds } from '../../schema/identifier';
+import { schemaTypesDefinition } from '../../schema/schema-types';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { pool } from './context';
 import { lookupKeys, type Owner } from './identity';
 import { versionOf } from './unchanged';
 
-export interface RawDoc { _index: string; _id: string; _seq_no: number; _primary_term: number; _source: Record<string, any> }
+// `partial`: read without the lists of relationships (see mgetRaw's `withoutLists`)
+export interface RawDoc { _index: string; _id: string; _seq_no: number; _primary_term: number; _source: Record<string, any>; partial?: boolean }
 
-// Raw documents by (index, id), realtime. `light` leaves out the rel_* lists of busy entities.
-export const mgetRaw = async (refs: { index: string; id: string }[], opts: { light?: boolean } = {}): Promise<Map<string, RawDoc>> => {
+// The fields listing an entity's core relationships and sightings (rel_indicates, rel_uses...): on a busy entity,
+// hundreds of thousands of ids, which the merge rules never read (they read the refs: rel_created-by,
+// rel_object-marking...)
+let relationshipLists: string[] | undefined;
+const relationshipListFields = () => {
+  relationshipLists ??= [...schemaTypesDefinition.get(ABSTRACT_STIX_CORE_RELATIONSHIP), STIX_SIGHTING_RELATIONSHIP]
+    .flatMap((type) => [buildRefRelationKey(type, '*'), `rel_${type}`]);
+  return relationshipLists;
+};
+
+// Raw documents by (index, id), realtime. `light` leaves out every rel_* field; `withoutLists` only the lists of
+// relationships, keeping the refs (the document is then marked partial: written back from a full read)
+export const mgetRaw = async (
+  refs: { index: string; id: string }[],
+  opts: { light?: boolean; withoutLists?: boolean } = {},
+): Promise<Map<string, RawDoc>> => {
   const found = new Map<string, RawDoc>();
   const unique = R.uniqBy((r) => `${r.index}|${r.id}`, refs);
+  let excludes: string[] | undefined;
+  if (opts.light) excludes = ['rel_*'];
+  else if (opts.withoutLists) excludes = relationshipListFields();
   await pool(R.splitEvery(1000, unique), 4, async (slice) => {
     const response: any = await elRawMget({
-      docs: slice.map((r) => ({ _index: r.index, _id: r.id, ...(opts.light ? { _source: { excludes: ['rel_*'] } } : {}) })),
+      docs: slice.map((r) => ({ _index: r.index, _id: r.id, ...(excludes ? { _source: { excludes } } : {}) })),
     });
-    response.docs.filter((d: any) => d.found).forEach((d: any) => found.set(d._id, d as RawDoc));
+    response.docs.filter((d: any) => d.found).forEach((d: any) => found.set(d._id, opts.withoutLists ? { ...d, partial: true } : d));
   });
   return found;
 };
@@ -120,7 +141,7 @@ export class ChunkReads {
   // The documents only: their versions, before deciding which ones need their refs
   async loadDocuments(targets: { index: string; id: string }[]) {
     if (targets.length === 0) return;
-    const [{ owners }, raws] = await Promise.all([liveOwners(targets.map((t) => t.id)), mgetRaw(targets)]);
+    const [{ owners }, raws] = await Promise.all([liveOwners(targets.map((t) => t.id)), mgetRaw(targets, { withoutLists: true })]);
     owners.forEach((owner, key) => this.owners.set(key, owner));
     targets.forEach((t) => this.looked.add(t.id.toLowerCase()));
     raws.forEach((raw, id) => this.raws.set(id, raw));
