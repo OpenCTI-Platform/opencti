@@ -53,6 +53,7 @@ export class WorkflowInstance<TContext extends Context = Context> extends StateM
    * Checks if an event can potentially be triggered from the current state (without running conditions).
    */
   public canTransition(event: Event): boolean {
+    if (this.completed) return false;
     const transition = this.definition.getTransition(this.currentState, event);
     return !!transition;
   }

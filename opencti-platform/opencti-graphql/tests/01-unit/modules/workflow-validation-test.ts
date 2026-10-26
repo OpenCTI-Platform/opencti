@@ -170,6 +170,30 @@ describe('Workflow Validation', () => {
     expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
   });
 
+  it('should not return an unlinked-transition error when a null to completes the workflow via validateDraft', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }],
+      transitions: [
+        { from: 'existing-state', to: null, event: 'complete', syncActions: [{ type: 'validateDraft' }] },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
+    expect(errors.some((e) => e.type === 'UNLINKED_TRANSITION')).toBe(false);
+  });
+
+  it('should still return an unlinked-transition error for a null to without validateDraft (an orphaned reference)', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }],
+      transitions: [
+        { from: 'existing-state', to: null, event: 'test' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors.some((e) => e.type === 'UNLINKED_TRANSITION' && e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
+  });
+
   it('should return error if filter operator is invalid', async () => {
     const invalid = {
       initialState: 'existing-state',
@@ -687,6 +711,47 @@ describe('Workflow Validation', () => {
     );
 
     // Ending states can be removed even when instances are in them
+    expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(false);
+  });
+
+  it('should not flag completed instances sitting in a removed non-ending state (same rule as publish)', async () => {
+    vi.mocked(middlewareLoader.storeLoadById).mockReset();
+    vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
+
+    // state-b has an outgoing transition (non-ending), like the source status of a terminal "Validate".
+    vi.mocked(middlewareLoader.storeLoadById).mockResolvedValue({
+      id: 'existing-workflow',
+      draft_version: {
+        id: 'v1', timestamp: '', createdBy: '',
+        content: JSON.stringify({
+          initialState: 'state-a',
+          states: [{ statusId: 'state-a' }, { statusId: 'state-b' }, { statusId: 'state-c' }],
+          transitions: [
+            { from: 'state-a', to: 'state-b', event: 'proceed' },
+            { from: 'state-b', to: 'state-c', event: 'complete' },
+          ],
+        }),
+        validation_errors: [],
+      },
+    } as any);
+
+    vi.mocked(middlewareLoader.fullEntitiesList).mockImplementation(
+      async (_context: any, _user: any, entityTypes: any): Promise<any> => {
+        if (entityTypes.includes('WorkflowInstance')) {
+          return [{ id: 'instance-1', workflow_id: 'existing-workflow', currentState: 'state-b', completed: true }];
+        }
+        return [];
+      },
+    );
+
+    const updated = {
+      initialState: 'state-a',
+      states: [{ statusId: 'state-a' }, { statusId: 'state-c' }],
+      transitions: [{ from: 'state-a', to: 'state-c', event: 'skip' }],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(updated), 'Incident', 'existing-workflow');
+
     expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(false);
   });
 

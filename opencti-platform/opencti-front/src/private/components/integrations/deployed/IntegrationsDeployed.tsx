@@ -143,6 +143,7 @@ const IntegrationsDeployedContent = ({
   // squeezing them against a fixed 250px column.
   return (
     <Stack
+      data-testid="deployed-page"
       direction={{ xs: 'column', md: 'row' }}
       sx={{
         gap: 2,
@@ -168,6 +169,7 @@ const IntegrationsDeployedContent = ({
           }}
         >
           <SearchInput
+            data-testid="integrations-search-input"
             value={searchInput}
             onSubmit={handleSearchInputSubmit}
             onChange={handleSearchInputChange}
