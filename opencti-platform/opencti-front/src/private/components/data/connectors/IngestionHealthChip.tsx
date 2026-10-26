@@ -1,9 +1,8 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useTheme } from '@mui/material/styles';
-import { Chip, type ChipSeverity, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { HEALTH_DISPLAY } from '@components/data/connectors/ingestionHealthDisplay';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import type { IngestionHealthChip_ingestionHealth$key } from './__generated__/IngestionHealthChip_ingestionHealth.graphql';
@@ -25,29 +24,12 @@ interface IngestionHealthChipProps {
   ingestionHealth?: IngestionHealthChip_ingestionHealth$key | null;
 }
 
-// Design system feedback tones of the statuses shown: only a failure is flagged
-const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
-  critical: 'critical',
-  degraded: 'high',
-};
-
-// Theme colour of a health status, for health markers drawn outside a chip.
-// Reads the project theme itself: a component holding the MUI theme lacks its extended palette (warn...)
-export const useIngestionHealthColor = () => {
-  const theme = useTheme<Theme>();
-  return (status: string): string | undefined => ({
-    critical: theme.palette.error.main,
-    degraded: theme.palette.warn.main,
-    healthy: theme.palette.success.main,
-  }[status]);
-};
-
 const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth: ingestionHealthKey }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const ingestionHealth = useFragment(ingestionHealthFragment, ingestionHealthKey ?? null);
   // Nothing to flag: not evaluated yet, healthy or unknown
-  const severity = ingestionHealth ? HEALTH_STATUS_SEVERITY_COLORS[ingestionHealth.status] : undefined;
+  const severity = ingestionHealth ? HEALTH_DISPLAY[ingestionHealth.status]?.chip : undefined;
   if (!isFeatureEnable('INGESTION_HEALTH') || !ingestionHealth || !severity) {
     return null;
   }
