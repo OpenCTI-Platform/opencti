@@ -2,7 +2,7 @@ import amqp from 'amqplib/callback_api';
 import util from 'util';
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { LRUCache } from 'lru-cache';
-import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
+import conf, { booleanConf, configureCA, loadCert, LOCKFREE_INGESTION_ENABLED, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
@@ -517,7 +517,6 @@ export const getBestBackgroundConnectorId = async (context, user) => {
 // With the lock-free write path, a worker imports the objects of a message together (lockfreeImport): the split
 // bundles, in their dependency order, travel PUSH_CHUNK_SIZE objects per message instead of one, which also spares
 // publishing one message per object
-const LOCKFREE_INGESTION_ENABLED = booleanConf('app:lockfree_ingestion:enabled', false);
 const PUSH_CHUNK_SIZE = conf.get('app:lockfree_ingestion:push_chunk_size') || 500;
 export const chunkSplitBundles = (bundles) => {
   if (!LOCKFREE_INGESTION_ENABLED || bundles.length <= 1) return bundles;

@@ -4682,7 +4682,17 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
   }
   return thing;
 };
-const RELATION_FIELDS_NOT_INDEXED = new Set([INTERNAL_TO_FIELD, INTERNAL_FROM_FIELD, 'from', 'fromId', 'fromRole', 'fromType', 'to', 'toId', 'toRole', 'toType']);
+// A copy of a document without some of its fields, made once (a chain of R.dissoc copied it once per field)
+const withoutFields = (thing: Record<string, any>, fields: Set<string>) => {
+  const copy: Record<string, any> = {};
+  const keys = Object.keys(thing);
+  for (let index = 0; index < keys.length; index += 1) {
+    if (!fields.has(keys[index])) copy[keys[index]] = thing[keys[index]];
+  }
+  return copy;
+};
+const ENTITY_FIELDS_NOT_INDEXED = new Set([INTERNAL_TO_FIELD, INTERNAL_FROM_FIELD]);
+const RELATION_FIELDS_NOT_INDEXED = new Set([...ENTITY_FIELDS_NOT_INDEXED, 'from', 'fromId', 'fromRole', 'fromType', 'to', 'toId', 'toRole', 'toType']);
 const prepareRelation = (thing: Record<string, any>) => {
   if (thing.fromRole === undefined || thing.toRole === undefined) {
     throw DatabaseError('Cant index relation connections without from or to', {
@@ -4723,24 +4733,11 @@ const prepareRelation = (thing: Record<string, any>) => {
     types: [to.entity_type, ...getParentTypes(to.entity_type)],
     role: thing.toRole,
   });
-  // One copy without the from/to fields (a chain of R.dissoc copied the document once per field)
-  const prepared: Record<string, any> = {};
-  const keys = Object.keys(thing);
-  for (let index = 0; index < keys.length; index += 1) {
-    if (!RELATION_FIELDS_NOT_INDEXED.has(keys[index])) prepared[keys[index]] = thing[keys[index]];
-  }
+  const prepared = withoutFields(thing, RELATION_FIELDS_NOT_INDEXED);
   prepared.connections = connections;
   return prepared;
 };
-// One copy without the from/to fields (R.dissoc copied the document once per field)
-const prepareEntity = (thing: Record<string, any>) => {
-  const prepared: Record<string, any> = {};
-  const keys = Object.keys(thing);
-  for (let index = 0; index < keys.length; index += 1) {
-    if (keys[index] !== INTERNAL_TO_FIELD && keys[index] !== INTERNAL_FROM_FIELD) prepared[keys[index]] = thing[keys[index]];
-  }
-  return prepared;
-};
+const prepareEntity = (thing: Record<string, any>) => withoutFields(thing, ENTITY_FIELDS_NOT_INDEXED);
 export const prepareIndexingElement = async (thing: Record<string, any>) => {
   if (thing.base_type === BASE_TYPE_RELATION) {
     const relation = prepareRelation(thing as StoreRelation);

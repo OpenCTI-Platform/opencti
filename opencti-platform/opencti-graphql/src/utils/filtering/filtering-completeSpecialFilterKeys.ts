@@ -67,10 +67,8 @@ import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 import { pushAll } from '../arrayUtil';
-import { booleanConf } from '../../config/conf';
+import { LOCKFREE_INGESTION_ENABLED } from '../../config/conf';
 import { getInstanceIds } from '../../schema/identifier';
-
-const LOCKFREE_INGESTION_ENABLED = booleanConf('app:lockfree_ingestion:enabled', false);
 
 export const adaptFilterToRegardingOfFilterKey = async (
   context: AuthContext,

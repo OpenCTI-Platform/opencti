@@ -1225,16 +1225,16 @@ export const getVocabulariesCategories = (): VocabularyDefinition[] => {
 };
 
 // The vocabulary definitions are static: the categories of a field of a type are computed once
-const fieldCategories = new Map<string, [string, VocabularyDefinition][]>();
-const categoriesOfField = (fieldName: string, entityType: string) => {
+type FieldCategories = [string, (typeof vocabularyDefinitions)[keyof typeof vocabularyDefinitions]][];
+const fieldCategories = new Map<string, FieldCategories>();
+const categoriesOfField = (fieldName: string, entityType: string): FieldCategories => {
   const cacheKey = `${entityType}|${fieldName}`;
-  let categories = fieldCategories.get(cacheKey);
-  if (!categories) {
-    categories = Object.entries(vocabularyDefinitions)
-      .filter(([, { entity_types }]) => entity_types.includes(entityType))
-      .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName));
-    fieldCategories.set(cacheKey, categories);
-  }
+  const cached = fieldCategories.get(cacheKey);
+  if (cached) return cached;
+  const categories = Object.entries(vocabularyDefinitions)
+    .filter(([, { entity_types }]) => entity_types.includes(entityType))
+    .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName));
+  fieldCategories.set(cacheKey, categories);
   return categories;
 };
 
