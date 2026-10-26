@@ -42,7 +42,7 @@ const OWNER = 'x_opencti_cf_playbook_owner';
 const SECTORS = 'x_opencti_cf_playbook_sectors';
 const MALWARE_NAME = 'Playbook custom fields malware';
 
-// Same conversion as the worker (pycti extract_custom_properties) for the custom properties of the OpenCTI extension
+// Same conversion as the worker (pycti extract_custom_field_values) for the custom properties of the OpenCTI extension
 const toCustomFieldValues = (extension: Record<string, any>) => Object.entries(extension)
   .filter(([key]) => key.startsWith('x_opencti_cf_'))
   .map(([field_name, value]) => ({ field_name, value: Array.isArray(value) ? value : [value] }));

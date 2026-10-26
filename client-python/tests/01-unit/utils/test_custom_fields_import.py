@@ -33,7 +33,7 @@ def opencti_stix2(local_api_client):
     return instance
 
 
-def test_extract_custom_properties_reads_top_level_and_extensions():
+def test_extract_custom_field_values_reads_top_level_and_extensions():
     stix_object = {
         "type": "report",
         "name": "Report",
@@ -47,17 +47,17 @@ def test_extract_custom_properties_reads_top_level_and_extensions():
         },
     }
 
-    assert OpenCTIStix2.extract_custom_properties(stix_object) == [
+    assert OpenCTIStix2.extract_custom_field_values(stix_object) == [
         {"field_name": "x_opencti_cf_priority", "value": "P1"},
         {"field_name": "x_opencti_cf_score", "value": 80},
     ]
 
 
-def test_extract_custom_properties_returns_none_without_custom_property():
-    assert OpenCTIStix2.extract_custom_properties({"type": "report"}) is None
+def test_extract_custom_field_values_returns_none_without_custom_property():
+    assert OpenCTIStix2.extract_custom_field_values({"type": "report"}) is None
 
 
-def test_import_relationship_forwards_custom_properties(opencti_stix2: OpenCTIStix2):
+def test_import_relationship_forwards_custom_field_values(opencti_stix2: OpenCTIStix2):
     stix_relation = {
         "type": "relationship",
         "id": "relationship--1e5e9e1b-5d6b-4c5e-9a3f-2c8d1c7a4b11",
@@ -75,12 +75,12 @@ def test_import_relationship_forwards_custom_properties(opencti_stix2: OpenCTISt
         opencti_stix2.import_relationship(stix_relation)
 
     extras = mocked_import.call_args.kwargs["extras"]
-    assert extras["custom_properties"] == [
+    assert extras["custom_field_values"] == [
         {"field_name": "x_opencti_cf_confidence_level", "value": 80}
     ]
 
 
-def test_import_sighting_forwards_custom_properties(opencti_stix2: OpenCTIStix2):
+def test_import_sighting_forwards_custom_field_values(opencti_stix2: OpenCTIStix2):
     stix_sighting = {
         "type": "sighting",
         "id": "sighting--3c4d5e6f-7a8b-4c9d-8e1f-2a3b4c5d6e70",
@@ -100,7 +100,7 @@ def test_import_sighting_forwards_custom_properties(opencti_stix2: OpenCTIStix2)
             to_id="identity--5e6f7a8b-9c1d-4e2f-8a3b-4c5d6e7f8a90",
         )
 
-    assert mocked_create.call_args.kwargs["custom_properties"] == [
+    assert mocked_create.call_args.kwargs["custom_field_values"] == [
         {"field_name": "x_opencti_cf_triage_status", "value": "confirmed"}
     ]
 
@@ -127,7 +127,7 @@ def test_import_security_coverage_result_sends_custom_field_values(
         SecurityCoverageResult(opencti_stix2.opencti).import_from_stix2(
             stixObject=stix_object,
             extras={
-                "custom_properties": [
+                "custom_field_values": [
                     {"field_name": "x_opencti_cf_review", "value": ["done"]}
                 ]
             },
@@ -136,4 +136,52 @@ def test_import_security_coverage_result_sends_custom_field_values(
     sent_input = mocked_post.call_args.kwargs["json"]["variables"]["input"]
     assert sent_input["customFieldValues"] == [
         {"field_name": "x_opencti_cf_review", "value": ["done"]}
+    ]
+
+
+@pytest.mark.parametrize(
+    "entity, kwargs",
+    [
+        (
+            "identity",
+            {
+                "type": "Organization",
+                "name": "Vendor",
+                "custom_properties": {
+                    "x_opencti_reliability": "B - Usually reliable",
+                    "x_opencti_organization_type": "vendor",
+                },
+            },
+        ),
+        (
+            "location",
+            {
+                "type": "City",
+                "name": "Paris",
+                "custom_properties": {"x_opencti_location_type": "City"},
+            },
+        ),
+    ],
+)
+def test_create_converts_stix_custom_properties_into_custom_field_values(
+    local_api_client, entity, kwargs
+):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    created = {"id": "fake", "standard_id": "fake", "entity_type": "fake"}
+    mock_response.json.return_value = {
+        "data": {"organizationAdd": created, "locationAdd": created}
+    }
+
+    with patch.object(
+        local_api_client.session, "post", return_value=mock_response
+    ) as mocked_post:
+        getattr(local_api_client, entity).create(**kwargs)
+
+    # Converted as for a STIX import: the platform maps each property to a custom field
+    # by name or alias, and ignores it if none matches, instead of rejecting the creation
+    sent_input = mocked_post.call_args.kwargs["json"]["variables"]["input"]
+    assert sent_input["customFieldValues"] == [
+        {"field_name": key, "value": value}
+        for key, value in kwargs["custom_properties"].items()
     ]
