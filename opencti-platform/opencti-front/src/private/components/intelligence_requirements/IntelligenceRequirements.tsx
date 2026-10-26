@@ -22,6 +22,7 @@ import IntelligenceRequirementsCards, {
   PRIORITY_SEVERITY,
 } from './IntelligenceRequirementsCards';
 import IrSparkline from './IrSparkline';
+import IrAiAssistedCreation from './IrAiAssistedCreation';
 import type { IntelligenceRequirementsLinesQuery, IntelligenceRequirementsLinesQuery$variables } from './__generated__/IntelligenceRequirementsLinesQuery.graphql';
 import type { IntelligenceRequirements_data$data } from './__generated__/IntelligenceRequirements_data.graphql';
 import type { IntelligenceRequirementsLine_node$data } from './__generated__/IntelligenceRequirementsLine_node.graphql';
@@ -47,7 +48,12 @@ const IntelligenceRequirements = () => {
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as IntelligenceRequirementsLinesQuery$variables;
   const queryRef = useQueryLoading<IntelligenceRequirementsLinesQuery>(intelligenceRequirementsLinesQuery, queryPaginationOptions);
 
-  const createButton = <Button onClick={() => navigate('/dashboard/intelligence_requirements/new')}>{t_i18n('Create a requirement')}</Button>;
+  const createButton = (
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      <IrAiAssistedCreation />
+      <Button onClick={() => navigate('/dashboard/intelligence_requirements/new')}>{t_i18n('Create a requirement')}</Button>
+    </Box>
+  );
   const viewButtons = [
     <ViewSwitchingButtons key="switching_buttons" handleChangeView={helpers.handleChangeView} currentView={viewStorage.view} />,
   ];

@@ -1,6 +1,8 @@
 import React from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
+import { Alert, Text } from '@filigran/design-system';
+import Box from '@mui/material/Box';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
@@ -140,7 +142,10 @@ const IntelligenceRequirementConfiguration = () => {
   const { setTitle } = useConnectedDocumentModifier();
   const { irId } = useParams() as { irId?: string };
   setTitle(t_i18n('PIR (generic)'));
+  // Proposal of the AI assisted creation: opened unsaved, with the notes of the agent
+  const { state } = useLocation() as { state?: { aiDraft?: IrDraft; aiNotes?: { summary: string; explanations: { criterion_id: string; text: string }[] } } };
   if (irId) return <EditConfiguration irId={irId} />;
+  const aiNotes = state?.aiNotes;
   return (
     <>
       <Breadcrumbs elements={[
@@ -148,7 +153,30 @@ const IntelligenceRequirementConfiguration = () => {
         { label: t_i18n('New requirement'), current: true },
       ]}
       />
-      <IntelligenceRequirementConfigurationForm initialDraft={emptyDraft()} />
+      {state?.aiDraft && (
+        <Box sx={{ mb: 2 }}>
+          <Alert
+            severity="ia"
+            title={t_i18n('Proposed by the AI: review it, then create the requirement (it is created paused).')}
+            description={aiNotes ? (
+              <Box>
+                {aiNotes.summary && <Text as="p" variant="content-compact" style={{ marginBottom: 8 }}>{aiNotes.summary}</Text>}
+                <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                  {aiNotes.explanations.map((e) => (
+                    <li key={e.criterion_id}>
+                      <Text as="span" variant="content-compact">
+                        <strong>{state.aiDraft?.criteria.find((c) => c.id === e.criterion_id)?.name ?? e.criterion_id}</strong>
+                        {` · ${e.text}`}
+                      </Text>
+                    </li>
+                  ))}
+                </Box>
+              </Box>
+            ) : undefined}
+          />
+        </Box>
+      )}
+      <IntelligenceRequirementConfigurationForm initialDraft={state?.aiDraft ?? emptyDraft()} />
     </>
   );
 };

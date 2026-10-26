@@ -1,0 +1,300 @@
+{
+ "name": "Vulnérabilités activement exploitées sur notre SI et acteurs associés",
+ "description": "Suivre les vulnérabilités activement exploitées qui touchent les systèmes du SI et les acteurs qui les exploitent.",
+ "ir_question": "Parmi les vulnérabilités activement exploitées dans la nature, lesquelles affectent les systèmes de notre SI (produits, versions, composants exposés), et quels acteurs malveillants (groupes d'intrusion, campagnes) les exploitent actuellement, afin de prioriser les correctifs et les mesures de détection ?",
+ "ir_priority": "high",
+ "ir_status": "paused",
+ "ir_thresholds": [
+  50,
+  80
+ ],
+ "ir_rescan_days": 30,
+ "ir_kiqs": [
+  {
+   "id": "k1",
+   "text": "Quelles vulnérabilités (CVE) présentes dans la plateforme sont marquées comme activement exploitées (catalogue CISA KEV, score EPSS élevé, étiquettes d'exploitation, rapports récents) ?",
+   "criteria_ids": [
+    "c-exploited"
+   ]
+  },
+  {
+   "id": "k2",
+   "text": "Parmi ces vulnérabilités, lesquelles touchent des produits, versions ou composants (logiciels, systèmes) effectivement déployés ou exposés dans notre SI ?",
+   "criteria_ids": [
+    "c-system-vulns"
+   ]
+  },
+  {
+   "id": "k3",
+   "text": "Quels groupes d'intrusion, acteurs de la menace et campagnes sont liés à l'exploitation de ces vulnérabilités (relations « exploite » / « cible ») ?",
+   "criteria_ids": [
+    "c-actors"
+   ]
+  },
+  {
+   "id": "k4",
+   "text": "Quels logiciels malveillants, outils et techniques d'attaque (ATT&CK : accès initial, exécution, élévation de privilèges) sont utilisés avec ces vulnérabilités ?",
+   "criteria_ids": [
+    "c-arsenal",
+    "c-vuln-malware"
+   ]
+  }
+ ],
+ "ir_subject_groups": [
+  {
+   "id": "g-systems",
+   "name": "Systèmes du SI (tous les Systems)",
+   "kind": "filter",
+   "role": "entry",
+   "entity_ids": [],
+   "keywords": [],
+   "filters": {
+    "mode": "and",
+    "filterGroups": [],
+    "filters": [
+     {
+      "key": [
+       "entity_type"
+      ],
+      "values": [
+       "System"
+      ],
+      "operator": "eq",
+      "mode": "or"
+     }
+    ]
+   }
+  }
+ ],
+ "ir_scope_criteria": [
+  {
+   "id": "c-exploited",
+   "name": "CVE activement exploitées (CISA KEV)",
+   "kind": "attribute",
+   "from_group_ids": [],
+   "from_in_requirement": false,
+   "from_types": [],
+   "relationship_types": [],
+   "direction": "outgoing",
+   "target_types": [
+    "Vulnerability"
+   ],
+   "target_filters": {
+    "mode": "and",
+    "filterGroups": [],
+    "filters": [
+     {
+      "key": [
+       "x_opencti_cisa_kev"
+      ],
+      "values": [
+       "true"
+      ],
+      "operator": "eq",
+      "mode": "or"
+     }
+    ]
+   },
+   "keyword_fields": [],
+   "mode": "propose"
+  },
+  {
+   "id": "c-system-vulns",
+   "name": "Vulnérabilités des systèmes du SI",
+   "kind": "graph",
+   "from_group_ids": [
+    "g-systems"
+   ],
+   "from_in_requirement": false,
+   "from_types": [],
+   "relationship_types": [
+    "has"
+   ],
+   "direction": "outgoing",
+   "target_types": [
+    "Vulnerability"
+   ],
+   "target_filters": null,
+   "keyword_fields": [],
+   "mode": "auto"
+  },
+  {
+   "id": "c-actors",
+   "name": "Acteurs et campagnes ciblant ces vulnérabilités",
+   "kind": "graph",
+   "from_group_ids": [],
+   "from_in_requirement": true,
+   "from_types": [
+    "Vulnerability"
+   ],
+   "relationship_types": [
+    "targets"
+   ],
+   "direction": "incoming",
+   "target_types": [
+    "Intrusion-Set",
+    "Threat-Actor-Group",
+    "Threat-Actor-Individual",
+    "Campaign"
+   ],
+   "target_filters": null,
+   "keyword_fields": [],
+   "mode": "auto"
+  },
+  {
+   "id": "c-arsenal",
+   "name": "Arsenal des acteurs (malwares, outils, techniques)",
+   "kind": "graph",
+   "from_group_ids": [],
+   "from_in_requirement": true,
+   "from_types": [
+    "Intrusion-Set",
+    "Threat-Actor-Group",
+    "Campaign"
+   ],
+   "relationship_types": [
+    "uses"
+   ],
+   "direction": "outgoing",
+   "target_types": [
+    "Malware",
+    "Tool",
+    "Attack-Pattern"
+   ],
+   "target_filters": null,
+   "keyword_fields": [],
+   "mode": "auto"
+  },
+  {
+   "id": "c-vuln-malware",
+   "name": "Malwares exploitant ces vulnérabilités",
+   "kind": "graph",
+   "from_group_ids": [],
+   "from_in_requirement": true,
+   "from_types": [
+    "Vulnerability"
+   ],
+   "relationship_types": [
+    "exploits"
+   ],
+   "direction": "incoming",
+   "target_types": [
+    "Malware",
+    "Tool"
+   ],
+   "target_filters": null,
+   "keyword_fields": [],
+   "mode": "auto"
+  }
+ ],
+ "ir_relevance_rules": [
+  {
+   "id": "r-kev",
+   "name": "CVE au catalogue CISA KEV",
+   "applies_to_types": [
+    "Vulnerability"
+   ],
+   "applies_to_criterion_id": null,
+   "filters": {
+    "mode": "and",
+    "filterGroups": [],
+    "filters": [
+     {
+      "key": [
+       "x_opencti_cisa_kev"
+      ],
+      "values": [
+       "true"
+      ],
+      "operator": "eq",
+      "mode": "or"
+     }
+    ]
+   },
+   "points": 40,
+   "required": false,
+   "enabled": true
+  },
+  {
+   "id": "r-cvss",
+   "name": "CVSS critique (>= 9)",
+   "applies_to_types": [
+    "Vulnerability"
+   ],
+   "applies_to_criterion_id": null,
+   "filters": {
+    "mode": "and",
+    "filterGroups": [],
+    "filters": [
+     {
+      "key": [
+       "x_opencti_cvss_base_score"
+      ],
+      "values": [
+       "9"
+      ],
+      "operator": "gte",
+      "mode": "or"
+     }
+    ]
+   },
+   "points": 20,
+   "required": false,
+   "enabled": true
+  },
+  {
+   "id": "r-epss",
+   "name": "EPSS élevé (>= 0.5)",
+   "applies_to_types": [
+    "Vulnerability"
+   ],
+   "applies_to_criterion_id": null,
+   "filters": {
+    "mode": "and",
+    "filterGroups": [],
+    "filters": [
+     {
+      "key": [
+       "x_opencti_epss_score"
+      ],
+      "values": [
+       "0.5"
+      ],
+      "operator": "gte",
+      "mode": "or"
+     }
+    ]
+   },
+   "points": 20,
+   "required": false,
+   "enabled": true
+  },
+  {
+   "id": "r-ransom",
+   "name": "Malware de type ransomware",
+   "applies_to_types": [
+    "Malware"
+   ],
+   "applies_to_criterion_id": null,
+   "filters": {
+    "mode": "and",
+    "filterGroups": [],
+    "filters": [
+     {
+      "key": [
+       "malware_types"
+      ],
+      "values": [
+       "ransomware"
+      ],
+      "operator": "eq",
+      "mode": "or"
+     }
+    ]
+   },
+   "points": 20,
+   "required": false,
+   "enabled": true
+  }
+ ]
+}

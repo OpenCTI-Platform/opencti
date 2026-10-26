@@ -192,3 +192,69 @@ export const draftToInput = (draft: IrDraft) => ({
     enabled: r.enabled,
   })),
 });
+
+// region proposal of the AI assisted creation (an IntelligenceRequirementInput as JSON) -> draft of the form
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type JsonInput = Record<string, any>;
+
+const filtersToString = (filters: unknown): string | null => {
+  if (!filters) return null;
+  return typeof filters === 'string' ? filters : JSON.stringify(filters);
+};
+
+const str = (value: unknown, fallback = '') => (typeof value === 'string' ? value : fallback);
+const list = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v) => typeof v === 'string') : []);
+
+export const inputToDraft = (input: JsonInput, entities: Map<string, IrEntityOption>): IrDraft => {
+  const option = (id: string): IrEntityOption => entities.get(id) ?? { value: id, label: id, type: '' };
+  return {
+    name: str(input.name),
+    description: str(input.description),
+    question: str(input.ir_question),
+    priority: (['critical', 'high', 'medium', 'low'].includes(input.ir_priority) ? input.ir_priority : 'medium') as IrPriority,
+    status: input.ir_status === 'active' ? 'active' : 'paused',
+    thresholds: (Array.isArray(input.ir_thresholds) && input.ir_thresholds.length > 0 ? input.ir_thresholds : [50, 80]).join(', '),
+    rescan_days: Number.isInteger(input.ir_rescan_days) ? input.ir_rescan_days : 30,
+    kiqs: (input.ir_kiqs ?? []).map((k: JsonInput) => ({ id: str(k.id, newId('k')), text: str(k.text), criteria_ids: list(k.criteria_ids) })),
+    groups: (input.ir_subject_groups ?? []).map((g: JsonInput) => ({
+      id: str(g.id, newId('g')),
+      name: str(g.name),
+      kind: (['list', 'filter', 'keywords'].includes(g.kind) ? g.kind : 'list') as IrGroupKind,
+      role: (['entry', 'context', 'both'].includes(g.role) ? g.role : 'entry') as IrGroupRole,
+      entities: list(g.entity_ids).map(option),
+      filters: filtersToString(g.filters),
+      keywords: list(g.keywords),
+    })),
+    criteria: (input.ir_scope_criteria ?? []).map((c: JsonInput) => ({
+      id: str(c.id, newId('c')),
+      name: str(c.name),
+      kind: (['graph', 'attribute', 'keywords'].includes(c.kind) ? c.kind : 'graph') as IrCriterionKind,
+      from_group_ids: list(c.from_group_ids),
+      from_in_requirement: c.from_in_requirement === true,
+      from_types: list(c.from_types),
+      relationship_types: list(c.relationship_types),
+      direction: (['outgoing', 'incoming', 'both'].includes(c.direction) ? c.direction : 'outgoing') as IrDirection,
+      target_types: list(c.target_types),
+      target_filters: filtersToString(c.target_filters),
+      keyword_fields: list(c.keyword_fields).length > 0 ? list(c.keyword_fields) : ['name', 'description', 'content'],
+      mode: (['auto', 'propose', 'off'].includes(c.mode) ? c.mode : 'auto') as IrCriterionMode,
+    })),
+    rules: (input.ir_relevance_rules ?? []).map((r: JsonInput) => ({
+      id: str(r.id, newId('r')),
+      name: str(r.name),
+      applies_to_types: list(r.applies_to_types),
+      applies_to_criterion_id: typeof r.applies_to_criterion_id === 'string' ? r.applies_to_criterion_id : null,
+      filters: filtersToString(r.filters),
+      path_condition: r.path_condition && list(r.path_condition.relationship_types).length > 0 ? {
+        relationship_types: list(r.path_condition.relationship_types),
+        direction: (['outgoing', 'incoming', 'both'].includes(r.path_condition.direction) ? r.path_condition.direction : 'incoming') as IrDirection,
+        target_relationship_type: str(r.path_condition.target_relationship_type, 'targets'),
+        targets: list(r.path_condition.target_ids).map(option),
+      } : null,
+      points: Number.isFinite(r.points) ? r.points : 10,
+      required: r.required === true,
+      enabled: r.enabled !== false,
+    })),
+  };
+};
+// endregion
