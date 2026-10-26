@@ -10,8 +10,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { internalFindByIds } from '../middleware-loader';
 import { getInstanceIds } from '../../schema/identifier';
 import { schemaTypesDefinition } from '../../schema/schema-types';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../../schema/general';
-import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../../schema/general';
 import { pool } from './context';
 import { lookupKeys, type Owner } from './identity';
 import { versionOf } from './unchanged';
@@ -31,14 +30,43 @@ const uniqueLiveOwners = (owners: (Owner | undefined)[]): Owner[] => {
   return R.uniqBy((owner) => owner.owner_id, live);
 };
 
-// The fields listing an entity's core relationships and sightings (rel_indicates, rel_uses...): on a busy entity,
-// hundreds of thousands of ids, which the merge rules never read (they read the refs: rel_created-by,
-// rel_object-marking...)
-let relationshipLists: string[] | undefined;
-const relationshipListFields = () => {
-  relationshipLists ??= [...schemaTypesDefinition.get(ABSTRACT_STIX_CORE_RELATIONSHIP), STIX_SIGHTING_RELATIONSHIP]
+// The rel_* fields a read without the lists of relationships keeps: the refs (rel_created-by, rel_object-marking...)
+// and the internal relationships. The lists of core relationships and sightings (rel_indicates, rel_uses...) hold
+// hundreds of thousands of ids on a busy entity, and the merge rules never read them.
+let keptRelationFields: string[] | undefined;
+const keptRelationFieldPatterns = () => {
+  keptRelationFields ??= [...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP), ...schemaTypesDefinition.get(ABSTRACT_INTERNAL_RELATIONSHIP)]
     .flatMap((type) => [buildRefRelationKey(type, '*'), `rel_${type}`]);
-  return relationshipLists;
+  return keptRelationFields;
+};
+
+const MAX_SPLIT_READ_ATTEMPTS = 10;
+
+// Documents without their lists of relationships, as two entries of one mget per document: every field but rel_*, and
+// the kept rel_* fields, joined when both entries read the same version. Elasticsearch filters each document by
+// includes at little cost but by excludes at a cost per pattern: excluding the lists themselves, one pattern per
+// relationship type, took 600 ms for 500 documents (9 ms unfiltered, 29 ms this way).
+const mgetWithoutLists = async (slice: DocRef[], found: Map<string, RawDoc>, attempt = 1): Promise<void> => {
+  const includes = keptRelationFieldPatterns();
+  const response: any = await elRawMget({
+    docs: slice.flatMap((r) => [
+      { _index: r.index, _id: r.id, _source: { excludes: ['rel_*'] } },
+      { _index: r.index, _id: r.id, _source: { includes } },
+    ]),
+  });
+  const changed: DocRef[] = []; // written between the two entries: read again
+  slice.forEach((r, i) => {
+    const [base, relations] = [response.docs[2 * i], response.docs[2 * i + 1]];
+    if (!base.found && !relations.found) return;
+    if (!base.found || !relations.found || base._seq_no !== relations._seq_no || base._primary_term !== relations._primary_term) {
+      changed.push(r);
+      return;
+    }
+    found.set(base._id, { ...base, _source: { ...base._source, ...relations._source }, partial: true });
+  });
+  if (changed.length === 0) return;
+  if (attempt >= MAX_SPLIT_READ_ATTEMPTS) throw new Error(`Documents kept changing while read: ${changed.map((r) => r.id).join(', ')}`);
+  await mgetWithoutLists(changed, found, attempt + 1);
 };
 
 // Raw documents by (index, id), realtime, keyed by _id. `light` leaves out every rel_* field; `withoutLists` only
@@ -46,15 +74,14 @@ const relationshipListFields = () => {
 export const mgetRaw = async (refs: DocRef[], opts: { light?: boolean; withoutLists?: boolean } = {}): Promise<Map<string, RawDoc>> => {
   const found = new Map<string, RawDoc>();
   const uniqueRefs = R.uniqBy((ref) => `${ref.index}|${ref.id}`, refs);
-  let excludes: string[] | undefined;
-  if (opts.light) excludes = ['rel_*'];
-  else if (opts.withoutLists) excludes = relationshipListFields();
-  const sourceFilter = excludes ? { _source: { excludes } } : {};
+  if (opts.withoutLists) {
+    await pool(R.splitEvery(500, uniqueRefs), MGET_CONCURRENCY, (slice) => mgetWithoutLists(slice, found));
+    return found;
+  }
+  const sourceFilter = opts.light ? { _source: { excludes: ['rel_*'] } } : {};
   await pool(R.splitEvery(MGET_BATCH_SIZE, uniqueRefs), MGET_CONCURRENCY, async (batch) => {
     const response: { docs: (RawDoc & { found: boolean })[] } = await elRawMget({ docs: batch.map((ref) => ({ _index: ref.index, _id: ref.id, ...sourceFilter })) });
-    response.docs.filter((doc) => doc.found).forEach((doc) => {
-      found.set(doc._id, opts.withoutLists ? { ...doc, partial: true } : doc);
-    });
+    response.docs.filter((doc) => doc.found).forEach((doc) => found.set(doc._id, doc));
   });
   return found;
 };
