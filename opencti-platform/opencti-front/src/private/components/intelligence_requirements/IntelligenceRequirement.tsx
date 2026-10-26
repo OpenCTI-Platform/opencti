@@ -11,6 +11,7 @@ import { PRIORITY_SEVERITY } from './IntelligenceRequirementsCards';
 import IrOverview from './outputs/IrOverview';
 import IrEntities from './outputs/IrEntities';
 import IrInbox from './outputs/IrInbox';
+import IrAiInsight from './IrAiInsight';
 import type { IntelligenceRequirementQuery } from './__generated__/IntelligenceRequirementQuery.graphql';
 
 // Page of a requirement: the same output screens for every question (Overview, Entities, Inbox).
@@ -54,7 +55,10 @@ const IntelligenceRequirement = () => {
             <Chip label={t_i18n(ir.ir_status === 'active' ? 'Active' : 'Paused')} />
           </Box>
         </Box>
-        <Button variant="secondary" onClick={() => navigate(`/dashboard/intelligence_requirements/${ir.id}/configuration`)}>{t_i18n('Configuration')}</Button>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <IrAiInsight irId={ir.id} />
+          <Button variant="secondary" onClick={() => navigate(`/dashboard/intelligence_requirements/${ir.id}/configuration`)}>{t_i18n('Configuration')}</Button>
+        </Box>
       </Box>
       <Paper padding={16}>
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
