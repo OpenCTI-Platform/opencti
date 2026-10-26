@@ -17,7 +17,7 @@ enum IngestionHealthCheckSeverity {
 
 type IngestionHealthCheck {
   health_check_code: String!
-  # In English: the front translates it from the code and the metadata, and falls back to it
+  # In English, may hold {key} placeholders to fill from health_check_metadata: the front translates it with them
   health_check_message: String
   # What describes this failure (e.g. the missing capability), for the front to render
   health_check_metadata: JSON

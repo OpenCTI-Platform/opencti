@@ -79,7 +79,8 @@ interface BaseHealthCheckDefinition {
   label: string;
   severity: IngestionHealthCheckSeverity;
   // Computed when read, never stored: the entity type of the ingestor adapts it to the kind of ingestion
-  // Absent when the failure needs nothing more than the name of the check: the label is the message
+  // Absent when the failure needs nothing more than the name of the check: the label is the message.
+  // A {key} placeholder is filled from metadata[key]: by the front once translated, by formatHealthCheckMessage elsewhere
   message?: (metadata: HealthCheckMetadata, entityType: string) => string;
 }
 
@@ -201,7 +202,8 @@ export const HEALTH_CHECK_REGISTRY = {
     kind: IngestionHealthCheckKind.Configuration,
     label: 'User lacks required capability',
     severity: IngestionHealthCheckSeverity.Blocking,
-    message: ({ capability }) => `User lacks required capability: ${capability}`,
+    // The front shows the description of the capability, translated
+    message: () => 'User lacks required capability: "{capability}"',
     // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
     isEnabled: (ingestor, { user }) => !!user && !user.internal && ingestor.entity_type in REQUIRED_CAPABILITY_BY_ENTITY_TYPE,
     getFailure: (ingestor, { user }) => {
