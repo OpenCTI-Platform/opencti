@@ -768,6 +768,81 @@ describe('PublicDashboard resolver', () => {
           expect(malwaressData[0].value).toEqual(3);
         });
 
+        describe('SCO Time series breakdown', () => {
+          const API_SCO_BREAKDOWN_QUERY = gql`
+            query PublicStixCoreObjectsTimeSeriesBreakdown(
+              $startDate: DateTime
+              $endDate: DateTime
+              $uriKey: String!
+              $widgetId : String!
+            ) {
+              publicStixCoreObjectsTimeSeriesBreakdown(
+                startDate: $startDate
+                endDate: $endDate
+                uriKey: $uriKey
+                widgetId : $widgetId
+              ) {
+                truncated
+                series {
+                  label
+                  isOther
+                  data {
+                    date
+                    value
+                  }
+                }
+              }
+            }
+          `;
+          const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+          it('should return the data for API: SCO Time series breakdown', async () => {
+            const { data, errors } = await queryAsAdmin({
+              query: API_SCO_BREAKDOWN_QUERY,
+              variables: {
+                uriKey: publicDashboardUriKey,
+                widgetId: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
+                startDate: yesterday,
+              },
+            });
+            expect(errors).toBeUndefined();
+            const { publicStixCoreObjectsTimeSeriesBreakdown } = data;
+            expect(publicStixCoreObjectsTimeSeriesBreakdown.truncated).toEqual(false);
+            const { series } = publicStixCoreObjectsTimeSeriesBreakdown;
+            expect(series.map((serie) => serie.label).sort()).toEqual(['Administrative-Area', 'Malware']);
+            expect(series.every((serie) => serie.isOther === false)).toEqual(true);
+            const total = (label) => series.find((serie) => serie.label === label).data.reduce((sum, point) => sum + point.value, 0);
+            expect(total('Administrative-Area')).toEqual(2);
+            expect(total('Malware')).toEqual(3);
+          });
+
+          it('should refuse the breakdown of a widget without breakdown', async () => {
+            const { data, errors } = await queryAsAdmin({
+              query: API_SCO_BREAKDOWN_QUERY,
+              variables: {
+                uriKey: publicDashboardUriKey,
+                widgetId: '0a471055-7426-4840-9501-33770b845f92',
+                startDate: yesterday,
+              },
+            });
+            expect(errors).toBeDefined();
+            expect(errors.length).toEqual(1);
+            expect(data.publicStixCoreObjectsTimeSeriesBreakdown).toBeNull();
+          });
+
+          it('should refuse the breakdown without start date', async () => {
+            const { errors } = await queryAsAdmin({
+              query: API_SCO_BREAKDOWN_QUERY,
+              variables: {
+                uriKey: publicDashboardUriKey,
+                widgetId: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
+              },
+            });
+            expect(errors).toBeDefined();
+            expect(errors.length).toEqual(1);
+          });
+        });
+
         it('should return the data for API: SCR Time series', async () => {
           const API_SCR_LIST_QUERY = gql`
             query PublicStixRelationshipsMultiTimeSeries(

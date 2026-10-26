@@ -11,6 +11,23 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
+import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
+import { TYPE_FILTER } from '../../utils/filtering/filtering-constants';
+
+/**
+ * Entity types every entity of the dataset belongs to, read from a top level "entity type = ..." filter.
+ * Empty when the filters do not restrict the type for sure. Same rule as the front (widgetBreakdown.ts).
+ */
+export const getBreakdownEntityTypes = (filters?: FilterGroup | null): string[] => {
+  if (!filters) return [];
+  const isRestrictingGroup = filters.mode === FilterMode.And || filters.filters.length + filters.filterGroups.length === 1;
+  // Manifest filters can hold the key as a string or as a list
+  const typeFilter = filters.filters.find((filter) => [filter.key].flat().includes(TYPE_FILTER));
+  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== FilterOperator.Eq) || typeFilter.mode === FilterMode.And) {
+    return [];
+  }
+  return typeFilter.values.filter((value): value is string => typeof value === 'string');
+};
 
 /**
  * Sanitizes a raw uri_key input to a valid [a-z0-9-] slug.

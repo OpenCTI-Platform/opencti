@@ -6,6 +6,7 @@ import PublicStixCoreObjectsNumber from './stix_core_objects/PublicStixCoreObjec
 import PublicStixCoreObjectsList from './stix_core_objects/PublicStixCoreObjectsList';
 import PublicStixCoreObjectsDistributionList from './stix_core_objects/PublicStixCoreObjectsDistributionList';
 import PublicStixCoreObjectsMultiVerticalBars from './stix_core_objects/PublicStixCoreObjectsMultiVerticalBars';
+import PublicStixCoreObjectsTimeSeriesBreakdown from './stix_core_objects/PublicStixCoreObjectsTimeSeriesBreakdown';
 import PublicStixCoreObjectsMultiLineChart from './stix_core_objects/PublicStixCoreObjectsMultiLineChart';
 import PublicStixCoreObjectsMultiAreaChart from './stix_core_objects/PublicStixCoreObjectsMultiAreaChart';
 import PublicStixCoreObjectsTimeline from './stix_core_objects/PublicStixCoreObjectsTimeline';
@@ -57,9 +58,12 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
     // Rendering the widget without its breakdown would silently show a single total series
     if (hasWidgetBreakdown(widget)) {
       return (
-        <Card>
-          {t_i18n('Breakdowns are not supported in public dashboards')}
-        </Card>
+        <PublicStixCoreObjectsTimeSeriesBreakdown
+          startDate={startDate}
+          endDate={endDate}
+          uriKey={uriKey}
+          widget={widget}
+        />
       );
     }
 

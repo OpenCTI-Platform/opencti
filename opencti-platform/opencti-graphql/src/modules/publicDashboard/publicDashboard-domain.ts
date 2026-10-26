@@ -3,7 +3,7 @@ import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type StoreEntityPublicDashboard } from './publicDashboard-types';
-import { createEntity, deleteElementById, loadEntity, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, loadEntity, TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { isNotEmptyField } from '../../database/utils';
 import { notify } from '../../database/redis';
@@ -20,6 +20,7 @@ import {
   type QueryPublicStixCoreObjectsDistributionArgs,
   type QueryPublicStixCoreObjectsMultiTimeSeriesArgs,
   type QueryPublicStixCoreObjectsNumberArgs,
+  type QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs,
   type QueryPublicStixRelationshipsArgs,
   type QueryPublicStixRelationshipsDistributionArgs,
   type QueryPublicStixRelationshipsMultiTimeSeriesArgs,
@@ -32,7 +33,7 @@ import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { checkUserIsAdminOnDashboard, getBreakdownEntityTypes, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import {
@@ -41,6 +42,7 @@ import {
   stixCoreObjectsDistributionByEntity,
   stixCoreObjectsMultiTimeSeries,
   stixCoreObjectsNumber,
+  stixCoreObjectsTimeSeriesBreakdown,
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findStixRelationPaginated, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
@@ -368,6 +370,35 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   };
   // Use standard API
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
+};
+
+// vertical-bar & line & area & heatmap with a breakdown: one series per value of a field
+export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs) => {
+  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  if (!parameters?.breakdownBy) {
+    throw UnsupportedError('This widget has no breakdown', { widgetId: args.widgetId });
+  }
+  // The histogram is anchored on the start date: without it the series would silently collapse on today
+  if (!args.startDate) {
+    throw FunctionalError('A start date is required for a time series breakdown');
+  }
+  const types = getBreakdownEntityTypes(selection.filters);
+  const standardArgs = {
+    field: parameters.breakdownBy,
+    dateAttribute: selection.date_attribute,
+    startDate: args.startDate,
+    endDate: args.endDate,
+    interval: parameters.interval ?? 'day',
+    limit: parameters.breakdownLimit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT,
+    order: parameters.breakdownOrder === 'asc' ? 'asc' : 'desc',
+    includeOther: parameters.breakdownOther ?? false,
+    filters: selection.filters,
+    types: types.length > 0 ? types : [ABSTRACT_STIX_CORE_OBJECT],
+  };
+  // Use standard API
+  return stixCoreObjectsTimeSeriesBreakdown(context, user, standardArgs);
 };
 
 export const publicStixRelationshipsMultiTimeSeries = async (

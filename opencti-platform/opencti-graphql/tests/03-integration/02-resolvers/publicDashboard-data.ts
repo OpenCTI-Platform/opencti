@@ -476,6 +476,55 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         static: false,
       },
     },
+    'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10': {
+      id: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
+      type: 'vertical-bar',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'areas and malwares by entity type',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'entities',
+          isTo: true,
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: ['entity_type'],
+                values: ['Administrative-Area', 'Malware'],
+                operator: 'eq',
+                mode: 'or',
+              },
+              {
+                key: 'description',
+                values: ['widget tests'],
+                operator: 'search',
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of areas and malwares by entity type',
+        interval: 'day',
+        breakdownBy: 'entity_type',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: false,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 0,
+        y: 8,
+        i: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
+        moved: false,
+        static: false,
+      },
+    },
   },
   config: {
 

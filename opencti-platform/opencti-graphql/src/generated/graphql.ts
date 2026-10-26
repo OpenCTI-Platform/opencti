@@ -25246,6 +25246,7 @@ export type Query = {
   publicStixCoreObjectsDistribution?: Maybe<Array<Maybe<PublicDistribution>>>;
   publicStixCoreObjectsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   publicStixCoreObjectsNumber?: Maybe<Number>;
+  publicStixCoreObjectsTimeSeriesBreakdown?: Maybe<TimeSeriesBreakdown>;
   publicStixRelationships?: Maybe<StixRelationshipConnection>;
   publicStixRelationshipsDistribution?: Maybe<Array<Maybe<PublicDistribution>>>;
   publicStixRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
@@ -27283,6 +27284,14 @@ export type QueryPublicStixCoreObjectsMultiTimeSeriesArgs = {
 
 
 export type QueryPublicStixCoreObjectsNumberArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
+export type QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   uriKey: Scalars['String']['input'];
@@ -51371,6 +51380,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   publicStixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['PublicDistribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsDistributionArgs, 'uriKey' | 'widgetId'>>;
   publicStixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
   publicStixCoreObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsNumberArgs, 'uriKey' | 'widgetId'>>;
+  publicStixCoreObjectsTimeSeriesBreakdown?: Resolver<Maybe<ResolversTypes['TimeSeriesBreakdown']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['PublicDistribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsDistributionArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
