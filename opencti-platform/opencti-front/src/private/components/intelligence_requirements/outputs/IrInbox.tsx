@@ -30,8 +30,9 @@ const inboxQuery = graphql`
       id
       ir_subject_groups { id name }
       ir_scope_criteria { id name kind mode from_group_ids from_in_requirement }
+      ir_inbox_counts { open proposed entered score health done }
     }
-    intelligenceRequirementMatches(id: $id, first: 500) {
+    intelligenceRequirementMatches(id: $id, first: 2000) {
       edges {
         node {
           id
@@ -57,7 +58,47 @@ const inboxQuery = graphql`
         }
       }
     }
-    intelligenceRequirementItems(id: $id, first: 500) {
+    openItems: intelligenceRequirementItems(id: $id, statuses: [open], first: 500) {
+      pageInfo { globalCount }
+      edges {
+        node {
+          id
+          item_kind
+          item_status
+          item_title
+          item_result
+          item_entity_type
+          created_at
+          item_data { criterion_id from_score to_score threshold reasons message }
+          match {
+            id
+            match_status
+            match_score
+            match_excluded
+            entity { ... on StixCoreObject { representative { main } } }
+            match_explanations {
+              criterion_id
+              kind
+              anchor_id
+              relationship_type
+              direction
+              keyword
+              field
+              anchor { representative { main } }
+              container { representative { main } }
+              relationship {
+                confidence
+                created
+                start_time
+                createdBy { name }
+              }
+            }
+          }
+        }
+      }
+    }
+    doneItems: intelligenceRequirementItems(id: $id, statuses: [done], first: 200) {
+      pageInfo { globalCount }
       edges {
         node {
           id
@@ -283,8 +324,11 @@ const IrInbox = ({ irId }: { irId: string }) => {
   const criteria = data.intelligenceRequirement?.ir_scope_criteria ?? [];
   const groups = data.intelligenceRequirement?.ir_subject_groups ?? [];
   const matches = (data.intelligenceRequirementMatches?.edges ?? []).map((e) => e.node);
-  const items = (data.intelligenceRequirementItems?.edges ?? []).map((e) => e.node);
-  const open = items.filter((i) => i.item_status === 'open');
+  // Open items and the latest done items are queried separately: the open ones must never be hidden by done ones
+  const open = (data.openItems?.edges ?? []).map((e) => e.node);
+  const items = [...open, ...(data.doneItems?.edges ?? []).map((e) => e.node)];
+  const counts = data.intelligenceRequirement?.ir_inbox_counts;
+  const openTotal = counts?.open ?? open.length;
   const visible = items.filter((i) => {
     if (filter === 'done') return i.item_status !== 'open';
     if (filter === 'open') return i.item_status === 'open';
@@ -338,16 +382,26 @@ const IrInbox = ({ irId }: { irId: string }) => {
   return (
     <>
       <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-        {filterButton('open', 'To review', open.length)}
-        {filterButton('proposed', 'Proposed', open.filter((i) => i.item_kind === 'proposed').length)}
-        {filterButton('entered', 'Entered', open.filter((i) => i.item_kind === 'entered').length)}
-        {filterButton('score', 'Score threshold', open.filter((i) => i.item_kind === 'score').length)}
-        {filterButton('done', 'Done', items.length - open.length)}
+        {filterButton('open', 'To review', openTotal)}
+        {filterButton('proposed', 'Proposed', counts?.proposed ?? 0)}
+        {filterButton('entered', 'Entered', counts?.entered ?? 0)}
+        {filterButton('score', 'Score threshold', counts?.score ?? 0)}
+        {filterButton('done', 'Done', counts?.done ?? 0)}
         <Box sx={{ flex: 1 }} />
         <Text as="span" variant="content-caption" style={{ alignSelf: 'center', opacity: 0.7 }}>{t_i18n('Sort by')}</Text>
         <Button size="small" variant={sort === 'newest' ? 'primary' : 'tertiary'} onClick={() => setSort('newest')}>{t_i18n('Newest first')}</Button>
         <Button size="small" variant={sort === 'score' ? 'primary' : 'tertiary'} onClick={() => setSort('score')}>{t_i18n('Highest score first')}</Button>
       </Box>
+      {filter !== 'done' && openTotal > open.length && (
+        <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginBottom: 8 }}>
+          {`${t_i18n('Showing the')} ${open.length} ${t_i18n('most recent open items out of')} ${openTotal}`}
+        </Text>
+      )}
+      {filter === 'done' && (data.doneItems?.pageInfo.globalCount ?? 0) > (data.doneItems?.edges.length ?? 0) && (
+        <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginBottom: 8 }}>
+          {`${t_i18n('Showing the')} ${data.doneItems?.edges.length ?? 0} ${t_i18n('most recent done items out of')} ${data.doneItems?.pageInfo.globalCount ?? 0}`}
+        </Text>
+      )}
       {selectable.length > 0 && (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', mb: 1, px: 1.5, py: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
           <Checkbox
