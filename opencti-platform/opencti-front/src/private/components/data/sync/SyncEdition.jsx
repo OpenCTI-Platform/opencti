@@ -141,7 +141,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
   };
 
   const handleGetStreams = ({ uri, token, ssl_verify }) => {
-    const args = { uri, token, ssl_verify: ssl_verify ?? true };
+    const args = { uri, token, ssl_verify };
     fetchQuery(syncStreamCollectionQuery, args)
       .toPromise()
       .then((result) => {
