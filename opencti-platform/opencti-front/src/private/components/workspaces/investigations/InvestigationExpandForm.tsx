@@ -1,4 +1,4 @@
-import { Button } from '@filigran/design-system';
+import { Button, Text } from '@filigran/design-system';
 import { DialogActions, Stack } from '@mui/material';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,6 +13,7 @@ type InvestigationExpandFormData = {
 };
 
 export interface InvestigationExpandFormProps {
+  disabled?: boolean;
   targets: FieldOption[];
   relationships: FieldOption[];
   onDismiss?: () => void;
@@ -29,6 +30,7 @@ const InvestigationExpandForm = ({
   onDismiss,
   onReset,
   onSubmit,
+  disabled = false,
 }: InvestigationExpandFormProps) => {
   const { t_i18n } = useFormatter();
 
@@ -46,18 +48,23 @@ const InvestigationExpandForm = ({
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
           <Stack spacing={3} sx={{ p: 3 }}>
-            <Stack direction="row" justifyContent="space-between">
+            <Stack
+              direction="row"
+              sx={{ justifyContent: 'space-between' }}
+            >
               <Field
                 name="entity_types"
                 component={CheckboxesField}
                 label={t_i18n('All types of target')}
                 items={targets}
+                disabled={disabled}
               />
               <Field
                 name="relationship_types"
                 component={CheckboxesField}
                 label={t_i18n('All types of relationship')}
                 items={relationships}
+                disabled={disabled}
               />
             </Stack>
 
@@ -67,7 +74,12 @@ const InvestigationExpandForm = ({
               name="reset_filters"
               label={t_i18n('Reset filters')}
               containerstyle={{ marginTop: 12 }}
+              disabled={disabled}
             />
+
+            <Text variant="content-compact">
+              {t_i18n('You have view access to this investigation: you can see the results but not add or dismiss them')}
+            </Text>
 
             <DialogActions>
               {onDismiss && (
@@ -75,7 +87,7 @@ const InvestigationExpandForm = ({
                   <Button
                     priority="tertiary"
                     onClick={onDismiss}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || disabled}
                   >
                     {t_i18n('Dismiss')}
                   </Button>
@@ -91,7 +103,7 @@ const InvestigationExpandForm = ({
               </Button>
               <Button
                 onClick={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || disabled}
               >
                 {t_i18n('Expand')}
               </Button>

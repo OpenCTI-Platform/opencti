@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { Dialog, DialogActions, DialogTitle, Stack } from '@mui/material';
-import { Button, Text } from '@filigran/design-system';
+import { Dialog, DialogTitle } from '@mui/material';
 import { graphql } from 'react-relay';
 import { fdsLayerClass, layerInputVars, SURFACE_LAYER } from '../../../../../utils/fdsLayer';
 import InvestigationExpandForm, { InvestigationExpandFormProps } from '../InvestigationExpandForm';
@@ -13,6 +12,7 @@ import useGraphInteractions from '../../../../../components/graph/utils/useGraph
 import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 import { countExpandOptions, ExpandElement, selectExpandIds } from './investigation-enrichment.utils';
 import { InvestigationEnrichmentExpandTouchedElementsQuery$data } from './__generated__/InvestigationEnrichmentExpandTouchedElementsQuery.graphql';
+import InvestigationEnrichmentExpandEmpty from './InvestigationEnrichmentExpandEmpty';
 
 // The touched elements of one work, with what the graph needs to draw them (see graphNodeFragment).
 // Fetched only on expand: the list of works is polled and only needs ids and types.
@@ -129,6 +129,7 @@ const toExpandElements = (work?: InvestigationEnrichmentWork): ExpandElement[] =
 
 interface InvestigationEnrichmentExpandProps {
   investigationId: string;
+  canEdit: boolean;
   work?: InvestigationEnrichmentWork;
   onClose: () => void;
   onDismiss: (workId: string) => void;
@@ -137,6 +138,7 @@ interface InvestigationEnrichmentExpandProps {
 
 const InvestigationEnrichmentExpand = ({
   investigationId,
+  canEdit,
   work,
   onClose,
   onDismiss,
@@ -259,31 +261,11 @@ const InvestigationEnrichmentExpand = ({
         {t_i18n('Enrichment Results')} - {getMainRepresentative(work?.eventSource)}
       </DialogTitle>
       {hasNothingToAdd ? (
-        <Stack spacing={3} sx={{ p: 3 }}>
-          <Stack gap={1}>
-            <Text variant="content-base-bold">
-              {t_i18n('Nothing to add to the graph')}
-            </Text>
-            <Text variant="content-compact">
-              {t_i18n('Everything this enrichment touched is already in the graph, or it touched nothing that can be drawn.')}
-            </Text>
-          </Stack>
-
-          <DialogActions>
-            <Button
-              priority="secondary"
-              onClick={onClose}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              priority="primary"
-              onClick={() => onDismiss(work!.id)}
-            >
-              {t_i18n('Dismiss')}
-            </Button>
-          </DialogActions>
-        </Stack>
+        <InvestigationEnrichmentExpandEmpty
+          onClose={onClose}
+          onDismiss={() => onDismiss(work!.id)}
+          canEdit={canEdit}
+        />
       ) : (
         <InvestigationExpandForm
           onReset={onClose}
@@ -291,6 +273,7 @@ const InvestigationEnrichmentExpand = ({
           onDismiss={() => onDismiss(work!.id)}
           targets={targets}
           relationships={relationships}
+          disabled={!canEdit}
         />
       )}
     </Dialog>

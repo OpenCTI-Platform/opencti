@@ -5980,6 +5980,7 @@
   "You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data": "システムを作成者に設定しました。データのトレーサビリティを確保するために、 このフィード用に特定のユーザーを作成します。",
   "You have successfully logged out.": "ログアウトが完了しました。",
   "You have unsaved changes": "未保存の変更があります",
+  "You have view access to this investigation: you can see the results but not add or dismiss them": "この調査については閲覧権限があります。結果を確認することはできますが、結果を追加したり却下したりすることはできません。",
   "You just need to try?": "試す必要がありますか？",
   "You must be logged in to do this.": "この操作を行うにはログインする必要があります。",
   "You must provide at least one external reference for this type of entity": "このタイプのエンティティは最低1個の外部参照を含む必要があります",

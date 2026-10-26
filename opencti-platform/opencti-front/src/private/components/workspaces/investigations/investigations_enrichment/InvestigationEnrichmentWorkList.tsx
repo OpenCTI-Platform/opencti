@@ -43,7 +43,10 @@ const InvestigationEnrichmentWorkList = ({
   onAddAll,
 }: InvestigationEnrichmentWorkListProps) => {
   const { t_i18n } = useFormatter();
-  const { canRefresh } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
+  const {
+    canEdit,
+    canRefresh,
+  } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
 
   const [commitEnrichment] = useApiMutation<InvestigationEnrichmentWorkListAskEnrichment>(askEnrichMutation);
   const askEnrichment = (entityId: string, connectorId: string) => {
@@ -132,6 +135,7 @@ const InvestigationEnrichmentWorkList = ({
                 onReviewDismiss={worksType === 'toreview' ? onDimiss : undefined}
                 onReview={worksType === 'toreview' ? review : undefined}
                 onReviewAddAll={worksType === 'toreview' ? addAll : undefined}
+                canEditInvestigation={canEdit}
               />
             </AccordionDetails>
           </Accordion>

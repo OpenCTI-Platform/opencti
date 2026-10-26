@@ -13,6 +13,7 @@ const useInvestigationEnrichmentRights = (currentUserAccessRight: string | null 
   const canRefresh = canEdit && canEnrichInvestigation;
 
   return {
+    canEdit,
     canRefresh,
     canLaunch: canRefresh && canUpdateKnowledge,
   };

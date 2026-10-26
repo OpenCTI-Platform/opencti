@@ -5980,6 +5980,7 @@
   "You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data": "시스템을 작성자로 설정했습니다. 데이터의 추적성을 보장하기 위해 이 피드에 특정 사용자를 만듭니다",
   "You have successfully logged out.": "성공적으로 로그아웃했습니다.",
   "You have unsaved changes": "저장되지 않은 변경 사항이 있습니다",
+  "You have view access to this investigation: you can see the results but not add or dismiss them": "귀하는 이 조사에 대한 조회 권한이 있습니다. 결과를 볼 수는 있지만, 결과를 추가하거나 기각할 수는 없습니다.",
   "You just need to try?": "시도해 보시겠습니까?",
   "You must be logged in to do this.": "이 작업을 수행하려면 로그인해야 합니다.",
   "You must provide at least one external reference for this type of entity": "이 유형의 엔터티에 대해 적어도 하나의 외부 참조를 제공해야 합니다",

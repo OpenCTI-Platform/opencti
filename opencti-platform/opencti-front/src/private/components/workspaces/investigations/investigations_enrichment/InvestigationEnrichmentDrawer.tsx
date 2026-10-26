@@ -43,7 +43,7 @@ const InvestigationEnrichmentDrawer = ({
   const [tab, setTab] = useState<TabList>('toreview');
   const [workToReview, setWorkToReview] = useState<InvestigationEnrichmentWork>();
 
-  const { canLaunch } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
+  const { canLaunch, canEdit } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
 
   const { graphState } = useGraphContext();
   const { selectedNodes, selectedLinks } = graphState;
@@ -103,6 +103,7 @@ const InvestigationEnrichmentDrawer = ({
         onClose={() => setWorkToReview(undefined)}
         onDismiss={dismissReview}
         onExpand={onExpand}
+        canEdit={canEdit}
       />
     </>
   );

@@ -5980,6 +5980,7 @@
   "You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data": "Sie haben System als Ersteller festgelegt. Erstellen Sie einen speziellen Benutzer für diesen Feed, um die Rückverfolgbarkeit Ihrer Daten zu gewährleisten",
   "You have successfully logged out.": "Sie haben sich erfolgreich abgemeldet.",
   "You have unsaved changes": "Sie haben ungespeicherte Änderungen",
+  "You have view access to this investigation: you can see the results but not add or dismiss them": "Sie haben Lesezugriff auf diese Untersuchung: Sie können die Ergebnisse einsehen, aber weder eigene hinzufügen noch bestehende verwerfen.",
   "You just need to try?": "Sie müssen es nur versuchen?",
   "You must be logged in to do this.": "Sie müssen eingeloggt sein, um dies zu tun.",
   "You must provide at least one external reference for this type of entity": "Sie müssen mindestens einen externen Verweis für diese Art von Entität angeben",

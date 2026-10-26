@@ -5980,6 +5980,7 @@
   "You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data": "You have set System as a creator. Create a specific user for this feed to ensure traceabilitiy of your data",
   "You have successfully logged out.": "You have successfully logged out.",
   "You have unsaved changes": "You have unsaved changes",
+  "You have view access to this investigation: you can see the results but not add or dismiss them": "You have view access to this investigation: you can see the results but not add or dismiss them",
   "You just need to try?": "You just need to try?",
   "You must be logged in to do this.": "You must be logged in to do this.",
   "You must provide at least one external reference for this type of entity": "You must provide at least one external reference for this type of entity",

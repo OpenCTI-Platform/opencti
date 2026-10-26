@@ -65,6 +65,7 @@ interface ConnectorWorkListProps {
   onReviewDismiss?: (workId: string) => void;
   onReview?: (workId: string) => void;
   onReviewAddAll?: (workId: string) => void;
+  canEditInvestigation?: boolean;
 }
 
 /**
@@ -78,6 +79,7 @@ const ConnectorWorkList = ({
   onReviewDismiss,
   onReview,
   onReviewAddAll,
+  canEditInvestigation = false,
 }: ConnectorWorkListProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
@@ -166,9 +168,13 @@ const ConnectorWorkList = ({
                         divider
                         secondaryAction={(
                           <Security needs={['CONNECTORAPI', 'MODULES_MODMANAGE']}>
-                            <Stack direction="row" gap={1}>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                            >
                               {onReview && (
                                 <IconButton
+                                  disabled={isFail}
                                   tooltip={t_i18n('Review results')}
                                   aria-label={t_i18n('Review results')}
                                   onClick={() => onReview?.(work.id)}
@@ -176,24 +182,29 @@ const ConnectorWorkList = ({
                                   <ReviewsOutlined fontSize="small" />
                                 </IconButton>
                               )}
-                              {onReviewAddAll && (
-                                <IconButton
-                                  tooltip={t_i18n('Add all to graph')}
-                                  aria-label={t_i18n('Add all to graph')}
-                                  onClick={() => onReviewAddAll?.(work.id)}
-                                >
-                                  <ControlPointDuplicate fontSize="small" />
-                                </IconButton>
-                              )}
-                              {onReviewDismiss && (
-                                <IconButton
-                                  tooltip={t_i18n('Dismiss review')}
-                                  aria-label={t_i18n('Dismiss review')}
-                                  onClick={() => onReviewDismiss?.(work.id)}
-                                >
-                                  <DoNotDisturb fontSize="small" />
-                                </IconButton>
-                              )}
+                              <Security needs={[]} hasAccess={canEditInvestigation}>
+                                <>
+                                  {onReviewAddAll && (
+                                    <IconButton
+                                      disabled={isFail}
+                                      tooltip={t_i18n('Add all to graph')}
+                                      aria-label={t_i18n('Add all to graph')}
+                                      onClick={() => onReviewAddAll?.(work.id)}
+                                    >
+                                      <ControlPointDuplicate fontSize="small" />
+                                    </IconButton>
+                                  )}
+                                  {onReviewDismiss && (
+                                    <IconButton
+                                      tooltip={t_i18n('Dismiss review')}
+                                      aria-label={t_i18n('Dismiss review')}
+                                      onClick={() => onReviewDismiss?.(work.id)}
+                                    >
+                                      <DoNotDisturb fontSize="small" />
+                                    </IconButton>
+                                  )}
+                                </>
+                              </Security>
                               {(onReview || onReviewAddAll || onReviewDismiss) && (
                                 <Divider orientation="vertical" flexItem />
                               )}
