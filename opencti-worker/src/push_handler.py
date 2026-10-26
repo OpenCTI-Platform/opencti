@@ -34,25 +34,19 @@ LOCKFREE_IMPORT_PROBE_QUERY = "mutation { lockfreeImport(operations: []) { statu
 BATCH_SUPPORT_RECHECK_SECONDS = 300
 
 MessageResult = Literal["ack", "nack", "requeue"]
-# The context of a bundle message (applicant, work, update...): messages sharing it can be imported together
-GroupKey = Tuple[Any, ...]
 
 
 class ParsedMessage(NamedTuple):
-    """A message received in a batch, read to group it with others."""
-
-    group_key: Optional[GroupKey]  # None: handled on its own
+    group_key: Optional[Tuple[Any, ...]]  # None: handled on its own
     data: Dict[str, Any]  # empty when the message cannot be read
     objects: List[Any]
 
 
 def _missing_ref_deferrals(data: Dict[str, Any]) -> Any:
-    """How many times the message's items were sent again for a missing reference."""
     return data.get("missing_ref_deferrals", 0)
 
 
 def _retry_at(data: Dict[str, Any]) -> Any:
-    """When the items of a message sent again for a missing reference are due (0: now)."""
     return data.get("missing_ref_retry_at") or 0
 
 
@@ -169,7 +163,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
 
     @contextmanager
     def _confirmed_push_channel(self) -> Iterator[BlockingChannel]:
-        """A channel of its own to publish with, deliveries confirmed when the broker allows it."""
         with pika.BlockingConnection(self.pika_parameters) as push_pika_connection:
             with push_pika_connection.channel() as push_channel:
                 try:
@@ -201,31 +194,23 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     def batch_import_supported(self) -> bool:
         """Whether the platform takes lock-free batch imports (checked again every 5 minutes when not)."""
         now = time.monotonic()
-        if self._batch_support_check_due(now):
+        if self._batch_supported is None or (
+            not self._batch_supported
+            and now - self._batch_checked_at > BATCH_SUPPORT_RECHECK_SECONDS
+        ):
             self._batch_checked_at = now
-            self._batch_supported = self._probe_batch_import()
+            try:
+                self.api.send_query(LOCKFREE_IMPORT_PROBE_QUERY)
+                self._batch_supported = True
+            except Exception:  # pylint: disable=broad-except
+                self._batch_supported = False
             self.logger.info(
                 "Batch import support", {"supported": self._batch_supported}
             )
         return bool(self._batch_supported)
 
-    def _batch_support_check_due(self, now: float) -> bool:
-        if self._batch_supported is None:
-            return True
-        return (
-            not self._batch_supported
-            and now - self._batch_checked_at > BATCH_SUPPORT_RECHECK_SECONDS
-        )
-
-    def _probe_batch_import(self) -> bool:
-        try:
-            self.api.send_query(LOCKFREE_IMPORT_PROBE_QUERY)
-            return True
-        except Exception:  # pylint: disable=broad-except
-            return False
-
     @staticmethod
-    def _batch_key(data: Dict[str, Any]) -> Optional[GroupKey]:
+    def _batch_key(data: Dict[str, Any]) -> Optional[Tuple[Any, ...]]:
         """Messages with the same key are imported together; None when a message goes on its own."""
         if data.get("type", "bundle") != "bundle" or data.get("draft_id"):
             return None
@@ -265,7 +250,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     def send_to_queue_end(
         self, messages: List[Tuple[Dict[str, Any], List[Any]]]
     ) -> None:
-        """Publish (message data, objects) pairs at the end of the push queue, each as one bundle message."""
         with self._confirmed_push_channel() as push_channel:
             for data, objects in messages:
                 self.send_bundle_to_specific_queue(
@@ -321,7 +305,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         return results
 
     def _parse_for_grouping(self, body: str) -> ParsedMessage:
-        """Read a message's context and objects; a message that cannot be grouped gets no key."""
         try:
             data = json.loads(body)
             content = json.loads(base64.b64decode(data["content"]).decode("utf-8"))
@@ -337,7 +320,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     def _handle_groups(
         self, bodies: List[str], messages: List[ParsedMessage]
     ) -> List[MessageResult]:
-        """Import consecutive messages sharing their context as one group, every other message on its own."""
         results: List[MessageResult] = []
         start = 0
         while start < len(messages):
@@ -365,7 +347,16 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         self.wait_for_retry([message.data for message in messages])
         try:
             self._set_api_context(data)
-            imported_items, rejected = self._import_group(data, objects)
+            types = data["entities_types"] if data.get("entities_types") else None
+            bundle = _new_bundle(objects)
+            with self._batch_import_mode(True, data):
+                imported_items, rejected = self.api.stix2.import_bundle(
+                    bundle,
+                    data.get("update", False),
+                    types,
+                    data.get("work_id"),
+                    self.objects_max_refs,
+                )
             self.send_to_dead_letter(data, rejected)
             self.send_deferred(data)
         except Exception as ex:  # pylint: disable=broad-except
@@ -382,7 +373,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         return results
 
     def _set_api_context(self, data: Dict[str, Any]) -> None:
-        """Send the next requests as the message asks: applicant, playbook, event, draft, work..."""
         self.api.set_applicant_id_header(data.get("applicant_id"))
         self.api.set_playbook_id_header(data.get("playbook_id"))
         self.api.set_event_id(data.get("event_id"))
@@ -391,27 +381,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         self.api.set_previous_standard_header(data.get("previous_standard"))
         self.api.set_work_id(data.get("work_id"))
 
-    def _import_group(
-        self, data: Dict[str, Any], objects: List[Any]
-    ) -> Tuple[List[Any], List[Any]]:
-        """Import the objects of a group as one bundle through the batch import: (imported, rejected) items."""
-        types = data["entities_types"] if data.get("entities_types") else None
-        bundle = _new_bundle(objects)
-        with self._batch_import_mode(True, data):
-            imported_items, rejected = self.api.stix2.import_bundle(
-                bundle,
-                data.get("update", False),
-                types,
-                data.get("work_id"),
-                self.objects_max_refs,
-            )
-        return imported_items, rejected
-
     @contextmanager
     def _batch_import_mode(self, enabled: bool, data: Dict[str, Any]) -> Iterator[None]:
-        """The client's batch import settings for one import of the message, reset after it. Items with a missing
-        reference are left to the worker, to send again through the queue, until the last deferral.
-        """
+        """Items with a missing reference are left to the worker, to send again through the queue, until the last
+        deferral."""
         self.api.batch_import_enabled = enabled
         self.api.defer_missing_references = (
             _missing_ref_deferrals(data) < MAX_MISSING_REF_DEFERRALS
@@ -421,16 +394,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         finally:
             self.api.batch_import_enabled = False
             self.api.defer_missing_references = False
-
-    def _batch_import_wanted(self, data: Dict[str, Any], object_count: int) -> bool:
-        """Whether a message imported on its own goes through the batch import: when it holds several objects
-        (or an item sent again for a missing reference, so that it can be sent again) and the platform can.
-        """
-        if not (object_count > 1 or _missing_ref_deferrals(data) > 0):
-            return False
-        if data.get("draft_id"):
-            return False
-        return self.batch_import_supported()
 
     def _record_processing_telemetry(
         self, imported_count: int, start_processing: datetime.datetime
@@ -489,8 +452,15 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     raise ValueError("JSON data type is not a STIX2 bundle")
                 if len(content["objects"]) == 1 or data.get("no_split", False):
                     update = data.get("update", False)
-                    batch_import = self._batch_import_wanted(
-                        data, len(content["objects"])
+                    # Several objects in one message: imported together when the platform can
+                    # (an item sent again for a missing reference too, so that it can be sent again)
+                    batch_import = (
+                        (
+                            len(content["objects"]) > 1
+                            or _missing_ref_deferrals(data) > 0
+                        )
+                        and not data.get("draft_id")
+                        and self.batch_import_supported()
                     )
                     with self._batch_import_mode(batch_import, data):
                         imported_items, too_large_items_bundles = (

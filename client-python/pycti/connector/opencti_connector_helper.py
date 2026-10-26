@@ -3779,7 +3779,15 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.metric.inc("error_count")
             raise ValueError("Nothing to import")
 
-        messages = self._bundles_to_messages(bundles, no_split)
+        # Messages sent: the split bundles, in their dependency order, several objects per message when the
+        # platform imports them together (lock-free batch import)
+        messages = bundles
+        chunk_size = 1 if no_split else self._push_chunk_size()
+        if chunk_size > 1 and len(bundles) > 1:
+            messages = [
+                self._merge_split_bundles(bundles[start : start + chunk_size])
+                for start in range(0, len(bundles), chunk_size)
+            ]
         # Merged split bundles are not to be split again by the worker
         messages_merged = len(messages) < len(bundles)
 
@@ -3842,18 +3850,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         return bundles
 
-    def _bundles_to_messages(self, bundles: list, no_split: bool) -> list:
-        """The messages to push: the split bundles, in their dependency order, several objects per message when
-        the platform imports them together (lock-free batch import).
-        """
-        chunk_size = 1 if no_split else self._push_chunk_size()
-        if chunk_size <= 1 or len(bundles) <= 1:
-            return bundles
-        return [
-            self._merge_split_bundles(bundles[start : start + chunk_size])
-            for start in range(0, len(bundles), chunk_size)
-        ]
-
     def _push_chunk_size(self) -> int:
         """Objects per pushed message: CONNECTOR_PUSH_CHUNK_SIZE (default 500) when the platform imports a
         message's objects together (lock-free batch import), 1 otherwise. Checked once.
@@ -3880,11 +3876,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """One bundle with the objects of several split bundles, in their order."""
         parsed = [json.loads(b) if isinstance(b, str) else b for b in bundles]
         merged = dict(parsed[0])
-        merged["objects"] = [
-            stix_object
-            for parsed_bundle in parsed
-            for stix_object in parsed_bundle.get("objects", [])
-        ]
+        merged["objects"] = [o for b in parsed for o in b.get("objects", [])]
         return json.dumps(merged)
 
     def _send_bundle(self, channel, bundle, **kwargs) -> None:

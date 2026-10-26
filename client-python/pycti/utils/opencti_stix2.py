@@ -4064,7 +4064,25 @@ class OpenCTIStix2:
         candidates = []
         for bundle in bundles:
             for item in bundle["objects"]:
-                if self._reject_if_too_large(item, objects_max_refs, work_id):
+                nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
+                if 0 < objects_max_refs <= nb_refs:
+                    too_large_element_message = "Too large element in bundle"
+                    self.opencti.logger_class("worker").warning(
+                        too_large_element_message
+                    )
+                    item["rejection_info"] = {
+                        "reject_reason": "ELEMENT_TOO_LARGE",
+                        "objects_max_refs": objects_max_refs,
+                    }
+                    self.opencti.work.report_expectation(
+                        work_id,
+                        {
+                            "error": too_large_element_message,
+                            "source": "Element "
+                            + item["id"]
+                            + " is too large and couldn't be processed",
+                        },
+                    )
                     rejected.append(item)
                 else:
                     candidates.append((bundle["id"], item))
@@ -4102,31 +4120,6 @@ class OpenCTIStix2:
             else:
                 imported_elements.append({"id": item["id"], "type": item["type"]})
         return imported_elements, rejected
-
-    def _reject_if_too_large(
-        self, item: Dict, objects_max_refs: int, work_id: Optional[str]
-    ) -> bool:
-        """Whether the item has too many refs to be imported; if so, it is marked and reported as rejected."""
-        nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
-        too_large = 0 < objects_max_refs <= nb_refs
-        if not too_large:
-            return False
-        too_large_element_message = "Too large element in bundle"
-        self.opencti.logger_class("worker").warning(too_large_element_message)
-        item["rejection_info"] = {
-            "reject_reason": "ELEMENT_TOO_LARGE",
-            "objects_max_refs": objects_max_refs,
-        }
-        self.opencti.work.report_expectation(
-            work_id,
-            {
-                "error": too_large_element_message,
-                "source": "Element "
-                + item["id"]
-                + " is too large and couldn't be processed",
-            },
-        )
-        return True
 
     def _convert_in_batch(
         self,

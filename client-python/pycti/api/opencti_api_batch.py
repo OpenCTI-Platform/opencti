@@ -29,7 +29,6 @@ def _camel_to_type(field: str) -> str:
 
 
 def _has_files(value) -> bool:
-    """Whether the variables hold a file to upload, at any depth."""
     if isinstance(value, dict):
         return any(_has_files(v) for v in value.values())
     if isinstance(value, list):
@@ -63,18 +62,6 @@ def _ref_and_type(field: str, variables: Dict) -> Tuple[Optional[str], str]:
         return ref, "External-Reference"
     entity_type = create_input.get("type") or _camel_to_type(field)
     return create_input.get("stix_id"), entity_type
-
-
-def _placeholder_answer(field: str, ref: str, entity_type: str) -> Dict:
-    """The answer to a kept create, as the platform would shape it, with the STIX id as id."""
-    placeholder = {
-        "id": ref,
-        "standard_id": ref,
-        "entity_type": entity_type,
-        "parent_types": [],
-        "x_opencti_stix_ids": [],
-    }
-    return {"data": {field: placeholder}}
 
 
 class BatchImport:
@@ -122,7 +109,14 @@ class BatchImport:
         self.owners.append(self.owner)
         if len(self.operations) >= self.chunk_size:
             self.flush()
-        return _placeholder_answer(field, ref, entity_type)
+        placeholder = {
+            "id": ref,
+            "standard_id": ref,
+            "entity_type": entity_type,
+            "parent_types": [],
+            "x_opencti_stix_ids": [],
+        }
+        return {"data": {field: placeholder}}
 
     def flush(self):
         """Sends the kept creates; the bundle items with a create that failed are recorded in ``failed``."""

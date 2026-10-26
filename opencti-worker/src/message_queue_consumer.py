@@ -7,8 +7,6 @@ from typing import Any, Callable, List, Literal, Optional, Tuple
 import pika
 
 MessageResult = Literal["ack", "nack", "requeue"]
-# A message received and not settled yet: (delivery tag, body)
-Delivery = Tuple[int, str]
 
 
 @dataclass(unsafe_hash=True)
@@ -52,7 +50,6 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
             )
 
     def settle(self, delivery_tag: int, result: str) -> None:
-        """Ack, reject or requeue the message, from the connection's thread."""
         match result:
             case "ack":
                 cb = functools.partial(self.ack_message, delivery_tag)
@@ -64,8 +61,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
                 cb = functools.partial(self.nack_message, delivery_tag, True)
                 self.pika_connection.add_callback_threadsafe(cb)
 
-    def consume_batch(self, messages: List[Delivery]) -> None:
-        """Handle messages together, then settle each one with its own result."""
+    def consume_batch(self, messages: List[Tuple[int, str]]) -> None:
         try:
             results = self.handle_batch([body for _, body in messages])
         except Exception as e:  # pylint: disable=broad-except
@@ -78,9 +74,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
             self.settle(delivery_tag, result)
 
     def consume_queue_batched(self) -> None:
-        """Consume the queue in batches: batch_size messages, or fewer when no other one arrived within
-        batch_wait seconds."""
-        pending: List[Delivery] = []
+        pending: List[Tuple[int, str]] = []
         for message in self.channel.consume(
             self.queue_name, inactivity_timeout=self.batch_wait
         ):
@@ -95,18 +89,16 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
             elif not pending:
                 continue
             # A full batch, or the queue went quiet: process what came
-            batch, pending = pending, []
-            self.process_batch(batch)
-
-    def process_batch(self, messages: List[Delivery]) -> None:
-        """Handle a batch in the thread pool and wait for it: one batch at a time per queue."""
-        self.logger.info(
-            "Processing messages together, launching a thread...",
-            {"queue": self.queue_name, "messages": len(messages)},
-        )
-        task_future = self.submit_fn(functools.partial(self.consume_batch, messages))
-        while not task_future.done():
-            self.pika_connection.sleep(0.05)
+            messages, pending = pending, []
+            self.logger.info(
+                "Processing messages together, launching a thread...",
+                {"queue": self.queue_name, "messages": len(messages)},
+            )
+            task_future = self.submit_fn(
+                functools.partial(self.consume_batch, messages)
+            )
+            while not task_future.done():  # One batch at a time per queue
+                self.pika_connection.sleep(0.05)
 
     def consume_message(self, delivery_tag: int, body: str) -> None:
         try:

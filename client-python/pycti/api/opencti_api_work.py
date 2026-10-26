@@ -30,13 +30,6 @@ PER_MESSAGE_HEADERS = (
     "previous-standard",
     "opencti-retry-number",
 )
-# Successes are counted per (work id, draft id)
-PendingKey = Tuple[str, Optional[str]]
-
-
-def _is_unknown_count_argument(err: ValueError) -> bool:
-    """Whether the platform refused a report for predating its count argument."""
-    return "count" in str(err) and "Unknown argument" in str(err)
 
 
 class ExpectationBatcher:
@@ -77,14 +70,14 @@ class ExpectationBatcher:
         self._lock = threading.Lock()
         # One send at a time: the background sender, an explicit flush or the one at exit
         self._send_lock = threading.Lock()
-        self._pending: Dict[PendingKey, int] = {}
-        self._attempts: Dict[PendingKey, int] = {}
+        # Successes per (work id, draft id)
+        self._pending: Dict[Tuple[str, Optional[str]], int] = {}
+        self._attempts: Dict[Tuple[str, Optional[str]], int] = {}
         self._pending_total = 0
         self._wake = threading.Event()
         self._thread = None
         # Its own HTTP session: the client's is used by the import, from another thread
         self._session = requests.session()
-        # Cleared once the platform refuses the count argument: reports then go one by one
         self._count_supported = True
 
     def add(self, work_id: str):
@@ -95,22 +88,16 @@ class ExpectationBatcher:
             self._pending[key] = self._pending.get(key, 0) + 1
             self._pending_total += 1
             full = self._pending_total >= self.max_pending
-            self._start_sender_once()
+            if self._thread is None:
+                self._thread = threading.Thread(
+                    target=self._run, name="opencti-expectations", daemon=True
+                )
+                self._thread.start()
+                atexit.register(self.flush)
         if full:
             self._wake.set()
 
-    def _start_sender_once(self):
-        """Start the background sender on the first report, and send what is pending at exit (under ``_lock``)."""
-        if self._thread is not None:
-            return
-        self._thread = threading.Thread(
-            target=self._run, name="opencti-expectations", daemon=True
-        )
-        self._thread.start()
-        atexit.register(self.flush)
-
     def _run(self):
-        """Background sender: every ``interval`` seconds, or sooner when ``add`` reaches ``max_pending``."""
         while True:
             self._wake.wait(self.interval)
             self._wake.clear()
@@ -119,36 +106,26 @@ class ExpectationBatcher:
     def flush(self):
         """Send every pending report now."""
         with self._send_lock:
-            for key, count in self._take_pending().items():
-                work_id, draft_id = key
-                unsent = self._send(work_id, draft_id, count)
-                self._record_send_result(key, unsent)
-
-    def _take_pending(self) -> Dict[PendingKey, int]:
-        """Empty the pending counts and return them."""
-        with self._lock:
-            pending = self._pending
-            self._pending = {}
-            self._pending_total = 0
-        return pending
-
-    def _record_send_result(self, key: PendingKey, unsent: int):
-        """After a send: an unsent count goes back with the next reports, until it was tried ``max_attempts`` times."""
-        if unsent == 0:
-            self._attempts.pop(key, None)
-            return
-        attempts = self._attempts.get(key, 0) + 1
-        if attempts >= self.max_attempts:
-            self._attempts.pop(key, None)
-            self.api.app_logger.error(
-                "Cannot report expectations, dropped",
-                {"work_id": key[0], "count": unsent, "attempts": attempts},
-            )
-            return
-        self._attempts[key] = attempts
-        with self._lock:
-            self._pending[key] = self._pending.get(key, 0) + unsent
-            self._pending_total += unsent
+            with self._lock:
+                pending, self._pending, self._pending_total = self._pending, {}, 0
+            for key, count in pending.items():
+                unsent = self._send(key[0], key[1], count)
+                if unsent == 0:
+                    self._attempts.pop(key, None)
+                    continue
+                # An unsent count goes back with the next reports, until it was tried max_attempts times
+                attempts = self._attempts.get(key, 0) + 1
+                if attempts >= self.max_attempts:
+                    self._attempts.pop(key, None)
+                    self.api.app_logger.error(
+                        "Cannot report expectations, dropped",
+                        {"work_id": key[0], "count": unsent, "attempts": attempts},
+                    )
+                    continue
+                self._attempts[key] = attempts
+                with self._lock:
+                    self._pending[key] = self._pending.get(key, 0) + unsent
+                    self._pending_total += unsent
 
     def _headers(self, work_id: str, draft_id: Optional[str]) -> Dict:
         """The client's headers for this work and draft, without those of the message being processed."""
@@ -166,10 +143,29 @@ class ExpectationBatcher:
         headers = self._headers(work_id, draft_id)
         unsent = count
         try:
-            if self._count_supported and self._send_count(work_id, count, headers):
-                return 0
+            if self._count_supported:
+                try:
+                    self.api.query(
+                        REPORT_EXPECTATIONS_QUERY,
+                        {"id": work_id, "count": count},
+                        True,
+                        headers=headers,
+                        session=self._session,
+                    )
+                    return 0
+                except ValueError as err:
+                    # A platform older than the count argument: report one by one from now on
+                    if "count" not in str(err) or "Unknown argument" not in str(err):
+                        raise
+                    self._count_supported = False
             while unsent > 0:
-                self._send_one(work_id, headers)
+                self.api.query(
+                    REPORT_EXPECTATION_QUERY,
+                    {"id": work_id, "error": None},
+                    True,
+                    headers=headers,
+                    session=self._session,
+                )
                 unsent -= 1
             return 0
         except Exception as err:  # pylint: disable=broad-except
@@ -178,34 +174,6 @@ class ExpectationBatcher:
                 {"work_id": work_id, "count": unsent, "error": str(err)},
             )
             return unsent
-
-    def _send_count(self, work_id: str, count: int, headers: Dict) -> bool:
-        """Send the count as one report; False when the platform is older than the count argument (from then on,
-        reports go one by one)."""
-        try:
-            self.api.query(
-                REPORT_EXPECTATIONS_QUERY,
-                {"id": work_id, "count": count},
-                True,
-                headers=headers,
-                session=self._session,
-            )
-            return True
-        except ValueError as err:
-            if not _is_unknown_count_argument(err):
-                raise
-            self._count_supported = False
-            return False
-
-    def _send_one(self, work_id: str, headers: Dict):
-        """Send a single success report."""
-        self.api.query(
-            REPORT_EXPECTATION_QUERY,
-            {"id": work_id, "error": None},
-            True,
-            headers=headers,
-            session=self._session,
-        )
 
 
 class OpenCTIApiWork:
