@@ -4,13 +4,15 @@ import {
   elAggregationNestedTermsWithFilter,
   elAggregationRelationsCount,
   elAggregationsList,
+  elAttributeValues,
   elCardinalityCount,
   elFindByIds,
+  elHistogramCount,
   elPaginate,
   elUpdate,
 } from '../../../src/database/engine';
 import { cleanAllEntityInconsistencies } from '../../../src/database/inconsistencyCleaner';
-import { CLIENT_ABORT_ERROR } from '../../../src/config/errors';
+import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_ENTITIES_INDICES, READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 
@@ -59,6 +61,16 @@ describe('Engine calls classify an already-aborted request as CLIENT_ABORT_ERROR
       .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
   });
 
+  it('elHistogramCount should reject with CLIENT_ABORT_ERROR', async () => {
+    await expect(elHistogramCount(abortedContext(), ADMIN_USER, READ_DATA_INDICES_WITHOUT_INFERRED, { field: 'created_at', interval: 'month' }))
+      .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+  });
+
+  it('elAttributeValues should reject with CLIENT_ABORT_ERROR', async () => {
+    await expect(elAttributeValues(abortedContext(), ADMIN_USER, 'entity_type'))
+      .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+  });
+
   it('elUpdate (write path) should reject with CLIENT_ABORT_ERROR', async () => {
     await expect(elUpdate(abortedContext(), READ_ENTITIES_INDICES[0], 'engine-abort-test-id', { doc: {} }))
       .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
@@ -67,5 +79,13 @@ describe('Engine calls classify an already-aborted request as CLIENT_ABORT_ERROR
   it('cleanAllEntityInconsistencies (inconsistencyCleaner.loadRawElement) should reject with CLIENT_ABORT_ERROR', async () => {
     await expect(cleanAllEntityInconsistencies(abortedContext(), ADMIN_USER, 'engine-abort-test-id'))
       .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+  });
+});
+
+describe('Engine calls keep classifying a genuine engine failure as DATABASE_ERROR', () => {
+  it('elAggregationNestedTermsWithFilter should reject with DATABASE_ERROR on an invalid query', async () => {
+    const aggregation = { path: 'connections', field: 'connections.internal_id.keyword', filter: { not_a_query: {} } };
+    await expect(elAggregationNestedTermsWithFilter(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, aggregation))
+      .rejects.toMatchObject({ extensions: { code: DATABASE_ERROR } });
   });
 });
