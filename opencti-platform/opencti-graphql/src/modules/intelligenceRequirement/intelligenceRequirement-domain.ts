@@ -110,6 +110,19 @@ export const countRequirementOpenItems = async (context: AuthContext, user: Auth
   return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
 };
 
+// Inbox counters for the filter buttons (open items per kind, done items)
+export const countRequirementInbox = async (context: AuthContext, user: AuthUser, irId: string) => {
+  const count = (status: string, kind?: string) => {
+    let filters = addFilter(addFilter(undefined, 'ir_id', irId), 'item_status', status);
+    if (kind) filters = addFilter(filters, 'item_kind', kind);
+    return countAllThings(context, user, { types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+  };
+  const [open, proposed, entered, score, health, done] = await Promise.all([
+    count('open'), count('open', 'proposed'), count('open', 'entered'), count('open', 'score'), count('open', 'health'), count('done'),
+  ]);
+  return { open, proposed, entered, score, health, done };
+};
+
 // Entities entering the requirement (in or proposed) per day over the last days
 export const requirementActivity = async (context: AuthContext, user: AuthUser, irId: string, days: number) => {
   const endDate = new Date();

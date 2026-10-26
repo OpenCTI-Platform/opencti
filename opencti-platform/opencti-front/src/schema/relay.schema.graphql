@@ -9152,6 +9152,11 @@ type Query {
   pirRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!, relationship_type: [String!]): [MultiTimeSeries]
   pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   intelligenceRequirement(id: ID!): IntelligenceRequirement
+
+  """
+  Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings
+  """
+  intelligenceRequirementPreview(input: IntelligenceRequirementInput!): IrPreview!
   intelligenceRequirements(first: Int, after: ID, orderBy: IntelligenceRequirementOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): IntelligenceRequirementConnection
   intelligenceRequirementMatches(id: ID!, statuses: [IrMatchStatus!], first: Int, after: ID, orderBy: IntelligenceRequirementMatchOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): IntelligenceRequirementMatchConnection
   intelligenceRequirementItems(id: ID!, statuses: [IrItemStatus!], kinds: [IrItemKind!], first: Int, after: ID, filters: FilterGroup, search: String): IntelligenceRequirementItemConnection
@@ -10091,6 +10096,11 @@ type Mutation {
   intelligenceRequirementUpdate(id: ID!, input: IntelligenceRequirementInput!): IntelligenceRequirement
   intelligenceRequirementStatusUpdate(id: ID!, status: IntelligenceRequirementStatus!): IntelligenceRequirement
   intelligenceRequirementDelete(id: ID!): ID
+
+  """
+  AI Insight with the LLM configured on the platform, when XTM One is not usable
+  """
+  intelligenceRequirementAiInsight(id: ID!, language: String): String
   intelligenceRequirementItemDecide(id: ID!, decision: IrItemDecision!): IntelligenceRequirementItem
 
   """
@@ -16061,6 +16071,12 @@ type IntelligenceRequirement implements InternalObject & BasicObject {
   currentUserAccessRight: String
   ir_entities_count: Int!
   ir_inbox_open_count: Int!
+  ir_inbox_counts: IrInboxCounts!
+
+  """
+  AI Insight: prompt for an XTM One agent (content of the requirement and its questions)
+  """
+  ir_ai_prompt(language: String, reference_only: Boolean): String!
   ir_activity(days: Int): [IrActivityPoint!]!
 }
 
@@ -16070,6 +16086,47 @@ enum IntelligenceRequirementOrdering {
   updated_at
   ir_priority
   _score
+}
+
+type IrInboxCounts {
+  open: Int!
+  proposed: Int!
+  entered: Int!
+  score: Int!
+  health: Int!
+  done: Int!
+}
+
+type IrPreviewEntity {
+  id: String!
+  name: String!
+  entity_type: String!
+}
+
+type IrPreviewGroup {
+  id: String!
+  name: String!
+  kind: String!
+  entities: [IrPreviewEntity!]!
+  unresolved_ids: [String!]!
+  matching_count: Int
+}
+
+type IrPreviewCriterion {
+  id: String!
+  name: String!
+  kind: String!
+  today_count: Int
+  note: String
+  warnings: [String!]!
+}
+
+type IrPreview {
+  valid: Boolean!
+  errors: [String!]!
+  warnings: [String!]!
+  groups: [IrPreviewGroup!]!
+  criteria: [IrPreviewCriterion!]!
 }
 
 type IrActivityPoint {

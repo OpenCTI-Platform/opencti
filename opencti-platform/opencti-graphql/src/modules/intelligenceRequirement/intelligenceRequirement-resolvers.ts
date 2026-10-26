@@ -13,12 +13,15 @@ import {
   intelligenceRequirementUpdate,
   countRequirementEntities,
   countRequirementOpenItems,
+  countRequirementInbox,
   requirementActivity,
 } from './intelligenceRequirement-domain';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
 import { findMatchesPaginated, loadMatchById, parseMatchExplanations } from './intelligenceRequirementMatch-domain';
 import { findItemsPaginated, parseItemData } from './intelligenceRequirementItem-domain';
 import { decideItem, decideItems, setMatchStatus } from './intelligenceRequirement-pipeline';
+import { buildRequirementAiPrompt, buildRequirementAiReference, generateRequirementAiInsight } from './intelligenceRequirement-ai';
+import { previewIntelligenceRequirement } from './intelligenceRequirement-preview';
 
 const parseJson = <T>(value: string | null | undefined, fallback: T): T => {
   try {
@@ -33,6 +36,7 @@ const parsed = (ir: BasicStoreEntityIntelligenceRequirement) => parseIntelligenc
 
 const intelligenceRequirementResolvers: Resolvers = {
   Query: {
+    intelligenceRequirementPreview: (_, { input }, context) => previewIntelligenceRequirement(context, context.user, input),
     intelligenceRequirement: (_, { id }, context) => findById(context, context.user, id),
     intelligenceRequirements: (_, args, context) => findIntelligenceRequirementPaginated(context, context.user, args),
     intelligenceRequirementMatches: (_, { id, ...args }, context) => findMatchesPaginated(context, context.user, id, args),
@@ -46,6 +50,10 @@ const intelligenceRequirementResolvers: Resolvers = {
     currentUserAccessRight: (ir, _, context) => getUserAccessRight(context.user, ir),
     ir_entities_count: (ir, _, context) => countRequirementEntities(context, context.user, ir.id),
     ir_inbox_open_count: (ir, _, context) => countRequirementOpenItems(context, context.user, ir.id),
+    ir_inbox_counts: (ir, _, context) => countRequirementInbox(context, context.user, ir.id),
+    ir_ai_prompt: (ir, { language, reference_only }, context) => (reference_only
+      ? buildRequirementAiReference(context, context.user, ir, language || 'English')
+      : buildRequirementAiPrompt(context, context.user, ir, language || 'English')),
     ir_activity: (ir, { days }, context) => requirementActivity(context, context.user, ir.id, days ?? 30),
     // Stored as serialized JSON, exposed as typed blocks
     ir_kiqs: (ir) => parsed(ir).ir_kiqs,
@@ -105,6 +113,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     intelligenceRequirementStatusUpdate: (_, { id, status }, context) => intelligenceRequirementStatusUpdate(context, context.user, id, status),
     intelligenceRequirementDelete: (_, { id }, context) => intelligenceRequirementDelete(context, context.user, id),
     intelligenceRequirementItemDecide: (_, { id, decision }, context) => decideItem(context, context.user, id, decision),
+    intelligenceRequirementAiInsight: (_, { id, language }, context) => generateRequirementAiInsight(context, context.user, id, language || 'English'),
     intelligenceRequirementItemsDecide: (_, { ids, decision }, context) => decideItems(context, context.user, ids, decision),
     intelligenceRequirementMatchStatusUpdate: (_, { id, status }, context) => setMatchStatus(context, context.user, id, status),
   },

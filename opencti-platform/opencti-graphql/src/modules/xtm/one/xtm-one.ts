@@ -158,6 +158,8 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       { name: 'cti.entity_forecast', description: 'Forecast future activity of an OpenCTI entity' },
       { name: 'cti.entity_history', description: 'Summarize internal history of an OpenCTI entity' },
       { name: 'cti.nlq_search', description: 'Generate an OpenCTI filter from a natural language query' },
+      { name: 'cti.pir_insight', description: 'Write an intelligence assessment answering an OpenCTI intelligence requirement' },
+      { name: 'cti.pir_builder', description: 'Turn a question into a configuration of an OpenCTI intelligence requirement' },
       { name: 'cti.stix_harvester', description: 'Extract cyber threat intelligence from documents into STIX 2.1 bundles' },
       { name: 'cti.stix_transformer', description: 'Transform a STIX 2.1 bundle (enrich, filter, rewrite, normalize) and return a valid STIX 2.1 bundle' },
       { name: 'cti.stix_consumer', description: 'Consume a STIX 2.1 bundle as the final step of an OpenCTI playbook (summarize, alert, post, dispatch)' },

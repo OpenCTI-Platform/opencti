@@ -115,6 +115,9 @@ type IntelligenceRequirement implements InternalObject & BasicObject {
   # List indicators
   ir_entities_count: Int!
   ir_inbox_open_count: Int!
+  ir_inbox_counts: IrInboxCounts!
+  "AI Insight: prompt for an XTM One agent (content of the requirement and its questions)"
+  ir_ai_prompt(language: String, reference_only: Boolean): String!
   ir_activity(days: Int): [IrActivityPoint!]!
 }
 
@@ -126,6 +129,42 @@ enum IntelligenceRequirementOrdering {
   _score
 }
 
+type IrInboxCounts {
+  open: Int!
+  proposed: Int!
+  entered: Int!
+  score: Int!
+  health: Int!
+  done: Int!
+}
+type IrPreviewEntity {
+  id: String!
+  name: String!
+  entity_type: String!
+}
+type IrPreviewGroup {
+  id: String!
+  name: String!
+  kind: String!
+  entities: [IrPreviewEntity!]!
+  unresolved_ids: [String!]!
+  matching_count: Int
+}
+type IrPreviewCriterion {
+  id: String!
+  name: String!
+  kind: String!
+  today_count: Int
+  note: String
+  warnings: [String!]!
+}
+type IrPreview {
+  valid: Boolean!
+  errors: [String!]!
+  warnings: [String!]!
+  groups: [IrPreviewGroup!]!
+  criteria: [IrPreviewCriterion!]!
+}
 type IrActivityPoint {
   date: DateTime!
   value: Int!
@@ -204,6 +243,8 @@ input IntelligenceRequirementInput {
 
 type Query {
   intelligenceRequirement(id: ID!): IntelligenceRequirement @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  "Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings"
+  intelligenceRequirementPreview(input: IntelligenceRequirementInput!): IrPreview! @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
   intelligenceRequirements(
     first: Int
     after: ID
@@ -378,6 +419,8 @@ extend type Query {
   ): IntelligenceRequirementItemConnection @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
 }
 extend type Mutation {
+  "AI Insight with the LLM configured on the platform, when XTM One is not usable"
+  intelligenceRequirementAiInsight(id: ID!, language: String): String @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
   intelligenceRequirementItemDecide(id: ID!, decision: IrItemDecision!): IntelligenceRequirementItem @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
   "Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided."
   intelligenceRequirementItemsDecide(ids: [ID!]!, decision: IrItemDecision!): Int @auth(for: [PIRAPI_PIRUPDATE]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])

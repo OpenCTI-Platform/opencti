@@ -14519,7 +14519,10 @@ export type IntelligenceRequirement = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   ir_activity: Array<IrActivityPoint>;
+  /** AI Insight: prompt for an XTM One agent (content of the requirement and its questions) */
+  ir_ai_prompt: Scalars['String']['output'];
   ir_entities_count: Scalars['Int']['output'];
+  ir_inbox_counts: IrInboxCounts;
   ir_inbox_open_count: Scalars['Int']['output'];
   ir_kiqs: Array<IrKiq>;
   ir_priority: IntelligenceRequirementPriority;
@@ -14543,6 +14546,12 @@ export type IntelligenceRequirement = BasicObject & InternalObject & {
 
 export type IntelligenceRequirementIr_ActivityArgs = {
   days?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type IntelligenceRequirementIr_Ai_PromptArgs = {
+  language?: InputMaybe<Scalars['String']['input']>;
+  reference_only?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type IntelligenceRequirementConnection = {
@@ -15098,6 +15107,16 @@ export enum IrDirection {
   Outgoing = 'outgoing'
 }
 
+export type IrInboxCounts = {
+  __typename?: 'IrInboxCounts';
+  done: Scalars['Int']['output'];
+  entered: Scalars['Int']['output'];
+  health: Scalars['Int']['output'];
+  open: Scalars['Int']['output'];
+  proposed: Scalars['Int']['output'];
+  score: Scalars['Int']['output'];
+};
+
 export type IrItemData = {
   __typename?: 'IrItemData';
   criterion_id?: Maybe<Scalars['String']['output']>;
@@ -15187,6 +15206,42 @@ export type IrPathConditionInput = {
   relationship_types: Array<Scalars['String']['input']>;
   target_ids: Array<Scalars['String']['input']>;
   target_relationship_type: Scalars['String']['input'];
+};
+
+export type IrPreview = {
+  __typename?: 'IrPreview';
+  criteria: Array<IrPreviewCriterion>;
+  errors: Array<Scalars['String']['output']>;
+  groups: Array<IrPreviewGroup>;
+  valid: Scalars['Boolean']['output'];
+  warnings: Array<Scalars['String']['output']>;
+};
+
+export type IrPreviewCriterion = {
+  __typename?: 'IrPreviewCriterion';
+  id: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  note?: Maybe<Scalars['String']['output']>;
+  today_count?: Maybe<Scalars['Int']['output']>;
+  warnings: Array<Scalars['String']['output']>;
+};
+
+export type IrPreviewEntity = {
+  __typename?: 'IrPreviewEntity';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type IrPreviewGroup = {
+  __typename?: 'IrPreviewGroup';
+  entities: Array<IrPreviewEntity>;
+  id: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
+  matching_count?: Maybe<Scalars['Int']['output']>;
+  name: Scalars['String']['output'];
+  unresolved_ids: Array<Scalars['String']['output']>;
 };
 
 export type IrRule = {
@@ -18018,6 +18073,8 @@ export type Mutation = {
   ingestionTaxiiFieldPatch?: Maybe<IngestionTaxii>;
   ingestionTaxiiResetState?: Maybe<IngestionTaxii>;
   intelligenceRequirementAdd?: Maybe<IntelligenceRequirement>;
+  /** AI Insight with the LLM configured on the platform, when XTM One is not usable */
+  intelligenceRequirementAiInsight?: Maybe<Scalars['String']['output']>;
   intelligenceRequirementDelete?: Maybe<Scalars['ID']['output']>;
   intelligenceRequirementItemDecide?: Maybe<IntelligenceRequirementItem>;
   /** Same decision on several inbox items; items that are closed or that the decision does not apply to are skipped. Returns the number of items decided. */
@@ -19526,6 +19583,12 @@ export type MutationIngestionTaxiiResetStateArgs = {
 
 export type MutationIntelligenceRequirementAddArgs = {
   input: IntelligenceRequirementInput;
+};
+
+
+export type MutationIntelligenceRequirementAiInsightArgs = {
+  id: Scalars['ID']['input'];
+  language?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -25591,6 +25654,8 @@ export type Query = {
   intelligenceRequirement?: Maybe<IntelligenceRequirement>;
   intelligenceRequirementItems?: Maybe<IntelligenceRequirementItemConnection>;
   intelligenceRequirementMatches?: Maybe<IntelligenceRequirementMatchConnection>;
+  /** Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings */
+  intelligenceRequirementPreview: IrPreview;
   intelligenceRequirements?: Maybe<IntelligenceRequirementConnection>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
@@ -27123,6 +27188,11 @@ export type QueryIntelligenceRequirementMatchesArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   statuses?: InputMaybe<Array<IrMatchStatus>>;
+};
+
+
+export type QueryIntelligenceRequirementPreviewArgs = {
+  input: IntelligenceRequirementInput;
 };
 
 
@@ -41898,6 +41968,7 @@ export type ResolversTypes = ResolversObject<{
   IrCriterionKind: IrCriterionKind;
   IrCriterionMode: IrCriterionMode;
   IrDirection: IrDirection;
+  IrInboxCounts: ResolverTypeWrapper<IrInboxCounts>;
   IrItemData: ResolverTypeWrapper<IrItemData>;
   IrItemDecision: IrItemDecision;
   IrItemKind: IrItemKind;
@@ -41909,6 +41980,10 @@ export type ResolversTypes = ResolversObject<{
   IrMatchStatus: IrMatchStatus;
   IrPathCondition: ResolverTypeWrapper<StoreIrPathCondition>;
   IrPathConditionInput: IrPathConditionInput;
+  IrPreview: ResolverTypeWrapper<IrPreview>;
+  IrPreviewCriterion: ResolverTypeWrapper<IrPreviewCriterion>;
+  IrPreviewEntity: ResolverTypeWrapper<IrPreviewEntity>;
+  IrPreviewGroup: ResolverTypeWrapper<IrPreviewGroup>;
   IrRule: ResolverTypeWrapper<StoreIrRule>;
   IrRuleInput: IrRuleInput;
   IrRuleOutcome: ResolverTypeWrapper<IrRuleOutcome>;
@@ -43054,12 +43129,17 @@ export type ResolversParentTypes = ResolversObject<{
   IrActivityPoint: IrActivityPoint;
   IrCriterion: StoreIrCriterion;
   IrCriterionInput: IrCriterionInput;
+  IrInboxCounts: IrInboxCounts;
   IrItemData: IrItemData;
   IrKiq: StoreIrKiq;
   IrKiqInput: IrKiqInput;
   IrMatchExplanation: StoreIrMatchExplanation;
   IrPathCondition: StoreIrPathCondition;
   IrPathConditionInput: IrPathConditionInput;
+  IrPreview: IrPreview;
+  IrPreviewCriterion: IrPreviewCriterion;
+  IrPreviewEntity: IrPreviewEntity;
+  IrPreviewGroup: IrPreviewGroup;
   IrRule: StoreIrRule;
   IrRuleInput: IrRuleInput;
   IrRuleOutcome: IrRuleOutcome;
@@ -48547,7 +48627,9 @@ export type IntelligenceRequirementResolvers<ContextType = any, ParentType exten
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ir_activity?: Resolver<Array<ResolversTypes['IrActivityPoint']>, ParentType, ContextType, Partial<IntelligenceRequirementIr_ActivityArgs>>;
+  ir_ai_prompt?: Resolver<ResolversTypes['String'], ParentType, ContextType, Partial<IntelligenceRequirementIr_Ai_PromptArgs>>;
   ir_entities_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ir_inbox_counts?: Resolver<ResolversTypes['IrInboxCounts'], ParentType, ContextType>;
   ir_inbox_open_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ir_kiqs?: Resolver<Array<ResolversTypes['IrKiq']>, ParentType, ContextType>;
   ir_priority?: Resolver<ResolversTypes['IntelligenceRequirementPriority'], ParentType, ContextType>;
@@ -48790,6 +48872,15 @@ export type IrCriterionResolvers<ContextType = any, ParentType extends Resolvers
   target_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
+export type IrInboxCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrInboxCounts'] = ResolversParentTypes['IrInboxCounts']> = ResolversObject<{
+  done?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entered?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  health?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  open?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  proposed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type IrItemDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrItemData'] = ResolversParentTypes['IrItemData']> = ResolversObject<{
   criterion_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   from_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -48829,6 +48920,38 @@ export type IrPathConditionResolvers<ContextType = any, ParentType extends Resol
   target_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   target_relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   targets?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+}>;
+
+export type IrPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPreview'] = ResolversParentTypes['IrPreview']> = ResolversObject<{
+  criteria?: Resolver<Array<ResolversTypes['IrPreviewCriterion']>, ParentType, ContextType>;
+  errors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  groups?: Resolver<Array<ResolversTypes['IrPreviewGroup']>, ParentType, ContextType>;
+  valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  warnings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrPreviewCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPreviewCriterion'] = ResolversParentTypes['IrPreviewCriterion']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  note?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  today_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  warnings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrPreviewEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPreviewEntity'] = ResolversParentTypes['IrPreviewEntity']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrPreviewGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPreviewGroup'] = ResolversParentTypes['IrPreviewGroup']> = ResolversObject<{
+  entities?: Resolver<Array<ResolversTypes['IrPreviewEntity']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  matching_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  unresolved_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type IrRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrRule'] = ResolversParentTypes['IrRule']> = ResolversObject<{
@@ -50098,6 +50221,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionTaxiiFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiFieldPatchArgs, 'id' | 'input'>>;
   ingestionTaxiiResetState?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiResetStateArgs, 'id'>>;
   intelligenceRequirementAdd?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementAddArgs, 'input'>>;
+  intelligenceRequirementAiInsight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementAiInsightArgs, 'id'>>;
   intelligenceRequirementDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementDeleteArgs, 'id'>>;
   intelligenceRequirementItemDecide?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItem']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemDecideArgs, 'decision' | 'id'>>;
   intelligenceRequirementItemsDecide?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationIntelligenceRequirementItemsDecideArgs, 'decision' | 'ids'>>;
@@ -51998,6 +52122,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   intelligenceRequirement?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementArgs, 'id'>>;
   intelligenceRequirementItems?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItemConnection']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementItemsArgs, 'id'>>;
   intelligenceRequirementMatches?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatchConnection']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementMatchesArgs, 'id'>>;
+  intelligenceRequirementPreview?: Resolver<ResolversTypes['IrPreview'], ParentType, ContextType, RequireFields<QueryIntelligenceRequirementPreviewArgs, 'input'>>;
   intelligenceRequirements?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementConnection']>, ParentType, ContextType, Partial<QueryIntelligenceRequirementsArgs>>;
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
@@ -56441,10 +56566,15 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IntrusionSetEditMutations?: IntrusionSetEditMutationsResolvers<ContextType>;
   IrActivityPoint?: IrActivityPointResolvers<ContextType>;
   IrCriterion?: IrCriterionResolvers<ContextType>;
+  IrInboxCounts?: IrInboxCountsResolvers<ContextType>;
   IrItemData?: IrItemDataResolvers<ContextType>;
   IrKiq?: IrKiqResolvers<ContextType>;
   IrMatchExplanation?: IrMatchExplanationResolvers<ContextType>;
   IrPathCondition?: IrPathConditionResolvers<ContextType>;
+  IrPreview?: IrPreviewResolvers<ContextType>;
+  IrPreviewCriterion?: IrPreviewCriterionResolvers<ContextType>;
+  IrPreviewEntity?: IrPreviewEntityResolvers<ContextType>;
+  IrPreviewGroup?: IrPreviewGroupResolvers<ContextType>;
   IrRule?: IrRuleResolvers<ContextType>;
   IrRuleOutcome?: IrRuleOutcomeResolvers<ContextType>;
   IrSubjectGroup?: IrSubjectGroupResolvers<ContextType>;
