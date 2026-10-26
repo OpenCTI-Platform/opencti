@@ -76,7 +76,7 @@ jobs:
     - name: Set up Docker Compose for backends and sync instances
       env:
         # Empty for Elasticsearch 8: docker-compose.yml then keeps its default image
-        ELASTICSEARCH_IMAGE: ${{ matrix.elasticsearch == '9' && 'elasticsearch:9.5.5' || '' }}
+        ELASTICSEARCH_IMAGE: ${{ matrix.elasticsearch == '9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
       run: |
          set -ex
          cd scripts/ci
@@ -233,7 +233,7 @@ jobs:
     - name: Set up Docker Compose for backends and sync instances
       env:
         # Empty for Elasticsearch 8: docker-compose.yml then keeps its default image
-        ELASTICSEARCH_IMAGE: ${{ matrix.elasticsearch == '9' && 'elasticsearch:9.5.5' || '' }}
+        ELASTICSEARCH_IMAGE: ${{ matrix.elasticsearch == '9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
       run: |
          set -eux
          cd scripts/ci
