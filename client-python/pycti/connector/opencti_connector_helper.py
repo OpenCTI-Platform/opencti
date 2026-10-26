@@ -3242,7 +3242,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         ConnectorRunError.model_validate(error).model_dump()
                     )
                 except ValidationError as e:
-                    self.connector_logger.error(
+                    self.connector_logger.warning(
                         "Malformed error response from the connector",
                         {"received": repr(error), "reason": str(e)},
                     )

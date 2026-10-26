@@ -49,7 +49,7 @@ def _stored_errors(helper: OpenCTIConnectorHelper) -> list:
 def test_none_result_clears_errors():
     helper = _run(None)
     assert helper.connector_info.errors == []
-    helper.connector_logger.error.assert_not_called()
+    helper.connector_logger.warning.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -68,7 +68,7 @@ def test_none_result_clears_errors():
 def test_non_list_result_is_handled_like_none(callback_result):
     helper = _run(callback_result)
     assert helper.connector_info.errors == []
-    helper.connector_logger.error.assert_not_called()
+    helper.connector_logger.warning.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -105,11 +105,12 @@ def test_non_list_result_is_handled_like_none(callback_result):
 def test_list_of_malformed_errors_is_dropped_and_logged(malformed_error):
     helper = _run([malformed_error, malformed_error])
     assert helper.connector_info.errors == []
-    assert helper.connector_logger.error.call_count == 2
-    message, meta = helper.connector_logger.error.call_args.args
+    assert helper.connector_logger.warning.call_count == 2
+    message, meta = helper.connector_logger.warning.call_args.args
     assert message == "Malformed error response from the connector"
     assert meta["received"] == repr(malformed_error)
     assert meta["reason"]
+    helper.connector_logger.error.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -120,14 +121,14 @@ def test_list_of_malformed_errors_is_dropped_and_logged(malformed_error):
 def test_list_of_valid_errors_is_stored(callback_result):
     helper = _run(callback_result)
     assert _stored_errors(helper) == list(callback_result)
-    helper.connector_logger.error.assert_not_called()
+    helper.connector_logger.warning.assert_not_called()
 
 
 def test_mixed_list_keeps_valid_errors_and_logs_malformed_ones():
     helper = _run([API_ERROR, "oops", RATE_ERROR])
     assert _stored_errors(helper) == [API_ERROR, RATE_ERROR]
-    helper.connector_logger.error.assert_called_once()
-    assert helper.connector_logger.error.call_args.args[1]["received"] == "'oops'"
+    helper.connector_logger.warning.assert_called_once()
+    assert helper.connector_logger.warning.call_args.args[1]["received"] == "'oops'"
 
 
 def _run_errors_logs(helper: OpenCTIConnectorHelper) -> list:
