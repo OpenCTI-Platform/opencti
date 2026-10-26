@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsAdmin } from '../../utils/testQueryHelper';
+import { isRuntimeSortEnable } from '../../../src/database/engine';
 
 const LIST_QUERY = `
   query stixCyberObservables(
@@ -333,13 +334,19 @@ describe('StixCyberObservable resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: gql(LIST_QUERY), variables: { first: 10 } });
     expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
   });
-  it('should list stixCyberObservables orderBy observable_value', async () => {
+  it('should list stixCyberObservables orderBy observable_value, or refuse it without runtime sorting', async () => {
     const queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: { first: 10, orderBy: 'observable_value', orderMode: 'desc' },
     });
-    expect(queryResult.data.stixCyberObservables).not.toBeNull();
-    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
+    if (isRuntimeSortEnable()) {
+      // Elasticsearch: the sort works
+      expect(queryResult.data.stixCyberObservables).not.toBeNull();
+      expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
+    } else {
+      // OpenSearch: the API refuses this sort with an explicit error
+      expect(queryResult.errors?.[0].message).toBe('Runtime mapping is only possible with elastic >=7.12');
+    }
   });
   it('should update stixCyberObservable', async () => {
     const queryResult = await queryAsAdmin({

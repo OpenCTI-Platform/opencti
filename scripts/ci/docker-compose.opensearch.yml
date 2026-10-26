@@ -1,0 +1,15 @@
+# Merged over docker-compose.yml (COMPOSE_FILE) by the backend tests matrix to run against OpenSearch.
+# The service keeps its name, so ELASTICSEARCH__URL, the ports and the log steps stay the same.
+services:
+  elasticsearch:
+    image: opensearchproject/opensearch:3.9.0@sha256:adfa61f85025d06b4aeb562e7e74fde7e31c437039c93c3862c17e9acebd6c7c
+    # File indexing needs the attachment processor, a plugin on OpenSearch (built in on Elasticsearch)
+    command: ["sh", "-c", "bin/opensearch-plugin install --batch ingest-attachment && exec ./opensearch-docker-entrypoint.sh opensearch"]
+    # Replaced, not merged: OpenSearch refuses to start with the xpack settings of Elasticsearch
+    environment: !override
+      - discovery.type=single-node
+      - DISABLE_SECURITY_PLUGIN=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      # OpenSearch keeps a fixed default of 1024, too low for some OpenCTI queries (Elasticsearch sizes it from the heap)
+      - indices.query.bool.max_clause_count=4096
+      - "OPENSEARCH_JAVA_OPTS=-Xms2G -Xmx2G"
