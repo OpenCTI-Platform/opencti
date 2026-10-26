@@ -1096,10 +1096,17 @@ enum BackgroundTasksOrdering {
   _score
 }
 
+type BackgroundTaskContextOptions {
+  includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+}
+
 type BackgroundTaskContext {
   field: String
   type: BackgroundTaskContextType
   values: [String]!
+  options: BackgroundTaskContextOptions
 }
 
 type BackgroundTaskAction {
@@ -1190,6 +1197,11 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+  comment: String
+  shareOrganizationIds: [String!]
+  unshareOrganizationIds: [String!]
 }
 
 input BackgroundTaskContextInput {
@@ -8969,6 +8981,8 @@ type Query {
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
+  workflowStatuses(entityType: String!): [Status!]!
+  workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]!
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!

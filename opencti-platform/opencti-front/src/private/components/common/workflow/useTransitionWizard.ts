@@ -5,7 +5,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useSwitchDraft from '../../drafts/useSwitchDraft';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
 import { MESSAGING$, relayErrorHandling } from '../../../../relay/environment';
-import { CommentMode } from '../../settings/sub_types/workflow/utils';
+import { buildTransitionRuntimeParams, hasTransitionComment, TransitionInputValues } from './WorkflowTransitionInputs';
 import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './WorkflowStatus.graphql';
 import type { WorkflowStatusTriggerMutation as WorkflowStatusTriggerMutationType } from './__generated__/WorkflowStatusTriggerMutation.graphql';
 import type { WorkflowStatusClearMutation as WorkflowStatusClearMutationType } from './__generated__/WorkflowStatusClearMutation.graphql';
@@ -21,11 +21,7 @@ export interface TransitionWizard {
   commentMode?: string;
 }
 
-export interface TransitionFormValues {
-  comment: string;
-  shareOrganizations: Array<{ value: string; label?: string }>;
-  unshareOrganizations: Array<{ value: string; label?: string }>;
-}
+export type TransitionFormValues = TransitionInputValues;
 
 interface UseTransitionWizardArgs {
   entityId: string;
@@ -115,7 +111,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
   ) => {
     if (inFlight.current || approving || clearing || isPending) return;
     const requiresValidation = !!draftId && actions.includes('validateDraft');
-    const hasComment = comment === CommentMode.allowed || comment === CommentMode.required;
+    const hasComment = hasTransitionComment(comment);
     if (!requiresShareOrg && !requiresUnshareOrg && !hasComment && !requiresValidation) {
       fireTransition(eventName, actions);
       return;
@@ -132,10 +128,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
 
   const handleApplyWizard = (values: TransitionFormValues): Promise<void> => {
     if (!wizard) return Promise.resolve();
-    const runtimeParams: Record<string, string[]> = {};
-    if (wizard.requiresShareOrg) runtimeParams.shareOrganizationIds = values.shareOrganizations.map((organization) => organization.value);
-    if (wizard.requiresUnshareOrg) runtimeParams.unshareOrganizationIds = values.unshareOrganizations.map((organization) => organization.value);
-    return fireTransition(wizard.event, wizard.actions, runtimeParams, values.comment.trim() || undefined);
+    return fireTransition(wizard.event, wizard.actions, buildTransitionRuntimeParams(wizard, values), values.comment.trim() || undefined);
   };
 
   const handleClear = () => {

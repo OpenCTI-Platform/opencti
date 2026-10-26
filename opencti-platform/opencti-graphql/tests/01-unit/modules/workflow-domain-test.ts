@@ -6,6 +6,7 @@ import { createEntity, createRelation, deleteElementById, loadEntity, updateAttr
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
+import { elAggregationCount } from '../../../src/database/engine';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { StatusScope } from '../../../src/generated/graphql';
 import { getEntitiesListFromCache } from '../../../src/database/cache';
@@ -23,6 +24,8 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  getMassWorkflowTransitions,
+  getWorkflowStatuses,
   initializeEntityWorkflow,
   isStatusTemplateUsedInWorkflows,
   isStatusUsedInWorkflow,
@@ -126,6 +129,14 @@ vi.mock('../../../src/modules/notification/notification-domain', () => ({
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addWorkflowPublishCount: vi.fn(),
 }));
+
+vi.mock('../../../src/database/engine', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/database/engine')>();
+  return {
+    ...actual,
+    elAggregationCount: vi.fn(),
+  };
+});
 
 vi.mock('../../../src/domain/status', () => ({
   createStatus: vi.fn(),
@@ -239,6 +250,15 @@ describe('Workflow bypass', () => {
     expect(createListTask).not.toHaveBeenCalled();
     expect(updateAttribute).not.toHaveBeenCalled();
     expect(await setWorkflowStatus(context, user, entity.id, target.id, false)).toMatchObject({ success: true });
+  });
+
+  it.each([true, false])('does nothing when the entity is already in the target status (applyTransitionActions: %s)', async (applyTransitionActions) => {
+    expect(await setWorkflowStatus(context, user, entity.id, legacy.id, applyTransitionActions, 'note'))
+      .toMatchObject({ success: true, executionStatus: 'completed', newState: 'open', unchanged: true });
+    expect(ActionRegistry.log).not.toHaveBeenCalled();
+    expect(addNotification).not.toHaveBeenCalled();
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+    expect(instance.history).toBe('[]');
   });
 
   it('allows static organizations without runtime input', async () => {
@@ -524,9 +544,12 @@ describe('Workflow bypass', () => {
       expect(result).toMatchObject({ success: false, reason: expect.stringContaining('pending') });
       expect(JSON.parse(instance.pendingTransition).event).toBe(firstEvent);
     } else {
+      // The completed event already reached the bypass target, so the bypass changes nothing
+      const isNoOpBypass = mutation === 'bypass';
+      if (isNoOpBypass) expect(result).toMatchObject({ success: true, unchanged: true });
       expect(JSON.parse(instance.history).map((entry: any) => entry.event)).toEqual([
         ...(executionStatus === 'completed' ? [firstEvent] : []),
-        mutation === 'event' ? 'close' : mutation === 'bypass' ? 'event_bypass' : 'admin_clear_pending_state',
+        ...(isNoOpBypass ? [] : [mutation === 'event' ? 'close' : 'admin_clear_pending_state']),
       ]);
     }
     if (first === 'callback') {
@@ -2809,6 +2832,47 @@ describe('Transition comments – Domain', () => {
 
       expect(getLastHistoryEntry()).not.toHaveProperty('comment');
     });
+
+    describe('required inputs', () => {
+      const mockTransition = (transition: Record<string, unknown>) => {
+        (WorkflowFactory.createDefinition as any).mockImplementation(() => ({ ...defaultCreateDefinition(), getTransitions: () => [{ event: 'review', to: 'reviewed', ...transition }] }));
+      };
+      afterEach(() => {
+        (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
+      });
+
+      it('should reject a transition that requires a comment when none is given, before any action runs', async () => {
+        setupMocks();
+        mockTransition({ comment: 'required' });
+
+        const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', '  ');
+
+        expect(result).toMatchObject({ success: false, reason: 'A comment is required for this transition' });
+        expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+      });
+
+      it('should run a transition that requires a comment when one is given, or when the user can bypass mandatory fields', async () => {
+        setupMocks();
+        mockTransition({ comment: 'required' });
+        const bypassFieldsUser = { id: 'user-id', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' }] } as any;
+
+        expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Reviewed')).toMatchObject({ success: true });
+        expect(await triggerWorkflowEvent(mockContext, bypassFieldsUser, 'entity-id', 'review')).toMatchObject({ success: true });
+      });
+
+      it.each([
+        ['requiresShareOrganizationInput', 'shareOrganizationIds'],
+        ['requiresUnshareOrganizationInput', 'unshareOrganizationIds'],
+      ])('should reject a transition with %s when no organization is given', async (requirement, key) => {
+        setupMocks();
+        mockTransition({ [requirement]: true });
+
+        expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review'))
+          .toMatchObject({ success: false, reason: `${key} must contain at least one organization ID` });
+        expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+        expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', undefined, { [key]: ['org-id'] })).toMatchObject({ success: true });
+      });
+    });
   });
 
   describe('triggerWorkflowEvent – notifications', () => {
@@ -3226,6 +3290,25 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(updateAttribute).not.toHaveBeenCalled();
   });
 
+  it('names the current status when the event has no transition from it', async () => {
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: asyncDefinition, validation_errors: [] } });
+      if (id === 'reviewing') return Promise.resolve({ id: 'reviewing', name: 'In review' });
+      return Promise.resolve(null);
+    });
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'reviewing', history: '[]' });
+    (WorkflowFactory.createDefinition as any).mockReturnValueOnce({ getTransitions: () => [] });
+    (WorkflowFactory.getInstance as any).mockReturnValueOnce({
+      trigger: vi.fn().mockResolvedValue({ success: false, reason: "No transition found from state 'reviewing' for event 'submit'" }),
+    });
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    expect(result).toMatchObject({ success: false, reason: "Transition 'submit' is not available from status 'In review'" });
+  });
+
   it('wraps unexpected errors and returns success:false', async () => {
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
@@ -3434,6 +3517,125 @@ describe('getWorkflowPublishedVersionId', () => {
 // ---------------------------------------------------------------------------
 // cleanupEntityWorkflow
 // ---------------------------------------------------------------------------
+
+describe('getMassWorkflowTransitions', () => {
+  const statuses = [
+    { id: 'status-new', template_id: 'new', scope: 'GLOBAL' },
+    { id: 'status-analyse', template_id: 'analyse', scope: 'GLOBAL' },
+    { id: 'status-closed', template_id: 'closed', scope: 'GLOBAL' },
+  ];
+  const transitionsByState: Record<string, any[]> = {
+    new: [{ event: 'start', to: 'analyse', actionTypes: [], conditions: [] }],
+    analyse: [{ event: 'close', to: 'closed', actionTypes: [], conditions: [] }],
+  };
+  const statesByEntity: Record<string, string> = { 'report-a': 'new', 'report-b': 'new', 'report-c': 'analyse' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (findStatusesByType as any).mockResolvedValue(statuses);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id, published_version: { id: 'v1', content: JSON.stringify({ initialState: 'new', states: [], transitions: [] }) } });
+      }
+      if (statesByEntity[id]) return Promise.resolve({ id, internal_id: id, entity_type: 'Report' });
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockImplementation((_ctx: any, _user: any, _types: string[], opts: any) => {
+      const entityId = opts.filters.filters[0].values[0];
+      return Promise.resolve({ id: `instance-${entityId}`, internal_id: `instance-${entityId}`, currentState: statesByEntity[entityId], history: '[]' });
+    });
+    (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+      getInitialState: () => 'new',
+      hasState: () => true,
+      getTransitions: (state: string) => transitionsByState[state] ?? [],
+    }));
+  });
+
+  it('should offer the transitions of the status shared by the selected entities', async () => {
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
+
+    expect(result).toEqual([expect.objectContaining({ event: 'start', toState: 'analyse', toStatus: statuses[1] })]);
+  });
+
+  it('should tell which inputs a transition needs, for the mass update to collect them', async () => {
+    transitionsByState.new.push({ event: 'approve', to: 'analyse', actionTypes: [], conditions: [], comment: 'required', requiresShareOrganizationInput: true });
+    (elAggregationCount as any).mockResolvedValue([{ label: 'status-new', value: 2, count: 2 }]);
+    try {
+      const selection = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
+      const selectAll = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { filters: null });
+
+      for (const transitions of [selection, selectAll]) {
+        expect(transitions.find((transition) => transition.event === 'approve'))
+          .toMatchObject({ comment: 'required', requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false });
+      }
+    } finally {
+      transitionsByState.new.pop();
+    }
+  });
+
+  it('should offer nothing when the selected entities have no transition in common', async () => {
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-c'] });
+
+    expect(result).toEqual([]);
+  });
+
+  it('should drop a transition whose condition fails for one selected entity', async () => {
+    (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+      getInitialState: () => 'new',
+      hasState: () => true,
+      getTransitions: () => [{ event: 'start', to: 'analyse', actionTypes: [], conditions: [(ctx: any) => Promise.resolve(ctx.entity.internal_id !== 'report-b')] }],
+    }));
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
+
+    expect(result).toEqual([]);
+  });
+
+  it('should offer the transitions of the statuses found under the filter of a select all', async () => {
+    (elAggregationCount as any).mockResolvedValue([{ label: 'status-new', value: 2, count: 2 }]);
+    const filters = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Report'] }], filterGroups: [] });
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { filters, search: 'apt', excludedIds: ['report-x'] });
+
+    expect(result).toEqual([expect.objectContaining({ event: 'start', toState: 'analyse' })]);
+    const options = (elAggregationCount as any).mock.calls[0][3];
+    expect(options).toMatchObject({ field: 'x_opencti_workflow_id', types: ['Report'], search: 'apt', normalizeLabel: false });
+    expect(options.filters.filters).toContainEqual(expect.objectContaining({ key: ['internal_id'], values: ['report-x'], operator: 'not_eq' }));
+  });
+
+  it('should treat entities without status as being in the initial state', async () => {
+    (elAggregationCount as any).mockResolvedValue([{ label: 'unknown', value: 1, count: 1 }]);
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', {});
+
+    expect(result).toEqual([expect.objectContaining({ event: 'start' })]);
+  });
+
+  it('should offer nothing when the statuses under the filter have no transition in common', async () => {
+    (elAggregationCount as any).mockResolvedValue([{ label: 'status-new', value: 1, count: 1 }, { label: 'status-analyse', value: 1, count: 1 }]);
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', {});
+
+    expect(result).toEqual([]);
+  });
+
+  it('should offer nothing when ENTITIES_WORKFLOW is disabled', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
+
+    expect(result).toEqual([]);
+  });
+
+  it('should offer nothing when the entity type has no published workflow', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a'] });
+
+    expect(result).toEqual([]);
+  });
+});
 
 describe('cleanupEntityWorkflow', () => {
   beforeEach(() => {
@@ -4378,5 +4580,48 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     expect(logApp.error).toHaveBeenCalledOnce();
     expect(lastUpdateInputs().map((input: any) => input.key)).toEqual(['history', 'pendingError']);
     expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', status_id: 'status-reviewing-id', reason: 'sync_failed' })]);
+  });
+});
+
+describe('getWorkflowStatuses', () => {
+  const definition = {
+    initialState: 'new',
+    states: [{ statusId: 'new' }, { statusId: 'analyse' }],
+    transitions: [{ from: 'new', to: 'analyse', event: 'start' }],
+  };
+  const makeStatus = (id: string, template_id: string, order: number, scope = 'GLOBAL') => ({
+    id, entity_type: 'Status', type: 'Report', scope, template_id, order,
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockResolvedValue({ id: 'workflow-def-id', published_version: { id: 'v1', content: JSON.stringify(definition) } });
+  });
+
+  it('should list the statuses of the published workflow, ordered', async () => {
+    (fullEntitiesList as any).mockResolvedValue([
+      makeStatus('status-analyse', 'analyse', 1),
+      makeStatus('status-closed', 'closed', 2),
+      makeStatus('status-new', 'new', 0),
+      makeStatus('status-new-request', 'new', 0, 'REQUEST_ACCESS'),
+    ]);
+
+    const result = await getWorkflowStatuses(mockContext, mockUser, 'Report');
+
+    expect(result.map((status) => status.id)).toEqual(['status-new', 'status-analyse']);
+  });
+
+  it('should list nothing when the entity type has no published workflow', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
+  });
+
+  it('should list nothing while ENTITIES_WORKFLOW is disabled', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+
+    expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
   });
 });

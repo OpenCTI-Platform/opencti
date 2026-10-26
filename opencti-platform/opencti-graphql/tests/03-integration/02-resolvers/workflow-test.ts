@@ -338,7 +338,7 @@ describe('Workflow Resolver', () => {
       },
     });
     expect(result.data?.triggerWorkflowEvent.success).toBe(false);
-    expect(result.data?.triggerWorkflowEvent.reason).toContain('No transition found');
+    expect(result.data?.triggerWorkflowEvent.reason).toContain("Transition 'invalid_event' is not available from status");
   });
 
   it('should delete a workflow definition', async () => {

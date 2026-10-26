@@ -1,9 +1,21 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { baseOperationBuilder, buildContainersElementsBundle, sendResultToQueue } from '../../../src/manager/taskManager';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  baseOperationBuilder,
+  buildContainersElementsBundle,
+  sendResultToQueue,
+  taskHandlerGenerator,
+  taskList,
+  workflowBypassOperationCallback,
+  workflowTransitionOperationCallback,
+} from '../../../src/manager/taskManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { pushBundleToWorker } from '../../../src/database/rabbitmq';
-import { updateExpectationsNumber } from '../../../src/domain/work';
+import { reportExpectation, updateExpectationsNumber } from '../../../src/domain/work';
+import { updateTask } from '../../../src/domain/backgroundTask';
+import { setWorkflowStatus, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
+import { internalFindByIds } from '../../../src/database/middleware-loader';
+import { resolveUserByIdFromCache } from '../../../src/modules/user/user-domain';
 import {
   ACTION_TYPE_ADD_GROUPS,
   ACTION_TYPE_ADD_ORGANIZATIONS,
@@ -34,6 +46,40 @@ vi.mock('../../../src/domain/work', async (importOriginal) => {
   return {
     ...actual,
     updateExpectationsNumber: vi.fn(),
+    reportExpectation: vi.fn(),
+  };
+});
+
+vi.mock('../../../src/modules/user/user-domain', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return {
+    ...actual,
+    resolveUserByIdFromCache: vi.fn(),
+  };
+});
+
+vi.mock('../../../src/database/cache', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return {
+    ...actual,
+    getEntityFromCache: vi.fn().mockResolvedValue({}),
+  };
+});
+
+vi.mock('../../../src/domain/backgroundTask', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return {
+    ...actual,
+    updateTask: vi.fn(),
+  };
+});
+
+vi.mock('../../../src/modules/workflow/domain/workflow-domain', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return {
+    ...actual,
+    setWorkflowStatus: vi.fn(),
+    triggerWorkflowEvent: vi.fn(),
   };
 });
 
@@ -78,6 +124,7 @@ const relationshipElement = {
 
 vi.mock('../../../src/database/middleware-loader', () => {
   return {
+    internalFindByIds: vi.fn(),
     fullRelationsList: vi.fn().mockImplementation((_c, _u, _t, args) => {
       const { callback, fromOrToId } = args;
       const mockRelations = fromOrToId ? fromOrToId.map((id: string) => {
@@ -499,5 +546,212 @@ describe('baseOperationBuilder', () => {
     const result = baseOperationBuilder('UNKNOWN_ACTION', [], baseElement);
 
     expect(result).toEqual({});
+  });
+});
+
+describe('workflowBypassOperationCallback', () => {
+  const task = { id: 'task-id', work_id: 'work-id', task_processed_number: 0 };
+  const buildOperations = (applyTransitionActions: boolean) => [{
+    type: 'REPLACE',
+    context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: ['status-id'], options: { applyTransitionActions } },
+  }];
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([true, false])('should force the status of each element with applyTransitionActions %s', async (applyTransitionActions) => {
+    vi.mocked(setWorkflowStatus).mockResolvedValue({ success: true });
+    const callback = workflowBypassOperationCallback(testContext, ADMIN_USER, task, buildOperations(applyTransitionActions));
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+    await callback.reportOnWork();
+
+    expect(setWorkflowStatus).toHaveBeenCalledTimes(2);
+    expect(setWorkflowStatus).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'status-id', applyTransitionActions);
+    expect(setWorkflowStatus).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'status-id', applyTransitionActions);
+    expect(updateExpectationsNumber).toHaveBeenCalledWith(testContext, ADMIN_USER, 'work-id', 2);
+    expect(reportExpectation).toHaveBeenCalledTimes(2);
+    expect(reportExpectation).toHaveBeenCalledWith(testContext, ADMIN_USER, 'work-id', undefined);
+    expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
+  });
+
+  it('should continue with the next elements when one element fails or is rejected', async () => {
+    vi.mocked(setWorkflowStatus)
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValueOnce({ success: false, reason: 'not mapped' })
+      .mockResolvedValueOnce({ success: true });
+    const callback = workflowBypassOperationCallback(testContext, ADMIN_USER, task, buildOperations(true));
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }, { internal_id: 'entity-3' }]);
+    await callback.reportOnWork();
+
+    expect(setWorkflowStatus).toHaveBeenCalledTimes(3);
+    expect(reportExpectation).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'work-id', { error: 'boom', source: 'entity-1' });
+    expect(reportExpectation).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'work-id', { error: 'not mapped', source: 'entity-2' });
+    expect(reportExpectation).toHaveBeenNthCalledWith(3, testContext, ADMIN_USER, 'work-id', undefined);
+    expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 3 });
+  });
+
+  it('should count the processed elements across pages from the current progress', async () => {
+    vi.mocked(setWorkflowStatus).mockResolvedValue({ success: true });
+    const callback = workflowBypassOperationCallback(testContext, ADMIN_USER, { ...task, task_processed_number: 5 }, buildOperations(true));
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+    await callback([{ internal_id: 'entity-3' }, { internal_id: 'entity-4' }]);
+
+    expect(updateTask).toHaveBeenNthCalledWith(1, testContext, 'task-id', { task_processed_number: 7 });
+    expect(updateTask).toHaveBeenNthCalledWith(2, testContext, 'task-id', { task_processed_number: 9 });
+  });
+
+  it('should report on the work only once every page is applied', async () => {
+    vi.mocked(setWorkflowStatus).mockResolvedValue({ success: true });
+    const callback = workflowBypassOperationCallback(testContext, ADMIN_USER, task, buildOperations(true));
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+    await callback([{ internal_id: 'entity-3' }]);
+
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
+    expect(reportExpectation).not.toHaveBeenCalled();
+
+    await callback.reportOnWork();
+
+    expect(updateExpectationsNumber).toHaveBeenCalledTimes(1);
+    expect(updateExpectationsNumber).toHaveBeenCalledWith(testContext, ADMIN_USER, 'work-id', 3);
+    expect(reportExpectation).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('workflowTransitionOperationCallback', () => {
+  const task = { id: 'task-id', work_id: 'work-id', task_processed_number: 0 };
+  const operations = [{
+    type: 'REPLACE',
+    context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: [], options: { eventName: 'approve' } },
+  }];
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should trigger the transition event on each element', async () => {
+    vi.mocked(triggerWorkflowEvent).mockResolvedValue({ success: true });
+    const callback = workflowTransitionOperationCallback(testContext, ADMIN_USER, task, operations);
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledTimes(2);
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'approve', undefined, {});
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'approve', undefined, {});
+    expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
+  });
+
+  it('should give every element the comment and the organizations of the task', async () => {
+    vi.mocked(triggerWorkflowEvent).mockResolvedValue({ success: true });
+    const options = { eventName: 'approve', comment: '  Checked  ', shareOrganizationIds: ['org-share'], unshareOrganizationIds: ['org-unshare'] };
+    const callback = workflowTransitionOperationCallback(testContext, ADMIN_USER, task, [{ ...operations[0], context: { ...operations[0].context, options } }]);
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+
+    const runtimeParams = { shareOrganizationIds: ['org-share'], unshareOrganizationIds: ['org-unshare'] };
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'approve', 'Checked', runtimeParams);
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'approve', 'Checked', runtimeParams);
+  });
+
+  it('should continue with the next elements when an element is not in an eligible state', async () => {
+    vi.mocked(triggerWorkflowEvent)
+      .mockResolvedValueOnce({ success: false, reason: 'Transition not allowed' })
+      .mockResolvedValueOnce({ success: true });
+    const callback = workflowTransitionOperationCallback(testContext, ADMIN_USER, task, operations);
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+    await callback.reportOnWork();
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledTimes(2);
+    expect(reportExpectation).toHaveBeenCalledTimes(2);
+    expect(reportExpectation).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'work-id', { error: 'Transition not allowed', source: 'entity-1' });
+    expect(reportExpectation).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'work-id', undefined);
+    expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
+  });
+});
+
+describe('taskList', () => {
+  it('should wait for the callback to process the elements', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'entity-1' }] as any);
+    let processed = false;
+    const callback = async () => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+      processed = true;
+    };
+
+    await taskList(testContext, ADMIN_USER, { task_ids: ['entity-1'] }, callback);
+
+    expect(processed).toBe(true);
+  });
+
+  it('should complete the list task when the callback fails, as before it was awaited', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'entity-1' }] as any);
+    const callback = vi.fn().mockRejectedValue(new Error('queue unavailable'));
+
+    await expect(taskList(testContext, ADMIN_USER, { id: 'task-id', task_ids: ['entity-1'] }, callback)).resolves.toBeUndefined();
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('taskHandlerGenerator: workflow status actions', () => {
+  const statusBypassAction = { type: 'REPLACE', context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: ['status-id'], options: { applyTransitionActions: true } } };
+  const transitionAction = { type: 'REPLACE', context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: [], options: { eventName: 'approve' } } };
+  const addLabelAction = { type: 'ADD', context: { field: 'object-label', type: 'RELATION', values: ['label-id'] } };
+  const buildTask = (actions: object[]) => ({
+    id: 'task-id',
+    type: 'LIST',
+    initiator_id: ADMIN_USER.id,
+    task_ids: ['entity-1'],
+    task_expected_number: 1,
+    task_processed_number: 0,
+    connector_id: 'connector-456',
+    work_id: 'work-id',
+    actions,
+  });
+
+  beforeEach(() => {
+    vi.mocked(resolveUserByIdFromCache).mockResolvedValue(ADMIN_USER as any);
+    vi.mocked(internalFindByIds).mockResolvedValue([{ internal_id: 'entity-1', standard_id: 'report--1', entity_type: 'Report' }] as any);
+    vi.mocked(setWorkflowStatus).mockResolvedValue({ success: true });
+    vi.mocked(triggerWorkflowEvent).mockResolvedValue({ success: true });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should route a status bypass to the workflow engine instead of the workers', async () => {
+    await taskHandlerGenerator(testContext)(buildTask([statusBypassAction]));
+
+    expect(setWorkflowStatus).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-1', 'status-id', true);
+    expect(pushBundleToWorker).not.toHaveBeenCalled();
+    expect(updateTask).toHaveBeenCalledWith(expect.anything(), 'task-id', { completed: true });
+  });
+
+  it('should route a transition to the workflow engine instead of the workers', async () => {
+    await taskHandlerGenerator(testContext)(buildTask([transitionAction]));
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-1', 'approve', undefined, {});
+    expect(pushBundleToWorker).not.toHaveBeenCalled();
+  });
+
+  it('should send the comment and the organizations of a transition task to the workflow engine', async () => {
+    const options = { eventName: 'approve', comment: 'Checked', shareOrganizationIds: ['org-share'] };
+    await taskHandlerGenerator(testContext)(buildTask([{ ...transitionAction, context: { ...transitionAction.context, options } }]));
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-1', 'approve', 'Checked', { shareOrganizationIds: ['org-share'] });
+  });
+
+  it('should send the other actions of the task to the workers', async () => {
+    await taskHandlerGenerator(testContext)(buildTask([statusBypassAction, addLabelAction]));
+
+    expect(setWorkflowStatus).toHaveBeenCalledTimes(1);
+    expect(pushBundleToWorker).toHaveBeenCalledTimes(1);
   });
 });

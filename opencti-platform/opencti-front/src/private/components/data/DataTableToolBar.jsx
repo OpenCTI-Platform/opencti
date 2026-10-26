@@ -43,6 +43,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
+  Switch as FdsSwitch,
   Tooltip as FdsTooltip,
   TooltipContent,
   TooltipTrigger,
@@ -92,6 +93,7 @@ import Security from '../../../utils/Security';
 import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import { isFeatureEnable } from '../../../utils/platformModulesHelper';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import {
   AUTOMATION,
@@ -99,6 +101,7 @@ import {
   EXPLORE_EXUPDATE_EXDELETE,
   EXPLORE_EXUPDATE_PUBLISH,
   INVESTIGATION_INUPDATE_INDELETE,
+  isBypassUser,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMERGE,
@@ -114,6 +117,20 @@ import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMar
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
+import { ENTITIES_WORKFLOW_FEATURE_FLAG } from '../common/workflow/workflowFeatureFlag';
+import { ItemStatusWorkflow } from '../common/workflow/WorkflowBypassStatus';
+import {
+  buildTransitionOptions,
+  buildWorkflowStatusOptions,
+  buildWorkflowTransitionAction,
+  isFieldOptionDisabled,
+  canReplaceStatusDirectly,
+  isTransitionInputValid,
+  setTransitionInputs,
+  WORKFLOW_TRANSITION_FIELD,
+  withWorkflowBypassOptions,
+} from '../common/workflow/workflowMassActions';
+import MassTransitionInputs from '../common/workflow/MassTransitionInputs';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
@@ -333,6 +350,44 @@ const toolBarQueryTaskAddMutation = graphql`
   }
 `;
 
+const toolBarWorkflowQuery = graphql`
+  query DataTableToolBarWorkflowQuery(
+    $entityType: String!
+    $entityIds: [String!]
+    $filters: String
+    $search: String
+    $excludedIds: [String!]
+  ) {
+    workflowDefinitionPublished(entityType: $entityType)
+    workflowStatuses(entityType: $entityType) {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowMassTransitions(
+      entityType: $entityType
+      entityIds: $entityIds
+      filters: $filters
+      search: $search
+      excludedIds: $excludedIds
+    ) {
+      event
+      toState
+      toStatus {
+        template {
+          name
+        }
+      }
+      comment
+      requiresShareOrganizationInput
+      requiresUnshareOrganizationInput
+    }
+  }
+`;
+
 const toolBarConnectorsQuery = graphql`
   query DataTableToolBarConnectorsQuery($type: String!) {
     enrichmentConnectors(type: $type) {
@@ -447,6 +502,12 @@ class DataTableToolBar extends Component {
       containers: [],
       organizations: [],
       statuses: [],
+      workflowPublished: false,
+      workflowBypass: false,
+      directStatusAllowed: true,
+      workflowLoading: false,
+      transitionOptions: [],
+      workflowStatusOptions: [],
       externalReferences: [],
       enrichConnectors: [],
       enrichSelected: [],
@@ -497,8 +558,36 @@ class DataTableToolBar extends Component {
     });
   }
 
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
+  handleOpenUpdate(workflowEntityType, canBypassWorkflow, workflowTarget) {
+    this.workflowQueryId = (this.workflowQueryId ?? 0) + 1;
+    const queryId = this.workflowQueryId;
+    this.setState({
+      displayUpdate: true,
+      workflowPublished: false,
+      workflowBypass: false,
+      // The workflow entity type is only set with the workflow enabled, for a single type, outside a draft
+      directStatusAllowed: canReplaceStatusDirectly({ workflowEnabled: !!workflowEntityType, canBypassWorkflow }),
+      workflowLoading: !!workflowEntityType,
+      transitionOptions: [],
+      workflowStatusOptions: [],
+    });
+    if (workflowEntityType) {
+      fetchQuery(toolBarWorkflowQuery, { entityType: workflowEntityType, ...workflowTarget })
+        .toPromise()
+        .then((data) => {
+          if (queryId !== this.workflowQueryId) return;
+          this.setState({
+            workflowPublished: data?.workflowDefinitionPublished === true,
+            workflowBypass: canBypassWorkflow && data?.workflowDefinitionPublished === true,
+            workflowLoading: false,
+            transitionOptions: buildTransitionOptions(data?.workflowMassTransitions ?? []),
+            workflowStatusOptions: buildWorkflowStatusOptions(data?.workflowStatuses ?? []),
+          });
+        })
+        .catch(() => {
+          if (queryId === this.workflowQueryId) this.setState({ workflowLoading: false });
+        });
+    }
   }
 
   handleOpenRescan() {
@@ -613,7 +702,7 @@ class DataTableToolBar extends Component {
   }
 
   handleLaunchUpdate() {
-    const { actionsInputs } = this.state;
+    const { actionsInputs, workflowBypass } = this.state;
     const categoryAttributeMapping = {
       case_severity_ov: 'severity',
       case_priority_ov: 'priority',
@@ -625,6 +714,9 @@ class DataTableToolBar extends Component {
     };
 
     const actions = actionsInputs.map((n) => {
+      if (n.field === WORKFLOW_TRANSITION_FIELD) {
+        return buildWorkflowTransitionAction(n);
+      }
       if (categoryAttributeMapping[n.field]) {
         return ({
           type: n.type,
@@ -642,7 +734,7 @@ class DataTableToolBar extends Component {
           field: n.field,
           type: n.fieldType,
           values: n.values,
-          options: n.options,
+          options: n.field === 'x_opencti_workflow_id' && workflowBypass ? withWorkflowBypassOptions(n.options) : n.options,
         },
       };
     });
@@ -717,6 +809,12 @@ class DataTableToolBar extends Component {
       R.assoc(key, checked === true, actionsInputs[i]?.options || {}),
       actionsInputs[i] || {},
     );
+    this.setState({ actionsInputs });
+  }
+
+  handleChangeActionInputTransitionInputs(i, inputs) {
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = setTransitionInputs(actionsInputs[i] || {}, inputs);
     this.setState({ actionsInputs });
   }
 
@@ -1097,9 +1195,13 @@ class DataTableToolBar extends Component {
           },
           checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
           checkTypes(typesWithDetection) && { label: t('Detection'), value: 'x_opencti_detection' },
-          selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && {
+          selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && this.state.directStatusAllowed && {
             label: t('Status'),
             value: 'x_opencti_workflow_id',
+          },
+          this.state.workflowPublished && {
+            label: t('Workflow transition'),
+            value: WORKFLOW_TRANSITION_FIELD,
           },
         ] : []),
       ].filter(Boolean);
@@ -1111,9 +1213,6 @@ class DataTableToolBar extends Component {
     }
 
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
-
-    const selectedFields = actionsInputs.map((a) => a.field).filter(Boolean);
-    const replaceSelectedFields = actionsInputs.filter((a) => a.type === 'REPLACE').map((a) => a.field).filter(Boolean);
 
     return (
       <Select
@@ -1130,8 +1229,7 @@ class DataTableToolBar extends Component {
             sortedOptions.map(
               (n) => {
               // disable some fields to prevent making several actions on the same key if one of them is a replace
-                const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
-                  || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
+                const disableField = isFieldOptionDisabled(actionsInputs, i, n.value);
                 return (
                   <SelectItem
                     key={n.value}
@@ -1798,12 +1896,13 @@ class DataTableToolBar extends Component {
             selectOnFocus={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || null}
-            options={this.state.statuses}
+            // With a published workflow, only its statuses can be set, as in the single entity status change
+            options={this.state.workflowPublished ? this.state.workflowStatusOptions : this.state.statuses}
             onInputChange={(newValue, meta) => {
-              if (meta.cause === 'type') (this.searchStatuses.bind(this, i, selectedTypes))(newValue);
+              if (meta.cause === 'type' && !this.state.workflowPublished) (this.searchStatuses.bind(this, i, selectedTypes))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
-            renderOption={(option) => (
+            renderOption={(option) => (option.status ? <ItemStatusWorkflow status={option.status} /> : (
               <>
                 <div className={classes.icon}>
                   <Avatar
@@ -1819,17 +1918,40 @@ class DataTableToolBar extends Component {
                 </div>
                 <div className={classes.text}>{option.label}</div>
               </>
-            )}
+            ))}
           >
             <ComboboxLabel>{t('Values')}</ComboboxLabel>
             <ComboboxField>
-              <ComboboxInput onFocus={() => (this.searchStatuses.bind(this, i, selectedTypes))('')} />
+              <ComboboxInput onFocus={() => !this.state.workflowPublished && (this.searchStatuses.bind(this, i, selectedTypes))('')} />
               <ComboboxControls>
                 <ComboboxTrigger />
               </ComboboxControls>
             </ComboboxField>
             <ComboboxContent
               emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
+        );
+      case WORKFLOW_TRANSITION_FIELD:
+        return (
+          <Combobox
+            disabled={disabled}
+            selectOnFocus={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values[0] || null}
+            options={this.state.transitionOptions}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No transition available for all selected entities')}
               listAriaLabel={t('Values')}
             />
           </Combobox>
@@ -2288,11 +2410,22 @@ class DataTableToolBar extends Component {
   }
 
   areStepValid() {
-    const { actionsInputs } = this.state;
+    const { actionsInputs, workflowLoading, workflowBypass } = this.state;
+    // The update mode of the workflow fields depends on the workflow query
+    if (workflowLoading) {
+      return false;
+    }
     for (const n of actionsInputs) {
       // Removing a custom field without value clears it
       const isCustomFieldClear = n?.type === 'REMOVE' && isCustomFieldAttribute(n.field) && Array.isArray(n.values);
       if (!n || !n.type || !n.field || !n.values || (n.values.length === 0 && !isCustomFieldClear)) {
+        return false;
+      }
+      const isWorkflowField = n.field === WORKFLOW_TRANSITION_FIELD || (n.field === 'x_opencti_workflow_id' && workflowBypass);
+      if (isWorkflowField && !n.values[0]) {
+        return false;
+      }
+      if (n.field === WORKFLOW_TRANSITION_FIELD && !isTransitionInputValid(n)) {
         return false;
       }
     }
@@ -2383,6 +2516,9 @@ class DataTableToolBar extends Component {
           const typesAreDifferent = elementsTypes.filter((type) => !['Stix-Core-Object', 'Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type)).length > 1;
           const preventMerge = selectedTypes.at(0) === 'Vocabulary'
             && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+          // Mass workflow operations are refused by the backend in drafts and without the feature flag
+          const workflowEntityType = selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0])
+            && !me.draftContext && isFeatureEnable(settings, ENTITIES_WORKFLOW_FEATURE_FLAG) ? selectedTypes[0] : null;
           // region update
           const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
             || (entityTypeFilterValues.length === 1
@@ -2472,6 +2608,14 @@ class DataTableToolBar extends Component {
             currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
           });
           const availableFilterKeys = Array.from(filterKeysMap.keys()).concat(['entity_type']);
+          // Same targets as the task, so the transitions offered can run on every entity
+          const workflowTarget = selectAll
+            ? {
+                filters: serializeFilterGroupForBackend(removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys)),
+                search,
+                excludedIds: Object.keys(this.props.deSelectedElements || {}),
+              }
+            : { entityIds: Object.keys(selectedElements || {}) };
           const isContainer = !!container?.id;
           // endregion
           return (
@@ -2556,7 +2700,7 @@ class DataTableToolBar extends Component {
                                 numberOfSelectedElements === 0
                                 || this.state.processing
                               }
-                              onClick={this.handleOpenUpdate.bind(this)}
+                              onClick={() => this.handleOpenUpdate(workflowEntityType, isBypassUser(me), workflowTarget)}
                               size="small"
                             >
                               <BrushOutlined />
@@ -2960,7 +3104,7 @@ class DataTableToolBar extends Component {
                                   ', ',
                                   R.map(
                                     (p) => this.constructor.displayActionValue(p),
-                                    R.pathOr([], ['context', 'values'], o),
+                                    o.context?.options?.eventName ? [o.context.options.eventName] : R.pathOr([], ['context', 'values'], o),
                                   ),
                                 ),
                                 80,
@@ -3048,6 +3192,24 @@ class DataTableToolBar extends Component {
                               >
                                 {t('The "start time" must be earlier than the "stop time".')}
                               </Alert>
+                            </Grid>
+                          )}
+                          {actionsInputs[i]?.field === WORKFLOW_TRANSITION_FIELD && actionsInputs[i]?.values?.[0]?.requirements && (
+                            <Grid item xs={12}>
+                              <MassTransitionInputs
+                                key={actionsInputs[i].values[0].value}
+                                requirements={actionsInputs[i].values[0].requirements}
+                                onChange={(inputs) => this.handleChangeActionInputTransitionInputs(i, inputs)}
+                              />
+                            </Grid>
+                          )}
+                          {actionsInputs[i]?.field === 'x_opencti_workflow_id' && this.state.workflowBypass && (
+                            <Grid item xs={12}>
+                              <FdsSwitch
+                                checked={actionsInputs[i]?.options?.applyTransitionActions ?? true}
+                                label={t('Apply transition actions')}
+                                onCheckedChange={(checked) => this.handleChangeActionInputOptions(i, 'applyTransitionActions', checked)}
+                              />
                             </Grid>
                           )}
                         </Grid>
