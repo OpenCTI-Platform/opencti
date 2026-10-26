@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../../../src/database/redis';
 import {
   buildHealthTransitionMessage,
+  formatHealthCheckMessage,
   buildIngestionHealthContext,
   computeHealthTransition,
   DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
@@ -506,7 +507,7 @@ describe('user missing capability check', () => {
     const checks = checksFor(CONNECTOR_WITH_USER, WITHOUT_CAPABILITY);
     expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: { capability: 'CONNECTORAPI' } }]);
     expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_metadata).toEqual({ capability: 'CONNECTORAPI' });
-    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('User lacks required capability: CONNECTORAPI');
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('User lacks required capability: "{capability}"');
   });
 
   it('should ask the user for CONNECTORAPI only', () => {
@@ -796,5 +797,17 @@ describe('buildHealthTransitionMessage', () => {
   it('should ignore the checks unknown to the registry', () => {
     expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [OTHER_CHECK]))
       .toBe('reports `My connector` (Connector) as critical');
+  });
+
+  it('should fill the placeholders of the check messages from their metadata', () => {
+    const missingCapability = { health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: { capability: 'CONNECTORAPI' } };
+    expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [missingCapability]))
+      .toBe('reports `My connector` (Connector) as critical: User lacks required capability: "CONNECTORAPI"');
+  });
+});
+
+describe('formatHealthCheckMessage', () => {
+  it('should keep a placeholder without value', () => {
+    expect(formatHealthCheckMessage('{known} and {unknown}', { known: 'value' })).toBe('value and {unknown}');
   });
 });
