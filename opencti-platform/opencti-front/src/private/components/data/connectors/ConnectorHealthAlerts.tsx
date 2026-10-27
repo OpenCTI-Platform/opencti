@@ -73,7 +73,6 @@ interface ConnectorHealthAlertsProps {
 // Health issues of one connector or feed, split by severity (critical, then degraded)
 const ConnectorHealthAlerts = ({ ingestionHealth, subject = 'connector' }: ConnectorHealthAlertsProps) => {
   const theme = useTheme();
-  const { t_i18n } = useFormatter();
   const { getHealthCheckMessage } = useHealthCheckMessage();
   const { isFeatureEnable } = useHelper();
   const data = useFragment(connectorHealthAlertsFragment, ingestionHealth ?? null);

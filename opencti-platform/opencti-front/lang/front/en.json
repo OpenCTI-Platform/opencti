@@ -5790,7 +5790,7 @@
   "User interaction (UI)": "User interaction (UI)",
   "User Interaction (UI)": "User Interaction (UI)",
   "User interface": "User interface",
-  "User lacks required capability: \"{capability}\"": "User lacks required capability: \"{capability}\"",
+  "User lacks required capability: \"{capability_description}\"": "User lacks required capability: \"{capability_description}\"",
   "User policy": "User policy",
   "User responsible for data creation": "User responsible for data creation",
   "User responsible for data creation (empty = System)": "User responsible for data creation (empty = System)",

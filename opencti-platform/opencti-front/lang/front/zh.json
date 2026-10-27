@@ -5790,7 +5790,7 @@
   "User interaction (UI)": "用户交互 (UI)",
   "User Interaction (UI)": "用户交互（用户界面）",
   "User interface": "用户界面",
-  "User lacks required capability: \"{capability}\"": "用户缺少所需权限：\"{capability}\"",
+  "User lacks required capability: \"{capability_description}\"": "用户缺少所需权限：\"{capability_description}\"",
   "User policy": "用户策略",
   "User responsible for data creation": "负责创建数据的用户",
   "User responsible for data creation (empty = System)": "负责数据创建的用户（空 = System）",

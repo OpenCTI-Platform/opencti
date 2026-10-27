@@ -5790,7 +5790,7 @@
   "User interaction (UI)": "Взаимодействие с пользователем (UI)",
   "User Interaction (UI)": "Взаимодействие с пользователем (UI)",
   "User interface": "Пользовательский интерфейс",
-  "User lacks required capability: \"{capability}\"": "У пользователя отсутствует необходимый привилегированный доступ: \"{capability}\"",
+  "User lacks required capability: \"{capability_description}\"": "У пользователя отсутствует необходимый привилегированный доступ: \"{capability_description}\"",
   "User policy": "Политика пользователя",
   "User responsible for data creation": "Пользователь, ответственный за создание данных",
   "User responsible for data creation (empty = System)": "Пользователь, ответственный за создание данных (пусто = Система)",

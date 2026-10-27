@@ -5790,7 +5790,7 @@
   "User interaction (UI)": "Interazione con l'utente (UI)",
   "User Interaction (UI)": "Interazione con l'utente (UI)",
   "User interface": "Interfaccia utente",
-  "User lacks required capability: \"{capability}\"": "L'utente non dispone dell'autorizzazione richiesta: \"{capability}\"",
+  "User lacks required capability: \"{capability_description}\"": "L'utente non dispone dell'autorizzazione richiesta: \"{capability_description}\"",
   "User policy": "Politica utente",
   "User responsible for data creation": "Utente responsabile della creazione dei dati",
   "User responsible for data creation (empty = System)": "Utente responsabile della creazione dei dati (vuoto = Sistema)",
