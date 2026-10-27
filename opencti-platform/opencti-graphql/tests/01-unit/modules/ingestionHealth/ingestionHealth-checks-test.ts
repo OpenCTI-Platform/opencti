@@ -261,6 +261,14 @@ describe('isRuntimeCheckEnabled', () => {
     expect(isRuntimeCheckEnabled(FEED, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
     expect(isRuntimeCheckEnabled(SYNC, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
   });
+
+  it('should be false when the only runtime check enabled for the ingestion is disabled on the platform: nothing to read', () => {
+    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_HEARTBEAT_MISSING] })).toBe(false);
+    const failingFeed = { ...FEED, last_execution_status: 'error' };
+    expect(isRuntimeCheckEnabled(failingFeed, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(false);
+    // Another check disabled: still read
+    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(true);
+  });
 });
 
 describe('execution failed check', () => {

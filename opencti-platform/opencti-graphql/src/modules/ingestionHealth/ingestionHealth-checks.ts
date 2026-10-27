@@ -44,10 +44,13 @@ const getHealthCheckFailure = (
   return definition.getFailure(ingestor, context);
 };
 
-// Whether a runtime check is enabled for the ingestor: its runtime data must be read before it is evaluated
+// Whether a runtime check is enabled for the ingestor: its runtime data must be read before it is evaluated.
+// A check disabled on the platform is not read: an ingestor depending on it only needs no runtime data
 export const isRuntimeCheckEnabled = (ingestor: HealthCheckIngestor, context: GlobalIngestionHealthContext): boolean => {
-  return Object.values(HEALTH_CHECK_REGISTRY).some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
-    && definition.isEnabled(ingestor, context));
+  return (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][])
+    .some(([code, definition]) => definition.kind === IngestionHealthCheckKind.Runtime
+      && !context.disabledHealthChecks?.includes(code)
+      && definition.isEnabled(ingestor, context));
 };
 
 // Keeps only the runtime values of the checks enabled for the ingestor: a value read for a disabled check proves nothing.
