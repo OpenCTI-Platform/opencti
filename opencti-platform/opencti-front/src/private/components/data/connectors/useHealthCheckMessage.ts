@@ -1,3 +1,5 @@
+import { useFormatter } from '../../../../components/i18n';
+
 // What the front needs to word one failing health check
 export interface HealthCheckMessageSource {
   health_check_code: string;
@@ -23,23 +25,33 @@ const PLACEHOLDER_PATTERN = /\{(\w+)\}/g;
 
 // Translated message of a failing check, its {key} placeholders filled with the values of its metadata.
 // A message without translation (computed by the backend) shows as is
-export const getHealthCheckMessage = (check: HealthCheckMessageSource, t_i18n: Translate): string => {
-  const message = check.health_check_message;
-  if (!message) {
-    return check.health_check_code;
-  }
-  const keys = [...message.matchAll(PLACEHOLDER_PATTERN)].map(([, key]) => key);
-  const metadata = (check.health_check_metadata ?? {}) as Record<string, unknown>;
-  const values: Record<string, string> = {};
-  for (const key of keys) {
-    const value = metadata[key];
-    if (typeof value !== 'string' && typeof value !== 'number') {
-      // Nothing to fill the placeholder with: it stays as is, a missing value would make the translation throw
-      values[key] = `{${key}}`;
-    } else {
-      const translateValue = METADATA_VALUE_TRANSLATIONS[key];
-      values[key] = translateValue ? translateValue(String(value), t_i18n) : String(value);
+const useHealthCheckMessage = () => {
+  const { t_i18n } = useFormatter();
+
+  const getHealthCheckMessage = (check: HealthCheckMessageSource): string => {
+    const message = check.health_check_message;
+    if (!message) {
+      return check.health_check_code;
     }
-  }
-  return t_i18n(message, { values });
+    const keys = [...message.matchAll(PLACEHOLDER_PATTERN)].map(([, key]) => key);
+    const metadata = (check.health_check_metadata ?? {}) as Record<string, unknown>;
+    const values: Record<string, string> = {};
+    for (const key of keys) {
+      const value = metadata[key];
+      if (typeof value !== 'string' && typeof value !== 'number') {
+        // Nothing to fill the placeholder with: it stays as is, a missing value would make the translation throw
+        values[key] = `{${key}}`;
+      } else {
+        const translateValue = METADATA_VALUE_TRANSLATIONS[key];
+        values[key] = translateValue ? translateValue(String(value), t_i18n) : String(value);
+      }
+    }
+    return t_i18n(message, { values });
+  };
+
+  return {
+    getHealthCheckMessage,
+  };
 };
+
+export default useHealthCheckMessage;
