@@ -498,7 +498,7 @@ export const isRuntimeSortEnable = (): boolean => isRuntimeSortingEnable;
  * - ElkClient: passes the signal as an option natively.
  * - OpenSearch: manually hooks up the abort signal to call .abort() on the promise.
  */
-const elExecuteWithAbortSignal = async (
+export const elExecuteWithAbortSignal = async (
   abortSignal: AbortSignal | undefined,
   elkOperation: (opts: { signal: AbortSignal | undefined }) => Promise<any>,
   openSearchOperation: () => Promise<any>,
@@ -3499,11 +3499,15 @@ export const elHistogramCount = async (
     body,
   };
   logApp.debug('[SEARCH] histogramCount', { query });
-  return elRawSearch(context, user, types, query).then((data) => {
-    const { buckets } = data.aggregations.count_over_time;
-    const dataToPairs = R.toPairs(buckets);
-    return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
-  });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const { buckets } = data.aggregations.count_over_time;
+      const dataToPairs = R.toPairs(buckets);
+      return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
+    })
+    .catch((err) => {
+      throw wrapEngineError('Histogram computation count fail', err, { query });
+    });
 };
 type AggregationCountOpts = QueryBodyBuilderOpts & {
   field: string;
@@ -3565,7 +3569,7 @@ export const elAggregationCount = async (
       });
     })
     .catch((err) => {
-      throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+      throw wrapEngineError('Aggregation computation count fail', err, { query });
     });
 };
 
@@ -3701,7 +3705,7 @@ export const elAggregationRelationsCount = async (
       });
     })
     .catch((e) => {
-      throw DatabaseError('Processing aggregation relations count fail', { cause: e });
+      throw wrapEngineError('Processing aggregation relations count fail', e);
     });
 };
 type AggregationNestedTermsWithFilterOpts = QueryBodyBuilderOpts & {
@@ -3750,7 +3754,7 @@ export const elAggregationNestedTermsWithFilter = async (
       });
     })
     .catch((err) => {
-      throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+      throw wrapEngineError('Aggregation computation count fail', err, { query });
     });
 };
 type AggregationsListOpts = QueryBodyBuilderOpts & {
