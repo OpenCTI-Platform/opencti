@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -41,11 +41,6 @@ const MINUTE_MS = 60 * 1000;
 // Same bound as the backend: one day
 const MAX_NOTIFICATION_DELAY_MINUTES = 24 * 60;
 
-interface IngestionHealthSettingsValue {
-  notification_delay: number;
-  disabled_health_checks: readonly string[];
-}
-
 interface SettingsIngestionHealthProps {
   settings: SettingsIngestionHealth_settings$key;
 }
@@ -54,7 +49,7 @@ interface SettingsIngestionHealthProps {
 const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => {
   const { t_i18n } = useFormatter();
   const { id, ingestion_health_settings } = useFragment(settingsIngestionHealthFragment, settings);
-  const [commitField] = useApiMutation(settingsIngestionHealthFieldPatch);
+  const [commitField, isSaving] = useApiMutation(settingsIngestionHealthFieldPatch);
   const notificationDelay = ingestion_health_settings?.notification_delay ?? 0;
   const disabledHealthChecks = ingestion_health_settings?.disabled_health_checks ?? [];
 
@@ -67,51 +62,29 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
       .required(t_i18n('This field is required')),
   });
 
-  // The whole object is sent: the backend replaces it.
-  // Saves are serialized and built on the settings last asked, not on the last response: overlapping edits
-  // (a delay and a toggle, two quick toggles) cannot overwrite each other. Edits made while a save is in flight
-  // are merged into the next one
-  const askedSettings = useRef<IngestionHealthSettingsValue | null>(null);
-  const isSaving = useRef(false);
-
-  const saveAskedSettings = () => {
-    const value = askedSettings.current;
-    if (isSaving.current || !value) {
-      return;
-    }
-    isSaving.current = true;
-    const settle = () => {
-      isSaving.current = false;
-      // Nothing asked since: the settings to build on are the ones of the response again
-      if (askedSettings.current === value) {
-        askedSettings.current = null;
-      }
-      saveAskedSettings();
-    };
+  // The whole object is sent: the backend replaces it, built on the last response.
+  // The form is disabled while a save is in flight: an edit cannot be built on settings about to change and overwrite the save
+  const commitSettings = (changes: { notification_delay?: number; disabled_health_checks?: readonly string[] }) => {
     commitField({
-      variables: { id, input: { key: 'ingestion_health_settings', value } },
-      onCompleted: settle,
-      onError: settle,
+      variables: {
+        id,
+        input: {
+          key: 'ingestion_health_settings',
+          value: { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks, ...changes },
+        },
+      },
     });
-  };
-
-  const commitSettings = (change: (current: IngestionHealthSettingsValue) => Partial<IngestionHealthSettingsValue>) => {
-    const current = askedSettings.current ?? { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks };
-    askedSettings.current = { ...current, ...change(current) };
-    saveAskedSettings();
   };
 
   const handleSubmitDelay = (name: string, value: string) => {
     validation.validateAt(name, { [name]: value })
-      .then(() => commitSettings(() => ({ notification_delay: Number(value) * MINUTE_MS })))
+      .then(() => commitSettings({ notification_delay: Number(value) * MINUTE_MS }))
       .catch(() => false);
   };
 
   const handleToggleCheck = (code: string, enabled: boolean) => {
-    commitSettings(({ disabled_health_checks }) => {
-      const others = disabled_health_checks.filter((disabledCode) => disabledCode !== code);
-      return { disabled_health_checks: enabled ? others : [...others, code] };
-    });
+    const others = disabledHealthChecks.filter((disabledCode) => disabledCode !== code);
+    commitSettings({ disabled_health_checks: enabled ? others : [...others, code] });
   };
 
   return (
@@ -132,6 +105,7 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
               label={t_i18n('Notification delay (in minutes)')}
               helperText={t_i18n('Time a health status must stay unchanged before it is notified')}
               fullWidth
+              disabled={isSaving}
               onSubmit={handleSubmitDelay}
             />
           </Form>
@@ -156,6 +130,7 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
                 <Box sx={{ minWidth: 0 }}>
                   <Switch
                     checked={check.enabled}
+                    disabled={isSaving}
                     onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
                     // Named by the backend registry, translated with the labels of the backend schema
                     label={t_i18n(check.health_check_label)}
