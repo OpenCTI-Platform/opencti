@@ -10,6 +10,7 @@ import TextField from '../../../../components/TextField';
 import ComboboxFieldComponent, { asMultiValue } from '../../../../components/ComboboxField';
 import { CustomFieldEdition_customFieldDefinition$key } from './__generated__/CustomFieldEdition_customFieldDefinition.graphql';
 import TextareaField from '../../../../components/TextareaField';
+import { areCustomFieldAliasesValid } from '../../../../utils/customFields';
 
 export const CustomFieldEditionFragment = graphql`
   fragment CustomFieldEdition_customFieldDefinition on CustomFieldDefinition {
@@ -41,8 +42,9 @@ const customFieldMutationFieldPatch = graphql`
 
 const customFieldValidation = (t: (name: string) => string) => Yup.object().shape({
   label: Yup.string().required(t('This field is required')),
-  aliases: Yup.array().of(Yup.string()),
-  description: Yup.string().nullable(),
+  aliases: Yup.array().of(Yup.string())
+    .test('alias-format', t('An alias must start with x_ and contain only lowercase letters, numbers and underscores'), (aliases) => areCustomFieldAliasesValid(aliases)),
+  description: Yup.string().trim().required(t('This field is required')),
   min_value: Yup.number().nullable(),
   max_value: Yup.number().nullable(),
   select_options: Yup.array().of(Yup.string()).nullable(),
@@ -116,6 +118,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             name="label"
             label={t_i18n('Label')}
             fullWidth={true}
+            required
             className="mt-5"
             onSubmit={handleSubmitField}
           />
@@ -128,8 +131,10 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             allowCustomValue
             createValueFromInput={(input: string) => input}
             placeholder={t_i18n('Type and press Enter to add items')}
+            helperText={t_i18n('When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create')}
             className="mt-5"
-            onInternalChange={asMultiValue<string>(handleSubmitField)}
+            // onChange (not onInternalChange) so that the value reaches Formik, which shows a validation error
+            onChange={asMultiValue<string>(handleSubmitField)}
           />
           {data.field_type === 'integer' && (
             <>
@@ -182,6 +187,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
             component={TextareaField}
             name="description"
             label={t_i18n('Description')}
+            required
             rows={2}
             className="mt-5"
             onSubmit={handleSubmitField}

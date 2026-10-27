@@ -93,7 +93,7 @@ input CustomFieldDefinitionAddInput {
   field_type: String!
   entity_types: [String!]
   multiple: Boolean
-  description: String
+  description: String! @constraint(minLength: 1, format: "not-blank")
   created: DateTime
   # Integer-specific
   min_value: Int

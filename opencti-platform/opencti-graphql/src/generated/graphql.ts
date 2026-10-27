@@ -6572,7 +6572,7 @@ export type CustomFieldDefinition = BasicObject & InternalObject & {
 export type CustomFieldDefinitionAddInput = {
   aliases?: InputMaybe<Array<Scalars['String']['input']>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
-  description?: InputMaybe<Scalars['String']['input']>;
+  description: Scalars['String']['input'];
   entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
   field_type: Scalars['String']['input'];
   label: Scalars['String']['input'];
