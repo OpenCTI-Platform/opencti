@@ -41,15 +41,24 @@ const toIds = (value: unknown): string[] => (Array.isArray(value) ? value : [val
 
 const omit = (input: Record<string, unknown>, keys: string[]) => Object.fromEntries(Object.entries(input).filter(([key]) => !keys.includes(key)));
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof File);
+
+// Observables carry their attributes and files under their type key (e.g. `IPv4Addr`), the other objects at the top level.
+const fileHolders = (input: Record<string, unknown>) => [input, ...Object.values(input).filter(isPlainObject)];
+
+// The input without its references and uploads, the ones under the type key of an observable included.
+const cleanInput = (input: Record<string, unknown>) => Object.fromEntries(Object.entries(omit(input, [...REF_KEYS, ...UPLOAD_KEYS]))
+  .map(([key, value]) => [key, isPlainObject(value) ? omit(value, UPLOAD_KEYS) : value]));
+
 export const createPendingCollector = (getPending: (id: string) => PendingObjectData | undefined = () => undefined) => {
   const files: File[] = [];
   const pool = new Map<string, PendingObjectPayload>();
 
   // The files of a pending object go to the uploads of the submission, the object keeps their index.
   // `embedded[i]` flags the markdown images of its descriptions among its files.
-  const takeFiles = (input: Record<string, unknown>): PendingFilePayload[] => {
-    const embedded = Array.isArray(input.embedded) ? input.embedded : [];
-    return (Array.isArray(input.files) ? input.files as File[] : []).flatMap((file, index) => {
+  const takeFiles = (input: Record<string, unknown>): PendingFilePayload[] => fileHolders(input).flatMap((holder) => {
+    const embedded = Array.isArray(holder.embedded) ? holder.embedded : [];
+    return (Array.isArray(holder.files) ? holder.files as File[] : []).flatMap((file, index) => {
       if (!(file instanceof File)) return [];
       files.push(file);
       return [{
@@ -59,14 +68,14 @@ export const createPendingCollector = (getPending: (id: string) => PendingObject
         ...(embedded[index] === true ? { embedded: true } : {}),
       }];
     });
-  };
+  });
 
   // A pending id goes to the pool (once), an existing id stays an existing ref.
   const refOf = (id: string): PendingRef => {
     if (!isPendingId(id)) return { existing: id };
     const data = getPending(id);
     if (data && !pool.has(id)) {
-      const pooled: PendingObjectPayload = { id, entityType: data.entityType, input: omit(data.input, [...REF_KEYS, ...UPLOAD_KEYS]) };
+      const pooled: PendingObjectPayload = { id, entityType: data.entityType, input: cleanInput(data.input) };
       const pooledFiles = takeFiles(data.input);
       if (pooledFiles.length > 0) pooled.files = pooledFiles;
       pool.set(id, pooled);
@@ -85,7 +94,7 @@ export const createPendingCollector = (getPending: (id: string) => PendingObject
       }
     });
     const pendingFiles = takeFiles(input);
-    const payload: PendingObjectPayload = { id: option.value, entityType, input: omit(input, [...REF_KEYS, ...UPLOAD_KEYS]) };
+    const payload: PendingObjectPayload = { id: option.value, entityType, input: cleanInput(input) };
     if (Object.keys(refs).length > 0) payload.refs = refs;
     if (pendingFiles.length > 0) payload.files = pendingFiles;
     return payload;
