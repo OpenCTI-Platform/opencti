@@ -59,7 +59,7 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
       component={Link}
       to={`/dashboard/entities/events/${data.id}`}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="Event" />
       </ListItemIcon>
       <ListItemText
@@ -108,7 +108,7 @@ export const EventLineDummy = ({
 }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

@@ -64,7 +64,7 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
       component={Link}
       to={`/dashboard/entities/systems/${data.id}`}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="System" />
       </ListItemIcon>
       <ListItemText
@@ -112,7 +112,7 @@ export const SystemLineDummy = ({
 }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

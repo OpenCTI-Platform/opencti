@@ -72,7 +72,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
         component={Link}
         to={`${resolveLink(node.entity_type)}/${node.id}`}
       >
-        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
@@ -182,7 +182,7 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
         </IconButton>
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

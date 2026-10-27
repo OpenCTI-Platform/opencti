@@ -10,6 +10,9 @@ import { useDataTableContext } from './DataTableContext';
 export const SELECT_COLUMN_SIZE = 42;
 export const ICON_COLUMN_SIZE = 56;
 
+// Marks the column menu button whichever way @common/button renders it: design-system button or MUI fallback.
+const COLUMN_MENU_BUTTON_CLASS = 'DataTableHeader-columnMenu';
+
 const HeaderContainer = styled('div')(({ theme }) => ({
   flex: '0 0 auto',
   position: 'relative',
@@ -20,11 +23,14 @@ const HeaderContainer = styled('div')(({ theme }) => ({
   '& .react-draggable-dragging': {
     backgroundColor: theme.palette.primary.main,
   },
+  [`& .${COLUMN_MENU_BUTTON_CLASS}`]: {
+    visibility: 'hidden',
+  },
   '&:hover': {
     '& .react-draggable': {
       backgroundColor: theme.palette.primary.main,
     },
-    '& .MuiButton-root': {
+    [`& .${COLUMN_MENU_BUTTON_CLASS}`]: {
       visibility: 'visible',
     },
   },
@@ -116,12 +122,12 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
         <IconButton
           disableRipple
           aria-label={t_i18n('View more')}
+          className={COLUMN_MENU_BUTTON_CLASS}
           onClick={openColumnMenu}
           style={{
             visibility: isActive ? 'visible' : undefined,
           }}
           sx={{
-            visibility: 'hidden',
             marginRight: 1,
             opacity: 0.5,
             width: 24,

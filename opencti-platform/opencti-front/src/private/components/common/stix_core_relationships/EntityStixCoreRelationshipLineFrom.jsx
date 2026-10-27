@@ -609,7 +609,7 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
             disabled={true}
           />
         </ListItemIcon>
-        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <Skeleton
             animation="wave"
             variant="circular"

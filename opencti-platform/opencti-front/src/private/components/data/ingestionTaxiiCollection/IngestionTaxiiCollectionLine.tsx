@@ -62,7 +62,7 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
         </Security>
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <AccessPoint />
       </ListItemIcon>
       <ListItemText
@@ -100,7 +100,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
       divider={true}
       secondaryAction={<MoreVert />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

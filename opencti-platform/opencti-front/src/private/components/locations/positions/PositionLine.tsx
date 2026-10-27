@@ -60,7 +60,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
       component={Link}
       to={`/dashboard/locations/positions/${data.id}`}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="Position" />
       </ListItemIcon>
       <ListItemText
@@ -101,7 +101,7 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
 }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

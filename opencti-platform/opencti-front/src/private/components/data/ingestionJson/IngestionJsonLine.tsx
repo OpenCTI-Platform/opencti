@@ -61,7 +61,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
         </Security>
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
@@ -107,7 +107,7 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
       divider={true}
       secondaryAction={<MoreVert />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

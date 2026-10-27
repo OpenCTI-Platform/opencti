@@ -64,7 +64,7 @@ class FeedLineLineComponent extends Component {
           target="_blank" // open in new tab
 
         >
-          <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+          <ListItemIcon sx={{ color: 'primary.main' }}>
             <FileDelimitedOutline />
           </ListItemIcon>
           <ListItemText
@@ -157,7 +157,7 @@ class FeedDummyComponent extends Component {
         divider={true}
         secondaryAction={<MoreVert />}
       >
-        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <Skeleton
             animation="wave"
             variant="circular"

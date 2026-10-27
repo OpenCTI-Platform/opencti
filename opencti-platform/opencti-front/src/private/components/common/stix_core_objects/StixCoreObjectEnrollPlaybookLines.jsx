@@ -75,7 +75,7 @@ const StixCoreObjectEnrollPlaybook = ({
                     </Security>
                   )}
                 >
-                  <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+                  <ListItemIcon sx={{ color: 'primary.main' }}>
                     <ItemIcon type="Playbook" />
                   </ListItemIcon>
                   <ListItemText primary={playbook.name} />

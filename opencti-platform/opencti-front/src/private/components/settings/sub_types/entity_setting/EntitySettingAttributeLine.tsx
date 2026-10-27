@@ -7,7 +7,6 @@ import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { LockPersonOutlined, NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import { DataColumns } from '../../../../../components/list_lines';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -78,7 +77,7 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
             : {},
         ]}
       >
-        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           {attribute.name === INPUT_AUTHORIZED_MEMBERS
             ? (
                 <LockPersonOutlined
@@ -129,11 +128,7 @@ export const EntitySettingAttributeLineDummy = ({
     <ListItem
       divider={true}
       sx={{ paddingLeft: '10px', height: '50px' }}
-      secondaryAction={(
-        <Box>
-          <NorthEastOutlined />
-        </Box>
-      )}
+      secondaryAction={<NorthEastOutlined />}
     >
       <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />

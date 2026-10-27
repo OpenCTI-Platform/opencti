@@ -149,7 +149,7 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
     <>
       <ErrorBoundary>
         <div id="container">
-          <Box sx={{ margin: 0, overflow: 'hidden' }} style={{ width: '100%', height: 1000 }}>
+          <Box sx={{ margin: 0, overflow: 'hidden', width: '100%', height: 1000 }}>
             <ReactFlowProvider>
               <Flow />
             </ReactFlowProvider>

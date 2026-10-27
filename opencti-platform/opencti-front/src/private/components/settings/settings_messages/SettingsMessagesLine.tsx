@@ -69,7 +69,7 @@ const SettingsMessagesLine = ({
       sx={{ paddingLeft: 1, height: '50px' }}
       secondaryAction={<SettingsMessagesPopover settingsId={entityId} message={message} />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <MessageOutlined />
       </ListItemIcon>
       <ListItemText

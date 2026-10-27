@@ -6,7 +6,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Box from '@mui/material/Box';
 import { MoreVertOutlined } from '@mui/icons-material';
 import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
@@ -606,11 +605,7 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
       <ListItem
         sx={{ paddingLeft: '10px', height: 50 }}
         divider={true}
-        secondaryAction={(
-          <Box>
-            <MoreVertOutlined />
-          </Box>
-        )}
+        secondaryAction={<MoreVertOutlined />}
       >
         <ListItemIcon
           sx={{ color: (theme) => theme.palette.grey[700] }}
@@ -620,7 +615,7 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
             disabled={true}
           />
         </ListItemIcon>
-        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <Skeleton
             animation="wave"
             variant="circular"

@@ -19,6 +19,19 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { removeEmptyFields } from '../../../../utils/utils';
 
+// Material UI 9 reads the action buttons' props from `slotProps.fab` only: `FabProps` is ignored there.
+const speedDialActionSlotProps = {
+  fab: {
+    sx: {
+      bgcolor: 'primary.main',
+      color: 'primary.contrastText',
+      '&:hover': {
+        bgcolor: 'primary.main',
+      },
+    },
+  },
+};
+
 const ContainerAddStixCoreObjects = (props) => {
   const {
     targetStixCoreObjectTypes,
@@ -184,12 +197,14 @@ const ContainerAddStixCoreObjects = (props) => {
             icon={<HexagonOutline />}
             tooltipTitle={t_i18n('Create an observable')}
             onClick={() => handleOpenCreateObservable()}
+            slotProps={speedDialActionSlotProps}
           />
           <SpeedDialAction
             title={t_i18n('Create an entity')}
             icon={<GlobeModel />}
             tooltipTitle={t_i18n('Create an entity')}
             onClick={() => handleOpenCreateEntity()}
+            slotProps={speedDialActionSlotProps}
           />
         </SpeedDial>
         <StixDomainObjectCreation

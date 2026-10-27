@@ -89,12 +89,23 @@ export const feedCreationAllTypesQuery = graphql`
         }
     }
 `;
-const StepCloseButton = styled(IconButton)({
+export const StepCloseButton = styled(IconButton)({
   position: 'absolute',
   // Offsets resolve against the padding box; the 1px border sits outside it.
   top: -1,
   right: -29,
 });
+
+export const FeedAttributeStep = styled('div')(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  margin: '0 0 20px 0',
+  padding: '15px',
+  verticalAlign: 'middle',
+  border: `1px solid ${theme.palette.background.accent}`,
+  borderRadius: '4px',
+  display: 'flex',
+}));
 
 const feedCreationMutation = graphql`
     mutation FeedCreationMutation($input: FeedAddInput!) {
@@ -595,28 +606,13 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         searchContext={{ entityTypes: selectedTypes }}
                       />
                       {selectedTypes.length > 0 && (
-                        <Box
-                          sx={{ padding: '10px 28px 20px 0' }}
-                          style={{ marginTop: 20 }}
-                        >
+                        <Box sx={{ padding: '10px 28px 20px 0', marginTop: '20px' }}>
                           {Object.keys(feedAttributes).map((i) => {
                             const hasNeighborMapping = R.values(feedAttributes[i]?.mappings || {}).some(
                               (m) => !!m?.relationship_type,
                             );
                             return (
-                              <Box
-                                key={i}
-                                sx={{
-                                  position: 'relative',
-                                  width: '100%',
-                                  margin: '0 0 20px 0',
-                                  padding: '15px',
-                                  verticalAlign: 'middle',
-                                  border: `1px solid ${theme.palette.background.accent}`,
-                                  borderRadius: '4px',
-                                  display: 'flex',
-                                }}
-                              >
+                              <FeedAttributeStep key={i}>
                                 <StepCloseButton
                                   disabled={feedAttributes.length === 1}
                                   aria-label="Delete"
@@ -818,7 +814,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                     );
                                   })}
                                 </Box>
-                              </Box>
+                              </FeedAttributeStep>
                             );
                           })}
                           <Box sx={{ width: '100%' }}>

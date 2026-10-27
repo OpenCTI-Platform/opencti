@@ -33,6 +33,19 @@ import { emptyFilterGroup, normalizeFilterGroupForBackend } from '../../../../ut
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import Drawer from '../drawer/Drawer';
 
+// Material UI 9 reads the action buttons' props from `slotProps.fab` only: `FabProps` is ignored there.
+const speedDialActionSlotProps = {
+  fab: {
+    sx: {
+      bgcolor: 'primary.main',
+      color: 'primary.contrastText',
+      '&:hover': {
+        bgcolor: 'primary.main',
+      },
+    },
+  },
+};
+
 const Item = styled('div')({
   position: 'absolute',
   width: 180,
@@ -552,12 +565,14 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 icon={<HexagonOutline />}
                 tooltipTitle={t_i18n('Create an observable')}
                 onClick={handleOpenCreateObservable}
+                slotProps={speedDialActionSlotProps}
               />
               <SpeedDialAction
                 title={t_i18n('Create an entity')}
                 icon={<GlobeModel />}
                 tooltipTitle={t_i18n('Create an entity')}
                 onClick={handleOpenCreateEntity}
+                slotProps={speedDialActionSlotProps}
               />
             </SpeedDial>
             <StixDomainObjectCreation

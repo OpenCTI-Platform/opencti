@@ -71,7 +71,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
         component={Link}
         to={`/dashboard/integrations/feeds/form/${data.id}`}
       >
-        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <ItemIcon type={mainEntityType} />
         </ListItemIcon>
         <ListItemText
@@ -112,7 +112,7 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
       divider={true}
       secondaryAction={<MoreVert sx={{ color: (theme) => theme.palette.grey[700] }} />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

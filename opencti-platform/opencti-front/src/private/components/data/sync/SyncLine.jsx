@@ -50,7 +50,7 @@ const itemSx = {
 };
 
 const itemIconSx = {
-  color: (theme) => theme.palette.primary.main,
+  color: 'primary.main',
 };
 
 class SyncLineLineComponent extends Component {

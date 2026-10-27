@@ -113,7 +113,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                   to={link}
                   disabled={restricted}
                 >
-                  <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+                  <ListItemIcon sx={{ color: 'primary.main' }}>
                     <ItemIcon type={node.entity_type} isReversed={isReversed} />
                   </ListItemIcon>
                   <ListItemText

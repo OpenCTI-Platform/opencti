@@ -8,7 +8,6 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
-import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
@@ -123,11 +122,7 @@ class RoleLineDummyComponent extends Component {
       <ListItem
         sx={{ paddingLeft: '10px', height: '50px' }}
         divider={true}
-        secondaryAction={(
-          <Box>
-            <KeyboardArrowRightOutlined />
-          </Box>
-        )}
+        secondaryAction={<KeyboardArrowRightOutlined />}
       >
         <ListItemIcon sx={{ color: (theme) => theme.palette.grey[700] }}>
           <Skeleton

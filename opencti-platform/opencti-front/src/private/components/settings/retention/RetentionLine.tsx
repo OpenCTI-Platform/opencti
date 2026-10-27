@@ -11,7 +11,6 @@ import { RetentionLinesPaginationQuery$variables } from '@components/settings/re
 import { RetentionLine_node$key } from '@components/settings/retention/__generated__/RetentionLine_node.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
@@ -74,7 +73,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
         />
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <LayersClearOutlined />
       </ListItemIcon>
       <ListItemText
@@ -152,13 +151,9 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
     <ListItem
       sx={{ paddingLeft: '10px', height: '50px' }}
       divider={true}
-      secondaryAction={(
-        <Box>
-          <MoreVert />
-        </Box>
-      )}
+      secondaryAction={<MoreVert />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

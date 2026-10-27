@@ -50,7 +50,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
       onClick={() => onToggleEntity(entity)}
       selected={isSelected}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={entity.entity_type} />
       </ListItemIcon>
       <ListItemText

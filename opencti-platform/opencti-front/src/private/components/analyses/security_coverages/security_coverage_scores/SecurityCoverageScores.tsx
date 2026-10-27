@@ -59,6 +59,14 @@ const ScoreText = styled('div')(({ theme }) => ({
   color: theme.palette.text?.primary || '#ffffff',
 }));
 
+const ScoreIcon = styled(Avatar)({
+  backgroundColor: 'transparent',
+  fontSize: 24,
+  position: 'absolute',
+  top: 22,
+  left: 22,
+});
+
 const CoverageName = styled('div')(({ theme }) => ({
   fontSize: 12,
   color: theme.palette.text?.secondary || '#999999',
@@ -130,9 +138,9 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
           <ChartWrapper>
             <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
             <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')} placement="bottom">
-              <Avatar sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize, fontSize: 24, position: 'absolute', top: 22, left: 22 }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
+              <ScoreIcon sx={{ width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
                 <span style={{ color: theme.palette.text?.primary }}><HourglassEmpty style={{ fontSize: iconSize }} /></span>
-              </Avatar>
+              </ScoreIcon>
             </Tooltip>
           </ChartWrapper>
         </ChartContainer>
@@ -147,9 +155,9 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
               <ChartWrapper>
                 <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
                 <Tooltip title={`${coverageResult.coverage_name} ${coverageResult.coverage_score}/100`} placement="bottom">
-                  <Avatar sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize, fontSize: 24, position: 'absolute', top: 22, left: 22 }} style={{ top: iconPosition, left: iconPosition - 1, fontSize: iconSize - 2 }}>
+                  <ScoreIcon sx={{ width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition - 1, fontSize: iconSize - 2 }}>
                     <span style={{ color: theme.palette.text?.primary }}>{getIconFromName(coverageResult.coverage_name, iconSize)}</span>
-                  </Avatar>
+                  </ScoreIcon>
                 </Tooltip>
               </ChartWrapper>
             </ChartContainer>
@@ -169,9 +177,9 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
             <ChartWrapper>
               <Chart options={options} series={series} type="donut" width={70} height={70} />
               <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')} placement="top">
-                <Avatar sx={{ bgcolor: 'transparent', width: 24, height: 24, fontSize: 24, position: 'absolute', top: 22, left: 22 }} style={{ top: 24, left: 23 }}>
+                <ScoreIcon sx={{ width: 24, height: 24 }} style={{ top: 24, left: 23 }}>
                   <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}><HourglassEmpty style={{ fontSize: 23 }} /></span>
-                </Avatar>
+                </ScoreIcon>
               </Tooltip>
             </ChartWrapper>
           </ChartContainer>
@@ -200,9 +208,9 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
               <ChartWrapper>
                 <Chart options={options} series={series} type="donut" width={70} height={70} />
                 <Tooltip title={coverageResult.coverage_name} placement="top">
-                  <Avatar sx={{ bgcolor: 'transparent', width: 25, height: 30, fontSize: 24, position: 'absolute', top: 22, left: 22 }}>
+                  <ScoreIcon sx={{ width: 25, height: 30 }}>
                     <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>{getIconFromName(coverageResult.coverage_name, 26)}</span>
-                  </Avatar>
+                  </ScoreIcon>
                 </Tooltip>
               </ChartWrapper>
             </ChartContainer>

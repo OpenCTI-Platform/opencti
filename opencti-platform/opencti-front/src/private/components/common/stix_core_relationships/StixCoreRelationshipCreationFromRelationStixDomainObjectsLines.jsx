@@ -33,14 +33,6 @@ const SecondaryHeading = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-const PanelContent = styled(AccordionDetails)({
-  padding: 0,
-});
-
-const EntityList = styled(List)({
-  width: '100%',
-});
-
 const Item = styled(ListItemButton)(({ theme }) => ({
   minHeight: 48,
   paddingTop: theme.spacing(0.5),
@@ -141,8 +133,8 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                     {stixDomainObjects[type].length} {t('entitie(s)')}
                   </SecondaryHeading>
                 </AccordionSummary>
-                <PanelContent>
-                  <EntityList>
+                <AccordionDetails sx={{ padding: 0 }}>
+                  <List sx={{ width: '100%' }}>
                     {stixDomainObjects[type].map((stixDomainObject) => (
                       <Item
                         key={stixDomainObject.id}
@@ -166,8 +158,8 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                         </ItemLabels>
                       </Item>
                     ))}
-                  </EntityList>
-                </PanelContent>
+                  </List>
+                </AccordionDetails>
               </Accordion>
             );
           })

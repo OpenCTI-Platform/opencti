@@ -51,7 +51,7 @@ const JsonMapperLine: FunctionComponent<JsonMapperLineProps> = ({
         />
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText

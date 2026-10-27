@@ -8,7 +8,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
-import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -70,7 +69,7 @@ class IndicatorEntityLineComponent extends Component {
           to={link}
           disabled={restricted}
         >
-          <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+          <ListItemIcon sx={{ color: 'primary.main' }}>
             <ItemIcon type={node.entity_type} />
           </ListItemIcon>
           <ListItemText
@@ -672,11 +671,7 @@ class IndicatorEntityLineDummyComponent extends Component {
       <ListItem
         sx={{ paddingLeft: '10px', height: 50 }}
         divider={true}
-        secondaryAction={(
-          <Box>
-            <MoreVert />
-          </Box>
-        )}
+        secondaryAction={<MoreVert />}
       >
         <ListItemIcon sx={{ color: (theme) => theme.palette.grey[700] }}>
           <Skeleton

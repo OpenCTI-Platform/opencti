@@ -714,7 +714,6 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           );
         }}
         isOptionEqualToValue={(option: StixCoreObjectOption, value: FieldOption) => option.value === value.value}
-        sx={{ '& .MuiAutocomplete-clearIndicator': { display: 'none' } }}
       />
 
       <DeferredCreationContext.Provider value={deferredContextValue}>

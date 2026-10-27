@@ -59,7 +59,7 @@ export const AdministrativeAreaLine: FunctionComponent<
       component={Link}
       to={`/dashboard/locations/administrative_areas/${data.id}`}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="Administrative-Area" />
       </ListItemIcon>
       <ListItemText
@@ -98,7 +98,7 @@ export const AdministrativeAreaLineDummy = ({
 }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

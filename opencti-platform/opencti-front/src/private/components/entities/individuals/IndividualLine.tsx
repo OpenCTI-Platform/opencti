@@ -73,7 +73,7 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
       component={Link}
       to={`/dashboard/entities/individuals/${data.id}`}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="Individual" />
       </ListItemIcon>
       <ListItemText
@@ -121,7 +121,7 @@ export const IndividualLineDummy = ({
 }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

@@ -7,7 +7,6 @@ import { KeyboardArrowRightOutlined, MoreVertOutlined } from '@mui/icons-materia
 import { Link } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
-import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
@@ -76,11 +75,7 @@ export const SettingsOrganizationLineDummy = ({
     <ListItem
       sx={{ paddingLeft: '10px', height: '50px' }}
       divider={true}
-      secondaryAction={(
-        <Box>
-          <MoreVertOutlined />
-        </Box>
-      )}
+      secondaryAction={<MoreVertOutlined />}
     >
       <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />

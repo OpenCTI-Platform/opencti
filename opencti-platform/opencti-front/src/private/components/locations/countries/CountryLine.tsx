@@ -63,7 +63,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
       component={Link}
       to={`/dashboard/locations/countries/${data.id}`}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         {flagUrl ? (
           <img
             style={{ width: 20 }}
@@ -110,7 +110,7 @@ export const CountryLineDummy = ({
 }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

@@ -82,7 +82,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
         </Security>
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
@@ -120,7 +120,7 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
       divider={true}
       secondaryAction={<MoreVert />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

@@ -1,6 +1,5 @@
 import { MoreVertOutlined } from '@mui/icons-material';
 import { ListItemButton, Stack, Typography } from '@mui/material';
-import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -688,11 +687,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
     <ListItem
       sx={{ height: 50 }}
       divider={true}
-      secondaryAction={(
-        <Box>
-          <MoreVertOutlined />
-        </Box>
-      )}
+      secondaryAction={<MoreVertOutlined />}
     >
       <ListItemIcon sx={(theme) => ({ color: theme.palette.grey?.[700] })}>
         <Skeleton

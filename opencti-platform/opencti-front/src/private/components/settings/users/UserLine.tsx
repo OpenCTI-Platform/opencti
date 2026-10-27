@@ -41,7 +41,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
       component={Link}
       to={`/dashboard/settings/accesses/users/${node.id}`}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         {userServiceAccount && (<ManageAccountsOutlined />)}
         {!userServiceAccount && (external ? <AccountCircleOutlined /> : <PersonOutlined />)}
       </ListItemIcon>

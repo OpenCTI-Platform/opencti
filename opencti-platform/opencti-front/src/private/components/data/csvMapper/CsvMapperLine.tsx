@@ -51,7 +51,7 @@ const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({
         />
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText

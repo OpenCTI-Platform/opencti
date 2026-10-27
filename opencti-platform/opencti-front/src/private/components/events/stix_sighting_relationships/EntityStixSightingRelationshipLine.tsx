@@ -10,7 +10,6 @@ import { Chip } from '@filigran/design-system';
 import { Link } from 'react-router';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import Box from '@mui/material/Box';
 import { AutoFix } from 'mdi-material-ui';
 import { styled } from '@mui/material/styles';
 import { EntityStixSightingRelationshipLine_node$key } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipLine_node.graphql';
@@ -254,7 +253,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
         to={link}
         disabled={restricted}
       >
-        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <ItemIcon type={!restricted ? entity?.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
@@ -326,11 +325,7 @@ export const EntityStixSightingRelationshipLineDummy = ({
     <ListItem
       sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={(
-        <Box>
-          <MoreVertOutlined />
-        </Box>
-      )}
+      secondaryAction={<MoreVertOutlined />}
     >
       <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
         <HelpOutlined />

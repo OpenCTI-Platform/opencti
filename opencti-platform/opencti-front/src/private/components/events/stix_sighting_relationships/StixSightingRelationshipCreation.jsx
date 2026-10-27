@@ -34,6 +34,17 @@ const CloseButton = styled(IconButton)({
   },
 });
 
+const Choice = styled(ListItemButton)({
+  position: 'relative',
+  height: 100,
+  transition: 'background-color 0.1s ease',
+  cursor: 'pointer',
+  '&:hover': {
+    background: 'rgba(0, 0, 0, 0.1)',
+  },
+  padding: '10px',
+});
+
 const Item = styled('div')({
   position: 'absolute',
   width: 180,
@@ -374,20 +385,10 @@ class StixSightingRelationshipCreation extends Component {
         </Header>
         <List component="div" sx={{ padding: '10px 20px 20px 20px' }}>
           {existingSightings.map((sighting) => (
-            <ListItemButton
+            <Choice
               focusVisibleClassName="focus-visible"
               key={sighting.node.id}
-              sx={{
-                position: 'relative',
-                height: 100,
-                transition: 'background-color 0.1s ease',
-                cursor: 'pointer',
-                '&:hover': {
-                  background: 'rgba(0, 0, 0, 0.1)',
-                },
-                padding: '10px',
-                marginBottom: '10px',
-              }}
+              sx={{ marginBottom: '10px' }}
               onClick={this.handleSelectSighting.bind(this, sighting.node)}
             >
               <Item
@@ -486,20 +487,10 @@ class StixSightingRelationshipCreation extends Component {
                 </Content>
               </Item>
               <div className="clearfix" />
-            </ListItemButton>
+            </Choice>
           ))}
-          <ListItemButton
+          <Choice
             focusVisibleClassName="focus-visible"
-            sx={{
-              position: 'relative',
-              height: 100,
-              transition: 'background-color 0.1s ease',
-              cursor: 'pointer',
-              '&:hover': {
-                background: 'rgba(0, 0, 0, 0.1)',
-              },
-              padding: '10px',
-            }}
             onClick={this.handleChangeStep.bind(this)}
           >
             <Item
@@ -584,7 +575,7 @@ class StixSightingRelationshipCreation extends Component {
               </Content>
             </Item>
             <div className="clearfix" />
-          </ListItemButton>
+          </Choice>
         </List>
       </div>
     );

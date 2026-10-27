@@ -50,7 +50,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
       <ListItemIcon style={{ paddingLeft: 10 }}>
         <Checkbox checked={node.id in (addedElements || {})} />
       </ListItemIcon>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
@@ -317,7 +317,7 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
       >
         <CircleOutlined />
       </ListItemIcon>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

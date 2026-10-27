@@ -6,7 +6,6 @@ import { BackupTableOutlined, AlarmOnOutlined, MoreVert } from '@mui/icons-mater
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import { styled, Theme, useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
 import { DataColumns } from '../../../../components/list_lines';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -203,13 +202,9 @@ export const TriggerLineDummy = ({
     <ListItem
       sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={(
-        <Box>
-          <MoreVert />
-        </Box>
-      )}
+      secondaryAction={<MoreVert />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

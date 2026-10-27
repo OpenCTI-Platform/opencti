@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Box from '@mui/material/Box';
 import { CheckCircleOutlined, DoNotDisturbOnOutlined, KeyboardArrowRightOutlined, ReportGmailerrorred } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router';
@@ -126,11 +125,7 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
     <ListItem
       sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={(
-        <Box>
-          <KeyboardArrowRightOutlined />
-        </Box>
-      )}
+      secondaryAction={<KeyboardArrowRightOutlined />}
     >
       <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
         <Skeleton

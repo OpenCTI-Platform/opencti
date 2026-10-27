@@ -35,7 +35,7 @@ const Description = styled('div')({
 });
 
 const itemIconSx = {
-  color: (theme) => theme.palette.primary.main,
+  color: 'primary.main',
 };
 
 const goIconSx = {

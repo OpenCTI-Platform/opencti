@@ -64,7 +64,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
   return (
     <>
       <ListItem sx={{ paddingLeft: '10px', height: '50px' }} divider>
-        <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <ItemIcon type="Notifier" />
         </ListItemIcon>
         <ListItemText

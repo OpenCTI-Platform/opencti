@@ -65,7 +65,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
       component={Link}
       to={`/dashboard/entities/organizations/${data.id}`}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="Organization" />
       </ListItemIcon>
       <ListItemText
@@ -118,7 +118,7 @@ export const OrganizationLineDummy = ({
 }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"

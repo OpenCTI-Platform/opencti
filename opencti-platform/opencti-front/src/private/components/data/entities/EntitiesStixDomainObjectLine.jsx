@@ -42,7 +42,7 @@ const EntitiesStixDomainObjectLineComponent = ({
       to={link}
     >
       <ListItemIcon
-        sx={{ color: (theme) => theme.palette.primary.main }}
+        sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, node, event)
@@ -56,7 +56,7 @@ const EntitiesStixDomainObjectLineComponent = ({
           }
         />
       </ListItemIcon>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
@@ -359,7 +359,7 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
           disabled={true}
         />
       </ListItemIcon>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

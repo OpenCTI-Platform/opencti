@@ -106,7 +106,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
           ? onToggleShiftEntity(index, { id: nodeSubType.id }, event)
           : onToggleEntity({ id: nodeSubType.id }, event))
         }
-        sx={{ color: (theme) => theme.palette.primary.main }}
+        sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
       >
         <Checkbox
@@ -116,7 +116,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
           }
         />
       </ListItemIcon>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={nodeSubType.id} />
       </ListItemIcon>
       <ListItemText

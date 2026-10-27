@@ -89,7 +89,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
           sx={{ paddingLeft: '15px', height: 50 }}
           onClick={() => setOpen(true)}
         >
-          <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main, minWidth: 52 }}>
+          <ListItemIcon sx={{ color: 'primary.main', minWidth: 52 }}>
             <ItemIcon type="Task" />
           </ListItemIcon>
           <ListItemText
@@ -146,7 +146,7 @@ export const CaseTasksLineDummy = () => {
         </IconButton>
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary.main, minWidth: 52 }}>
+      <ListItemIcon sx={{ color: 'primary.main', minWidth: 52 }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
