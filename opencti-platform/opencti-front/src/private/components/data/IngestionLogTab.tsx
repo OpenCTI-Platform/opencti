@@ -10,7 +10,7 @@ import Tag from '../../../components/common/tag/Tag';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Label from '../../../components/common/label/Label';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../utils/String';
@@ -278,7 +278,13 @@ const IngestionLogTab: React.FC<IngestionLogTabProps> = ({ name, logHistory }) =
         size="large"
         header={
           detailsOpen !== null && logHistory.length > 0 ? (
-            <Stack direction="row" alignItems="center" gap={0.5}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
               <Tooltip title={t_i18n('Previous log')}>
                 <span>
                   <IconButton
@@ -322,17 +328,23 @@ const IngestionLogTab: React.FC<IngestionLogTabProps> = ({ name, logHistory }) =
         {detailsOpen !== null ? (
           <Stack
             sx={{
+              gap: 2,
               flex: 1,
               minHeight: 0,
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
             }}
-            gap={2}
           >
             <Box sx={{ flexShrink: 0 }}>
               <Label>{t_i18n('Timestamp')}</Label>
-              <Typography variant="body1" gutterBottom fontFamily="monospace">
+              <Typography
+                variant="body1"
+                gutterBottom
+                sx={{
+                  fontFamily: 'monospace',
+                }}
+              >
                 {formatTimestamp(detailsOpen.entry.timestamp) || EMPTY_VALUE}
               </Typography>
             </Box>

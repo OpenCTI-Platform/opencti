@@ -17,7 +17,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { Delete } from 'mdi-material-ui';
 import * as R from 'ramda';
 import React, { useState } from 'react';
@@ -35,15 +34,6 @@ import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFr
 import { deserializeFilterGroupForFrontend, isStringifiedFilterGroupFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { deleteNode } from '../../../../utils/store';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  progress: {
-    borderRadius: 4,
-    height: 10,
-  },
-}));
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -158,7 +148,6 @@ const TasksListFragment = graphql`
   }
 `;
 const TasksList = ({ data, options }) => {
-  const classes = useStyles();
   const { t_i18n, nsdt, n } = useFormatter();
   const [displayMessages, setDisplayMessages] = useState(false);
   const [displayErrors, setDisplayErrors] = useState(false);
@@ -276,22 +265,30 @@ const TasksList = ({ data, options }) => {
           return (
             <Card key={task.id}>
               <Grid container={true} spacing={3}>
-                <Grid item xs={5}>
+                <Grid size={5}>
                   <Grid container={true} spacing={1}>
                     {task.description && (
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         <Typography variant="h3" gutterBottom={true}>
                           {`${t_i18n('Description')}: ${task.description}`}
                         </Typography>
                       </Grid>
                     )}
-                    <Grid item xs={12}>
-                      <Stack gap={1}>
+                    <Grid size={12}>
+                      <Stack sx={{
+                        gap: 1,
+                      }}
+                      >
                         <Typography variant="h3" gutterBottom={true}>
                           {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                         </Typography>
                         {task.task_search && (
-                          <Stack direction="row" gap={1}>
+                          <Stack
+                            direction="row"
+                            sx={{
+                              gap: 1,
+                            }}
+                          >
                             <Tag
                               label={`${t_i18n('Search')}: ${task.task_search}`}
                             />
@@ -325,8 +322,11 @@ const TasksList = ({ data, options }) => {
                         )}
                       </Stack>
                     </Grid>
-                    <Grid item xs={12}>
-                      <Stack gap={1}>
+                    <Grid size={12}>
+                      <Stack sx={{
+                        gap: 1,
+                      }}
+                      >
                         <Typography variant="h3" gutterBottom={true}>
                           {t_i18n('Actions')}
                         </Typography>
@@ -341,8 +341,10 @@ const TasksList = ({ data, options }) => {
                               <Stack
                                 key={task.actions.indexOf(action)}
                                 direction="row"
-                                gap={1}
-                                flexWrap="wrap"
+                                sx={{
+                                  gap: 1,
+                                  flexWrap: 'wrap',
+                                }}
                               >
                                 <Tag
                                   label={action.type}
@@ -365,9 +367,9 @@ const TasksList = ({ data, options }) => {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid item xs={7}>
+                <Grid size={7}>
                   <Grid container={true} spacing={3}>
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Initiator')}
                       </Typography>
@@ -375,13 +377,13 @@ const TasksList = ({ data, options }) => {
                         {truncate(task.initiator?.name, 15)}
                       </Tooltip>
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Task start time')}
                       </Typography>
                       {nsdt(task.created_at)}
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {task.completed
                           ? t_i18n('Task end time')
@@ -391,7 +393,7 @@ const TasksList = ({ data, options }) => {
                     </Grid>
                     {(task.scope ?? task.type)
                       && (
-                        <Grid item xs={2}>
+                        <Grid size={2}>
                           <Typography variant="h3" gutterBottom={true}>
                             {t_i18n('Scope')}
                           </Typography>
@@ -399,18 +401,21 @@ const TasksList = ({ data, options }) => {
                         </Grid>
                       )
                     }
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Status')}
                       </Typography>
                       <TaskStatus status={status} label={t_i18n(status)} />
                     </Grid>
-                    <Grid item xs={10}>
+                    <Grid size={10}>
                       <Typography variant="h3" gutterBottom={true}>
                         {progressFullText}
                       </Typography>
                       <LinearProgress
-                        classes={{ root: classes.progress }}
+                        sx={{
+                          borderRadius: '4px',
+                          height: 10,
+                        }}
                         variant="determinate"
                         value={progressValue}
                       />
@@ -467,7 +472,7 @@ const TasksList = ({ data, options }) => {
         <DialogContentText>
           <Paper padding={0}>
             <TableContainer>
-              <Table className={classes.table} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>{t_i18n('Timestamp')}</TableCell>
@@ -503,7 +508,7 @@ const TasksList = ({ data, options }) => {
         <DialogContentText>
           <Paper padding={0}>
             <TableContainer>
-              <Table className={classes.table} aria-label="simple table">
+              <Table aria-label="simple table">
                 <TableHead>
                   <TableRow>
                     <TableCell>{t_i18n('Timestamp')}</TableCell>

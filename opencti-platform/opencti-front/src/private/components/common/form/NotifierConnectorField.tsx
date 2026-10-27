@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import { ComboboxChangeMeta } from '@filigran/design-system';
@@ -9,19 +9,16 @@ import { useFormatter } from '../../../../components/i18n';
 import { NotifierConnectorFieldSearchQuery$data } from './__generated__/NotifierConnectorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface NotifierConnectorFieldProps {
   name: string;
@@ -49,7 +46,6 @@ const NotifierConnectorFieldQuery = graphql`
 const NotifierConnectorField: FunctionComponent<
   NotifierConnectorFieldProps
 > = ({ name, style, onChange, disabled, helpertext, required = false }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [connectors, setConnectors] = useState<
@@ -95,10 +91,10 @@ const NotifierConnectorField: FunctionComponent<
         onFocusInput={() => searchNotifierConnectors('')}
         renderOption={(option: { label: string }) => (
           <>
-            <div className={classes.icon}>
+            <OptionIcon>
               <ItemIcon type="Notifier" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

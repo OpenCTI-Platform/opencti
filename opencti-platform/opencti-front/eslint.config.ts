@@ -141,7 +141,6 @@ export default defineConfig([
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
       '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
-      'custom-rules/classes-rule': 1,
       'custom-rules/no-deprecated-components': 'warn',
       'custom-rules/no-fragment-ref-anchor': 'error',
       'custom-rules/no-replaced-components': 'error',

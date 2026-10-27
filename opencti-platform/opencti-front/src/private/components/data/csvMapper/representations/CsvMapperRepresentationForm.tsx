@@ -2,13 +2,12 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, FieldProps } from 'formik';
 import CsvMapperRepresentationAttributesForm from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
-import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
-import { Accordion, AccordionDetails } from '@mui/material';
+import { Accordion, AccordionDetails, Box } from '@mui/material';
+import { styled, useTheme } from '@mui/material/styles';
 import { DeleteOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import AccordionSummary from '@mui/material/AccordionSummary';
-import classNames from 'classnames';
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
 import IconButton from '@common/button/IconButton';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
@@ -20,29 +19,17 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import { FieldOption } from '../../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  red: {
-    borderColor: theme.palette.designSystem.tertiary.red[400],
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 export interface RepresentationFormEntityOption extends FieldOption {
   type: string;
@@ -71,7 +58,7 @@ const CsvMapperRepresentationForm: FunctionComponent<
   onDelete,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
 
   const { name, value } = field;
   const { setFieldValue } = form;
@@ -129,17 +116,24 @@ const CsvMapperRepresentationForm: FunctionComponent<
         expanded={open}
         variant="outlined"
         style={{ width: '100%' }}
-        sx={{
-          backgroundColor: 'transparent',
-          border: '1px solid var(--border-elevation-subtle)',
-          borderRadius: '4px',
-        }}
-        className={classNames({
-          [classes.red]: hasError,
-        })}
+        sx={[
+          {
+            backgroundColor: 'transparent',
+            border: '1px solid var(--border-elevation-subtle)',
+            borderRadius: '4px',
+          },
+          hasError && { borderColor: theme.palette.designSystem.tertiary.red[400] },
+        ]}
       >
         <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
-          <div className={classes.container}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+            }}
+          >
             <Typography>
               {representationLabel(index, value, t_i18n)}
             </Typography>
@@ -153,7 +147,7 @@ const CsvMapperRepresentationForm: FunctionComponent<
                 <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
-          </div>
+          </Box>
         </AccordionSummary>
         <AccordionDetails style={{ width: '100%' }}>
           <>
@@ -166,12 +160,12 @@ const CsvMapperRepresentationForm: FunctionComponent<
               value={availableTypes.find((e) => e.id === value.target_type) || null}
               renderOption={(option) => (
                 <>
-                  <div className={classes.icon}>
+                  <OptionIcon>
                     <ItemIcon type={option.label} />
-                  </div>
-                  <div className={classes.text}>
+                  </OptionIcon>
+                  <OptionText>
                     {t_i18n(`${prefixLabel}${option.label}`)}
-                  </div>
+                  </OptionText>
                 </>
               )}
               onValueChange={(val) => handleChangeEntityType(val as RepresentationFormEntityOption | null)}

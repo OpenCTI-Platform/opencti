@@ -1,13 +1,12 @@
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import type { ComboboxChangeMeta } from '@filigran/design-system';
 import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
 import { ObjectParticipantFieldMembersSearchQuery$data } from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { FieldOption } from '../../../../utils/field';
@@ -40,20 +39,17 @@ export const objectParticipantFieldParticipantsSearchQuery = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface OptionParticipant extends FieldOption {
   type: string;
@@ -77,7 +73,6 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   disabled,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { me } = useContext((UserContext));
   const [participants, setParticipants] = useState<OptionParticipant[]>([]);
@@ -136,10 +131,10 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(option: { type: string; label: string }) => (
         <>
-          <div className={classes.icon}>
+          <OptionIcon>
             <ItemIcon type={option.type} />
-          </div>
-          <div className={classes.text}>{option.label}</div>
+          </OptionIcon>
+          <OptionText>{option.label}</OptionText>
         </>
       )}
     />

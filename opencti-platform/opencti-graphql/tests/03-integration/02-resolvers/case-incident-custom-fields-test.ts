@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 
 const CUSTOM_FIELD_ADD_QUERY = gql`
   mutation CustomFieldDefinitionAddForCaseIncidentTest($input: CustomFieldDefinitionAddInput!) {
@@ -78,6 +79,14 @@ const CASE_INCIDENT_DELETE_QUERY = gql`
   }
 `;
 
+// Managing the custom field definitions is an Enterprise Edition feature
+beforeAll(() => {
+  vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+});
+afterAll(() => {
+  vi.restoreAllMocks();
+});
+
 describe('Custom fields wired on Case-Incident', () => {
   let customFieldId: string;
   let customFieldName: string;
@@ -90,6 +99,7 @@ describe('Custom fields wired on Case-Incident', () => {
         input: {
           name: 'x_opencti_cf_test_case_incident_score',
           label: 'Test Case Incident Score',
+          description: 'Test Case Incident Score description',
           field_type: 'integer',
           min_value: 0,
           max_value: 100,
@@ -215,6 +225,7 @@ describe('Custom fields multi_select upsert on Case-Incident', () => {
         input: {
           name: 'x_opencti_cf_test_case_incident_tags',
           label: 'Test Case Incident Tags',
+          description: 'Test Case Incident Tags description',
           field_type: 'multi_select',
           select_options: ['alpha', 'bravo', 'charlie'],
         },

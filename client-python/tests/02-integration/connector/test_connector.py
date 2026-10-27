@@ -2,6 +2,7 @@ import pika.exceptions
 import pytest
 
 from pycti import OpenCTIConnector
+from pycti.connector.opencti_connector_helper import ConnectorInfo
 from tests.cases.connectors import (
     ExternalImportConnector,
     ExternalImportConnectorTest,
@@ -52,6 +53,66 @@ def test_register_simple_connector(simple_connector, api_connector, api_work):
             break
 
     assert test_connector == "", "Connector is still registered"
+
+
+def read_connector_errors(api_client, connector_id):
+    result = api_client.query(
+        """
+            query GetConnectorErrors($id: String!) {
+                connector(id: $id) {
+                    connector_info {
+                        errors {
+                            code
+                            message
+                            criticity
+                        }
+                    }
+                }
+            }
+        """,
+        {"id": connector_id},
+    )
+    return result["data"]["connector"]["connector_info"]["errors"]
+
+
+@pytest.mark.connectors
+def test_ping_sends_connector_info_errors(simple_connector, api_client, api_connector):
+    connector_id = simple_connector.to_input()["input"]["id"]
+    connector_info = ConnectorInfo()
+    connector_info.add_error("API_UNREACHABLE", "Source API returned 503", 2)
+    connector_info.add_error("RATE_LIMITED", "Too many requests", 0)
+
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+
+    assert read_connector_errors(api_client, connector_id) == [
+        {
+            "code": "API_UNREACHABLE",
+            "message": "Source API returned 503",
+            "criticity": 2,
+        },
+        {"code": "RATE_LIMITED", "message": "Too many requests", "criticity": 0},
+    ]
+
+
+@pytest.mark.connectors
+def test_ping_replaces_errors_and_clears_them_with_an_empty_list(
+    simple_connector, api_client, api_connector
+):
+    connector_id = simple_connector.to_input()["input"]["id"]
+    connector_info = ConnectorInfo()
+    connector_info.add_error("API_UNREACHABLE", "Source API returned 503", 2)
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+
+    connector_info.clear_errors()
+    connector_info.add_error("RATE_LIMITED", "Too many requests", 0)
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+    assert read_connector_errors(api_client, connector_id) == [
+        {"code": "RATE_LIMITED", "message": "Too many requests", "criticity": 0}
+    ]
+
+    connector_info.clear_errors()
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+    assert read_connector_errors(api_client, connector_id) == []
 
 
 @pytest.fixture(params=cases_of(ExternalImportConnectorTest), ids=case_id)

@@ -1,10 +1,11 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsUser } from '../../utils/testQueryHelper';
 import { USER_EDITOR } from '../../utils/testQuery';
 import { buildCustomFieldTaskInputs } from '../../../src/modules/customField/custom-field-task';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../src/modules/customField/custom-field-types';
 import type { EditInput } from '../../../src/generated/graphql';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 
 const CUSTOM_FIELD_ADD = gql`
   mutation CustomFieldsReviewAdd($input: CustomFieldDefinitionAddInput!) {
@@ -113,7 +114,7 @@ const LEVEL = 'x_opencti_cf_review_level';
 const DUE = 'x_opencti_cf_review_due';
 
 const addDefinition = async (input: Record<string, unknown>, entityTypes: { entityType: string; mandatory: boolean }[]) => {
-  const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input } });
+  const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input: { description: `${input.label} description`, ...input } } });
   expect(result.errors).toBeUndefined();
   const { id } = result.data?.customFieldDefinitionAdd ?? {};
   for (const { entityType, mandatory } of entityTypes) {
@@ -133,6 +134,14 @@ const readCaseValues = async (id: string) => {
   const result = await queryAsAdmin({ query: CASE_READ, variables: { id } });
   return result.data?.caseIncident.customFieldValues as Record<string, any>[];
 };
+
+// Managing the custom field definitions is an Enterprise Edition feature
+beforeAll(() => {
+  vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+});
+afterAll(() => {
+  vi.restoreAllMocks();
+});
 
 describe('Custom fields review: relationships, mandatory fields, filters and merge', () => {
   const definitionIds: string[] = [];

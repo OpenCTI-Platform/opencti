@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, toPairs } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { toPairs } from 'ramda';
+import { styled } from '@mui/material/styles';
 import IconButton from '@common/button/IconButton';
 import FormControl from '@mui/material/FormControl';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
@@ -21,29 +21,27 @@ import FilterIconButton from '../FilterIconButton';
 import { export_max_size } from '../../utils/utils';
 import { Stack } from '@mui/material';
 
-const styles = (theme) => ({
-  parameters: {
-    display: 'flex',
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(2),
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
-  sortFieldContainer: {
-    display: 'flex',
-    gap: theme.spacing(1),
-    alignItems: 'center',
-  },
-  cardsContainer: {
-    margin: '10px 0 0 -15px',
-    paddingTop: 0,
-  },
-  sortFieldLabel: {
-    fontSize: 14,
-  },
-  filler: {
-    flex: 'auto',
-  },
+const Parameters = styled('div')(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(2),
+  flexWrap: 'wrap',
+  alignItems: 'center',
+}));
+
+const SortFieldContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(1),
+  alignItems: 'center',
+}));
+
+const CardsContainer = styled('div')({
+  margin: '10px 0 0 -15px',
+  paddingTop: 0,
+});
+
+const Filler = styled('div')({
+  flex: 'auto',
 });
 
 class ListCards extends Component {
@@ -58,7 +56,6 @@ class ListCards extends Component {
   render() {
     const {
       t,
-      classes,
       handleSearch,
       handleChangeView,
       handleAddFilter,
@@ -89,7 +86,7 @@ class ListCards extends Component {
           const availableFilterKeys = Array.from(filterKeysMap.keys());
           return (
             <>
-              <div className={classes.parameters}>
+              <Parameters>
                 <SearchInput
                   variant="small"
                   onSubmit={handleSearch.bind(this)}
@@ -107,7 +104,7 @@ class ListCards extends Component {
                     }}
                   />
                 )}
-                <div className={classes.sortFieldContainer}>
+                <SortFieldContainer>
                   {/* Radix's Select.Root renders no DOM node of its own, so the label and the trigger are plain
                       siblings in this FormControl's flow -- the axis is the product's to set. */}
                   <FormControl sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
@@ -143,9 +140,14 @@ class ListCards extends Component {
                       <ArrowUpward fontSize="small" />
                     )}
                   </IconButton>
-                </div>
-                <div className={classes.filler} />
-                <Stack direction="row" gap={1}>
+                </SortFieldContainer>
+                <Filler />
+                <Stack
+                  direction="row"
+                  sx={{
+                    gap: 1,
+                  }}
+                >
                   {numberOfElements && (
                     <div style={{ alignSelf: 'center' }}>
                       <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
@@ -219,8 +221,8 @@ class ListCards extends Component {
                     additionalHeaderButtons && (
                       <Stack
                         direction="row"
-                        gap={1}
                         sx={{
+                          gap: 1,
                           '&:empty': {
                             display: 'none',
                           },
@@ -233,7 +235,7 @@ class ListCards extends Component {
 
                   {createButton}
                 </Stack>
-              </div>
+              </Parameters>
               <FilterIconButton
                 helpers={helpers}
                 filters={filters}
@@ -257,7 +259,7 @@ class ListCards extends Component {
                   />
                 </Security>
               )}
-              <div className={classes.cardsContainer}>{children}</div>
+              <CardsContainer>{children}</CardsContainer>
             </>
           );
         }}
@@ -267,7 +269,6 @@ class ListCards extends Component {
 }
 
 ListCards.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   children: PropTypes.object,
   handleSearch: PropTypes.func.isRequired,
@@ -291,4 +292,4 @@ ListCards.propTypes = {
   additionalHeaderButtons: PropTypes.arrayOf[React.ReactNode],
 };
 
-export default compose(inject18n, withStyles(styles))(ListCards);
+export default inject18n(ListCards);

@@ -4,12 +4,11 @@ import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Dialog from '@common/dialog/Dialog';
-import { useTheme } from '@mui/styles';
-import withStyles from '@mui/styles/withStyles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import qrcode from 'qrcode';
-import { compose, pick } from 'ramda';
+import { pick } from 'ramda';
 import { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router';
@@ -36,25 +35,6 @@ import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 import TextareaField from '../../../components/TextareaField';
-
-const styles = () => ({
-  container: {
-    width: 900,
-    margin: '0 auto',
-  },
-  paper: {
-    width: '100%',
-    margin: '0 auto',
-    marginBottom: 24,
-    padding: 20,
-    textAlign: 'left',
-    borderRadius: 4,
-    position: 'relative',
-  },
-  switchField: {
-    padding: '20px 0 0',
-  },
-});
 
 const profileOverviewFieldPatch = graphql`
   mutation ProfileOverviewFieldPatchMutation(
@@ -203,7 +183,7 @@ const OtpComponent = ({ closeFunction }) => (
 );
 
 const ProfileOverviewComponent = (props) => {
-  const { t, me, classes, about, settings, themes } = props;
+  const { t, me, about, settings, themes } = props;
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
   const { isPlaygroundEnable } = useHelper();
@@ -278,8 +258,11 @@ const ProfileOverviewComponent = (props) => {
 
   return (
     <Stack
-      gap={2}
-      sx={{ width: 900, margin: '0 auto' }}
+      sx={{
+        gap: 2,
+        width: 900,
+        margin: '0 auto',
+      }}
     >
       <TokenCreationDrawer
         userId={me.id}
@@ -489,7 +472,7 @@ const ProfileOverviewComponent = (props) => {
               type="button"
               startIcon={<NoEncryptionOutlined />}
               onClick={disableOtp}
-              classes={{ root: classes.button }}
+              keepMui
               disabled={settings.otp_mandatory}
             >
               {t('Disable two-factor authentication')}
@@ -501,7 +484,7 @@ const ProfileOverviewComponent = (props) => {
               color="secondary"
               startIcon={<LockOutlined />}
               onClick={() => setDisplay2FA(true)}
-              classes={{ root: classes.button }}
+              keepMui
             >
               {t('Enable two-factor authentication')}
             </Button>
@@ -521,7 +504,10 @@ const ProfileOverviewComponent = (props) => {
           >
             {({ submitForm, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Stack gap={2}>
+                <Stack sx={{
+                  gap: 2,
+                }}
+                >
                   <Field
                     component={TextField}
                     variant="outlined"
@@ -556,7 +542,7 @@ const ProfileOverviewComponent = (props) => {
                     type="button"
                     onClick={submitForm}
                     disabled={external || isSubmitting}
-                    classes={{ root: classes.button }}
+                    keepMui
                   >
                     {t('Update')}
                   </Button>
@@ -570,8 +556,17 @@ const ProfileOverviewComponent = (props) => {
         <div>
           <Label>{t('OpenCTI version')}</Label>
           <pre>{about.version}</pre>
-          <Stack gap={2}>
-            <Stack direction="row" justifyContent="flex-end" gap={1}>
+          <Stack sx={{
+            gap: 2,
+          }}
+          >
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: 'flex-end',
+                gap: 1,
+              }}
+            >
               {hasAccessTokenCapability && isPlaygroundEnable() && (
                 <Button
                   variant="secondary"
@@ -601,8 +596,6 @@ const ProfileOverviewComponent = (props) => {
 };
 
 ProfileOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   me: PropTypes.object,
   about: PropTypes.object,
@@ -655,4 +648,4 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ProfileOverview);
+export default inject18n(ProfileOverview);

@@ -260,14 +260,19 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
         height: '100%',
       }}
       >
-        <Box flex={1}>
+        <Box sx={{
+          flex: 1,
+        }}
+        >
           {children}
         </Box>
         <Stack
-          mt={3}
           direction="row"
-          alignItems="center"
-          justifyContent="space-between"
+          sx={{
+            mt: 3,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
           <div>
             <Button
@@ -355,9 +360,11 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
 
       {resetPwdStep === ResetPwdStep.MFA && (
         <Stack
-          height="100%"
-          justifyContent="space-between"
-          alignItems="start"
+          sx={{
+            height: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'start',
+          }}
         >
           <OtpValidation
             variant="resetPassword"

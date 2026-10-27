@@ -4,7 +4,7 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import React, { useEffect, useRef, useState } from 'react';
 import type { Theme } from '../../../components/Theme';

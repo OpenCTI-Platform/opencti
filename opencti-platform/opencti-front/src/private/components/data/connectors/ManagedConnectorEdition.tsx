@@ -4,7 +4,7 @@ import CreatorField from '@components/common/form/CreatorField';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { useMemo } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { FormikHelpers } from 'formik/dist/types';
 import Alert from '@mui/material/Alert';

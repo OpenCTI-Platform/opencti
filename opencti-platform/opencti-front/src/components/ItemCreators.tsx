@@ -26,7 +26,13 @@ const ItemCreators = ({ creators, maxWidth }: ItemCreatorsProps) => {
   const navigate = useNavigate();
 
   return (
-    <Stack direction="row" gap={1} flexWrap="wrap">
+    <Stack
+      direction="row"
+      sx={{
+        gap: 1,
+        flexWrap: 'wrap',
+      }}
+    >
       {creators.map((creator) => {
         return (
           <Security

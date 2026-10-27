@@ -143,7 +143,15 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
       }}
     >
       {/* Name column: logo or built-in icon, then the name. */}
-      <Stack direction="row" alignItems="center" gap={1.5} sx={{ flex: 1, minWidth: 0 }}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1.5,
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
         <Box
           sx={{
             height: 32,
@@ -217,7 +225,13 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
           title={item.verified ? t_i18n('Supported by Filigran') : t_i18n('Supported by Community')}
           slotProps={{ popper: { sx: { textTransform: 'none' } } }}
         >
-          <Stack direction="row" alignItems="center" gap={0.5}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              gap: 0.5,
+            }}
+          >
             {item.verified ? (
               <span style={{ display: 'inline-flex' }}>
                 <FiligranIcon
@@ -254,7 +268,12 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
       <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('actions')}>
         {item.builtIn ? (
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <Stack direction="row" alignItems="center">
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+              }}
+            >
               {isImportableBuiltInKind(item.builtIn.kind) && (
                 <>
                   <BuiltInIntegrationImport kind={item.builtIn.kind} />

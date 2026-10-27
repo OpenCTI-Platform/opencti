@@ -208,7 +208,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
   } as UsePreloadedPaginationFragment<SettingsOrganizationUsersPaginationQuery>;
 
   return (
-    <Grid item xs={12} style={{ marginTop: 0 }}>
+    <Grid style={{ marginTop: 0 }} size={12}>
       <Card
         title={t_i18n('Users')}
         action={(

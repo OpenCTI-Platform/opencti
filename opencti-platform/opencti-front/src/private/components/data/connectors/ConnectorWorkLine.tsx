@@ -81,9 +81,9 @@ const ConnectorWorkLine: FunctionComponent<
   return (
     <>
       <Grid container={true} spacing={2}>
-        <Grid item xs={7}>
+        <Grid size={7}>
           <Grid container={true} spacing={1}>
-            <Grid item xs={8}>
+            <Grid size={8}>
               <Label>
                 {t_i18n('Name')}
               </Label>
@@ -93,19 +93,19 @@ const ConnectorWorkLine: FunctionComponent<
                 </Typography>
               </Tooltip>
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <Label>
                 {statusLabel ?? t_i18n('Status')}
               </Label>
               <TaskStatus status={workStatus} label={t_i18n(workStatus)} />
             </Grid>
-            <Grid item xs={8}>
+            <Grid size={8}>
               <Label>
                 {t_i18n('Work start time')}
               </Label>
               {nsdt(workReceivedTime)}
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <Label>
                 {t_i18n('Work end time')}
               </Label>
@@ -113,9 +113,9 @@ const ConnectorWorkLine: FunctionComponent<
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t_i18n('Operations completed')}
               </Label>
@@ -125,7 +125,7 @@ const ConnectorWorkLine: FunctionComponent<
                   : workProcessedNumber ?? EMPTY_VALUE}
               </span>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t_i18n('Total number of operations')}
               </Label>
@@ -133,7 +133,7 @@ const ConnectorWorkLine: FunctionComponent<
                 {workExpectedNumber ?? EMPTY_VALUE}
               </span>
             </Grid>
-            <Grid item xs={11}>
+            <Grid size={11}>
               <Label>
                 {t_i18n('Progress')}
               </Label>

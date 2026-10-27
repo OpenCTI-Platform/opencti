@@ -7,7 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import * as R from 'ramda';
 import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
@@ -44,7 +44,6 @@ import SecurityCoverageInformation from '../../analyses/security_coverages/Secur
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { StixCoreRelationshipOverview_stixCoreRelationship$key } from './__generated__/StixCoreRelationshipOverview_stixCoreRelationship.graphql';
 import { useComputeLink } from 'src/utils/hooks/useAppData';
-import { Theme } from 'src/components/Theme';
 import CustomFieldValuesDisplay from '../custom_fields/CustomFieldValuesDisplay';
 
 const fragment = graphql`
@@ -4318,80 +4317,62 @@ const fragment = graphql`
       }
     `;
 
-const useStyles = makeStyles((theme: Theme) => ({
-  container: {
-    margin: 0,
-    position: 'relative',
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 8,
-  },
-  itemHeader: {
-    padding: '10px 0 10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0 10px 0 10px',
-    height: 40,
-    maxHeight: 40,
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-    wordBreak: 'break-word',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  },
-  middle: {
-    margin: '0 auto',
-    paddingTop: 20,
-    width: 200,
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-  },
-  buttonExpand: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    height: 25,
-    color: theme.palette.primary.main,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    '&:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
-    },
-  },
+const Container = styled('div')({
+  margin: 0,
+  position: 'relative',
+});
+
+const Item = styled('div')({
+  position: 'absolute',
+  width: 180,
+  height: 80,
+  borderRadius: 8,
+});
+
+const ItemHeader = styled('div')({
+  padding: '10px 0 10px 0',
+});
+
+const ItemIconContainer = styled('div')({
+  position: 'absolute',
+  top: 8,
+  left: 5,
+  fontSize: 8,
+});
+
+const ItemType = styled('div')(({ theme }) => ({
+  width: '100%',
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+  fontSize: 11,
+}));
+
+const ItemContent = styled('div')(({ theme }) => ({
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '0 10px 0 10px',
+  height: 40,
+  maxHeight: 40,
+  color: theme.palette.text.primary,
+  textAlign: 'center',
+  wordBreak: 'break-word',
+}));
+
+const ItemName = styled('span')({
+  display: 'inline-block',
+  lineHeight: 1,
+  fontSize: 12,
+  verticalAlign: 'middle',
+});
+
+const Middle = styled('div')(({ theme }) => ({
+  margin: '0 auto',
+  paddingTop: 20,
+  width: 200,
+  textAlign: 'center',
+  color: theme.palette.text.primary,
 }));
 
 const TRUNCATE_CHARS_COUNT = 40;
@@ -4412,7 +4393,6 @@ const StixCoreRelationshipOverview = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { t_i18n, nsdt, fldt } = useFormatter();
-  const classes = useStyles();
   const stixCoreRelationship = useFragment(fragment, data);
   const computeLink = useComputeLink();
 
@@ -4461,13 +4441,13 @@ const StixCoreRelationshipOverview = ({
     : t_i18n(`relationship_${to?.entity_type}`);
 
   return (
-    <div className={classes.container}>
+    <Container>
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card
             title={<>{t_i18n('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip />)}</>}
             action={!stixCoreRelationship.is_inferred && (
@@ -4493,8 +4473,7 @@ const StixCoreRelationshipOverview = ({
             )}
           >
             <Link to={linkFrom ?? ''}>
-              <div
-                className={classes.item}
+              <Item
                 style={{
                   border: `1px solid ${itemColor(
                     !fromRestricted ? from?.entity_type : 'Restricted',
@@ -4503,15 +4482,14 @@ const StixCoreRelationshipOverview = ({
                   left: 20,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(
                       !fromRestricted ? from?.entity_type : 'Restricted',
                     )}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <ItemIconContainer>
                     <ItemIcon
                       type={!fromRestricted ? from?.entity_type : 'Restricted'}
                       color={itemColor(
@@ -4519,18 +4497,18 @@ const StixCoreRelationshipOverview = ({
                       )}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </ItemIconContainer>
+                  <ItemType>
                     { }
                     {!fromRestricted
                       ? from?.relationship_type
                         ? t_i18n('Relationship')
                         : t_i18n(`entity_${from?.entity_type}`)
                       : t_i18n('Restricted')}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </ItemType>
+                </ItemHeader>
+                <ItemContent>
+                  <ItemName>
                     <Tooltip title={fromText}>
                       <span>
                         {!fromRestricted
@@ -4539,19 +4517,18 @@ const StixCoreRelationshipOverview = ({
                       </span>
                     </Tooltip>
                     {!fromRestricted && from?.draftVersion && (<DraftChip />)}
-                  </span>
-                </div>
-              </div>
+                  </ItemName>
+                </ItemContent>
+              </Item>
             </Link>
-            <div className={classes.middle}>
+            <Middle>
               <ArrowRightAlt fontSize="large" />
               <Typography sx={{ fontSize: '14px', fontWeight: 400 }}>
                 {capitalizeFirstLetter(t_i18n(`relationship_${stixCoreRelationship.relationship_type}`))}
               </Typography>
-            </div>
+            </Middle>
             <Link to={linkTo ?? ''}>
-              <div
-                className={classes.item}
+              <Item
                 style={{
                   border: `1px solid ${itemColor(
                     !toRestricted ? to?.entity_type : 'Restricted',
@@ -4560,15 +4537,14 @@ const StixCoreRelationshipOverview = ({
                   right: 20,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(
                       !toRestricted ? to?.entity_type : 'Restricted',
                     )}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <ItemIconContainer>
                     <ItemIcon
                       type={!toRestricted ? to?.entity_type : 'Unknown'}
                       color={itemColor(
@@ -4576,8 +4552,8 @@ const StixCoreRelationshipOverview = ({
                       )}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </ItemIconContainer>
+                  <ItemType>
                     {
                       !toRestricted
                         ? to?.relationship_type
@@ -4585,10 +4561,10 @@ const StixCoreRelationshipOverview = ({
                           : t_i18n(`entity_${to?.entity_type}`)
                         : t_i18n('Restricted')
                     }
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </ItemType>
+                </ItemHeader>
+                <ItemContent>
+                  <ItemName>
                     <Tooltip title={toText}>
                       <span>
                         {!toRestricted
@@ -4597,12 +4573,15 @@ const StixCoreRelationshipOverview = ({
                       </span>
                     </Tooltip>
                     {!toRestricted && to?.draftVersion && (<DraftChip />)}
-                  </span>
-                </div>
-              </div>
+                  </ItemName>
+                </ItemContent>
+              </Item>
             </Link>
             <Divider style={{ marginTop: 30, marginBottom: 15 }} />
-            <Stack gap={2}>
+            <Stack sx={{
+              gap: 2,
+            }}
+            >
               <div>
                 <Label>
                   {t_i18n('Description')}
@@ -4618,7 +4597,7 @@ const StixCoreRelationshipOverview = ({
               <Divider />
 
               <Grid container={true} spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t_i18n('Marking')}
                   </Label>
@@ -4634,7 +4613,7 @@ const StixCoreRelationshipOverview = ({
                   </Label>
                   {nsdt(stixCoreRelationship.stop_time)}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   {relationship_type === 'has-covered'
                     && (
                       <Box sx={{ marginBottom: 2 }}>
@@ -4654,10 +4633,10 @@ const StixCoreRelationshipOverview = ({
             </Stack>
           </Card>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Details')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Confidence level')}
                 </Label>
@@ -4694,7 +4673,7 @@ const StixCoreRelationshipOverview = ({
                 </Label>
                 {nsdt(stixCoreRelationship.updated_at)}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Processing status')}
                 </Label>
@@ -4731,27 +4710,27 @@ const StixCoreRelationshipOverview = ({
         </Grid>
         {stixCoreRelationship.x_opencti_inferences == null && (
           <>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreRelationshipStixCoreRelationships
                 entityId={stixCoreRelationship.id}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreObjectOrStixRelationshipLastContainers
                 stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreRelationshipExternalReferences
                 stixCoreRelationshipId={stixCoreRelationship.id}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreRelationshipLatestHistory
                 stixCoreRelationshipId={stixCoreRelationship.id}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <StixCoreObjectOrStixCoreRelationshipNotes
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
                 isRelationship={true}
@@ -4784,7 +4763,26 @@ const StixCoreRelationshipOverview = ({
                 variant="tertiary"
                 size="small"
                 onClick={() => setExpanded(true)}
-                classes={{ root: classes.buttonExpand }}
+                sx={(theme) => ({
+                  position: 'absolute',
+                  left: 0,
+                  bottom: 0,
+                  width: '100%',
+                  height: 25,
+                  color: theme.palette.primary.main,
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, .1)'
+                      : 'rgba(0, 0, 0, .1)',
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                  '&:hover': {
+                    backgroundColor:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, .2)'
+                        : 'rgba(0, 0, 0, .2)',
+                  },
+                })}
               >
                 {expanded ? (
                   <ExpandLessOutlined />
@@ -4821,7 +4819,7 @@ const StixCoreRelationshipOverview = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Container>
   );
 };
 

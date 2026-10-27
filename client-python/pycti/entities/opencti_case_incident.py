@@ -5,6 +5,8 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class CaseIncident:
     """Main CaseIncident class for OpenCTI
@@ -822,7 +824,11 @@ class CaseIncident:
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
 
         if name is not None:
             self.opencti.app_logger.info("Creating Case Incident", {"name": name})
@@ -866,7 +872,7 @@ class CaseIncident:
                 "noTriggerImport": no_trigger_import,
                 "embedded": embedded,
                 "upsertOperations": upsert_operations,
-                "customFieldValues": custom_properties,
+                "customFieldValues": custom_field_values,
             }
             result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(
@@ -1112,7 +1118,7 @@ class CaseIncident:
                     if "opencti_upsert_operations" in stix_object
                     else None
                 ),
-                custom_properties=extras.get("custom_properties", None),
+                custom_field_values=extras.get("custom_field_values", None),
             )
         else:
             self.opencti.app_logger.error(

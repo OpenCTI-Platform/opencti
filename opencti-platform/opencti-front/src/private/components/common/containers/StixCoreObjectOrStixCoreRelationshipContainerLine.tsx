@@ -6,7 +6,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { ListItemButton } from '@mui/material';
 import { typesWithFintelTemplates } from 'src/utils/hooks/useAttributes';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,7 +16,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { StixCoreObjectOrStixCoreRelationshipContainerLine_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
 import ItemEntityType from '../../../../components/ItemEntityType';
@@ -24,25 +23,17 @@ import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const itemSx = {
+  paddingLeft: '10px',
+  height: 50,
+};
+
+const goIconSx = {
+  position: 'absolute',
+  right: -10,
+} as const;
+
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
   node: StixCoreObjectOrStixCoreRelationshipContainerLine_node$data;
@@ -54,7 +45,6 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
 export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
   StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
 > = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
-  const classes = useStyles();
   const { fd } = useFormatter();
 
   const isContainer = typesWithFintelTemplates.includes(node.entity_type);
@@ -63,43 +53,38 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
 
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={itemSx}
       divider={true}
       component={Link}
       to={redirectionLink}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <ItemEntityType entityType={node.entity_type} />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {getMainRepresentative(node)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               {node.createdBy?.name ?? EMPTY_VALUE}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.creator.width }}
             >
               {(node.creators ?? []).map((c) => c?.name).join(', ')}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -107,35 +92,32 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
                 labels={node.objectLabel}
                 onClick={onLabelClick.bind(this)}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created.width }}
             >
               {fd(node.first_observed || node.published || node.created)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.x_opencti_workflow_id.width }}
             >
               <ItemStatus
                 status={node.status}
                 disabled={!node.workflowEnabled}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
                 markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />
-            </div>
+            </BodyItem>
           </>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={goIconSx}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
@@ -391,18 +373,15 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps {
 export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionComponent<
   StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
 > = ({ dataColumns }) => {
-  const classes = useStyles();
-
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+    <ListItem sx={itemSx} divider={true}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <Skeleton
@@ -411,9 +390,8 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionCom
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -422,9 +400,8 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionCom
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               <Skeleton
@@ -433,9 +410,8 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionCom
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.creator.width }}
             >
               <Skeleton
@@ -444,9 +420,8 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionCom
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
@@ -455,9 +430,8 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionCom
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created.width }}
             >
               <Skeleton
@@ -466,9 +440,8 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionCom
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <Skeleton
@@ -477,11 +450,11 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionCom
                 width={100}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={goIconSx}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItem>

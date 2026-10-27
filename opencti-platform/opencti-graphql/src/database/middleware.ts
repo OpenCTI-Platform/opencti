@@ -104,6 +104,7 @@ import {
 } from '../schema/identifier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
+import { isStreamPublishable } from './stream/stream-utils';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -426,13 +427,39 @@ export const loadEntity = async <T extends BasicStoreEntity> (
 // endregion
 
 // region Loader element
+// Targets of refs relations, by internal id.
+// With objectsBaseData, the members of containers (object relations) are loaded with their base data only:
+// a container can hold tens of thousands of them, while a STIX conversion only reads their ids.
+// A member also targeted by another ref (author, marking...) keeps its full data.
+const loadRefsTargets = async (
+  context: AuthContext,
+  user: AuthUser,
+  refsRelations: BasicStoreRelation[],
+  objectsBaseData: boolean,
+): Promise<Record<string, BasicStoreBase>> => {
+  const isBaseDataRelation = (rel: BasicStoreRelation) => objectsBaseData && rel.entity_type === RELATION_OBJECT;
+  const fullRelations = refsRelations.filter((rel) => !isBaseDataRelation(rel));
+  const fullTargetIds = new Set(fullRelations.map((rel) => rel.toId));
+  const baseRelations = refsRelations.filter((rel) => isBaseDataRelation(rel) && !fullTargetIds.has(rel.toId));
+  const loadTargets = async (relations: BasicStoreRelation[], baseData: boolean) => {
+    if (relations.length === 0) {
+      return {};
+    }
+    const ids = R.uniq(relations.map((rel) => rel.toId));
+    const types = R.uniq(relations.map((rel) => rel.toType));
+    return await elFindByIds(context, user, ids, { type: types, toMap: true, baseData }) as Record<string, BasicStoreBase>;
+  };
+  const [fullTargets, baseTargets] = await Promise.all([loadTargets(fullRelations, false), loadTargets(baseRelations, true)]);
+  return Object.assign(baseTargets, fullTargets);
+};
+
 const loadElementMetaDependencies = async (
   context: AuthContext,
   user: AuthUser,
   elements: { internal_id: string; entity_type: string }[],
-  args: { onlyMarking?: boolean } = {},
+  args: { onlyMarking?: boolean; objectsBaseData?: boolean } = {},
 ): Promise<Map<string, BasicStoreBase>> => {
-  const { onlyMarking = true } = args;
+  const { onlyMarking = true, objectsBaseData = false } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
   const workingIds = Array.from(workingElementsMap.keys());
@@ -452,10 +479,7 @@ const loadElementMetaDependencies = async (
     await fullRelationsList<BasicStoreRelation>(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
   }
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
-  // Parallel resolutions
-  const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
-  const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, toMap: true }) as Record<string, BasicStoreBase>;
+  const toResolvedElements = await loadRefsTargets(context, user, refsRelations, objectsBaseData);
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map<string, BasicStoreBase>();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -508,7 +532,7 @@ export const loadElementsWithDependencies = async (
   context: AuthContext,
   user: AuthUser,
   elements: BasicStoreBase[],
-  opts: { onlyMarking?: boolean } = {},
+  opts: { onlyMarking?: boolean; objectsBaseData?: boolean } = {},
 ): Promise<BasicStoreCommon[]> => {
   const fileMarkings: string[] = [];
   const elementsToDeps: { internal_id: string; entity_type: string }[] = [...elements];
@@ -595,6 +619,8 @@ export const loadElementsWithDependencies = async (
 };
 type LoadByIdsWithDependeciesOpts = ElFindByIdsOpts & {
   onlyMarking?: boolean;
+  // Load the members of containers with their base data only, enough for a STIX conversion
+  objectsBaseData?: boolean;
 };
 const loadByIdsWithDependencies = async (
   context: AuthContext,
@@ -1052,7 +1078,9 @@ export const inputResolveRefs = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
+  opts: { embeddedFromWithRefs?: boolean } = {},
 ): Promise<Record<string, any>> => {
+  const { embeddedFromWithRefs = true } = opts;
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map<string, { id: string; destKey?: string; multiple?: boolean; vocab?: { field: any; data: string } }[]>();
     const expectedIds: string[] = [];
@@ -1112,7 +1140,7 @@ export const inputResolveRefs = async (
             expectedIds.push(i);
           });
         } else { // Single
-          if (dst === 'from' && isStixRefRelationship(type)) {
+          if (dst === 'from' && isStixRefRelationship(type) && embeddedFromWithRefs) {
             // If resolution is due to embedded ref, the from must be fully resolved
             // This will be used to generated a correct stream message
             embeddedFromResolution = id;
@@ -1356,6 +1384,15 @@ const partialInstanceWithInputs = (instance: Record<string, any>, inputs: EditIn
     ...inputData,
   };
 };
+// Apply a json patch on a single attribute and return its patched value.
+// Only this attribute is cloned, cloning the whole instance is too expensive for big entities.
+// Operations rooted on other attributes cannot change this one, so they are skipped.
+const patchAttributeValue = (key: string, currentValue: any, patch: ReadonlyArray<jsonpatch.Operation>) => {
+  const keyPath = `/${key}`;
+  const keyPatch = patch.filter((operation) => operation.path === keyPath || operation.path.startsWith(`${keyPath}/`));
+  const document = { [key]: structuredClone(currentValue) };
+  return jsonpatch.applyPatch(document, keyPatch).newDocument[key];
+};
 const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Record<string, any>): EditInput | object => {
   const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
@@ -1405,8 +1442,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
             });
           }
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else {
         finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
       }
@@ -1430,8 +1466,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
@@ -1442,8 +1477,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
         const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
         const patch = [{ op: 'replace' as const, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else { // Replace general
         finalVal = value;
       }
@@ -1456,13 +1490,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
     const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
     const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
     const patch = [{ op: operation as EditOperation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-    const clonedInstance = structuredClone(instance);
-    clonedInstance[key] = clonedInstance[key] ?? {}; // Patch on complete empty value is not supported by jsonpatch
-    const patchedInstance = jsonpatch.applyPatch(clonedInstance, patch).newDocument;
-    if (compareUnsorted(patchedInstance[key], instance[key])) {
+    // Patch on complete empty value is not supported by jsonpatch
+    const patchedValue = patchAttributeValue(key, instance[key] ?? {}, patch);
+    if (compareUnsorted(patchedValue, instance[key])) {
       return {}; // No need to update the attribute
     }
-    finalVal = [patchedInstance[key]];
+    finalVal = [patchedValue];
   } else {
     // now we  check if the new value would actually result in no change in database
     let evaluateValue = value ? R.head(value) : null;
@@ -1509,8 +1542,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   return { key, value: finalVal, operation };
 };
-const mergeInstanceWithUpdateInputs = (base: Record<string, any>, inputs: EditInput[]) => {
-  const instance = structuredClone(base);
+// The instance is not mutated, no need to clone it.
+// The result shares the nested values of the attributes that are not updated with the instance: do not mutate it.
+const mergeInstanceWithUpdateInputs = (instance: Record<string, any>, inputs: EditInput[]) => {
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(instance.entity_type), ...schemaRelationsRefDefinition.getInputNames(instance.entity_type)];
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
@@ -3575,7 +3609,17 @@ export const createRelationRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, relationshipType) as BasicStoreEntityEntitySetting;
 
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  // The full from of an embedded ref (all its refs) only feeds the update event: without event, a base resolution is enough.
+  // For a container with thousands of refs, the full resolution was the main cost of each created ref.
+  // Light from = multiple ref without event: no update event is built and the returned from is the one resolved (without the new ref).
+  const isEventPublished = isStreamPublishable(opts);
+  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting, { embeddedFromWithRefs: isEventPublished });
+  // A single ref reads the current target on the fully resolved from (kept, replaced or refused below): it keeps the full resolution
+  const isSingleRef = isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType);
+  if (!isEventPublished && isSingleRef) {
+    resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  }
+  const isLightFrom = isStixRefRelationship(relationshipType) && !isEventPublished && !isSingleRef;
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
@@ -3683,20 +3727,21 @@ export const createRelationRaw = async (
     await indexCreatedElement(context, user, dataRel);
     // Push the input in the stream
     let event;
-    // In case on embedded relationship creation, we need to dispatch
-    // an update of the from entity that host this embedded ref.
-    if (isStixRefRelationship(relationshipType)) {
-      let referencesPromises;
-      if (opts.references) {
-        referencesPromises = internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) as Promise<BasicStoreBase[]>;
-      }
-      const references = referencesPromises ? await BluePromise.all(referencesPromises) : [];
+    // Commit references of an embedded ref are checked whether its event is built or not
+    let references: BasicStoreBase[] = [];
+    if (isStixRefRelationship(relationshipType) && opts.references) {
+      references = await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) as BasicStoreBase[];
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
         throw FunctionalError('Cant find element references for commit', {
           id: input.fromId,
           references: opts.references,
         });
       }
+    }
+    // In case on embedded relationship creation, we need to dispatch
+    // an update of the from entity that host this embedded ref.
+    // Light from: nothing is built, the update of the from (two STIX conversions and diffs of the whole from) would be wasted.
+    if (isStixRefRelationship(relationshipType) && !isLightFrom) {
       const previous = resolvedInput.from; // Complete resolution done by the input resolver
       const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
       const instance = { ...previous };
@@ -3722,7 +3767,7 @@ export const createRelationRaw = async (
       const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any };
       event = await storeUpdateEvent(context, user, previous, instance, changes, storeUpdateEventsOpts);
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
-    } else {
+    } else if (!isStixRefRelationship(relationshipType)) {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }

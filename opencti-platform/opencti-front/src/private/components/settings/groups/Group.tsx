@@ -6,7 +6,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
@@ -14,7 +13,7 @@ import { Link } from 'react-router';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
 import { uniq } from 'ramda';
 import { ListItemButton } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -31,17 +30,10 @@ import MarkingIcon from '../../../../utils/MarkingIcon';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 0 0',
+});
 
 const groupFragment = graphql`
   fragment Group_group on Group
@@ -110,7 +102,6 @@ const groupFragment = graphql`
   }
 `;
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -140,16 +131,16 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   });
 
   return (
-    <div className={classes.container} data-testid="group-details-page">
+    <Container data-testid="group-details-page">
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Description')}
                 </Label>
@@ -158,10 +149,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   limit={400}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <GroupHiddenTypesChipList groupData={group} />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Auto new markings')}
                 </Label>
@@ -170,7 +161,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   label={group.auto_new_marking ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Default membership')}
                 </Label>
@@ -182,10 +173,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Permissions')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Roles')}
                 </Label>
@@ -206,7 +197,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   ))}
                 </List>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Default dashboard')}
                 </Label>
@@ -235,7 +226,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </ListItemButton>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Max Confidence Level')}
                 </Label>
@@ -243,7 +234,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   confidenceLevel={group.group_confidence_level}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('No creators accumulation')}
                 </Label>
@@ -252,7 +243,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   label={group.no_creators ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Restrict delete to created entities')}
                 </Label>
@@ -264,10 +255,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card title={t_i18n('Markings')}>
             <Grid container={true} spacing={3}>
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <Label action={(
                   <Tooltip
                     title={t_i18n(
@@ -303,7 +294,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <Label>
                   {t_i18n('Allowed markings')}
                 </Label>
@@ -327,7 +318,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <Label>
                   {t_i18n('Maximum shareable markings')}
                 </Label>
@@ -438,7 +429,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         <Triggers recipientId={group.id} filterKey="authorized_members.id" />
         <GroupUsers groupId={group.id} />
       </Grid>
-    </div>
+    </Container>
   );
 };
 

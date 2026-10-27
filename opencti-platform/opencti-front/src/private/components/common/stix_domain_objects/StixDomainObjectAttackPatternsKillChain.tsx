@@ -319,13 +319,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           {currentView === 'matrix' && (
             <Stack
               direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
             >
               <Stack
                 direction="row"
-                alignItems="end"
-                gap={1}
+                sx={{
+                  alignItems: 'end',
+                  gap: 1,
+                }}
               >
                 <Stack direction="row">
                   <FormControl>
@@ -410,13 +414,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <Stack>
             <Stack
               direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
             >
               <Stack
                 direction="row"
-                gap={1}
-                alignItems="center"
+                sx={{
+                  gap: 1,
+                  alignItems: 'center',
+                }}
               >
                 <SearchInput
                   variant="small"
@@ -435,7 +443,9 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   <Stack
                     id="container-view-buttons"
                     direction="row"
-                    gap={1}
+                    sx={{
+                      gap: 1,
+                    }}
                   >
                     <ToggleButtonGroup
                       size="small"

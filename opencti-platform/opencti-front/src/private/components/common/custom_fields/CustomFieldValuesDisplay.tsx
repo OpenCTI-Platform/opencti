@@ -4,6 +4,7 @@ import { graphql } from 'react-relay';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { CustomFieldDef, CustomFieldStoredValue, getCustomFieldDisplayValue, getCustomFieldLabel } from '../../../../utils/customFields';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -45,11 +46,13 @@ const CustomFieldValuesDisplay: FunctionComponent<CustomFieldValuesDisplayProps>
       )}
       {values.map((value) => {
         const displayValue = getCustomFieldDisplayValue(value, { t_i18n, fldt });
+        // A markdown custom field is displayed as the description: full width, rendered and expandable
+        const isMarkdown = definitions.find((definition) => definition.id === value.field_id)?.field_type === 'markdown';
         return (
-          <Grid item xs={6} key={value.field_id}>
+          <Grid key={value.field_id} size={isMarkdown ? 12 : 6}>
             <Label>{getCustomFieldLabel(value, definitions)}</Label>
             <FieldOrEmpty source={displayValue}>
-              <Tag label={displayValue} />
+              {isMarkdown ? <ExpandableMarkdown source={displayValue} limit={300} /> : <Tag label={displayValue} />}
             </FieldOrEmpty>
           </Grid>
         );

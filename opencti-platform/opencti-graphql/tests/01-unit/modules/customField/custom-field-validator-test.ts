@@ -309,6 +309,33 @@ describe('transformCustomFieldValueAddInput', () => {
     expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'hello' }]);
   });
 
+  it('keeps the first input when the name and an alias of a same field are both given', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string', aliases: ['x_opencti_cf_alias'] } as any));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['explicit'] } as any,
+      { field_name: 'x_opencti_cf_alias', value: ['from alias'] } as any,
+    ]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'explicit' }]);
+  });
+
+  it('uses the alias input when the input under the name is dropped', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'integer', aliases: ['x_opencti_cf_alias'] } as any));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['not-a-number'] } as any,
+      { field_name: 'x_opencti_cf_alias', value: [42] } as any,
+    ]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 42 }]);
+  });
+
+  it('keeps both inputs of a repeated name, for the validation to reject them', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string' }));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['a'] } as any,
+      { field_name: 'x_opencti_cf_field', value: ['b'] } as any,
+    ]);
+    expect(result).toHaveLength(2);
+  });
+
   it('transforms an integer input', async () => {
     seed(makeDefinition({ id: 'cf-id-1', field_type: 'integer' }));
     const result = await transform([{ field_name: 'x_opencti_cf_field', value: [42] } as any]);

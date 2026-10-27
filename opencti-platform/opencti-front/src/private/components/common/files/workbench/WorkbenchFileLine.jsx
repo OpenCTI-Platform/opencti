@@ -1,7 +1,6 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import { FileOutline } from 'mdi-material-ui';
 import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
@@ -13,7 +12,7 @@ import { Link } from 'react-router';
 import Slide from '@mui/material/Slide';
 import { Chip } from '@filigran/design-system';
 import { ListItemButton } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
@@ -27,59 +26,13 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
 import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
-const styles = (theme) => ({
-  itemNested: {
-    paddingLeft: theme.spacing(4),
-    height: 50,
-  },
-  itemText: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    marginRight: 10,
-  },
-  linesContainer: {
-    marginTop: 10,
-  },
-  itemHead: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  bodyItem: bodyItemStyle,
-  // `text-overflow` never reaches bare text in a flex container; it only ellipsises a real child.
-  truncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
+const BodyItem = styled('div')(bodyItemStyle);
+
+// `text-overflow` never reaches bare text in a flex container; it only ellipsises a real child.
+const BodyItemText = styled('span')({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 });
 
 const inlineStyles = {
@@ -111,7 +64,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nested }) => {
+const WorkbenchFileLineComponent = ({ file, dense, directDownload, nested }) => {
   const theme = useTheme();
   const { t_i18n, nsdt } = useFormatter();
   const { me } = useAuth();
@@ -191,7 +144,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
         )}
       >
         <ListItemButton
-          classes={{ root: nested ? classes.itemNested : classes.item }}
+          sx={nested ? { paddingLeft: 4, height: 50 } : { paddingLeft: '10px', height: 50 }}
           component={isOutdated ? null : Link}
           disabled={isProgress}
           to={`/dashboard/data/import/workbench/${toB64(file.id)}`}
@@ -216,15 +169,15 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
           <ListItemText
             primary={(
               <>
-                <div className={classes.bodyItem} style={inlineStyles.name}>
-                  <span className={classes.truncate}>{file.name.replace('.json', '')}</span>
-                </div>
+                <BodyItem style={inlineStyles.name}>
+                  <BodyItemText>{file.name.replace('.json', '')}</BodyItemText>
+                </BodyItem>
                 <FieldOrEmpty source={file.metaData.creator?.name}>
-                  <div className={classes.bodyItem} style={inlineStyles.creator_name}>
-                    <span className={classes.truncate}>{file.metaData.creator?.name}</span>
-                  </div>
+                  <BodyItem style={inlineStyles.creator_name}>
+                    <BodyItemText>{file.metaData.creator?.name}</BodyItemText>
+                  </BodyItem>
                 </FieldOrEmpty>
-                <div className={classes.bodyItem} style={inlineStyles.labels}>
+                <BodyItem style={inlineStyles.labels}>
                   {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
                     <Chip
                       key={index}
@@ -232,13 +185,13 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                       label={label.trim()}
                     />
                   )) : null}
-                </div>
-                <div className={classes.bodyItem} style={inlineStyles.markings}>
+                </BodyItem>
+                <BodyItem style={inlineStyles.markings}>
                   <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
-                </div>
-                <div className={classes.bodyItem} style={inlineStyles.lastModified}>
-                  <span className={classes.truncate}>{nsdt(file.lastModified)}</span>
-                </div>
+                </BodyItem>
+                <BodyItem style={inlineStyles.lastModified}>
+                  <BodyItemText>{nsdt(file.lastModified)}</BodyItemText>
+                </BodyItem>
               </>
             )}
           />
@@ -258,7 +211,6 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
 WorkbenchFileLineComponent.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
-  classes: PropTypes.object,
   file: PropTypes.object.isRequired,
   connectors: PropTypes.array,
   dense: PropTypes.bool,
@@ -270,4 +222,4 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
   file: workbenchLineFragment,
 });
 
-export default withStyles(styles)(WorkbenchFileLine);
+export default WorkbenchFileLine;

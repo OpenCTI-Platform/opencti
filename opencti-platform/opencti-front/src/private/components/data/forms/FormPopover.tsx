@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
+import Box from '@mui/material/Box';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormLinesPaginationQuery$variables } from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
 import { ConnectionHandler } from 'relay-runtime';
 import { FormEditionContainerQuery } from './__generated__/FormEditionContainerQuery.graphql';
@@ -17,12 +17,6 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import handleExportJson from './FormExportHandler';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 const formPopoverDeletionMutation = graphql`
   mutation FormPopoverDeletionMutation($id: ID!) {
@@ -41,7 +35,6 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
   paginationOptions,
   formName = '',
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
@@ -117,7 +110,7 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
   };
 
   return (
-    <div className={classes.container}>
+    <Box sx={{ margin: 0 }}>
       <IconButton
         aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
@@ -172,7 +165,7 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this form?')}
       />
-    </div>
+    </Box>
   );
 };
 

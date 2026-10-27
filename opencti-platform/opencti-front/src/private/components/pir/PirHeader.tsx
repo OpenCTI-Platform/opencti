@@ -84,7 +84,14 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <Stack direction="row" alignItems="center" gap={1} marginBottom={1}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+          marginBottom: 1,
+        }}
+      >
         <TitleMainEntity sx={{ flex: 1 }}>
           {name}
         </TitleMainEntity>
@@ -99,6 +106,8 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
                   mutation={pirHeaderEditAuthorizedMembersMutation}
                   authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
                   canDeactivate={false}
+                  // PIRs are viewable by everyone by default, the line must stay visible to remove it
+                  showAllMembersLine
                   customInfoMessage={t_i18n('info_authorizedmembers_pir')}
                 />
               </Security>

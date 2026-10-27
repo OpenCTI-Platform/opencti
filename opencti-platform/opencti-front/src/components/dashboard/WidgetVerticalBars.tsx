@@ -1,6 +1,6 @@
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ApexOptions } from 'apexcharts';
 import { verticalBarsChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';

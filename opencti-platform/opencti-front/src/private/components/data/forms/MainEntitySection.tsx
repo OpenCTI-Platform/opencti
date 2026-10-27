@@ -1,4 +1,3 @@
-import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
 // fds:keep-mui Switch predates this PR; main-entity toggles still use MUI here.
 import { Alert, FormControlLabel, Stack, Switch, Typography } from '@mui/material';
@@ -8,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { EntitySettings, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import DraftDefaultsSection from './DraftDefaultsSection';
 import { removeFieldsSupersededByParsedMapping } from './FormUtils';
-import useStyles from './useFormSchemaEditorStyles';
+import { AddButton, alertSx, tabPanelSx } from './formSchemaEditorStyles';
 
 export interface MainEntitySectionProps {
   formData: FormBuilderData;
@@ -37,11 +36,15 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
   renderField,
   handleAddField,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   return (
-    <Stack gap={2} className={classes.tabPanel}>
+    <Stack
+      sx={{
+        ...tabPanelSx,
+        gap: 2,
+      }}
+    >
       <Select
         value={formData.mainEntityType}
         onValueChange={(value) => handleMainEntityTypeChange(value)}
@@ -61,7 +64,10 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
         </div>
       </Select>
 
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <FormControlLabel
           control={(
             <Switch
@@ -242,8 +248,8 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
           return (
             <Alert
               severity="info"
-              className={classes.alert}
               sx={{
+                ...alertSx,
                 marginTop: 2.5,
                 backgroundColor: 'transparent',
                 border: '1px solid var(--color-filigran-brand-primary)',
@@ -256,7 +262,7 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
         if (formData.mainEntityFieldMode === 'parsed' && formData.mainEntityMultiple) {
           return (
             <>
-              <Alert severity="info" className={classes.alert} style={{ marginTop: 20 }}>
+              <Alert severity="info" sx={alertSx} style={{ marginTop: 20 }}>
                 {t_i18n('Parsed mode enabled. Users can enter multiple values in a single field. Additional fields can be defined that will apply to all created entities.')}
               </Alert>
               {formData.mainEntityParseFieldMapping && (
@@ -269,14 +275,13 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
                       .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping);
                     return mainEntityParsedFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityParsedFields));
                   })()}
-                  <Button
+                  <AddButton
                     variant="secondary"
                     startIcon={<Add />}
                     onClick={() => handleAddField('main_entity', formData.mainEntityType)}
-                    className={classes.addButton}
                   >
                     {t_i18n('Add field')}
-                  </Button>
+                  </AddButton>
                 </div>
               )}
             </>
@@ -284,20 +289,24 @@ const MainEntitySection: React.FC<MainEntitySectionProps> = ({
         }
         const mainEntityFields = fieldsByEntity.main_entity || [];
         return (
-          <Stack gap={2} sx={{ mt: 1 }}>
+          <Stack
+            sx={{
+              gap: 2,
+              mt: 1,
+            }}
+          >
             <Typography variant="h6">
               {t_i18n('Main Entity Fields')}
             </Typography>
             {mainEntityFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityFields))}
             <div>
-              <Button
+              <AddButton
                 variant="secondary"
                 startIcon={<Add />}
                 onClick={() => handleAddField('main_entity', formData.mainEntityType)}
-                className={classes.addButton}
               >
                 {t_i18n('Add field')}
-              </Button>
+              </AddButton>
             </div>
           </Stack>
         );

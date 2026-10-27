@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import Alert from '@mui/material/Alert';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { RssBox } from 'mdi-material-ui';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
 import IngestionRssPopover from './ingestionRss/IngestionRssPopover';
@@ -28,17 +28,12 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 
 const LOCAL_STORAGE_KEY = 'ingestionRss';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 0 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 0 50px 0',
+});
 
 const IngestionRss = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const { setTitle } = useConnectedDocumentModifier();
@@ -113,15 +108,15 @@ const IngestionRss = () => {
   } as UsePreloadedPaginationFragment<IngestionRssLinesDataTableQuery>;
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
-      <div className={classes.container}>
+      <Container>
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-      </div>
+      </Container>
     );
   }
   return (
-    <div className={classes.container} data-testid="rss-feeds-page">
+    <Container data-testid="rss-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=rss' }, { label: t_i18n('RSS feeds'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -165,7 +160,7 @@ const IngestionRss = () => {
           )}
         />
       )}
-    </div>
+    </Container>
   );
 };
 

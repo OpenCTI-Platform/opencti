@@ -3,37 +3,13 @@ import { Field, useFormikContext } from 'formik';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
 import { UserEdition_user$data } from '@components/settings/users/__generated__/UserEdition_user.graphql';
 import ConfidenceInputSliderField from '../../../../../components/ConfidenceInputSliderField';
 import { useFormatter } from '../../../../../components/i18n';
-import type { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import { layerInputVars } from '../../../../../utils/fdsLayer';
 import UserConfidenceLevel from '../UserConfidenceLevel';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme: Theme) => ({
-  alert: {
-    width: '100%',
-    marginTop: 20,
-    padding: 16,
-    border: 'none',
-    borderRadius: 'var(--radius-sm)',
-    backgroundColor: 'var(--bg-elevation-default)',
-    // `--bg-input-default` resolves where it is DECLARED, on `:root`, so the layer class alone misses it.
-    ...layerInputVars,
-  },
-  // The alert's own message slot leads with 8px, which stacked on the padding above.
-  message: {
-    width: '100%',
-    overflow: 'visible',
-    padding: 0,
-    color: theme.palette.text?.secondary,
-  },
-}));
 
 interface UserConfidenceLevelFieldProps {
   name: string;
@@ -63,7 +39,6 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
 }) => {
   const { t_i18n } = useFormatter();
   const finalLabel = label || t_i18n('Confidence level');
-  const classes = useStyles();
   const { setFieldValue, initialValues } = useFormikContext<Record<string, boolean>>();
   const [switchValue, setSwitchValue] = useState(Number.isInteger(initialValues[name]));
 
@@ -79,13 +54,33 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
   };
   return (
     <Alert
-      classes={{ root: classes.alert, message: classes.message }}
       severity="info"
       icon={false}
       variant="outlined"
       // The alias ladder is anchored by the host panel; the block sits one step above it.
       className="layer-3"
-      sx={{ position: 'relative' }}
+      sx={{
+        position: 'relative',
+        width: '100%',
+        marginTop: '20px',
+        padding: '16px',
+        border: 'none',
+        borderRadius: 'var(--radius-sm)',
+        backgroundColor: 'var(--bg-elevation-default)',
+        // `--bg-input-default` resolves where it is DECLARED, on `:root`, so the layer class alone misses it.
+        ...layerInputVars,
+      }}
+      slotProps={{
+        // The alert's own message slot leads with 8px, which stacked on the padding above.
+        message: {
+          sx: {
+            width: '100%',
+            overflow: 'visible',
+            padding: 0,
+            color: 'text.secondary',
+          },
+        },
+      }}
     >
       { user && !!user.effective_confidence_level && (
         <Box sx={{ marginBottom: '24px' }}>

@@ -3,7 +3,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { RelayEnvironmentProvider } from 'react-relay';
 import type { OperationDescriptor } from 'react-relay';
 import { createMockEnvironment, MockPayloadGenerator as MockGen } from 'relay-test-utils';
-import { ThemeOptions, ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeOptions, createTheme, ThemeProvider } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router';
 import { describe, afterEach, it, expect } from 'vitest';
 import AppIntlProvider from './components/AppIntlProvider';

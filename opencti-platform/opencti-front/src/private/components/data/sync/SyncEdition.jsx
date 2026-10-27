@@ -9,7 +9,6 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
@@ -23,31 +22,26 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import PasswordTextField from '../../../../components/PasswordTextField';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import IngestionEditionUserHandling from '../../../../private/components/data/IngestionEditionUserHandling';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  alert: {
-    width: '100%',
-    marginTop: 20,
-  },
-  message: {
-    width: '100%',
-    // Same block as the creation drawer: hidden clipped the focus ring of the
-    // full-width fields it holds.
-    overflow: 'visible',
-  },
-}));
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+});
+
+const alertSx = {
+  width: '100%',
+  marginTop: '20px',
+};
+
+const alertMessageSx = {
+  width: '100%',
+  // Same block as the creation drawer: hidden clipped the focus ring of the
+  // full-width fields it holds.
+  overflow: 'visible',
+};
 
 const syncMutationFieldPatch = graphql`
   mutation SyncEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
@@ -85,7 +79,6 @@ const syncValidation = (t) => Yup.object().shape({
 const SyncEditionContainer = ({ synchronizer }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [streams, setStreams] = useState([]);
   const [openOptions, setOpenOptions] = useState(synchronizer.no_dependencies || synchronizer.synchronized);
   const relatedUser = synchronizer.user
@@ -188,7 +181,8 @@ const SyncEditionContainer = ({ synchronizer }) => {
           />
           <Alert
             icon={false}
-            classes={{ root: classes.alert, message: classes.message }}
+            sx={alertSx}
+            slotProps={{ message: { sx: alertMessageSx } }}
             severity="warning"
             variant="outlined"
             style={{ position: 'relative' }}
@@ -293,7 +287,8 @@ const SyncEditionContainer = ({ synchronizer }) => {
             <AccordionDetails>
               <Alert
                 icon={false}
-                classes={{ root: classes.alert, message: classes.message }}
+                sx={alertSx}
+                slotProps={{ message: { sx: alertMessageSx } }}
                 severity="error"
                 variant="outlined"
                 style={{ position: 'relative' }}
@@ -322,15 +317,15 @@ const SyncEditionContainer = ({ synchronizer }) => {
               <div>{t_i18n('Every data fetched from this OpenCTI stream will be written as the only source of truth')}</div>
             </AccordionDetails>
           </Accordion>
-          <div className={classes.buttons}>
+          <Buttons>
             <Button
               color="secondary"
               onClick={() => handleVerify(values)}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Verify')}
             </Button>
-          </div>
+          </Buttons>
         </Form>
       )}
     </Formik>

@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import { FIELD_TYPES, getAttributesForEntityType as getAttributesUtil, getAvailableFieldTypes, getForcedFieldType, mapAttributeTypeToFieldType } from './FormUtils';
-import useStyles from './useFormSchemaEditorStyles';
+import { FieldHeader, fieldGroupSx, fieldTitleSx } from './formSchemaEditorStyles';
 
 interface UseFieldRendererParams {
   formData: FormBuilderData;
@@ -40,7 +40,6 @@ const useFieldRenderer = ({
   handleMoveFieldDown,
   handleRemoveField,
 }: UseFieldRendererParams) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const renderField = (field: FormFieldAttribute, index: number, entityType: string, entityFields: FormFieldAttribute[]) => {
@@ -165,9 +164,15 @@ const useFieldRenderer = ({
     }
 
     return (
-      <Stack key={field.id} className={classes.fieldGroup} gap={1}>
-        <div className={classes.fieldHeader}>
-          <Typography className={classes.fieldTitle}>
+      <Stack
+        key={field.id}
+        sx={{
+          ...fieldGroupSx,
+          gap: 1,
+        }}
+      >
+        <FieldHeader>
+          <Typography sx={fieldTitleSx}>
             {field.isMandatory ? `${t_i18n('Field')} ${index + 1} (${t_i18n('Mandatory')})` : `${t_i18n('Field')} ${index + 1}`}
           </Typography>
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -202,9 +207,12 @@ const useFieldRenderer = ({
               />
             )}
           </div>
-        </div>
+        </FieldHeader>
 
-        <Stack gap={2}>
+        <Stack sx={{
+          gap: 2,
+        }}
+        >
 
           <Select
             value={field.attributeMapping.attributeName}
@@ -367,7 +375,14 @@ const useFieldRenderer = ({
               <div>
                 <Typography variant="caption" style={{ marginRight: 20 }}>{t_i18n('Options')}</Typography>
                 {field.options?.map((option, optIndex) => (
-                  <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
+                  <Box
+                    key={optIndex}
+                    style={{ marginTop: 10 }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
                     <TextField
                       variant="outlined"
                       label={t_i18n('Label')}

@@ -20,7 +20,7 @@ import DashboardDetailsPage from '../model/dashboardDetails.pageModel';
 import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 import { REGISTER_BANNER_DISMISSED_KEY } from '../../src/utils/bannerConstants';
 
-test('Dashboard restriction access', { tag: ['@ce', '@group1'] }, async ({ page, secondUserPage }) => {
+test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page, secondUserPage }) => {
   const adminLeftBar = new LeftBarPage(page);
   const adminDashboards = new DashboardPage(page);
   const adminDashboardDetails = new DashboardDetailsPage(page);

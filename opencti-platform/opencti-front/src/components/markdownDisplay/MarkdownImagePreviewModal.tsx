@@ -6,7 +6,7 @@ import IconButton from '../common/button/IconButton';
 import type { MarkdownPreviewImage } from './markdownPreviewImageUtils';
 import { useFormatter } from '../i18n';
 import { Theme } from '../Theme';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
 export type { MarkdownPreviewImage };
 

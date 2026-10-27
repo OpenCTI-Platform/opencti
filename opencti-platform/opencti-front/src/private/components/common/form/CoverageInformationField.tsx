@@ -11,7 +11,7 @@ import { GenericContext } from '../model/GenericContextModel';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 import { FormGroup, FormLabel, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { CoverageInformationFieldEntityMutation } from './__generated__/CoverageInformationFieldEntityMutation.graphql';

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
@@ -19,21 +17,12 @@ import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 
 const interval$ = interval(TEN_SECONDS);
 
-const styles = () => ({
-  paper: {
-    padding: '10px 15px 10px 15px',
-    marginTop: -2,
-    borderRadius: 4,
-  },
-});
-
 const WorkbenchFileViewerBase = ({
   entity,
   handleOpenImport,
   connectors,
   relay,
   t,
-  classes,
 }) => {
   const { id, pendingFiles } = entity;
   const { edges } = pendingFiles;
@@ -55,7 +44,7 @@ const WorkbenchFileViewerBase = ({
   };
 
   return (
-    <Grid item xs={6}>
+    <Grid size={6}>
       <div style={{ height: '100%' }}>
         <Card
           padding="horizontal"
@@ -66,7 +55,7 @@ const WorkbenchFileViewerBase = ({
                 color="primary"
                 aria-label="Add"
                 onClick={() => setOpenCreate(true)}
-                classes={{ root: classes.createButton }}
+                keepMui
                 size="small"
               >
                 <Add fontSize="small" />
@@ -113,10 +102,7 @@ const WorkbenchFileViewerBase = ({
   );
 };
 
-const WorkbenchFileViewerComponent = compose(
-  inject18n,
-  withStyles(styles),
-)(WorkbenchFileViewerBase);
+const WorkbenchFileViewerComponent = inject18n(WorkbenchFileViewerBase);
 
 const WorkbenchFileViewerRefetchQuery = graphql`
   query WorkbenchFileViewerRefetchQuery($id: String!) {
