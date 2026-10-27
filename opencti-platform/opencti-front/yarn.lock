@@ -4922,6 +4922,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/leaflet@npm:1.9.22":
+  version: 1.9.22
+  resolution: "@types/leaflet@npm:1.9.22"
+  dependencies:
+    "@types/geojson": "npm:*"
+  checksum: 10c0/ce2e09d0f208244478c6103ba64726b33a474f89f303860c7b0494ca1bb44f1744285d93c90093c95669497c7dbdc7c206495af0b741fe6e251bf106b0415593
+  languageName: node
+  linkType: hard
+
 "@types/mdast@npm:^4.0.0, @types/mdast@npm:^4.0.4":
   version: 4.0.4
   resolution: "@types/mdast@npm:4.0.4"
@@ -10480,6 +10489,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"leaflet@npm:1.9.4":
+  version: 1.9.4
+  resolution: "leaflet@npm:1.9.4"
+  checksum: 10c0/f639441dbb7eb9ae3fcd29ffd7d3508f6c6106892441634b0232fafb9ffb1588b05a8244ec7085de2c98b5ed703894df246898477836cfd0ce5b96d4717b5ca1
+  languageName: node
+  linkType: hard
+
 "levn@npm:^0.4.1":
   version: 0.4.1
   resolution: "levn@npm:0.4.1"
@@ -12299,6 +12315,7 @@ __metadata:
     "@types/eslint-plugin-jsx-a11y": "npm:6.10.1"
     "@types/geojson": "npm:7946.0.16"
     "@types/html-to-pdfmake": "npm:2.4.5"
+    "@types/leaflet": "npm:1.9.22"
     "@types/node": "npm:22.20.5"
     "@types/pdfmake": "npm:0.3.3"
     "@types/prop-types": "npm:15.7.15"
@@ -12351,6 +12368,7 @@ __metadata:
     jsdom: "npm:30.1.3"
     json5: "npm:2.2.3"
     knip: "npm:6.42.1"
+    leaflet: "npm:1.9.4"
     license-checker-rseidelsohn: "npm:5.0.1"
     maplibre-gl: "npm:6.15.0"
     markdown-to-jsx: "npm:9.10.3"
