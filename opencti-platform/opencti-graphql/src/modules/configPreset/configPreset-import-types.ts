@@ -47,6 +47,9 @@ export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`
 export interface ConfigPresetImporter {
   // Reads only: finds the existing item, validates, decides the result and records in the plan what it would create
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan) => Promise<ConfigPresetComputedItem>;
+  // Writes the item with one domain call, so that a failure never leaves it half written; an error makes the item failed.
+  // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten).
+  apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem) => Promise<ConfigPresetImportStatus | void>;
 }
 
 // Content of metadata.json

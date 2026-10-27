@@ -60,10 +60,20 @@ export interface UserImportActionContextData extends ElementContextData {
   file_name: string;
   connectors: string[];
 }
+// The import of a configuration preset: the report of the import is the file, linked to no entity
+export interface ConfigPresetImportSummary {
+  counts: Record<'created' | 'overwritten' | 'skipped' | 'failed', number>;
+}
+export interface UserConfigPresetImportActionContextData {
+  file_id: string;
+  path: string;
+  file_name: string;
+  input: ConfigPresetImportSummary;
+}
 export interface UserImportAction extends BasicUserAction {
   event_type: 'command';
   event_scope: 'import';
-  context_data: UserImportActionContextData;
+  context_data: UserImportActionContextData | UserConfigPresetImportActionContextData;
 }
 export interface UserExportActionContextData extends ElementContextData {
   format: string;

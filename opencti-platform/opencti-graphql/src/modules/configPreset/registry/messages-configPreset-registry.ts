@@ -1,5 +1,5 @@
 import type { AuthContext } from '../../../types/user';
-import { CONFIG_PRESET_MESSAGES_FIELDS, getMessagesConfigPresetConfigurations } from '../../../domain/settings';
+import { CONFIG_PRESET_MESSAGES_FIELDS, getMessagesConfigPresetConfigurations, getSettings, settingsEditField } from '../../../domain/settings';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../configPreset-import-types';
 import { buildImportFields, importFailureReason, isNothingToImport } from '../configPreset-import-utils';
@@ -45,6 +45,15 @@ const messagesImporter: ConfigPresetImporter = {
       return { ...base, status: 'skipped', reason: 'Nothing to import', fields };
     }
     return { ...base, status: 'overwritten', fields };
+  },
+  // One settingsEditField call per message, with the fields that are not null
+  apply: async (context, user, item) => {
+    const messageId = item.id as keyof typeof CONFIG_PRESET_MESSAGES_FIELDS;
+    const configuration = messageConfigurationSchemas[messageId].parse(item.configuration) as Record<string, unknown>;
+    const input = CONFIG_PRESET_MESSAGES_FIELDS[messageId]
+      .filter((key) => configuration[key] !== null && configuration[key] !== undefined)
+      .map((key) => ({ key, value: [configuration[key]] }));
+    await settingsEditField(context, user, (await getSettings(context)).id, input);
   },
 };
 

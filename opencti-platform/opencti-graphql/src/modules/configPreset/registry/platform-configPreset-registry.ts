@@ -1,6 +1,8 @@
+import { FunctionalError } from '../../../config/errors';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { getPlatformConfigPresetConfiguration, getPlatformDefaultTheme } from '../../../domain/settings';
 import { findById as findThemeById } from '../../theme/theme-domain';
+import { getSettings, settingsEditField } from '../../../domain/settings';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { type ConfigPresetComputedItem, type ConfigPresetImporter, configPresetPlanKey } from '../configPreset-import-types';
 import { buildImportFields, importFailureReason, isNothingToImport } from '../configPreset-import-utils';
@@ -52,6 +54,21 @@ const platformImporter: ConfigPresetImporter = {
       }
     }
     return { ...base, status: 'overwritten', fields };
+  },
+  // One settingsEditField call with the values that are not null, the default theme by the internal id it has on this platform
+  apply: async (context, user, item) => {
+    const configuration = platformConfigurationSchema.parse(item.configuration);
+    const input = PLATFORM_VALUE_KEYS
+      .filter((key) => configuration[key as keyof typeof configuration] !== null && configuration[key as keyof typeof configuration] !== undefined)
+      .map((key) => ({ key, value: [configuration[key as keyof typeof configuration]] }));
+    if (configuration.default_theme) {
+      const theme = await findThemeById(context, user, configuration.default_theme.standard_id);
+      if (!theme) {
+        throw FunctionalError(`Default theme ${configuration.default_theme.name} could not be imported`);
+      }
+      input.push({ key: 'platform_theme', value: [theme.id] });
+    }
+    await settingsEditField(context, user, (await getSettings(context)).id, input);
   },
 };
 

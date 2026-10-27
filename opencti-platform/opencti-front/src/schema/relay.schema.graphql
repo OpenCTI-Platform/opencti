@@ -599,6 +599,7 @@ type HistoryChange {
 }
 
 type ContextData {
+  file_id: String
   entity_id: String
   entity_name: String
   entity_type: String
@@ -10205,6 +10206,7 @@ type Mutation {
   configPresetImportUpload(file: Upload!): File!
   configPresetImportSessionSave(file_id: String!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession!
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
+  configPresetImport(file_id: String!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput!
 }
 
 enum WorkflowExecutionStatus {
@@ -17888,6 +17890,12 @@ type ConfigPresetImportSession {
   counts: ConfigPresetImportCounts
   report_id: String
   available_events: [ConfigPresetImportSessionEvent!]!
+}
+
+type ConfigPresetImportOutput {
+  results: [ConfigPresetImportResult!]!
+  report_id: String
+  settings: Settings
 }
 
 input ConfigPresetSelectionInput {

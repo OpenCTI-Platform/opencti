@@ -1,5 +1,5 @@
 import { PLATFORM_VERSION } from '../../config/conf';
-import type { UserConfigPresetExportActionContextData } from '../../listener/UserActionListener';
+import type { UserConfigPresetExportActionContextData, UserConfigPresetImportActionContextData } from '../../listener/UserActionListener';
 
 const BUNDLE_NAME_MAX_LENGTH = 80;
 
@@ -31,4 +31,9 @@ export const buildConfigPresetFileName = (date: Date) => {
 export const buildConfigPresetExportMessage = ({ file_name, input: { entity_types, counts } }: UserConfigPresetExportActionContextData) => {
   const exported = entity_types.map((type) => `${type}: ${counts[type] ?? 0}`).join(', ');
   return `exports the configuration preset \`${file_name}\` (${exported})`;
+};
+
+// Message of the activity log of an import: the file and the number of items per result
+export const buildConfigPresetImportMessage = ({ file_name, input: { counts } }: UserConfigPresetImportActionContextData) => {
+  return `imports a configuration preset (created: ${counts.created}, overwritten: ${counts.overwritten}, skipped: ${counts.skipped}, failed: ${counts.failed}), report \`${file_name}\``;
 };

@@ -569,6 +569,7 @@ type HistoryChange {
   changes_removed: [String!]
 }
 type ContextData {
+  file_id: String
   entity_id: String
   entity_name: String
   entity_type: String

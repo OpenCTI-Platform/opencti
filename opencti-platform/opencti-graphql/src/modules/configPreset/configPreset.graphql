@@ -147,6 +147,14 @@ type ConfigPresetImportSession {
     available_events: [ConfigPresetImportSessionEvent!]!
 }
 
+# The results of an import, one per processed item (the required dependencies included), and the settings so that the front store learns the new values; settings is null for a dry run.
+type ConfigPresetImportOutput {
+    results: [ConfigPresetImportResult!]!
+    # The import report, null for a dry run or when it could not be written.
+    report_id: String
+    settings: Settings
+}
+
 extend type Query {
     configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Items of one type, by page; ids, the keys of the items, keeps only those items, excludedIds removes those.
@@ -183,4 +191,6 @@ extend type Mutation {
     configPresetImportSessionSave(file_id: String!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Start over (draft) or Close (finished): deletes the session, and the pending zip with delete_file.
     configPresetImportSessionClear(delete_file: Boolean): Boolean! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Applies the selected items of the pending zip of the caller (and the items they depend on); with dry_run nothing is written and the expected results are returned.
+    configPresetImport(file_id: String!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

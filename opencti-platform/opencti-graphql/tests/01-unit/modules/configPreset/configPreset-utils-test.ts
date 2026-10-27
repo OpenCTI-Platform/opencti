@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
-import { buildConfigPresetExportMessage, buildConfigPresetFileName, sanitizeBundleName } from '../../../../src/modules/configPreset/configPreset-utils';
+import {
+  buildConfigPresetExportMessage,
+  buildConfigPresetFileName,
+  buildConfigPresetImportMessage,
+  sanitizeBundleName,
+} from '../../../../src/modules/configPreset/configPreset-utils';
 
 describe('Config preset naming', () => {
   it('sanitizes the bundle name', () => {
@@ -61,5 +66,17 @@ describe('Config preset export activity message', () => {
       },
     });
     expect(message).toBe('exports the configuration preset `opencti-config-20261014-090507-7.0.0.zip` (platform: 1, messages: 2)');
+  });
+});
+
+describe('Config preset import activity message', () => {
+  it('gives the report and the number of items per result', () => {
+    const message = buildConfigPresetImportMessage({
+      file_id: 'config_preset/history/id/import-report.json',
+      path: 'config_preset/history/id',
+      file_name: 'import-report.json',
+      input: { counts: { created: 1, overwritten: 2, skipped: 3, failed: 4 } },
+    });
+    expect(message).toEqual('imports a configuration preset (created: 1, overwritten: 2, skipped: 3, failed: 4), report `import-report.json`');
   });
 });

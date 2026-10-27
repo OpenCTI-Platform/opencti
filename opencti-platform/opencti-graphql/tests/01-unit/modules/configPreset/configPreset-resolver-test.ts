@@ -43,6 +43,7 @@ const buildSchema = () => {
         type Mutation { health: Boolean @public }
         scalar Upload
         scalar DateTime
+        type Settings { id: ID! }
         type File { id: ID! name: String! }
         type PageInfo { startCursor: String! endCursor: String! hasNextPage: Boolean! hasPreviousPage: Boolean! globalCount: Int! }
       `,

@@ -1,6 +1,14 @@
 import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../../generated/graphql';
-import { getPlatformDefaultTheme, getWhitemarkConfigPresetConfiguration } from '../../../domain/settings';
-import { checkExistingTheme, findAllThemes, findById as findThemeById, findThemePaginated, getThemeConfigPresetConfiguration } from '../../theme/theme-domain';
+import { getPlatformDefaultTheme, getSettings, getWhitemarkConfigPresetConfiguration, settingsEditField } from '../../../domain/settings';
+import {
+  addTheme,
+  checkExistingTheme,
+  fieldPatchTheme,
+  findAllThemes,
+  findById as findThemeById,
+  findThemePaginated,
+  getThemeConfigPresetConfiguration,
+} from '../../theme/theme-domain';
 import { BUILT_IN_THEME_STANDARD_IDS } from '../../theme/theme-constants';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
@@ -93,6 +101,35 @@ const brandingImporter: ConfigPresetImporter = {
     }
     plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
     return { ...base, exists: false, status: 'created', fields };
+  },
+  apply: async (context, user, item) => {
+    if (item.id === WHITEMARK_ID) {
+      const { platform_whitemark: whitemark } = whitemarkConfigurationSchema.parse(item.configuration);
+      await settingsEditField(context, user, (await getSettings(context)).id, [{ key: 'platform_whitemark', value: [whitemark] }]);
+      return undefined;
+    }
+    const { standard_id: standardId, ...configuration } = themeConfigurationSchema.parse(item.configuration);
+    // Looked up again right before the creation: a theme with this standard id created since compute is overwritten, never duplicated
+    const existing = await findThemeById(context, user, standardId);
+    if (existing) {
+      const input = Object.entries(configuration).filter(([, value]) => value !== null && value !== undefined).map(([key, value]) => ({ key, value: [value as string] }));
+      await fieldPatchTheme(context, user, existing.id, input);
+      return 'overwritten';
+    }
+    // addTheme trusts its input: the bundle standard id is passed, and the theme is never built-in
+    await addTheme(context, user, {
+      ...configuration,
+      theme_logo: configuration.theme_logo ?? '',
+      theme_logo_collapsed: configuration.theme_logo_collapsed ?? '',
+      theme_logo_login: configuration.theme_logo_login ?? '',
+      theme_login_aside_color: configuration.theme_login_aside_color ?? null,
+      theme_login_aside_gradient_start: configuration.theme_login_aside_gradient_start ?? null,
+      theme_login_aside_gradient_end: configuration.theme_login_aside_gradient_end ?? null,
+      theme_login_aside_image: configuration.theme_login_aside_image ?? null,
+      standard_id: standardId,
+      built_in: false,
+    });
+    return undefined;
   },
 };
 

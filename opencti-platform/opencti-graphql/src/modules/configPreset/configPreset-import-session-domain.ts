@@ -22,7 +22,7 @@ const SESSION_STATUSES = ['DRAFT', 'APPLYING', 'FINISHED'];
 export const getConfigPresetPlatformId = async (context: AuthContext): Promise<string> => (await getSettingsFromDatabase(context))!.internal_id;
 
 // A session of another platform (restore on the same Redis), of an unknown version or status is no session: logged, never thrown
-const readSession = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetImportSession | null> => {
+export const readConfigPresetImportSession = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetImportSession | null> => {
   const stored = (await redisGetConfigPresetImportSession(user.id)) as Partial<ConfigPresetImportSession> | null;
   if (!stored) {
     return null;
@@ -53,13 +53,34 @@ export const applyConfigPresetImportEvent = async <E extends ConfigPresetImportS
   payload: ConfigPresetImportSessionPayloads[E],
 ): Promise<ConfigPresetImportSession | null> => {
   return withSessionLock(user, async () => {
-    const next = transitionConfigPresetImportSession(await readSession(context, user), event, payload);
+    const next = transitionConfigPresetImportSession(await readConfigPresetImportSession(context, user), event, payload);
     if (next) {
       await redisSetConfigPresetImportSession(user.id, next);
     } else {
       await redisDeleteConfigPresetImportSession(user.id);
     }
     return next;
+  });
+};
+
+// The write of a run of the engine: applied only while the stored session is applying with the start date of this run,
+// otherwise skipped and logged, so that a stale run never touches a session it no longer owns
+export const applyConfigPresetImportRunEvent = async <E extends ConfigPresetImportSessionEvent>(
+  context: AuthContext,
+  user: AuthUser,
+  startedAt: string,
+  event: E,
+  payload: ConfigPresetImportSessionPayloads[E],
+): Promise<boolean> => {
+  return withSessionLock(user, async () => {
+    const session = await readConfigPresetImportSession(context, user);
+    if (session?.status !== 'APPLYING' || session.started_at !== startedAt) {
+      logApp.warn('[CONFIG PRESET] Skipping the write of an import run that no longer owns the session', { user_id: user.id, event });
+      return false;
+    }
+    const next = transitionConfigPresetImportSession(session, event, payload);
+    await redisSetConfigPresetImportSession(user.id, next!);
+    return true;
   });
 };
 
@@ -73,12 +94,12 @@ const toGraphqlSession = (session: ConfigPresetImportSession | null) => {
 
 export const findConfigPresetImportSession = async (context: AuthContext, user: AuthUser) => {
   checkConfigPresetImportAccess(context, user);
-  return toGraphqlSession(await readSession(context, user));
+  return toGraphqlSession(await readConfigPresetImportSession(context, user));
 };
 
 // An upload while the import runs would delete the zip being imported
 export const checkConfigPresetImportNotApplying = async (context: AuthContext, user: AuthUser) => {
-  if ((await readSession(context, user))?.status === 'APPLYING') {
+  if ((await readConfigPresetImportSession(context, user))?.status === 'APPLYING') {
     throw FunctionalError('An import is in progress', { event: 'UPLOAD', status: 'APPLYING' });
   }
 };
@@ -98,7 +119,7 @@ export const saveConfigPresetImportSession = async (
 // Start over (from draft) and Close (from finished): the session is deleted, and the pending zip with deleteFileToo
 export const clearConfigPresetImportSession = async (context: AuthContext, user: AuthUser, deleteFileToo: boolean) => {
   checkConfigPresetImportAccess(context, user);
-  const session = await readSession(context, user);
+  const session = await readConfigPresetImportSession(context, user);
   const event = session?.status === 'FINISHED' ? 'CLOSE' : 'START_OVER';
   await applyConfigPresetImportEvent(context, user, event, undefined);
   if (deleteFileToo && session) {
