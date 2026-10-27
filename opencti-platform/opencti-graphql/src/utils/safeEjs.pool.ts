@@ -1,4 +1,4 @@
-import { Worker } from 'worker_threads';
+import { Worker, type WorkerOptions } from 'worker_threads';
 import conf from '../config/conf';
 import type { WorkerReply, WorkerRequest } from './safeEjs.worker';
 
@@ -29,7 +29,10 @@ const resolveWorkerUrl = () => {
 };
 
 const spawnWorker = (): PooledWorker => {
-  const worker = new Worker(resolveWorkerUrl(), { resourceLimits: RESOURCE_LIMITS });
+  // Node reads unset Worker options (execArgv, env, argv...) through the prototype chain: a null prototype keeps
+  // them independent of Object.prototype while preserving their defaults (e.g. execArgv inherited from the process)
+  const options: WorkerOptions = Object.assign(Object.create(null), { resourceLimits: RESOURCE_LIMITS });
+  const worker = new Worker(resolveWorkerUrl(), options);
   // An idle worker must never hold the platform open on shutdown. A render in flight keeps the
   // event loop alive through its own timeout timer.
   worker.unref();

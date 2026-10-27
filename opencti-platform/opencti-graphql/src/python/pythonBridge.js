@@ -38,6 +38,8 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         pythonPath: DEV_MODE ? 'python' : 'python3',
         scriptPath,
         args,
+        // PythonShell copies inherited options into the spawn options: an own value keeps the shell disabled
+        shell: false,
       };
       const shell = new PythonShell(scriptName, options);
       // Messaging is used to get data out of the python process
