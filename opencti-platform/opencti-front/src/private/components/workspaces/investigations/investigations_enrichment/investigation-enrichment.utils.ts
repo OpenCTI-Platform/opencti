@@ -25,6 +25,22 @@ export interface ExpandElement {
 }
 
 /**
+ * The touched elements of a work, from the ids and types loaded with the list of works.
+ */
+export const toExpandElements = (work?: InvestigationEnrichmentWork): ExpandElement[] => {
+  return (work?.touchedElements ?? []).flatMap((element) => (
+    element?.id && element.entity_type
+      ? [{
+          id: element.id,
+          entity_type: element.entity_type,
+          fromId: element.fromId,
+          toId: element.toId,
+        }]
+      : []
+  ));
+};
+
+/**
  * Whether a touched element is a relationship.
  */
 const isRelationship = (element: ExpandElement) => !!element.fromId && !!element.toId;
@@ -56,6 +72,14 @@ export const countExpandOptions = (
     relationships: relationshipCounts,
   };
 };
+
+/**
+ * Whether an expand has nothing to add: everything touched is already on the graph.
+ */
+export const isNothingToExpand = (
+  elements: ExpandElement[],
+  graphIds: Set<string>,
+) => elements.every((element) => graphIds.has(element.id));
 
 /**
  * Ids of what an expand adds to the graph: the touched entities of a ticked type, and the touched

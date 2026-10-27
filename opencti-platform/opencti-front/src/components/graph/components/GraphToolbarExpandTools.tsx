@@ -1,6 +1,6 @@
 import { OpenWithOutlined, Undo } from '@mui/icons-material';
-import React, { useState } from 'react';
-import Dialog from '@mui/material/Dialog';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogTitle, Text } from '@filigran/design-system';
 import { graphql } from 'react-relay';
 import { useParams } from 'react-router';
 import InvestigationExpandDialogContent, { InvestigationExpandDialogContentProps } from '@components/workspaces/investigations/InvestigationExpandDialogContent';
@@ -13,7 +13,6 @@ import useGraphInteractions from '../utils/useGraphInteractions';
 import { fetchQuery } from '../../../relay/environment';
 import { GraphToolbarExpandToolsRelationshipsQuery$data } from './__generated__/GraphToolbarExpandToolsRelationshipsQuery.graphql';
 import { ObjectToParse } from '../utils/useGraphParser';
-import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 const expandRelationshipsQuery = graphql`
   query GraphToolbarExpandToolsRelationshipsQuery($filters: FilterGroup) {
@@ -339,20 +338,22 @@ const GraphToolbarExpandTools = ({
       />
 
       <Dialog
-        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
-        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
-        fullWidth
-        maxWidth={false}
         open={isExpandOpen}
-        sx={{ '& .MuiDialog-paper': { width: 640 } }}
-        onClose={() => setIsExpandOpen(false)}
+        onOpenChange={setIsExpandOpen}
       >
-        <InvestigationExpandDialogContent
-          links={graphData?.links ?? []}
-          selectedNodes={selectedNodes}
-          onSubmit={onExpand}
-          onReset={() => setIsExpandOpen(false)}
-        />
+        <DialogContent size="md">
+          <DialogTitle>
+            <Text variant="title-md">
+              {t_i18n('Expand the selected entities')}
+            </Text>
+          </DialogTitle>
+          <InvestigationExpandDialogContent
+            links={graphData?.links ?? []}
+            selectedNodes={selectedNodes}
+            onSubmit={onExpand}
+            onReset={() => setIsExpandOpen(false)}
+          />
+        </DialogContent>
       </Dialog>
     </>
   );

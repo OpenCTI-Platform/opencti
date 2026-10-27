@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countExpandOptions, ExpandElement, selectExpandIds } from './investigation-enrichment.utils';
+import { countExpandOptions, ExpandElement, isNothingToExpand, selectExpandIds } from './investigation-enrichment.utils';
 
 const malware: ExpandElement = { id: 'malware-1', entity_type: 'Malware' };
 const indicator: ExpandElement = { id: 'indicator-1', entity_type: 'Indicator' };
@@ -24,6 +24,20 @@ describe('Function: countExpandOptions', () => {
     );
     expect([...targets.entries()]).toEqual([['Indicator', 1]]);
     expect([...relationships.entries()]).toEqual([]);
+  });
+});
+
+describe('Function: isNothingToExpand', () => {
+  it('is true when everything touched is already on the graph', () => {
+    expect(isNothingToExpand([malware, indicates], new Set(['malware-1', 'rel-1']))).toBe(true);
+  });
+
+  it('is true when nothing was touched', () => {
+    expect(isNothingToExpand([], new Set())).toBe(true);
+  });
+
+  it('is false when something touched is not on the graph', () => {
+    expect(isNothingToExpand([malware, indicator], new Set(['malware-1']))).toBe(false);
   });
 });
 

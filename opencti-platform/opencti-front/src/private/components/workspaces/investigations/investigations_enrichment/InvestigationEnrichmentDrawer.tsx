@@ -12,6 +12,9 @@ import InvestigationEnrichmentExpand from './InvestigationEnrichmentExpand';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { InvestigationEnrichmentDrawerDismissReview } from './__generated__/InvestigationEnrichmentDrawerDismissReview.graphql';
 import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
+import useInvestigationEnrichmentExpand from './useInvestigationEnrichmentExpand';
+import InvestigationEnrichmentAddAllDialog from './InvestigationEnrichmentAddAllDialog';
+import { isNothingToExpand, toExpandElements } from './investigation-enrichment.utils';
 
 const dismissReviewMutation = graphql`
   mutation InvestigationEnrichmentDrawerDismissReview($workId: ID!, $status: WorkInvestigationStatus!) {
@@ -42,7 +45,12 @@ const InvestigationEnrichmentDrawer = ({
   const { t_i18n } = useFormatter();
   const [tab, setTab] = useState<TabList>('toreview');
   const [workToReview, setWorkToReview] = useState<InvestigationEnrichmentWork>();
+  const [workToAddAll, setWorkToAddAll] = useState<InvestigationEnrichmentWork>();
 
+  const {
+    graphIds,
+    expandWork,
+  } = useInvestigationEnrichmentExpand(investigation.id, onExpand);
   const { canLaunch, canEdit } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
 
   const { graphState } = useGraphContext();
@@ -58,6 +66,15 @@ const InvestigationEnrichmentDrawer = ({
       variables: { workId: workId, status: 'DONE' },
       onCompleted: () => askRefresh(),
     });
+  };
+
+  /**
+   * Shortcut of a review that ticks every type and expands: adds all the
+   * touched elements to the graph, then marks the work as reviewed.
+   */
+  const addAll = async (work: InvestigationEnrichmentWork) => {
+    await expandWork(work);
+    dismissReview(work.id);
   };
 
   return (
@@ -88,7 +105,7 @@ const InvestigationEnrichmentDrawer = ({
             onWorkDeleted={askRefresh}
             onDimiss={dismissReview}
             onReview={setWorkToReview}
-            onAddAll={console.log}
+            onAddAll={setWorkToAddAll}
             onEnrichment={() => {
               askRefresh();
               setTab('ongoing');
@@ -104,6 +121,15 @@ const InvestigationEnrichmentDrawer = ({
         onDismiss={dismissReview}
         onExpand={onExpand}
         canEdit={canEdit}
+      />
+
+      <InvestigationEnrichmentAddAllDialog
+        work={workToAddAll}
+        nothingToAdd={isNothingToExpand(toExpandElements(workToAddAll), graphIds)}
+        canEdit={canEdit}
+        onConfirm={addAll}
+        onDismiss={dismissReview}
+        onClose={() => setWorkToAddAll(undefined)}
       />
     </>
   );
