@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, startTransition } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Chip, Paper, Text } from '@filigran/design-system';
@@ -16,6 +16,7 @@ const overviewQuery = graphql`
   query IrOverviewQuery($id: ID!) {
     intelligenceRequirement(id: $id) {
       id
+      ir_inbox_open_count
       ir_thresholds
       ir_kiqs { id text criteria_ids }
       ir_subject_groups { id name }
@@ -44,7 +45,7 @@ const overviewQuery = graphql`
             anchor { representative { main } }
             container { representative { main } }
           }
-          match_score_breakdown { name points hit reason }
+          match_score_breakdown { name points hit reason kind criterion_id }
         }
       }
     }
@@ -90,6 +91,10 @@ const Kpi = ({ label, value, detail }: { label: string; value: string | number; 
   </Paper>
 );
 
+// The overview puts the most relevant entities first; the inbox keeps its latest items to review
+const TOP_ENTITIES = 10;
+const INBOX_ITEMS = 5;
+
 const IrOverview = ({ irId }: { irId: string }) => {
   const { t_i18n } = useFormatter();
   const [fetchKey, setFetchKey] = useState(0);
@@ -109,7 +114,7 @@ const IrOverview = ({ irId }: { irId: string }) => {
   return (
     <>
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, mb: 2 }}>
-        <Kpi label={t_i18n('Entities in the requirement')} value={inRequirement.length} detail={`${proposed.length} ${t_i18n('proposed')} · ${excluded.length} ${t_i18n('excluded')}`} />
+        <Kpi label={t_i18n('Entities in the requirement')} value={inRequirement.length} detail={`${proposed.length} ${t_i18n('proposed')} · ${excluded.length} ${t_i18n('not eligible')}`} />
         <Kpi label={t_i18n('Inbox · to review')} value={items.length} detail={`${items.filter((i) => i.item_kind === 'proposed').length} ${t_i18n('proposed to accept')}`} />
         <Kpi label={`${t_i18n('Score')} ≥ ${topThreshold}`} value={high.length} detail={t_i18n('high-priority entities')} />
         <Kpi label={t_i18n('KIQs answered')} value={`${kiqs.filter((k) => k.answered).length}/${kiqs.length}`} />
@@ -117,35 +122,36 @@ const IrOverview = ({ irId }: { irId: string }) => {
       <Box sx={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 2 }}>
         <Paper padding={16}>
           <Box sx={{ display: 'flex', mb: 1.5 }}>
-            <Text as="span" variant="title-sm">{t_i18n('Inbox')}</Text>
+            <Text as="span" variant="title-sm">{t_i18n('Top entities by score')}</Text>
             <Box sx={{ flex: 1 }} />
-            <Link to={`/dashboard/intelligence_requirements/${irId}/inbox`}>{t_i18n('Open inbox')}</Link>
+            <Link to={`/dashboard/intelligence_requirements/${irId}/entities`}>{t_i18n('See all')}</Link>
           </Box>
-          {items.length === 0 && <Text as="span" variant="content-base">{t_i18n('Nothing to review.')}</Text>}
-          {items.slice(0, 6).map((item) => (
-            <IrInboxItem key={item.id} item={item} criteria={criteria} groups={groups} matches={matches} onDetails={setSelected} compact />
+          {inRequirement.length === 0 && <Text as="span" variant="content-base">{t_i18n('No entity in the requirement yet.')}</Text>}
+          {inRequirement.slice(0, TOP_ENTITIES).map((m) => (
+            <Box
+              key={m.id}
+              onClick={() => setSelected(m.id)}
+              sx={{ display: 'grid', gridTemplateColumns: '28px 1fr 110px', alignItems: 'center', py: 0.75, px: 0.5, cursor: 'pointer', borderBottom: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
+            >
+              <ItemIcon type={m.match_entity_type} size="small" />
+              <Box>
+                <Text as="div" variant="content-compact-medium">{m.entity?.representative.main ?? m.match_entity_id}</Text>
+                <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n(`entity_${m.match_entity_type}`)}</Text>
+              </Box>
+              <ScoreBar score={m.match_score} />
+            </Box>
           ))}
         </Paper>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Paper padding={16}>
             <Box sx={{ display: 'flex', mb: 1.5 }}>
-              <Text as="span" variant="title-sm">{t_i18n('Top entities by score')}</Text>
+              <Text as="span" variant="title-sm">{t_i18n('Inbox')}</Text>
               <Box sx={{ flex: 1 }} />
-              <Link to={`/dashboard/intelligence_requirements/${irId}/entities`}>{t_i18n('See all')}</Link>
+              <Link to={`/dashboard/intelligence_requirements/${irId}/inbox`}>{t_i18n('Open inbox')}</Link>
             </Box>
-            {inRequirement.slice(0, 8).map((m) => (
-              <Box
-                key={m.id}
-                onClick={() => setSelected(m.id)}
-                sx={{ display: 'grid', gridTemplateColumns: '28px 1fr 110px', alignItems: 'center', py: 0.75, px: 0.5, cursor: 'pointer', borderBottom: '1px solid', borderColor: 'divider', '&:hover': { bgcolor: 'action.hover' } }}
-              >
-                <ItemIcon type={m.match_entity_type} size="small" />
-                <Box>
-                  <Text as="div" variant="content-compact-medium">{m.entity?.representative.main ?? m.match_entity_id}</Text>
-                  <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n(`entity_${m.match_entity_type}`)}</Text>
-                </Box>
-                <ScoreBar score={m.match_score} />
-              </Box>
+            {items.length === 0 && <Text as="span" variant="content-base">{t_i18n('Nothing to review.')}</Text>}
+            {items.slice(0, INBOX_ITEMS).map((item) => (
+              <IrInboxItem key={item.id} item={item} criteria={criteria} groups={groups} matches={matches} onDetails={setSelected} compact />
             ))}
           </Paper>
           <Paper padding={16}>
@@ -164,10 +170,11 @@ const IrOverview = ({ irId }: { irId: string }) => {
         </Box>
       </Box>
       <IrMatchDrawer
+        irId={irId}
         match={(matches.find((m) => m.id === selected) ?? null) as IrMatchData | null}
         criteria={criteria}
         onClose={() => setSelected(null)}
-        onChanged={() => setFetchKey((k) => k + 1)}
+        onChanged={() => startTransition(() => setFetchKey((k) => k + 1))}
       />
     </>
   );

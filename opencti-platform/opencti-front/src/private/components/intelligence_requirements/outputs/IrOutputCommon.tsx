@@ -144,7 +144,7 @@ export const KIND_CHIP: Record<string, { label: string; severity: 'neutral' | 'i
 };
 
 export const StatusChip = ({ status, excluded, t }: { status: string; excluded?: boolean; t: (s: string) => string }) => {
-  if (excluded) return <Chip label={t('Excluded')} severity="critical" size="sm" />;
+  if (excluded) return <Chip label={t('Not eligible')} severity="critical" size="sm" />;
   const chip = STATUS_CHIP[status] ?? STATUS_CHIP.auto;
   return <Chip label={t(chip.label)} severity={chip.severity} size="sm" />;
 };

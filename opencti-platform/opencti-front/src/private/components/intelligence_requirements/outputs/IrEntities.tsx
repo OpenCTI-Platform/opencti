@@ -34,6 +34,7 @@ const requirementQuery = graphql`
   query IrEntitiesRequirementQuery($id: ID!) {
     intelligenceRequirement(id: $id) {
       id
+      ir_inbox_open_count
       ir_scope_criteria { id name kind }
       ir_kiqs { id criteria_ids }
     }
@@ -44,6 +45,7 @@ const typesQuery = graphql`
   query IrEntitiesTypesQuery($id: ID!, $statuses: [IrMatchStatus!], $excluded: Boolean) {
     intelligenceRequirement(id: $id) {
       id
+      ir_inbox_open_count
       ir_entities_by_type(statuses: $statuses, excluded: $excluded) { entity_type count }
     }
   }
@@ -105,7 +107,7 @@ export const irEntitiesLineFragment = graphql`
       anchor { representative { main } }
       container { representative { main } }
     }
-    match_score_breakdown { name points hit reason }
+    match_score_breakdown { name points hit reason kind criterion_id }
   }
 `;
 
@@ -185,7 +187,7 @@ type Line = IrEntitiesLine_node$data;
 const PRESETS: { value: Preset; label: string; statuses: string[]; excluded?: boolean }[] = [
   { value: 'in', label: 'In the requirement', statuses: IN_STATUSES, excluded: false },
   { value: 'proposed', label: 'Proposed', statuses: ['proposed'] },
-  { value: 'excluded', label: 'Excluded by a required rule', statuses: IN_STATUSES, excluded: true },
+  { value: 'excluded', label: 'Not meeting the scope conditions', statuses: IN_STATUSES, excluded: true },
   { value: 'closed', label: 'Rejected or removed', statuses: ['rejected', 'removed'] },
 ];
 // A decision applies to the entities in these statuses (same rule as the server)
@@ -297,7 +299,7 @@ const IrEntities = ({ irId }: { irId: string }) => {
       isSortable: false,
       render: (line: Line) => (
         <Box sx={{ display: 'flex', gap: 0.5, overflow: 'hidden' }}>
-          {line.match_score_breakdown.filter((o) => o.hit && o.points !== 0).slice(0, 2).map((o) => (
+          {line.match_score_breakdown.filter((o) => o.kind !== 'condition' && o.hit && o.points !== 0).slice(0, 2).map((o) => (
             <Box key={o.name} component="span" sx={{ fontSize: 11, border: '1px solid', borderColor: 'divider', borderRadius: 0.5, px: 0.75, whiteSpace: 'nowrap' }}>{`${o.name} ${o.points > 0 ? '+' : ''}${o.points}`}</Box>
           ))}
         </Box>
@@ -386,6 +388,7 @@ const IrEntities = ({ irId }: { irId: string }) => {
         />
       )}
       <IrMatchDrawer
+        irId={irId}
         match={selected as unknown as IrMatchData | null}
         criteria={criteria}
         onClose={() => setSelected(null)}

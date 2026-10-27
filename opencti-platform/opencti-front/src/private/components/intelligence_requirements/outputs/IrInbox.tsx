@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { startTransition, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Checkbox, Chip, Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, Paper, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
@@ -18,6 +18,7 @@ import {
   ProofChain,
 } from './IrOutputCommon';
 import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
+import IrMailbox from './IrMailbox';
 import { IrTriageCard, useIrTriage, useIrTriageAgent } from './IrTriage';
 import Drawer from '@components/common/drawer/Drawer';
 import XtmOneAISummaryDisplay from '@components/common/ai/XtmOneAISummaryDisplay';
@@ -34,6 +35,7 @@ const inboxQuery = graphql`
   query IrInboxQuery($id: ID!) {
     intelligenceRequirement(id: $id) {
       id
+      ir_inbox_open_count
       ir_subject_groups { id name }
       ir_scope_criteria { id name kind mode from_group_ids from_in_requirement }
       ir_inbox_counts { open proposed entered score health brief done }
@@ -60,7 +62,7 @@ const inboxQuery = graphql`
             anchor { representative { main } }
             container { representative { main } }
           }
-          match_score_breakdown { name points hit reason }
+          match_score_breakdown { name points hit reason kind criterion_id }
         }
       }
     }
@@ -270,7 +272,7 @@ export const IrInboxItem = ({ item, criteria, groups = [], matches = [], onDecid
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
           <Chip label={t_i18n(chip.label)} severity={chip.severity} />
           {item.item_entity_type && <Chip label={t_i18n(`entity_${item.item_entity_type}`)} />}
-          {item.match && <Chip label={item.match.match_excluded ? t_i18n('Excluded') : `${t_i18n('score')} ${item.match.match_score}`} />}
+          {item.match && <Chip label={item.match.match_excluded ? t_i18n('Not eligible') : `${t_i18n('score')} ${item.match.match_score}`} />}
           {groupNames.map((name) => <Chip key={name} label={name} severity="info" />)}
           <Box sx={{ flex: 1 }} />
           <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>{nsdt(item.created_at)}</Text>
@@ -360,6 +362,12 @@ const IrInbox = ({ irId }: { irId: string }) => {
   const [sort, setSort] = useState<Sort>('newest');
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<Decision | null>(null);
+  // Mailbox (one line per entity, reading pane) or list of items; remembered in this browser
+  const [view, setView] = useState<'mailbox' | 'list'>(() => (localStorage.getItem('ir-inbox-view') === 'list' ? 'list' : 'mailbox'));
+  const changeView = (value: 'mailbox' | 'list') => {
+    localStorage.setItem('ir-inbox-view', value);
+    setView(value);
+  };
   const data = useLazyLoadQuery<IrInboxQuery>(inboxQuery, { id: irId }, { fetchPolicy: 'network-only', fetchKey });
   const [commit] = useApiMutation<IrInboxDecideMutation>(decideMutation);
   const [commitBulk, bulkInFlight] = useApiMutation<IrInboxBulkDecideMutation>(bulkDecideMutation);
@@ -386,7 +394,8 @@ const IrInbox = ({ irId }: { irId: string }) => {
   const sorted = sort === 'score'
     ? [...visible].sort((a, b) => scoreOf(b) - scoreOf(a) || b.created_at.localeCompare(a.created_at))
     : visible;
-  const refresh = () => setFetchKey((k) => k + 1);
+  // Refetch in a transition: the current view stays on screen instead of being replaced by a loader
+  const refresh = () => startTransition(() => setFetchKey((k) => k + 1));
   const decide = (id: string, decision: Decision) => {
     commit({ variables: { id, decision }, onCompleted: refresh });
   };
@@ -450,6 +459,9 @@ const IrInbox = ({ irId }: { irId: string }) => {
             {briefInFlight ? t_i18n('Generating the brief… (about 30 s)') : t_i18n('Generate a brief now')}
           </Button>
         )}
+        <Text as="span" variant="content-caption" style={{ alignSelf: 'center', opacity: 0.7 }}>{t_i18n('View')}</Text>
+        <Button size="small" variant={view === 'mailbox' ? 'primary' : 'tertiary'} onClick={() => changeView('mailbox')}>{t_i18n('Mailbox')}</Button>
+        <Button size="small" variant={view === 'list' ? 'primary' : 'tertiary'} onClick={() => changeView('list')}>{t_i18n('List')}</Button>
         <Text as="span" variant="content-caption" style={{ alignSelf: 'center', opacity: 0.7 }}>{t_i18n('Sort by')}</Text>
         <Button size="small" variant={sort === 'newest' ? 'primary' : 'tertiary'} onClick={() => setSort('newest')}>{t_i18n('Newest first')}</Button>
         <Button size="small" variant={sort === 'score' ? 'primary' : 'tertiary'} onClick={() => setSort('score')}>{t_i18n('Highest score first')}</Button>
@@ -464,7 +476,20 @@ const IrInbox = ({ irId }: { irId: string }) => {
           {`${t_i18n('Showing the')} ${data.doneItems?.edges.length ?? 0} ${t_i18n('most recent done items out of')} ${data.doneItems?.pageInfo.globalCount ?? 0}`}
         </Text>
       )}
-      {selectable.length > 0 && (
+      {view === 'mailbox' && filter !== 'done' && (
+        <IrMailbox
+          irId={irId}
+          items={sorted.filter((i) => i.item_status === 'open') as unknown as IrInboxItemData[]}
+          matches={matches as unknown as IrMatchData[]}
+          criteria={criteria}
+          sort={sort}
+          triageAgent={triageAgent}
+          onDecideItems={(ids, decision, onDone) => commitBulk({ variables: { ids, decision }, onCompleted: onDone })}
+          onRefresh={refresh}
+          onReadBrief={setBriefId}
+        />
+      )}
+      {(view === 'list' || filter === 'done') && selectable.length > 0 && (
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', mb: 1, px: 1.5, py: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
           <Checkbox
             checked={allSelected}
@@ -483,7 +508,7 @@ const IrInbox = ({ irId }: { irId: string }) => {
           )}
         </Box>
       )}
-      {visible.length === 0
+      {(view === 'list' || filter === 'done') && (visible.length === 0
         ? <Paper padding={24}><Text as="span" variant="content-base">{t_i18n('Nothing to review.')}</Text></Paper>
         : sorted.map((item) => (
             <IrInboxItem
@@ -500,7 +525,7 @@ const IrInbox = ({ irId }: { irId: string }) => {
               triageAgent={triageAgent}
               onReadBrief={setBriefId}
             />
-          ))}
+          )))}
       {confirm && (
         <Dialog
           open
@@ -531,6 +556,7 @@ const IrInbox = ({ irId }: { irId: string }) => {
         />
       </Drawer>
       <IrMatchDrawer
+        irId={irId}
         match={(matches.find((m) => m.id === selected) ?? null) as IrMatchData | null}
         criteria={criteria}
         onClose={() => setSelected(null)}
