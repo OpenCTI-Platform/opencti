@@ -60,10 +60,7 @@ const InvestigationEnrichmentAddAllDialog = ({
     >
       <DialogContent size="md">
         <DialogTitle>
-          <Text
-            as="span"
-            variant="title-md"
-          >
+          <Text variant="title-md">
             {t_i18n('Add all to graph')}
           </Text>
         </DialogTitle>

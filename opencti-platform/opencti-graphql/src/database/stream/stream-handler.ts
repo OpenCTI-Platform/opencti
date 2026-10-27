@@ -47,15 +47,11 @@ const resolveWorkflowStatusName = async (context: AuthContext, user: AuthUser, i
   }
 };
 
-/**
- * Push an event to the stream, and record the touched element when running under an enrichment work.
- */
 const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: AuthUser, event: T, opts: EventOpts = {}) => {
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
   const isPublishable = isStreamPublishable(opts);
   if (isPublishable) {
-    // Recorded even in a draft: the work carries the draft context
     await trackWorkTouchedElement(context, event);
   }
 

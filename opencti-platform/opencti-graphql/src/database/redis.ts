@@ -633,9 +633,6 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   return workId;
 };
 
-/**
- * Mark a work as initialized, optionally storing its event type.
- */
 export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean, eventType?: string) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectRaw(tx, workId, {
