@@ -1,3 +1,4 @@
+import './config/prototype-seal';
 import './instrumentation';
 
 import { context, propagation, trace } from '@opentelemetry/api';
