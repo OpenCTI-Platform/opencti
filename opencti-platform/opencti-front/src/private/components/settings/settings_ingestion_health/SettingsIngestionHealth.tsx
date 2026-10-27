@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -41,6 +41,11 @@ const MINUTE_MS = 60 * 1000;
 // Same bound as the backend: one day
 const MAX_NOTIFICATION_DELAY_MINUTES = 24 * 60;
 
+interface IngestionHealthSettingsValue {
+  notification_delay: number;
+  disabled_health_checks: readonly string[];
+}
+
 interface SettingsIngestionHealthProps {
   settings: SettingsIngestionHealth_settings$key;
 }
@@ -62,28 +67,51 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
       .required(t_i18n('This field is required')),
   });
 
-  // The whole object is sent: the backend replaces it
-  const commitSettings = (changes: { notification_delay?: number; disabled_health_checks?: readonly string[] }) => {
+  // The whole object is sent: the backend replaces it.
+  // Saves are serialized and built on the settings last asked, not on the last response: overlapping edits
+  // (a delay and a toggle, two quick toggles) cannot overwrite each other. Edits made while a save is in flight
+  // are merged into the next one
+  const askedSettings = useRef<IngestionHealthSettingsValue | null>(null);
+  const isSaving = useRef(false);
+
+  const saveAskedSettings = () => {
+    const value = askedSettings.current;
+    if (isSaving.current || !value) {
+      return;
+    }
+    isSaving.current = true;
+    const settle = () => {
+      isSaving.current = false;
+      // Nothing asked since: the settings to build on are the ones of the response again
+      if (askedSettings.current === value) {
+        askedSettings.current = null;
+      }
+      saveAskedSettings();
+    };
     commitField({
-      variables: {
-        id,
-        input: {
-          key: 'ingestion_health_settings',
-          value: { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks, ...changes },
-        },
-      },
+      variables: { id, input: { key: 'ingestion_health_settings', value } },
+      onCompleted: settle,
+      onError: settle,
     });
+  };
+
+  const commitSettings = (change: (current: IngestionHealthSettingsValue) => Partial<IngestionHealthSettingsValue>) => {
+    const current = askedSettings.current ?? { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks };
+    askedSettings.current = { ...current, ...change(current) };
+    saveAskedSettings();
   };
 
   const handleSubmitDelay = (name: string, value: string) => {
     validation.validateAt(name, { [name]: value })
-      .then(() => commitSettings({ notification_delay: Number(value) * MINUTE_MS }))
+      .then(() => commitSettings(() => ({ notification_delay: Number(value) * MINUTE_MS })))
       .catch(() => false);
   };
 
   const handleToggleCheck = (code: string, enabled: boolean) => {
-    const others = disabledHealthChecks.filter((disabledCode) => disabledCode !== code);
-    commitSettings({ disabled_health_checks: enabled ? others : [...others, code] });
+    commitSettings(({ disabled_health_checks }) => {
+      const others = disabled_health_checks.filter((disabledCode) => disabledCode !== code);
+      return { disabled_health_checks: enabled ? others : [...others, code] };
+    });
   };
 
   return (
