@@ -37,9 +37,10 @@ vi.mock('./DashboardVariableValueInput', () => ({
 }));
 
 vi.mock('./ValueInputs/SelectionValuesInput', () => ({
-  default: ({ values, onChange, label, error, disabled }: {
+  default: ({ values, onChange, onBlur, label, error, disabled }: {
     values: string[];
     onChange: (values: string[]) => void;
+    onBlur?: () => void;
     label: string;
     error?: string;
     disabled?: boolean;
@@ -51,6 +52,7 @@ vi.mock('./ValueInputs/SelectionValuesInput', () => ({
         data-testid="selection-input"
         value={values.join(',')}
         onChange={(event) => onChange(event.target.value ? event.target.value.split(',') : [])}
+        onBlur={onBlur}
       />
       {error && <span>{error}</span>}
     </>
@@ -66,6 +68,7 @@ vi.mock('./RestrictionFiltersField', () => ({
     <div data-testid="rule-editor" data-entity-types={entityTypes.join()}>
       <button type="button" onClick={() => onChange(rule)}>Set rule</button>
       <button type="button" onClick={() => onChange(otherRule)}>Set other rule</button>
+      <button type="button" onClick={() => onChange({ mode: 'and', filters: [], filterGroups: [] })}>Clear rule</button>
       <button type="button" onClick={() => onChange({ ...rule, filters: [...rule.filters, { key: 'objectMarking', values: [], operator: 'eq', mode: 'or' }] })}>
         Add a filter without value
       </button>
@@ -279,13 +282,38 @@ describe('DashboardVariableDialog', () => {
       }));
     });
 
-    it('says why Create is disabled as soon as By filter is chosen', async () => {
+    it('says why Create is disabled once the rule is edited, not as soon as By filter is chosen', async () => {
       const { user } = renderDialog();
       await chooseType(user, 'Entity');
       await chooseEntityType(user);
       await user.click(radio('By filter'));
-      expect(screen.getByText('At least one filter is required')).toBeInTheDocument();
+      expect(screen.queryByText('At least one filter is required')).not.toBeInTheDocument();
       expect(submit()).toBeDisabled();
+      await user.click(screen.getByRole('button', { name: 'Clear rule' }));
+      expect(screen.getByText('At least one filter is required')).toBeInTheDocument();
+    });
+
+    it('says why Create is disabled once the selection is touched, not as soon as Manual selection is chosen', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Label');
+      await user.click(radio('Manual selection'));
+      expect(screen.queryByText('Select at least one value')).not.toBeInTheDocument();
+      expect(submit()).toBeDisabled();
+      await user.click(screen.getByTestId('selection-input'));
+      await user.tab();
+      expect(screen.getByText('Select at least one value')).toBeInTheDocument();
+    });
+
+    it('disables the default value until the rule is valid', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Entity');
+      await chooseEntityType(user);
+      await user.click(radio('By filter'));
+      expect(screen.getByTestId('value-input')).toBeDisabled();
+      await user.click(screen.getByRole('button', { name: 'Set rule' }));
+      expect(screen.getByTestId('value-input')).toBeEnabled();
+      await user.click(screen.getByRole('button', { name: 'Clear rule' }));
+      expect(screen.getByTestId('value-input')).toBeDisabled();
     });
 
     it('keeps the default value when the rule sent does not change', async () => {

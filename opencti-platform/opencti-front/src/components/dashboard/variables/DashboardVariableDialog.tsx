@@ -320,10 +320,13 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     values={values.selectionValues}
                     // A type that cannot be restricted has no values to search: its selection is only shown.
                     disabled={isTypeIncomplete || !isRestrictable}
-                    // Shown as soon as the mode is chosen: Create stays disabled until the selection is valid.
-                    error={errors.selectionValues}
+                    // Shown once the field is touched, or for values already chosen: an untouched field shows no error,
+                    // Create staying disabled until the selection is valid.
+                    error={errors.selectionValues && (touched.selectionValues || values.selectionValues.length > 0) ? errors.selectionValues : undefined}
+                    onBlur={() => setFieldTouched('selectionValues', true)}
                     onChange={(selectionValues) => {
                       setFieldValue('selectionValues', selectionValues);
+                      setFieldTouched('selectionValues', true, false);
                       // A default value removed from the selection is no longer allowed.
                       if (!selectionValues.includes(values.defaultValue)) setFieldValue('defaultValue', '');
                     }}
@@ -336,8 +339,8 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     entityTypes={values.entityTypes}
                     label={t_i18n('Filters')}
                     value={values.filters}
-                    // Shown as soon as the mode is chosen: Create stays disabled until the rule is valid.
-                    error={errors.filters}
+                    // Shown once the rule is edited, as the selection: Create stays disabled until the rule is valid.
+                    error={values.filters !== undefined ? errors.filters : undefined}
                     onChange={(filters) => {
                       const isSameRule = serializeFilterGroupForBackend(filters) === serializeFilterGroupForBackend(values.filters);
                       setFieldValue('filters', filters);
@@ -355,7 +358,8 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     label={t_i18n('Default value')}
                     variable={draftToVariable(values, values.id ?? 'draft')}
                     value={values.defaultValue}
-                    disabled={isTypeIncomplete}
+                    // Searched within the rule: an empty or invalid one would offer entities the rule does not define.
+                    disabled={isTypeIncomplete || (values.restrictionMode === 'filters' && !!errors.filters)}
                     onChange={(defaultValue) => setFieldValue('defaultValue', defaultValue)}
                   />
                 ) : <Input label={t_i18n('Default value')} disabled value="" onChange={() => {}} />}

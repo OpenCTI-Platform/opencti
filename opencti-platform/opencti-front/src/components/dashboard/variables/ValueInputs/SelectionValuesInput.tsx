@@ -21,6 +21,7 @@ export interface SelectionValuesInputProps {
   variable: DashboardVariableShape;
   values: string[];
   onChange: (values: string[]) => void;
+  onBlur?: () => void;
   label: string;
   disabled?: boolean;
   error?: string;
@@ -30,7 +31,7 @@ export interface SelectionValuesInputProps {
  * Input of the values of a selection restriction: the values a variable is restricted to, searched as the value of
  * the variable is (useVariableValueOptions), or picked among the vocabularies of its category.
  */
-const SelectionValuesInput = ({ variable, values, onChange, label, disabled, error }: SelectionValuesInputProps) => {
+const SelectionValuesInput = ({ variable, values, onChange, onBlur, label, disabled, error }: SelectionValuesInputProps) => {
   const { t_i18n } = useFormatter();
   const isVocabulary = variable.type === 'vocabulary';
   const { options: searchOptions, search, listingError } = useVariableValueOptions(variable);
@@ -91,7 +92,7 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
       <ComboboxLabel>{label}</ComboboxLabel>
       <ComboboxField>
         <ComboboxChips aria-label={label} />
-        <ComboboxInput onFocus={(event) => runSearch(event, '')} />
+        <ComboboxInput onFocus={(event) => runSearch(event, '')} onBlur={onBlur} />
         <ComboboxControls>
           <ComboboxTrigger />
         </ComboboxControls>
