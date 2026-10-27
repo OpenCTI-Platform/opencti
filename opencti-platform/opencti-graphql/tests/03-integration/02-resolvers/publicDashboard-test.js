@@ -795,12 +795,15 @@ describe('PublicDashboard resolver', () => {
           const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
           it('should return the data for API: SCO Time series breakdown', async () => {
+            // Computed right before the query, not when the file is collected: the server ends the period
+            // at its own "now", and both must fall on consecutive UTC days for the 2 buckets asserted below
+            const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             const { data, errors } = await queryAsAdmin({
               query: API_SCO_BREAKDOWN_QUERY,
               variables: {
                 uriKey: publicDashboardUriKey,
                 widgetId: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
-                startDate: yesterday,
+                startDate,
               },
             });
             expect(errors).toBeUndefined();
