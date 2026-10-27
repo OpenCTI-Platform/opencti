@@ -741,7 +741,6 @@ export const redisSetForgotPasswordOtp = async (
   await getClientBase().setex(forgotPasswordOtpKeyName, ttl, JSON.stringify(data));
   await getClientBase().setex(pointerKey, ttl, transactionId);
 };
-// Returns null for an unknown or expired transaction: an empty object would let callers read its fields through the prototype chain
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
   const str = await getClientBase().get(keyName);

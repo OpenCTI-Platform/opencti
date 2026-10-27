@@ -27,7 +27,6 @@ vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
 
-// An unknown or expired transaction must never be completed from fields set on the object prototype
 describe('forgot password with an unknown transaction', () => {
   const prototype = Object.prototype as Record<string, unknown>;
   const INHERITED_OTP = '12345678';

@@ -72,7 +72,6 @@ it('Check yara indicator bad pattern', async () => {
 });
 
 it('Check child python execution ignores a shell set on the object prototype', async () => {
-  // A child started through this shell would fail: the option must not be read from the prototype
   Object.prototype.shell = '/nonexistent/shell';
   try {
     const result = await execChildPython(

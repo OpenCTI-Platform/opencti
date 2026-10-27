@@ -29,8 +29,6 @@ const resolveWorkerUrl = () => {
 };
 
 const spawnWorker = (): PooledWorker => {
-  // Node reads unset Worker options (execArgv, env, argv...) through the prototype chain: a null prototype keeps
-  // them independent of Object.prototype while preserving their defaults (e.g. execArgv inherited from the process)
   const options: WorkerOptions = Object.assign(Object.create(null), { resourceLimits: RESOURCE_LIMITS });
   const worker = new Worker(resolveWorkerUrl(), options);
   // An idle worker must never hold the platform open on shutdown. A render in flight keeps the

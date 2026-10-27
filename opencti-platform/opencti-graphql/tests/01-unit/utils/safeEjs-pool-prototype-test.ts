@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
 
-// A dedicated file so the pool loads fresh and spawns its first worker while the prototype is set
-// (ci-unit isolates modules per file).
+// A dedicated file so the pool loads fresh and spawns its first worker in this test (ci-unit isolates modules per file).
 describe('check safeRenderClient worker options', () => {
   const prototype = Object.prototype as Record<string, unknown>;
 

@@ -49,8 +49,6 @@ const baseSmtpOptions = {
   },
 };
 
-// Nodemailer picks the transport from these options, reading them through the prototype chain when unset:
-// own values pin the SMTP transport, whatever Object.prototype holds
 const SMTP_TRANSPORT_SELECTORS = {
   url: undefined,
   pool: false,

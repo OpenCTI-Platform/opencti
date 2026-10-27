@@ -1427,8 +1427,6 @@ export const addBookmark = async (context: AuthContext, user: AuthUser, id: stri
   return storeLoadById<BasicStoreEntity>(context, user, id, type);
 };
 
-// Users without local credentials (service accounts, SSO users) have no own password:
-// one read through the prototype chain must never be accepted as their hash
 const getOwnPasswordHash = (user: Partial<Pick<BasicStoreEntityUser, 'password'>>) => {
   return Object.hasOwn(user, 'password') && typeof user.password === 'string' && user.password.length > 0 ? user.password : undefined;
 };
