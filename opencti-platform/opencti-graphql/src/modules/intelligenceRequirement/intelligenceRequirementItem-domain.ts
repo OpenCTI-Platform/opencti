@@ -8,6 +8,7 @@ import { enforceEnableFeatureFlag } from '../../utils/access';
 import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import { OrderingMode } from '../../generated/graphql';
 import { type BasicStoreEntityIntelligenceRequirementItem, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM, type StoreIrItemData } from './intelligenceRequirementItem-types';
+import { isRequirementDeleted } from './intelligenceRequirement-lifecycle';
 
 export const parseItemData = (item: BasicStoreEntityIntelligenceRequirementItem): StoreIrItemData => {
   try {
@@ -30,6 +31,7 @@ export const createItem = async (
   title: string,
   opts: { entityId?: string; entityType?: string; matchId?: string; data?: StoreIrItemData } = {},
 ) => {
+  if (isRequirementDeleted(irId)) return null;
   const input = {
     ir_id: irId,
     item_kind: kind,

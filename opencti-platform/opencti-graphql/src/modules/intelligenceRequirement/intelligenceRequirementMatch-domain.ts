@@ -9,10 +9,12 @@ import {
   type BasicStoreEntityIntelligenceRequirementMatch,
   ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH,
   IR_MATCH_IN_STATUSES,
+  isInRequirement,
   type StoreIrMatchExplanation,
 } from './intelligenceRequirementMatch-types';
 import type { StoreIrCriterion } from './intelligenceRequirement-types';
 import { entityDisplayName } from './intelligenceRequirementItem-domain';
+import { isRequirementDeleted } from './intelligenceRequirement-lifecycle';
 
 const MAX_EXPLANATIONS = 20;
 
@@ -62,7 +64,7 @@ export const listMatches = async (context: AuthContext, user: AuthUser, irId: st
 // Entities that are part of the requirement (used as starting point of "second hop" criteria)
 export const listInRequirementEntityIds = async (context: AuthContext, user: AuthUser, irId: string) => {
   const matches = await listMatches(context, user, irId, IR_MATCH_IN_STATUSES);
-  return new Set(matches.map((m) => m.match_entity_id));
+  return new Set(matches.filter(isInRequirement).map((m) => m.match_entity_id));
 };
 
 const sameExplanation = (a: StoreIrMatchExplanation, b: StoreIrMatchExplanation) => a.criterion_id === b.criterion_id
@@ -90,6 +92,7 @@ export const upsertMatch = async (
   criterion: StoreIrCriterion,
   explanation: StoreIrMatchExplanation,
 ): Promise<UpsertMatchResult | null> => {
+  if (isRequirementDeleted(irId)) return null;
   const existing = await loadMatch(context, user, irId, entity.id);
   const now = new Date();
   if (!existing) {

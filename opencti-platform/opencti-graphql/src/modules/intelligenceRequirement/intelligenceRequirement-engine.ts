@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { FilterGroup } from '../../generated/graphql';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { fullEntitiesList, fullRelationsList, internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
+import { fullRelationsList, internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { IDS_FILTER } from '../../utils/filtering/filtering-constants';
@@ -11,6 +11,7 @@ import type { ParsedIntelligenceRequirement, StoreIrCriterion } from './intellig
 import type { StoreIrMatchExplanation } from './intelligenceRequirementMatch-types';
 import { parseIrFilters } from './intelligenceRequirement-config';
 import { listInRequirementEntityIds } from './intelligenceRequirementMatch-domain';
+import { resolveSubjectGroup } from './intelligenceRequirement-groups';
 
 // Scope engine: evaluates one stream event against the entry criteria of a requirement
 // and returns the entities that should enter it (with the criterion and the proof).
@@ -42,19 +43,9 @@ export const buildEngineState = async (context: AuthContext, user: AuthUser, ir:
   const excludedKeywords = new Map<string, string[]>();
   for (let i = 0; i < ir.ir_subject_groups.length; i += 1) {
     const group = ir.ir_subject_groups[i];
-    if (group.kind === 'list') {
-      const ids = new Set<string>(group.entity_ids);
-      const entities = await internalFindByIds<BasicStoreEntity>(context, user, group.entity_ids) as BasicStoreEntity[];
-      entities.forEach((e) => {
-        ids.add(e.internal_id);
-        ids.add(e.standard_id);
-      });
-      listIds.set(group.id, ids);
-    } else if (group.kind === 'filter') {
+    if (group.kind === 'list' || group.kind === 'filter') {
       // A dynamic group is resolved by the search engine: any OpenCTI filter key can be used (malware types, labels...)
-      const filters = parseIrFilters(group.filters);
-      const entities = filters ? await fullEntitiesList<BasicStoreEntity>(context, user, [ABSTRACT_STIX_CORE_OBJECT], { filters, baseData: true }) : [];
-      listIds.set(group.id, new Set(entities.flatMap((e) => [e.internal_id, e.standard_id])));
+      listIds.set(group.id, (await resolveSubjectGroup(context, user, group)).allIds);
     } else if (group.kind === 'keywords') {
       keywords.set(group.id, group.keywords.map((k) => k.toLowerCase()));
       excludedKeywords.set(group.id, (group.exclude_keywords ?? []).map((k) => k.toLowerCase()));
@@ -262,16 +253,32 @@ export const findKeyword = (stix: any, keywords: string[], fields: string[], exc
  * An entity was created or updated: attribute criteria (zero hop) and keyword criteria.
  * When the keyword is found in a container, the contained objects are the candidates.
  */
+/**
+ * Member of one of the subject groups: listed in a list group, or selected by the dynamic filter of a filter group.
+ * The filter is evaluated on the entity now, so an entity that has just been labelled enters at once.
+ */
+const isGroupMember = async (context: AuthContext, user: AuthUser, state: IrEngineState, groupIds: string[], id: string) => {
+  for (let i = 0; i < groupIds.length; i += 1) {
+    const group = state.ir.ir_subject_groups.find((g) => g.id === groupIds[i]);
+    if (group?.kind === 'list' && state.listIds.get(group.id)?.has(id)) return true;
+    if (group?.kind === 'filter' && await matchesFilters(context, user, state, id, parseIrFilters(group.filters))) return true;
+  }
+  return false;
+};
+
 export const evaluateEntity = async (context: AuthContext, user: AuthUser, state: IrEngineState, stix: any): Promise<IrCandidate[]> => {
   const ext = stix.extensions?.[STIX_EXT_OCTI];
   if (!ext?.id || !ext?.type) return [];
   const entity = { id: ext.id, type: ext.type };
   const candidates: IrCandidate[] = [];
   const at = new Date().toISOString();
-  // Attribute criteria
+  // Attribute criteria (zero hop), possibly "the members of these subject groups"
   const attributeCriteria = activeCriteria(state.ir, 'attribute');
   for (let i = 0; i < attributeCriteria.length; i += 1) {
     const criterion = attributeCriteria[i];
+    // The type first: it costs nothing, while the membership of a dynamic group is a query
+    if (!isTypeMatching(entity.type, criterion.target_types)) continue;
+    if (criterion.from_group_ids.length > 0 && !await isGroupMember(context, user, state, criterion.from_group_ids, entity.id)) continue;
     if (await isTarget(context, user, state, criterion, entity.id, entity.type)) {
       candidates.push({ entity, criterion, explanation: { criterion_id: criterion.id, kind: 'attribute', at } });
     }

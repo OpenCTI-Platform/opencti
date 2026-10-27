@@ -14530,11 +14530,15 @@ export type IntelligenceRequirement = BasicObject & InternalObject & {
   ir_kiqs: Array<IrKiq>;
   ir_last_brief_at?: Maybe<Scalars['DateTime']['output']>;
   ir_priority: IntelligenceRequirementPriority;
+  /** Where the requirement stands in the stream (catch-up, lag, last batch, last error) */
+  ir_processing_status: IrProcessingStatus;
   ir_question: Scalars['String']['output'];
   ir_relevance_rules: Array<IrRule>;
   ir_rescan_days: Scalars['Int']['output'];
   ir_scope_criteria: Array<IrCriterion>;
   ir_status: IntelligenceRequirementStatus;
+  /** Everything stored for the requirement, removed with it (entities whatever their status, inbox items) */
+  ir_stored_counts: IrStoredCounts;
   ir_subject_groups: Array<IrSubjectGroup>;
   ir_thresholds: Array<Scalars['Int']['output']>;
   lastEventId?: Maybe<Scalars['String']['output']>;
@@ -14641,6 +14645,8 @@ export type IntelligenceRequirementMatch = BasicObject & InternalObject & {
   match_entity_type: Scalars['String']['output'];
   match_excluded: Scalars['Boolean']['output'];
   match_explanations: Array<IrMatchExplanation>;
+  /** Score, eligibility and status over time, dated with the events that changed them */
+  match_history: Array<IrMatchHistoryPoint>;
   match_last_fact_at?: Maybe<Scalars['DateTime']['output']>;
   match_score: Scalars['Int']['output'];
   match_score_breakdown: Array<IrRuleOutcome>;
@@ -15072,14 +15078,45 @@ export type IrActivityPoint = {
   value: Scalars['Int']['output'];
 };
 
+export type IrBatchStats = {
+  __typename?: 'IrBatchStats';
+  backfilled: Scalars['Int']['output'];
+  entered: Scalars['Int']['output'];
+  errors: Scalars['Int']['output'];
+  events: Scalars['Int']['output'];
+  rescored: Scalars['Int']['output'];
+  updated: Scalars['Int']['output'];
+};
+
 export enum IrBriefFrequency {
   Daily = 'daily',
   Off = 'off',
   Weekly = 'weekly'
 }
 
+export type IrCondition = {
+  __typename?: 'IrCondition';
+  applies_to_types: Array<Scalars['String']['output']>;
+  filters?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  link?: Maybe<IrGroupLink>;
+  name: Scalars['String']['output'];
+  path_condition?: Maybe<IrPathCondition>;
+};
+
+export type IrConditionInput = {
+  applies_to_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  filters?: InputMaybe<FilterGroup>;
+  id: Scalars['String']['input'];
+  link?: InputMaybe<IrGroupLinkInput>;
+  name: Scalars['String']['input'];
+  path_condition?: InputMaybe<IrPathConditionInput>;
+};
+
 export type IrCriterion = {
   __typename?: 'IrCriterion';
+  /** Scope conditions: all must be met for an entity brought by the criterion to enter the requirement */
+  conditions: Array<IrCondition>;
   direction: IrDirection;
   from_group_ids: Array<Scalars['String']['output']>;
   from_in_requirement: Scalars['Boolean']['output'];
@@ -15095,6 +15132,7 @@ export type IrCriterion = {
 };
 
 export type IrCriterionInput = {
+  conditions?: InputMaybe<Array<IrConditionInput>>;
   direction?: InputMaybe<IrDirection>;
   from_group_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   from_in_requirement?: InputMaybe<Scalars['Boolean']['input']>;
@@ -15126,6 +15164,18 @@ export enum IrDirection {
   Incoming = 'incoming',
   Outgoing = 'outgoing'
 }
+
+/** The entity has one of the relationship types with a member of one of the subject groups (object: it contains one) */
+export type IrGroupLink = {
+  __typename?: 'IrGroupLink';
+  group_ids: Array<Scalars['String']['output']>;
+  relationship_types: Array<Scalars['String']['output']>;
+};
+
+export type IrGroupLinkInput = {
+  group_ids: Array<Scalars['String']['input']>;
+  relationship_types: Array<Scalars['String']['input']>;
+};
 
 export type IrInboxCounts = {
   __typename?: 'IrInboxCounts';
@@ -15182,6 +15232,18 @@ export type IrKiqInput = {
   text: Scalars['String']['input'];
 };
 
+export type IrLastBatch = {
+  __typename?: 'IrLastBatch';
+  at: Scalars['DateTime']['output'];
+  backfilled: Scalars['Int']['output'];
+  duration_ms: Scalars['Int']['output'];
+  entered: Scalars['Int']['output'];
+  errors: Scalars['Int']['output'];
+  events: Scalars['Int']['output'];
+  rescored: Scalars['Int']['output'];
+  updated: Scalars['Int']['output'];
+};
+
 export enum IrMatchDecisionStatus {
   Accepted = 'accepted',
   Rejected = 'rejected',
@@ -15207,6 +15269,18 @@ export type IrMatchExplanation = {
   relationship_type?: Maybe<Scalars['String']['output']>;
 };
 
+export type IrMatchHistoryPoint = {
+  __typename?: 'IrMatchHistoryPoint';
+  at: Scalars['DateTime']['output'];
+  changes: Array<Scalars['String']['output']>;
+  eligible: Scalars['Boolean']['output'];
+  /** entry, fact, config or decision */
+  kind: Scalars['String']['output'];
+  score: Scalars['Int']['output'];
+  status: Scalars['String']['output'];
+  trigger?: Maybe<Scalars['String']['output']>;
+};
+
 export enum IrMatchStatus {
   Accepted = 'accepted',
   Auto = 'auto',
@@ -15219,6 +15293,7 @@ export type IrPathCondition = {
   __typename?: 'IrPathCondition';
   direction: IrDirection;
   relationship_types: Array<Scalars['String']['output']>;
+  target_group_ids: Array<Scalars['String']['output']>;
   target_ids: Array<Scalars['String']['output']>;
   target_relationship_type: Scalars['String']['output'];
   targets: Array<StixCoreObject>;
@@ -15227,6 +15302,7 @@ export type IrPathCondition = {
 export type IrPathConditionInput = {
   direction: IrDirection;
   relationship_types: Array<Scalars['String']['input']>;
+  target_group_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   target_ids: Array<Scalars['String']['input']>;
   target_relationship_type: Scalars['String']['input'];
 };
@@ -15267,6 +15343,33 @@ export type IrPreviewGroup = {
   unresolved_ids: Array<Scalars['String']['output']>;
 };
 
+export type IrProcessingError = {
+  __typename?: 'IrProcessingError';
+  at: Scalars['DateTime']['output'];
+  event_id?: Maybe<Scalars['String']['output']>;
+  message: Scalars['String']['output'];
+};
+
+export type IrProcessingStatus = {
+  __typename?: 'IrProcessingStatus';
+  /** Active requirements, processed one after the other by the engine */
+  active_requirements: Scalars['Int']['output'];
+  catchup_from_at: Scalars['DateTime']['output'];
+  cursor_at: Scalars['DateTime']['output'];
+  /** Estimate: the stream does not count the events between two positions */
+  lag_events: Scalars['Int']['output'];
+  lag_seconds: Scalars['Int']['output'];
+  last_batch?: Maybe<IrLastBatch>;
+  last_error?: Maybe<IrProcessingError>;
+  /** Progress of the catch-up, from its start to the head of the stream (0-100) */
+  progress: Scalars['Int']['output'];
+  /** live, catching_up or paused */
+  state: Scalars['String']['output'];
+  stream_head_at: Scalars['DateTime']['output'];
+  stream_size: Scalars['Int']['output'];
+  totals?: Maybe<IrBatchStats>;
+};
+
 export type IrRule = {
   __typename?: 'IrRule';
   applies_to_criterion_id?: Maybe<Scalars['String']['output']>;
@@ -15274,9 +15377,11 @@ export type IrRule = {
   enabled: Scalars['Boolean']['output'];
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
+  link?: Maybe<IrGroupLink>;
   name: Scalars['String']['output'];
   path_condition?: Maybe<IrPathCondition>;
   points: Scalars['Int']['output'];
+  /** Legacy: required rules are converted into scope conditions of the criteria */
   required: Scalars['Boolean']['output'];
 };
 
@@ -15286,6 +15391,7 @@ export type IrRuleInput = {
   enabled?: InputMaybe<Scalars['Boolean']['input']>;
   filters?: InputMaybe<FilterGroup>;
   id: Scalars['String']['input'];
+  link?: InputMaybe<IrGroupLinkInput>;
   name: Scalars['String']['input'];
   path_condition?: InputMaybe<IrPathConditionInput>;
   points: Scalars['Int']['input'];
@@ -15294,11 +15400,20 @@ export type IrRuleInput = {
 
 export type IrRuleOutcome = {
   __typename?: 'IrRuleOutcome';
+  criterion_id?: Maybe<Scalars['String']['output']>;
   hit: Scalars['Boolean']['output'];
+  /** rule (relevance) or condition (scope) */
+  kind?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   points: Scalars['Int']['output'];
   reason?: Maybe<Scalars['String']['output']>;
   rule_id: Scalars['String']['output'];
+};
+
+export type IrStoredCounts = {
+  __typename?: 'IrStoredCounts';
+  entities: Scalars['Int']['output'];
+  items: Scalars['Int']['output'];
 };
 
 export type IrSubjectGroup = {
@@ -25706,6 +25821,7 @@ export type Query = {
   ingestionTaxiis?: Maybe<IngestionTaxiiConnection>;
   intelligenceRequirement?: Maybe<IntelligenceRequirement>;
   intelligenceRequirementItems?: Maybe<IntelligenceRequirementItemConnection>;
+  intelligenceRequirementMatch?: Maybe<IntelligenceRequirementMatch>;
   intelligenceRequirementMatches?: Maybe<IntelligenceRequirementMatchConnection>;
   /** Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings */
   intelligenceRequirementPreview: IrPreview;
@@ -27229,6 +27345,11 @@ export type QueryIntelligenceRequirementItemsArgs = {
   kinds?: InputMaybe<Array<IrItemKind>>;
   search?: InputMaybe<Scalars['String']['input']>;
   statuses?: InputMaybe<Array<IrItemStatus>>;
+};
+
+
+export type QueryIntelligenceRequirementMatchArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -42016,12 +42137,17 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   IrActivityPoint: ResolverTypeWrapper<IrActivityPoint>;
+  IrBatchStats: ResolverTypeWrapper<IrBatchStats>;
   IrBriefFrequency: IrBriefFrequency;
+  IrCondition: ResolverTypeWrapper<Omit<IrCondition, 'link' | 'path_condition'> & { link?: Maybe<ResolversTypes['IrGroupLink']>, path_condition?: Maybe<ResolversTypes['IrPathCondition']> }>;
+  IrConditionInput: IrConditionInput;
   IrCriterion: ResolverTypeWrapper<StoreIrCriterion>;
   IrCriterionInput: IrCriterionInput;
   IrCriterionKind: IrCriterionKind;
   IrCriterionMode: IrCriterionMode;
   IrDirection: IrDirection;
+  IrGroupLink: ResolverTypeWrapper<IrGroupLink>;
+  IrGroupLinkInput: IrGroupLinkInput;
   IrInboxCounts: ResolverTypeWrapper<IrInboxCounts>;
   IrItemData: ResolverTypeWrapper<IrItemData>;
   IrItemDecision: IrItemDecision;
@@ -42029,8 +42155,10 @@ export type ResolversTypes = ResolversObject<{
   IrItemStatus: IrItemStatus;
   IrKiq: ResolverTypeWrapper<StoreIrKiq>;
   IrKiqInput: IrKiqInput;
+  IrLastBatch: ResolverTypeWrapper<IrLastBatch>;
   IrMatchDecisionStatus: IrMatchDecisionStatus;
   IrMatchExplanation: ResolverTypeWrapper<StoreIrMatchExplanation>;
+  IrMatchHistoryPoint: ResolverTypeWrapper<IrMatchHistoryPoint>;
   IrMatchStatus: IrMatchStatus;
   IrPathCondition: ResolverTypeWrapper<StoreIrPathCondition>;
   IrPathConditionInput: IrPathConditionInput;
@@ -42038,9 +42166,12 @@ export type ResolversTypes = ResolversObject<{
   IrPreviewCriterion: ResolverTypeWrapper<IrPreviewCriterion>;
   IrPreviewEntity: ResolverTypeWrapper<IrPreviewEntity>;
   IrPreviewGroup: ResolverTypeWrapper<IrPreviewGroup>;
+  IrProcessingError: ResolverTypeWrapper<IrProcessingError>;
+  IrProcessingStatus: ResolverTypeWrapper<IrProcessingStatus>;
   IrRule: ResolverTypeWrapper<StoreIrRule>;
   IrRuleInput: IrRuleInput;
   IrRuleOutcome: ResolverTypeWrapper<IrRuleOutcome>;
+  IrStoredCounts: ResolverTypeWrapper<IrStoredCounts>;
   IrSubjectGroup: ResolverTypeWrapper<StoreIrSubjectGroup>;
   IrSubjectGroupInput: IrSubjectGroupInput;
   IrSubjectGroupKind: IrSubjectGroupKind;
@@ -43182,22 +43313,32 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   IrActivityPoint: IrActivityPoint;
+  IrBatchStats: IrBatchStats;
+  IrCondition: Omit<IrCondition, 'link' | 'path_condition'> & { link?: Maybe<ResolversParentTypes['IrGroupLink']>, path_condition?: Maybe<ResolversParentTypes['IrPathCondition']> };
+  IrConditionInput: IrConditionInput;
   IrCriterion: StoreIrCriterion;
   IrCriterionInput: IrCriterionInput;
+  IrGroupLink: IrGroupLink;
+  IrGroupLinkInput: IrGroupLinkInput;
   IrInboxCounts: IrInboxCounts;
   IrItemData: IrItemData;
   IrKiq: StoreIrKiq;
   IrKiqInput: IrKiqInput;
+  IrLastBatch: IrLastBatch;
   IrMatchExplanation: StoreIrMatchExplanation;
+  IrMatchHistoryPoint: IrMatchHistoryPoint;
   IrPathCondition: StoreIrPathCondition;
   IrPathConditionInput: IrPathConditionInput;
   IrPreview: IrPreview;
   IrPreviewCriterion: IrPreviewCriterion;
   IrPreviewEntity: IrPreviewEntity;
   IrPreviewGroup: IrPreviewGroup;
+  IrProcessingError: IrProcessingError;
+  IrProcessingStatus: IrProcessingStatus;
   IrRule: StoreIrRule;
   IrRuleInput: IrRuleInput;
   IrRuleOutcome: IrRuleOutcome;
+  IrStoredCounts: IrStoredCounts;
   IrSubjectGroup: StoreIrSubjectGroup;
   IrSubjectGroupInput: IrSubjectGroupInput;
   IrTypeCount: IrTypeCount;
@@ -48692,11 +48833,13 @@ export type IntelligenceRequirementResolvers<ContextType = any, ParentType exten
   ir_kiqs?: Resolver<Array<ResolversTypes['IrKiq']>, ParentType, ContextType>;
   ir_last_brief_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   ir_priority?: Resolver<ResolversTypes['IntelligenceRequirementPriority'], ParentType, ContextType>;
+  ir_processing_status?: Resolver<ResolversTypes['IrProcessingStatus'], ParentType, ContextType>;
   ir_question?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   ir_relevance_rules?: Resolver<Array<ResolversTypes['IrRule']>, ParentType, ContextType>;
   ir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ir_scope_criteria?: Resolver<Array<ResolversTypes['IrCriterion']>, ParentType, ContextType>;
   ir_status?: Resolver<ResolversTypes['IntelligenceRequirementStatus'], ParentType, ContextType>;
+  ir_stored_counts?: Resolver<ResolversTypes['IrStoredCounts'], ParentType, ContextType>;
   ir_subject_groups?: Resolver<Array<ResolversTypes['IrSubjectGroup']>, ParentType, ContextType>;
   ir_thresholds?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
   lastEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48766,6 +48909,7 @@ export type IntelligenceRequirementMatchResolvers<ContextType = any, ParentType 
   match_entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   match_excluded?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   match_explanations?: Resolver<Array<ResolversTypes['IrMatchExplanation']>, ParentType, ContextType>;
+  match_history?: Resolver<Array<ResolversTypes['IrMatchHistoryPoint']>, ParentType, ContextType>;
   match_last_fact_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   match_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   match_score_breakdown?: Resolver<Array<ResolversTypes['IrRuleOutcome']>, ParentType, ContextType>;
@@ -48917,7 +49061,26 @@ export type IrActivityPointResolvers<ContextType = any, ParentType extends Resol
   value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
+export type IrBatchStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrBatchStats'] = ResolversParentTypes['IrBatchStats']> = ResolversObject<{
+  backfilled?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entered?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  errors?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  rescored?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type IrConditionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrCondition'] = ResolversParentTypes['IrCondition']> = ResolversObject<{
+  applies_to_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  link?: Resolver<Maybe<ResolversTypes['IrGroupLink']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path_condition?: Resolver<Maybe<ResolversTypes['IrPathCondition']>, ParentType, ContextType>;
+}>;
+
 export type IrCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrCriterion'] = ResolversParentTypes['IrCriterion']> = ResolversObject<{
+  conditions?: Resolver<Array<ResolversTypes['IrCondition']>, ParentType, ContextType>;
   direction?: Resolver<ResolversTypes['IrDirection'], ParentType, ContextType>;
   from_group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   from_in_requirement?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -48930,6 +49093,11 @@ export type IrCriterionResolvers<ContextType = any, ParentType extends Resolvers
   relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   target_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   target_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrGroupLinkResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrGroupLink'] = ResolversParentTypes['IrGroupLink']> = ResolversObject<{
+  group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type IrInboxCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrInboxCounts'] = ResolversParentTypes['IrInboxCounts']> = ResolversObject<{
@@ -48958,6 +49126,17 @@ export type IrKiqResolvers<ContextType = any, ParentType extends ResolversParent
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type IrLastBatchResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrLastBatch'] = ResolversParentTypes['IrLastBatch']> = ResolversObject<{
+  at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  backfilled?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  duration_ms?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entered?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  errors?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  rescored?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
 export type IrMatchExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrMatchExplanation'] = ResolversParentTypes['IrMatchExplanation']> = ResolversObject<{
   anchor?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   anchor_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48976,9 +49155,20 @@ export type IrMatchExplanationResolvers<ContextType = any, ParentType extends Re
   relationship_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
+export type IrMatchHistoryPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrMatchHistoryPoint'] = ResolversParentTypes['IrMatchHistoryPoint']> = ResolversObject<{
+  at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  changes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  eligible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  trigger?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type IrPathConditionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPathCondition'] = ResolversParentTypes['IrPathCondition']> = ResolversObject<{
   direction?: Resolver<ResolversTypes['IrDirection'], ParentType, ContextType>;
   relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  target_group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   target_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   target_relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   targets?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
@@ -49016,12 +49206,34 @@ export type IrPreviewGroupResolvers<ContextType = any, ParentType extends Resolv
   unresolved_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
+export type IrProcessingErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrProcessingError'] = ResolversParentTypes['IrProcessingError']> = ResolversObject<{
+  at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  event_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrProcessingStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrProcessingStatus'] = ResolversParentTypes['IrProcessingStatus']> = ResolversObject<{
+  active_requirements?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  catchup_from_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  cursor_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  lag_events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  lag_seconds?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  last_batch?: Resolver<Maybe<ResolversTypes['IrLastBatch']>, ParentType, ContextType>;
+  last_error?: Resolver<Maybe<ResolversTypes['IrProcessingError']>, ParentType, ContextType>;
+  progress?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  state?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stream_head_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  stream_size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  totals?: Resolver<Maybe<ResolversTypes['IrBatchStats']>, ParentType, ContextType>;
+}>;
+
 export type IrRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrRule'] = ResolversParentTypes['IrRule']> = ResolversObject<{
   applies_to_criterion_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   applies_to_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  link?: Resolver<Maybe<ResolversTypes['IrGroupLink']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path_condition?: Resolver<Maybe<ResolversTypes['IrPathCondition']>, ParentType, ContextType>;
   points?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -49029,11 +49241,18 @@ export type IrRuleResolvers<ContextType = any, ParentType extends ResolversParen
 }>;
 
 export type IrRuleOutcomeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrRuleOutcome'] = ResolversParentTypes['IrRuleOutcome']> = ResolversObject<{
+  criterion_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  kind?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   points?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   rule_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrStoredCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrStoredCounts'] = ResolversParentTypes['IrStoredCounts']> = ResolversObject<{
+  entities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  items?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type IrSubjectGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrSubjectGroup'] = ResolversParentTypes['IrSubjectGroup']> = ResolversObject<{
@@ -52192,6 +52411,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionTaxiis?: Resolver<Maybe<ResolversTypes['IngestionTaxiiConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiisArgs>>;
   intelligenceRequirement?: Resolver<Maybe<ResolversTypes['IntelligenceRequirement']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementArgs, 'id'>>;
   intelligenceRequirementItems?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementItemConnection']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementItemsArgs, 'id'>>;
+  intelligenceRequirementMatch?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatch']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementMatchArgs, 'id'>>;
   intelligenceRequirementMatches?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatchConnection']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementMatchesArgs, 'id'>>;
   intelligenceRequirementPreview?: Resolver<ResolversTypes['IrPreview'], ParentType, ContextType, RequireFields<QueryIntelligenceRequirementPreviewArgs, 'input'>>;
   intelligenceRequirements?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementConnection']>, ParentType, ContextType, Partial<QueryIntelligenceRequirementsArgs>>;
@@ -56636,18 +56856,26 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IntrusionSetEdge?: IntrusionSetEdgeResolvers<ContextType>;
   IntrusionSetEditMutations?: IntrusionSetEditMutationsResolvers<ContextType>;
   IrActivityPoint?: IrActivityPointResolvers<ContextType>;
+  IrBatchStats?: IrBatchStatsResolvers<ContextType>;
+  IrCondition?: IrConditionResolvers<ContextType>;
   IrCriterion?: IrCriterionResolvers<ContextType>;
+  IrGroupLink?: IrGroupLinkResolvers<ContextType>;
   IrInboxCounts?: IrInboxCountsResolvers<ContextType>;
   IrItemData?: IrItemDataResolvers<ContextType>;
   IrKiq?: IrKiqResolvers<ContextType>;
+  IrLastBatch?: IrLastBatchResolvers<ContextType>;
   IrMatchExplanation?: IrMatchExplanationResolvers<ContextType>;
+  IrMatchHistoryPoint?: IrMatchHistoryPointResolvers<ContextType>;
   IrPathCondition?: IrPathConditionResolvers<ContextType>;
   IrPreview?: IrPreviewResolvers<ContextType>;
   IrPreviewCriterion?: IrPreviewCriterionResolvers<ContextType>;
   IrPreviewEntity?: IrPreviewEntityResolvers<ContextType>;
   IrPreviewGroup?: IrPreviewGroupResolvers<ContextType>;
+  IrProcessingError?: IrProcessingErrorResolvers<ContextType>;
+  IrProcessingStatus?: IrProcessingStatusResolvers<ContextType>;
   IrRule?: IrRuleResolvers<ContextType>;
   IrRuleOutcome?: IrRuleOutcomeResolvers<ContextType>;
+  IrStoredCounts?: IrStoredCountsResolvers<ContextType>;
   IrSubjectGroup?: IrSubjectGroupResolvers<ContextType>;
   IrTypeCount?: IrTypeCountResolvers<ContextType>;
   JSON?: GraphQLScalarType;

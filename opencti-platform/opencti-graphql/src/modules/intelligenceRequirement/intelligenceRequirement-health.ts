@@ -57,7 +57,7 @@ export const findRequirementHealthIssues = async (context: AuthContext, user: Au
         criterionId: c.id,
         title: `Criterion "${c.name}" brought ${lastDay} entities in 24 hours`,
         message: c.mode === 'auto'
-          ? 'Switch it to Propose, narrow its target types or filters, or add a required relevance rule.'
+          ? 'Switch it to Propose, narrow its target types or filters, or add a condition to it.'
           : 'Narrow its target types or filters, or add exclusion keywords.',
       });
     }
@@ -70,7 +70,7 @@ export const findRequirementHealthIssues = async (context: AuthContext, user: Au
           criterionId: c.id,
           title: `${rejected} entities from criterion "${c.name}" were rejected or removed in ${REJECTION_DAYS} days`,
           message: `${Math.round((rejected / (rejected + kept)) * 100)}% of what it brought recently was dismissed: `
-            + (c.kind === 'keywords' ? 'add exclusion keywords or switch it to Propose.' : 'narrow it, switch it to Propose, or add a required relevance rule.'),
+            + (c.kind === 'keywords' ? 'add exclusion keywords or switch it to Propose.' : 'narrow it, switch it to Propose, or add a condition to it.'),
         });
       }
     }

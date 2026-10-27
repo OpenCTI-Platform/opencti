@@ -8,6 +8,9 @@ export const IR_MATCH_STATUSES = ['auto', 'proposed', 'accepted', 'rejected', 'r
 // Statuses for which the entity is part of the requirement
 export const IR_MATCH_IN_STATUSES = ['auto', 'accepted'];
 
+// Part of the requirement: automatically or by an analyst, and meeting the conditions of the scope
+export const isInRequirement = (match: { match_status: string; match_excluded?: boolean | null }) => IR_MATCH_IN_STATUSES.includes(match.match_status) && !match.match_excluded;
+
 // Why an entity entered: one entry per (criterion, proof)
 export interface StoreIrMatchExplanation {
   criterion_id: string;
@@ -26,6 +29,18 @@ export interface StoreIrMatchExplanation {
   container_type?: string;
 }
 
+// One point of the history of an entity of the requirement: recorded when its score, its eligibility or its status changes,
+// dated with the stream event that caused it (a replayed event keeps its own date, so a catch-up does not flatten the history).
+export interface StoreIrMatchHistoryPoint {
+  at: string;
+  score: number;
+  eligible: boolean;
+  status: string;
+  kind: 'entry' | 'fact' | 'config' | 'decision';
+  trigger?: string; // what happened (new relationship, configuration changed, accepted by...)
+  changes: string[]; // what it changed (rules and conditions met or no longer met)
+}
+
 interface IntelligenceRequirementMatchFields {
   ir_id: string;
   match_entity_id: string;
@@ -38,6 +53,7 @@ interface IntelligenceRequirementMatchFields {
   match_score_breakdown: string; // serialized, computed by the relevance engine
   match_excluded: boolean;
   match_last_fact_at: Date;
+  match_history?: string; // serialized StoreIrMatchHistoryPoint[], capped
 }
 
 export interface BasicStoreEntityIntelligenceRequirementMatch extends BasicStoreEntity, IntelligenceRequirementMatchFields {}

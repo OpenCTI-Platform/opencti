@@ -7,7 +7,7 @@ import { checkStixCoreRelationshipMapping } from '../../database/stix';
 import { enforceEnableFeatureFlag } from '../../utils/access';
 import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
-import { normalizeIntelligenceRequirementInput, parseIrFilters, validateIntelligenceRequirementConfig } from './intelligenceRequirement-config';
+import { normalizeIntelligenceRequirementInput, parseIrFilters, typesOverlap, validateIntelligenceRequirementConfig } from './intelligenceRequirement-config';
 import type { StoreIrCriterion, StoreIrSubjectGroup } from './intelligenceRequirement-types';
 
 // Preview of a requirement configuration before saving it (AI assisted creation, review screen):
@@ -131,7 +131,11 @@ export const previewIntelligenceRequirement = async (context: AuthContext, user:
           preview.note = `${total} matching relationship(s) today${criterion.from_in_requirement ? ', plus the second hop once entities enter' : ''}.`;
         }
       }
-      if (criterion.kind === 'attribute') {
+      if (criterion.kind === 'attribute' && criterion.from_group_ids.length > 0) {
+        const members = groups.filter((g) => criterion.from_group_ids.includes(g.id)).reduce((sum, g) => sum + (g.matching_count ?? 0), 0);
+        preview.today_count = members;
+        preview.note = `${members} member(s) of its subject group(s) today (they enter when they are created or updated, and as soon as they become members).`;
+      } else if (criterion.kind === 'attribute') {
         const page = await pageEntitiesConnection<BasicStoreEntity>(context, user, targetTypes, { filters: parseIrFilters(criterion.target_filters), first: 1 });
         preview.today_count = page.pageInfo.globalCount ?? 0;
         preview.note = `${preview.today_count} matching entities today (they enter when they are created or updated).`;
@@ -148,6 +152,13 @@ export const previewIntelligenceRequirement = async (context: AuthContext, user:
       }
     } catch (e) {
       preview.warnings.push(`Could not count today's matches: ${errorMessage(e)}`);
+    }
+    const conditions = criterion.conditions ?? [];
+    if (conditions.length > 0) {
+      preview.note = `${preview.note ?? ''}${preview.note ? ' ' : ''}Counted before its ${conditions.length} condition(s): ${conditions.map((cond) => cond.name).join(' AND ')}.`;
+      conditions.filter((cond) => !typesOverlap(criterion.target_types, cond.applies_to_types)).forEach((cond) => {
+        preview.warnings.push(`Condition "${cond.name}" applies to ${cond.applies_to_types.join(', ')}, a type this criterion never brings: it has no effect.`);
+      });
     }
     if (!linkedCriteria.has(criterion.id) && config.kiqs.length > 0) preview.warnings.push('Not linked to any key intelligence question.');
     criteria.push(preview);

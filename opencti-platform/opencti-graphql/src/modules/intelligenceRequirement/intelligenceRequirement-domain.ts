@@ -6,19 +6,26 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, IR_MATCH_IN_STATUSES } from './intelligenceRequirementMatch-types';
 import { ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM } from './intelligenceRequirementItem-types';
 import { createEntity, distributionEntities, internalDeleteElementById, timeSeriesEntities } from '../../database/middleware';
+import { fetchStreamInfo } from '../../database/stream/stream-handler';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
+import { BUS_TOPICS, INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 import { enforceEnableFeatureFlag, SYSTEM_USER, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
 import type { EditInput, IntelligenceRequirementInput } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
-import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, type StoreEntityIntelligenceRequirement } from './intelligenceRequirement-types';
+import {
+  type BasicStoreEntityIntelligenceRequirement,
+  ENTITY_TYPE_INTELLIGENCE_REQUIREMENT,
+  type StoreEntityIntelligenceRequirement,
+  type StoreIrProcessing,
+} from './intelligenceRequirement-types';
 import { parseIntelligenceRequirement, serializeIntelligenceRequirementInput } from './intelligenceRequirement-config';
 import { rescoreRequirement } from './intelligenceRequirement-pipeline';
 import { checkRequirementHealth } from './intelligenceRequirement-health';
 import { generateRequirementBrief, markBriefStarted } from './intelligenceRequirement-brief';
+import { markRequirementDeleted } from './intelligenceRequirement-lifecycle';
 
 const rescanStartEventId = (rescanDays: number) => `${now() - (rescanDays * 24 * 3600 * 1000)}-0`;
 
@@ -40,7 +47,9 @@ export const intelligenceRequirementAdd = async (context: AuthContext, user: Aut
     { id: MEMBER_ACCESS_ALL, access_right: MEMBER_ACCESS_RIGHT_VIEW },
   ];
   const nowDate = new Date();
-  const finalInput = { ...attributes, lastEventId: rescanStartEventId(attributes.ir_rescan_days), authorized_members, created_at: nowDate, updated_at: nowDate };
+  const lastEventId = rescanStartEventId(attributes.ir_rescan_days);
+  const ir_processing = JSON.stringify({ catchup_from: lastEventId });
+  const finalInput = { ...attributes, lastEventId, ir_processing, authorized_members, created_at: nowDate, updated_at: nowDate };
   const created = await createEntity(context, user, finalInput, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
   await publishUserAction({
     user,
@@ -65,7 +74,10 @@ export const intelligenceRequirementUpdate = async (context: AuthContext, user: 
   const editInputs: EditInput[] = Object.entries(attributes).map(([key, value]) => ({ key, value: Array.isArray(value) ? value : [value] }));
   const updated = await editInternalObject<StoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, editInputs);
   // Relevance rules may have changed: rescore the entities of the requirement (threshold crossings create inbox items)
-  await rescoreRequirement(context, SYSTEM_USER, parseIntelligenceRequirement(updated as unknown as BasicStoreEntityIntelligenceRequirement));
+  await rescoreRequirement(context, SYSTEM_USER, parseIntelligenceRequirement(updated as unknown as BasicStoreEntityIntelligenceRequirement), {
+    kind: 'config',
+    trigger: `Configuration changed by ${user.name}`,
+  });
   return updated;
 };
 
@@ -74,31 +86,107 @@ export const intelligenceRequirementStatusUpdate = async (context: AuthContext, 
   return editInternalObject<StoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, [{ key: 'ir_status', value: [status] }]);
 };
 
-export const intelligenceRequirementDelete = async (context: AuthContext, user: AuthUser, id: string) => {
-  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
-  const deleted = await deleteInternalObject(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
-  // Delete the entities and inbox items of the requirement
+// Entities (whatever their status, eligible or not) and inbox items stored for a requirement
+export const countRequirementStoredContent = async (context: AuthContext, user: AuthUser, irId: string) => {
+  const filters = addFilter(undefined, 'ir_id', irId);
+  const count = (type: string) => countAllThings(context, user, { types: [type], indices: [READ_INDEX_INTERNAL_OBJECTS], filters });
+  return { entities: await count(ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH), items: await count(ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM) };
+};
+
+const deleteRequirementContent = async (context: AuthContext, id: string) => {
   const children = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM], {
     filters: addFilter(undefined, 'ir_id', id),
   });
   for (let i = 0; i < children.length; i += 1) {
     await internalDeleteElementById(context, SYSTEM_USER, children[i].id, children[i].entity_type);
   }
+  return children.length;
+};
+
+const DELETE_SWEEP_DELAY = 30 * 1000;
+
+/**
+ * Permanent deletion of a requirement and of everything stored for it (entities, inbox items, briefs).
+ * The engine stops writing into it at once; a second sweep removes what a batch in flight may still have written.
+ */
+export const intelligenceRequirementDelete = async (context: AuthContext, user: AuthUser, id: string) => {
+  enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
+  markRequirementDeleted(id);
+  const deleted = await deleteInternalObject(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
+  await deleteRequirementContent(context, id);
+  setTimeout(() => {
+    deleteRequirementContent(context, id)
+      .then((swept) => (swept > 0 ? logApp.info('[OPENCTI-MODULE] Intelligence requirement content swept after deletion', { requirement: id, swept }) : null))
+      .catch((err) => logApp.error('[OPENCTI-MODULE] Intelligence requirement deletion sweep error', { cause: err, requirement: id }));
+  }, DELETE_SWEEP_DELAY);
   return deleted;
 };
 
 /**
  * Engine side: move the stream position of a requirement without audit log.
  */
-export const updateIntelligenceRequirementLastEventId = async (context: AuthContext, user: AuthUser, id: string, lastEventId: string) => {
+export const updateIntelligenceRequirementLastEventId = async (context: AuthContext, user: AuthUser, id: string, lastEventId: string, processing?: StoreIrProcessing) => {
   return editInternalObject<StoreEntityIntelligenceRequirement>(
     context,
     user,
     id,
     ENTITY_TYPE_INTELLIGENCE_REQUIREMENT,
-    [{ key: 'lastEventId', value: [lastEventId] }],
+    [{ key: 'lastEventId', value: [lastEventId] }, ...(processing ? [{ key: 'ir_processing', value: [JSON.stringify(processing)] }] : [])],
     { auditLogEnabled: false },
   );
+};
+
+const LIVE_LAG_SECONDS = 120;
+const eventMs = (eventId: string | undefined | null) => {
+  const ms = Number.parseInt((eventId ?? '').split('-')[0], 10);
+  return Number.isNaN(ms) ? null : ms;
+};
+
+/**
+ * Where the requirement stands in the stream: live, catching up or paused, the progress of its catch-up,
+ * its lag behind the stream (in time, and an estimate in events), its last batch and its last error.
+ */
+export const requirementProcessingStatus = async (context: AuthContext, user: AuthUser, ir: BasicStoreEntityIntelligenceRequirement) => {
+  const processing = parseRequirementProcessing(ir);
+  const stream = await fetchStreamInfo();
+  const headMs = eventMs(stream.lastEventId) ?? Date.now();
+  const firstMs = eventMs(stream.firstEventId) ?? headMs;
+  const cursorMs = Math.min(eventMs(ir.lastEventId) ?? headMs, headMs);
+  const createdMs = new Date(ir.created_at ?? Date.now()).getTime();
+  const catchupFromMs = Math.max(eventMs(processing.catchup_from) ?? createdMs - (ir.ir_rescan_days ?? 30) * 24 * 3600 * 1000, firstMs);
+  const span = headMs - catchupFromMs;
+  const lagSeconds = Math.max(0, Math.round((headMs - cursorMs) / 1000));
+  const lagEvents = headMs > firstMs ? Math.round((stream.streamSize ?? 0) * ((headMs - cursorMs) / (headMs - firstMs))) : 0;
+  let state = 'catching_up';
+  if (ir.ir_status !== 'active') state = 'paused';
+  else if (lagSeconds <= LIVE_LAG_SECONDS) state = 'live';
+  const activeRequirements = await countAllThings(context, user, {
+    types: [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT],
+    indices: [READ_INDEX_INTERNAL_OBJECTS],
+    filters: addFilter(undefined, 'ir_status', 'active'),
+  });
+  return {
+    state,
+    progress: span > 0 ? Math.max(0, Math.min(100, Math.round(((cursorMs - catchupFromMs) / span) * 100))) : 100,
+    cursor_at: new Date(cursorMs).toISOString(),
+    stream_head_at: new Date(headMs).toISOString(),
+    catchup_from_at: new Date(catchupFromMs).toISOString(),
+    lag_seconds: lagSeconds,
+    lag_events: lagEvents,
+    stream_size: stream.streamSize ?? 0,
+    active_requirements: activeRequirements,
+    last_batch: processing.last_batch ?? null,
+    totals: processing.totals ?? null,
+    last_error: processing.last_error ?? null,
+  };
+};
+
+export const parseRequirementProcessing = (ir: BasicStoreEntityIntelligenceRequirement): StoreIrProcessing => {
+  try {
+    return JSON.parse(ir.ir_processing || '{}');
+  } catch {
+    return {};
+  }
 };
 
 // region list indicators (entities in the requirement, open inbox items, activity)

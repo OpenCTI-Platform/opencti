@@ -54,6 +54,7 @@ const INTELLIGENCE_REQUIREMENT_MATCH_DEFINITION: ModuleDefinition<StoreEntityInt
     { name: 'match_score', label: 'Requirement match score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag },
     { name: 'match_score_breakdown', label: 'Requirement match score breakdown', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false, featureFlag },
     { name: 'match_excluded', label: 'Requirement match excluded', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag },
+    { name: 'match_history', label: 'Requirement match history', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false, featureFlag },
     { name: 'match_last_fact_at', label: 'Requirement match last fact', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true, featureFlag },
   ],
   relations: [],

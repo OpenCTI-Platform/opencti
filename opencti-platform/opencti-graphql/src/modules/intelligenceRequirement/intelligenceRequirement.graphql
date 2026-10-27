@@ -71,12 +71,28 @@ type IrCriterion {
   target_filters: String
   keyword_fields: [String!]!
   mode: IrCriterionMode!
+  "Scope conditions: all must be met for an entity brought by the criterion to enter the requirement"
+  conditions: [IrCondition!]!
+}
+type IrCondition {
+  id: String!
+  name: String!
+  applies_to_types: [String!]!
+  filters: String
+  link: IrGroupLink
+  path_condition: IrPathCondition
+}
+"The entity has one of the relationship types with a member of one of the subject groups (object: it contains one)"
+type IrGroupLink {
+  relationship_types: [String!]!
+  group_ids: [String!]!
 }
 type IrPathCondition {
   relationship_types: [String!]!
   direction: IrDirection!
   target_relationship_type: String!
   target_ids: [String!]!
+  target_group_ids: [String!]!
   targets: [StixCoreObject!]!
 }
 type IrRule {
@@ -85,8 +101,10 @@ type IrRule {
   applies_to_types: [String!]!
   applies_to_criterion_id: String
   filters: String
+  link: IrGroupLink
   path_condition: IrPathCondition
   points: Int!
+  "Legacy: required rules are converted into scope conditions of the criteria"
   required: Boolean!
   enabled: Boolean!
 }
@@ -126,6 +144,10 @@ type IntelligenceRequirement implements InternalObject & BasicObject {
   ir_inbox_counts: IrInboxCounts!
   "Entities of the requirement per type (quick type filters), for the given statuses and exclusion"
   ir_entities_by_type(statuses: [IrMatchStatus!], excluded: Boolean): [IrTypeCount!]!
+  "Everything stored for the requirement, removed with it (entities whatever their status, inbox items)"
+  ir_stored_counts: IrStoredCounts!
+  "Where the requirement stands in the stream (catch-up, lag, last batch, last error)"
+  ir_processing_status: IrProcessingStatus!
   "AI Insight: prompt for an XTM One agent (content of the requirement and its questions)"
   ir_ai_prompt(language: String, reference_only: Boolean): String!
   ir_activity(days: Int): [IrActivityPoint!]!
@@ -176,6 +198,51 @@ type IrPreview {
   groups: [IrPreviewGroup!]!
   criteria: [IrPreviewCriterion!]!
 }
+type IrBatchStats {
+  events: Int!
+  entered: Int!
+  updated: Int!
+  rescored: Int!
+  backfilled: Int!
+  errors: Int!
+}
+type IrLastBatch {
+  at: DateTime!
+  duration_ms: Int!
+  events: Int!
+  entered: Int!
+  updated: Int!
+  rescored: Int!
+  backfilled: Int!
+  errors: Int!
+}
+type IrProcessingError {
+  at: DateTime!
+  message: String!
+  event_id: String
+}
+type IrProcessingStatus {
+  "live, catching_up or paused"
+  state: String!
+  "Progress of the catch-up, from its start to the head of the stream (0-100)"
+  progress: Int!
+  cursor_at: DateTime!
+  stream_head_at: DateTime!
+  catchup_from_at: DateTime!
+  lag_seconds: Int!
+  "Estimate: the stream does not count the events between two positions"
+  lag_events: Int!
+  stream_size: Int!
+  "Active requirements, processed one after the other by the engine"
+  active_requirements: Int!
+  last_batch: IrLastBatch
+  totals: IrBatchStats
+  last_error: IrProcessingError
+}
+type IrStoredCounts {
+  entities: Int!
+  items: Int!
+}
 type IrTypeCount {
   entity_type: String!
   count: Int!
@@ -222,12 +289,26 @@ input IrCriterionInput {
   target_filters: FilterGroup
   keyword_fields: [String!]
   mode: IrCriterionMode!
+  conditions: [IrConditionInput!]
+}
+input IrConditionInput {
+  id: String!
+  name: String!
+  applies_to_types: [String!]
+  filters: FilterGroup
+  link: IrGroupLinkInput
+  path_condition: IrPathConditionInput
+}
+input IrGroupLinkInput {
+  relationship_types: [String!]!
+  group_ids: [String!]!
 }
 input IrPathConditionInput {
   relationship_types: [String!]!
   direction: IrDirection!
   target_relationship_type: String!
   target_ids: [String!]!
+  target_group_ids: [String!]
 }
 input IrRuleInput {
   id: String!
@@ -235,6 +316,7 @@ input IrRuleInput {
   applies_to_types: [String!]
   applies_to_criterion_id: String
   filters: FilterGroup
+  link: IrGroupLinkInput
   path_condition: IrPathConditionInput
   points: Int!
   required: Boolean
@@ -327,6 +409,8 @@ type IntelligenceRequirementMatch implements InternalObject & BasicObject {
   match_score_breakdown: [IrRuleOutcome!]!
   match_excluded: Boolean!
   match_last_fact_at: DateTime
+  "Score, eligibility and status over time, dated with the events that changed them"
+  match_history: [IrMatchHistoryPoint!]!
 }
 enum IntelligenceRequirementMatchOrdering {
   match_score
@@ -355,15 +439,29 @@ extend type Query {
     filters: FilterGroup
     search: String
   ): IntelligenceRequirementMatchConnection @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  intelligenceRequirementMatch(id: ID!): IntelligenceRequirementMatch @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
 }
 # endregion
 
+type IrMatchHistoryPoint {
+  at: DateTime!
+  score: Int!
+  eligible: Boolean!
+  status: String!
+  "entry, fact, config or decision"
+  kind: String!
+  trigger: String
+  changes: [String!]!
+}
 type IrRuleOutcome {
   rule_id: String!
   name: String!
   points: Int!
   hit: Boolean!
   reason: String
+  "rule (relevance) or condition (scope)"
+  kind: String
+  criterion_id: String
 }
 
 # region inbox of a requirement

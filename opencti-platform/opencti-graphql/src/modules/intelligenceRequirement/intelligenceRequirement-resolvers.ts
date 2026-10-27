@@ -17,6 +17,8 @@ import {
   intelligenceRequirementHealthCheck,
   intelligenceRequirementBriefGenerate,
   countRequirementEntitiesByType,
+  countRequirementStoredContent,
+  requirementProcessingStatus,
   requirementActivity,
 } from './intelligenceRequirement-domain';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
@@ -25,6 +27,7 @@ import { findItemsPaginated, parseItemData } from './intelligenceRequirementItem
 import { decideItem, decideItems, setMatchesStatus, setMatchStatus } from './intelligenceRequirement-pipeline';
 import { buildRequirementAiPrompt, buildRequirementAiReference, generateRequirementAiInsight } from './intelligenceRequirement-ai';
 import { previewIntelligenceRequirement } from './intelligenceRequirement-preview';
+import { parseMatchHistory } from './intelligenceRequirement-scoring';
 
 const parseJson = <T>(value: string | null | undefined, fallback: T): T => {
   try {
@@ -43,6 +46,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     intelligenceRequirement: (_, { id }, context) => findById(context, context.user, id),
     intelligenceRequirements: (_, args, context) => findIntelligenceRequirementPaginated(context, context.user, args),
     intelligenceRequirementMatches: (_, { id, ...args }, context) => findMatchesPaginated(context, context.user, id, args),
+    intelligenceRequirementMatch: (_, { id }, context) => loadMatchById(context, context.user, id),
     intelligenceRequirementItems: (_, { id, ...args }, context) => findItemsPaginated(context, context.user, id, args),
   },
   IntelligenceRequirement: {
@@ -55,6 +59,8 @@ const intelligenceRequirementResolvers: Resolvers = {
     ir_entities_count: (ir, _, context) => countRequirementEntities(context, context.user, ir.id),
     ir_inbox_open_count: (ir, _, context) => countRequirementOpenItems(context, context.user, ir.id),
     ir_inbox_counts: (ir, _, context) => countRequirementInbox(context, context.user, ir.id),
+    ir_stored_counts: (ir, _, context) => countRequirementStoredContent(context, context.user, ir.id),
+    ir_processing_status: (ir, _, context) => requirementProcessingStatus(context, context.user, ir),
     ir_entities_by_type: (ir, { statuses, excluded }, context) => countRequirementEntitiesByType(context, context.user, ir.id, statuses, excluded),
     ir_ai_prompt: (ir, { language, reference_only }, context) => (reference_only
       ? buildRequirementAiReference(context, context.user, ir, language || 'English')
@@ -75,6 +81,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     },
   },
   IrPathCondition: {
+    target_group_ids: (condition) => condition.target_group_ids ?? [],
     targets: async (condition, _, context) => {
       if (!condition.target_ids?.length) return [];
       const entities = await internalFindByIds<BasicStoreEntity>(context, context.user, condition.target_ids);
@@ -90,6 +97,7 @@ const intelligenceRequirementResolvers: Resolvers = {
     match_excluded: (match) => match.match_excluded ?? false,
     match_score: (match) => match.match_score ?? 0,
     match_score_breakdown: (match) => parseJson(match.match_score_breakdown, []),
+    match_history: (match) => parseMatchHistory(match),
   },
   IntelligenceRequirementItem: {
     created_at: (item) => item.created_at ?? new Date(0),
