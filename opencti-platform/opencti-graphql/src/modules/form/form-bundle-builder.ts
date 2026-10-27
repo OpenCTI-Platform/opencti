@@ -13,9 +13,9 @@ import { transformSpecialFields } from './form-fields-converter';
 import { completeEntity } from './form-entity-builder';
 import { loadFormEntity } from './form-utils';
 import { buildMaterializeOptions, materializeEntityFromFields } from './form-entity-materializer';
-import { materializePendingRoots, type PendingUpload, withPendingExternalReferenceFiles } from './form-pending';
+import { materializePendingRoots, type PendingUpload, withArtifactFileNotImported, withPendingExternalReferenceFiles } from './form-pending';
 
-const toStix = (entity: StoreEntity) => withPendingExternalReferenceFiles(convertStoreToStix_2_1(entity), entity);
+const toStix = (entity: StoreEntity) => withArtifactFileNotImported(withPendingExternalReferenceFiles(convertStoreToStix_2_1(entity), entity));
 
 type MainEntitySourceMode = 'lookup' | 'multiple' | 'parsed' | 'default';
 

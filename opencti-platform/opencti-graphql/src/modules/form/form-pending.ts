@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { FunctionalError } from '../../config/errors';
 import { internalLoadById } from '../../database/middleware-loader';
 import {
@@ -13,13 +14,13 @@ import { isNotEmptyField } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { schemaTypesDefinition } from '../../schema/schema-types';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixDomainObject, isStixDomainObjectIdentity } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { FormFieldType, type FormSchemaDefinition } from './form-types';
-import { STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { PENDING_EXTERNAL_REFERENCE } from './form-pending-marker';
 
 /**
@@ -296,6 +297,22 @@ const applyPendingFiles = (entity: Record<string, any>, files: PendingFile[] | u
     tokenToUri.set(tokens[index], `data:${image.uploadMimeType};base64,${image.data}`);
   });
   forEachTempImage(entity, (token) => tokenToUri.get(token));
+};
+
+/**
+ * An Artifact is the file uploaded with it: like artifactImport, its hashes, mime type and name come from that file.
+ * Gap: an archive protected by the "infected" password is not extracted, as artifactImport does.
+ */
+const applyArtifactFile = (entity: Record<string, any>) => {
+  if (entity.entity_type !== ENTITY_HASHED_OBSERVABLE_ARTIFACT || !entity.x_opencti_files) return;
+  if (entity.x_opencti_files.length > 1) throw FunctionalError('An Artifact created in a form takes one file', { files: entity.x_opencti_files.length });
+  const [{ name, data, mime_type }] = entity.x_opencti_files;
+  const content = Buffer.from(data, 'base64');
+  const hash = (algorithm: string) => crypto.createHash(algorithm).update(content).digest('hex');
+  entity.hashes = { MD5: hash('md5'), 'SHA-1': hash('sha1'), 'SHA-256': hash('sha256'), 'SHA-512': hash('sha512') };
+  entity.mime_type = mime_type;
+  entity.x_opencti_additional_names = [name];
+  if (isEmptyInput(entity.x_opencti_description)) entity.x_opencti_description = 'Artifact uploaded';
 };
 
 // A pooled external reference: its attributes, its files and the markdown images of its description.
@@ -649,6 +666,7 @@ export const materializePendingRoots = async (
   return Promise.all(toArray(roots).map(async (pending) => {
     const entity = buildPendingAttributes(pending);
     applyPendingFiles(entity, pending.files, uploads);
+    applyArtifactFile(entity);
     for (const [key, refs] of Object.entries(getPendingRefs(pending)) as [PendingRefKey, PendingRef | PendingRef[]][]) {
       const resolved = await resolveRefs(key, toArray(refs));
       if (key === INPUT_CREATED_BY) {
@@ -670,6 +688,16 @@ export const materializePendingRoots = async (
  * external references created on submission travel next to them (x_opencti_files with their data), the
  * import attaches them to the external reference.
  */
+// An Artifact is its file: like artifactImport, the import must not run the file import connectors on it
+export const withArtifactFileNotImported = <T extends Record<string, any>>(stix: T): T => {
+  if (stix.type === 'artifact') {
+    (stix.extensions?.[STIX_EXT_OCTI]?.files ?? []).forEach((file: Record<string, any>) => {
+      file.no_trigger_import = true;
+    });
+  }
+  return stix;
+};
+
 export const withPendingExternalReferenceFiles = <T extends Record<string, any>>(stix: T, entity: Record<string, any>): T => {
   const references = entity[INPUT_EXTERNAL_REFS];
   // Observables keep their external references in their OpenCTI extension, the other objects at the top level

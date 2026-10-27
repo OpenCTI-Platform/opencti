@@ -17,12 +17,13 @@ import {
   resolvePendingFieldRefs,
   validatePendingPayload,
   validatePendingRoots,
+  withArtifactFileNotImported,
   withPendingExternalReferenceFiles,
   type PendingObject,
 } from '../../../../src/modules/form/form-pending';
 import type { AuthContext } from '../../../../src/types/user';
 import { resolveMainEntityAuthorFromValues } from '../../../../src/modules/form/form-domain';
-import { STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
 import type { FormSchemaDefinition } from '../../../../src/modules/form/form-types';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
@@ -789,6 +790,41 @@ describe('files of pending objects', () => {
   it('should reject a pooled file pointing outside the uploads', () => {
     const pooled = { ...extRef('e1'), files: [{ name: 'a.pdf', uploadIndex: 3 }] };
     expect(() => validatePendingPayload({ pendingObjects: [pooled] }, 1)).toThrow('Pending file refers to a missing upload');
+  });
+});
+
+describe('Artifact created in a form', () => {
+  const artifact = (files: PendingObject['files']): PendingObject => ({ entityType: 'Artifact', input: { type: 'Artifact', Artifact: { hashes: [{ algorithm: 'MD5', hash: 'typed' }] } }, files });
+  const upload = { filename: 'sample.bin', mimetype: 'application/octet-stream', data: 'YWJj' }; // "abc"
+
+  it('should take its hashes, mime type and name from its file, like artifactImport', async () => {
+    const [entity] = await materializePendingRoots(context, user, [artifact([{ name: 'sample.bin', uploadIndex: 0 }])], {}, [upload]) as any[];
+    expect(entity).toMatchObject({
+      entity_type: 'Artifact',
+      hashes: {
+        MD5: '900150983cd24fb0d6963f7d28e17f72',
+        'SHA-1': 'a9993e364706816aba3e25717850c26c9cd0d89d',
+        'SHA-256': 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+        'SHA-512': expect.stringMatching(/^[0-9a-f]{128}$/),
+      },
+      mime_type: 'application/octet-stream',
+      x_opencti_additional_names: ['sample.bin'],
+      x_opencti_description: 'Artifact uploaded',
+      x_opencti_files: [{ name: 'sample.bin', data: 'YWJj', mime_type: 'application/octet-stream' }],
+    });
+  });
+
+  it('should refuse an Artifact with more than one file', async () => {
+    const files = [{ name: 'a', uploadIndex: 0 }, { name: 'b', uploadIndex: 1 }];
+    await expect(materializePendingRoots(context, user, [artifact(files)], {}, [upload, upload])).rejects.toThrow('An Artifact created in a form takes one file');
+  });
+
+  it('should not run the file import connectors on the file of an Artifact', () => {
+    const files = () => [{ name: 'sample.bin', data: 'YWJj' }];
+    const stix: any = withArtifactFileNotImported({ type: 'artifact', extensions: { [STIX_EXT_OCTI]: { files: files() } } });
+    expect(stix.extensions[STIX_EXT_OCTI].files).toEqual([{ name: 'sample.bin', data: 'YWJj', no_trigger_import: true }]);
+    const other: any = withArtifactFileNotImported({ type: 'malware', extensions: { [STIX_EXT_OCTI]: { files: files() } } });
+    expect(other.extensions[STIX_EXT_OCTI].files).toEqual(files());
   });
 });
 
