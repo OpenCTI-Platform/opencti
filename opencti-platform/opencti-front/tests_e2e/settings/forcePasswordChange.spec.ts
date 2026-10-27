@@ -207,7 +207,7 @@ test.describe('Force password change - password history', { tag: ['@ce', '@group
     const loginPage = new LoginFormPageModel(page);
     await page.context().clearCookies();
     await page.goto('/');
-    await loginPage.login(HISTORY_USER.email, HISTORY_USER.password);
+    await loginPage.login(HISTORY_USER.email, HISTORY_USER.password, { expectPasswordChange: true });
 
     await expect(page.getByText('Must be different from your last 2 passwords')).toBeVisible({ timeout: 30000 });
     await page.getByLabel('New password').fill(HISTORY_USER.password);
