@@ -50,6 +50,7 @@ const stixCoreObjectsTimeSeriesBreakdownQuery = graphql`
       filters: $filters
     ) {
       truncated
+      dates
       series {
         label
         isOther
@@ -69,10 +70,7 @@ const stixCoreObjectsTimeSeriesBreakdownQuery = graphql`
             name
           }
         }
-        data {
-          date
-          value
-        }
+        values
       }
     }
   }

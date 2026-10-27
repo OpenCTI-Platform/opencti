@@ -11,6 +11,7 @@ import {
   getBreakdownFieldOptions,
   getBreakdownTickAmount,
   getRenderedBarsBudget,
+  getRenderedPointsBudget,
   getWidgetBreakdownLimit,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
@@ -228,6 +229,26 @@ describe('rendered bars budget', () => {
   });
 });
 
+describe('rendered points budget', () => {
+  it('shares the bars budget between every series', () => {
+    expect(getRenderedPointsBudget('vertical-bar', 800, 20)).toEqual(getRenderedBarsBudget(800));
+  });
+
+  it('gives each line or area series a point every 2 pixels', () => {
+    expect(getRenderedPointsBudget('line', 700, 1)).toEqual(350);
+    expect(getRenderedPointsBudget('area', 700, 50)).toEqual(350 * 50);
+  });
+
+  it('gives each heatmap series a cell every 6 pixels', () => {
+    expect(getRenderedPointsBudget('heatmap', 600, 10)).toEqual(100 * 10);
+  });
+
+  it('keeps a few points per series on a tiny or unknown width', () => {
+    expect(getRenderedPointsBudget('heatmap', 12, 2)).toEqual(10 * 2);
+    expect(getRenderedPointsBudget('line', 0, 1)).toEqual((MAX_RENDERED_BARS * 2) / 2);
+  });
+});
+
 describe('nextBreakdownChartWidth', () => {
   it('takes the first measured width', () => {
     expect(nextBreakdownChartWidth(undefined, 800)).toEqual(800);
@@ -255,7 +276,7 @@ describe('coarsenSeriesForRendering', () => {
     const result = coarsenSeriesForRendering(series, 'day', 10);
     expect(result.interval).toEqual('day');
     expect(result.series).toBe(series);
-    expect(result.barsCount).toEqual(3);
+    expect(result.pointsCount).toEqual(3);
   });
 
   it('sums days into weeks starting on Monday', () => {
@@ -277,7 +298,7 @@ describe('coarsenSeriesForRendering', () => {
 
     const toWeeks = coarsenSeriesForRendering(series, 'day', 1200);
     expect(toWeeks.interval).toEqual('week');
-    expect(toWeeks.barsCount).toBeLessThanOrEqual(1200);
+    expect(toWeeks.pointsCount).toBeLessThanOrEqual(1200);
 
     const toMonths = coarsenSeriesForRendering(series, 'day', 600);
     expect(toMonths.interval).toEqual('month');
@@ -293,7 +314,7 @@ describe('coarsenSeriesForRendering', () => {
     expect(coarsenSeriesForRendering(series, 'day', MIN_RENDERED_BARS).interval).toEqual('week');
     const result = coarsenSeriesForRendering(series, 'week', 20);
     expect(result.interval).toEqual('month');
-    expect(result.barsCount).toEqual(13);
+    expect(result.pointsCount).toEqual(13);
   });
 
   it('never goes beyond years', () => {

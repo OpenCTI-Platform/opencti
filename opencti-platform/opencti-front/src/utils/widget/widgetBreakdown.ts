@@ -140,8 +140,15 @@ export const isWidgetBreakdownActive = (widget: Widget, host?: WidgetHost) => {
 export const MIN_RENDERED_BARS = 150;
 export const MAX_RENDERED_BARS = 600;
 export const PIXELS_PER_BAR = 2;
+// Lines, areas and heatmaps draw every series across the whole width: a point closer than
+// PIXELS_PER_LINE_POINT to the next one, or a heatmap cell thinner than PIXELS_PER_HEATMAP_CELL,
+// adds cost (SVG nodes, path length, hover lookups) without adding readable detail
+export const PIXELS_PER_LINE_POINT = 2;
+export const PIXELS_PER_HEATMAP_CELL = 6;
+const MIN_RENDERED_POINTS_PER_SERIES = 10;
 export const PIXELS_PER_X_LABEL = 60;
-export const ANIMATION_BAR_THRESHOLD = 300;
+// Animating more points than this blocks the main thread for seconds, whatever the chart type
+export const ANIMATION_POINTS_THRESHOLD = 300;
 // Relative change under which a new chart width is ignored, to not redraw the chart on small resizes
 const CHART_WIDTH_HYSTERESIS = 0.2;
 
@@ -151,6 +158,18 @@ const CHART_WIDTH_HYSTERESIS = 0.2;
 export const getRenderedBarsBudget = (width: number) => {
   if (!(width > 0)) return MAX_RENDERED_BARS;
   return Math.min(MAX_RENDERED_BARS, Math.max(MIN_RENDERED_BARS, Math.floor(width / PIXELS_PER_BAR)));
+};
+
+/**
+ * Number of points the chart can draw for a given width in pixels: bars share the width between
+ * every series, while lines, areas and heatmaps draw each series across the whole width.
+ */
+export const getRenderedPointsBudget = (type: string, width: number, seriesCount: number) => {
+  if (type === 'vertical-bar') return getRenderedBarsBudget(width);
+  const chartWidth = width > 0 ? width : MAX_RENDERED_BARS * PIXELS_PER_BAR;
+  const pixelsPerPoint = type === 'heatmap' ? PIXELS_PER_HEATMAP_CELL : PIXELS_PER_LINE_POINT;
+  const pointsPerSeries = Math.max(MIN_RENDERED_POINTS_PER_SERIES, Math.floor(chartWidth / pixelsPerPoint));
+  return pointsPerSeries * Math.max(1, seriesCount);
 };
 
 /**
@@ -208,19 +227,19 @@ const sumByInterval = (data: TimeSeriesPoint[], interval: string): TimeSeriesPoi
 };
 
 /**
- * Sums the series into coarser intervals until the chart draws at most `maxBars` bars.
+ * Sums the series into coarser intervals until the chart draws at most `maxPoints` points.
  * Buckets are always rebuilt from the original points, so counts stay exact when starting
  * from days; starting from weeks, a week overlapping two months counts in the month of its Monday.
  */
 export const coarsenSeriesForRendering = <T extends { data: TimeSeriesPoint[] }>(
   series: T[],
   interval: string,
-  maxBars = MAX_RENDERED_BARS,
+  maxPoints = MAX_RENDERED_BARS,
 ) => {
-  const countBars = (candidate: T[]) => candidate.reduce((count, serie) => count + serie.data.length, 0);
+  const countPoints = (candidate: T[]) => candidate.reduce((count, serie) => count + serie.data.length, 0);
   let renderedInterval = interval;
   let renderedSeries = series;
-  while (countBars(renderedSeries) > maxBars && COARSER_INTERVAL[renderedInterval]) {
+  while (countPoints(renderedSeries) > maxPoints && COARSER_INTERVAL[renderedInterval]) {
     const coarserInterval = COARSER_INTERVAL[renderedInterval];
     renderedInterval = coarserInterval;
     renderedSeries = series.map((serie) => ({ ...serie, data: sumByInterval(serie.data, coarserInterval) }));
@@ -228,6 +247,6 @@ export const coarsenSeriesForRendering = <T extends { data: TimeSeriesPoint[] }>
   return {
     series: renderedSeries,
     interval: renderedInterval,
-    barsCount: countBars(renderedSeries),
+    pointsCount: countPoints(renderedSeries),
   };
 };

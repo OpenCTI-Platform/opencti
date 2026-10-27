@@ -146,7 +146,7 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['user-d', 'user-c']);
   });
 
-  it('should forward the asc order to the candidates aggregation only in asc', async () => {
+  it('should order the candidates aggregation by value, like the selection', async () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('user-a', 10)]);
     vi.mocked(engine.elFindByIds).mockResolvedValue({ 'user-a': makeEntity('user-a', 'Alice') } as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
@@ -154,9 +154,10 @@ describe('timeSeriesBreakdownEntities', () => {
     await breakdown({ field: 'creator_id', order: 'asc' });
     expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).order).toEqual('asc');
 
+    // Not the default order by number of entities: inferred entities weigh differently
     for (const order of ['desc', null, undefined]) {
       await breakdown({ field: 'creator_id', order });
-      expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).order).toBeUndefined();
+      expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).order).toEqual('desc');
     }
   });
 
@@ -221,7 +222,10 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(other.label).toEqual('Other');
     expect(other.entity).toBeNull();
     expect(other.value).toEqual(7);
-    expect(other.data.map((point) => point.value)).toEqual([2, 0, 5]);
+    expect(other.values).toEqual([2, 0, 5]);
+    // The dates are sent once, shared by every series
+    expect(result.dates).toEqual(['2026-01-01T00:00:00.000Z', '2026-01-02T00:00:00.000Z', '2026-01-03T00:00:00.000Z']);
+    expect(result.series.every((serie) => serie.values.length === result.dates.length)).toBe(true);
   });
 
   it('should not add the Other series unless it is requested', async () => {
@@ -248,6 +252,31 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual([]);
     expect(result.series.map((serie) => serie.label)).toEqual(['Other']);
     expect(result.series[0].value).toEqual(3);
+  });
+
+  it('should reject an unsupported interval before querying', async () => {
+    const actualEngine = await vi.importActual<typeof engine>('../../../src/database/engine');
+    vi.mocked(engine.getHistogramDateFormat).mockImplementation(actualEngine.getHistogramDateFormat);
+
+    await expect(breakdown({ field: 'creator_id', interval: 'minute' })).rejects.toThrow('Unsupported interval');
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
+  });
+
+  it('should end the period now when no end date is given', async () => {
+    // Without it, the histogram would create a bucket for every day up to the most recent entity
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('user-a', 10)]);
+    vi.mocked(engine.elFindByIds).mockResolvedValue({ 'user-a': makeEntity('user-a', 'Alice') } as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+    const recentStartDate = new Date(Date.now() - 2 * 86400000);
+
+    const before = Date.now();
+    const result = await breakdown({ field: 'creator_id', startDate: recentStartDate, endDate: undefined });
+
+    const histogramOptions = vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3] as any;
+    expect(histogramOptions.endDate).toBeInstanceOf(Date);
+    expect(histogramOptions.endDate.getTime()).toBeGreaterThanOrEqual(before);
+    expect((vi.mocked(engine.elAggregationCount).mock.calls[0][3] as any).endDate).toEqual(histogramOptions.endDate);
+    expect(result.dates).toHaveLength(3);
   });
 
   it('should reject a breakdown exceeding the maximum number of buckets', async () => {
@@ -278,9 +307,9 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(result.truncated).toBe(true);
     expect(result.series.map((serie) => (serie.entity as any)?.name)).toEqual(['Alice', 'Bob']);
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['user-a', 'user-b']);
-    expect(result.series[0].data.map((point) => point.value)).toEqual([0, 4, 0]);
+    expect(result.series[0].values).toEqual([0, 4, 0]);
     // A value without any histogram bucket still gets a full zero series
-    expect(result.series[1].data.map((point) => point.value)).toEqual([0, 0, 0]);
+    expect(result.series[1].values).toEqual([0, 0, 0]);
   });
 
   it('should not be truncated when every usable value fits in the limit', async () => {
@@ -345,7 +374,7 @@ describe('timeSeriesBreakdownEntities', () => {
 
     const result = await breakdown({ field: 'creator_id' });
 
-    expect(result).toEqual({ truncated: false, series: [] });
+    expect(result).toEqual({ truncated: false, dates: [], series: [] });
     expect(engine.elHistogramBreakdownCount).not.toHaveBeenCalled();
   });
 });

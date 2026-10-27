@@ -36622,17 +36622,18 @@ export type TimeSeries = {
 
 export type TimeSeriesBreakdown = {
   __typename?: 'TimeSeriesBreakdown';
+  dates: Array<Scalars['DateTime']['output']>;
   series: Array<TimeSeriesBreakdownSerie>;
   truncated: Scalars['Boolean']['output'];
 };
 
 export type TimeSeriesBreakdownSerie = {
   __typename?: 'TimeSeriesBreakdownSerie';
-  data?: Maybe<Array<Maybe<TimeSeries>>>;
   entity?: Maybe<StixObjectOrStixRelationshipOrCreator>;
   isOther: Scalars['Boolean']['output'];
   label: Scalars['String']['output'];
   value?: Maybe<Scalars['Int']['output']>;
+  values: Array<Scalars['Int']['output']>;
 };
 
 export enum TokenDuration {
@@ -54183,16 +54184,17 @@ export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type TimeSeriesBreakdownResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeriesBreakdown'] = ResolversParentTypes['TimeSeriesBreakdown']> = ResolversObject<{
+  dates?: Resolver<Array<ResolversTypes['DateTime']>, ParentType, ContextType>;
   series?: Resolver<Array<ResolversTypes['TimeSeriesBreakdownSerie']>, ParentType, ContextType>;
   truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type TimeSeriesBreakdownSerieResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeriesBreakdownSerie'] = ResolversParentTypes['TimeSeriesBreakdownSerie']> = ResolversObject<{
-  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType>;
   entity?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   isOther?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
 }>;
 
 export type TokenGeneratedResolvers<ContextType = any, ParentType extends ResolversParentTypes['TokenGenerated'] = ResolversParentTypes['TokenGenerated']> = ResolversObject<{

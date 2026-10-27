@@ -29,11 +29,13 @@ import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from 
 import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
+  buildTimeSeriesAxis,
   countTimeSeriesIntervals,
   extractIdsFromStoreObject,
   extractObjectsPirsFromInputs,
   extractObjectsRestrictionsFromInputs,
   fillTimeSeries,
+  fillTimeSeriesValues,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isDraftIndex,
@@ -61,6 +63,7 @@ import {
   elFindByIds,
   type ElFindByIdsOpts,
   elHistogramBreakdownCount,
+  getHistogramDateFormat,
   HISTOGRAM_BREAKDOWN_OTHER_KEY,
   elHistogramCount,
   elIndexElements,
@@ -953,6 +956,8 @@ const timeSeriesBreakdown = async (
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
   const isAscending = args.order === 'asc';
   const withOther = args.includeOther === true;
+  // Refuse an unsupported interval before it is used to size the request
+  getHistogramDateFormat(interval);
   const intervalsCount = countTimeSeriesIntervals(startDate, endDate, interval);
   // The Other series is one more series of points
   const seriesCount = seriesLimit + (withOther ? 1 : 0);
@@ -970,12 +975,12 @@ const timeSeriesBreakdown = async (
     intervalInclude: true,
   };
   // 1. Discover the candidate values over the whole period. Vocabulary and enum values keep their raw form.
-  // In asc, the terms aggregation itself is ordered ascending, so its capped page holds the lowest values
+  // The terms aggregation is ordered like the selection below, so its capped page holds the right values
   const candidates = await elAggregationCount(context, user, indices, {
     ...breakdownArgs,
     convertEntityTypeLabel: true,
     normalizeLabel: false,
-    order: isAscending ? 'asc' : undefined,
+    order: isAscending ? 'asc' : 'desc',
   });
   // desc keeps the values with the highest total over the period, asc the lowest ones
   const sortedCandidates = R.sortWith(
@@ -991,7 +996,7 @@ const timeSeriesBreakdown = async (
   // (in asc, the true lowest values may be among them)
   const truncated = usableCandidates.length > seriesLimit || candidates.length >= MAX_AGGREGATION_SIZE;
   if (selected.length === 0 && !withOther) {
-    return { truncated, series: [] };
+    return { truncated, dates: [], series: [] };
   }
   // 3. Count every selected value, and the entities carrying none of them, over time in a single query
   const histograms = await elHistogramBreakdownCount(context, user, indices, {
@@ -1000,12 +1005,14 @@ const timeSeriesBreakdown = async (
     keys: selected.map((candidate) => candidate.key),
     withOther,
   });
+  // Every series shares the same dates: they are sent once, each series only carries its values
+  const axis = buildTimeSeriesAxis(startDate, endDate, interval);
   const series = selected.map(({ label, value, entity, key }) => ({
     label,
     value,
     entity,
     isOther: false,
-    data: fillTimeSeries(startDate, endDate, interval, histograms.get(key) ?? []),
+    values: fillTimeSeriesValues(axis, histograms.get(key) ?? []),
   }));
   if (withOther) {
     const otherPoints = histograms.get(HISTOGRAM_BREAKDOWN_OTHER_KEY) ?? [];
@@ -1014,10 +1021,10 @@ const timeSeriesBreakdown = async (
       value: otherPoints.reduce((total, point) => total + point.value, 0),
       entity: null,
       isOther: true,
-      data: fillTimeSeries(startDate, endDate, interval, otherPoints),
+      values: fillTimeSeriesValues(axis, otherPoints),
     });
   }
-  return { truncated, series };
+  return { truncated, dates: axis.dates, series };
 };
 const checkTimeSeriesBreakdownLimit = (limit: number | null | undefined) => {
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
@@ -1034,7 +1041,10 @@ export const timeSeriesBreakdownEntities = async (
   checkTimeSeriesBreakdownLimit(args.limit);
   const breakdownField = resolveBreakdownField(types, args.field);
   const indices = args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES;
-  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(types, args), args);
+  // Without an end date, the histogram would create every empty bucket up to the most recent entity,
+  // a date in the future included, past the size checked above: the period always ends
+  const boundedArgs = { ...args, endDate: args.endDate ?? new Date() };
+  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(types, boundedArgs), boundedArgs);
 };
 export const timeSeriesRelations = async (
   context: AuthContext,

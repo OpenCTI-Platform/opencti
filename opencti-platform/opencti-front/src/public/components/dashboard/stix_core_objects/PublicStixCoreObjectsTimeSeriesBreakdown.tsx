@@ -27,6 +27,7 @@ const publicStixCoreObjectsTimeSeriesBreakdownQuery = graphql`
       widgetId: $widgetId
     ) {
       truncated
+      dates
       series {
         label
         isOther
@@ -46,10 +47,7 @@ const publicStixCoreObjectsTimeSeriesBreakdownQuery = graphql`
             name
           }
         }
-        data {
-          date
-          value
-        }
+        values
       }
     }
   }

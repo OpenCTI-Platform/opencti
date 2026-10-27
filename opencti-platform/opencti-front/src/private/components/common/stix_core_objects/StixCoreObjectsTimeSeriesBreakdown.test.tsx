@@ -109,13 +109,14 @@ const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>([
 ]);
 const userContext = createMockUserContext({ schema: { filterKeysSchema } });
 
-const dailyData = (days: number) => Array.from({ length: days }, (_, i) => ({
-  date: new Date(Date.UTC(2025, 9, 1 + i)).toISOString(),
-  value: i % 3,
-}));
+const dailyValues = (days: number) => Array.from({ length: days }, (_, i) => i % 3);
 
-const respond = (series: unknown[], truncated = false) => {
-  mocks.response = { stixCoreObjectsTimeSeriesBreakdown: { truncated, series } };
+type SerieFixture = { label: string; isOther?: boolean; entity: Record<string, string> | null; values: number[] };
+// The dates are shared by every series, which carry one value per date
+const respond = (series: SerieFixture[], truncated = false) => {
+  const days = Math.max(0, ...series.map((serie) => serie.values.length));
+  const dates = Array.from({ length: days }, (_, i) => new Date(Date.UTC(2025, 9, 1 + i)).toISOString());
+  mocks.response = { stixCoreObjectsTimeSeriesBreakdown: { truncated, dates, series } };
 };
 
 const render = (widget: Widget) => testRender(
@@ -179,16 +180,16 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
   it('names the series after the entity, or the translated entity type', () => {
     respond([
-      { label: 'user-id', entity: { id: 'user-id', name: 'Alice' }, data: dailyData(3) },
-      { label: 'unresolved-id', entity: null, data: dailyData(3) },
+      { label: 'user-id', entity: { id: 'user-id', name: 'Alice' }, values: dailyValues(3) },
+      { label: 'unresolved-id', entity: null, values: dailyValues(3) },
     ]);
     render(makeWidget('line', { breakdownBy: 'creator_id' }));
     expect(mocks.lines.mock.calls[0][0].series.map((serie: { name: string }) => serie.name)).toEqual(['Alice', 'unresolved-id']);
 
     vi.clearAllMocks();
     respond([
-      { label: 'Report', entity: null, data: dailyData(3) },
-      { label: 'Not-A-Translated-Type', entity: null, data: dailyData(3) },
+      { label: 'Report', entity: null, values: dailyValues(3) },
+      { label: 'Not-A-Translated-Type', entity: null, values: dailyValues(3) },
     ]);
     render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
     const names = mocks.areas.mock.calls[0][0].series.map((serie: { name: string }) => serie.name);
@@ -198,8 +199,8 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
   it('names the other serie and makes it grey, keeping the order of the API', () => {
     respond([
-      { label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, data: dailyData(3) },
-      { label: 'Other', isOther: true, entity: null, data: dailyData(3) },
+      { label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values: dailyValues(3) },
+      { label: 'Other', isOther: true, entity: null, values: dailyValues(3) },
     ]);
     render(makeWidget('line', { breakdownBy: 'creator_id' }));
     const names = mocks.lines.mock.calls[0][0].series.map((serie: { name: string }) => serie.name);
@@ -209,20 +210,46 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(other.color).toBeTruthy();
   });
 
-  it('keeps the requested interval for lines and heatmaps', () => {
-    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, data: dailyData(366) }));
+  it('places the values of every series on the shared dates', () => {
+    respond([{ label: 'Report', entity: null, values: [4, 0, 7] }]);
+    render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect(mocks.lines.mock.calls[0][0].series[0].data).toEqual([
+      { x: new Date('2025-10-01T00:00:00.000Z'), y: 4 },
+      { x: new Date('2025-10-02T00:00:00.000Z'), y: 0 },
+      { x: new Date('2025-10-03T00:00:00.000Z'), y: 7 },
+    ]);
+  });
+
+  it('keeps the requested interval for lines the chart width can show, without animating many points', () => {
+    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
     respond(series);
     render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    expect(mocks.lines.mock.calls[0][0].interval).toEqual('day');
+    // 1200 px show 600 points per line
+    expect(mocks.lines.mock.calls[0][0]).toMatchObject({ interval: 'day', isAnimated: false });
     expect(mocks.lines.mock.calls[0][0].series[0].data).toHaveLength(366);
+  });
 
-    render(makeWidget('heatmap', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    expect(mocks.heatmap.mock.calls[0][0].data[0].data).toHaveLength(366);
-    expect(mocks.heatmap.mock.calls[0][0]).toMatchObject({ minValue: 0, maxValue: 2 });
+  it('coarsens lines, areas and heatmaps the chart width cannot show, and says so', () => {
+    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
+    respond(series);
+    // 1200 px show 200 heatmap cells per series
+    const { getByTestId } = render(makeWidget('heatmap', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    const heatmap = mocks.heatmap.mock.lastCall?.[0];
+    expect(heatmap).toMatchObject({ interval: 'week', isAnimated: false });
+    expect(heatmap.data[0].data.length).toBeLessThanOrEqual(200);
+    expect(heatmap.minValue).toBeLessThan(heatmap.maxValue);
+    expect(getByTestId('widget-warning').textContent).toContain('Interval adjusted to');
+
+    // 300 px show 150 points per line or area
+    mocks.width = 300;
+    render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect(mocks.lines.mock.lastCall?.[0].interval).toEqual('week');
+    render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect(mocks.areas.mock.lastCall?.[0]).toMatchObject({ interval: 'week', isAnimated: false });
   });
 
   it('coarsens a large bar chart, disables its animations and says so', () => {
-    const series = Array.from({ length: 40 }, (_, i) => ({ label: `Type-${i}`, entity: null, data: dailyData(366) }));
+    const series = Array.from({ length: 40 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
     respond(series);
     const { getByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
 
@@ -238,7 +265,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   });
 
   it('coarsens less on a wide chart, and more on a narrow one', () => {
-    const series = Array.from({ length: 3 }, (_, i) => ({ label: `Type-${i}`, entity: null, data: dailyData(366) }));
+    const series = Array.from({ length: 3 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
     respond(series);
     mocks.width = 2000;
     render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
@@ -249,16 +276,18 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(mocks.bars.mock.lastCall?.[0].interval).toEqual('month');
   });
 
-  it('does not draw the bars before the chart is measured', () => {
-    respond([{ label: 'Report', entity: null, data: dailyData(30) }]);
+  it('does not draw the chart before it is measured', () => {
+    respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
     mocks.width = 0;
     const { queryByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
     expect(queryByTestId('bars')).toBeNull();
     expect(mocks.bars).not.toHaveBeenCalled();
+    render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect(mocks.lines).not.toHaveBeenCalled();
   });
 
   it('keeps a small bar chart as configured', () => {
-    respond([{ label: 'Report', entity: null, data: dailyData(30) }]);
+    respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
     const { queryByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type', stacked: true }, multiTypesSelection));
 
     const props = mocks.bars.mock.lastCall?.[0];
@@ -267,13 +296,13 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   });
 
   it('warns when only the top values are displayed', () => {
-    respond([{ label: 'Report', entity: null, data: dailyData(3) }], true);
+    respond([{ label: 'Report', entity: null, values: dailyValues(3) }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5 }, multiTypesSelection));
     expect(getByTestId('widget-warning').textContent).toContain('5');
   });
 
   it('warns that only the lowest values are displayed when ordered by lowest values', () => {
-    respond([{ label: 'Report', entity: null, data: dailyData(3) }], true);
+    respond([{ label: 'Report', entity: null, values: dailyValues(3) }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5, breakdownOrder: 'asc' }, multiTypesSelection));
     expect(getByTestId('widget-warning').textContent).toContain('Only the 5 lowest values are displayed.');
   });

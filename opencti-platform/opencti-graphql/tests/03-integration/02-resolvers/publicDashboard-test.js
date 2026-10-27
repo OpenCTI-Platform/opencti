@@ -783,13 +783,11 @@ describe('PublicDashboard resolver', () => {
                 widgetId : $widgetId
               ) {
                 truncated
+                dates
                 series {
                   label
                   isOther
-                  data {
-                    date
-                    value
-                  }
+                  values
                 }
               }
             }
@@ -811,7 +809,10 @@ describe('PublicDashboard resolver', () => {
             const { series } = publicStixCoreObjectsTimeSeriesBreakdown;
             expect(series.map((serie) => serie.label).sort()).toEqual(['Administrative-Area', 'Malware']);
             expect(series.every((serie) => serie.isOther === false)).toEqual(true);
-            const total = (label) => series.find((serie) => serie.label === label).data.reduce((sum, point) => sum + point.value, 0);
+            // Without end date, the period ends now: yesterday and today
+            expect(publicStixCoreObjectsTimeSeriesBreakdown.dates).toHaveLength(2);
+            expect(series.every((serie) => serie.values.length === 2)).toEqual(true);
+            const total = (label) => series.find((serie) => serie.label === label).values.reduce((sum, value) => sum + value, 0);
             expect(total('Administrative-Area')).toEqual(2);
             expect(total('Malware')).toEqual(3);
           });

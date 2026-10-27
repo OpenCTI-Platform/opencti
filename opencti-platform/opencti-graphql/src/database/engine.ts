@@ -3436,7 +3436,7 @@ export type HistogramCountOpts = QueryBodyBuilderOpts & {
   interval?: string;
   field?: string;
 };
-const getHistogramDateFormat = (interval: string | undefined) => {
+export const getHistogramDateFormat = (interval: string | undefined) => {
   switch (interval) {
     case 'year':
       return 'yyyy';
@@ -3508,7 +3508,8 @@ type AggregationCountOpts = QueryBodyBuilderOpts & {
   weightField?: string | null;
   normalizeLabel?: boolean | null;
   convertEntityTypeLabel?: boolean | null;
-  // 'asc' orders the buckets by ascending value, so the lowest values are the ones kept by the size cap
+  // Orders the buckets by value, so the ones kept by the size cap are the lowest or the highest values.
+  // Without it, the buckets are ordered by number of documents.
   order?: 'asc' | 'desc' | null;
 };
 export const elAggregationCount = async (
@@ -3543,8 +3544,8 @@ export const elAggregationCount = async (
   if (isKeywordField) {
     body.aggs.genres.terms.missing = 'unknown';
   }
-  if (order === 'asc') {
-    body.aggs.genres.terms.order = { weight: 'asc' };
+  if (order) {
+    body.aggs.genres.terms.order = { weight: order };
   }
   const query = {
     index: getIndicesToQuery(context, user, indexName),

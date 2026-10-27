@@ -446,11 +446,12 @@ type TimeSeriesBreakdownSerie {
   entity: StixObjectOrStixRelationshipOrCreator
   value: Int
   isOther: Boolean!
-  data: [TimeSeries]
+  values: [Int!]!
 }
 
 type TimeSeriesBreakdown {
   truncated: Boolean!
+  dates: [DateTime!]!
   series: [TimeSeriesBreakdownSerie!]!
 }
 

@@ -156,6 +156,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
         filters: $filters
       ) {
         truncated
+        dates
         series {
           label
           value
@@ -165,15 +166,12 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
               value
             }
           }
-          data {
-            date
-            value
-          }
+          values
         }
       }
     }
   `;
-  type Serie = { label: string; value: number; isOther: boolean; entity: { value: string } | null; data: { date: string; value: number }[] };
+  type Serie = { label: string; value: number; isOther: boolean; entity: { value: string } | null; values: number[] };
   const LABELS = { a: 'bkd-int-a', b: 'bkd-int-b', c: 'bkd-int-c' };
   // Reports (label, creation date): a=3, b=2, c=1 and one report without label, over January to March 2021
   const REPORTS: { label: keyof typeof LABELS | null; created: string }[] = [
@@ -203,9 +201,9 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
         ...variables,
       },
     });
-    return result.data?.stixCoreObjectsTimeSeriesBreakdown as { truncated: boolean; series: Serie[] };
+    return result.data?.stixCoreObjectsTimeSeriesBreakdown as { truncated: boolean; dates: string[]; series: Serie[] };
   };
-  const sumOf = (serie: Serie) => serie.data.reduce((total, point) => total + point.value, 0);
+  const sumOf = (serie: Serie) => serie.values.reduce((total, value) => total + value, 0);
   const expectBreakdownError = (variables: Record<string, unknown>, message: string) => {
     const request = {
       query: BREAKDOWN_QUERY,
@@ -256,16 +254,17 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
   });
 
   it('should break down by label in descending order', async () => {
-    const { truncated, series } = await breakdown({ field: 'objectLabel', order: 'desc', limit: 2 });
+    const { truncated, dates, series } = await breakdown({ field: 'objectLabel', order: 'desc', limit: 2 });
     expect(series.map((s) => s.entity?.value)).toEqual([LABELS.a, LABELS.b]);
     expect(series.map((s) => s.value)).toEqual([3, 2]);
     expect(series.map((s) => s.isOther)).toEqual([false, false]);
     // The label c is left out by the limit
     expect(truncated).toEqual(true);
     series.forEach((serie) => expect(sumOf(serie)).toEqual(serie.value));
-    // One point per month, from January to March
-    expect(series[0].data.map((point) => point.value)).toEqual([2, 1, 0]);
-    expect(series[1].data.map((point) => point.value)).toEqual([0, 1, 1]);
+    // One point per month, from January to March, on dates shared by every serie
+    expect(dates).toEqual(['2021-01-01T00:00:00.000Z', '2021-02-01T00:00:00.000Z', '2021-03-01T00:00:00.000Z']);
+    expect(series[0].values).toEqual([2, 1, 0]);
+    expect(series[1].values).toEqual([0, 1, 1]);
     // With a limit above the number of labels, nothing is left out and the unlabeled report is not a serie
     const all = await breakdown({ field: 'objectLabel', order: 'desc', limit: 10 });
     expect(all.truncated).toEqual(false);
@@ -291,7 +290,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     expect(descOther.entity).toBeNull();
     expect(descOther.value).toEqual(2);
     expect(sumOf(descOther)).toEqual(2);
-    expect(descOther.data.map((point) => point.value)).toEqual([1, 0, 1]);
+    expect(descOther.values).toEqual([1, 0, 1]);
     // asc: Other counts the reports of the label a and the unlabeled report
     const asc = await breakdown({ field: 'objectLabel', order: 'asc', limit: 2, includeOther: true });
     expect(asc.series.map((s) => s.isOther)).toEqual([false, false, true]);

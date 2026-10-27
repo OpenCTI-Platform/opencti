@@ -11,6 +11,7 @@ interface WidgetMultiLinesProps {
   series: ApexAxisChartSeries;
   interval?: string | null;
   hasLegend?: boolean;
+  isAnimated?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -18,13 +19,14 @@ const WidgetMultiLines = ({
   series,
   interval,
   hasLegend = false,
+  isAnimated = true,
   onMounted,
 }: WidgetMultiLinesProps) => {
   const theme = useTheme<Theme>();
   const formatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    return lineChartOptions(
+    const chartOptions = lineChartOptions(
       theme,
       !interval || ['day', 'week'].includes(interval),
       formatter,
@@ -33,7 +35,11 @@ const WidgetMultiLines = ({
       false,
       hasLegend,
     ) as ApexOptions;
-  }, [theme, formatter, hasLegend]);
+    if (isAnimated) {
+      return chartOptions;
+    }
+    return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
+  }, [theme, formatter, hasLegend, isAnimated]);
 
   return (
     <Chart

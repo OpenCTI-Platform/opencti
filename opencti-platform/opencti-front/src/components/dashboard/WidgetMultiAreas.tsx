@@ -12,6 +12,7 @@ interface WidgetMultiAreasProps {
   interval?: string | null;
   isStacked?: boolean;
   hasLegend?: boolean;
+  isAnimated?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -20,13 +21,14 @@ const WidgetMultiAreas = ({
   interval,
   isStacked = false,
   hasLegend = false,
+  isAnimated = true,
   onMounted,
 }: WidgetMultiAreasProps) => {
   const theme = useTheme<Theme>();
   const formatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    return areaChartOptions(
+    const chartOptions = areaChartOptions(
       theme,
       !interval || ['day', 'week'].includes(interval),
       formatter,
@@ -35,7 +37,11 @@ const WidgetMultiAreas = ({
       isStacked,
       hasLegend,
     ) as ApexOptions;
-  }, [theme, formatter, isStacked, hasLegend]);
+    if (isAnimated) {
+      return chartOptions;
+    }
+    return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
+  }, [theme, formatter, isStacked, hasLegend, isAnimated]);
 
   return (
     <Chart

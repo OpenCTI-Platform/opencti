@@ -428,10 +428,13 @@ type TimeSeriesBreakdownSerie {
   entity: StixObjectOrStixRelationshipOrCreator
   value: Int
   isOther: Boolean!
-  data: [TimeSeries]
+  # One value per date of TimeSeriesBreakdown.dates
+  values: [Int!]!
 }
 type TimeSeriesBreakdown {
   truncated: Boolean!
+  # Dates shared by every series, sent once
+  dates: [DateTime!]!
   series: [TimeSeriesBreakdownSerie!]!
 }
 input AuditsTimeSeriesParameters {

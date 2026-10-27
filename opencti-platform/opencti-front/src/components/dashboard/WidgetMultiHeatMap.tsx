@@ -40,6 +40,8 @@ interface WidgetMultiHeatMapProps {
   minValue: number;
   maxValue: number;
   isStacked?: boolean;
+  interval?: string | null;
+  isAnimated?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -48,21 +50,24 @@ const WidgetMultiHeatMap = ({
   minValue,
   maxValue,
   isStacked = false,
+  interval,
+  isAnimated = true,
   onMounted,
 }: WidgetMultiHeatMapProps) => {
   const theme = useTheme<Theme>();
-  const axisFormatter = useTimeSeriesAxisFormatter();
+  const axisFormatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    const interval = Math.trunc((maxValue - minValue) / 9);
+    // Width of each color range, not to be confused with the time interval of the series
+    const rangeWidth = Math.trunc((maxValue - minValue) / 9);
     const colorRanges = Array(10)
       .fill(0)
       .map((_, i) => ({
         from:
-        minValue + (i + 1) * interval - interval === 0
+        minValue + (i + 1) * rangeWidth - rangeWidth === 0
           ? 1
-          : minValue + (i + 1) * interval - interval,
-        to: minValue + (i + 1) * interval,
+          : minValue + (i + 1) * rangeWidth - rangeWidth,
+        to: minValue + (i + 1) * rangeWidth,
         color:
         theme.palette.mode === 'dark'
           ? darkColors[i + 1]
@@ -75,7 +80,7 @@ const WidgetMultiHeatMap = ({
       theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
     });
 
-    return heatMapOptions(
+    const chartOptions = heatMapOptions(
       theme,
       true,
       axisFormatter,
@@ -84,7 +89,11 @@ const WidgetMultiHeatMap = ({
       isStacked,
       colorRanges,
     ) as ApexOptions;
-  }, [theme, isStacked, maxValue, minValue, axisFormatter]);
+    if (isAnimated) {
+      return chartOptions;
+    }
+    return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
+  }, [theme, isStacked, maxValue, minValue, axisFormatter, isAnimated]);
 
   return (
     <Chart
