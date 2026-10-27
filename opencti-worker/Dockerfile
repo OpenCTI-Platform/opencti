@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.27
+# syntax=docker/dockerfile:1.28
 FROM python:3.12-alpine
 
 COPY src /opt/opencti-worker
@@ -7,6 +7,7 @@ WORKDIR /opt/opencti-worker
 RUN --mount=type=bind,source=requirements.txt,target=requirements.txt <<EOT
     set -euxo pipefail
 
+    apk --no-cache upgrade
     apk --no-cache add -t .pip_deps git
     pip3 install --no-cache-dir --requirement requirements.txt
     apk del .pip_deps

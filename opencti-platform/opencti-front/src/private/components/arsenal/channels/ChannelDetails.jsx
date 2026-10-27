@@ -30,18 +30,24 @@ export const ChannelDetails = ({
   return (
     <Card title={t_i18n('Details')}>
       <Grid container={true} spacing={2}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Label>
             {t_i18n('Description')}
           </Label>
           <ExpandableMarkdown source={channel.description} limit={400} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Label>
             {t_i18n('Channel types')}
           </Label>
           <FieldOrEmpty source={channel.channel_types}>
-            <Stack direction="row" gap={1} flexWrap="wrap">
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+                flexWrap: 'wrap',
+              }}
+            >
               {channel.channel_types?.map((channelType) => (
                 <Tag
                   key={channelType}

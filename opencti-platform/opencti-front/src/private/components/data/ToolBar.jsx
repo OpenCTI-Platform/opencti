@@ -7,7 +7,7 @@ import DataTableToolBar from './DataTableToolBar';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../utils/hooks/useDraftContext';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
 const useStyles = makeStyles(() => ({
   bottomNav: {
@@ -90,13 +90,15 @@ const ToolBar = (props) => {
           variant="persistent"
           classes={{ paper: paperClass }}
           open={isOpen}
-          PaperProps={{
-            variant: 'elevation',
-            elevation: 1,
-            style: {
-              marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-              bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
-              zIndex: theme.zIndex.appBar - 2,
+          slotProps={{
+            paper: {
+              variant: 'elevation',
+              elevation: 1,
+              style: {
+                marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+                bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
+                zIndex: theme.zIndex.appBar - 2,
+              },
             },
           }}
         >

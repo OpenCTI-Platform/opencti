@@ -313,7 +313,8 @@
         "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
         "opencti-platform/opencti-front/src/private/components/data/forms/view/fieldRenderers/primitiveFieldRenderers.tsx",
         "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
-        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx"
+        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarRemoveConfirm.tsx"
       ]
     },
     {
@@ -338,6 +339,126 @@
       "reason": "night-2 visual pass: the `Add filter` picker. It never HOLDS a value -- picking an option adds a filter and the field empties -- so `value` is a literal null and ONLY a keystroke may write the input: in single mode the library answers a pick with setInputValue(getOptionLabel(option), \"select\"), and accepting that programmatic write left the field reading \"Label\" after the filter was added, so filling the same text a second time fired no input event and never reopened the panel. The name rides on `placeholder` + aria-label under `labelPosition=\"none\"`: the library renders labels ABOVE the control, and this one shares a flex row with an unlabelled search field. Covered by ListFilters.picker.test.tsx, which mirrors filters.pageModel's two-pass sequence.",
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "graph experience: the panels floating over the graph canvas (legend and its minimized pill, hover card, empty state) and the toolbar docked under it on the same surface, padding owned by the padding prop",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/GraphToolbar.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: every graph tool button (toolbar items, the More actions trigger and the legend actions); the pressed state of a toggle is the active prop",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx"
+      ]
+    },
+    {
+      "component": "Button",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the counters opening the graph toolbar, the minimized legend pill and the next action of the empty states",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the tooltips of the graph tool buttons (with their shortcut, or why they are disabled), counters, legend entries and hover card badges",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
+      ]
+    },
+    {
+      "component": "Menu",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the More actions menu closing the graph toolbar, toggles as checkable items and lists as submenus; the lists of the toolbar (select by type, filters) as menus anchored to their tool, the same items in both; the context menu of the graphs, opened at the pointer from a hidden trigger (LIBRARY-FEEDBACK #67)",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphContextMenu.tsx"
+      ]
+    },
+    {
+      "component": "MenuItem",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the items of the graph toolbar menus; the choices of a toolbar list are one shared component, the same in the menu anchored to their tool and in their submenu of More actions",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarOptionsList.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
+      ]
+    },
+    {
+      "component": "MenuLabel",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the headings of the graph toolbar menus (the groups of More actions, the parts of a toolbar list)",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarOptionsList.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphContextMenu.tsx"
+      ]
+    },
+    {
+      "component": "Badge",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the number of filters in use on the filter buttons of the graph toolbar",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the type scale of the graph panels (legend headings and counters, hover card title, empty state title and text, keyboard shortcuts, the reasons and shortcuts of the More actions items)",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphShortcutsDialog.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
       ]
     },
     {
@@ -421,6 +542,18 @@
       ]
     },
     {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "keyboard access (#16818): the clear button of the basic filter value input and of the entity filter search (default, tertiary, small), a real tab stop replacing the native type=\"search\" clear icon that keyboard users cannot reach.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/BasicFilterInput.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
+      ]
+    },
+    {
       "component": "Text",
       "importFrom": "@filigran/design-system",
       "guards": [
@@ -488,6 +621,183 @@
         "opencti-platform/opencti-front/src/components/filters/FilterChipLine.tsx",
         "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityOption.tsx",
         "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
+      ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the value of a boolean or vocabulary variable, and of any variable restricted to a selection of values (one SelectItem per allowed value, labelled through the filters representatives).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/SelectValueInputs.tsx"
+      ]
+    },
+    {
+      "component": "Combobox",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the server-side search of the value of an entity, label, marking, user, group, status, kill chain phase or entity type variable, fed by useSearchEntities like the filter value autocomplete (a kill chain phase by its own query, scoped to the kill chain); and, in the variable dialog, the kill chain of a kill chain phase variable, picked among the kill chains of the platform.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/SearchValueInput.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
+      ]
+    },
+    {
+      "component": "Input",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the free value of a text or numeric variable (type=number), with the library error state when the value references another variable.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/TextValueInput.tsx"
+      ]
+    },
+    {
+      "component": "Chip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the chip of a variable, `Name : value`, clickable to open its value input; severity critical when the value cannot be resolved (Restricted), medium when the default value of the variable is not valid (warning), neutral otherwise.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: explains `Not used by any widget` on the muted chip of a variable no widget references, or that its default value is not valid (the warning wins).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
+      ]
+    },
+    {
+      "component": "Input",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables dialog: the name of the variable and, for a kill chain phase variable, the name of its kill chain.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
+      ]
+    },
+    {
+      "component": "RadioGroup",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables dialog: the restriction mode step, which only offers No restriction in PR 2 (and shows a restriction set elsewhere as a checked, disabled option).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
+      ]
+    },
+    {
+      "component": "Radio",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables dialog: the options of the restriction mode step.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
+      ]
+    },
+    {
+      "component": "Alert",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables dialog: the form level error (a dashboard cannot hold more than 50 variables).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables deletion dialog: the confirmation question, the warning about the impacted widgets and their list (content-base), replacing MUI Typography and a bare <ul>.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDeleteDialog.tsx"
+      ]
+    },
+    {
+      "component": "ButtonGroup",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the Fixed value / Variable switch of a date, numeric or free text widget filter value (glyph items named by aria-label and tooltip, LIBRARY-FEEDBACK #63).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterValueVariableSwitch.tsx"
+      ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the list of the dashboard variables compatible with a date, numeric or free text widget filter, in the Variable mode of the value switch.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterValueVariableSwitch.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: names the two glyph items (Fixed value, Variable) of the widget filter value switch.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterValueVariableSwitch.tsx"
+      ]
+    },
+    {
+      "component": "Dialog",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables dialog: the creation and edition form of a variable (Dialog, DialogContent size md, DialogTitle, DialogBody, DialogFooter), replacing the MUI wrapper @common/dialog/Dialog. The focus goes to the name through onOpenAutoFocus, not autoFocus.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
+      ]
+    },
+    {
+      "component": "Dialog",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables deletion dialog: the confirmation of a variable deletion (size sm, DialogDescription for the question). Closing by Escape, overlay or close button is refused while the deletion is in flight.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDeleteDialog.tsx"
+      ]
+    },
+    {
+      "component": "DatePicker",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the value of a date variable (chip popover and default value of the variable dialog), stored as an ISO string, committed on accept (calendar pick, Enter, blur). Replaces the MUI X DatePicker; the platform language is passed as the picker locale.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/DateValueInput.tsx"
       ]
     }
   ]

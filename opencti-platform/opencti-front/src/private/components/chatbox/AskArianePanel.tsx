@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useIntl } from 'react-intl';
 import { ChatPanel, ChatMode } from '@filigran/chatbot';
 import { useLocation, useNavigate } from 'react-router';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
@@ -181,6 +181,11 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
         // Persisted thumbs rating of an answer, sent as POST / DELETE
         // `{apiBaseUrl}/conversations/{conversation_id}/messages/{message_id}/feedback`.
         feedback: '/conversations',
+        // The decks, reports and videos an answer made. Their cards download
+        // one as `POST {apiBaseUrl}/artifacts/{kind}/{id}/download` and follow
+        // a video still rendering with `GET {apiBaseUrl}/artifacts/{kind}/{id}`;
+        // unset, they only link to XTM One.
+        artifacts: '/artifacts',
       }}
       locale={chatbotLocale}
       user={{ firstName }}

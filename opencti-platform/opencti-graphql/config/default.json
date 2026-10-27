@@ -118,7 +118,8 @@
     },
     "live_stream": {
       "cache_max_size": 5000,
-      "cache_max_time": 2
+      "cache_max_time": 2,
+      "resolution_batch_size": 500
     },
     "exclusion_list": {
       "file_max_size": 10000000
@@ -131,6 +132,7 @@
     "python_execution": "native",
     "python_execution_venv": "../../../.python-venv/lib/python3.12/site-packages",
     "artifact_zip_password": "infected",
+    "artifact_zip_max_extracted_size": 104857600,
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",
@@ -382,12 +384,27 @@
     "lock_key": "exclusion_list_cache_sync_manager_lock",
     "interval": 10000
   },
+  "ingestion_health_manager": {
+    "enabled": true,
+    "lock_key": "ingestion_health_manager_lock",
+    "interval": 60000
+  },
   "catalog_manager": {
     "enabled": true,
     "lock_key": "catalog_manager_lock",
     "interval": 60000,
     "custom_catalog_refresh_endpoint_uri": null,
     "catalog_sync_remote_timeout": 30000
+  },
+  "safe_ejs": {
+    "idle_pool_size": 2,
+    "max_renders_per_worker": 1000,
+    "resource_limits": {
+      "max_old_generation_size_mb": 50,
+      "max_young_generation_size_mb": 10,
+      "code_range_size_mb": 10,
+      "stack_size_mb": 4
+    }
   },
   "redis": {
     "mode": "single",

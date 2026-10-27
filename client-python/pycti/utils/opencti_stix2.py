@@ -1395,7 +1395,7 @@ class OpenCTIStix2:
                 embedded_flags.append(file_obj.get("embedded", False))
 
         # Extract all custom properties
-        custom_properties = self.extract_custom_properties(stix_object)
+        custom_field_values = self.extract_custom_field_values(stix_object)
 
         # Extra
         extras = {
@@ -1413,7 +1413,7 @@ class OpenCTIStix2:
             "filesMarkings": files_markings if files_markings else None,
             "noTriggerImport": no_trigger_import if no_trigger_import else None,
             "embedded": embedded_flags if embedded_flags else None,
-            "custom_properties": custom_properties,
+            "custom_field_values": custom_field_values,
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -1683,7 +1683,41 @@ class OpenCTIStix2:
             return None
 
     @staticmethod
-    def extract_custom_properties(stix_object: Dict) -> Optional[List[Dict]]:
+    def flatten_custom_field_values(entity: Dict) -> Dict:
+        """Flatten the custom field values of an OpenCTI entity, in place.
+
+        Each value of ``customFieldValues`` is set on the entity under its field
+        name (``x_opencti_cf_*``), then ``customFieldValues`` is removed.
+
+        :param entity: OpenCTI entity dictionary
+        :type entity: Dict
+        :return: the same entity, flattened
+        :rtype: Dict
+        """
+        if "customFieldValues" not in entity:
+            return entity
+        for custom_field_value in entity["customFieldValues"] or []:
+            field_name = custom_field_value.get("field_name")
+            value = None
+            for value_field in [
+                "select_values",
+                "int_value",
+                "string_value",
+                "boolean_value",
+                "date_value",
+                "select_value",
+            ]:
+                candidate = custom_field_value.get(value_field)
+                if candidate is not None:
+                    value = candidate
+                    break
+            if value is not None:
+                entity[field_name] = value
+        del entity["customFieldValues"]
+        return entity
+
+    @staticmethod
+    def extract_custom_field_values(stix_object: Dict) -> Optional[List[Dict]]:
         """Extract the x_ custom properties of a STIX object as custom field inputs.
 
         Top-level properties take precedence over the ones nested in extensions.
@@ -1694,11 +1728,11 @@ class OpenCTIStix2:
         :return: list of ``{"field_name", "value"}`` inputs, or None if there is none
         :rtype: Optional[List[Dict]]
         """
-        custom_properties = []
+        custom_field_values = []
         seen_custom_fields = set()
         for key, value in stix_object.items():
             if key.startswith("x_") and value is not None:
-                custom_properties.append({"field_name": key, "value": value})
+                custom_field_values.append({"field_name": key, "value": value})
                 seen_custom_fields.add(key)
         # Also extract x_ custom properties nested inside all extensions
         extensions = stix_object.get("extensions")
@@ -1713,9 +1747,9 @@ class OpenCTIStix2:
                         and key not in seen_custom_fields
                         and value is not None
                     ):
-                        custom_properties.append({"field_name": key, "value": value})
+                        custom_field_values.append({"field_name": key, "value": value})
                         seen_custom_fields.add(key)
-        return custom_properties if len(custom_properties) > 0 else None
+        return custom_field_values if len(custom_field_values) > 0 else None
 
     def import_relationship(
         self, stix_relation: Dict, update: bool = False, types: List = None
@@ -1759,7 +1793,7 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
             "sample_ids": sample_refs_ids,
-            "custom_properties": self.extract_custom_properties(stix_relation),
+            "custom_field_values": self.extract_custom_field_values(stix_relation),
         }
 
         # Create the relation
@@ -1932,7 +1966,7 @@ class OpenCTIStix2:
                 else None
             ),
             upsert_operations=upsert_operations,
-            custom_properties=self.extract_custom_properties(stix_sighting),
+            custom_field_values=self.extract_custom_field_values(stix_sighting),
         )
         if stix_sighting_result is not None:
             self.set_in_cache(
@@ -2148,26 +2182,7 @@ class OpenCTIStix2:
                 entity["hashes"][hash_item["algorithm"]] = hash_item["hash"]
 
         # Flatten custom fields
-        if "customFieldValues" in entity:
-            custom_field_values = entity["customFieldValues"]
-            for custom_field_value in custom_field_values:
-                field_name = custom_field_value.get("field_name")
-                value = None
-                for value_field in [
-                    "select_values",
-                    "int_value",
-                    "string_value",
-                    "boolean_value",
-                    "date_value",
-                    "select_value",
-                ]:
-                    candidate = custom_field_value.get(value_field)
-                    if candidate is not None:
-                        value = candidate
-                        break
-                if value is not None:
-                    entity[field_name] = value
-            del entity["customFieldValues"]
+        self.flatten_custom_field_values(entity)
         # Final
         entity["x_opencti_id"] = entity["id"]
         if not no_custom_attributes:

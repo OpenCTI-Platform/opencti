@@ -117,9 +117,9 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
           >
             <Stack
               direction="row"
-              alignItems="center"
-              gap={1}
               sx={{
+                alignItems: 'center',
+                gap: 1,
                 minHeight: 50,
               }}
             >

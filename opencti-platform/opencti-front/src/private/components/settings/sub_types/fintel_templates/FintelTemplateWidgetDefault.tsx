@@ -1,8 +1,8 @@
 import React from 'react';
-import { ContentCopy, Edit, DeleteOutline, WarningAmber } from '@mui/icons-material';
+import { ContentCopy, Edit, DeleteOutlined, WarningAmber } from '@mui/icons-material';
 import { ListItemText, Tooltip, Typography, ListItem } from '@mui/material';
 import { IconButton } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { renderWidgetIcon } from '../../../../../utils/widget/widgetUtils';
 import { useFormatter } from '../../../../../components/i18n';
 import { useFintelTemplateContext } from './FintelTemplateContext';
@@ -73,7 +73,7 @@ const FintelTemplateWidgetDefault = ({
               aria-label={t_i18n('Delete widget')}
               aria-haspopup="true"
               onClick={onDelete}
-              icon={<DeleteOutline fontSize="small" />}
+              icon={<DeleteOutlined fontSize="small" />}
             />
           </Tooltip>
         </div>

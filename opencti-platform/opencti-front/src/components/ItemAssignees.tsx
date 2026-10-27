@@ -43,7 +43,13 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
   };
   return (
     <FieldOrEmpty source={assignees}>
-      <Stack direction="row" gap={1} flexWrap="wrap">
+      <Stack
+        direction="row"
+        sx={{
+          gap: 1,
+          flexWrap: 'wrap',
+        }}
+      >
         {assignees.map((assignee) => (
           <Tooltip key={assignee.id} title={assignee.name}>
             <Tag

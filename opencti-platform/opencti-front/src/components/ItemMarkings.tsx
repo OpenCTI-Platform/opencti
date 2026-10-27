@@ -103,7 +103,13 @@ const ItemMarkings = ({
   if (!limit || markings.length <= 1) {
     return (
       <FieldOrEmpty source={markings}>
-        <Stack direction="row" gap={1} flexWrap="wrap">
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
           {markings.map((markingDefinition) => (
             <ChipMarking
               key={markingDefinition.id}
@@ -123,10 +129,10 @@ const ItemMarkings = ({
     <Tooltip
       title={(
         <Stack
-          gap={1}
           direction="row"
-          flexWrap="wrap"
           sx={{
+            gap: 1,
+            flexWrap: 'wrap',
             alignItems: 'flex-start',
             p: 1,
           }}
@@ -154,7 +160,13 @@ const ItemMarkings = ({
         },
       }}
     >
-      <Stack direction="row" gap={1} flexWrap="wrap">
+      <Stack
+        direction="row"
+        sx={{
+          gap: 1,
+          flexWrap: 'wrap',
+        }}
+      >
         {markings.slice(0, limit).map((markingDefinition, index) => {
           const isLastVisible = index === limit - 1;
           const showBadge = hasOverflow && isLastVisible;

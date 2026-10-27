@@ -7,7 +7,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 interface BasicUserAction {
   user: AuthUser;
   status?: 'success' | 'error'; // nothing = success
-  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command';
+  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'ingestion_health';
   event_scope: string;
   event_access: 'extended' | 'administration';
   prevent_indexing?: boolean;
@@ -71,7 +71,8 @@ export interface UserExportActionContextData extends ElementContextData {
   export_scope: 'query' | 'single' | 'selection';
   export_type: 'simple' | 'full';
   element_id: string; // Same as id
-  max_marking: string;
+  max_marking: string[];
+  file_markings: string[];
   list_params?: unknown;
   selected_ids?: string[];
 }
@@ -79,6 +80,24 @@ export interface UserExportAction extends BasicUserAction {
   event_type: 'command';
   event_scope: 'export';
   context_data: UserExportActionContextData;
+}
+
+// The export of a configuration preset: a file of the platform, linked to no entity
+export interface ConfigPresetExportSummary {
+  entity_types: string[];
+  counts: Record<string, number>;
+  items: Record<string, string[]>;
+}
+export interface UserConfigPresetExportActionContextData {
+  path: string;
+  file_name: string;
+  // The context data of the activity log is mapped field by field: what is not a known field goes in the free-form input
+  input: ConfigPresetExportSummary;
+}
+export interface UserConfigPresetExportAction extends BasicUserAction {
+  event_type: 'command';
+  event_scope: 'export';
+  context_data: UserConfigPresetExportActionContextData;
 }
 
 export interface UserSendActionContextData extends ElementContextData {
@@ -143,6 +162,20 @@ export interface UserModificationAction extends BasicUserAction {
 }
 // endregion
 
+// region health
+export interface IngestionHealthAction extends BasicUserAction {
+  event_type: 'ingestion_health';
+  event_scope: 'critical' | 'degraded' | 'recovered';
+  message: string;
+  // Only fields mapped under context_data: the history index mapping is strict
+  context_data: {
+    id: string;
+    entity_type: string;
+    entity_name: string;
+  };
+}
+// endregion
+
 // region authentication
 export interface UserLoginAction extends BasicUserAction {
   event_type: 'authentication';
@@ -168,7 +201,9 @@ export interface UserForgotPasswordAction extends BasicUserAction {
 // endregion
 
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction
-  | UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
+  | UserLogoutAction | UserExportAction | UserConfigPresetExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction
+  | DisseminateAction | UserForgotPasswordAction
+  | IngestionHealthAction;
 
 export interface ActionListener {
   id: string;

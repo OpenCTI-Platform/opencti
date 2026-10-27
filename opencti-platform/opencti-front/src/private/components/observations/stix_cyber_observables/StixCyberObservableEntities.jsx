@@ -17,6 +17,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { Stack } from '@mui/material';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
+import { onActivationKey } from '../../../../utils/domEvent';
 
 const styles = (theme) => ({
   paper: {
@@ -179,6 +180,9 @@ class StixCyberObservableEntities extends Component {
         <div
           style={inlineStylesHeaders[field]}
           onClick={this.handleSort.bind(this, field, !this.state.orderAsc)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={onActivationKey(() => this.handleSort(field, !this.state.orderAsc))}
         >
           <span>{t(label)}</span>
           {this.state.sortBy === field ? sortComponent : ''}
@@ -206,7 +210,12 @@ class StixCyberObservableEntities extends Component {
         <Card
           title={t('Relations')}
           action={(
-            <Stack direction="row" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+              }}
+            >
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCoreRelationshipCreationFromEntity
                   paginationOptions={paginationOptions}

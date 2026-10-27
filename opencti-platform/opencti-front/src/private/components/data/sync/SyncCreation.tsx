@@ -348,13 +348,13 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                                   spacing={1}
                                   style={{ overflow: 'hidden' }}
                                 >
-                                  <Grid key={name} item xs={12}>
+                                  <Grid key={name} size={12}>
                                     <Typography>{name}</Typography>
                                   </Grid>
-                                  <Grid key={description} item xs={12}>
+                                  <Grid key={description} size={12}>
                                     <Typography>{description}</Typography>
                                   </Grid>
-                                  <Grid key={filters} item xs={12}>
+                                  <Grid key={filters} size={12}>
                                     <FilterIconButton
                                       filters={streamsFilters}
                                       variant="small"

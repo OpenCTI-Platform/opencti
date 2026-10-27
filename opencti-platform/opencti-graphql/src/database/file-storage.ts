@@ -22,9 +22,16 @@ import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, in
 // Storage path constants are imported directly from this dependency-free module (not document-domain.ts)
 // to avoid a circular import evaluation-order issue where these constants could be undefined
 // at the time ALL_MERGEABLE_FOLDERS/ALL_ROOT_FOLDERS are computed below.
-import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-types';
+import {
+  CONFIG_PRESET_STORAGE_PATH,
+  EMBEDDED_STORAGE_PATH,
+  EXPORT_STORAGE_PATH,
+  FROM_TEMPLATE_STORAGE_PATH,
+  IMPORT_STORAGE_PATH,
+  SUPPORT_STORAGE_PATH,
+} from '../modules/internal/document/document-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
+import { BYPASS, isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
@@ -95,6 +102,13 @@ interface S3FileObject {
   mimeType: string;
 }
 
+const removeDraftFilePrefix = (filePath: string) => filePath.replace(/^draft\/[^/]+\//, '');
+
+// Configuration preset bundles hold the platform configuration: only BYPASS users can read them
+const isConfigPresetFileRestricted = (user: AuthUser, filePath: string) => {
+  return removeDraftFilePrefix(filePath).startsWith(`${CONFIG_PRESET_STORAGE_PATH}/`) && !isUserHasCapability(user, BYPASS);
+};
+
 /**
  * Get file metadata from database, or else from S3.
  */
@@ -108,7 +122,7 @@ export const loadFile = async (
     if (!fileS3Path) {
       throw FunctionalError('File path not specified');
     }
-    const pathForPermissionChecks = fileS3Path.replace(/^draft\/[^/]+\//, '');
+    const pathForPermissionChecks = removeDraftFilePrefix(fileS3Path);
     // 01. Check if user as enough capability to get support packages
     if (pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
       if (opts.dontThrow) {
@@ -116,7 +130,14 @@ export const loadFile = async (
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
-    // 01.1. Check if user as enough capability to load import / export / template knowledge files
+    // 01.1. Check if user has enough capability to get configuration preset bundles
+    if (isConfigPresetFileRestricted(user, fileS3Path)) {
+      if (opts.dontThrow) {
+        return undefined;
+      }
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
+    // 01.2. Check if user as enough capability to load import / export / template knowledge files
     if ((pathForPermissionChecks.startsWith(IMPORT_STORAGE_PATH)
       || pathForPermissionChecks.startsWith(EMBEDDED_STORAGE_PATH)
       || pathForPermissionChecks.startsWith(EXPORT_STORAGE_PATH)
@@ -127,7 +148,7 @@ export const loadFile = async (
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
-    // 01.2. Check if user as enough capability to load import/global files
+    // 01.3. Check if user as enough capability to load import/global files
     if (pathForPermissionChecks.startsWith(`${IMPORT_STORAGE_PATH}/global`) && !isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT)) {
       if (opts.dontThrow) {
         return undefined;
@@ -152,6 +173,14 @@ export const loadFile = async (
       }
     }
     if (!document) {
+      if (opts.dontThrow) {
+        return undefined;
+      }
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
+    // 02.1. The lookup ignores case and accents (Config_preset/... finds config_preset/...), so the configuration
+    // preset rule is checked again on the path of the document actually found
+    if (isConfigPresetFileRestricted(user, document.internal_id)) {
       if (opts.dontThrow) {
         return undefined;
       }
@@ -635,8 +664,9 @@ export const upload = async (
   }
 
   // Stream the file content while incrementally computing the SHA256 hash to avoid holding the entire file twice in memory.
-  const hashReadStream = createReadStream();
+  // As the first full read of the file, it also rejects a file over the upload size limit before anything is stored.
   const hash = crypto.createHash('sha256');
+  const hashReadStream = createReadStream();
   for await (const chunk of hashReadStream) {
     hash.update(chunk);
   }

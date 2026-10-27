@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
@@ -135,7 +135,7 @@ const EntitiesDetailsRightsBar = () => {
         variant="body1"
         sx={{ textAlign: 'right', paddingRight: '20px' }}
       >
-        {t_i18n('{count} objects selected', {
+        {t_i18n('{count, plural, one {# object selected} other {# objects selected}}', {
           values: {
             count: uniqSelectedEntities.length,
           },

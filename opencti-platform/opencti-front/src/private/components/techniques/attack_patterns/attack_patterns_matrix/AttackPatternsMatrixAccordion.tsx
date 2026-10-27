@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/material/styles';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
 import IconButton from '@common/button/IconButton';
@@ -30,6 +30,7 @@ interface AccordionAttackPatternProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
+  expandAll?: boolean;
 }
 
 const AccordionAttackPattern = ({
@@ -40,11 +41,21 @@ const AccordionAttackPattern = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  expandAll,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(expandAll ?? false);
+  // Skip the collapse animation on expand/collapse all: animating every accordion at once is slow on large matrices
+  const [skipAnimation, setSkipAnimation] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { t_i18n } = useFormatter();
+
+  useEffect(() => {
+    if (expandAll !== undefined) {
+      setSkipAnimation(true);
+      setExpanded(expandAll);
+    }
+  }, [expandAll]);
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
@@ -140,7 +151,7 @@ const AccordionAttackPattern = ({
       elevation={0}
       id={attackPattern.attack_pattern_id}
       key={attackPattern.attack_pattern_id}
-      slotProps={{ transition: { unmountOnExit: true } }}
+      slotProps={{ transition: { unmountOnExit: true, ...(skipAnimation && { enter: false, exit: false }) } }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       sx={{
@@ -160,6 +171,7 @@ const AccordionAttackPattern = ({
             aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
             onClick={(event) => {
               event.stopPropagation();
+              setSkipAnimation(false);
               setExpanded(!expanded);
             }}
             aria-expanded={expanded}
@@ -183,7 +195,12 @@ const AccordionAttackPattern = ({
           '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
         }}
       >
-        <Typography variant="body2" fontSize={10}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontSize: 10,
+          }}
+        >
           {attackPattern.name}
         </Typography>
 

@@ -13,6 +13,9 @@ import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
 import { logApp } from '../../config/conf';
+import { WORKFLOW_CONTEXT_FILTER_KEYS } from '../../utils/filtering/filtering-constants';
+import { SYSTEM_USER } from '../../utils/access';
+import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 const filterModeValues = Object.values(FilterMode) as [string, ...string[]];
 const filterOperatorValues = Object.values(FilterOperator) as [string, ...string[]];
@@ -128,6 +131,47 @@ export const extractCanonicalStateIds = (definition: z.infer<typeof workflowDefi
   return stateIds;
 };
 
+/**
+ * The workflow instances that forbid replacing `oldDefinition` by `newDefinition`: those of this
+ * workflow still sitting in a removed state. Shared by validation and publish, which must apply the
+ * same rule. Two kinds of instances never block a removal: those in an ending state (no outgoing
+ * transition: terminal, they cannot progress anyway), and completed ones (a terminal transition such
+ * as "Validate" completes the instance and leaves it in its source state).
+ */
+export const findInstancesBlockingStateRemoval = async (
+  context: AuthContext,
+  user: AuthUser,
+  oldDefinition: z.infer<typeof workflowDefinitionSchema>,
+  newDefinition: z.infer<typeof workflowDefinitionSchema>,
+  workflowDefinitionId: string,
+): Promise<{ states: string[]; instances: any[] }> => {
+  const newStates = extractAllStatesFromDefinition(newDefinition);
+  const removedStates = [...extractAllStatesFromDefinition(oldDefinition)].filter((s) => !newStates.has(s));
+  const statesWithOutgoingTransitions = new Set<string>();
+  for (const transition of (oldDefinition.transitions ?? [])) {
+    const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+    for (const s of fromStates) {
+      if (s && s !== '*') statesWithOutgoingTransitions.add(s);
+    }
+  }
+  const states = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
+  if (states.length === 0) return { states, instances: [] };
+
+  // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
+  // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
+  // Instead, we filter by currentState in ES and post-filter by workflow_id.
+  const instancesInRemovedStates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['currentState'], values: states, operator: FilterOperator.Eq, mode: FilterMode.Or },
+      ],
+      filterGroups: [],
+    },
+  });
+  return { states, instances: instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionId && !inst.completed) };
+};
+
 const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, source: string) => {
   const definition = ActionDefinitions[action.type];
   if (!definition) {
@@ -215,7 +259,12 @@ export const validateWorkflowDefinitionData = async (
   const statesWithIncomingTransition = new Set<string>();
 
   for (const transition of transitions) {
-    if (transition.from === null || transition.to === null) {
+    // A null `to` is only a valid terminal transition (the engine keeps the instance in its
+    // current state, see `targetTransitionForSync?.to ?? instance.getCurrentState()`) when the
+    // transition explicitly completes the workflow via `validateDraft`. Otherwise it's an
+    // orphaned reference (e.g. an admin deleted the target status) and must still be reported.
+    const completesWorkflow = (transition.syncActions ?? []).some((action) => action.type === 'validateDraft');
+    if (transition.from === null || (transition.to === null && !completesWorkflow)) {
       errors.push({
         type: 'UNLINKED_TRANSITION',
         message: `Transition ${transition.event} should be linked to at least one status`,
@@ -249,11 +298,11 @@ export const validateWorkflowDefinitionData = async (
 
     if (transition.conditions) {
       // Validate filters recursively
-      const validateFilterGroup = (group: any): void => {
+      const validateFilterGroup = async (group: any): Promise<void> => {
         if (!group.filters || !Array.isArray(group.filters)) {
           return;
         }
-        group.filters.forEach((filter: any) => {
+        for (const filter of group.filters) {
           if (!filter.key) {
             errors.push({ type: 'MISSING_FILTER_KEY', message: 'Filter key is required' });
           }
@@ -266,13 +315,26 @@ export const validateWorkflowDefinitionData = async (
           if (filter.mode && !filterModeValues.includes(filter.mode)) {
             errors.push({ type: 'INVALID_FILTER_MODE', message: `Invalid filter mode '${filter.mode}'` });
           }
-        });
+          if (filter.key) {
+            // Entity attribute filters are evaluated by the stix filtering engine: reject keys it cannot evaluate,
+            // otherwise the condition is silently considered as not matching at runtime.
+            if (!WORKFLOW_CONTEXT_FILTER_KEYS.includes(filter.key)) {
+              try {
+                await validateFilterGroupForStixMatch(context, SYSTEM_USER, { mode: FilterMode.And, filters: [{ ...filter, key: [filter.key] }], filterGroups: [] });
+              } catch (error: any) {
+                errors.push({ type: 'UNSUPPORTED_FILTER_KEY', message: `Unsupported filter key '${filter.key}': ${error.message}` });
+              }
+            }
+          }
+        }
         if (group.filterGroups && Array.isArray(group.filterGroups)) {
-          group.filterGroups.forEach(validateFilterGroup);
+          for (const subGroup of group.filterGroups) {
+            await validateFilterGroup(subGroup);
+          }
         }
       };
       if (transition.conditions.filters) {
-        validateFilterGroup(transition.conditions.filters);
+        await validateFilterGroup(transition.conditions.filters);
       }
     }
 
@@ -410,44 +472,19 @@ export const validateWorkflowDefinitionData = async (
 
       const oldValidation = oldDefinitionData ? workflowDefinitionSchema.safeParse(oldDefinitionData) : null;
       if (oldValidation?.success) {
-        const oldStates = extractAllStatesFromDefinition(oldValidation.data);
-        const newStates = extractAllStatesFromDefinition(validationResult.data);
-        const removedStates = [...oldStates].filter((s) => !newStates.has(s));
-        if (removedStates.length > 0) {
-          // Ending states (no outgoing transitions in the old workflow) are safe to remove even when
-          // instances are in them — those instances are terminal and cannot progress anyway.
-          const statesWithOutgoingTransitions = new Set<string>();
-          for (const transition of oldValidation.data.transitions) {
-            const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
-            for (const s of fromStates) {
-              if (s && s !== '*') statesWithOutgoingTransitions.add(s);
-            }
-          }
-          const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
-
-          if (nonEndingRemovedStates.length > 0) {
-            // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
-            // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
-            // Instead, we filter by currentState in ES and post-filter by workflow_id.
-            const instancesInRemovedStates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-              filters: {
-                mode: FilterMode.And,
-                filters: [
-                  { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
-                ],
-                filterGroups: [],
-              },
-            });
-            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId);
-
-            if (conflictingInstances.length > 0) {
-              errors.push({
-                type: 'STATE_IN_USE',
-                message: `Cannot remove states ${nonEndingRemovedStates.join(', ')} that are currently in use by workflow instances`,
-                path: conflictingInstances.map((i: any) => ({ id: i.id, entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE })),
-              });
-            }
-          }
+        const { states: nonEndingRemovedStates, instances: conflictingInstances } = await findInstancesBlockingStateRemoval(
+          context,
+          user,
+          oldValidation.data,
+          validationResult.data,
+          existingWorkflowId,
+        );
+        if (conflictingInstances.length > 0) {
+          errors.push({
+            type: 'STATE_IN_USE',
+            message: `Cannot remove states ${nonEndingRemovedStates.join(', ')} that are currently in use by workflow instances`,
+            path: conflictingInstances.map((i: any) => ({ id: i.id, entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE })),
+          });
         }
 
         // Same guard, for entity types relying on the legacy per-entity Status record

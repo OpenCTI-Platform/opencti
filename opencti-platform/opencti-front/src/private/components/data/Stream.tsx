@@ -10,7 +10,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
 import { TAXIIAPI, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
@@ -222,7 +222,8 @@ const Stream = () => {
               <FilterIconButton
                 filters={deserializedFilters}
                 variant="small"
-                entityTypes={['Stix-Filtering']}
+                // as the stream edition form, so that a custom field filter is shown with its label
+                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
               />
             )
           : EMPTY_VALUE;

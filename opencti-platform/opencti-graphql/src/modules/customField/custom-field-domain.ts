@@ -1,5 +1,11 @@
 import { countAllThings, type EntityOptions, type FilterGroupWithNested, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldType, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type StoreEntityCustomFieldDefinition } from './custom-field-types';
+import {
+  type BasicStoreEntityCustomFieldDefinition,
+  CUSTOM_FIELD_TYPES,
+  type CustomFieldType,
+  ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
+  type StoreEntityCustomFieldDefinition,
+} from './custom-field-types';
 import { BackgroundTaskScope, type CustomFieldDefinitionAddInput, type EditInput, EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -10,8 +16,10 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { addCustomFieldCreatedCount } from '../../manager/telemetryManager';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { enforceEnableFeatureFlag, executionContext, SYSTEM_USER } from '../../utils/access';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
 
 /**
@@ -52,6 +60,8 @@ export const findCustomFieldStixFilterKeys = async (context: AuthContext, user: 
 
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
+  // Managing the custom field definitions is an Enterprise Edition feature, their values stay usable
+  await checkEnterpriseEdition(context);
   // Validate name starts with the required prefix and matches the allowed format
   if (!CUSTOM_FIELD_NAME_REGEX.test(input.name)) {
     throw ValidationError(
@@ -75,9 +85,8 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
     }
   }
   // Validate field_type is supported
-  const allowedTypes: CustomFieldType[] = ['integer', 'string', 'markdown', 'boolean', 'date', 'select', 'multi_select'];
-  if (!allowedTypes.includes(input.field_type as CustomFieldType)) {
-    throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: allowedTypes });
+  if (!CUSTOM_FIELD_TYPES.includes(input.field_type as CustomFieldType)) {
+    throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: CUSTOM_FIELD_TYPES });
   }
   // Validate integer bounds
   if (input.field_type === 'integer' && input.min_value != null && input.max_value != null && input.min_value > input.max_value) {
@@ -91,6 +100,7 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
   // multi_select is intrinsically multi-valued; force the multiple flag so the entity attribute is indexed as an array
   const multiple = input.field_type === 'multi_select' ? true : (input.multiple ?? false);
   const created = await createEntity(context, user, { ...input, multiple }, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+  addCustomFieldCreatedCount();
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -136,6 +146,8 @@ const scheduleCustomFieldValuesCleanupTask = async (fieldName: string, fieldId: 
 
 export const customFieldDefinitionDelete = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
+  // Managing the custom field definitions is an Enterprise Edition feature, their values stay usable
+  await checkEnterpriseEdition(context);
   const element = await deleteElementById<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   await publishUserAction({
@@ -151,7 +163,7 @@ export const customFieldDefinitionDelete = async (context: AuthContext, user: Au
   return customFieldDefinitionId;
 };
 
-export const customFieldDefinitionEdit = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
+const editCustomFieldDefinition = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   // Prevent changing field_type (immutable after creation)
   const forbiddenKeys = ['field_type', 'name'];
@@ -294,6 +306,12 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
+export const customFieldDefinitionEdit = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
+  // Managing the custom field definitions is an Enterprise Edition feature, their values stay usable
+  await checkEnterpriseEdition(context);
+  return editCustomFieldDefinition(context, user, customFieldDefinitionId, input);
+};
+
 export const customFieldDefinitionAddEntityType = async (
   context: AuthContext,
   user: AuthUser,
@@ -302,6 +320,7 @@ export const customFieldDefinitionAddEntityType = async (
   mandatory: boolean,
   defaultValue?: string | null,
 ) => {
+  await checkEnterpriseEdition(context);
   const definition = await findById(context, user, customFieldDefinitionId);
   if (!definition) {
     throw FunctionalError('Custom field definition not found', { id: customFieldDefinitionId });
@@ -336,11 +355,18 @@ export const customFieldDefinitionUpdateEntityType = async (
     throw FunctionalError('Custom field definition is not attached to this entity type', { id: customFieldDefinitionId, entityType });
   }
   const currentSettings = definition.entity_type_settings ?? [];
+  // In Community, a mandatory custom field can still be made optional (and only that), so that the creation
+  // of the entities of this type never stays blocked by a setting that can no longer be managed
+  const currentSetting = currentSettings.find((setting) => setting.entity_type === entityType);
+  const isOnlyMadeOptional = !mandatory && (defaultValue ?? undefined) === (currentSetting?.default_value ?? undefined);
+  if (!isOnlyMadeOptional) {
+    await checkEnterpriseEdition(context);
+  }
   const nextSettings = [
     ...currentSettings.filter((setting) => setting.entity_type !== entityType),
     { entity_type: entityType, mandatory, default_value: defaultValue ?? undefined },
   ];
-  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
+  return editCustomFieldDefinition(context, user, customFieldDefinitionId, [
     { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
   ]);
 };
@@ -351,6 +377,7 @@ export const customFieldDefinitionRemoveEntityType = async (
   customFieldDefinitionId: string,
   entityType: string,
 ) => {
+  await checkEnterpriseEdition(context);
   const definition = await findById(context, user, customFieldDefinitionId);
   if (!definition) {
     throw FunctionalError('Custom field definition not found', { id: customFieldDefinitionId });

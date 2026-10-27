@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useParams } from 'react-router';
 import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
-import { Box, Grid2 as Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { Box, Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SyncPopover from '@components/data/sync/SyncPopover';
 import IngestionRssPopover from '@components/data/ingestionRss/IngestionRssPopover';
@@ -20,6 +20,8 @@ import IngestionCsvLogsTab from '@components/data/ingestionCsv/IngestionCsvLogsT
 import IngestionJsonLogsTab from '@components/data/ingestionJson/IngestionJsonLogsTab';
 import SyncLogsTab from '@components/data/sync/SyncLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import type { IngestionHealthChip_ingestionHealth$key } from '@components/data/connectors/__generated__/IngestionHealthChip_ingestionHealth.graphql';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -52,6 +54,9 @@ const feedDetailSyncQuery = graphql`
       ssl_verify
       synchronized
       queue_messages
+      ingestionHealth {
+        ...IngestionHealthChip_ingestionHealth
+      }
       user {
         id
         name
@@ -75,6 +80,9 @@ const feedDetailRssQuery = graphql`
       ssl_verify
       created_at
       updated_at
+      ingestionHealth {
+        ...IngestionHealthChip_ingestionHealth
+      }
       user {
         id
         name
@@ -102,6 +110,9 @@ const feedDetailTaxiiQuery = graphql`
       ssl_verify
       created_at
       updated_at
+      ingestionHealth {
+        ...IngestionHealthChip_ingestionHealth
+      }
       user {
         id
         name
@@ -120,6 +131,9 @@ const feedDetailTaxiiPushQuery = graphql`
       confidence_to_score
       created_at
       updated_at
+      ingestionHealth {
+        ...IngestionHealthChip_ingestionHealth
+      }
       user {
         id
         name
@@ -145,6 +159,9 @@ const feedDetailCsvQuery = graphql`
       ssl_verify
       created_at
       updated_at
+      ingestionHealth {
+        ...IngestionHealthChip_ingestionHealth
+      }
       user {
         id
         name
@@ -167,6 +184,9 @@ const feedDetailJsonQuery = graphql`
       ssl_verify
       created_at
       updated_at
+      ingestionHealth {
+        ...IngestionHealthChip_ingestionHealth
+      }
       user {
         id
         name
@@ -207,6 +227,7 @@ export interface FeedDetailNode {
   created_at?: string | null;
   updated_at?: string | null;
   user?: { readonly id: string; readonly name: string } | null;
+  ingestionHealth?: IngestionHealthChip_ingestionHealth$key | null;
 }
 
 type FeedKind = Exclude<BuiltInIntegrationKind, 'form'>;
@@ -343,8 +364,22 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
       />
 
       {/* Same flat header layout as the connector detail page. */}
-      <Stack direction="row" justifyContent="space-between" gap={2} sx={{ width: '100%' }}>
-        <Stack direction="row" gap={2} alignItems="center" sx={{ minWidth: 0 }}>
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: 'space-between',
+          gap: 2,
+          width: '100%',
+        }}
+      >
+        <Stack
+          direction="row"
+          sx={{
+            gap: 2,
+            alignItems: 'center',
+            minWidth: 0,
+          }}
+        >
           <Box
             sx={{
               height: 56,
@@ -394,11 +429,12 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                   {node.name}
                 </span>
               </Tooltip>
-              <div style={{ display: 'inline-block', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexShrink: 0, gap: theme.spacing(1) }}>
                 <ItemBoolean
                   status={running}
                   label={running ? t_i18n('Active') : t_i18n('Inactive')}
                 />
+                <IngestionHealthChip ingestionHealth={node.ingestionHealth} />
               </div>
             </TitleMainEntity>
             {node.description && (
@@ -408,7 +444,13 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
             )}
           </Box>
         </Stack>
-        <Stack direction="row" alignItems="center" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
           {/* Same gate as the legacy feed list lines: read-only INGESTION
               users do not get the mutation actions. */}
           <Security needs={[INGESTION_SETINGESTIONS]}>

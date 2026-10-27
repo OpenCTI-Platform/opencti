@@ -108,6 +108,7 @@ import './customField/custom-field';
 // region graphql registration
 import './channel/channel-graphql';
 import './connector/connector-graphql';
+import './ingestionHealth/ingestionHealth-graphql';
 import './catalog/catalog-graphql';
 import './language/language-graphql';
 import './event/event-graphql';
@@ -179,6 +180,7 @@ import './user/user-graphql';
 import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
+import './configPreset/configPreset-graphql';
 // endregion
 
 // region modules static init

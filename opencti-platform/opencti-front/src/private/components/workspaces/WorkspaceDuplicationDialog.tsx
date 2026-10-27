@@ -75,6 +75,7 @@ const WorkspaceDuplicationDialog: FunctionComponent<
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
   const workspace = useFragment(workspaceDuplicationFragment, data);
   const isInvestigation = workspace.type === 'investigation';
 
@@ -193,11 +194,16 @@ const WorkspaceDuplicationDialog: FunctionComponent<
       open={displayDuplicate}
       onClose={handleCloseDuplicate}
       fullWidth={true}
+      slotProps={{
+        // MUI's transition mounts asynchronously; focusing on mount would
+        // race the DOM insertion, so wait for it to fully enter instead.
+        transition: { onEntered: () => nameInputRef.current?.focus() },
+      }}
       title={isInvestigation ? t_i18n('Duplicate the investigation') : t_i18n('Duplicate the dashboard')}
     >
       <Input
+        ref={nameInputRef}
         error={!newName ? t_i18n('This field is required') : undefined}
-        autoFocus
         id="duplicated_workspace_name"
         label={t_i18n('New name')}
         type="text"

@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.27
+# syntax=docker/dockerfile:1.28
 FROM node:22-alpine3.23 AS base
 
 
@@ -70,6 +70,7 @@ FROM base AS app
 RUN <<EOT
   set -euxo pipefail
 
+  apk --no-cache upgrade
   apk --no-cache add tini python3 python3-dev
   rm /var/log/apk.log
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED

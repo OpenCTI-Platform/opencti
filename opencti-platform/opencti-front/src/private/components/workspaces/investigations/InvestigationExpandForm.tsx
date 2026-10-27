@@ -372,7 +372,12 @@ const InvestigationExpandFormContent = ({
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
           <Stack spacing={3} sx={{ p: 3 }}>
-            <Stack direction="row" justifyContent="space-between">
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: 'space-between',
+              }}
+            >
               <Field
                 name="entity_types"
                 component={CheckboxesField}

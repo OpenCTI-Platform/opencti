@@ -291,7 +291,7 @@ export const resolveUserForFeed = async (context: AuthContext, feed: BasicStoreE
 const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
     const { id } = req.params as { id: string };
-    res.set({ 'content-type': 'text/plain; charset=utf-8' });
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     try {
       const context = await createAuthenticatedContext(req, res, 'rolling_feeds');
       const feed = await findFeed(context, SYSTEM_USER, id);

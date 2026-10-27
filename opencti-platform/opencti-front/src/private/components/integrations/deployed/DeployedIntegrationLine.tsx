@@ -6,9 +6,11 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined, ScheduleOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
@@ -18,18 +20,20 @@ import { paperBorder } from '../paperSurface';
 // section renders as a proper aligned table. Widths are percentages of the
 // row so the table always fills the available space; the name column absorbs
 // the rest. Metric columns collapse on small screens instead of squeezing
-// the names.
+// the names. Every data column, header included, is aligned on the left.
 const COLUMNS = {
   type: { width: '13%', minWidth: 110, display: { xs: 'none', sm: 'flex' } },
   description: { width: '18%', display: { xs: 'none', lg: 'flex' } },
-  messages: { width: '8%', minWidth: 72, display: { xs: 'none', sm: 'flex' }, justifyContent: 'flex-end' },
-  throughput: { width: '9%', minWidth: 84, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' },
+  messages: { width: '8%', minWidth: 72, display: { xs: 'none', sm: 'flex' } },
+  throughput: { width: '9%', minWidth: 84, display: { xs: 'none', md: 'flex' } },
   date: { width: '12%', minWidth: 130, display: { xs: 'none', md: 'flex' } },
   status: { width: '9%', minWidth: 84, display: 'flex' },
+  healthStatus: { width: '9%', minWidth: 84, display: 'flex' },
   actions: { width: 34, display: 'flex', justifyContent: 'center' },
 } as const;
 
 const cellSx = (column: keyof typeof COLUMNS) => ({
+  justifyContent: 'flex-start',
   ...COLUMNS[column],
   flexShrink: 0,
   alignItems: 'center',
@@ -39,6 +43,7 @@ const cellSx = (column: keyof typeof COLUMNS) => ({
 export const DeployedIntegrationLinesHeader = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const { isFeatureEnable } = useHelper();
   const headerCellSx = {
     fontSize: 10,
     fontWeight: 600,
@@ -80,6 +85,11 @@ export const DeployedIntegrationLinesHeader = () => {
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('status') }}>
         {t_i18n('Status')}
       </Typography>
+      {isFeatureEnable('INGESTION_HEALTH') && (
+        <Typography component="div" sx={{ ...headerCellSx, ...cellSx('healthStatus') }}>
+          {t_i18n('Health status')}
+        </Typography>
+      )}
       <Box sx={cellSx('actions')} />
     </Box>
   );
@@ -95,6 +105,7 @@ export interface DeployedIntegrationLineProps {
 const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProps) => {
   const { t_i18n, n, nsdt, rd } = useFormatter();
   const theme = useTheme();
+  const { isFeatureEnable } = useHelper();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
@@ -138,7 +149,15 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       }}
     >
       {/* Name column: logo, name and managed flag. */}
-      <Stack direction="row" alignItems="center" gap={1.5} sx={{ flex: 1, minWidth: 0 }}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1.5,
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
         <Box
           sx={{
             height: 32,
@@ -211,7 +230,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           {item.description || EMPTY_VALUE}
         </Typography>
       </Box>
-      {/* Messages column: queued messages badge (right-aligned numbers). */}
+      {/* Messages column: queued messages badge. */}
       <Box sx={cellSx('messages')}>
         {item.messagesCount != null ? (
           <Tooltip title={t_i18n('Queued messages')}>
@@ -276,7 +295,13 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
             // Neutralize the global tooltip lowercasing: this is a sentence.
             slotProps={{ popper: { sx: { textTransform: 'none' } } }}
           >
-            <Stack direction="row" alignItems="center" gap={0.5}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
               <ScheduleOutlined sx={{ fontSize: 13, color: theme.palette.text.secondary }} />
               <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary, whiteSpace: 'nowrap' }}>
                 {rd(lastDate)}
@@ -291,13 +316,31 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       </Box>
       {/* Status column. */}
       <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
-        <Stack direction="column" alignItems="flex-start" gap={0.5}>
+        <Stack
+          direction="column"
+          sx={{
+            alignItems: 'flex-start',
+            gap: 0.5,
+          }}
+        >
           {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
           {item.status === 'processing'
             ? <ItemBoolean status={undefined} label={statusText} />
             : <ItemBoolean status={item.status === 'active'} label={statusText} />}
         </Stack>
       </Box>
+      {/* Health status column: forms are not ingestions, they have no health. */}
+      {isFeatureEnable('INGESTION_HEALTH') && (
+        <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('healthStatus')}>
+          {item.kind !== 'form' ? (
+            <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
+          ) : (
+            <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary }}>
+              {EMPTY_VALUE}
+            </Typography>
+          )}
+        </Box>
+      )}
       {/* Actions column. */}
       <Box sx={cellSx('actions')}>
         <DeployedIntegrationPopover item={item} onChange={onChange} />

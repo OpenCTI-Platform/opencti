@@ -49,7 +49,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import CardNumber from '../../../../components/common/card/CardNumber';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -288,7 +288,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
   return (
     <>
       <Grid container={true} spacing={3} sx={{ marginBottom: 3 }}>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <QueryRenderer
             query={stixDomainObjectThreatKnowledgeContainersNumberQuery}
             variables={{
@@ -329,7 +329,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             }}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <QueryRenderer
             query={
               stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
@@ -387,7 +387,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             }}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <QueryRenderer
             query={
               stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery

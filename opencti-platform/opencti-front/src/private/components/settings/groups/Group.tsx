@@ -144,12 +144,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Description')}
                 </Label>
@@ -158,10 +158,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   limit={400}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <GroupHiddenTypesChipList groupData={group} />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Auto new markings')}
                 </Label>
@@ -170,7 +170,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   label={group.auto_new_marking ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Default membership')}
                 </Label>
@@ -182,10 +182,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Permissions')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Roles')}
                 </Label>
@@ -206,7 +206,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   ))}
                 </List>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Default dashboard')}
                 </Label>
@@ -235,7 +235,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </ListItemButton>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Max Confidence Level')}
                 </Label>
@@ -243,7 +243,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   confidenceLevel={group.group_confidence_level}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('No creators accumulation')}
                 </Label>
@@ -252,7 +252,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   label={group.no_creators ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Restrict delete to created entities')}
                 </Label>
@@ -264,10 +264,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card title={t_i18n('Markings')}>
             <Grid container={true} spacing={3}>
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <Label action={(
                   <Tooltip
                     title={t_i18n(
@@ -303,7 +303,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <Label>
                   {t_i18n('Allowed markings')}
                 </Label>
@@ -327,7 +327,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <Label>
                   {t_i18n('Maximum shareable markings')}
                 </Label>

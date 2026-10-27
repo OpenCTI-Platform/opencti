@@ -4,7 +4,8 @@ import { ZoomInOutlined, ZoomOutOutlined, SaveOutlined } from '@mui/icons-materi
 import Drawer from '@mui/material/Drawer';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import makeStyles from '@mui/styles/makeStyles';
-import { createStyles, useTheme } from '@mui/styles';
+import { createStyles } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import type { Theme } from '../../../../components/Theme';

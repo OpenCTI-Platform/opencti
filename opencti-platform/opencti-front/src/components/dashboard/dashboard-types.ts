@@ -14,13 +14,19 @@ export interface DashboardConfig {
 // When used in dashboards widgets must have a layout
 export type DashboardWidget = Widget & { layout: NonNullable<Widget['layout']> };
 
-type DashboardVariableType = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
+export type DashboardVariableType = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
   | 'marking' | 'status' | 'group' | 'boolean' | 'numeric' | 'text' | 'date';
 
-type DashboardVariableRestriction
+export type DashboardVariableRestriction
   = | { mode: 'none' }
     | { mode: 'selection'; values: string[] }
     | { mode: 'filters'; filters: FilterGroup };
+
+// Display order of the variable type select.
+export const DASHBOARD_VARIABLE_TYPES: readonly DashboardVariableType[] = [
+  'entity', 'label', 'marking', 'user', 'group', 'status', 'killChainPhase', 'vocabulary',
+  'entityType', 'text', 'numeric', 'boolean', 'date',
+];
 
 interface DashboardVariableBase {
   id: string;

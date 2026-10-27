@@ -3,7 +3,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC,
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
-import { now } from '../../utils/format';
+import { now, sinceNowInMs } from '../../utils/format';
 import { isEmptyField } from '../../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
@@ -13,6 +13,7 @@ import {
   redisDeleteConnectorHeartbeat,
   redisGetConnectorHealthMetrics,
   redisGetConnectorHeartbeat,
+  redisGetConnectorLogs,
   redisGetConnectorsHeartbeats,
   redisGetManagedConnectorAutoUpgradeStatus,
   redisSetConnectorHealthMetrics,
@@ -23,6 +24,7 @@ import {
 import semver from 'semver';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import {
+  findCatalogByCatalogId,
   findCatalogContractsByImageName,
   findCatalogContractsBySlugs,
   findLatestCompatibleCatalogContractByImageName,
@@ -33,9 +35,18 @@ import { findManagedConnectorsByCatalogId } from './connector-repository';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityUser } from '../user/user-types';
-import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, ConnectorInfo, StoreEntityConnector, StoreEntityConnectorManager } from './connector-types';
+import type {
+  BasicStoreEntityConnector,
+  BasicStoreEntityConnectorManager,
+  CachedConnector,
+  ConnectorInfo,
+  StoreEntityConnector,
+  StoreEntityConnectorManager,
+} from './connector-types';
+import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from './connector-types';
 import {
   type AddManagedConnectorInput,
+  type ConnectorContractConfiguration,
   ConnectorPriorityGroup,
   type CurrentConnectorStatusInput,
   type EditInput,
@@ -60,7 +71,6 @@ import { getEntitiesMapFromCache } from '../../database/cache';
 import { createOnTheFlyUser } from '../../modules/user/user-domain';
 import { filter, includes, map, pipe } from 'ramda';
 import { BACKGROUND_TASK_QUEUES, connectorConfig, getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector } from './connector-rabbitmq';
-import { sinceNowInMinutes } from '../../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../../schema/general';
 import { isNotEmptyField } from '../../database/utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../notifier/notifier-statics';
@@ -111,22 +121,65 @@ export const issueConnectorJWT = async () => {
   return keyPair.signJwt(jwt);
 };
 
+// A managed connector stopped, or being stopped, on purpose: no process is expected to run
+export const isConnectorStopped = (connector: any) => {
+  if (!(connector.is_managed || isNotEmptyField(connector.catalog_id))) {
+    return false;
+  }
+  return connector.manager_requested_status === 'stopping'
+    || connector.manager_requested_status === 'stopped'
+    || connector.manager_current_status === 'stopped';
+};
+
 // lastSeenAt is the last connector heartbeat (ping or registration), stored in Redis.
 // Never derive it from updated_at: any write on the connector entity bumps it.
 export const isConnectorActive = (connector: any, lastSeenAt?: string | null) => {
   if (connector.built_in) {
     return connector.active ?? true;
   }
-  if (connector.is_managed || isNotEmptyField(connector.catalog_id)) {
-    // return false if managed connector is stopped or stopping
-    const connectorStopped = connector.manager_requested_status === 'stopping'
-      || connector.manager_requested_status === 'stopped'
-      || connector.manager_current_status === 'stopped';
-    if (connectorStopped) {
-      return false;
-    }
+  if (isConnectorStopped(connector)) {
+    return false;
   }
-  return isNotEmptyField(lastSeenAt) && sinceNowInMinutes(lastSeenAt) < 5;
+  return isNotEmptyField(lastSeenAt) && sinceNowInMs(lastSeenAt) < CONNECTOR_LIVELINESS_GRACE_PERIOD_MS;
+};
+
+// Projection read from Elasticsearch by findRegularlyPingingConnectors: other connector fields are NOT loaded
+export type PingingConnector = Pick<BasicStoreEntityConnector, 'internal_id' | 'standard_id' | 'entity_type' | 'built_in' | 'connector_info'>;
+
+/**
+ * Finds the connectors pinging continuously.
+ *
+ * The pycti PingAlive thread pings every 40 s whatever the collection period, so for these connectors a missing
+ * heartbeat means the process is down. The other connectors only ping around their runs.
+ *
+ * Decided on connector_info, sent by pycti at each ping. Read from Elasticsearch, not from the connectors cache:
+ * pings write connector_info without refreshing the cache (a notify reloads every connector on every node), so the
+ * cached value would be the one of the last cache reload, possibly far behind the last ping.
+ * - no connector_info: never pinged with a pycti sending it, not considered as pinging
+ * - connector_info.run_and_terminate: declared run and terminate (CONNECTOR_RUN_AND_TERMINATE or a zero duration period),
+ *   no ping thread, only a ping at the end of each run
+ *
+ * Misclassified, accepted:
+ * - run and terminate connectors not declaring it (restarted by an external cron, or exiting after one run):
+ *   their ping thread sends run_and_terminate false, they are considered as pinging and their heartbeat is missing between runs
+ * - connectors switched from continuous to run and terminate: run_and_terminate stays false until the end of their first run
+ * - connectors pinging continuously without sending connector_info (pycti versions before connector_info, non pycti clients):
+ *   not considered as pinging
+ *
+ * @param context the execution context
+ * @param user the user reading the connectors
+ * @returns the non built-in connectors pinging continuously, projected on base fields + built_in + connector_info
+ */
+export const findRegularlyPingingConnectors = async (context: AuthContext, user: AuthUser): Promise<PingingConnector[]> => {
+  // Not read from cache because connector_info update does not trigger a cache invalidation
+  // Projection: only the fields used below, read every period by the health manager
+  const connectors: PingingConnector[] = await fullEntitiesList<BasicStoreEntityConnector>(context, user, [ENTITY_TYPE_CONNECTOR], {
+    baseData: true,
+    baseFields: ['built_in', 'connector_info'],
+  });
+  // connector_info is not filterable (flat object): filtered here. A few hundred connectors at most
+  return connectors.filter((connector) => !connector.built_in
+    && isNotEmptyField(connector.connector_info) && connector.connector_info.run_and_terminate !== true);
 };
 
 // Liveness is a single derived field: failing to read heartbeats must not fail the loading of connectors
@@ -147,6 +200,20 @@ const loadConnectorsHeartbeats = async () => {
     logApp.warn('[OPENCTI-MODULE] Unable to read connectors heartbeats, connectors considered inactive', { cause: err });
     return new Map<string, string>();
   }
+};
+
+// Liveness is not part of the connectors cache (see connectorsForCache):
+// consumers of the cache must compute it before relying on `active`.
+export const refreshConnectorsLiveness = async <T extends { internal_id: string; built_in?: boolean }>(cachedConnectors: T[]) => {
+  if (cachedConnectors.length === 0) {
+    return [];
+  }
+  const heartbeats = await loadConnectorsHeartbeats();
+  return cachedConnectors.map((conn) => {
+    // Built-in connectors do not send heartbeats
+    const lastSeenAt = conn.built_in ? null : (heartbeats.get(conn.internal_id) ?? null);
+    return { ...conn, last_seen_at: lastSeenAt, active: isConnectorActive(conn, lastSeenAt) };
+  });
 };
 
 export const completeConnector = (connector: any, lastSeenAt?: string | null) => {
@@ -175,6 +242,19 @@ export const connectors = async (context: AuthContext, user: AuthUser) => {
   return [...storedConnectors, ...builtInConnectors].map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 
+// The connectors cache is only reloaded on connectors events, while liveness changes with the pings or their absence:
+// it holds connectors without liveness, see refreshConnectorsLiveness. Built-in connectors keep their configured `active`.
+export const connectorsForCache = async (context: AuthContext, user: AuthUser): Promise<CachedConnector[]> => {
+  const [storedConnectors, builtInConnectors] = await Promise.all([
+    findConnectors(context, user),
+    builtInConnectorsRuntime(context, user),
+  ]);
+  return [...storedConnectors, ...builtInConnectors].map((connector) => {
+    const { active, last_seen_at: _, ...completed } = completeConnector(connector);
+    return completed.built_in ? { ...completed, active } : completed;
+  });
+};
+
 export const connector = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   const storedConnector = await findConnectorById(context, user, connectorId);
   if (storedConnector) {
@@ -194,7 +274,19 @@ export const connectorManagers = (context: AuthContext, user: AuthUser) => {
 export const connectorsForManagers = async (context: AuthContext, user: AuthUser) => {
   const managedConnectors = await findManagedConnectors(context, user);
   const heartbeats = await loadConnectorsHeartbeats();
-  return managedConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
+  // Without contract snapshot there is no image to deploy, and its failing image would fail the whole list
+  const deployableConnectors = managedConnectors.filter((connector) => {
+    if (!connector.manager_contract) {
+      logApp.warn('[OPENCTI-MODULE] Managed connector without contract snapshot is not served to the manager', {
+        module: 'connector',
+        connectorId: connector.internal_id,
+        catalogId: connector.catalog_id,
+      });
+      return false;
+    }
+    return true;
+  });
+  return deployableConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 
 const NO_UPDATE_STATUS = {
@@ -341,14 +433,14 @@ export const connectorsForWorker = async (context: AuthContext, user: AuthUser) 
   return registeredConnectors;
 };
 
-export const computeManagerConnectorContract = async (_context: AuthContext, _user: AuthUser, connectorEntity: any) => {
+export const computeManagerConnectorContract = async (_context: AuthContext, _user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
   if (!connectorEntity.manager_contract) {
     return null;
   }
   return JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(connectorEntity.manager_contract, { excludeRuntimeConfigVars: true }));
 };
 
-export const computeManagerConnectorExcerpt = async (_context: AuthContext, _user: AuthUser, connectorEntity: any) => {
+export const computeManagerConnectorExcerpt = async (_context: AuthContext, _user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
   if (!connectorEntity.manager_contract) {
     return null;
   }
@@ -357,7 +449,7 @@ export const computeManagerConnectorExcerpt = async (_context: AuthContext, _use
 };
 
 const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration') ?? 604800;
-const computeConnectorTokenConfiguration = async (context: AuthContext, connectorEntity: any) => {
+const computeConnectorTokenConfiguration = async (context: AuthContext, connectorEntity: BasicStoreEntityConnector) => {
   const resourceId = `manager-configuration-${connectorEntity.internal_id}`;
   let lock;
   try {
@@ -394,14 +486,12 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
 export const computeManagerConnectorConfiguration = async (
   context: AuthContext,
   _user: AuthUser,
-  connectorEntity: any,
+  connectorEntity: BasicStoreEntityConnector,
   { withEncrypted = false }: { withEncrypted?: boolean } = {},
 ) => {
-  if (!connectorEntity.catalog_id) {
-    return [];
-  }
-  const configurations = structuredClone(connectorEntity.manager_contract_configuration) ?? [];
-  const contract = withEncrypted ? configurations : configurations.filter((configuration: any) => !configuration.encrypted);
+  // As stored, without the GraphQL type name: exposed on both ConnectorContractConfiguration and ManagerContractConfiguration
+  const configurations: Omit<ConnectorContractConfiguration, '__typename'>[] = structuredClone(connectorEntity.manager_contract_configuration) ?? [];
+  const contract = withEncrypted ? configurations : configurations.filter((configuration) => !configuration.encrypted);
   contract.push(
     { key: 'CONNECTOR_ID', value: connectorEntity.internal_id },
     { key: 'CONNECTOR_NAME', value: connectorEntity.name },
@@ -413,11 +503,14 @@ export const computeManagerConnectorConfiguration = async (
   return injectProxyConfiguration(contract).sort();
 };
 
-export const computeManagerConnectorImage = async (connectorEntity: any) => {
-  if (!connectorEntity.manager_contract) {
-    return '';
-  }
+export const computeManagerConnectorImage = async (connectorEntity: BasicStoreEntityConnector) => {
   const managerContract = connectorEntity.manager_contract;
+  if (!managerContract) {
+    throw FunctionalError('Missing manager contract snapshot', {
+      connectorId: connectorEntity.id ?? connectorEntity.internal_id,
+      catalogId: connectorEntity.catalog_id,
+    });
+  }
   if (!managerContract.image || !managerContract.contract_version) {
     throw FunctionalError('Invalid manager contract snapshot', {
       connectorId: connectorEntity.id ?? connectorEntity.internal_id,
@@ -428,15 +521,104 @@ export const computeManagerConnectorImage = async (connectorEntity: any) => {
   return `${managerContract.image}:${managerContract.contract_version}`;
 };
 
-export const computeManagerContractHash = async (context: AuthContext, user: AuthUser, connectorEntity: any) => {
+export const computeManagerContractHash = async (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
   const image = await computeManagerConnectorImage(connectorEntity);
   const configuration = await computeManagerConnectorConfiguration(context, user, connectorEntity, { withEncrypted: true });
   return shortHash({
     image,
-    subHash: configuration.map((configuration: any) => `${configuration.key}|${configuration.value}`),
+    subHash: configuration.map((configuration) => `${configuration.key}|${configuration.value}`),
     state: connectorEntity.connector_state_timestamp,
   });
 };
+
+// region manager fields, exposed on two GraphQL types:
+// - Connector: any connector, read by the UI. The manager fields of a connector that is not managed are null.
+// - ManagedConnector: read by the connectors manager, it only expects managed connectors.
+const isManagedConnector = (connectorEntity: BasicStoreEntityConnector) => isNotEmptyField(connectorEntity.catalog_id);
+
+const computeIfManagedConnector = async <T>(connectorEntity: BasicStoreEntityConnector, compute: () => T | Promise<T>) => {
+  return isManagedConnector(connectorEntity) ? compute() : null;
+};
+
+const computeForManagedConnector = async <T>(connectorEntity: BasicStoreEntityConnector, compute: () => T | Promise<T>) => {
+  if (!isManagedConnector(connectorEntity)) {
+    throw FunctionalError('Connector is not managed', { connectorId: connectorEntity.internal_id });
+  }
+  return compute();
+};
+
+export const computeConnectorCurrentStatus = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => connectorEntity.manager_current_status);
+};
+export const computeManagedConnectorCurrentStatus = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => connectorEntity.manager_current_status);
+};
+
+export const computeConnectorRequestedStatus = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => connectorEntity.manager_requested_status);
+};
+export const computeManagedConnectorRequestedStatus = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => {
+    if (!connectorEntity.manager_requested_status) {
+      throw FunctionalError('Missing manager requested status', { connectorId: connectorEntity.internal_id });
+    }
+    return connectorEntity.manager_requested_status;
+  });
+};
+
+// The connectors lists must not fail on an unrepaired managed connector, the manager must
+export const computeConnectorContractImage = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => {
+    if (!connectorEntity.manager_contract) {
+      logApp.error('[OPENCTI-MODULE] Managed connector without contract snapshot', {
+        module: 'connector',
+        connectorId: connectorEntity.internal_id,
+        catalogId: connectorEntity.catalog_id,
+      });
+      return null;
+    }
+    return computeManagerConnectorImage(connectorEntity);
+  });
+};
+export const computeManagedConnectorContractImage = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => computeManagerConnectorImage(connectorEntity));
+};
+
+export const computeConnectorContractConfiguration = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => computeManagerConnectorConfiguration(context, user, connectorEntity));
+};
+export const computeManagedConnectorContractConfiguration = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => computeManagerConnectorConfiguration(context, user, connectorEntity, { withEncrypted: true }));
+};
+
+export const computeConnectorContractHash = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => computeManagerContractHash(context, user, connectorEntity));
+};
+export const computeManagedConnectorContractHash = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => computeManagerContractHash(context, user, connectorEntity));
+};
+
+export const computeConnectorLogs = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => redisGetConnectorLogs(connectorEntity.id));
+};
+export const computeManagedConnectorLogs = (connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => redisGetConnectorLogs(connectorEntity.id));
+};
+
+export const computeConnectorHealthMetrics = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => connectorGetHealth(context, user, connectorEntity.id));
+};
+export const computeManagedConnectorHealthMetrics = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => connectorGetHealth(context, user, connectorEntity.id));
+};
+
+export const computeConnectorUptime = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeIfManagedConnector(connectorEntity, () => connectorGetUptime(context, user, connectorEntity.id));
+};
+export const computeManagedConnectorUptime = (context: AuthContext, user: AuthUser, connectorEntity: BasicStoreEntityConnector) => {
+  return computeForManagedConnector(connectorEntity, () => connectorGetUptime(context, user, connectorEntity.id));
+};
+// endregion
 
 // region connectors
 export const updateConnectorWithConnectorInfo = async (
@@ -607,11 +789,16 @@ export const managedConnectorAdd = async (
   input: AddManagedConnectorInput,
 ) => {
   await checkEnterpriseEdition(context);
+  // The connector stays bound to its catalog: auto-upgrades and contract snapshot are resolved from it
+  const catalog = await findCatalogByCatalogId(context, user, input.catalog_id);
+  if (isEmptyField(catalog)) {
+    throw FunctionalError('Catalog not found', { catalogId: input.catalog_id });
+  }
   // Get contract
-  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image);
+  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image, input.catalog_id);
   if (isEmptyField(targetContract)) {
     // Distinguish an unknown connector from a connector that the platform version cannot run
-    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image);
+    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image, input.catalog_id);
     if (imageContracts.length > 0) {
       throw FunctionalError('This connector is not compatible with the platform version', {
         image: input.manager_contract_image,

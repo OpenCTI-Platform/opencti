@@ -1,6 +1,7 @@
 import type { BasicStoreEntity } from './store';
+import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 
-export interface BasicStoreEntitySynchronizer extends BasicStoreEntity {
+export interface BasicStoreEntitySynchronizer extends BasicStoreEntity, IngestionHealthFields {
   name: string;
   uri: string;
   token?: string | null;

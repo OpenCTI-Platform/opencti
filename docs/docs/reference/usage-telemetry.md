@@ -134,6 +134,14 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of form intakes deleted
 - The number of form intakes submitted
 
+### Custom fields
+
+- The number of custom field definitions created
+- The number of custom field definitions, broken down by attached entity type
+- The number of custom field definitions, broken down by field type (`integer`, `string`, `markdown`, `boolean`, `date`, `select`, `multi_select`)
+- The number of dashboards with at least one widget filtering on a custom field
+- The number of saved filters filtering on a custom field
+
 ### Security and compliance
 
 - The number of security coverages
@@ -162,3 +170,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Workflows
 
 - The number of workflow definitions published
+
+### Configuration presets
+
+- The number of configuration preset bundles exported

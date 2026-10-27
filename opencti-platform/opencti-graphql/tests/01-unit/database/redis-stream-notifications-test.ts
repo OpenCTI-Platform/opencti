@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { StreamNotifEvent } from '../../../src/types/event';
 
 // Mock the Redis layer before importing the module under test, so no real connection is opened.
-const mockClient = { call: vi.fn() };
+const mockClient = { xrange: vi.fn() };
 vi.mock('../../../src/database/redis', () => ({
   getClientBase: vi.fn(() => mockClient),
   getClientXRANGE: vi.fn(() => mockClient),
@@ -33,8 +33,8 @@ describe('rawFetchRangeNotifications (notification range pagination)', () => {
 
   it('paginates with an exclusive cursor, stops on a short batch and keeps only live events', async () => {
     let callCount = 0;
-    mockClient.call.mockImplementation((...args: unknown[]) => {
-      const count = args[5] as number; // ['XRANGE', stream, startId, endId, 'COUNT', count]
+    mockClient.xrange.mockImplementation((...args: unknown[]) => {
+      const count = args[4] as number; // [stream, startId, endId, 'COUNT', count]
       callCount += 1;
       if (callCount === 1) {
         // A full batch (== COUNT) forces another iteration.
@@ -56,19 +56,19 @@ describe('rawFetchRangeNotifications (notification range pagination)', () => {
     });
 
     // Only two XRANGE calls: the short second batch ends iteration without an extra empty call.
-    expect(mockClient.call).toHaveBeenCalledTimes(2);
-    const firstCallArgs = mockClient.call.mock.calls[0];
-    const secondCallArgs = mockClient.call.mock.calls[1];
-    const batchSize = firstCallArgs[5] as number;
+    expect(mockClient.xrange).toHaveBeenCalledTimes(2);
+    const firstCallArgs = mockClient.xrange.mock.calls[0];
+    const secondCallArgs = mockClient.xrange.mock.calls[1];
+    const batchSize = firstCallArgs[4] as number;
 
     // First call is inclusive of the start id and carries the COUNT batch size.
-    expect(firstCallArgs[0]).toBe('XRANGE');
-    expect(firstCallArgs[2]).toBe('1'); // new Date(1).getTime()
-    expect(firstCallArgs[3]).toBe('2'); // new Date(2).getTime()
-    expect(firstCallArgs[4]).toBe('COUNT');
+    expect(firstCallArgs[0]).toBe('stream.notification');
+    expect(firstCallArgs[1]).toBe('1'); // new Date(1).getTime()
+    expect(firstCallArgs[2]).toBe('2'); // new Date(2).getTime()
+    expect(firstCallArgs[3]).toBe('COUNT');
 
     // Second call excludes the last id processed in the first batch (the '(' prefix).
-    expect(secondCallArgs[2]).toBe(`(${1000 + (batchSize - 1)}-0`);
+    expect(secondCallArgs[1]).toBe(`(${1000 + (batchSize - 1)}-0`);
 
     // All live events are delivered; the 'digest' entry of the second batch is filtered out.
     expect(received).toHaveLength(batchSize + 1);
@@ -90,8 +90,8 @@ describe('rawFetchRangeNotifications (notification range pagination)', () => {
     });
     let batchSize = 0;
     let callCount = 0;
-    mockClient.call.mockImplementation((...args: unknown[]) => {
-      const count = args[5] as number;
+    mockClient.xrange.mockImplementation((...args: unknown[]) => {
+      const count = args[4] as number;
       callCount += 1;
       if (callCount === 1) {
         batchSize = count;
@@ -109,7 +109,7 @@ describe('rawFetchRangeNotifications (notification range pagination)', () => {
     });
 
     // The second XRANGE excludes the exact full id (ms-seq) of the last entry of the first batch.
-    expect(mockClient.call.mock.calls[1][2]).toBe(`(5-${batchSize - 1}`);
+    expect(mockClient.xrange.mock.calls[1][1]).toBe(`(5-${batchSize - 1}`);
     // Every event is delivered exactly once: no duplicate, no skip.
     const ids = received.map((e) => (e.event as unknown as { data: { id: string } }).data.id);
     expect(ids).toHaveLength(batchSize + 2);
@@ -118,8 +118,8 @@ describe('rawFetchRangeNotifications (notification range pagination)', () => {
 
   it('stops early when the callback returns false', async () => {
     // Always return a full batch: without the early-stop the loop would never end.
-    mockClient.call.mockImplementation((...args: unknown[]) => {
-      const count = args[5] as number;
+    mockClient.xrange.mockImplementation((...args: unknown[]) => {
+      const count = args[4] as number;
       return Array.from({ length: count }, (_, i) => liveEntry(i, 'trigger-A'));
     });
 
@@ -130,14 +130,14 @@ describe('rawFetchRangeNotifications (notification range pagination)', () => {
     });
 
     expect(batches).toBe(1);
-    expect(mockClient.call).toHaveBeenCalledTimes(1);
+    expect(mockClient.xrange).toHaveBeenCalledTimes(1);
   });
 
   it('does not invoke the callback when the range is empty', async () => {
-    mockClient.call.mockResolvedValue([]);
+    mockClient.xrange.mockResolvedValue([]);
     const callback = vi.fn();
     await fetchRangeNotifications(new Date(1), new Date(2), callback);
     expect(callback).not.toHaveBeenCalled();
-    expect(mockClient.call).toHaveBeenCalledTimes(1);
+    expect(mockClient.xrange).toHaveBeenCalledTimes(1);
   });
 });

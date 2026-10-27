@@ -6,6 +6,8 @@ import * as Redis from '../../../../src/database/redis';
 import * as UserActionListener from '../../../../src/listener/UserActionListener';
 import * as Access from '../../../../src/utils/access';
 import * as CacheModule from '../../../../src/database/cache';
+import * as TelemetryManager from '../../../../src/manager/telemetryManager';
+import * as EnterpriseEdition from '../../../../src/enterprise-edition/ee';
 import { EditOperation, FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import {
   customFieldDefinitionAdd,
@@ -46,8 +48,16 @@ vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
 
+vi.mock('../../../../src/manager/telemetryManager', () => ({
+  addCustomFieldCreatedCount: vi.fn(),
+}));
+
 vi.mock('../../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn(async () => []),
+}));
+
+vi.mock('../../../../src/enterprise-edition/ee', () => ({
+  checkEnterpriseEdition: vi.fn(),
 }));
 
 vi.mock('../../../../src/utils/access', async () => {
@@ -157,10 +167,17 @@ describe('customFieldDefinitionAdd', () => {
     expect(Middleware.createEntity).not.toHaveBeenCalled();
   });
 
+  it('throws in Community Edition', async () => {
+    vi.mocked(EnterpriseEdition.checkEnterpriseEdition).mockRejectedValue(new Error('Enterprise edition is not enabled'));
+    await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput)).rejects.toThrow('Enterprise edition is not enabled');
+    expect(Middleware.createEntity).not.toHaveBeenCalled();
+  });
+
   it('throws on an invalid technical name', async () => {
     await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, name: 'invalid_name' }))
       .rejects.toThrow('Technical name must start with "x_opencti_cf_"');
     expect(Middleware.createEntity).not.toHaveBeenCalled();
+    expect(TelemetryManager.addCustomFieldCreatedCount).not.toHaveBeenCalled();
   });
 
   it('throws when the technical name already exists', async () => {
@@ -218,6 +235,7 @@ describe('customFieldDefinitionAdd', () => {
       message: 'creates custom field definition `x_opencti_cf_tags`',
     }));
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), created, mockUser);
+    expect(TelemetryManager.addCustomFieldCreatedCount).toHaveBeenCalledTimes(1);
   });
 
   it('respects the provided multiple flag for a non-multi_select field type', async () => {
@@ -498,5 +516,53 @@ describe('customFieldDefinitionRemoveEntityType', () => {
       Access.SYSTEM_USER,
       expect.objectContaining({ filters: expect.stringContaining('"Case-Incident"') }),
     );
+  });
+});
+
+describe('custom field definitions management in Community Edition', () => {
+  it.each([
+    ['delete', () => customFieldDefinitionDelete(mockContext, mockUser, 'cf-id-1')],
+    ['edit', () => customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'label', value: ['New label'] } as any])],
+    ['attach to an entity type', () => customFieldDefinitionAddEntityType(mockContext, mockUser, 'cf-id-1', 'Case-Incident', false)],
+    ['make a custom field mandatory', () => {
+      vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(makeDefinition({ entity_types: ['Case-Incident'] }) as any);
+      return customFieldDefinitionUpdateEntityType(mockContext, mockUser, 'cf-id-1', 'Case-Incident', true);
+    }],
+    ['detach from an entity type', () => customFieldDefinitionRemoveEntityType(mockContext, mockUser, 'cf-id-1', 'Case-Incident')],
+  ])('refuses to %s a custom field definition', async (_, mutation) => {
+    vi.mocked(EnterpriseEdition.checkEnterpriseEdition).mockRejectedValue(new Error('Enterprise edition is not enabled'));
+    await expect(mutation()).rejects.toThrow('Enterprise edition is not enabled');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+    expect(Middleware.deleteElementById).not.toHaveBeenCalled();
+  });
+});
+
+describe('making a mandatory custom field optional in Community Edition', () => {
+  const definition = makeDefinition({
+    entity_types: ['Case-Incident'],
+    entity_type_settings: [{ entity_type: 'Case-Incident', mandatory: true, default_value: '10' }],
+  });
+
+  beforeEach(() => {
+    vi.mocked(EnterpriseEdition.checkEnterpriseEdition).mockRejectedValue(new Error('Enterprise edition is not enabled'));
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(definition as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: definition } as any);
+  });
+
+  it('is allowed, so that the creation of the entities is never blocked', async () => {
+    await customFieldDefinitionUpdateEntityType(mockContext, mockUser, 'cf-id-1', 'Case-Incident', false, '10');
+    expect(Middleware.updateAttribute).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'cf-id-1',
+      'CustomFieldDefinition',
+      [{ key: 'entity_type_settings', value: [{ entity_type: 'Case-Incident', mandatory: false, default_value: '10' }], operation: EditOperation.Replace }],
+    );
+  });
+
+  it('refuses to change the default value at the same time', async () => {
+    await expect(customFieldDefinitionUpdateEntityType(mockContext, mockUser, 'cf-id-1', 'Case-Incident', false, '20'))
+      .rejects.toThrow('Enterprise edition is not enabled');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
   });
 });

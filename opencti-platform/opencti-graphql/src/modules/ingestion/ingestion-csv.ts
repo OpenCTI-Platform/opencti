@@ -6,6 +6,7 @@ import { normalizeName } from '../../schema/identifier';
 import { convertIngestionCsvToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
+import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
 const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIngestionCsv> = {
   type: {
@@ -42,6 +43,7 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     { name: 'last_execution_status', label: 'Last execution status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'authentication_value', label: 'Authentication value', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'ssl_verify', label: 'Verify SSL certificate', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
+    ...ingestionHealthAttributes,
   ],
   relations: [],
   representative: (stix: StixIngestionCsv) => {

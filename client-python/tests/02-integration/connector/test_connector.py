@@ -1,6 +1,5 @@
 import pika.exceptions
 import pytest
-from pytest_cases import fixture, parametrize_with_cases
 
 from pycti import OpenCTIConnector
 from tests.cases.connectors import (
@@ -12,13 +11,12 @@ from tests.cases.connectors import (
     InternalImportConnectorTest,
     SimpleConnectorTest,
 )
-from tests.utils import get_connector_id, get_new_work_id
+from tests.utils import case_id, cases_of, get_connector_id, get_new_work_id
 
 
-@fixture
-@parametrize_with_cases("connector", cases=SimpleConnectorTest)
-def simple_connector(connector, api_connector, api_work):
-    connector = OpenCTIConnector(**connector)
+@pytest.fixture(params=cases_of(SimpleConnectorTest), ids=case_id)
+def simple_connector(request, api_connector, api_work):
+    connector = OpenCTIConnector(**request.param())
     api_connector.register(connector)
     yield connector
     # Unregistering twice just to make sure
@@ -56,9 +54,9 @@ def test_register_simple_connector(simple_connector, api_connector, api_work):
     assert test_connector == "", "Connector is still registered"
 
 
-@fixture
-@parametrize_with_cases("data", cases=ExternalImportConnectorTest)
-def external_import_connector_data(data, api_client, api_connector, api_work):
+@pytest.fixture(params=cases_of(ExternalImportConnectorTest), ids=case_id)
+def external_import_connector_data(request, api_client, api_connector, api_work):
+    data = request.param()
     connector = ExternalImportConnector(data["config"], api_client, data["data"])
     connector.run()
     yield data["data"]
@@ -111,9 +109,9 @@ def test_external_import_connector(
         api_client.stix_domain_object.delete(id=sdo["id"])
 
 
-@fixture
-@parametrize_with_cases("data", cases=InternalEnrichmentConnectorTest)
-def internal_enrichment_connector_data(data, api_client, api_connector, api_work):
+@pytest.fixture(params=cases_of(InternalEnrichmentConnectorTest), ids=case_id)
+def internal_enrichment_connector_data(request, api_client, api_connector, api_work):
+    data = request.param()
     enrichment_connector = InternalEnrichmentConnector(
         data["config"], api_client, data["data"]
     )
@@ -164,9 +162,9 @@ def test_internal_enrichment_connector(
     ), f"Score of {observable['value']} is not 100. Instead {observable['x_opencti_score']}"
 
 
-@fixture
-@parametrize_with_cases("data", cases=InternalImportConnectorTest)
-def internal_import_connector_data(data, api_client, api_connector, api_work):
+@pytest.fixture(params=cases_of(InternalImportConnectorTest), ids=case_id)
+def internal_import_connector_data(request, api_client, api_connector, api_work):
+    data = request.param()
     import_connector = InternalImportConnector(
         data["config"], api_client, data["observable"]
     )

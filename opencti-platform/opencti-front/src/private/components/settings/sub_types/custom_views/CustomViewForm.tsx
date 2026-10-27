@@ -7,6 +7,7 @@ import MarkdownField from '../../../../../components/fields/markdownField/Markdo
 import { useFormatter } from '../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { Stack } from '@mui/material';
+import { useEffect, useRef } from 'react';
 import SwitchField from '../../../../../components/fields/SwitchField';
 
 export interface CustomViewFormInputs {
@@ -45,6 +46,13 @@ const CustomViewForm = ({
   values,
 }: CustomViewFormProps) => {
   const { t_i18n } = useFormatter();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+  // The form is only mounted while its drawer is open, so focusing on mount
+  // is what autoFocus did; MUI's focus trap leaves an already-focused child alone.
+  useEffect(() => {
+    nameInputRef.current?.focus();
+  }, []);
 
   const validators = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -72,10 +80,15 @@ const CustomViewForm = ({
       {({ submitForm, handleReset, isSubmitting, setSubmitting, setFieldValue }) => {
         return (
           <Form>
-            <Stack gap={1}>
+            <Stack sx={{
+              gap: 1,
+            }}
+            >
               <Field
-                autoFocus
                 component={TextField}
+                innerRef={(node: HTMLInputElement | null) => {
+                  nameInputRef.current = node;
+                }}
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}

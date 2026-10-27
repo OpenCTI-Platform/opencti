@@ -1,7 +1,7 @@
 import React, { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { useQueryLoader } from 'react-relay';
@@ -142,7 +142,14 @@ const IntegrationsDeployedContent = ({
   // Below md the sidebar stacks full-width above the cards instead of
   // squeezing them against a fixed 250px column.
   return (
-    <Stack direction={{ xs: 'column', md: 'row' }} gap={2} alignItems={{ xs: 'stretch', md: 'flex-start' }}>
+    <Stack
+      data-testid="deployed-page"
+      direction={{ xs: 'column', md: 'row' }}
+      sx={{
+        gap: 2,
+        alignItems: { xs: 'stretch', md: 'flex-start' },
+      }}
+    >
       <DeployedFacetSidebar
         filters={filters}
         onFiltersChange={setFilters}
@@ -153,8 +160,16 @@ const IntegrationsDeployedContent = ({
       />
 
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Stack direction="row" alignItems="center" flexWrap="wrap" gap={2}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2,
+          }}
+        >
           <SearchInput
+            data-testid="integrations-search-input"
             value={searchInput}
             onSubmit={handleSearchInputSubmit}
             onChange={handleSearchInputChange}

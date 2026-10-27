@@ -319,6 +319,7 @@ export const logS3Debug = {
 
 export const logMigration = {
   info: (message) => migrationLogger.log('info', message),
+  error: (message) => migrationLogger.log('error', message),
 };
 
 export const logApp = {
@@ -607,6 +608,14 @@ export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
 // Connector versions decoupled from the platform version (use isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG)
 // to check activation): remote catalog synchronization and connector update detection.
 export const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
+
+// Ingestion health of connectors, computed by the ingestion health manager
+// (use isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) to check activation)
+export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
+
+// Configuration presets: export of platform configuration bundles (use isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)
+// to check activation)
+export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;

@@ -40,6 +40,7 @@ import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
 import { Stack } from '@mui/material';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const styles = (theme) => ({
   container: {
@@ -204,17 +205,7 @@ const StixCoreObjectFilesAndHistory = ({
         objectAssignee: values.objectAssignee.map(({ value }) => value),
         objectParticipant: values.objectParticipant.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        authorized_members: !authorizedMembers
-          ? null
-          : authorizedMembers
-              .filter((v) => v.accessRight !== 'none')
-              .map((member) => ({
-                id: member.value,
-                access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
-              })),
+        authorized_members: authorizedMembers ? authorizedMembersToInput(authorizedMembers) : null,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -283,7 +274,7 @@ const StixCoreObjectFilesAndHistory = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
         <FileImportViewer
           entity={entity}
@@ -305,7 +296,7 @@ const StixCoreObjectFilesAndHistory = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
-        <Grid item xs={12} style={{ paddingTop: 14 }}>
+        <Grid style={{ marginTop: -10 }} size={12}>
           <StixCoreObjectHistory
             stixCoreObjectId={id}
             withoutRelations={withoutRelations}
@@ -493,7 +484,13 @@ const StixCoreObjectFilesAndHistory = ({
                 fullWidth={true}
                 data-testid="StixCoreObjectFilesAndHistoryExportDialog"
                 title={(
-                  <Stack direction="row" alignItems="center" gap={1}>
+                  <Stack
+                    direction="row"
+                    sx={{
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     {t_i18n('Generate an export')}
                     <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
                       <InfoOutlined fontSize="small" color="primary" />

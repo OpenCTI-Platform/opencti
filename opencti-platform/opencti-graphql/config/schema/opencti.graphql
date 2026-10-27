@@ -738,6 +738,7 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
+  ingestionHealth: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
 }
 
 type SynchronizerEdge {
@@ -1014,6 +1015,7 @@ enum BackgroundTaskActionType {
   SEND_EMAIL
   ENROLL_PLAYBOOK
   ADD_RELATED_COVERED_ENTITIES
+  REMOVE_CUSTOM_FIELD_VALUES
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE

@@ -1,6 +1,7 @@
 import React from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
+import MuiThemeProvider from '../../../../components/MuiThemeProvider';
 import type { ThemeOptions } from '@mui/material/styles';
 import { describe, expect, it, vi } from 'vitest';
 import ThemeDark from '../../../../components/ThemeDark';
@@ -83,9 +84,9 @@ const renderSection = (
     ...overrides,
   };
   render(
-    <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
+    <MuiThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
       <RelationshipsSection {...props} />
-    </ThemeProvider>,
+    </MuiThemeProvider>,
   );
   return props;
 };
@@ -212,7 +213,7 @@ describe('RelationshipsSection', () => {
   it('toggles the required switch for a relationship', () => {
     const props = renderSection();
 
-    fireEvent.click(screen.getAllByRole('checkbox', { name: 'Required' })[0]);
+    fireEvent.click(screen.getAllByRole('switch', { name: 'Required' })[0]);
 
     expect(props.toggleRelationshipRequired).toHaveBeenCalledWith('relationship-1', true);
   });
@@ -312,7 +313,7 @@ describe('RelationshipsSection', () => {
     it('toggles the required switch for a relationship field', () => {
       const props = renderSection({ formData: relationshipFormData });
 
-      fireEvent.click(screen.getAllByRole('checkbox', { name: 'Required' })[1]);
+      fireEvent.click(screen.getAllByRole('switch', { name: 'Required' })[1]);
 
       expect(props.handleFieldChange).toHaveBeenCalledWith('relationships.0.fields.0.required', true);
     });

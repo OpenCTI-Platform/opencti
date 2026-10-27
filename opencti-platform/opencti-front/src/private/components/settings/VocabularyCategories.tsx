@@ -73,7 +73,10 @@ const VocabularyCategories = () => {
           { label: t_i18n('Vocabularies'), current: true },
         ]}
       />
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <SearchInput
           variant="small"
           onSubmit={handleSearch}

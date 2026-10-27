@@ -5,6 +5,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -26,10 +27,13 @@ const StatusDot = ({ item, label }: StatusDotProps) => {
   return (
     <Tooltip title={label}>
       <Box
+        component="span"
         sx={{
+          display: 'inline-block',
+          verticalAlign: 'middle',
+          marginLeft: 1,
           width: 8,
           height: 8,
-          flexShrink: 0,
           borderRadius: '50%',
           backgroundColor: color,
           boxShadow: `0 0 6px ${color}`,
@@ -125,7 +129,14 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
           alignItems: 'stretch',
         }}
       >
-        <Stack direction="row" gap={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1.5,
+            alignItems: 'flex-start',
+            width: '100%',
+          }}
+        >
           <Box
             sx={{
               height: 48,
@@ -155,7 +166,13 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             )}
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               {/* Sentence case: the V7 design language avoids all-caps text. */}
               <Typography
                 variant="body2"
@@ -176,25 +193,23 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
                 </Tooltip>
               )}
             </Stack>
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Typography
+              sx={{
+                fontSize: 15,
+                fontWeight: 600,
+                lineHeight: 1.35,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
+              }}
+            >
               <Tooltip title={item.name} placement="bottom-start">
-                <Typography
-                  sx={{
-                    fontSize: 15,
-                    fontWeight: 600,
-                    lineHeight: 1.35,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {item.name}
-                </Typography>
+                <span>{item.name}</span>
               </Tooltip>
               <StatusDot item={item} label={statusText} />
-            </Stack>
+            </Typography>
           </Box>
           <DeployedIntegrationPopover item={item} onChange={onChange} />
         </Stack>
@@ -221,16 +236,22 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
 
         <Stack
           direction="row"
-          alignItems="flex-end"
-          justifyContent="space-between"
-          gap={1.5}
           sx={{
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: 1.5,
             width: '100%',
             paddingTop: 1.5,
             borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.05)}`,
           }}
         >
-          <Stack direction="row" gap={2.5} sx={{ minWidth: 0 }}>
+          <Stack
+            direction="row"
+            sx={{
+              gap: 2.5,
+              minWidth: 0,
+            }}
+          >
             {item.messagesCount != null && (
               <Metric label={t_i18n('Messages')} value={n(item.messagesCount)} />
             )}
@@ -247,9 +268,20 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               <Metric label={t_i18n('User')} value={item.userName} />
             )}
           </Stack>
-          <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+          <Stack
+            direction="column"
+            onClick={stopLinkNavigation}
+            onAuxClick={stopLinkNavigation}
+            sx={{
+              alignItems: 'flex-end',
+              gap: 0.75,
+            }}
+          >
             {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
             {statusChip}
+            {item.kind !== 'form' && (
+              <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
+            )}
           </Stack>
         </Stack>
       </Card>

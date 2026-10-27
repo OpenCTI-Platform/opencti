@@ -616,9 +616,11 @@ const FeedEditionContainer = (props) => {
                                           value={feedAttributes[i]?.multi_match_separator ?? ','}
                                           onChange={(event) => handleChangeMultiMatchSeparator(i, event.target.value)}
                                           sx={{ width: 100 }}
-                                          inputProps={{ maxLength: 3 }}
                                           error={(feedAttributes[i]?.multi_match_separator ?? ',') === values.separator}
                                           helperText={(feedAttributes[i]?.multi_match_separator ?? ',') === values.separator ? t_i18n('Must differ from CSV separator') : undefined}
+                                          slotProps={{
+                                            htmlInput: { maxLength: 3 },
+                                          }}
                                         />
                                       )}
                                     </>
@@ -650,7 +652,7 @@ const FeedEditionContainer = (props) => {
                                       </Box>
                                       {isNeighborMode ? (
                                         <Grid container spacing={2}>
-                                          <Grid item xs={4}>
+                                          <Grid size={4}>
                                             <Select
                                               value={currentMapping?.relationship_type || ''}
                                               onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', value)}
@@ -668,7 +670,7 @@ const FeedEditionContainer = (props) => {
                                               </SelectContent>
                                             </Select>
                                           </Grid>
-                                          <Grid item xs={4}>
+                                          <Grid size={4}>
                                             <Select
                                               value={currentMapping?.target_entity_type || ''}
                                               onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', value)}
@@ -690,7 +692,7 @@ const FeedEditionContainer = (props) => {
                                               </SelectContent>
                                             </Select>
                                           </Grid>
-                                          <Grid item xs={4}>
+                                          <Grid size={4}>
                                             <FormControl variant="outlined" fullWidth disabled={!currentMapping?.target_entity_type}>
                                               {currentMapping?.target_entity_type ? (
                                                 <QueryRenderer

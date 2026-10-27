@@ -36,12 +36,13 @@ import { getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, g
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidgetColumns';
+import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 'src/utils/customFields';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 
 const WidgetCreationParameters = () => {
@@ -50,6 +51,7 @@ const WidgetCreationParameters = () => {
   const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
+    schema: { filterKeysSchema },
   } = useAuth();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
@@ -858,11 +860,9 @@ const WidgetCreationParameters = () => {
                                             key={value}
                                             value={value}
                                           >
-                                            {t_i18n(
-                                              capitalizeFirstLetter(
-                                                value,
-                                              ),
-                                            )}
+                                            {isCustomFieldAttribute(value)
+                                              ? getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, getCurrentSelectedEntityTypes(i), value)
+                                              : t_i18n(capitalizeFirstLetter(value))}
                                           </SelectItem>
                                         ))}
                                       </SelectContent>
