@@ -87,7 +87,7 @@ const mgetAccess = async (refs: DocRef[]) => {
   return found;
 };
 
-const loadWithAccessFields = async (ids: string[]) => {
+export const loadWithAccessFields = async (ids: string[]) => {
   const { live } = await liveOwners(ids);
   const refs = live.map((owner) => ({ index: owner.owner_index, id: owner.owner_id }));
   if (refs.length === 0) return [];

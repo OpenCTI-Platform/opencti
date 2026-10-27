@@ -17,12 +17,12 @@ import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY } from '../../schema/stixRefRelationship';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { claimKeys, identityKeys, ownerFieldsOf, setKeys } from './identity';
-import { loadByAnyIds, mgetRaw, toElements } from './load';
+import { mgetRaw, toElements } from './load';
 import { userFilterStoreElements } from '../../utils/access';
 import { appendPairs, pairEntryOf, pairKey, removeFromPair } from './pairs';
 import { enqueue, type Task } from './queue';
 import { newCounters } from './store';
-import { type ItemResult, writeEntityChunk, writeRelationChunk } from './writer';
+import { type ItemResult, loadWithAccessFields, writeEntityChunk, writeRelationChunk } from './writer';
 import { executeOperations, type Operation, type WriteCollector } from './batch';
 import type { GraphQLSchema } from 'graphql';
 
@@ -76,10 +76,10 @@ const storedElement = async (result: ItemResult, type: string) => {
 };
 
 // Objects by any of their ids, read in real time (a lock-free write is searchable only after the next refresh), with
-// the user's access filter
+// the user's access filter, which reads the objects' markings and organizations (a light read has none)
 export const findByIdsRealtime = async (context: AuthContext, user: AuthUser, ids: string[]) => {
   if (ids.length === 0) return [];
-  return userFilterStoreElements(context, user, await loadByAnyIds(ids, { light: true }));
+  return userFilterStoreElements(context, user, await loadWithAccessFields(ids));
 };
 
 const lockFreeContext = (context: AuthContext): AuthContext => ({ ...context, lockfree_write: true } as AuthContext);
