@@ -168,7 +168,7 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
                 {/* Further apart from the kind than the gap of the grid: same padding on every row, the chips stay aligned */}
                 <Box sx={{ justifySelf: 'center', display: 'flex', paddingLeft: 3 }}>
                   <Chip
-                    label={isBlocking ? t_i18n('Critical') : t_i18n('Degraded')}
+                    label={isBlocking ? t_i18n('Blocking') : t_i18n('Degraded')}
                     severity={isBlocking ? 'critical' : 'high'}
                   />
                 </Box>
