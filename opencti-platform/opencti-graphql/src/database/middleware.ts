@@ -980,7 +980,7 @@ const timeSeriesBreakdown = async (
     ...breakdownArgs,
     convertEntityTypeLabel: true,
     normalizeLabel: false,
-    order: isAscending ? 'asc' : 'desc',
+    bucketsOrder: isAscending ? 'asc' : 'desc',
   });
   // desc keeps the values with the highest total over the period, asc the lowest ones
   const sortedCandidates = R.sortWith(

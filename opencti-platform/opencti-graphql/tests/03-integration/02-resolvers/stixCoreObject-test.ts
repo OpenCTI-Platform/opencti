@@ -87,6 +87,22 @@ describe('stixCoreObjectsDistributionByEntity', () => {
     expect(distribution).toBeDefined();
     expect(distribution.length).toEqual(1);
   });
+
+  it('should keep the order of a distribution out of its aggregation', async () => {
+    // The order of the distribution APIs only sorts their result: any value must reach Elasticsearch unchanged
+    const DISTRIBUTION_QUERY = gql`
+      query StixCoreObjectsDistributionOrder($order: String) {
+        stixCoreObjectsDistribution(field: "entity_type", operation: count, types: ["Stix-Domain-Object"], limit: 3, order: $order) {
+          label
+          value
+        }
+      }
+    `;
+    const withoutOrder = await queryAsAdminWithSuccess({ query: DISTRIBUTION_QUERY, variables: {} });
+    const withUnknownOrder = await queryAsAdminWithSuccess({ query: DISTRIBUTION_QUERY, variables: { order: 'descending' } });
+    expect(withoutOrder.data?.stixCoreObjectsDistribution.length).toEqual(3);
+    expect(withUnknownOrder.data?.stixCoreObjectsDistribution).toEqual(withoutOrder.data?.stixCoreObjectsDistribution);
+  });
 });
 
 describe('stixCoreObjectsTimeSeriesBreakdown', () => {

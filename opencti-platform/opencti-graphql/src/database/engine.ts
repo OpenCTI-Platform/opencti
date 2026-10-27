@@ -3509,8 +3509,9 @@ type AggregationCountOpts = QueryBodyBuilderOpts & {
   normalizeLabel?: boolean | null;
   convertEntityTypeLabel?: boolean | null;
   // Orders the buckets by value, so the ones kept by the size cap are the lowest or the highest values.
-  // Without it, the buckets are ordered by number of documents.
-  order?: 'asc' | 'desc' | null;
+  // Without it, the buckets are ordered by number of documents. Not named `order`: the distribution APIs
+  // spread their GraphQL arguments here, and their own `order` only sorts the result after the aggregation.
+  bucketsOrder?: 'asc' | 'desc' | null;
 };
 export const elAggregationCount = async (
   context: AuthContext,
@@ -3518,7 +3519,7 @@ export const elAggregationCount = async (
   indexName: string[] | string | undefined,
   options: AggregationCountOpts = { field: '' },
 ): Promise<{ key: string; label: string; value: any; count: number }[]> => {
-  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false, order = null } = options;
+  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false, bucketsOrder = null } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
   const queryField = buildFieldForQuery(field);
   // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
@@ -3544,8 +3545,8 @@ export const elAggregationCount = async (
   if (isKeywordField) {
     body.aggs.genres.terms.missing = 'unknown';
   }
-  if (order) {
-    body.aggs.genres.terms.order = { weight: order };
+  if (bucketsOrder === 'asc' || bucketsOrder === 'desc') {
+    body.aggs.genres.terms.order = { weight: bucketsOrder };
   }
   const query = {
     index: getIndicesToQuery(context, user, indexName),

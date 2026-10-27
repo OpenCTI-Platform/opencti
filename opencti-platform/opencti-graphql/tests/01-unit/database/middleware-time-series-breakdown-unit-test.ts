@@ -35,7 +35,7 @@ vi.mock('../../../src/config/conf', async () => {
 
 import * as engine from '../../../src/database/engine';
 import * as accessModule from '../../../src/utils/access';
-import { BREAKDOWN_ALLOWED_REFS, resolveBreakdownField, timeSeriesBreakdownEntities } from '../../../src/database/middleware';
+import { BREAKDOWN_ALLOWED_REFS, distributionEntities, distributionHistory, resolveBreakdownField, timeSeriesBreakdownEntities } from '../../../src/database/middleware';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
@@ -152,13 +152,21 @@ describe('timeSeriesBreakdownEntities', () => {
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
 
     await breakdown({ field: 'creator_id', order: 'asc' });
-    expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).order).toEqual('asc');
+    expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).bucketsOrder).toEqual('asc');
 
     // Not the default order by number of entities: inferred entities weigh differently
     for (const order of ['desc', null, undefined]) {
       await breakdown({ field: 'creator_id', order });
-      expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).order).toEqual('desc');
+      expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).bucketsOrder).toEqual('desc');
     }
+  });
+
+  it('should not order the aggregation of the distribution APIs, whose order only sorts their result', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([]);
+    await distributionEntities(mockContext, accessModule.SYSTEM_USER, ['Report'], { field: 'entity_type', order: 'asc', limit: 10 } as any);
+    expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).bucketsOrder).toBeUndefined();
+    await distributionHistory(mockContext, accessModule.SYSTEM_USER, { field: 'entity_type', order: 'descending', limit: 10 } as any);
+    expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).bucketsOrder).toBeUndefined();
   });
 
   it('should keep the values with the highest total when the order is desc or not given', async () => {
