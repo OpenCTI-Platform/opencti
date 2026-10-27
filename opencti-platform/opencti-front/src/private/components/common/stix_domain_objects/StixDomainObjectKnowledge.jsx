@@ -3,13 +3,13 @@ import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/material/styles';
 import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
 import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import EntityStixCoreRelationshipsHorizontalBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import EntityStixSightingRelationshipsDonut from '../../events/stix_sighting_relationships/EntityStixSightingRelationshipsDonut';
 import CardNumber from '../../../../components/common/card/CardNumber';
@@ -219,9 +219,4 @@ StixDomainObjectKnowledgeComponent.propTypes = {
   theme: PropTypes.object,
 };
 
-const StixDomainObjectKnowledge = (props) => {
-  const theme = useTheme();
-  return <StixDomainObjectKnowledgeComponent {...props} theme={theme} />;
-};
-
-export default inject18n(StixDomainObjectKnowledge);
+export default inject18n(withTheme(StixDomainObjectKnowledgeComponent));

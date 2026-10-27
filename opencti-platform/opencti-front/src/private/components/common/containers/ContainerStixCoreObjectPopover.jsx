@@ -7,7 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -15,6 +15,7 @@ import { Component } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import { commitMutation } from '../../../../relay/environment';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { serializeObjectB64 } from '../../../../utils/object';
@@ -427,9 +428,4 @@ ContainerStixCoreObjectPopoverComponent.propTypes = {
   enableReferences: PropTypes.bool,
 };
 
-const ContainerStixCoreObjectPopover = (props) => {
-  const theme = useTheme();
-  return <ContainerStixCoreObjectPopoverComponent {...props} theme={theme} />;
-};
-
-export default inject18n(ContainerStixCoreObjectPopover);
+export default inject18n(withTheme(ContainerStixCoreObjectPopoverComponent));

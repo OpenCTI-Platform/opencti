@@ -11,8 +11,9 @@ import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import { ListItemButton } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import inject18n from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
@@ -591,12 +592,7 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
   },
 );
 
-const EntityStixCoreRelationshipLineToWithTheme = (props) => {
-  const theme = useTheme();
-  return <EntityStixCoreRelationshipLineToFragment {...props} theme={theme} />;
-};
-
-export const EntityStixCoreRelationshipLineTo = inject18n(EntityStixCoreRelationshipLineToWithTheme);
+export const EntityStixCoreRelationshipLineTo = inject18n(withTheme(EntityStixCoreRelationshipLineToFragment));
 
 class EntityStixCoreRelationshipLineToDummyComponent extends Component {
   render() {

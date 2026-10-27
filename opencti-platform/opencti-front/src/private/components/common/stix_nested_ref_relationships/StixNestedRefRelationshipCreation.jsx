@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
@@ -14,6 +14,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
 import { commitMutation, fetchQuery, QueryRenderer } from '../../../../relay/environment';
 import inject18n, { isNone } from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -887,9 +888,4 @@ StixNestedRefRelationshipCreationComponent.propTypes = {
   handleReverseRelation: PropTypes.func,
 };
 
-const StixNestedRefRelationshipCreation = (props) => {
-  const theme = useTheme();
-  return <StixNestedRefRelationshipCreationComponent {...props} theme={theme} />;
-};
-
-export default inject18n(StixNestedRefRelationshipCreation);
+export default inject18n(withTheme(StixNestedRefRelationshipCreationComponent));

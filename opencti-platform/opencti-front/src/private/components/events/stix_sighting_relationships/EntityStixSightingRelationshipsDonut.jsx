@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
-import { useTheme } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 import * as R from 'ramda';
 import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
@@ -290,9 +290,4 @@ EntityStixSightingRelationshipsDonut.propTypes = {
   toTypes: PropTypes.array,
 };
 
-const EntityStixSightingRelationshipsDonutWithTheme = (props) => {
-  const theme = useTheme();
-  return <EntityStixSightingRelationshipsDonut {...props} theme={theme} />;
-};
-
-export default inject18n(EntityStixSightingRelationshipsDonutWithTheme);
+export default inject18n(withTheme(EntityStixSightingRelationshipsDonut));

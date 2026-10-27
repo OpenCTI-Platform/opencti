@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Drawer from '@mui/material/Drawer';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -11,6 +11,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
 import { MESSAGING$, commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n, { isNone } from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import { itemColor } from '../../../../utils/Colors';
 import { formatDate } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -654,9 +655,4 @@ StixSightingRelationshipCreation.propTypes = {
   handleReverseSighting: PropTypes.func,
 };
 
-const StixSightingRelationshipCreationWithTheme = (props) => {
-  const theme = useTheme();
-  return <StixSightingRelationshipCreation {...props} theme={theme} />;
-};
-
-export default inject18n(StixSightingRelationshipCreationWithTheme);
+export default inject18n(withTheme(StixSightingRelationshipCreation));

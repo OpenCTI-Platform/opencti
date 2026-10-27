@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { pipe, map, assoc } from 'ramda';
-import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
@@ -16,6 +15,7 @@ import { Link } from 'react-router';
 import Slide from '@mui/material/Slide';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n, { isDateStringNone } from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -583,9 +583,4 @@ const StixDomainObjectTimeline = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-const StixDomainObjectTimelineWithTheme = (props) => {
-  const theme = useTheme();
-  return <StixDomainObjectTimeline {...props} theme={theme} />;
-};
-
-export default inject18n(StixDomainObjectTimelineWithTheme);
+export default inject18n(withTheme(StixDomainObjectTimeline));

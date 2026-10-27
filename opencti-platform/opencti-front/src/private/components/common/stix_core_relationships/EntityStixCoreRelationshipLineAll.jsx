@@ -10,9 +10,10 @@ import { MoreVertOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { AutoFix } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import ItemIcon from '../../../../components/ItemIcon';
 import SecurityCoverageScores from '../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -550,12 +551,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
   },
 );
 
-const EntityStixCoreRelationshipLineAllWithTheme = (props) => {
-  const theme = useTheme();
-  return <EntityStixCoreRelationshipLineAllFragment {...props} theme={theme} />;
-};
-
-export const EntityStixCoreRelationshipLineAll = inject18n(EntityStixCoreRelationshipLineAllWithTheme);
+export const EntityStixCoreRelationshipLineAll = inject18n(withTheme(EntityStixCoreRelationshipLineAllFragment));
 
 class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
   render() {

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
-import { useTheme } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Card from '@common/card/Card';
 import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import withTheme from '../../../../components/withTheme';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -140,9 +140,4 @@ StixCoreObjectReportsHorizontalBarComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const StixCoreObjectReportsHorizontalBar = (props) => {
-  const theme = useTheme();
-  return <StixCoreObjectReportsHorizontalBarComponent {...props} theme={theme} />;
-};
-
-export default inject18n(StixCoreObjectReportsHorizontalBar);
+export default inject18n(withTheme(StixCoreObjectReportsHorizontalBarComponent));
