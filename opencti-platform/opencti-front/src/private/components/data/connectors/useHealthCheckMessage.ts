@@ -9,17 +9,9 @@ export interface HealthCheckMessageSource {
   health_check_metadata?: unknown;
 }
 
-type Translate = (message: string, options?: { values?: Record<string, string | number> }) => string;
-
-// Description of the capabilities a check may ask for, translated as in the roles
-const CAPABILITY_DESCRIPTIONS: Record<string, string> = {
-  CONNECTORAPI: 'Connectors API usage: register, ping, export push ...',
-};
-
-// How a metadata value is shown in a message, by metadata key. A key absent here shows its value as is
-const METADATA_VALUE_TRANSLATIONS: Record<string, (value: string, t_i18n: Translate) => string> = {
-  capability: (capability, t_i18n) => (CAPABILITY_DESCRIPTIONS[capability] ? t_i18n(CAPABILITY_DESCRIPTIONS[capability]) : capability),
-};
+// Metadata whose value is an English text to translate, the other values are shown as is.
+// capability_description: the description of a capability, translated as in the roles
+const TRANSLATED_METADATA_KEYS = ['capability_description'];
 
 const PLACEHOLDER_PATTERN = /\{(\w+)\}/g;
 
@@ -42,8 +34,7 @@ const useHealthCheckMessage = () => {
         // Nothing to fill the placeholder with: it stays as is, a missing value would make the translation throw
         values[key] = `{${key}}`;
       } else {
-        const translateValue = METADATA_VALUE_TRANSLATIONS[key];
-        values[key] = translateValue ? translateValue(String(value), t_i18n) : String(value);
+        values[key] = TRANSLATED_METADATA_KEYS.includes(key) ? t_i18n(String(value)) : String(value);
       }
     }
     return t_i18n(message, { values });

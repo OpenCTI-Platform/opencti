@@ -510,12 +510,14 @@ describe('user missing capability check', () => {
   const WITHOUT_CAPABILITY = { internal: false, user_service_account: true, hasCapability: () => false };
   const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
   const CONNECTOR_WITH_USER = { ...CONNECTOR, connector_user_id: 'user-id' };
+  const CONNECTORAPI_DESCRIPTION = 'Connectors API usage: register, ping, export push ...';
 
-  it('should flag a connector whose user lacks CONNECTORAPI, with the capability in the message', () => {
+  it('should flag a connector whose user lacks CONNECTORAPI, with the description of the capability in the message', () => {
     const checks = checksFor(CONNECTOR_WITH_USER, WITHOUT_CAPABILITY);
-    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: { capability: 'CONNECTORAPI' } }]);
-    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_metadata).toEqual({ capability: 'CONNECTORAPI' });
-    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('User lacks required capability: "{capability}"');
+    const metadata = { capability: 'CONNECTORAPI', capability_description: CONNECTORAPI_DESCRIPTION };
+    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: metadata }]);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_metadata).toEqual(metadata);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('User lacks required capability: "{capability_description}"');
   });
 
   it('should ask the user for CONNECTORAPI only', () => {
@@ -819,9 +821,12 @@ describe('buildHealthTransitionMessage', () => {
   });
 
   it('should fill the placeholders of the check messages from their metadata', () => {
-    const missingCapability = { health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: { capability: 'CONNECTORAPI' } };
+    const missingCapability = {
+      health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY,
+      health_check_metadata: { capability: 'CONNECTORAPI', capability_description: 'Connectors API usage: register, ping, export push ...' },
+    };
     expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [missingCapability]))
-      .toBe('reports `My connector` (Connector) as critical: User lacks required capability: "CONNECTORAPI"');
+      .toBe('reports `My connector` (Connector) as critical: User lacks required capability: "Connectors API usage: register, ping, export push ..."');
   });
 });
 

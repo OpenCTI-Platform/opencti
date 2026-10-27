@@ -318,6 +318,32 @@ export const createInitialRequestAccessFlow = async (context) => {
   }
 };
 
+/**
+ * Finds the description of a capability in the capabilities defined by the platform (CAPABILITIES).
+ * The description is the English text shown in the roles, also used as its translation key by the front.
+ *
+ * @param {string} capabilityName full name of the capability, as created by createCapabilities:
+ * the names of its parents joined by _ (e.g. CONNECTORAPI, INGESTION_SETINGESTIONS)
+ * @returns {string | undefined} its description, undefined for an unknown name (a nested capability by its short name included)
+ */
+export const findCapabilityDescription = (capabilityName) => {
+  const findCapabilityInTree = (capabilities, parentName) => {
+    for (let i = 0; i < capabilities.length; i += 1) {
+      const capability = capabilities[i];
+      const name = `${parentName}${capability.name}`;
+      if (name === capabilityName) {
+        return capability.description;
+      }
+      const description = capability.dependencies ? findCapabilityInTree(capability.dependencies, `${name}_`) : undefined;
+      if (description) {
+        return description;
+      }
+    }
+    return undefined;
+  };
+  return findCapabilityInTree(CAPABILITIES, '');
+};
+
 export const createCapabilities = async (context, capabilities, parentName = '') => {
   for (let i = 0; i < capabilities.length; i += 1) {
     const capability = capabilities[i];
