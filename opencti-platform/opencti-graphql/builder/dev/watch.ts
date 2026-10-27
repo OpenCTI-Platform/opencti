@@ -47,11 +47,12 @@ const startApp = () => {
     stdio: ['inherit', 'pipe', 'pipe'],
     shell: false,
     env: {
-      // stdout is piped, so the backend cannot detect the terminal by itself to colorize its logs
+      // stdout is piped, so the backend cannot detect the terminal by itself to pick and colorize its logs format
       ...(process.stdout.isTTY && !process.env.NO_COLOR ? { FORCE_COLOR: '1' } : {}),
       ...process.env,
       NODE_ENV: 'development',
       HOT_RELOAD_WATCH: 'true',
+      WATCH_STDOUT_IS_TTY: String(!!process.stdout.isTTY),
     },
   });
 
