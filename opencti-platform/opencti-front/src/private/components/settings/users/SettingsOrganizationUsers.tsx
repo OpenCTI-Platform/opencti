@@ -18,6 +18,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 
 export const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
@@ -192,7 +193,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     password_valid_until: {
       label: 'Password valid until',
       percentWidth: 10,
-      render: (date) => (date ? ftd(date) : '-'),
+      render: (date) => defaultRender(ftd(date)),
     },
     created_at: {
       percentWidth: 10,

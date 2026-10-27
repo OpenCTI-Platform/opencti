@@ -169,7 +169,7 @@ const SearchIndexedFilesComponent = () => {
         label: 'Upload date',
         percentWidth: 10,
         isSortable: false,
-        render: (node: SearchIndexedFilesFile_node$data) => ftd(node.uploaded_at),
+        render: (node: SearchIndexedFilesFile_node$data) => defaultRender(ftd(node.uploaded_at)),
       },
       occurrences: {
         label: 'Occurrences',

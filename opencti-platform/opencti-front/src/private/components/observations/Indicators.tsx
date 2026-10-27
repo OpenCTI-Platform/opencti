@@ -1,6 +1,5 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import Tooltip from '@mui/material/Tooltip';
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { IndicatorsLines_data$data } from '@components/observations/__generated__/IndicatorsLines_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
@@ -17,6 +16,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 const LOCAL_STORAGE_KEY = 'indicators-list';
 
@@ -178,7 +178,7 @@ const Indicators = () => {
     },
     created: {
       percentWidth: 15,
-      render: ({ created }, { ftdt }) => <Tooltip title={ftdt(created)}>{ftdt(created)}</Tooltip>,
+      render: ({ created }, { ftdt }) => defaultRender(ftdt(created)),
     },
     objectMarking: {
       percentWidth: 10,

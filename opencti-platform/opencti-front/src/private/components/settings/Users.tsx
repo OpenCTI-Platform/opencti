@@ -19,6 +19,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useAuth from '../../../utils/hooks/useAuth';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 export const usersQuery = graphql`
   query UsersLinesPaginationQuery(
@@ -202,7 +203,7 @@ const Users = () => {
     password_valid_until: {
       label: 'Password valid until',
       percentWidth: 15,
-      render: ({ password_valid_until }) => ftd(password_valid_until),
+      render: ({ password_valid_until }) => defaultRender(ftd(password_valid_until)),
     },
     created_at: {
       percentWidth: 15,

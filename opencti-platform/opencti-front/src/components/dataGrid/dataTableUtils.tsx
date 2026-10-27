@@ -513,14 +513,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'First obs.',
     percentWidth: 14,
     isSortable: true,
-    render: ({ first_observed }, { ftdt }) => ftdt(first_observed),
+    render: ({ first_observed }, { ftdt }) => defaultRender(ftdt(first_observed)),
   },
   first_seen: {
     id: 'first_seen',
     label: 'First obs.',
     percentWidth: 12,
     isSortable: true,
-    render: ({ first_seen }, { ftdt }) => ftdt(first_seen),
+    render: ({ first_seen }, { ftdt }) => defaultRender(ftdt(first_seen)),
   },
   fromName: {
     id: 'fromName',
@@ -744,14 +744,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Last obs.',
     percentWidth: 14,
     isSortable: true,
-    render: ({ last_observed }, { ftdt }) => ftdt(last_observed),
+    render: ({ last_observed }, { ftdt }) => defaultRender(ftdt(last_observed)),
   },
   last_seen: {
     id: 'last_seen',
     label: 'Last obs.',
     percentWidth: 12,
     isSortable: true,
-    render: ({ last_seen }, { ftdt }) => ftdt(last_seen),
+    render: ({ last_seen }, { ftdt }) => defaultRender(ftdt(last_seen)),
   },
   malware_types: {
     id: 'malware_types',
@@ -767,7 +767,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Modification date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ modified }, { ftd }) => ftd(modified),
+    render: ({ modified }, { ftd }) => defaultRender(ftd(modified)),
   },
   name: {
     id: 'name',
@@ -977,7 +977,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Date',
     percentWidth: 10,
     isSortable: true,
-    render: ({ published }, { ftd }) => ftd(published),
+    render: ({ published }, { ftd }) => defaultRender(ftd(published)),
   },
   rating: {
     id: 'rating',
@@ -1153,28 +1153,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Start date',
     percentWidth: 25,
     isSortable: true,
-    render: ({ start_date }, { ftd }) => ftd(start_date),
+    render: ({ start_date }, { ftd }) => defaultRender(ftd(start_date)),
   },
   start_time: {
     id: 'start_time',
     label: 'Start date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ start_time }, { ftd }) => ftd(start_time),
+    render: ({ start_time }, { ftd }) => defaultRender(ftd(start_time)),
   },
   stop_time: {
     id: 'stop_time',
     label: 'End date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ stop_time }, { ftd }) => ftd(stop_time),
+    render: ({ stop_time }, { ftd }) => defaultRender(ftd(stop_time)),
   },
   submitted: {
     id: 'submitted',
     label: 'Submission date',
     percentWidth: 12,
     isSortable: true,
-    render: ({ submitted }, { ftd }) => ftd(submitted),
+    render: ({ submitted }, { ftd }) => defaultRender(ftd(submitted)),
   },
   takedown_types: {
     id: 'takedown_types',
@@ -1343,7 +1343,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Modification date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ updated_at }, { ftd }) => ftd(updated_at),
+    render: ({ updated_at }, { ftd }) => defaultRender(ftd(updated_at)),
   },
   url: {
     id: 'url',
@@ -1373,18 +1373,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Valid until',
     percentWidth: 10,
     isSortable: true,
-    render: ({ valid_until }, { ftdt }) => (
-      <Tooltip title={ftdt(valid_until)}>{ftdt(valid_until)}</Tooltip>
-    ),
+    render: ({ valid_until }, { ftdt }) => defaultRender(ftdt(valid_until)),
   },
   valid_from: {
     id: 'valid_from',
     label: 'Valid from',
     percentWidth: 10,
     isSortable: true,
-    render: ({ valid_from }, { ftdt }) => (
-      <Tooltip title={ftdt(valid_from)}>{ftdt(valid_from)}</Tooltip>
-    ),
+    render: ({ valid_from }, { ftdt }) => defaultRender(ftdt(valid_from)),
   },
   value: {
     id: 'value',

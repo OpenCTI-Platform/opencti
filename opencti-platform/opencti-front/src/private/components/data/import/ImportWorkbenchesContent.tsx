@@ -16,6 +16,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { EMPTY_VALUE, toB64 } from '../../../../utils/String';
 import { ImportWorkbenchesContentLines_data$data } from './__generated__/ImportWorkbenchesContentLines_data.graphql';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportWorkbenchesContentFileLineDeleteMutation($fileName: String) {
@@ -203,7 +204,7 @@ const ImportWorkbenchesContent = () => {
       percentWidth: 20,
       render: ({ lastModified }: ImportWorkbenchesContentFileLine_file$data, { ftd }: {
         ftd: (date: Date) => string;
-      }) => ftd(lastModified),
+      }) => defaultRender(ftd(lastModified)),
     },
   };
 

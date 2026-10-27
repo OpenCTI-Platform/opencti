@@ -191,7 +191,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
       percentWidth: 20,
       render: ({ lastModified }: ImportFilesContentFileLine_file$data, { ftd }: {
         ftd: (date: Date) => string;
-      }) => ftd(lastModified),
+      }) => defaultRender(ftd(lastModified)),
     },
   };
 
