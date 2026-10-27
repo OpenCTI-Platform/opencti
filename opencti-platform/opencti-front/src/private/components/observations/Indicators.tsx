@@ -178,7 +178,7 @@ const Indicators = () => {
     },
     created: {
       percentWidth: 15,
-      render: ({ created }, { nsdt }) => <Tooltip title={nsdt(created)}>{nsdt(created)}</Tooltip>,
+      render: ({ created }, { ftdt }) => <Tooltip title={ftdt(created)}>{ftdt(created)}</Tooltip>,
     },
     objectMarking: {
       percentWidth: 10,

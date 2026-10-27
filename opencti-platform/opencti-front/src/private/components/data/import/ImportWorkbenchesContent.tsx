@@ -201,9 +201,9 @@ const ImportWorkbenchesContent = () => {
       label: 'Modification date',
       isSortable: true,
       percentWidth: 20,
-      render: ({ lastModified }: ImportWorkbenchesContentFileLine_file$data, { fd }: {
-        fd: (date: Date) => string;
-      }) => fd(lastModified),
+      render: ({ lastModified }: ImportWorkbenchesContentFileLine_file$data, { ftd }: {
+        ftd: (date: Date) => string;
+      }) => ftd(lastModified),
     },
   };
 

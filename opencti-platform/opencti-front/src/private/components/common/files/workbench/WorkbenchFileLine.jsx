@@ -66,7 +66,7 @@ Transition.displayName = 'TransitionSlide';
 
 const WorkbenchFileLineComponent = ({ file, dense, directDownload, nested }) => {
   const theme = useTheme();
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const { me } = useAuth();
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete } = deletion;
@@ -190,7 +190,7 @@ const WorkbenchFileLineComponent = ({ file, dense, directDownload, nested }) => 
                   <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
                 </BodyItem>
                 <BodyItem style={inlineStyles.lastModified}>
-                  <BodyItemText>{nsdt(file.lastModified)}</BodyItemText>
+                  <BodyItemText>{ftdt(file.lastModified)}</BodyItemText>
                 </BodyItem>
               </>
             )}

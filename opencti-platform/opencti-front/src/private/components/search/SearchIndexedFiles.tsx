@@ -119,7 +119,7 @@ export const searchIndexedFilesLinesFragment = graphql`
 const LOCAL_STORAGE_KEY = 'view-files';
 
 const SearchIndexedFilesComponent = () => {
-  const { fd, t_i18n } = useFormatter();
+  const { ftd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Files Search | Advanced Search'));
   const {
@@ -169,7 +169,7 @@ const SearchIndexedFilesComponent = () => {
         label: 'Upload date',
         percentWidth: 10,
         isSortable: false,
-        render: (node: SearchIndexedFilesFile_node$data) => fd(node.uploaded_at),
+        render: (node: SearchIndexedFilesFile_node$data) => ftd(node.uploaded_at),
       },
       occurrences: {
         label: 'Occurrences',

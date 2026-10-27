@@ -15,6 +15,7 @@ import React, { ChangeEvent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { availableLanguage } from '../../../components/AppIntlProvider';
+import { dateFormatOptions, timeFormatOptions } from '../../../utils/dateDisplay';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -73,6 +74,8 @@ const settingsQuery = graphql`
         name
       }
       platform_language
+      platform_date_format
+      platform_time_format
       platform_type
       platform_whitemark
       platform_login_message
@@ -155,6 +158,8 @@ export const settingsMutationFieldPatch = graphql`
           name
         }
         platform_language
+        platform_date_format
+        platform_time_format
         platform_whitemark
         platform_enterprise_edition {
           license_enterprise
@@ -216,6 +221,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     platform_email: settings.platform_email,
     platform_theme: settings.platform_theme?.id,
     platform_language: settings.platform_language,
+    platform_date_format: settings.platform_date_format,
+    platform_time_format: settings.platform_time_format,
     platform_login_message: settings.platform_login_message,
     platform_banner_text: settings.platform_banner_text,
     platform_banner_level: settings.platform_banner_level,
@@ -255,6 +262,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       .email(t_i18n('The value must be an email address')),
     platform_theme: Yup.string().nullable(),
     platform_language: Yup.string().nullable(),
+    platform_date_format: Yup.string().nullable(),
+    platform_time_format: Yup.string().nullable(),
     platform_whitemark: Yup.string().nullable(),
     enterprise_license: Yup.string().nullable(),
     platform_login_message: Yup.string().nullable(),
@@ -573,6 +582,30 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       <em>{t_i18n('Automatic')}</em>
                     </SelectItem>
                     {availableLanguage.map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                  </Field>
+                  <Field
+                    component={SelectFieldFds}
+                    name="platform_date_format"
+                    label={t_i18n('Date format in tables')}
+                    fullWidth
+                    containerstyle={fieldSpacingContainerStyle}
+                    onFocus={(name: string) => handleChangeFocus(name)}
+                    onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                    helpertext={focusHelper('platform_date_format')}
+                  >
+                    {dateFormatOptions(t_i18n).map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                  </Field>
+                  <Field
+                    component={SelectFieldFds}
+                    name="platform_time_format"
+                    label={t_i18n('Time in tables')}
+                    fullWidth
+                    containerstyle={fieldSpacingContainerStyle}
+                    onFocus={(name: string) => handleChangeFocus(name)}
+                    onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                    helpertext={focusHelper('platform_time_format')}
+                  >
+                    {timeFormatOptions(t_i18n).map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
                   </Field>
                   <HiddenTypesField />
                   <div style={fieldSpacingContainerStyle}>

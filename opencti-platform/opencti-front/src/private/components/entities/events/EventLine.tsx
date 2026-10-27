@@ -50,7 +50,7 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
   dataColumns,
   node,
 }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(eventLineFragment, node);
   return (
     <ListItemButton
@@ -79,17 +79,17 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
             <BodyItem
               style={{ width: dataColumns.start_time.width }}
             >
-              {fd(data.start_time)}
+              {ftd(data.start_time)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.stop_time.width }}
             >
-              {fd(data.stop_time)}
+              {ftd(data.stop_time)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.created.width }}
             >
-              {fd(data.created)}
+              {ftd(data.created)}
             </BodyItem>
           </div>
         )}

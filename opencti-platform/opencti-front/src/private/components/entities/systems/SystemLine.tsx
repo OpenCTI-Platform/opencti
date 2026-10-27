@@ -55,7 +55,7 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
   node,
   onLabelClick,
 }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(systemLineFragment, node);
   return (
     <ListItemButton
@@ -88,12 +88,12 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
             <BodyItem
               style={{ width: dataColumns.created.width }}
             >
-              {fd(data.created)}
+              {ftd(data.created)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.modified.width }}
             >
-              {fd(data.modified)}
+              {ftd(data.modified)}
             </BodyItem>
           </div>
         )}

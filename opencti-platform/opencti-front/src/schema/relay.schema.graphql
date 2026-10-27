@@ -1479,6 +1479,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
   platform_language: String
+  platform_date_format: DateFormat
+  platform_time_format: TimeFormat
   platform_theme: Theme
   platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
@@ -1633,6 +1635,18 @@ enum UnitSystem {
   auto
   Metric
   Imperial
+}
+
+enum DateFormat {
+  auto
+  iso
+}
+
+enum TimeFormat {
+  auto
+  none
+  minutes
+  seconds
 }
 
 type CreatorConnection {
@@ -17415,6 +17429,8 @@ type User implements BasicObject & InternalObject {
   account_lock_after_date: DateTime
   administrated_organizations: [Organization!]!
   unit_system: UnitSystem
+  date_format: DateFormat
+  time_format: TimeFormat
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
@@ -17464,6 +17480,8 @@ type MeUser implements BasicObject & InternalObject {
   account_lock_after_date: DateTime
   administrated_organizations: [Organization!]!
   unit_system: UnitSystem
+  date_format: DateFormat
+  time_format: TimeFormat
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean

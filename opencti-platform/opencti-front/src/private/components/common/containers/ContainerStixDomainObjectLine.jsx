@@ -49,7 +49,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
     enableReferences,
     index,
   } = props;
-  const { t_i18n, fd, n } = useFormatter();
+  const { t_i18n, ftd, n } = useFormatter();
   const computeLink = useComputeLink();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
@@ -137,7 +137,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
               <BodyItem
                 style={{ width: dataColumns.created_at.width }}
               >
-                {fd(node.created_at)}
+                {ftd(node.created_at)}
               </BodyItem>
               <BodyItem
                 style={{ width: dataColumns.analyses.width }}

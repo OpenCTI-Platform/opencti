@@ -110,7 +110,7 @@ interface MembersListContainerProps {
 }
 
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
 
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -192,7 +192,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     password_valid_until: {
       label: 'Password valid until',
       percentWidth: 10,
-      render: (date) => (date ? fd(date) : '-'),
+      render: (date) => (date ? ftd(date) : '-'),
     },
     created_at: {
       percentWidth: 10,

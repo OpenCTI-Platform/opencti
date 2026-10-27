@@ -35,6 +35,7 @@ import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 import TextareaField from '../../../components/TextareaField';
+import { dateFormatOptions, timeFormatOptions } from '../../../utils/dateDisplay';
 
 const profileOverviewFieldPatch = graphql`
   mutation ProfileOverviewFieldPatchMutation(
@@ -85,6 +86,8 @@ const userValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   otp_activated: Yup.boolean(),
   unit_system: Yup.string().nullable(),
+  date_format: Yup.string().nullable(),
+  time_format: Yup.string().nullable(),
   submenu_show_icons: Yup.boolean(),
   submenu_auto_collapse: Yup.boolean(),
   monochrome_labels: Yup.boolean(),
@@ -205,6 +208,8 @@ const ProfileOverviewComponent = (props) => {
     'language',
     'otp_activated',
     'unit_system',
+    'date_format',
+    'time_format',
     'submenu_show_icons',
     'submenu_auto_collapse',
     'monochrome_labels',
@@ -402,6 +407,30 @@ const ProfileOverviewComponent = (props) => {
                 <SelectItem value="auto"><em>{t('Automatic')}</em></SelectItem>
                 <SelectItem value="Imperial">{t('Imperial')}</SelectItem>
                 <SelectItem value="Metric">{t('Metric')}</SelectItem>
+              </Field>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="date_format"
+                label={t('Date format in tables')}
+                fullWidth={true}
+                inputProps={{ name: 'date_format', id: 'date_format' }}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitField}
+              >
+                {dateFormatOptions(t).map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+              </Field>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="time_format"
+                label={t('Time in tables')}
+                fullWidth={true}
+                inputProps={{ name: 'time_format', id: 'time_format' }}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitField}
+              >
+                {timeFormatOptions(t).map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
               </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText
@@ -617,6 +646,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       otp_activated
       description
       unit_system
+      date_format
+      time_format
       submenu_show_icons
       submenu_auto_collapse
       monochrome_labels
