@@ -8,4 +8,5 @@
 - Stick to the theme provided by OpenCTI.
 - Use the `sx` prop for inline styles or `styled()` from `@mui/material/styles` for reusable styled components.
 - Read the theme with `useTheme` from `@mui/material/styles`.
+- In `sx`, read theme values through tokens (`color: 'grey.700'`, `marginLeft: 2`) rather than `(theme) => ...` callbacks.
 - Ensure dark mode compatibility (OpenCTI is heavily dark-mode focused).
