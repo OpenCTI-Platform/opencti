@@ -219,7 +219,7 @@ These objects are **not created immediately**. They are kept in your browser, an
 - When you create an object from within the creation of another one, the nested object is kept inside its parent until the parent is accepted.
 - Authors cannot be created in a form, only selected among existing ones.
 - The "Create and map" option is not offered inside a form. Map the entity after the submission.
-- An Artifact created in a form is stored as uploaded: an archive protected by the `infected` password is not extracted, as it is when the Artifact is created outside a form.
+- An Artifact created in a form is stored as uploaded: an archive protected by the `infected` password is not extracted, as it is when the Artifact is created outside a form ([#19285](https://github.com/OpenCTI-Platform/opencti/issues/19285)).
 
 !!! note "Asynchronous processing"
 
