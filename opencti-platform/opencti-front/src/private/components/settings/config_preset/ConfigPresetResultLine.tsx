@@ -7,7 +7,8 @@ import type { Theme } from '../../../../components/Theme';
 export type ConfigPresetResultStatus = 'CREATED' | 'OVERWRITTEN' | 'SKIPPED' | 'FAILED';
 
 interface ConfigPresetResultLineProps {
-  label: string;
+  // Absent when the line is shown on the row of the item, which already has its label
+  label?: string;
   status: ConfigPresetResultStatus | string;
   // Shown as the backend returns it (English, not translated)
   reason?: string | null;
@@ -34,7 +35,7 @@ const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = (
   const known = status in STATUS_LABELS;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
-      <Text variant="content-base">{label}</Text>
+      {label && <Text variant="content-base">{label}</Text>}
       <Chip
         label={known ? t_i18n(STATUS_LABELS[status as ConfigPresetResultStatus]) : status}
         severity={known ? STATUS_SEVERITIES[status as ConfigPresetResultStatus] : 'neutral'}

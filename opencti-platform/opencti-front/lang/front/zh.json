@@ -25,6 +25,7 @@
   "Select the configuration bundle (zip) exported from another platform.": "Select the configuration bundle (zip) exported from another platform.",
   "Select the elements to import. The elements you do not select are not touched.": "Select the elements to import. The elements you do not select are not touched.",
   "Set up your platform": "Set up your platform",
+  "Simulate again to update": "Simulate again to update",
   "Skipped": "Skipped",
   "Some files of the bundle cannot be imported": "Some files of the bundle cannot be imported",
   "Start from a configuration you already have, or skip and configure everything yourself later. You can reopen this guide at any time from Settings › Experience.": "Start from a configuration you already have, or skip and configure everything yourself later. You can reopen this guide at any time from Settings › Experience.",

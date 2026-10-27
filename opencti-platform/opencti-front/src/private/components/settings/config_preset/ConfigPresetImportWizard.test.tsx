@@ -191,6 +191,7 @@ describe('ConfigPresetImportWizard', () => {
       expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables).toEqual({
         file_id: 'config_preset/import/id/bundle.zip',
         selections: [{ type: 'platform', items: null }, { type: 'branding', items: null }],
+        dry_run: false,
       });
     });
 
@@ -278,6 +279,103 @@ describe('ConfigPresetImportWizard', () => {
       expect(onFinish).not.toHaveBeenCalled();
       await resolve(rendered, 'ConfigPresetImportWizardClearMutation', {});
       await waitFor(() => expect(onFinish).toHaveBeenCalledTimes(1));
+    });
+  });
+
+  describe('simulate', () => {
+    const simulated = [
+      { type: 'branding', key: 'theme--1', status: 'CREATED', reason: null },
+      { type: 'platform', key: 'platform', status: 'FAILED', reason: 'Default theme Import theme could not be imported' },
+      { type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null },
+    ];
+    const simulate = async (rendered: Rendered, results: unknown[] = simulated) => {
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', { Query: () => ({}), ConfigPresetImportOutput: () => ({ results, report_id: null, settings: null }) });
+    };
+
+    it('sends a dry run with the file id and the current selection', async () => {
+      const rendered = await renderPreview(session({ revision: 1, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] }));
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables).toEqual({
+        file_id: 'config_preset/import/id/bundle.zip',
+        selections: [{ type: 'messages', items: ['banner'] }],
+        dry_run: true,
+      });
+    });
+
+    it('shows the expected result on each selected row and required dependency, none on the others', async () => {
+      const rendered = await renderPreview(session({ revision: 1, selections: [{ type: 'platform', items: ['platform'], excluded_items: null }] }));
+      await simulate(rendered, simulated.slice(0, 2));
+      expect(within(screen.getByTestId('config-preset-import-item-branding-theme--1')).getByText('Created')).toBeInTheDocument();
+      const platform = screen.getByTestId('config-preset-import-item-platform-platform');
+      expect(within(platform).getByText('Failed')).toBeInTheDocument();
+      expect(within(platform).getByText('Default theme Import theme could not be imported')).toBeInTheDocument();
+      expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByText('Overwritten')).not.toBeInTheDocument();
+      expect(within(screen.getByTestId('config-preset-import-item-branding-whitemark')).queryByText(/Created|Overwritten|Skipped|Failed/)).not.toBeInTheDocument();
+    });
+
+    it('shows the default tag and the result together', async () => {
+      const rendered = await renderPreview();
+      await simulate(rendered);
+      const theme = screen.getByTestId('config-preset-import-item-branding-theme--1');
+      expect(within(theme).getByText('default')).toBeInTheDocument();
+      expect(within(theme).getByText('Created')).toBeInTheDocument();
+    });
+
+    it('clears the results on a selection change and says to simulate again, Apply staying available', async () => {
+      const rendered = await renderPreview();
+      await simulate(rendered);
+      expect(screen.getByText('Overwritten')).toBeInTheDocument();
+      await rendered.user.click(checkbox('Messages (1/1)'));
+      expect(screen.queryByText('Overwritten')).not.toBeInTheDocument();
+      expect(screen.getByText('Simulate again to update')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
+    });
+
+    it('locks Simulate, Apply, Start over and the checkboxes while the request runs', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      ['Simulate', 'Apply', 'Start over'].forEach((name) => expect(screen.getByRole('button', { name })).toBeDisabled());
+      expect(checkbox('Messages (1/1)')).toBeDisabled();
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      expect(rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportWizardApplyMutation')).toHaveLength(1);
+      await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', { ConfigPresetImportOutput: () => ({ results: [], report_id: null, settings: null }) });
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+    });
+
+    it('drops a response that arrives after the wizard was closed', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      rendered.unmount();
+      await expect(resolve(rendered, 'ConfigPresetImportWizardApplyMutation', { ConfigPresetImportOutput: () => ({ results: simulated, report_id: null, settings: null }) })).resolves.not.toThrow();
+    });
+
+    it('does not offer Simulate with nothing selected', async () => {
+      const rendered = await renderPreview(session({ revision: 1, selections: [] }));
+      expect(screen.getByRole('button', { name: 'Simulate' })).toBeDisabled();
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportWizardApplyMutation');
+    });
+
+    it('applies for real after a simulation, even when it showed failed items', async () => {
+      const rendered = await renderPreview();
+      await simulate(rendered);
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables).toMatchObject({ dry_run: false });
+    });
+
+    it('goes back to the upload step when the file is missing, and stays on the step for any other error', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      await reject(rendered, 'ConfigPresetImportWizardApplyMutation', 'network');
+      expect(await screen.findByRole('button', { name: 'Simulate' })).toBeEnabled();
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      await reject(rendered, 'ConfigPresetImportWizardApplyMutation', 'file_missing');
+      expect(await screen.findByText('The uploaded file no longer exists')).toBeInTheDocument();
+    });
+
+    it('shows no expected result when the wizard is opened again on a draft session', async () => {
+      await renderPreview(session({ revision: 2, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] }));
+      expect(screen.queryByText(/Created|Overwritten|Skipped|Failed/)).not.toBeInTheDocument();
     });
   });
 });

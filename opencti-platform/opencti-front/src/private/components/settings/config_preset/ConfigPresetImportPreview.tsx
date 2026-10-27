@@ -22,6 +22,7 @@ import {
   toggleConfigPresetTypes,
 } from './configPresetSelection';
 import { ConfigPresetItemRow } from './ConfigPresetExportItems';
+import ConfigPresetResultLine from './ConfigPresetResultLine';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
 const SAVE_DELAY_MS = 500;
@@ -76,15 +77,31 @@ type PreviewType = Preview['types'][number];
 // The list takes its counts from the items it was given: a bundle is read at once, there is no next page
 const toCountedTypes = (types: Preview['types']) => types.map((type) => ({ ...type, itemsPageInfo: { globalCount: type.items.length } }));
 
-interface ConfigPresetImportPreviewProps {
+type ImportSelections = ReturnType<typeof buildConfigPresetSelections>;
+
+// The expected result of a processed item
+interface SimulatedResult {
+  readonly type: string;
+  readonly key: string;
+  readonly status: string;
+  readonly reason?: string | null;
+}
+
+export interface ConfigPresetImportPreviewProps {
   session: ConfigPresetImportSession;
   // Sends the real import: the selection is saved first
-  onApply: (selections: ReturnType<typeof buildConfigPresetSelections>) => void;
+  onApply: (selections: ImportSelections) => void;
+  // Simulates the import of the selection: reads only, the results come back through onCompleted
+  onSimulate: (
+    fileId: string,
+    selections: ImportSelections,
+    callbacks: { onCompleted: (results: ReadonlyArray<SimulatedResult>) => void; onError: (error: Error) => void },
+  ) => void;
   onStartOver: () => void;
   onFileMissing: () => void;
 }
 
-const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProps> = ({ session, onApply, onStartOver, onFileMissing }) => {
+const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProps> = ({ session, onApply, onSimulate, onStartOver, onFileMissing }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const environment = useRelayEnvironment();
@@ -93,6 +110,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [selection, setSelection] = useState<ConfigPresetSelection>({});
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [confirmStartOver, setConfirmStartOver] = useState(false);
+  // The expected results, by `<type>/<key>`: held here only, never saved; cleared when the selection changes
+  const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
+  const [isOutdated, setIsOutdated] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const isMountedRef = useRef(true);
   const [commitSave] = useApiMutation<ConfigPresetImportPreviewSaveMutation>(configPresetImportPreviewSaveMutation);
   // The revision only goes up: the backend ignores a lower one
   const revisionRef = useRef(session.revision);
@@ -149,6 +171,17 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
 
   // A pending save is sent on close
   useEffect(() => flushSave, [flushSave]);
+  useEffect(() => () => {
+    isMountedRef.current = false;
+  }, []);
+
+  // A change of the selection clears the expected results: they no longer describe what would be imported
+  const clearResults = () => {
+    if (results !== null) {
+      setResults(null);
+      setIsOutdated(true);
+    }
+  };
 
   const types = preview ? toCountedTypes(preview.types) : [];
   const forced = getConfigPresetForcedItems(types, selection);
@@ -156,6 +189,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
 
   const handleSelectionChange = (next: ConfigPresetSelection) => {
     setSelection(next);
+    clearResults();
     revisionRef.current += 1;
     pendingRef.current = buildConfigPresetSelections(types, next);
     setSaveState('saving');
@@ -168,6 +202,28 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const handleApply = () => {
     flushSave();
     onApply(selections);
+  };
+
+  const handleSimulate = () => {
+    setIsSimulating(true);
+    onSimulate(session.file_id, selections, {
+      // A response that arrives after the wizard was closed is dropped
+      onCompleted: (simulated) => {
+        if (isMountedRef.current) {
+          setIsSimulating(false);
+          setIsOutdated(false);
+          setResults(Object.fromEntries(simulated.map((result) => [`${result.type}/${result.key}`, result])));
+        }
+      },
+      onError: (err) => {
+        if (isMountedRef.current) {
+          setIsSimulating(false);
+          if (getConfigPresetErrorReason(err) === 'file_missing') {
+            onFileMissing();
+          }
+        }
+      },
+    });
   };
 
   if (error) {
@@ -202,12 +258,23 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                 label={typeLabel(type)}
                 description={t_i18n(type.description)}
                 checked={getConfigPresetCheckboxState([type], selection, forced)}
+                disabled={isSimulating}
                 onCheckedChange={(checked) => handleSelectionChange(toggleConfigPresetTypes(selection, [type], checked === true))}
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), paddingLeft: theme.spacing(3.5) }}>
                 {type.items.map((item) => (
                   <div key={item.key} data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
-                    <ConfigPresetItemRow typeKey={type.key} item={item} selection={selection} forced={forced} onSelectionChange={handleSelectionChange} />
+                    <ConfigPresetItemRow
+                      typeKey={type.key}
+                      item={item}
+                      selection={selection}
+                      forced={forced}
+                      disabled={isSimulating}
+                      onSelectionChange={handleSelectionChange}
+                      statusSlot={results?.[`${type.key}/${item.key}`]
+                        ? <ConfigPresetResultLine status={results[`${type.key}/${item.key}`].status} reason={results[`${type.key}/${item.key}`].reason} />
+                        : undefined}
+                    />
                     <div style={{ paddingLeft: theme.spacing(3.5) }}>
                       <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
                         {item.exists ? t_i18n('Already exists, will be overwritten') : t_i18n('New')}
@@ -227,10 +294,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         </div>
       ))}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text variant="content-compact">{saveHint}</Text>
+        <Text variant="content-compact">{isOutdated ? t_i18n('Simulate again to update') : saveHint}</Text>
         <div style={{ display: 'flex', gap: theme.spacing(1) }}>
-          <Button variant="secondary" onClick={() => setConfirmStartOver(true)}>{t_i18n('Start over')}</Button>
-          <Button onClick={handleApply} disabled={selections.length === 0}>{t_i18n('Apply')}</Button>
+          <Button variant="secondary" onClick={() => setConfirmStartOver(true)} disabled={isSimulating}>{t_i18n('Start over')}</Button>
+          <Button variant="secondary" onClick={handleSimulate} disabled={selections.length === 0 || isSimulating}>{t_i18n('Simulate')}</Button>
+          <Button onClick={handleApply} disabled={selections.length === 0 || isSimulating}>{t_i18n('Apply')}</Button>
         </div>
       </div>
       <Dialog open={confirmStartOver} size="small" title={t_i18n('Start over')} onClose={() => setConfirmStartOver(false)}>

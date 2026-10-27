@@ -10,7 +10,7 @@ import { ConfigPresetImportWizardApplyMutation } from './__generated__/ConfigPre
 import { ConfigPresetImportWizardClearMutation } from './__generated__/ConfigPresetImportWizardClearMutation.graphql';
 import { ConfigPresetImportWizardQuery, ConfigPresetImportWizardQuery$data } from './__generated__/ConfigPresetImportWizardQuery.graphql';
 import { getConfigPresetErrorReason, getConfigPresetImportStep } from './configPresetImportStep';
-import ConfigPresetImportPreview from './ConfigPresetImportPreview';
+import ConfigPresetImportPreview, { ConfigPresetImportPreviewProps } from './ConfigPresetImportPreview';
 import { ConfigPresetImportProgress, ConfigPresetImportResult } from './ConfigPresetImportResult';
 import ConfigPresetImportUpload from './ConfigPresetImportUpload';
 import ConfigPresetWizardWelcome from './ConfigPresetWizardWelcome';
@@ -46,10 +46,17 @@ const configPresetImportWizardQuery = graphql`
   }
 `;
 
-// The mutation returns the settings, so that the store learns completed, the theme, the title and the whitemark
+// The same document applies and simulates. The real import returns the settings, so that the store learns completed, the
+// theme, the title and the whitemark; a dry run returns them null and writes nothing.
 const configPresetImportWizardApplyMutation = graphql`
-  mutation ConfigPresetImportWizardApplyMutation($file_id: String!, $selections: [ConfigPresetSelectionInput!]!) {
-    configPresetImport(file_id: $file_id, selections: $selections, dry_run: false) {
+  mutation ConfigPresetImportWizardApplyMutation($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean!) {
+    configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) {
+      results {
+        type
+        key
+        status
+        reason
+      }
       report_id
       settings {
         ...RootSettings
@@ -110,7 +117,7 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
   const handleApply = (fileId: string, selections: ConfigPresetImportWizardApplyMutation['variables']['selections']) => {
     setIsApplying(true);
     commitApply({
-      variables: { file_id: fileId, selections },
+      variables: { file_id: fileId, selections, dry_run: false },
       onCompleted: () => {
         setIsApplying(false);
         refresh();
@@ -122,6 +129,15 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
         }
         refresh();
       },
+    });
+  };
+
+  // The expected result of each item, nothing is written: the wizard stays on the preview
+  const handleSimulate: ConfigPresetImportPreviewProps['onSimulate'] = (fileId, selections, { onCompleted, onError }) => {
+    commitApply({
+      variables: { file_id: fileId, selections, dry_run: true },
+      onCompleted: (response) => onCompleted(response.configPresetImport.results),
+      onError,
     });
   };
 
@@ -171,6 +187,7 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
       key={session?.file_id}
       session={session!}
       onApply={(selections) => handleApply(session!.file_id, selections)}
+      onSimulate={handleSimulate}
       onStartOver={handleStartOver}
       onFileMissing={() => setIsFileMissing(true)}
     />

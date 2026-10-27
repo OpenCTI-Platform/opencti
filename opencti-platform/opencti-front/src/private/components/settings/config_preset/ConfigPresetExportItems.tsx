@@ -1,4 +1,4 @@
-import React, { FunctionComponent, Suspense, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, ReactNode, Suspense, useEffect, useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery, usePaginationFragment } from 'react-relay';
 import { Checkbox, Chip, SearchField, Spinner, Text } from '@filigran/design-system';
 import { ArrowBackOutlined } from '@mui/icons-material';
@@ -68,13 +68,24 @@ interface ConfigPresetSelectionProps {
   onSelectionChange: (selection: ConfigPresetSelection) => void;
 }
 
+interface ConfigPresetItemRowProps extends ConfigPresetSelectionProps {
+  typeKey: string;
+  item: ConfigPresetItem;
+  // Shown on the right of the row, after the tag (the expected result of a simulated import)
+  statusSlot?: ReactNode;
+  // Disables the checkbox, as a forced dependency is
+  disabled?: boolean;
+}
+
 // A forced dependency is checked and disabled
-export const ConfigPresetItemRow: FunctionComponent<ConfigPresetSelectionProps & { typeKey: string; item: ConfigPresetItem }> = ({
+export const ConfigPresetItemRow: FunctionComponent<ConfigPresetItemRowProps> = ({
   typeKey,
   item,
   selection,
   forced,
   onSelectionChange,
+  statusSlot,
+  disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -85,11 +96,16 @@ export const ConfigPresetItemRow: FunctionComponent<ConfigPresetSelectionProps &
       <Checkbox
         label={item.translatable ? t_i18n(item.label) : item.label}
         checked={isForced || isConfigPresetItemSelected(selection, typeKey, item.key)}
-        disabled={isForced}
+        disabled={isForced || disabled}
         onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetItem(selection, typeKey, item.key, checked === true))}
       />
-      {tags.length > 0 && (
-        <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{tags.join(' · ')}</Text>
+      {(tags.length > 0 || statusSlot) && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: theme.spacing(1) }}>
+          {tags.length > 0 && (
+            <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{tags.join(' · ')}</Text>
+          )}
+          {statusSlot}
+        </div>
       )}
     </div>
   );
