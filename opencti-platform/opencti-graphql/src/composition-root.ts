@@ -86,6 +86,7 @@ import vulnerabilityModule from './modules/vulnerability/vulnerability-module';
 import attackPatternModule from './modules/attackPattern/attackPattern-module';
 import courseOfActionModule from './modules/courseOfAction/courseOfAction-module';
 import customFieldModule from './modules/customField/custom-field-module';
+import configPresetModule from './modules/configPreset/configPreset-module';
 
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
@@ -172,6 +173,7 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   attackPatternModule,
   courseOfActionModule,
   customFieldModule,
+  configPresetModule,
 ];
 
 let modulesRegistered = false;

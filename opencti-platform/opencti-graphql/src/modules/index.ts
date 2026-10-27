@@ -30,5 +30,4 @@ import './relationsRef/stixCyberObservable-registrationRef';
 // incomplete modules
 // endregion
 // region graphql registration
-import './configPreset/configPreset-graphql';
 // endregion
