@@ -177,7 +177,6 @@ describe('ConfigPresetImportWizard', () => {
       expect(save[0].request.variables).toEqual({ file_id: 'config_preset/import/id/bundle.zip', selections: [{ type: 'messages', items: null }], revision: 5 });
       vi.useRealTimers();
       await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
-      expect(await screen.findByText('Saved')).toBeInTheDocument();
     });
 
     it('sends a pending save on close', async () => {

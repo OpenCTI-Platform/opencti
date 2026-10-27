@@ -23,7 +23,7 @@ import { getConfigPresetErrorReason } from './configPresetImportStep';
 import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
-import ConfigPresetImportMessages, { ConfigPresetSaveState } from './ConfigPresetImportMessages';
+import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
@@ -123,7 +123,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selection, setSelection] = useState<ConfigPresetSelection>({});
-  const [saveState, setSaveState] = useState<ConfigPresetSaveState>('idle');
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   // The expected results, by `<type>/<key>`: held here only, never saved; cleared when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
@@ -180,12 +179,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     if (pendingRef.current) {
       const selections = pendingRef.current;
       pendingRef.current = null;
-      setSaveState('saving');
-      commitSaveRef.current({
-        variables: { file_id: session.file_id, selections, revision: revisionRef.current },
-        onCompleted: () => setSaveState('saved'),
-        onError: () => setSaveState('error'),
-      });
+      // Saved in the background: a failure is notified by the global error toast
+      commitSaveRef.current({ variables: { file_id: session.file_id, selections, revision: revisionRef.current } });
     }
   }, [session.file_id]);
 
@@ -216,7 +211,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     clearResults();
     revisionRef.current += 1;
     pendingRef.current = buildConfigPresetSelections(types, next);
-    setSaveState('saving');
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
     }
@@ -344,7 +338,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       >
         <ConfigPresetImportMessages
           itemsCount={itemsCount}
-          saveState={saveState}
           isOutdated={isOutdated}
           hasPlatformChanged={hasPlatformChanged}
           isOtherImportRunning={isOtherImportRunning}

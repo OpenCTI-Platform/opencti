@@ -4,11 +4,8 @@ import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 
-export type ConfigPresetSaveState = 'idle' | 'saving' | 'saved' | 'error';
-
 interface ConfigPresetImportMessagesProps {
   itemsCount: number;
-  saveState: ConfigPresetSaveState;
   // The simulation results are out of date after a change of the selection
   isOutdated: boolean;
   hasPlatformChanged: boolean;
@@ -19,7 +16,6 @@ interface ConfigPresetImportMessagesProps {
 // What the admin reads above the actions of the preview: the compatibility of the bundle, who blocks Apply, the state of the selection
 const ConfigPresetImportMessages: FunctionComponent<ConfigPresetImportMessagesProps> = ({
   itemsCount,
-  saveState,
   isOutdated,
   hasPlatformChanged,
   isOtherImportRunning,
@@ -27,8 +23,12 @@ const ConfigPresetImportMessages: FunctionComponent<ConfigPresetImportMessagesPr
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const saveHint = { idle: '', saving: t_i18n('Saving'), saved: t_i18n('Saved'), error: t_i18n('The selection could not be saved') }[saveState];
-  const hint = hasPlatformChanged ? t_i18n('The platform changed since your simulation') : (isOutdated ? t_i18n('Simulate again to update') : saveHint);
+  let hint = '';
+  if (hasPlatformChanged) {
+    hint = t_i18n('The platform changed since your simulation');
+  } else if (isOutdated) {
+    hint = t_i18n('Simulate again to update');
+  }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
       <Alert
