@@ -4,7 +4,7 @@ import { CloudUploadOutlined } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';

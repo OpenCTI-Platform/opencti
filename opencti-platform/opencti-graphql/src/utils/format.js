@@ -93,6 +93,12 @@ export const computeDateFromEventId = (eventId) => {
 export const streamEventId = (date = null, index = 0) => `${utcEpochTime(date)}-${index}`;
 export const now = () => utcDate().toISOString();
 export const nowTime = () => timeFormat(now());
+export const durationInMs = (from, to) => {
+  return utcDate(to).diff(utcDate(from));
+};
+export const sinceNowInMs = (lastModified) => {
+  return durationInMs(lastModified, now());
+};
 export const sinceNowInMinutes = (lastModified) => {
   const diff = utcDate().diff(utcDate(lastModified));
   const duration = moment.duration(diff);

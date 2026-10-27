@@ -4,7 +4,7 @@ import { Field, FieldProps } from 'formik';
 import { CsvMapperColumnBasedFormData, CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
 import { alphabet } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import { useCsvMapperContext } from '@components/data/csvMapper/CsvMapperContext';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import SwitchField from '../../../../../components/fields/SwitchField';

@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { TooltipProvider } from '@filigran/design-system';
 import GlobalWorkflowSettingsCard from './GlobalWorkflowSettingsCard';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
@@ -119,7 +119,7 @@ describe('GlobalWorkflowSettingsCard', () => {
 
     renderWithTheme(<GlobalWorkflowSettingsCard />);
 
-    expect(screen.getByRole('checkbox')).toBeDisabled();
+    expect(screen.getByRole('switch')).toBeDisabled();
   });
 
   it('toggles sync_workflow_status_by_name via the generic entitySettingsFieldPatch mutation', () => {
@@ -130,7 +130,7 @@ describe('GlobalWorkflowSettingsCard', () => {
 
     renderWithTheme(<GlobalWorkflowSettingsCard />);
 
-    const switchInput = screen.getByRole('checkbox');
+    const switchInput = screen.getByRole('switch');
     expect(switchInput).not.toBeDisabled();
     expect(switchInput).not.toBeChecked();
 

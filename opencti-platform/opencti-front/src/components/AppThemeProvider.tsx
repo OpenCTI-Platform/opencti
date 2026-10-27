@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { ThemeOptions } from '@mui/material/styles/createTheme';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import themeDark, {
   THEME_DARK_DEFAULT_ACCENT,
   THEME_DARK_DEFAULT_BACKGROUND,

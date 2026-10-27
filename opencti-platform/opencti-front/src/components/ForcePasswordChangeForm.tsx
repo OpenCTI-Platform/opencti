@@ -85,7 +85,10 @@ const ForcePasswordChangeForm = ({
             height: '100%',
           }}
         >
-          <Box flex={1}>
+          <Box sx={{
+            flex: 1,
+          }}
+          >
             {renderPolicies?.(values.password)}
             <Field
               component={TextField}
@@ -105,10 +108,12 @@ const ForcePasswordChangeForm = ({
             />
           </Box>
           <Stack
-            mt={3}
             direction="row"
-            alignItems="center"
-            justifyContent={secondaryAction ? 'space-between' : 'flex-end'}
+            sx={{
+              mt: 3,
+              alignItems: 'center',
+              justifyContent: secondaryAction ? 'space-between' : 'flex-end',
+            }}
           >
             {secondaryAction}
             <Button

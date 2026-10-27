@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { useLocation, useNavigate } from 'react-router';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
@@ -14,12 +13,10 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { GroupsLinesPaginationQuery$data } from './groups/__generated__/GroupsLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 export const groupsSearchQuery = graphql`
   query GroupsSearchQuery($search: String, $groupsOrderBy: GroupsOrdering, $groupsOrderMode: OrderingMode) {
@@ -51,7 +48,6 @@ export const groupsSearchQuery = graphql`
 const LOCAL_STORAGE_KEY = 'groups';
 
 const Groups = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const location = useLocation();
@@ -165,10 +161,10 @@ const Groups = () => {
   };
 
   return (
-    <div className={classes.container} data-testid="groups-settings-page">
+    <Container data-testid="groups-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Groups'), current: true }]} />
       {groupState.view === 'lines' ? renderLines(paginationOptions) : ''}
-    </div>
+    </Container>
   );
 };
 

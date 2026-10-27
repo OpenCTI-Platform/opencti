@@ -9201,6 +9201,8 @@ type Query {
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
   customFieldStixFilterKeys(entityType: String): [String!]
+  configPresetExportableTypes: [ConfigPresetExportableType!]!
+  configPresetExportableItems(type: ID!, first: Int, after: ID, search: String, ids: [ID!], excludedIds: [ID!]): ConfigPresetExportableItemConnection!
 }
 
 type Subscription {
@@ -10101,6 +10103,7 @@ type Mutation {
   securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
   securityCoverageResultAdd(input: SecurityCoverageResultAddInput!): SecurityCoverageResult
+  securityCoverageResultEdit(id: ID!, input: SecurityCoverageResultEditInput!): SecurityCoverageResult
   securityCoverageResultDelete(id: ID!): ID
   securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
@@ -10175,6 +10178,7 @@ type Mutation {
   customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
+  configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File!
 }
 
 enum WorkflowExecutionStatus {
@@ -10303,7 +10307,7 @@ type WorkflowTriggerResult {
 
 type WorkflowTransition {
   event: String!
-  toState: String!
+  toState: String
   toStatus: Status
   comment: String
   actions: [String!]
@@ -10600,6 +10604,12 @@ type S3Connection {
   secret_key: String!
 }
 
+input ConnectorInfoErrorInput {
+  code: String!
+  message: String!
+  criticity: Int!
+}
+
 input ConnectorInfoInput {
   run_and_terminate: Boolean!
   buffering: Boolean!
@@ -10607,6 +10617,13 @@ input ConnectorInfoInput {
   queue_messages_size: Float!
   next_run_datetime: DateTime
   last_run_datetime: DateTime
+  errors: [ConnectorInfoErrorInput!]
+}
+
+type ConnectorInfoError {
+  code: String!
+  message: String!
+  criticity: Int!
 }
 
 type ConnectorInfo {
@@ -10616,6 +10633,7 @@ type ConnectorInfo {
   queue_messages_size: Float!
   next_run_datetime: DateTime
   last_run_datetime: DateTime
+  errors: [ConnectorInfoError!]
 }
 
 type ConnectorConfig {
@@ -10837,7 +10855,6 @@ type ConnectorManager implements BasicObject & InternalObject {
 
 enum IngestionHealthStatus {
   critical
-  stopped
   healthy
   degraded
 }
@@ -16397,6 +16414,20 @@ input SecurityCoverageResultAddInput {
   add_related_entities: SecurityCoverageSelectedEntitiesInput
 }
 
+input SecurityCoverageResultEditInput {
+  name: String
+  description: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  external_uri: String
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [SecurityCoverageExpectation!]
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
+}
+
 input AskSendOtpInput {
   email: String!
 }
@@ -17689,9 +17720,54 @@ input CustomFieldDefinitionAddInput {
   field_type: String!
   entity_types: [String!]
   multiple: Boolean
-  description: String
+
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
+  description: String!
   created: DateTime
   min_value: Int
   max_value: Int
   select_options: [String!]
+}
+
+type ConfigPresetItemReference {
+  type: String!
+  key: String!
+}
+
+type ConfigPresetExportableItem {
+  key: String!
+  label: String!
+  translatable: Boolean!
+  dependsOn: [ConfigPresetItemReference!]!
+  isDefault: Boolean!
+}
+
+type ConfigPresetExportableItemEdge {
+  cursor: String!
+  node: ConfigPresetExportableItem!
+}
+
+type ConfigPresetExportableItemConnection {
+  pageInfo: PageInfo!
+  edges: [ConfigPresetExportableItemEdge!]!
+}
+
+type ConfigPresetExportableGroup {
+  key: String!
+  label: String!
+}
+
+type ConfigPresetExportableType {
+  key: String!
+  label: String!
+  description: String!
+  group: ConfigPresetExportableGroup!
+  items: [ConfigPresetExportableItem!]!
+  itemsPageInfo: PageInfo!
+}
+
+input ConfigPresetSelectionInput {
+  type: ID!
+  items: [ID!]
+  excluded_items: [ID!]
 }

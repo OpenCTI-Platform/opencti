@@ -9,7 +9,7 @@ import MainEntitySection from './MainEntitySection';
 import RelationshipsSection from './RelationshipsSection';
 import useFieldRenderer from './useFieldRenderer';
 import { useFormBuilderOperations } from './useFormBuilderOperations';
-import useStyles from './useFormSchemaEditorStyles';
+import { Container } from './formSchemaEditorStyles';
 
 export interface FormSchemaEditorProps {
   initialValues?: FormBuilderData;
@@ -24,7 +24,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   onChange,
   onSchemaChange,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
   const [currentTab, setCurrentTab] = useState('main');
@@ -349,7 +348,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   });
 
   return (
-    <div className={classes.container}>
+    <Container>
       <Tabs value={currentTab} onValueChange={setCurrentTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="main">{t_i18n('Main Entity')}</TabsTrigger>
@@ -404,7 +403,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           )}
         </TabsContent>
       </Tabs>
-    </div>
+    </Container>
   );
 };
 

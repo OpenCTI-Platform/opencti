@@ -70,7 +70,13 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
   ];
 
   return (
-    <Stack flexDirection="row" gap={2} alignItems="center">
+    <Stack
+      sx={{
+        flexDirection: 'row',
+        gap: 2,
+        alignItems: 'center',
+      }}
+    >
       <SearchInput
         value={searchInput}
         onSubmit={handleSearchInputSubmit}

@@ -21,8 +21,8 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useTheme } from '@mui/material/styles';
+import React, { CSSProperties, FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryLoader } from 'react-relay';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { interval } from 'rxjs';
@@ -46,38 +46,23 @@ import { ConnectorsLogosQuery } from './__generated__/ConnectorsLogosQuery.graph
 
 const interval$ = interval(FIVE_SECONDS);
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>({
-  linesContainer: {
-    marginTop: 10,
-  },
-  itemHead: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  bodyItem: {
-    overflow: 'hidden',
-    fontSize: 13,
-    whiteSpace: 'nowrap',
-    paddingRight: 10,
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 0,
-    width: '100%',
-  },
-  bodyItemText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-  },
-});
+const bodyItemStyle: CSSProperties = {
+  overflow: 'hidden',
+  fontSize: 13,
+  whiteSpace: 'nowrap',
+  paddingRight: 10,
+  display: 'flex',
+  alignItems: 'center',
+  minWidth: 0,
+  width: '100%',
+};
+
+const bodyItemTextStyle: CSSProperties = {
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  minWidth: 0,
+};
 
 interface ConnectorsStatusContentProps {
   connectorsListData: ConnectorsListQuery['response'];
@@ -92,7 +77,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
 
-  const classes = useStyles(); // TODO remove as deprecated
+  const theme = useTheme<Theme>();
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
   const navigate = useNavigate();
@@ -304,11 +289,15 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
           />
         )}
       >
-        <List classes={{ root: classes.linesContainer }}>
+        <List style={{ marginTop: 10 }}>
           <ListItem
-            classes={{ root: classes.itemHead }}
             divider={false}
-            style={{ paddingTop: 0 }}
+            style={{
+              paddingTop: 0,
+              paddingLeft: 10,
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+            }}
             secondaryAction={<> &nbsp; </>}
           >
             <ListItemIcon>
@@ -401,7 +390,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                   >
                     <ListItemButton
                       component={Link}
-                      classes={{ root: classes.item }}
+                      style={{ paddingLeft: 10, height: 50 }}
                       to={`/dashboard/integrations/connectors/${connector.id}`}
                     >
                       <ListItemIcon>
@@ -432,39 +421,36 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             }}
                           >
                             <Tooltip title={connector.title} placement="top">
-                              <div className={classes.bodyItem}>
-                                <span className={classes.bodyItemText}>
+                              <div style={bodyItemStyle}>
+                                <span style={bodyItemTextStyle}>
                                   {connector.title}
                                 </span>
                               </div>
                             </Tooltip>
-                            <div className={classes.bodyItem}>
-                              <span className={classes.bodyItemText}>
+                            <div style={bodyItemStyle}>
+                              <span style={bodyItemTextStyle}>
                                 {connectorType}
                               </span>
                             </div>
-                            <div className={classes.bodyItem}>
+                            <div style={bodyItemStyle}>
                               <ItemBoolean
                                 label={connector.connectorTriggerStatus.label}
                                 status={connector.connectorTriggerStatus.status}
                               />
                             </div>
-                            <div className={classes.bodyItem}>
+                            <div style={bodyItemStyle}>
                               {n(connector.messages)}
                             </div>
-                            <div className={classes.bodyItem} style={{ gap: 4 }}>
+                            <div style={{ ...bodyItemStyle, gap: theme.spacing(1) }}>
                               <ConnectorStatusChip connector={connector} />
                               <IngestionHealthChip ingestionHealth={connector.ingestionHealth} />
                             </div>
-                            <div className={classes.bodyItem}>
-                              <span className={classes.bodyItemText}>
+                            <div style={bodyItemStyle}>
+                              <span style={bodyItemTextStyle}>
                                 {nsdt(connector.updated_at)}
                               </span>
                             </div>
-                            <div
-                              className={classes.bodyItem}
-                              style={{ justifyContent: 'center' }}
-                            >
+                            <div style={{ ...bodyItemStyle, justifyContent: 'center' }}>
                               <BooleanStatusIcon status={connector.is_managed} />
                             </div>
                           </div>

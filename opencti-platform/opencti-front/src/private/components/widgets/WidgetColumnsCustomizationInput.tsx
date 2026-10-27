@@ -3,7 +3,7 @@ import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AccordionDetails, Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import { Checkbox, IconButton } from '@filigran/design-system';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import type { Theme } from 'src/components/Theme';
 import { useFormatter } from 'src/components/i18n';

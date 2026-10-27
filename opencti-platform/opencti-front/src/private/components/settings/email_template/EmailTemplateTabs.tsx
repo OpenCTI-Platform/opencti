@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useEmailTemplateContext } from '@components/settings/email_template/EmailTemplateContext';
 import { EmailTemplateTabs_template$key } from '@components/settings/email_template/__generated__/EmailTemplateTabs_template.graphql';
 import { useFormatter } from '../../../../components/i18n';

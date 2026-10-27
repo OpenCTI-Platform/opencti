@@ -6,6 +6,7 @@ import { CalendarIcon } from '@mui/x-date-pickers/icons';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
 import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
+import { isAcceptedFromView } from '../../utils/Time';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface RelativeDateInputProps {
@@ -142,7 +143,10 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
           onChange={(value) => {
             pendingDate.current = value && !Number.isNaN(value.getTime()) ? value : null;
           }}
-          onAccept={(value) => {
+          onAccept={(value, context) => {
+            if (!isAcceptedFromView(context)) {
+              return;
+            }
             pendingDate.current = null;
             if (value) {
               handleChangeRangeDateFilter(value.toISOString());
@@ -218,7 +222,8 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
             open={isDatePickerOpen}
             onClose={() => setIsDatePickerOpen(false)}
             onAccept={handleChangeAbsoluteDateFilter}
-            value={isValidDate(draft) ? new Date(draft) : null}
+            // Uncontrolled: a controlled value without onChange would discard the picked day.
+            defaultValue={isValidDate(draft) ? new Date(draft) : null}
             slotProps={{
               textField: { tabIndex: -1 },
               popper: { anchorEl: fieldContainerRef.current },

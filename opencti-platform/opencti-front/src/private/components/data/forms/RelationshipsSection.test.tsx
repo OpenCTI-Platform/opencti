@@ -212,7 +212,7 @@ describe('RelationshipsSection', () => {
   it('toggles the required switch for a relationship', () => {
     const props = renderSection();
 
-    fireEvent.click(screen.getAllByRole('checkbox', { name: 'Required' })[0]);
+    fireEvent.click(screen.getAllByRole('switch', { name: 'Required' })[0]);
 
     expect(props.toggleRelationshipRequired).toHaveBeenCalledWith('relationship-1', true);
   });
@@ -312,7 +312,7 @@ describe('RelationshipsSection', () => {
     it('toggles the required switch for a relationship field', () => {
       const props = renderSection({ formData: relationshipFormData });
 
-      fireEvent.click(screen.getAllByRole('checkbox', { name: 'Required' })[1]);
+      fireEvent.click(screen.getAllByRole('switch', { name: 'Required' })[1]);
 
       expect(props.handleFieldChange).toHaveBeenCalledWith('relationships.0.fields.0.required', true);
     });

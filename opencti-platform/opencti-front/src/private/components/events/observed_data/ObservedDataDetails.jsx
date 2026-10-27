@@ -44,7 +44,7 @@ class ObservedDataDetailsComponent extends Component {
       <div style={{ height: '100%' }} data-testid="observed-data-details-page">
         <Card title={t('Entity details')}>
           <Grid container={true} spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('First observed')}
               </Label>
@@ -62,7 +62,7 @@ class ObservedDataDetailsComponent extends Component {
               </Label>
               {observedData.number_seen ?? '-'}
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Last observed')}
               </Label>

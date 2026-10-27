@@ -262,6 +262,21 @@ export const CUSTOM_FIELD_PREFIX = 'x_opencti_cf_';
 export const isCustomFieldAttribute = (attribute?: string | null): boolean => (
   !!attribute && attribute.startsWith(CUSTOM_FIELD_PREFIX)
 );
+// An alias matches a STIX custom property at ingestion, the only properties read being the ones starting
+// with "x_": it must be "x_" followed by lowercase letters, numbers and underscores (as checked backend-side).
+const CUSTOM_FIELD_ALIAS_REGEX = /^x_[a-z0-9_]+$/;
+export const areCustomFieldAliasesValid = (aliases?: readonly (string | undefined)[] | null): boolean => (
+  (aliases ?? []).every((alias) => !!alias && CUSTOM_FIELD_ALIAS_REGEX.test(alias))
+);
+// The technical name suggested from a label: lowercase, accents removed, any other character replaced
+// by an underscore, starting with a letter (e.g. "Closing reason" gives "closing_reason").
+export const buildCustomFieldNameSuffix = (label: string): string => label
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '_')
+  .replace(/^[^a-z]+/, '')
+  .replace(/_+$/, '');
 // ----------------------------------------------------------------------------------------------------------------------
 // Widgets integration (attribute widget & list/custom-attributes widget columns)
 // Minimal shape needed from a CustomFieldDefinition to build a widget column / resolve its rendering.
@@ -332,4 +347,40 @@ export const getCustomFieldRawValueByFieldName = (
   if (entry.select_values && entry.select_values.length > 0) return [...entry.select_values];
   if (entry.select_value !== null && entry.select_value !== undefined) return entry.select_value;
   return entry.string_value ?? undefined;
+};
+
+// Custom field definitions carried by every given entity type: as in the platform, a relationship type
+// inherits the custom fields attached to stix-core-relationship.
+export const getCustomFieldDefinitionsOfTypes = <T extends { entity_types?: readonly string[] | null }>(
+  definitions: readonly T[],
+  entityTypes: string[],
+  isRelationship: (entityType: string) => boolean,
+): T[] => definitions.filter((definition) => entityTypes.every((entityType) => {
+  const definitionTypes = definition.entity_types ?? [];
+  return definitionTypes.includes(entityType) || (isRelationship(entityType) && definitionTypes.includes('stix-core-relationship'));
+}));
+
+// Types targeted by a background task: the types of the selected rows for a manual selection (a list filtered
+// on an abstract type holds concrete ones), the filtered types or else the list types when everything is selected
+export const getTaskTargetedTypes = (
+  selectAll: boolean,
+  selectedElements: readonly { entity_type?: string }[],
+  filteredTypes: readonly string[],
+  listTypes?: readonly string[] | null,
+): string[] => {
+  if (!selectAll) {
+    return [...new Set(selectedElements.map((element) => element.entity_type).filter((type): type is string => !!type))];
+  }
+  return [...(filteredTypes.length > 0 ? filteredTypes : (listTypes ?? []))];
+};
+
+// Background task values are strings: one per multi_select option, a single one otherwise
+export const customFieldValueToTaskValues = (value: CustomFieldValue): string[] => (Array.isArray(value)
+  ? [...value]
+  : [String(value)].filter((v) => v !== ''));
+
+export const taskValuesToCustomFieldValue = (fieldType: string, values: readonly string[] | undefined): CustomFieldValue => {
+  if (fieldType === 'multi_select') return [...(values ?? [])];
+  if (fieldType === 'boolean') return values?.[0] === 'true';
+  return values?.[0] ?? '';
 };

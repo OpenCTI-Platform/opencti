@@ -1,22 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Grid from '@mui/material/Grid';
 import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
-
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-});
 
 class OpinionDetailsComponent extends Component {
   render() {
@@ -25,7 +15,7 @@ class OpinionDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Entity details')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Opinion')}
               </Label>
@@ -53,7 +43,6 @@ class OpinionDetailsComponent extends Component {
 
 OpinionDetailsComponent.propTypes = {
   opinion: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -72,4 +61,4 @@ const OpinionDetails = createFragmentContainer(OpinionDetailsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(OpinionDetails);
+export default inject18n(OpinionDetails);

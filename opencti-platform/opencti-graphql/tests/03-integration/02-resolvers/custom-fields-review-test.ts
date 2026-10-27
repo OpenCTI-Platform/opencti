@@ -1,7 +1,11 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsUser } from '../../utils/testQueryHelper';
 import { USER_EDITOR } from '../../utils/testQuery';
+import { buildCustomFieldTaskInputs } from '../../../src/modules/customField/custom-field-task';
+import type { BasicStoreEntityCustomFieldDefinition } from '../../../src/modules/customField/custom-field-types';
+import type { EditInput } from '../../../src/generated/graphql';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 
 const CUSTOM_FIELD_ADD = gql`
   mutation CustomFieldsReviewAdd($input: CustomFieldDefinitionAddInput!) {
@@ -110,7 +114,7 @@ const LEVEL = 'x_opencti_cf_review_level';
 const DUE = 'x_opencti_cf_review_due';
 
 const addDefinition = async (input: Record<string, unknown>, entityTypes: { entityType: string; mandatory: boolean }[]) => {
-  const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input } });
+  const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input: { description: `${input.label} description`, ...input } } });
   expect(result.errors).toBeUndefined();
   const { id } = result.data?.customFieldDefinitionAdd ?? {};
   for (const { entityType, mandatory } of entityTypes) {
@@ -130,6 +134,14 @@ const readCaseValues = async (id: string) => {
   const result = await queryAsAdmin({ query: CASE_READ, variables: { id } });
   return result.data?.caseIncident.customFieldValues as Record<string, any>[];
 };
+
+// Managing the custom field definitions is an Enterprise Edition feature
+beforeAll(() => {
+  vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+});
+afterAll(() => {
+  vi.restoreAllMocks();
+});
 
 describe('Custom fields review: relationships, mandatory fields, filters and merge', () => {
   const definitionIds: string[] = [];
@@ -342,6 +354,39 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
       expect(patched.errors).toBeUndefined();
       const values = await readCaseValues(caseId);
       expect(values).toMatchObject([{ field_name: TAGS, select_values: ['a'] }]);
+    });
+  });
+
+  describe('background task edits', () => {
+    // The worker applies the inputs of a background task action in a single edit of each element
+    const noteDefinition = { name: NOTE, field_type: 'string' } as BasicStoreEntityCustomFieldDefinition;
+    const tagsDefinition = { name: TAGS, field_type: 'multi_select' } as BasicStoreEntityCustomFieldDefinition;
+    const applyTask = async (id: string, input: EditInput[]) => {
+      const patched = await queryAsAdmin({ query: SDO_FIELD_PATCH, variables: { id, input } });
+      expect(patched.errors).toBeUndefined();
+      return readCaseValues(id);
+    };
+
+    it('should replace, add and remove values and options on the current values', async () => {
+      const caseId = await createCase('Custom fields review task', [{ field_name: NOTE, value: ['x'] }, { field_name: TAGS, value: ['a', 'b'] }]);
+      caseIds.push(caseId);
+
+      let values = await applyTask(caseId, [
+        ...buildCustomFieldTaskInputs(tagsDefinition, 'REPLACE', ['c']),
+        ...buildCustomFieldTaskInputs(noteDefinition, 'REPLACE', ['y']),
+      ]);
+      expect(values).toHaveLength(2);
+      expect(values.find((v) => v.field_name === TAGS)?.select_values).toEqual(['c']);
+      expect(values.find((v) => v.field_name === NOTE)?.string_value).toEqual('y');
+
+      values = await applyTask(caseId, buildCustomFieldTaskInputs(tagsDefinition, 'ADD', ['a', 'b']));
+      expect(values.find((v) => v.field_name === TAGS)?.select_values).toEqual(['c', 'a', 'b']);
+
+      values = await applyTask(caseId, buildCustomFieldTaskInputs(tagsDefinition, 'REMOVE', ['a']));
+      expect(values.find((v) => v.field_name === TAGS)?.select_values).toEqual(['c', 'b']);
+
+      values = await applyTask(caseId, buildCustomFieldTaskInputs(noteDefinition, 'REMOVE', []));
+      expect(values.map((v) => v.field_name)).toEqual([TAGS]);
     });
   });
 });

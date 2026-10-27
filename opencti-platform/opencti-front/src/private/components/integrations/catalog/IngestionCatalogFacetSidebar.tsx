@@ -236,7 +236,13 @@ const IngestionCatalogFacetSidebar = ({
         {/* No 'Filters' title: the sidebar is self-explanatory, the row only
             appears to host the clear action when a filter is active. */}
         {hasActiveFilters && (
-          <Stack direction="row" alignItems="center" justifyContent="flex-end">
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+            }}
+          >
             <Button
               variant="tertiary"
               size="small"

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { graphql, useFragment } from 'react-relay';
 import { FintelDesign } from '@components/common/form/FintelDesignField';
 import { useFintelTemplateContext } from './FintelTemplateContext';

@@ -5,7 +5,7 @@ import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
-import { patchSync } from '../domain/connector';
+import { isSyncRunning, patchSync } from '../domain/connector';
 import { resolveSyncedWorkflowId } from '../domain/status';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { lockResources } from '../lock/master-lock';
@@ -524,7 +524,8 @@ const initSyncManager = () => {
     const syncs = await topEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
     // region Handle management of existing synchronizer
     for (let index = 0; index < syncs.length; index += 1) {
-      const { id, running } = syncs[index];
+      const { id } = syncs[index];
+      const running = isSyncRunning(syncs[index]);
       const syncInstance = syncManagers.get(id);
       if (syncInstance) {
         // Sync already exist

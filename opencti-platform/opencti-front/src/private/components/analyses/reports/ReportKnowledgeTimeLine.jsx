@@ -1,6 +1,6 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
@@ -40,18 +40,11 @@ export const reportKnowledgeTimeLineQuery = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  container: {
-    width: '100%',
-    height: '100%',
-    overflow: 'auto',
-    paddingBottom: 80,
-  },
-  paper: {
-    padding: 15,
-  },
+const Container = styled('div')({
+  width: '100%',
+  height: '100%',
+  overflow: 'auto',
+  paddingBottom: 80,
 });
 
 const ReportKnowledgeTimeLineComponent = ({
@@ -59,11 +52,10 @@ const ReportKnowledgeTimeLineComponent = ({
   dateAttribute,
   displayRelationships,
 }) => {
-  const classes = useStyles();
   const { fldt, t_i18n } = useFormatter();
   const { edges } = report.objects;
   return (
-    <div id="container" className={classes.container}>
+    <Container id="container">
       <Timeline position="alternate">
         {edges.map((edge) => {
           const { node } = edge;
@@ -77,8 +69,10 @@ const ReportKnowledgeTimeLineComponent = ({
           return (
             <TimelineItem key={node.id}>
               <TimelineOppositeContent
-                sx={{ paddingTop: '18px' }}
-                color="text.secondary"
+                sx={{
+                  color: 'text.secondary',
+                  paddingTop: '18px',
+                }}
               >
                 {fldt(node[dateAttribute])}
                 {displayRelationships && (
@@ -114,7 +108,7 @@ const ReportKnowledgeTimeLineComponent = ({
           );
         })}
       </Timeline>
-    </div>
+    </Container>
   );
 };
 

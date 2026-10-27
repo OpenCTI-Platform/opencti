@@ -20,18 +20,51 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "e2e group0 tests"
-            grep_args: '--grep-invert "@group1|@groupff"'
+          - name: "e2e shard 1/4"
+            grep_args: '--grep-invert @groupff --project=chromium --shard=1/4'
             dev_features: '[]'
-            artifact_suffix: '-group0'
+            artifact_suffix: '-shard-1'
+          - name: "e2e shard 2/4"
+            grep_args: '--grep-invert @groupff --project=chromium --shard=2/4'
+            dev_features: '[]'
+            artifact_suffix: '-shard-2'
+          - name: "e2e shard 3/4"
+            grep_args: '--grep-invert @groupff --project=chromium --shard=3/4'
+            dev_features: '[]'
+            artifact_suffix: '-shard-3'
+          - name: "e2e shard 4/4"
+            grep_args: '--grep-invert @groupff --project=chromium --shard=4/4'
+            dev_features: '[]'
+            artifact_suffix: '-shard-4'
           - name: "e2e ff tests"
-            grep_args: '--grep @groupff'
+            grep_args: '--grep @groupff --project=chromium'
             dev_features: '["*"]'
             artifact_suffix: '-ff'
-          - name: "e2e group1 tests"
-            grep_args: '--grep @group1'
-            dev_features: '[]'
-            artifact_suffix: '-group1'
+          - name: "e2e workflow tests (1/3)"
+            # Dedicated shard for the workflow/form-intake setup chain and everything that depends
+            # on it. Isolated in its own Playwright projects ('workflow e2e (1)'/'(2)'/'(3)', see
+            # playwright.config.ts) so this expensive setup doesn't get forced to re-run in the
+            # other shards too - Playwright always fully runs a project's dependencies regardless
+            # of --grep/--grep-invert filters.
+            # Split across three CI jobs (real, separate runner VMs) rather than raising Playwright's
+            # `workers` count within one job: the backend containers (ES/RabbitMQ/platform/worker)
+            # already consume most of a single runner's CPU, so extra in-VM workers just thrash
+            # instead of parallelizing. Each shard re-pays the ~7.6min setup cost, but then runs its
+            # slice of the specs on its own dedicated CPU budget. Balanced by measured spec duration
+            # (shard 1 carries threatAdvisoryHappyFlow.spec.ts alone since it's the single longest
+            # file and can't be split further).
+            # Temporarily collect all workflow failures while stabilizing this shard.
+            grep_args: '--project="workflow e2e (1)" --max-failures=0'
+            dev_features: '["ACCESS_RESTRICTION_CAN_USE"]'
+            artifact_suffix: '-workflow-1'
+          - name: "e2e workflow tests (2/3)"
+            grep_args: '--project="workflow e2e (2)" --max-failures=0'
+            dev_features: '["ACCESS_RESTRICTION_CAN_USE"]'
+            artifact_suffix: '-workflow-2'
+          - name: "e2e workflow tests (3/3)"
+            grep_args: '--project="workflow e2e (3)" --max-failures=0'
+            dev_features: '["ACCESS_RESTRICTION_CAN_USE"]'
+            artifact_suffix: '-workflow-3'
 
     steps:
       - name: OpenCTI checkout
@@ -187,3 +220,12 @@ jobs:
         continue-on-error: true
         run: cat runner_resource_stat.log
 
+  # Single required check for branch protection: the shard count can change without touching the ruleset.
+  e2e-tests:
+    name: e2e tests
+    runs-on: ubuntu-26.04
+    needs: opencti-frontend-e2e-test
+    if: always()
+    steps:
+      - name: Fail if any e2e matrix job did not succeed
+        run: test "${{ needs.opencti-frontend-e2e-test.result }}" = "success"

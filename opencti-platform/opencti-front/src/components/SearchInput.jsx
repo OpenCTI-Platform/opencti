@@ -4,7 +4,7 @@ import { ManageSearchOutlined, TuneOutlined, KeyboardArrowDownOutlined } from '@
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useNavigate } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Menu from '@mui/material/Menu';

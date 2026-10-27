@@ -83,19 +83,19 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <ObservedDataDetails observedData={observedData} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview stixDomainObject={observedData} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={observedData.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/events/observed_data/${observedData.id}/knowledge`}
@@ -104,7 +104,7 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={observedData.id}
                     />
@@ -112,7 +112,7 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={observedData.id}
                     />
@@ -120,7 +120,7 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={observedData.id}
                     />
@@ -128,7 +128,7 @@ const ObservedData: React.FC<ObservedDataProps> = ({ observedDataData }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={observedData.id}
                       defaultMarkings={observedData.objectMarking ?? []}

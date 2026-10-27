@@ -865,6 +865,18 @@ describe('User has no settings capability and is organization admin query behavi
     }
   `;
 
+  const GROUPS_QUERY = gql`
+    query OrganizationAdminGroups {
+      groups {
+        edges {
+          node {
+            id
+          }
+        }
+      }
+    }
+  `;
+
   const ORGANIZATION_DELETE_QUERY = gql`
         mutation UserOrganizationDeleteMutation(
             $id: ID!
@@ -944,6 +956,10 @@ describe('User has no settings capability and is organization admin query behavi
     const capabilities = editorUserQueryResult.data?.user.capabilities ?? [];
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
+  it('should list no group when its administrated organizations have no grantable group', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    expect(queryResult.data?.groups.edges).toEqual([]);
+  });
   it('should user created', async () => {
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     organizationsIds.push(testOrganizationId);
@@ -979,6 +995,11 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data?.userAdd).not.toBeNull();
     expect(user.data?.userAdd.name).toEqual('User');
     userInternalId = user.data?.userAdd.id;
+  });
+  it('should list only the grantable groups of its administrated organizations', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    const groupsIds = queryResult.data?.groups.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(groupsIds).toEqual([amberGroupId]);
   });
   it('should not create user in an organization the org admin does not administrate', async () => {
     const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
@@ -1520,6 +1541,58 @@ describe('Service account User coverage', async () => {
       const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userId } });
       expect(queryResult.data.user).toBeNull();
     }
+  });
+});
+
+describe('Service account conversion with password policy', () => {
+  let settings: BasicStoreSettings;
+  let serviceAccountId: string;
+  const resetPolicy = {
+    enabled: true,
+    password_policy_max_length: 0,
+    password_policy_min_length: 0,
+    password_policy_min_lowercase: 0,
+    password_policy_min_numbers: 0,
+    password_policy_min_symbols: 0,
+    password_policy_min_uppercase: 0,
+    password_policy_min_words: 0,
+    password_policy_validity_days: 0,
+  };
+
+  beforeAll(async () => {
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    const serviceAccount = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'Service account with policy', user_service_account: true, groups: [], objectOrganization: [] } },
+    });
+    serviceAccountId = serviceAccount.data.userAdd.id;
+    // Password policy set after the service account creation
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      ...resetPolicy,
+      password_policy_min_length: 12,
+      password_policy_min_uppercase: 4,
+      password_policy_min_symbols: 2,
+      password_policy_min_words: 3,
+      password_policy_validity_days: 20,
+    });
+  });
+
+  afterAll(async () => {
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, resetPolicy);
+    await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: serviceAccountId } });
+  });
+
+  it('should turn service account into user with a password matching the policy', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: { id: serviceAccountId, input: { key: 'user_service_account', value: [false] } },
+    });
+    expect(queryResult.data.userEdit.fieldPatch.user_service_account).toEqual(false);
+    const convertedUser: any = await storeLoadById(testContext, ADMIN_USER, serviceAccountId, ENTITY_TYPE_USER);
+    expect(convertedUser.password).toBeDefined();
+    // Password validity policy must apply to the generated password
+    expect(convertedUser.password_valid_until).toBeTruthy();
+    expect(new Date(convertedUser.password_valid_until).getTime()).toBeGreaterThan(DateTime.now().plus({ days: 19 }).toMillis());
   });
 });
 

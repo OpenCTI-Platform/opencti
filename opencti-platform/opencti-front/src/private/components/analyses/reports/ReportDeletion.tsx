@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { Alert, AlertTitle, DialogActions, Stack, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
@@ -91,7 +91,12 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
               variant="outlined"
               style={{ marginTop: 20 }}
             >
-              <Stack spacing={1} pl={1}>
+              <Stack
+                spacing={1}
+                sx={{
+                  pl: 1,
+                }}
+              >
                 <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
 
                 <div>

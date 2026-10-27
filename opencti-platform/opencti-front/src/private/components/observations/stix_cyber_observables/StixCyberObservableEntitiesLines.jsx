@@ -7,8 +7,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import { ListItemButton } from '@mui/material';
@@ -27,32 +26,7 @@ import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles'
 
 const interval$ = interval(TEN_SECONDS);
 
-const styles = (theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  itemHead: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
+const BodyItem = styled('div')(bodyItemStyle);
 
 class StixCyberObservableEntitiesLinesComponent extends Component {
   componentDidMount() {
@@ -72,7 +46,6 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
       fsd,
       paginationOptions,
       data,
-      classes,
       displayRelation,
     } = this.props;
     return (
@@ -135,29 +108,27 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                 )}
               >
                 <ListItemButton
-                  classes={{ root: classes.item }}
+                  sx={{ paddingLeft: '10px', height: 50 }}
                   component={Link}
                   to={link}
                   disabled={restricted}
                 >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ListItemIcon sx={{ color: 'primary.main' }}>
                     <ItemIcon type={node.entity_type} isReversed={isReversed} />
                   </ListItemIcon>
                   <ListItemText
                     primary={(
                       <div>
                         {displayRelation && (
-                          <div
-                            className={classes.bodyItem}
+                          <BodyItem
                             style={{ width: '10%' }}
                           >
                             <ItemEntityType
                               entityType={node.relationship_type}
                             />
-                          </div>
+                          </BodyItem>
                         )}
-                        <div
-                          className={classes.bodyItem}
+                        <BodyItem
                           style={{ width: '10%' }}
                         >
                           <ItemEntityType
@@ -166,9 +137,8 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                             size="large"
                             showIcon
                           />
-                        </div>
-                        <div
-                          className={classes.bodyItem}
+                        </BodyItem>
+                        <BodyItem
                           style={{ width: '22%' }}
                         >
                           { }
@@ -180,33 +150,28 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                               )} ${getMainRepresentative(targetEntity.to)}`
                               : getMainRepresentative(targetEntity)
                             : t('Restricted')}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
+                        </BodyItem>
+                        <BodyItem
                           style={{ width: '12%' }}
                         >
                           {node.createdBy?.name ?? EMPTY_VALUE}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
+                        </BodyItem>
+                        <BodyItem
                           style={{ width: '12%' }}
                         >
                           {(node.creators ?? []).map((c) => c?.name).join(', ')}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
+                        </BodyItem>
+                        <BodyItem
                           style={{ width: '10%' }}
                         >
                           {fsd(node.start_time)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
+                        </BodyItem>
+                        <BodyItem
                           style={{ width: '10%' }}
                         >
                           {fsd(node.stop_time)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
+                        </BodyItem>
+                        <BodyItem
                           style={{ width: '12%' }}
                         >
                           <ItemConfidence
@@ -214,7 +179,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                             entityType={node.entity_type}
                             variant="inList"
                           />
-                        </div>
+                        </BodyItem>
                       </div>
                     )}
                   />
@@ -228,7 +193,6 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
 }
 
 StixCyberObservableEntitiesLinesComponent.propTypes = {
-  classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   entityId: PropTypes.string,
   data: PropTypes.object,
@@ -1106,7 +1070,4 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableEntitiesLines);
+export default inject18n(StixCyberObservableEntitiesLines);

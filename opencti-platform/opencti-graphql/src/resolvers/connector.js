@@ -36,7 +36,7 @@ import { getConnectorQueueSize } from '../modules/connector/connector-rabbitmq';
 import { loadCreator } from '../database/members';
 import { readSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { findIngestionLogsForFeed } from '../modules/ingestion/ingestion-common';
-import { ingestionHealthFieldResolvers } from '../modules/ingestionHealth/ingestionHealth-checks';
+import { ingestionHealthFieldResolvers } from '../modules/ingestionHealth/ingestionHealth-resolvers';
 
 const connectorResolvers = {
   Query: {

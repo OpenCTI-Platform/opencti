@@ -3,7 +3,7 @@ import { last } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { Chip } from '@filigran/design-system';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { ChipOwnProps } from '@mui/material/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';

@@ -6,7 +6,7 @@ import {
   securityCoverageDelete,
   securityCoverageStixBundle,
 } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
-import { createHasCoveredRelTask } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-domain';
+import { createHasCoveredRelTask, editSecurityCoverageResult } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-domain';
 import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
@@ -403,6 +403,31 @@ describe('SecurityCoverage domain', () => {
 
       const task = await findHasCoveredRelTask(results[0].id);
       expect(task.task_ids).toEqual([attackPattern1.standard_id, attackPattern2.standard_id]);
+
+      await cleanup(securityCoverage.id, reportWithTargets, [attackPattern1, attackPattern2, attackPattern3]);
+    });
+
+    it('should update a result and create a background task targeting only selected_ids when called through editSecurityCoverageResult', async () => {
+      const {
+        attackPattern1, attackPattern2, attackPattern3, reportWithTargets,
+      } = await setupReportWithAttackPatterns('SCR edit selected_ids');
+
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        objectCovered: reportWithTargets.standard_id,
+        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a200',
+      });
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+
+      const updated = await editSecurityCoverageResult(testContext, ADMIN_USER, results[0].id, {
+        name: 'SCR edit updated name',
+        add_related_entities: { selected_ids: [attackPattern3.standard_id] },
+      });
+      expect(updated.name).toEqual('SCR edit updated name');
+
+      const task = await findHasCoveredRelTask(results[0].id);
+      expect(task.task_ids).toEqual([attackPattern3.standard_id]);
 
       await cleanup(securityCoverage.id, reportWithTargets, [attackPattern1, attackPattern2, attackPattern3]);
     });

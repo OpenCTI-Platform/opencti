@@ -25,6 +25,7 @@ const config: CodegenConfig = {
           Channel: '../modules/channel/channel-types#BasicStoreEntityChannel',
           Catalog: '../modules/catalog/catalog-types#GraphqlCatalog',
           Connector: '../modules/connector/connector-types#BasicStoreEntityConnector',
+          ConnectorInfo: '../modules/connector/connector-types#ResolvedConnectorInfo',
           ManagedConnector: '../modules/connector/connector-types#BasicStoreEntityConnector',
           ConnectorManager: '../modules/connector/connector-types#BasicStoreEntityConnectorManager',
           Language: '../modules/language/language-types#BasicStoreEntityLanguage',

@@ -56,6 +56,9 @@ import { getBestBackgroundConnectorId, pushBundleToWorker } from '../database/ra
 import { updateProcessedTime } from '../domain/work';
 import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
+import { getCustomFieldDefinitions, isCustomFieldDefinitionOfEntityType } from '../modules/customField/custom-field-cache';
+import { buildCustomFieldTaskInputs } from '../modules/customField/custom-field-task';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
@@ -90,13 +93,16 @@ const findTasksToExecute = async (context) => {
   });
 };
 
+const ruleScanOrder = (taskPosition) => (isEmptyField(taskPosition) ? 'created_at' : 'updated_at');
 export const taskRule = async (context, user, task, callback) => {
   const { task_position, rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
+    // Ordered by an immutable field: applying the rule updates the scanned elements, an updated_at order would list them again.
+    // A legacy task_position is a cursor on the updated_at order, so it keeps that order to resume where it stopped.
+    const options = { baseData: true, orderMode: 'asc', orderBy: ruleScanOrder(task_position), ...buildEntityFilters(scan.types, scan), after: task_position };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
@@ -106,7 +112,7 @@ export const taskRule = async (context, user, task, callback) => {
       filterGroups: [],
     };
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
+    const options = { baseData: true, orderMode: 'asc', orderBy: ruleScanOrder(task_position), filters, after: task_position };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
@@ -130,7 +136,7 @@ export const taskList = async (context, user, task, callback) => {
     includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
-  callback(elements);
+  await callback(elements);
 };
 
 const throwErrorInDraftContext = (context, user, actionType) => {
@@ -156,12 +162,20 @@ const isUnshareAction = (actionType) => {
   return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
 };
 
-export const baseOperationBuilder = (actionType, operations, element) => {
+export const baseOperationBuilder = (actionType, operations, element, customFieldDefinitions = []) => {
   const baseOperationObject = {};
   // Knowledge management
   if (actionType === 'KNOWLEDGE_CHANGE') {
     baseOperationObject.opencti_operation = 'patch';
-    baseOperationObject.opencti_field_patch = operations.map((action) => {
+    baseOperationObject.opencti_field_patch = operations.flatMap((action) => {
+      // Custom fields are edited through custom_field_values, only on the elements whose type carries them
+      if (action.context.field?.startsWith(CUSTOM_FIELD_PREFIX)) {
+        const definition = customFieldDefinitions.find((d) => d.name === action.context.field);
+        if (!definition || !isCustomFieldDefinitionOfEntityType(definition, element.entity_type)) {
+          return [];
+        }
+        return buildCustomFieldTaskInputs(definition, action.type, action.context.values ?? []);
+      }
       let attrKey = action.context.field;
       if (action.context.type === 'RELATION') {
         attrKey = schemaRelationsRefDefinition
@@ -287,7 +301,7 @@ export const sendResultToQueue = async (context, user, task, objects, opts = {})
   }
 };
 
-const buildBundleElement = (element, actionType, operations) => {
+const buildBundleElement = (element, actionType, operations, customFieldDefinitions = []) => {
   const baseObject = {
     id: element.standard_id,
     type: convertTypeToStixType(element.entity_type),
@@ -295,7 +309,7 @@ const buildBundleElement = (element, actionType, operations) => {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
         type: element.entity_type,
-        ...baseOperationBuilder(actionType, operations, element),
+        ...baseOperationBuilder(actionType, operations, element, customFieldDefinitions),
       },
     },
   };
@@ -312,21 +326,33 @@ const buildBundleElement = (element, actionType, operations) => {
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
   let totalProcessed = task.task_processed_number;
-  return async (elements) => {
+  const hasCustomFieldActions = operations.some((action) => action.context?.field?.startsWith(CUSTOM_FIELD_PREFIX));
+  const customFieldDefinitions = hasCustomFieldActions ? await getCustomFieldDefinitions(context, user) : [];
+  let hasQueuedWork = false;
+  const callback = async (elements) => {
     // Build limited stix object to limit memory footprint
     const objects = [];
     for (let index = 0; index < elements.length; index += 1) {
       await doYield();
       const e = elements[index];
-      const object = buildBundleElement(e, actionType, operations);
-      objects.push(object);
+      const object = buildBundleElement(e, actionType, operations, customFieldDefinitions);
+      // An element without any change to apply (e.g. its type does not carry the custom field) is skipped
+      const fieldPatch = object.extensions[STIX_EXT_OCTI].opencti_field_patch;
+      if (!Array.isArray(fieldPatch) || fieldPatch.length > 0) {
+        objects.push(object);
+      }
     }
     // Send actions to queue
-    await sendResultToQueue(context, user, task, objects);
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+      hasQueuedWork = true;
+    }
     // Update task
     totalProcessed += elements.length;
     await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
+  callback.hasQueuedWork = () => hasQueuedWork;
+  return callback;
 };
 
 export const buildContainersElementsBundle = async (context, user, containers, elements, withNeighbours, operationType) => {
@@ -616,7 +642,7 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   return standardOperationCallback(context, user, task, actionType, operations);
 };
 
-const workerTaskHandler = async (context, user, task, actionType, operations) => {
+export const workerTaskHandler = async (context, user, task, actionType, operations) => {
   // Generate the right callback
   const callback = await computeOperationCallback(context, user, task, actionType, operations);
   // Handle queries and list
@@ -634,6 +660,11 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   if (task.type === TASK_TYPE_RULE) {
     // Task rule is enlist step by step
     await taskRule(context, user, task, callback);
+  }
+  // Elements can have nothing to apply (e.g. a custom field their type does not carry): when the whole task sent
+  // nothing to the workers, its work is completed here, otherwise it would stay in progress
+  if (task.work_id && callback.hasQueuedWork?.() === false) {
+    await updateProcessedTime(context, user, task.work_id, 'No change to apply');
   }
   return updateTask(context, task.id, { completed: true });
 };

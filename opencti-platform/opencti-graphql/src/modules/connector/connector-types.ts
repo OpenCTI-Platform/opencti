@@ -5,6 +5,15 @@ import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-
 import type { CatalogContractEntityFields } from '../catalog/catalog-types';
 import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
 
+// A running connector pings regularly: a heartbeat older than this means it is down
+export const CONNECTOR_LIVELINESS_GRACE_PERIOD_MS = 5 * 60 * 1000;
+
+export interface ConnectorInfoError {
+  code: string;
+  message: string;
+  criticity: number;
+}
+
 export interface ConnectorInfo {
   run_and_terminate: boolean;
   buffering: boolean;
@@ -12,6 +21,12 @@ export interface ConnectorInfo {
   queue_messages_size: number;
   next_run_datetime?: Date | string | null;
   last_run_datetime?: Date | string | null;
+  errors?: ConnectorInfoError[] | null;
+}
+
+// Parent of the ConnectorInfo GraphQL type: errors live in redis and are only loaded when requested, by connector id
+export interface ResolvedConnectorInfo extends ConnectorInfo {
+  connector_id: string;
 }
 
 type ConnectorManagerContract = CatalogContractEntityFields;
@@ -27,6 +42,7 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHe
   connector_scope: string;
   connector_state: string;
   connector_state_reset: boolean;
+  connector_state_timestamp?: string;
   connector_trigger_filters: string;
   connector_user_id: string;
   connector_info: ConnectorInfo;
@@ -41,6 +57,8 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHe
   manager_contract_configuration?: ConnectorContractConfiguration[];
   manager_contract?: ConnectorManagerContract;
   manager_upgrade_strategy?: string;
+  manager_current_status?: string;
+  manager_requested_status?: string;
   // endregion
 }
 

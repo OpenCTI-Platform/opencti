@@ -14,7 +14,7 @@ import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
 import FieldOrEmpty from '../FieldOrEmpty';
 import Card from '../common/card/Card';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../Theme';
 
 interface WidgetTimelineProps {
@@ -41,8 +41,10 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
           return (
             <TimelineItem key={`${value.id}-${index}`}>
               <TimelineOppositeContent
-                sx={{ paddingTop: '18px' }}
-                color="text.secondary"
+                sx={{
+                  color: 'text.secondary',
+                  paddingTop: '18px',
+                }}
               >
                 <FieldOrEmpty source={value[dateAttribute]}>
                   {fldt(value[dateAttribute])}

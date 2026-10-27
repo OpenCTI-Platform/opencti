@@ -2,8 +2,7 @@ import React from 'react';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { styled } from '@mui/material/styles';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -14,18 +13,7 @@ import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary?.main,
-  },
-  bodyItem: bodyItemStyle,
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface EntityNode {
   id: string;
@@ -51,44 +39,39 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
   onToggleEntity,
   selectedEntity,
 }) => {
-  const classes = useStyles();
   // Handle both edge.node and direct node structures
   const entity = 'node' in node && node.node ? node.node : node as EntityNode;
   const isSelected = selectedEntity?.id === entity.id;
 
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       onClick={() => onToggleEntity(entity)}
       selected={isSelected}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={entity.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <ItemEntityType entityType={entity.entity_type} />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(entity)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               {entity.createdBy?.name ?? EMPTY_VALUE}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -96,16 +79,15 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
                 labels={entity.objectLabel || []}
                 onClick={onLabelClick}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
                 markingDefinitions={entity.objectMarking ?? []}
                 limit={1}
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

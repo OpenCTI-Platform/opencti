@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import { Theme } from '../../../../components/Theme';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
 
 const StyledDrawer = styled(Drawer)(() => ({
@@ -84,7 +84,12 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
 
     if (entry.isEE) {
       return (
-        <Stack direction="row" alignItems="center">
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <TruncatedText>{translatedLabel}</TruncatedText>
           {/* Small variant: this is a navigation row, not a page heading, and
               the medium chip crowded the label. */}
