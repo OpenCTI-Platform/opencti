@@ -10,9 +10,18 @@ import { storeLoadById } from '../../../src/database/middleware-loader';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { ConnectorType, IngestionHealthStatus } from '../../../src/generated/graphql';
-import { HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_USER_MISSING, HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT } from '../../../src/modules/ingestionHealth/ingestionHealth-registry';
+import {
+  HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+  HEALTH_CHECK_HEARTBEAT_MISSING,
+  HEALTH_CHECK_REGISTRY,
+  HEALTH_CHECK_USER_MISSING,
+  HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
+} from '../../../src/modules/ingestionHealth/ingestionHealth-registry';
 import type { IngestionHealthFields } from '../../../src/modules/ingestionHealth/ingestionHealth-types';
+import type { BasicStoreEntity } from '../../../src/types/store';
 import type { BasicStoreEntityConnector } from '../../../src/modules/connector/connector-types';
+import { addIngestion, ingestionDelete, patchRssIngestion } from '../../../src/modules/ingestion/ingestion-rss-domain';
+import { ENTITY_TYPE_INGESTION_RSS } from '../../../src/modules/ingestion/ingestion-types';
 
 // Scenario: an S3 connector is first registered with a user that does not exist anymore, then with a regular user,
 // member of no organization. Its identity (an Organization) is under restricted access (authorized members): creating it
@@ -157,5 +166,58 @@ describe('Ingestion health manager: connector running as a regular user', () => 
       status: 'success',
       message: `reports \`${CONNECTOR_NAME}\` (${ENTITY_TYPE_CONNECTOR}) as recovered`,
     });
+  });
+});
+
+// Scenario: the heartbeat check is disabled on the platform, a connector pinging continuously runs with a deleted user,
+// and the history of a failing feed cannot be read. The connector depends on no runtime data anymore: it must still be
+// evaluated, only the feed needing the history is skipped until the next period.
+describe('Ingestion health manager: runtime data read failure with the heartbeat check disabled', () => {
+  const CONNECTOR_ID = '5d1a5c3e-8b0f-4f43-9a52-6f3f0c1e2a03';
+  const CONNECTOR_NAME = 'Ingestion health connector without heartbeat check';
+  const DELETED_USER_ID = '5d1a5c3e-8b0f-4f43-9a52-6f3f0c1e2a04';
+  let feedId: string;
+  let readFeedHistorySpy: MockInstance;
+  let resolveSettingsSpy: MockInstance;
+
+  beforeAll(async () => {
+    resolveSettingsSpy = vi.spyOn(ingestionHealthSettings, 'resolveIngestionHealthSettings')
+      .mockReturnValue({ notification_delay: 0, disabled_health_checks: [HEALTH_CHECK_HEARTBEAT_MISSING] });
+    readFeedHistorySpy = vi.spyOn(HEALTH_CHECK_REGISTRY[HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED], 'getRuntimeData')
+      .mockRejectedValue(new Error('Feed history unreachable'));
+    await registerConnector(
+      testContext,
+      ADMIN_USER,
+      { id: CONNECTOR_ID, name: CONNECTOR_NAME, type: ConnectorType.ExternalImport },
+      { connector_user_id: DELETED_USER_ID },
+    );
+    await pingConnector(testContext, ADMIN_USER, CONNECTOR_ID, null, { run_and_terminate: false, buffering: false, queue_threshold: 500, queue_messages_size: 0 });
+    const feed = await addIngestion(testContext, ADMIN_USER, {
+      name: 'Ingestion health failing feed',
+      uri: 'https://example.com/ingestion-health-rss-feed',
+      user_id: ADMIN_USER.id,
+    });
+    feedId = feed.id;
+    await patchRssIngestion(testContext, ADMIN_USER, feedId, { ingestion_running: true, last_execution_status: 'error' });
+  });
+
+  afterAll(async () => {
+    readFeedHistorySpy.mockRestore();
+    resolveSettingsSpy.mockRestore();
+    await connectorDelete(testContext, ADMIN_USER, CONNECTOR_ID);
+    await ingestionDelete(testContext, ADMIN_USER, feedId);
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+  });
+
+  it('should evaluate the connector and skip the failing feed only', async () => {
+    resetCacheForEntity(ENTITY_TYPE_USER);
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    await ingestionHealthHandler({ signal: new AbortController().signal });
+    expect(readFeedHistorySpy).toHaveBeenCalled();
+    const connector = await storeLoadById<BasicStoreEntityConnector & IngestionHealthFields>(testContext, ADMIN_USER, CONNECTOR_ID, ENTITY_TYPE_CONNECTOR);
+    expect(connector.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+    expect(connector.ingestion_health?.health_checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} }]);
+    const feed = await storeLoadById<BasicStoreEntity & IngestionHealthFields>(testContext, ADMIN_USER, feedId, ENTITY_TYPE_INGESTION_RSS);
+    expect(feed.ingestion_health).toBeUndefined();
   });
 });
