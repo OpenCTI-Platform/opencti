@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
 import { useNavigate } from 'react-router';
-import { Card, Chip, Text } from '@filigran/design-system';
+import { Card, CardTitle, Chip, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
@@ -97,7 +97,8 @@ const IntelligenceRequirementCard = ({ node }: { node: IntelligenceRequirementsL
   return (
     <Card onClick={() => navigate(`/dashboard/intelligence_requirements/${ir.id}`)} padding={16} gap={0} style={{ cursor: 'pointer', height: CARD_HEIGHT }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minWidth: 0, gap: 1 }}>
-        <Text as="div" variant="content-base-bold" style={clampStyle(2)}>{ir.name}</Text>
+        {/* The card is clickable through its title: the FDS Card stretches the title's control over the surface */}
+        <CardTitle as="div"><span style={clampStyle(2)}>{ir.name}</span></CardTitle>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
           <Chip label={t_i18n(ir.ir_priority)} severity={PRIORITY_SEVERITY[ir.ir_priority]} />
           <Chip label={t_i18n(ir.ir_status === 'active' ? 'Active' : 'Paused')} />
