@@ -1,8 +1,10 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Chip, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import { DeleteOutlined } from '@mui/icons-material';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -23,6 +25,8 @@ import IntelligenceRequirementsCards, {
 } from './IntelligenceRequirementsCards';
 import IrSparkline from './IrSparkline';
 import IrAiAssistedCreation from './IrAiAssistedCreation';
+import IrDeleteDialog from './IrDeleteDialog';
+import { deleteNode } from '../../../utils/store';
 import type { IntelligenceRequirementsLinesQuery, IntelligenceRequirementsLinesQuery$variables } from './__generated__/IntelligenceRequirementsLinesQuery.graphql';
 import type { IntelligenceRequirements_data$data } from './__generated__/IntelligenceRequirements_data.graphql';
 import type { IntelligenceRequirementsLine_node$data } from './__generated__/IntelligenceRequirementsLine_node.graphql';
@@ -47,6 +51,7 @@ const IntelligenceRequirements = () => {
   const contextFilters = useBuildEntityTypeBasedFilterContext(ENTITY_TYPE, viewStorage.filters);
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as IntelligenceRequirementsLinesQuery$variables;
   const queryRef = useQueryLoading<IntelligenceRequirementsLinesQuery>(intelligenceRequirementsLinesQuery, queryPaginationOptions);
+  const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const createButton = (
     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -120,6 +125,17 @@ const IntelligenceRequirements = () => {
         searchContextFinal={{ entityTypes: [ENTITY_TYPE] }}
         additionalHeaderToggleButtons={viewButtons}
         createButton={createButton}
+        actions={(row: IntelligenceRequirementsLine_node$data) => (
+          <IconButton
+            aria-label={t_i18n('Delete')}
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              setToDelete({ id: row.id, name: row.name });
+            }}
+          >
+            <DeleteOutlined fontSize="small" />
+          </IconButton>
+        )}
       />
     );
   };
@@ -158,6 +174,12 @@ const IntelligenceRequirements = () => {
         <IntelligenceRequirementsStats />
       </Suspense>
       {viewStorage.view === 'cards' ? renderCards() : renderList()}
+      <IrDeleteDialog
+        ir={toDelete}
+        onClose={() => setToDelete(null)}
+        onDeleted={() => {}}
+        updater={(store) => toDelete && deleteNode(store, 'Pagination_intelligenceRequirements', queryPaginationOptions, toDelete.id)}
+      />
     </>
   );
 };
