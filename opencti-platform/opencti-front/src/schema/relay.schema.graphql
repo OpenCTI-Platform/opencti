@@ -9225,6 +9225,7 @@ type Query {
   configPresetExportableTypes: [ConfigPresetExportableType!]!
   configPresetExportableItems(type: ID!, first: Int, after: ID, search: String, ids: [ID!], excludedIds: [ID!]): ConfigPresetExportableItemConnection!
   configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview!
+  configPresetImportSession: ConfigPresetImportSession
 }
 
 type Subscription {
@@ -10202,6 +10203,8 @@ type Mutation {
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
   configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File!
   configPresetImportUpload(file: Upload!): File!
+  configPresetImportSessionSave(file_id: String!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession!
+  configPresetImportSessionClear(delete_file: Boolean): Boolean!
 }
 
 enum WorkflowExecutionStatus {
@@ -17824,6 +17827,67 @@ type ConfigPresetImportPreview {
   generated_at: String!
   types: [ConfigPresetImportType!]!
   ignored: [String!]!
+}
+
+enum ConfigPresetImportSessionStatus {
+  DRAFT
+  APPLYING
+  FINISHED
+}
+
+enum ConfigPresetImportOutcome {
+  COMPLETED
+}
+
+enum ConfigPresetImportSessionEvent {
+  UPLOAD
+  SAVE
+  START_OVER
+  START
+  ITEM_PROCESSED
+  FINISH
+  CLOSE
+}
+
+enum ConfigPresetImportResultStatus {
+  CREATED
+  OVERWRITTEN
+  SKIPPED
+  FAILED
+}
+
+type ConfigPresetImportResult {
+  type: String!
+  key: String!
+  status: ConfigPresetImportResultStatus!
+  reason: String
+}
+
+type ConfigPresetImportCounts {
+  created: Int!
+  overwritten: Int!
+  skipped: Int!
+  failed: Int!
+}
+
+type ConfigPresetImportSessionSelection {
+  type: ID!
+  items: [ID!]
+  excluded_items: [ID!]
+}
+
+type ConfigPresetImportSession {
+  status: ConfigPresetImportSessionStatus!
+  file_id: String!
+  selections: [ConfigPresetImportSessionSelection!]!
+  revision: Int!
+  started_at: DateTime
+  total: Int!
+  results: [ConfigPresetImportResult!]!
+  outcome: ConfigPresetImportOutcome
+  counts: ConfigPresetImportCounts
+  report_id: String
+  available_events: [ConfigPresetImportSessionEvent!]!
 }
 
 input ConfigPresetSelectionInput {

@@ -1,0 +1,89 @@
+import { describe, expect, it } from 'vitest';
+import {
+  type ConfigPresetImportSession,
+  getConfigPresetImportAvailableEvents,
+  transitionConfigPresetImportSession as transition,
+} from '../../../../src/modules/configPreset/configPreset-import-session';
+
+const selections = [{ type: 'messages', items: ['banner'], excluded_items: null }];
+const draft = (overrides: Partial<ConfigPresetImportSession> = {}): ConfigPresetImportSession => ({
+  ...transition(null, 'UPLOAD', { platform_id: 'platform', file_id: 'file-1' })!,
+  ...overrides,
+});
+const applying = () => transition(draft(), 'START', { started_at: '2026-10-27T10:00:00.000Z', total: 2, selections })!;
+const finished = () => transition(applying(), 'FINISH', {
+  outcome: 'COMPLETED',
+  counts: { created: 1, overwritten: 1, skipped: 0, failed: 0 },
+  report_id: 'report',
+})!;
+const refused = (session: ConfigPresetImportSession | null, event: Parameters<typeof transition>[1], payload: never) => {
+  expect(() => transition(session, event, payload)).toThrowError('This action is not available in the current state of the import');
+};
+
+describe('Config preset import session transitions', () => {
+  it('uploads a zip: a draft with an empty selection, from no session, a draft or a finished import', () => {
+    const payload = { platform_id: 'platform', file_id: 'file-2' };
+    [null, draft({ selections, revision: 3 }), finished()].forEach((session) => {
+      expect(transition(session, 'UPLOAD', payload)).toMatchObject({ status: 'DRAFT', file_id: 'file-2', selections: [], revision: 0, results: [], outcome: null });
+    });
+  });
+
+  it('refuses an upload, a save, a start over and a start while applying', () => {
+    refused(applying(), 'UPLOAD', { platform_id: 'platform', file_id: 'f' } as never);
+    refused(applying(), 'SAVE', { file_id: 'file-1', selections, revision: 1 } as never);
+    refused(applying(), 'START_OVER', undefined as never);
+    refused(applying(), 'START', { started_at: 'x', total: 1, selections } as never);
+    refused(applying(), 'CLOSE', undefined as never);
+  });
+
+  it('saves the selection of a draft for its own file only', () => {
+    const saved = transition(draft(), 'SAVE', { file_id: 'file-1', selections, revision: 1 });
+    expect(saved).toMatchObject({ status: 'DRAFT', selections, revision: 1 });
+    expect(() => transition(draft(), 'SAVE', { file_id: 'other-file', selections, revision: 1 })).toThrowError('no longer exists');
+    refused(null, 'SAVE', { file_id: 'file-1', selections, revision: 1 } as never);
+    refused(finished(), 'SAVE', { file_id: 'file-1', selections, revision: 1 } as never);
+  });
+
+  it('ignores a save with a lower revision', () => {
+    const current = draft({ selections, revision: 5 });
+    expect(transition(current, 'SAVE', { file_id: 'file-1', selections: [], revision: 4 })).toBe(current);
+    expect(transition(current, 'SAVE', { file_id: 'file-1', selections: [], revision: 5 })).toMatchObject({ selections: [], revision: 5 });
+  });
+
+  it('starts only from a draft and replaces the selection with the one it is given', () => {
+    const started = transition(draft({ selections: [], revision: 2 }), 'START', { started_at: '2026-10-27T10:00:00.000Z', total: 3, selections })!;
+    expect(started).toMatchObject({ status: 'APPLYING', started_at: '2026-10-27T10:00:00.000Z', total: 3, selections, results: [] });
+    refused(null, 'START', { started_at: 'x', total: 1, selections } as never);
+    refused(finished(), 'START', { started_at: 'x', total: 1, selections } as never);
+  });
+
+  it('adds the result of each processed item while applying only', () => {
+    const result = { type: 'messages', key: 'banner', status: 'OVERWRITTEN' as const, reason: null };
+    const progress = transition(applying(), 'ITEM_PROCESSED', { result })!;
+    expect(progress.results).toEqual([result]);
+    expect(transition(progress, 'ITEM_PROCESSED', { result })!.results).toHaveLength(2);
+    refused(draft(), 'ITEM_PROCESSED', { result } as never);
+  });
+
+  it('finishes with the outcome, the counts and the report, and keeps them', () => {
+    const done = finished();
+    expect(done).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED', report_id: 'report', counts: { created: 1, overwritten: 1, skipped: 0, failed: 0 } });
+    refused(draft(), 'FINISH', { outcome: 'COMPLETED', counts: {}, report_id: null } as never);
+  });
+
+  it('starts over from a draft or a finished import, and closes a finished import only', () => {
+    expect(transition(draft(), 'START_OVER', undefined)).toBeNull();
+    expect(transition(finished(), 'START_OVER', undefined)).toBeNull();
+    expect(transition(finished(), 'CLOSE', undefined)).toBeNull();
+    refused(null, 'START_OVER', undefined as never);
+    refused(draft(), 'CLOSE', undefined as never);
+    refused(null, 'CLOSE', undefined as never);
+  });
+
+  it('lists the events each state accepts', () => {
+    expect(getConfigPresetImportAvailableEvents(null)).toEqual(['UPLOAD']);
+    expect(getConfigPresetImportAvailableEvents(draft())).toEqual(['UPLOAD', 'SAVE', 'START_OVER', 'START']);
+    expect(getConfigPresetImportAvailableEvents(applying())).toEqual(['ITEM_PROCESSED', 'FINISH']);
+    expect(getConfigPresetImportAvailableEvents(finished())).toEqual(['UPLOAD', 'START_OVER', 'CLOSE']);
+  });
+});

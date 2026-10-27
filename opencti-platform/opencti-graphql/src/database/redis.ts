@@ -1114,3 +1114,28 @@ export const redisUserMergeJournalRead = async (mergeId?: string) => {
   return keysFromList(listId, USER_MERGE_JOURNAL_TTL);
 };
 // endregion - user merge journal
+
+// region config preset import session
+// The wizard state of an administrator, one JSON document per user. Not an indexed entity, for the same reason as the user merge journal.
+const CONFIG_PRESET_IMPORT_SESSION_TTL = 30 * 24 * 60 * 60; // 30 days, renewed on every write
+const configPresetImportSessionKey = (userId: string) => `config_preset_import_session_${userId}`;
+
+export const redisSetConfigPresetImportSession = async (userId: string, session: object) => {
+  await getClientBase().set(configPresetImportSessionKey(userId), JSON.stringify(session), 'EX', CONFIG_PRESET_IMPORT_SESSION_TTL);
+};
+
+// The parsed document, null when absent or unreadable: the caller checks its content
+export const redisGetConfigPresetImportSession = async (userId: string): Promise<unknown | null> => {
+  const raw = await getClientBase().get(configPresetImportSessionKey(userId));
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    logApp.warn('[CONFIG PRESET] The import session in Redis could not be parsed', { user_id: userId });
+    return null;
+  }
+};
+
+export const redisDeleteConfigPresetImportSession = async (userId: string) => {
+  await getClientBase().del(configPresetImportSessionKey(userId));
+};
+// endregion - config preset import session

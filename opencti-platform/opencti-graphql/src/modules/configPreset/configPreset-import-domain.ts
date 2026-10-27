@@ -1,16 +1,16 @@
 import crypto from 'node:crypto';
 import { Transform } from 'node:stream';
 import { logApp } from '../../config/conf';
-import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
+import { FunctionalError } from '../../config/errors';
 import { downloadFile } from '../../database/raw-file-storage';
 import { deleteFile, type FileUploadData, loadFile, type LoadedFile, uploadToStorage } from '../../database/file-storage';
-import { BYPASS, isUserHasCapability } from '../../utils/access';
-import { getDraftContext } from '../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { ConfigPresetImportPreview } from '../../generated/graphql';
 import { allFilesForPaths } from '../internal/document/document-domain';
 import { CONFIG_PRESET_IMPORT_PATH } from '../internal/document/document-types';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from './configPreset-registry';
+import { checkConfigPresetImportAccess } from './configPreset-import-utils';
+import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying, getConfigPresetPlatformId } from './configPreset-import-session-domain';
 import { CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, type ConfigPresetItemKey, readConfigPresetBundle, readStreamWithLimit, resolveBundleDependencies } from './configPreset-import-bundle';
 import {
   CONFIG_PRESET_REASON_FILE_MISSING,
@@ -21,16 +21,6 @@ import {
 } from './configPreset-import-types';
 
 const fileMissing = () => FunctionalError('The uploaded file no longer exists', { reason: CONFIG_PRESET_REASON_FILE_MISSING });
-
-// The upload, the preview and the import are BYPASS only and refused in a draft context
-export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUser) => {
-  if (!isUserHasCapability(user, BYPASS)) {
-    throw ForbiddenAccess();
-  }
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot import configuration presets in draft');
-  }
-};
 
 // A transform that fails as soon as more than the limit goes through, so an oversized upload is not stored
 const limitStream = (limit: number) => {
@@ -63,6 +53,8 @@ const deleteOtherUploads = async (context: AuthContext, user: AuthUser, keepId: 
 
 export const configPresetImportUpload = async (context: AuthContext, user: AuthUser, file: Promise<FileUploadData>): Promise<LoadedFile> => {
   checkConfigPresetImportAccess(context, user);
+  // Refused before anything is stored: the deletion of the previous uploads would delete the zip being imported
+  await checkConfigPresetImportNotApplying(context, user);
   const { createReadStream, filename } = await file;
   const { upload } = await uploadToStorage(
     context,
@@ -71,6 +63,12 @@ export const configPresetImportUpload = async (context: AuthContext, user: AuthU
     { createReadStream: () => createReadStream().pipe(limitStream(CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE)), filename },
     { noTriggerImport: true, meta: { description: 'Configuration preset import' } },
   );
+  try {
+    await applyConfigPresetImportEvent(context, user, 'UPLOAD', { platform_id: await getConfigPresetPlatformId(context), file_id: upload.id });
+  } catch (err) {
+    await deleteFile(context, user, upload.id, { forceDelete: true }).catch((deleteErr) => logApp.warn('[CONFIG PRESET] Failed to delete a refused upload', { cause: deleteErr }));
+    throw err;
+  }
   await deleteOtherUploads(context, user, upload.id);
   return upload;
 };

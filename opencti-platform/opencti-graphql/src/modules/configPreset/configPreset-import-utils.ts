@@ -1,5 +1,8 @@
 import { getBaseUrl } from '../../config/conf';
-import type { AuthContext } from '../../types/user';
+import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
+import { BYPASS, isUserHasCapability } from '../../utils/access';
+import { getDraftContext } from '../../utils/draftContext';
+import type { AuthContext, AuthUser } from '../../types/user';
 import type { ConfigPresetImportField } from './configPreset-import-types';
 
 const DATA_URL = /^data:([^;,]+);base64,(.*)$/;
@@ -49,4 +52,14 @@ export const isNothingToImport = (configuration: Record<string, unknown>, keys: 
 
 export const importFailureReason = (error: { issues: { path: PropertyKey[]; message: string }[] }) => {
   return error.issues.map((issue) => `${issue.path.map(String).join('.') || 'configuration'}: ${issue.message}`).join(', ');
+};
+
+// The upload, the preview and the import are BYPASS only and refused in a draft context
+export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUser) => {
+  if (!isUserHasCapability(user, BYPASS)) {
+    throw ForbiddenAccess();
+  }
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot import configuration presets in draft');
+  }
 };

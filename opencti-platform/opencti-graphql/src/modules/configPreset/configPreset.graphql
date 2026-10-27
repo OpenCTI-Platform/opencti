@@ -83,6 +83,70 @@ type ConfigPresetImportPreview {
     ignored: [String!]!
 }
 
+enum ConfigPresetImportSessionStatus {
+    DRAFT
+    APPLYING
+    FINISHED
+}
+
+enum ConfigPresetImportOutcome {
+    COMPLETED
+}
+
+# The events the current state of the session accepts: the wizard enables its buttons from them.
+enum ConfigPresetImportSessionEvent {
+    UPLOAD
+    SAVE
+    START_OVER
+    START
+    ITEM_PROCESSED
+    FINISH
+    CLOSE
+}
+
+enum ConfigPresetImportResultStatus {
+    CREATED
+    OVERWRITTEN
+    SKIPPED
+    FAILED
+}
+
+# The result of one processed item: type is the bare family id, key the bundle id, the pair the preview rows carry.
+type ConfigPresetImportResult {
+    type: String!
+    key: String!
+    status: ConfigPresetImportResultStatus!
+    reason: String
+}
+
+type ConfigPresetImportCounts {
+    created: Int!
+    overwritten: Int!
+    skipped: Int!
+    failed: Int!
+}
+
+type ConfigPresetImportSessionSelection {
+    type: ID!
+    items: [ID!]
+    excluded_items: [ID!]
+}
+
+# The wizard state of the calling administrator: the pending zip, the selection, and the progress and result of the last import.
+type ConfigPresetImportSession {
+    status: ConfigPresetImportSessionStatus!
+    file_id: String!
+    selections: [ConfigPresetImportSessionSelection!]!
+    revision: Int!
+    started_at: DateTime
+    total: Int!
+    results: [ConfigPresetImportResult!]!
+    outcome: ConfigPresetImportOutcome
+    counts: ConfigPresetImportCounts
+    report_id: String
+    available_events: [ConfigPresetImportSessionEvent!]!
+}
+
 extend type Query {
     configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Items of one type, by page; ids, the keys of the items, keeps only those items, excludedIds removes those.
@@ -96,6 +160,8 @@ extend type Query {
     ): ConfigPresetExportableItemConnection! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # What the uploaded zip of the caller holds; reads only, never changes the import session.
     configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # The import session of the caller, null when there is none.
+    configPresetImportSession: ConfigPresetImportSession @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }
 
 input ConfigPresetSelectionInput {
@@ -113,4 +179,8 @@ extend type Mutation {
     configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Stores the zip of a configuration bundle for the caller (one pending upload per user) and returns its file; the preview and the import only take its id.
     configPresetImportUpload(file: Upload!): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Saves the selection of the draft session, for its own file only; a revision lower than the stored one is ignored.
+    configPresetImportSessionSave(file_id: String!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Start over (draft) or Close (finished): deletes the session, and the pending zip with delete_file.
+    configPresetImportSessionClear(delete_file: Boolean): Boolean! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }
