@@ -2,7 +2,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, waitFor } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
-import testRender from '../../../../utils/tests/test-render';
+import testRender from '../../../../../utils/tests/test-render';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
 
 const platformSettings = { key: 'platformSettings', label: 'Platform settings' };

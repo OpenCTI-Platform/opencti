@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
-import useGranted from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
+import useGranted from '../../../../../utils/hooks/useGranted';
+import useHelper from '../../../../../utils/hooks/useHelper';
 import useConfigPresetExportAccess from './useConfigPresetExportAccess';
 
-vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../utils/hooks/useGranted')>()),
+vi.mock('../../../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../utils/hooks/useGranted')>()),
   default: vi.fn(),
 }));
-vi.mock('../../../../utils/hooks/useHelper', () => ({ default: vi.fn() }));
+vi.mock('../../../../../utils/hooks/useHelper', () => ({ default: vi.fn() }));
 
 const mockAccess = (isBypass: boolean, enabledFlags: string[]) => {
   (useGranted as Mock).mockReturnValue(isBypass);

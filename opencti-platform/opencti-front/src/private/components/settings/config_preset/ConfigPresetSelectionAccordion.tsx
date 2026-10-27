@@ -15,7 +15,7 @@ import {
   isSingletonConfigPresetType,
   toggleConfigPresetTypes,
 } from './configPresetSelection';
-import { ConfigPresetItemRow } from './ConfigPresetExportItems';
+import { ConfigPresetItemRow } from './ConfigPresetItemRow';
 
 const toggleKey = (keys: readonly string[], key: string) => (keys.includes(key) ? keys.filter((current) => current !== key) : [...keys, key]);
 

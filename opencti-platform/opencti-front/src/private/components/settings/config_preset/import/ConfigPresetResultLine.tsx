@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Chip, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
 
 export type ConfigPresetResultStatus = 'CREATED' | 'OVERWRITTEN' | 'SKIPPED' | 'FAILED';
 

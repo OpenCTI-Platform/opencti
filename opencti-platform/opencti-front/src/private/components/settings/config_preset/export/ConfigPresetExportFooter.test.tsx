@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
-import testRender from '../../../../utils/tests/test-render';
+import testRender from '../../../../../utils/tests/test-render';
 import ConfigPresetExportFooter from './ConfigPresetExportFooter';
 
 describe('ConfigPresetExportFooter', () => {

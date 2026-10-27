@@ -2,10 +2,10 @@ import React, { FunctionComponent, useCallback, useEffect, useState } from 'reac
 import { fetchQuery, graphql, useRelayEnvironment } from 'react-relay';
 import { Alert, Spinner } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { FIVE_SECONDS } from '../../../../../utils/Time';
 import { ConfigPresetImportWizardApplyMutation } from './__generated__/ConfigPresetImportWizardApplyMutation.graphql';
 import { ConfigPresetImportWizardClearMutation } from './__generated__/ConfigPresetImportWizardClearMutation.graphql';
 import { ConfigPresetImportWizardQuery, ConfigPresetImportWizardQuery$data } from './__generated__/ConfigPresetImportWizardQuery.graphql';
@@ -16,8 +16,8 @@ import ConfigPresetImportInterrupted from './ConfigPresetImportInterrupted';
 import ConfigPresetImportPreview, { ConfigPresetImportPreviewProps } from './ConfigPresetImportPreview';
 import { ConfigPresetImportProgress, ConfigPresetImportResult } from './ConfigPresetImportResult';
 import ConfigPresetImportUpload from './ConfigPresetImportUpload';
-import ConfigPresetWizardStepper from './ConfigPresetWizardStepper';
-import ConfigPresetWizardWelcome from './ConfigPresetWizardWelcome';
+import ConfigPresetWizardStepper from '../ConfigPresetWizardStepper';
+import ConfigPresetWizardWelcome from '../ConfigPresetWizardWelcome';
 
 const configPresetImportWizardQuery = graphql`
   query ConfigPresetImportWizardQuery {

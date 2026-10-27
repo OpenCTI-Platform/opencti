@@ -1,4 +1,4 @@
-import type { ConfigPresetSelection } from './configPresetSelection';
+import type { ConfigPresetSelection } from '../configPresetSelection';
 
 // The selection as the session stores it, by type
 export interface ConfigPresetSessionSelection {

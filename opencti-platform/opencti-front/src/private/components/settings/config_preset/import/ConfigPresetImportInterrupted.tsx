@@ -3,8 +3,8 @@ import { Alert, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 

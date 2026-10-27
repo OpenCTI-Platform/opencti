@@ -4,13 +4,13 @@ import { Alert, Spinner, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { toConfigPresetSelection } from './configPresetImportSelection';
 import {
   addEnterpriseEditionExclusions,
@@ -20,10 +20,10 @@ import {
   withoutEnterpriseEditionItems,
 } from './configPresetImportEnterpriseEdition';
 import { getConfigPresetErrorReason } from './configPresetImportStep';
-import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from './configPresetSelection';
-import { ConfigPresetItemRow } from './ConfigPresetExportItems';
+import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from '../configPresetSelection';
+import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
-import ConfigPresetSelectionAccordion from './ConfigPresetSelectionAccordion';
+import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
 const SAVE_DELAY_MS = 500;

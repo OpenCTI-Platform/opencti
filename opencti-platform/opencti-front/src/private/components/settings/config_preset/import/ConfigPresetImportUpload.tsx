@@ -4,10 +4,10 @@ import { FileUploadOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import VisuallyHiddenInput from '../../../common/VisuallyHiddenInput';
 import { ConfigPresetImportUploadMutation } from './__generated__/ConfigPresetImportUploadMutation.graphql';
 
 const configPresetImportUploadMutation = graphql`

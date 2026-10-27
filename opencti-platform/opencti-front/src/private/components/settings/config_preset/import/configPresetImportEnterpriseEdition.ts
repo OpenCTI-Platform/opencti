@@ -1,4 +1,4 @@
-import type { ConfigPresetSelection } from './configPresetSelection';
+import type { ConfigPresetSelection } from '../configPresetSelection';
 
 interface ImportType {
   readonly key: string;

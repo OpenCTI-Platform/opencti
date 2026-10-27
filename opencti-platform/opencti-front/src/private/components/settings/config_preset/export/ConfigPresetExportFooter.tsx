@@ -3,10 +3,10 @@ import { FileDownloadOutlined, FileUploadOutlined } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
-import ConfigPresetWizard from './ConfigPresetWizard';
+import ConfigPresetWizard from '../ConfigPresetWizard';
 
 interface ConfigPresetExportFooterProps {
   // The card's own footer actions, kept above the export button

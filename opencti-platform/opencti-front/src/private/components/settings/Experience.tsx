@@ -36,8 +36,8 @@ import ExperienceCard, { ExperienceHeadline } from './experience/ExperienceCard'
 import ExperienceDetailRow from './experience/ExperienceDetailRow';
 import ExperienceFeatureTile from './experience/ExperienceFeatureTile';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
-import ConfigPresetExportFooter from './config_preset/ConfigPresetExportFooter';
-import useConfigPresetExportAccess from './config_preset/useConfigPresetExportAccess';
+import ConfigPresetExportFooter from './config_preset/export/ConfigPresetExportFooter';
+import useConfigPresetExportAccess from './config_preset/export/useConfigPresetExportAccess';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 export enum CGUStatus {

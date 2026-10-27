@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
-import testRender from '../../../../utils/tests/test-render';
+import testRender from '../../../../../utils/tests/test-render';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 
 describe('ConfigPresetResultLine', () => {

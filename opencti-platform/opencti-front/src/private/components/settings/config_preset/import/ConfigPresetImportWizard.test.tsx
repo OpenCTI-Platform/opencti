@@ -2,7 +2,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
-import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import ConfigPresetImportWizard from './ConfigPresetImportWizard';
 
 // The license dialogs are Relay-bound and irrelevant to what these tests assert

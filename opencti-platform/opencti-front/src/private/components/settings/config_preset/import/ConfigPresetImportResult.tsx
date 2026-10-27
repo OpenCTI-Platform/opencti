@@ -3,9 +3,9 @@ import { DownloadOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Spinner, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
+import { APP_BASE_PATH } from '../../../../../relay/environment';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 

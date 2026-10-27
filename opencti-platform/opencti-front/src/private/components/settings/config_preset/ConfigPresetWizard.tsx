@@ -5,7 +5,7 @@ import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import ConfigPresetImportWizard from './ConfigPresetImportWizard';
+import ConfigPresetImportWizard from './import/ConfigPresetImportWizard';
 
 const configPresetWizardSkipMutation = graphql`
   mutation ConfigPresetWizardSkipMutation($input: [EditInput]!) {
