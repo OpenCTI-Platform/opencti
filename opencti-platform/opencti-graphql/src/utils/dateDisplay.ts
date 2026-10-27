@@ -13,6 +13,8 @@ const checkSingleValue = (input: EditInput | undefined, allowedValues: string[],
  * Rejects a date or time format the tables cannot display, for the platform settings or a user.
  */
 export const checkDateDisplayInput = (inputs: EditInput[], dateFormatKey: string, timeFormatKey: string) => {
-  checkSingleValue(inputs.find(({ key }) => key === dateFormatKey), Object.values(DateFormat), 'Unsupported date format');
-  checkSingleValue(inputs.find(({ key }) => key === timeFormatKey), Object.values(TimeFormat), 'Unsupported time format');
+  for (const input of inputs) {
+    if (input.key === dateFormatKey) checkSingleValue(input, Object.values(DateFormat), 'Unsupported date format');
+    if (input.key === timeFormatKey) checkSingleValue(input, Object.values(TimeFormat), 'Unsupported time format');
+  }
 };
