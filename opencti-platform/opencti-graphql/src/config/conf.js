@@ -325,8 +325,8 @@ export const logS3Debug = {
 };
 
 export const logMigration = {
-  info: (message) => migrationLogger.log('info', message),
-  error: (message) => migrationLogger.log('error', message),
+  info: (message) => migrationLogger.log('info', message, { version: PLATFORM_VERSION }),
+  error: (message) => migrationLogger.log('error', message, { version: PLATFORM_VERSION }),
 };
 
 export const logApp = {
