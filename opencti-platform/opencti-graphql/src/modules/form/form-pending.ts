@@ -1,7 +1,12 @@
 import { FunctionalError } from '../../config/errors';
 import { internalLoadById } from '../../database/middleware-loader';
-import { ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET, DEFAULT_MAX_EMBEDDED_IMAGE_SIZE_BYTES, DEFAULT_MAX_TOTAL_EMBEDDED_IMAGE_SIZE_BYTES } from '../../database/markdown-embedded-images';
-import { collectTempImageTokensFromDescriptionFields, rewriteTempImageTokensInDescriptions } from '../../database/middlewareEmbeddedImages';
+import {
+  ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
+  DEFAULT_MAX_EMBEDDED_IMAGE_SIZE_BYTES,
+  DEFAULT_MAX_TOTAL_EMBEDDED_IMAGE_SIZE_BYTES,
+  MARKDOWN_FIELD_KEYS,
+  rewriteMarkdownImageUrls,
+} from '../../database/markdown-embedded-images';
 import { INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_PARTICIPANT } from '../../schema/general';
 import { ENTITY_TYPE_USER } from '../user/user-types';
 import { isNotEmptyField } from '../../database/utils';
@@ -100,7 +105,7 @@ const EXISTING_ONLY_INPUT_REFS = [INPUT_ASSIGNEE, INPUT_PARTICIPANT] as const;
 const UNSUPPORTED_INPUT_FIELDS = ['objects', 'caseTemplates', 'content_mapping', 'authorized_members', 'restricted_members', 'customFieldValues', INPUT_GRANTED_REFS];
 
 // URL of an image pasted in a markdown editor, before its upload (see the markdown field of the frontend)
-const TEMP_IMAGE_SCHEME = 'opencti-image://temp/';
+const TEMP_IMAGE_URL_REGEX = /^opencti-image:\/\/temp\/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/;
 
 const isRootKey = (key: string) => key === 'mainEntityLookupPending' || key.endsWith('_lookup_pending');
 
@@ -217,10 +222,36 @@ const buildPendingAttributes = (pending: PendingObject): Record<string, any> => 
   return entity;
 };
 
-// The shared collector takes the uuid of any image URL: only the temp images pasted in the editor are uploaded with the form
-const getTempImageTokens = (payload: unknown): string[] => {
-  const markdown = JSON.stringify(payload);
-  return collectTempImageTokensFromDescriptionFields(payload).filter((token) => markdown.includes(`${TEMP_IMAGE_SCHEME}${token}`));
+/**
+ * Calls `visit` on each image pasted in the editor (`opencti-image://temp/<uuid>`) of the description fields, in order, and
+ * writes the URL it returns in its place. The shared helpers take the uuid of any image URL: only these images are uploaded
+ * with the form, so counting and rewriting the same places keeps the bundle within the upload caps.
+ */
+const forEachTempImage = (node: unknown, visit: (token: string) => string | undefined): void => {
+  if (Array.isArray(node)) {
+    node.forEach((item) => forEachTempImage(item, visit));
+    return;
+  }
+  if (!isObject(node)) return;
+  MARKDOWN_FIELD_KEYS.forEach((key) => {
+    if (typeof node[key] !== 'string') return;
+    const { markdown, replacedCount } = rewriteMarkdownImageUrls(node[key], ({ url }) => {
+      const token = TEMP_IMAGE_URL_REGEX.exec(url)?.[1];
+      return token ? visit(token) : undefined;
+    });
+    if (replacedCount > 0) node[key] = markdown;
+  });
+  Object.values(node).forEach((value) => forEachTempImage(value, visit));
+};
+
+// The tokens of the pasted images, in order of first appearance, with the number of places each one is shown at
+const getTempImages = (payload: unknown): Map<string, number> => {
+  const places = new Map<string, number>();
+  forEachTempImage(payload, (token) => {
+    places.set(token, (places.get(token) ?? 0) + 1);
+    return undefined;
+  });
+  return places;
 };
 
 /**
@@ -229,7 +260,7 @@ const getTempImageTokens = (payload: unknown): string[] => {
  * description fields by data URIs: the import turns them into embedded files like the creation mutations do,
  * with the same mime type and size limits.
  * Ordering contract: the embedded files are given in the order of the first appearance of their token in the
- * description fields (the order of collectTempImageTokensFromDescriptionFields, a token used twice counts once),
+ * description fields (see forEachTempImage, a token used twice counts once),
  * and there must be exactly one per token. The mime type checked is the one of the upload, not the one the client declares.
  */
 const applyPendingFiles = (entity: Record<string, any>, files: PendingFile[] | undefined, uploads: PendingUpload[]) => {
@@ -246,7 +277,7 @@ const applyPendingFiles = (entity: Record<string, any>, files: PendingFile[] | u
   const regular = resolved.filter((file) => !file.embedded).map(({ name, data, mime_type }) => ({ name, data, mime_type }));
   if (regular.length > 0) entity.x_opencti_files = regular;
   const images = resolved.filter((file) => file.embedded);
-  const tokens = getTempImageTokens(entity);
+  const tokens = [...getTempImages(entity).keys()];
   if (images.length !== tokens.length) {
     throw FunctionalError('The embedded images do not match the image references of the description', { images: images.length, references: tokens.length });
   }
@@ -264,7 +295,7 @@ const applyPendingFiles = (entity: Record<string, any>, files: PendingFile[] | u
     }
     tokenToUri.set(tokens[index], `data:${image.uploadMimeType};base64,${image.data}`);
   });
-  rewriteTempImageTokensInDescriptions(entity, tokenToUri);
+  forEachTempImage(entity, (token) => tokenToUri.get(token));
 };
 
 // A pooled external reference: its attributes, its files and the markdown images of its description.
@@ -303,15 +334,14 @@ export const getPendingUploadCopies = (values: Record<string, any>): Map<number,
   const copies = new Map<number, number>();
   const add = (object: PendingObject, count: number) => {
     if (count === 0) return;
-    const markdown = JSON.stringify(object.input);
-    const tokens = getTempImageTokens(object.input);
+    const images = getTempImages(object.input);
+    const tokens = [...images.keys()];
     let image = 0;
     (object.files ?? []).forEach((file) => {
       let places = 1;
       if (file.embedded === true) {
-        const token = tokens[image];
+        places = images.get(tokens[image]) ?? 1;
         image += 1;
-        if (token) places = Math.max(1, markdown.split(`${TEMP_IMAGE_SCHEME}${token}`).length - 1);
       }
       copies.set(file.uploadIndex, (copies.get(file.uploadIndex) ?? 0) + count * places);
     });

@@ -733,6 +733,14 @@ describe('files of pending objects', () => {
     expect(entity.description).toBe(`${external} ![pasted](data:image/png;base64,cA==)`);
   });
 
+  it('should only write a pasted image where it is counted, not in the other image URLs holding its uuid', async () => {
+    const others = `![x](https://example.com/${TOKEN_A}) ![y](https://example.com/${TOKEN_A}.png)`;
+    const root = malware({ input: { name: 'M', description: `![pasted](opencti-image://temp/${TOKEN_A}) ${others}` }, files: [image(0)] });
+    expect(getPendingUploadCopies({ mainEntityLookupPending: [root] })).toEqual(new Map([[0, 1]]));
+    const [entity] = await materializePendingRoots(context, user, [root], {}, [png('cA==')]) as any[];
+    expect(entity.description).toBe(`![pasted](data:image/png;base64,cA==) ${others}`);
+  });
+
   it('should count a pasted image once per place it is shown in the descriptions', () => {
     const twice = `![a](opencti-image://temp/${TOKEN_A}) ![again](opencti-image://temp/${TOKEN_A}) ![b](opencti-image://temp/${TOKEN_B})`;
     const root = malware({ input: { name: 'M', description: `${twice} ![a](opencti-image://temp/${TOKEN_A})` }, files: [image(0), image(1)] });
