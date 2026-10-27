@@ -11,6 +11,7 @@ import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConne
 import { publishUserAction } from '../../listener/UserActionListener';
 import { logApp } from '../../config/conf';
 import { pushBundleToWorker } from '../../database/rabbitmq';
+import { redisDeleteWorks } from '../../database/redis';
 import { createWork, updateProcessedTime } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, type DraftWorkspaceAddInput, FilterMode, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
@@ -578,10 +579,17 @@ export interface SubmissionResult {
   entityId: string | undefined;
 }
 
-// Best effort: the submission failed before the worker got the bundle, so nothing will ever import into this draft.
-// The work is closed in error (as a connector does when it fails) and the draft created for this submission is deleted.
+// Best effort: the submission failed, nothing must be imported for it. The push may still have reached the queue
+// (a broker error after it accepted the message): the live state of the work is deleted first, so the worker skips such
+// a bundle (WORK_NOT_ALIVE) and its binding to the applicant and the draft can no longer be used. Then the work is closed
+// in error (as a connector does when it fails) and the draft created for this submission is deleted.
 const rollbackFailedSubmission = async (context: AuthContext, draftId: string | null, workId: string | undefined) => {
   if (workId) {
+    try {
+      await redisDeleteWorks([workId]);
+    } catch (cleanupError) {
+      logApp.error('[FORM] Cannot end the work of a failed submission', { workId, cause: cleanupError });
+    }
     try {
       await updateProcessedTime(context, SYSTEM_USER, workId, 'Form submission failed before the bundle was sent to the worker', true);
     } catch (cleanupError) {

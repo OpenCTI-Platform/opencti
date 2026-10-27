@@ -3,6 +3,7 @@ import { formSubmit } from '../../../src/modules/form/form-domain';
 import * as draftWorkspaceDomain from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import * as workDomain from '../../../src/domain/work';
 import * as rabbitmq from '../../../src/database/rabbitmq';
+import * as redis from '../../../src/database/redis';
 import { BYPASS, SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
@@ -32,6 +33,10 @@ vi.mock('../../../src/domain/work');
 vi.mock('../../../src/database/rabbitmq', () => ({
   pushBundleToWorker: vi.fn(),
   pushToConnector: vi.fn(),
+}));
+vi.mock('../../../src/database/redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/redis')>()),
+  redisDeleteWorks: vi.fn(),
 }));
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addFormIntakeSubmittedCount: vi.fn().mockResolvedValue(undefined),
@@ -843,6 +848,13 @@ describe('formSubmit - failure after the draft is created', () => {
     expect(draftWorkspaceDomain.deleteDraftWorkspace).toHaveBeenCalledWith(expect.anything(), SYSTEM_USER, 'draft-1');
   });
 
+  it('should end the live state of the work first, so a bundle that still reached the queue is skipped', async () => {
+    vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValue(new Error('queue failure after the broker accepted it'));
+    await expect(submit(false)).rejects.toThrow('Failed to process form submission');
+    expect(redis.redisDeleteWorks).toHaveBeenCalledWith(['work-1']);
+    expect(vi.mocked(redis.redisDeleteWorks).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(workDomain.updateProcessedTime).mock.invocationCallOrder[0]);
+  });
+
   it('should rethrow the original error as the cause', async () => {
     const failure = new Error('queue failure');
     vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValue(failure);
@@ -867,6 +879,7 @@ describe('formSubmit - failure after the draft is created', () => {
 
   it('should still report the submission error when the cleanup fails too', async () => {
     vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValue(new Error('queue failure'));
+    vi.mocked(redis.redisDeleteWorks).mockRejectedValue(new Error('redis cleanup failure'));
     vi.mocked(workDomain.updateProcessedTime).mockRejectedValue(new Error('work cleanup failure'));
     vi.mocked(draftWorkspaceDomain.deleteDraftWorkspace).mockRejectedValue(new Error('draft cleanup failure'));
     await expect(submit(true)).rejects.toThrow('Failed to process form submission');
@@ -877,5 +890,6 @@ describe('formSubmit - failure after the draft is created', () => {
     await expect(submit(true)).resolves.toMatchObject({ success: true, entityId: 'draft-1' });
     expect(draftWorkspaceDomain.deleteDraftWorkspace).not.toHaveBeenCalled();
     expect(workDomain.updateProcessedTime).not.toHaveBeenCalled();
+    expect(redis.redisDeleteWorks).not.toHaveBeenCalled();
   });
 });
