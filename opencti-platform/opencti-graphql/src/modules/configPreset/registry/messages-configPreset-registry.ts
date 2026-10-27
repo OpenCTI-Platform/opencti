@@ -39,7 +39,7 @@ const messagesImporter: ConfigPresetImporter = {
       return { ...base, status: 'failed', reason: importFailureReason(parsed.error), fields: [] };
     }
     const keys = CONFIG_PRESET_MESSAGES_FIELDS[messageId];
-    const fields = buildImportFields(context, parsed.data, keys);
+    const fields = buildImportFields(parsed.data, keys);
     // A message or a field that is absent or null in the bundle is left untouched
     if (isNothingToImport(parsed.data, keys)) {
       return { ...base, status: 'skipped', reason: 'Nothing to import', fields };

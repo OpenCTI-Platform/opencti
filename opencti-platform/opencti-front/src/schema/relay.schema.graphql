@@ -17804,7 +17804,6 @@ type ConfigPresetExportableType {
 type ConfigPresetImportField {
   key: String!
   value: String
-  external_host: Boolean!
 }
 
 type ConfigPresetImportItem {

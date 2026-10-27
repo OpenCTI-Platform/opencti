@@ -41,7 +41,7 @@ const platformImporter: ConfigPresetImporter = {
       return { ...base, status: 'failed', reason: importFailureReason(parsed.error), fields: [] };
     }
     const configuration = parsed.data;
-    const fields = buildImportFields(context, configuration, PLATFORM_IMPORT_KEYS, ['platform_favicon']);
+    const fields = buildImportFields(configuration, PLATFORM_IMPORT_KEYS);
     const defaultTheme = configuration.default_theme;
     if (isNothingToImport(configuration, PLATFORM_VALUE_KEYS) && !defaultTheme) {
       return { ...base, status: 'skipped', reason: 'Nothing to import', fields };

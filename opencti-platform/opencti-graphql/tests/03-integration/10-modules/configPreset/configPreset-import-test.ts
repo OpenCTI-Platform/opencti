@@ -32,7 +32,7 @@ const PREVIEW_QUERY = gql`
           translatable
           isDefault
           exists
-          fields { key value external_host }
+          fields { key value }
           dependsOn { type key }
         }
       }
@@ -79,8 +79,8 @@ describe('Config preset import: upload and preview', () => {
     const platform = result.types[0].items[0];
     expect(platform).toMatchObject({ key: 'platform', exists: true, dependsOn: [{ type: 'branding', key: CUSTOM_THEME_ID }] });
     expect(platform.fields).toEqual([
-      { key: 'platform_title', value: 'Imported title', external_host: false },
-      { key: 'platform_favicon', value: 'https://example.com/favicon.ico', external_host: true },
+      { key: 'platform_title', value: 'Imported title' },
+      { key: 'platform_favicon', value: 'https://example.com/favicon.ico' },
     ]);
     const [whitemark, theme] = result.types[1].items.sort((a: { key: string }) => (a.key === 'whitemark' ? -1 : 1));
     expect(whitemark).toMatchObject({ key: 'whitemark', exists: true, translatable: true });

@@ -93,7 +93,7 @@ const brandingImporter: ConfigPresetImporter = {
     if (!parsed.success) {
       return { ...base, exists: false, status: 'failed', reason: importFailureReason(parsed.error), fields: [] };
     }
-    const fields = buildImportFields(context, parsed.data, THEME_URL_KEYS, THEME_URL_KEYS);
+    const fields = buildImportFields(parsed.data, THEME_URL_KEYS);
     const existing = await findThemeById(context, user, item.id);
     if (existing) {
       return { ...base, exists: true, status: 'overwritten', fields };

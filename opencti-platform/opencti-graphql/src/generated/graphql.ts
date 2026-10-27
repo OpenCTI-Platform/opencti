@@ -4629,7 +4629,6 @@ export type ConfigPresetImportCounts = {
 
 export type ConfigPresetImportField = {
   __typename?: 'ConfigPresetImportField';
-  external_host: Scalars['Boolean']['output'];
   key: Scalars['String']['output'];
   value?: Maybe<Scalars['String']['output']>;
 };
@@ -44890,7 +44889,6 @@ export type ConfigPresetImportCountsResolvers<ContextType = any, ParentType exte
 }>;
 
 export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportField'] = ResolversParentTypes['ConfigPresetImportField']> = ResolversObject<{
-  external_host?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;

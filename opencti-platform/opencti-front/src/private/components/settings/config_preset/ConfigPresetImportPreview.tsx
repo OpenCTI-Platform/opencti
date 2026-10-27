@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { fetchQuery, graphql, useRelayEnvironment } from 'react-relay';
-import { Alert, Chip, Spinner, Text } from '@filigran/design-system';
+import { Alert, Spinner, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -53,7 +53,6 @@ const configPresetImportPreviewQuery = graphql`
           fields {
             key
             value
-            external_host
           }
           dependsOn {
             type
@@ -325,10 +324,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                 {item.exists ? t_i18n('Already exists, will be overwritten') : t_i18n('New')}
               </Text>
               {item.fields.map((field) => (
-                <div key={field.key} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-                  <Text variant="content-compact">{`${field.key}: ${field.value ?? t_i18n('Untouched')}`}</Text>
-                  {field.external_host && <Chip label={t_i18n('External host')} severity="medium" />}
-                </div>
+                <Text key={field.key} variant="content-compact">{`${field.key}: ${field.value ?? t_i18n('Untouched')}`}</Text>
               ))}
             </div>
           </div>

@@ -1,4 +1,3 @@
-import { getBaseUrl } from '../../config/conf';
 import { getSettingsFromDatabase } from '../../domain/settings';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { BYPASS, isUserHasCapability } from '../../utils/access';
@@ -18,32 +17,11 @@ const describeValue = (value: string) => {
   return `${match[1]} (${Math.max(1, Math.round(bytes / 1024))} KB)`;
 };
 
-const platformHost = (context: AuthContext) => {
-  try {
-    return new URL(getBaseUrl(context.req)).host;
-  } catch {
-    return null;
-  }
-};
-
-const isExternalHost = (value: string, host: string | null) => {
-  try {
-    const url = new URL(value);
-    return (url.protocol === 'http:' || url.protocol === 'https:') && url.host !== host;
-  } catch {
-    return false;
-  }
-};
-
-// The fields of an item shown in the preview, in the order of the keys; urlKeys are the ones that hold a URL or an image
-export const buildImportFields = (context: AuthContext, configuration: Record<string, unknown>, keys: string[], urlKeys: string[] = []): ConfigPresetImportField[] => {
-  const host = platformHost(context);
+// The fields of an item shown in the preview, in the order of the keys
+export const buildImportFields = (configuration: Record<string, unknown>, keys: string[]): ConfigPresetImportField[] => {
   return keys.map((key) => {
     const value = configuration[key];
-    if (typeof value !== 'string') {
-      return { key, value: null, external_host: false };
-    }
-    return { key, value: describeValue(value), external_host: urlKeys.includes(key) && isExternalHost(value, host) };
+    return { key, value: typeof value === 'string' ? describeValue(value) : null };
   });
 };
 

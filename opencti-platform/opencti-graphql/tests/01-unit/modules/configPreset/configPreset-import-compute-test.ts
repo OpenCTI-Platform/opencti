@@ -33,8 +33,8 @@ describe('Messages import (compute)', () => {
     const result = await compute('messages', 'banner', { platform_banner_text: 'Hello', platform_banner_level: null });
     expect(result).toMatchObject({ status: 'overwritten', exists: true });
     expect(result.fields).toEqual([
-      { key: 'platform_banner_text', value: 'Hello', external_host: false },
-      { key: 'platform_banner_level', value: null, external_host: false },
+      { key: 'platform_banner_text', value: 'Hello' },
+      { key: 'platform_banner_level', value: null },
     ]);
   });
 
@@ -58,8 +58,8 @@ describe('Platform import (compute)', () => {
     const result = await compute('platform', 'platform', platform({ platform_favicon: 'https://example.com/favicon.ico' }));
     expect(result.status).toEqual('overwritten');
     expect(result.fields).toEqual([
-      { key: 'platform_title', value: 'Title', external_host: false },
-      { key: 'platform_favicon', value: 'https://example.com/favicon.ico', external_host: true },
+      { key: 'platform_title', value: 'Title' },
+      { key: 'platform_favicon', value: 'https://example.com/favicon.ico' },
     ]);
   });
 
@@ -121,12 +121,12 @@ describe('Branding import (compute)', () => {
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_logo: 'http://example.com/a.png' }))).toMatchObject({ status: 'failed' });
   });
 
-  it('previews the URL and image fields only, flags an external host and shows a data image as type and size', async () => {
+  it('previews the URL and image fields only and shows a data image as type and size', async () => {
     const dataImage = `data:image/png;base64,${'A'.repeat(2048)}`;
     const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_logo_collapsed: dataImage }));
     expect(result.fields.map(({ key }) => key)).toEqual(['theme_logo', 'theme_logo_collapsed', 'theme_logo_login', 'theme_login_aside_image']);
-    expect(result.fields[0]).toEqual({ key: 'theme_logo', value: 'https://example.com/logo.png', external_host: true });
-    expect(result.fields[1]).toEqual({ key: 'theme_logo_collapsed', value: 'image/png (2 KB)', external_host: false });
+    expect(result.fields[0]).toEqual({ key: 'theme_logo', value: 'https://example.com/logo.png' });
+    expect(result.fields[1]).toEqual({ key: 'theme_logo_collapsed', value: 'image/png (2 KB)' });
     expect(result.fields[2].value).toBeNull();
   });
 

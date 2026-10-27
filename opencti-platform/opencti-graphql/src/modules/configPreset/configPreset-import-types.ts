@@ -7,11 +7,10 @@ export const CONFIG_PRESET_REASON_BUNDLE_REFUSED = 'bundle_refused';
 
 export type ConfigPresetImportStatus = 'created' | 'overwritten' | 'skipped' | 'failed';
 
-// A value the import would write; null means untouched. external_host: a URL whose host is not the platform's.
+// A value the import would write; null means untouched
 export interface ConfigPresetImportField {
   key: string;
   value: string | null;
-  external_host: boolean;
 }
 
 // An item of the bundle, found by its type (the bare family id) and its bundle id

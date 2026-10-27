@@ -11,7 +11,7 @@ vi.mock('@components/common/entreprise_edition/EnterpriseEditionAgreement', () =
 
 type Rendered = ReturnType<typeof testRender>;
 
-const field = (key: string, value: string | null, external_host = false) => ({ key, value, external_host });
+const field = (key: string, value: string | null) => ({ key, value });
 const platformSettings = { key: 'platformSettings', label: 'Platform settings' };
 const previewItem = (key: string, label: string, overrides: Record<string, unknown> = {}) => ({
   key,
@@ -33,7 +33,7 @@ const preview = {
   types: [
     previewType('platform', 'Platform configuration', [
       previewItem('platform', 'Platform configuration', {
-        fields: [field('platform_title', 'Imported title'), field('platform_favicon', 'https://example.com/favicon.ico', true), field('platform_language', null)],
+        fields: [field('platform_title', 'Imported title'), field('platform_favicon', 'https://example.com/favicon.ico'), field('platform_language', null)],
         dependsOn: [{ type: 'branding', key: 'theme--1' }],
       }),
     ]),
@@ -132,12 +132,11 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
     });
 
-    it('shows what each item would write: a null value untouched, an external host flagged, and whether it exists', async () => {
+    it('shows what each item would write: a null value untouched, and whether it exists', async () => {
       await renderPreview();
       const platform = screen.getByTestId('config-preset-import-item-platform-platform');
       expect(platform).toHaveTextContent('platform_title: Imported title');
       expect(platform).toHaveTextContent('platform_language: Untouched');
-      expect(platform).toHaveTextContent('External host');
       expect(platform).toHaveTextContent('Already exists, will be overwritten');
       expect(screen.getByTestId('config-preset-import-item-branding-theme--1')).toHaveTextContent('New');
     });

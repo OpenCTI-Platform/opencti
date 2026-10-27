@@ -46,11 +46,10 @@ type ConfigPresetExportableType {
     itemsPageInfo: PageInfo!
 }
 
-# A value the import would write; a null value is left untouched. external_host: a URL whose host is not the platform's.
+# A value the import would write; a null value is left untouched.
 type ConfigPresetImportField {
     key: String!
     value: String
-    external_host: Boolean!
 }
 
 # An item of an uploaded bundle: type is the bare family id, key the bundle id (the pair the results of the import carry).
