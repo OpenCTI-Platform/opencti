@@ -1,5 +1,5 @@
 import Grid from '@mui/material/Grid';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { assoc, head, last, map, pluck } from 'ramda';
 import React, { Suspense, useMemo } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
@@ -24,18 +24,6 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import XtmHubPermissionRequiredDialog from './settings/xtm-hub/XtmHubPermissionRequiredDialog';
-
-// region styles
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  root: {
-    marginRight: -20,
-    paddingRight: 20,
-    paddingBottom: 30,
-  },
-}));
-// endregion
 
 // region inner components
 
@@ -561,7 +549,6 @@ const dashboardMeFragment = graphql`
 const LOCAL_STORAGE_KEY = 'dashboard';
 
 const HomeDashboardComponent = ({ queryRef }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const authContext = useAuth();
   const currentMe = authContext.me;
@@ -590,7 +577,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
 
   return (
     <UserContext.Provider value={dashboardContextValue}>
-      <div className={classes.root} data-testid="dashboard-page">
+      <Box sx={{ marginRight: '-20px', paddingRight: '20px', paddingBottom: '30px' }} data-testid="dashboard-page">
         <XtmHubPermissionRequiredDialog />
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
           <CustomHomeDashboard
@@ -600,7 +587,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
         ) : (
           <DefaultDashboard timeField={default_time_field} />
         )}
-      </div>
+      </Box>
     </UserContext.Provider>
   );
 };

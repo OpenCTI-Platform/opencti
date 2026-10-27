@@ -1,8 +1,6 @@
 import DrawerHeader from '@common/drawer/DrawerHeader';
 import DrawerMUI from '@mui/material/Drawer';
-import { createStyles } from '@mui/styles';
-import { useTheme } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { fdsLayerClass, layerInputVars, SURFACE_LAYER } from '../../../../utils/fdsLayer';
 import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
@@ -13,36 +11,13 @@ import { Stack, SxProps } from '@mui/material';
 
 export type DrawerSize = 'small' | 'medium' | 'large' | 'extraLarge';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
-  header: {
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
-    padding: '10px 0',
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  container: {
-    padding: theme.spacing(3),
-    height: '100%',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-  },
-  mainButton: ({ bannerHeightNumber }) => ({
-    position: 'fixed',
-    bottom: `${bannerHeightNumber + 30}px`,
-  }),
-  withLargePanel: {
-    right: 280,
-  },
-  withPanel: {
-    right: 230,
-  },
-  noPanel: {
-    right: 30,
-  },
+const Container = styled('div')(({ theme }) => ({
+  padding: theme.spacing(3),
+  height: '100%',
+  overflowY: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(2),
 }));
 
 export interface DrawerControlledDialProps {
@@ -101,7 +76,6 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   } = useAuth();
 
   const theme = useTheme<Theme>();
-  const classes = useStyles({ bannerHeightNumber });
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
     if (open !== defaultOpen) {
@@ -247,8 +221,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           onClose={handleClose}
         />
 
-        <div
-          className={classes.container}
+        <Container
           style={{
             ...containerStyle,
             backgroundColor: 'var(--bg-elevation-default)',
@@ -256,7 +229,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         >
           {renderSubHeader()}
           {component}
-        </div>
+        </Container>
       </DrawerMUI>
     </>
   );

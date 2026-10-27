@@ -1,5 +1,5 @@
 import { Handle, NodeProps, Position } from 'reactflow';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Chip } from '@filigran/design-system';
 import { hexToRGB } from '../../../../../../utils/Colors';
 import { HIGHLIGHT_LABEL_SHADOW, NODE_SIZE } from '../utils';

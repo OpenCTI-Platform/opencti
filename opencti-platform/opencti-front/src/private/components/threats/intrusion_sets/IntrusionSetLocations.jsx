@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -22,23 +20,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
-
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
 
 class IntrusionSetLocationsComponent extends Component {
   removeLocation(locationEdge) {
@@ -130,7 +111,6 @@ class IntrusionSetLocationsComponent extends Component {
 }
 
 IntrusionSetLocationsComponent.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   intrusionSet: PropTypes.object,
@@ -162,4 +142,4 @@ const IntrusionSetLocations = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(IntrusionSetLocations);
+export default inject18n(IntrusionSetLocations);

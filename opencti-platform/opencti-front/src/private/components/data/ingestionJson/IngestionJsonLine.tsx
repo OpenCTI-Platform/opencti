@@ -1,4 +1,4 @@
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
@@ -14,28 +14,13 @@ import { Link } from 'react-router';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface IngestionJsonLineProps {
   node: IngestionJsonLine_node$key;
@@ -60,12 +45,11 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
   node,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const data = useFragment(ingestionJsonLineFragment, node);
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
@@ -77,44 +61,38 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
         </Security>
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.uri.width }}
             >
               {data.uri}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.ingestion_running.width }}
             >
               <ItemBoolean
                 label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
                 status={!!data.ingestion_running}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.connector.width }}
             >
               {fldt(data.last_execution_date) || EMPTY_VALUE}
-            </div>
-            <div
-              className={classes.bodyItem}
-            >
+            </BodyItem>
+            <BodyItem>
               <Link to={`/dashboard/integrations/connectors/${data.connector_id}`}>VIEW</Link>
-            </div>
+            </BodyItem>
           </div>
         )}
       />
@@ -123,14 +101,13 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
 };
 
 export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+      secondaryAction={<MoreVert />}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -141,8 +118,7 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -151,9 +127,8 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.uri.width }}
             >
               <Skeleton
@@ -162,9 +137,8 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.ingestion_running.width }}
             >
               <Skeleton
@@ -173,9 +147,8 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.connector.width }}
             >
               <Skeleton
@@ -184,17 +157,15 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
                 width={100}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
-            >
+            </BodyItem>
+            <BodyItem>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width={100}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

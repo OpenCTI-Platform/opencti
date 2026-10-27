@@ -4,7 +4,6 @@ import { FilterListOutlined, LibraryAddOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow, RelationManyToMany } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
 import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
@@ -20,16 +19,6 @@ import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
 import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../../utils/fdsLayer';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    width: 600,
-    padding: 20,
-    ...filterPopoverPaperSx,
-  },
-}));
 
 type ListFiltersProps = {
   handleOpenFilters: (event: SyntheticEvent) => void;
@@ -122,8 +111,6 @@ const ListFilters = ({
       };
     }
   };
-
-  const classes = useStyles();
 
   const { icon, tooltip, placeholder, color } = getParameters(type);
 
@@ -266,7 +253,16 @@ const ListFilters = ({
         </>
       )}
       <Popover
-        classes={{ paper: `${fdsLayerClass(FILTER_POPOVER_LAYER)} ${classes.container}` }}
+        slotProps={{
+          paper: {
+            className: fdsLayerClass(FILTER_POPOVER_LAYER),
+            sx: {
+              width: 600,
+              padding: '20px',
+              ...filterPopoverPaperSx,
+            },
+          },
+        }}
         open={isOpen}
         anchorEl={anchorEl}
         onClose={handleCloseFilters}

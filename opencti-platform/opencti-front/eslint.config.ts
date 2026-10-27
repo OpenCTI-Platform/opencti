@@ -141,7 +141,6 @@ export default defineConfig([
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
       '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
-      'custom-rules/classes-rule': 1,
       'custom-rules/no-deprecated-components': 'warn',
       'custom-rules/no-fragment-ref-anchor': 'error',
       'custom-rules/no-replaced-components': 'error',
@@ -207,21 +206,6 @@ export default defineConfig([
       ],
       'react/jsx-closing-bracket-location': 'error',
       'react/react-in-jsx-scope': 'off',
-    },
-  },
-
-  {
-    files: ['src/**/*.{js,jsx,ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            { name: '@mui/styles', importNames: ['useTheme'], message: 'Import useTheme from @mui/material/styles.' },
-            { name: '@mui/styles/useTheme', message: 'Import useTheme from @mui/material/styles.' },
-          ],
-        },
-      ],
     },
   },
 

@@ -15,7 +15,6 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@stylistic/eslint-plugin": "5.10.0",
-    "@types/estree": "1.0.9",
     "@typescript-eslint/parser": "8.72.0",
     "eslint-plugin-import": "2.32.0",
     "globals": "17.13.0",

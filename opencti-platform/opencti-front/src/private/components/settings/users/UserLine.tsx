@@ -7,34 +7,15 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { PersonOutlined, AccountCircleOutlined, KeyboardArrowRightOutlined, HorizontalRule, Security, ReportGmailerrorred, ManageAccountsOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { UserLine_node$data } from '@components/settings/users/__generated__/UserLine_node.graphql';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface UserLineComponentProps {
   dataColumns: DataColumns;
@@ -45,7 +26,6 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
   const { dataColumns, node } = props;
   const external = node.external === true;
   const userServiceAccount = node.user_service_account;
-  const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
   const passwordValidUntil = (node as { password_valid_until?: string | null }).password_valid_until;
   const passwordValidUntilDisplay = dataColumns.password_valid_until
@@ -56,44 +36,39 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
 
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       component={Link}
       to={`/dashboard/settings/accesses/users/${node.id}`}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         {userServiceAccount && (<ManageAccountsOutlined />)}
         {!userServiceAccount && (external ? <AccountCircleOutlined /> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {node.name}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.user_email.width }}
             >
               {node.user_email}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.firstname.width }}
             >
               <FieldOrEmpty source={node.firstname}>{node.firstname}</FieldOrEmpty>
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.lastname.width }}
             >
               <FieldOrEmpty source={node.lastname}>{node.lastname}</FieldOrEmpty>
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.effective_confidence_level.width }}
             >
               {node.effective_confidence_level?.max_confidence ?? (
@@ -103,9 +78,8 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
                   <ReportGmailerrorred fontSize="small" color="error" />
                 </Tooltip>
               )}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.otp.width }}
             >
               {node.otp_activated ? (
@@ -113,25 +87,23 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
               ) : (
                 <HorizontalRule fontSize="small" color="primary" />
               )}
-            </div>
+            </BodyItem>
             {dataColumns.password_valid_until && (
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.password_valid_until.width }}
               >
                 {passwordValidUntilDisplay}
-              </div>
+              </BodyItem>
             )}
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
               {fd(node.created_at)}
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
@@ -162,11 +134,9 @@ export const UserLine = createFragmentContainer(UserLineComponent, {
 export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>> = (props) => {
   const { dataColumns } = props;
 
-  const classes = useStyles();
-
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+    <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -177,8 +147,7 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -187,9 +156,8 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.user_email.width }}
             >
               <Skeleton
@@ -198,9 +166,8 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.firstname.width }}
             >
               <Skeleton
@@ -209,9 +176,8 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.lastname.width }}
             >
               <Skeleton
@@ -220,9 +186,8 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.effective_confidence_level.width }}
             >
               <Skeleton
@@ -231,9 +196,8 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.otp.width }}
             >
               <Skeleton
@@ -242,11 +206,10 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 width={40}
                 height="100%"
               />
-            </div>
+            </BodyItem>
             {dataColumns.password_valid_until
               && (
-                <div
-                  className={classes.bodyItem}
+                <BodyItem
                   style={{ width: dataColumns.password_valid_until.width }}
                 >
                   <Skeleton
@@ -255,10 +218,9 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                     width={100}
                     height="100%"
                   />
-                </div>
+                </BodyItem>
               )}
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
               <Skeleton
@@ -267,11 +229,11 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 width={100}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItem>

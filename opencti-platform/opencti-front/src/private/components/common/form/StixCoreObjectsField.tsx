@@ -9,7 +9,7 @@ import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import IconButton from '@common/button/IconButton';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -20,7 +20,6 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
 import { DeferredCreationContext } from '../../../../utils/hooks/useDeferredCreation';
 import { Checkbox } from '@filigran/design-system';
@@ -202,25 +201,16 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-  createOption: {
-    fontStyle: 'italic',
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const CREATE_OPTION_VALUE = '__create_new_entity__';
 
@@ -279,7 +269,6 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   disableCreation = false,
   deferCreation = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: entityTypes, stixCyberObservableTypes, stixDomainObjectTypes } = useAttributes();
   const { setFieldValue, values } = useFormikContext<Record<string, unknown>>();
@@ -706,26 +695,25 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           if (option.isCreateOption) {
             return (
               <li {...innerProps} key={option.value}>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <ItemIcon type="Add" />
-                </div>
-                <div className={`${classes.text} ${classes.createOption}`}>
+                </OptionIcon>
+                <OptionText sx={{ fontStyle: 'italic' }}>
                   {option.label}
-                </div>
+                </OptionText>
               </li>
             );
           }
           return (
             <li {...innerProps} key={option.value}>
-              <div className={classes.icon}>
+              <OptionIcon>
                 <ItemIcon type={option.type} />
-              </div>
-              <div className={classes.text}>{option.label}</div>
+              </OptionIcon>
+              <OptionText>{option.label}</OptionText>
             </li>
           );
         }}
         isOptionEqualToValue={(option: StixCoreObjectOption, value: FieldOption) => option.value === value.value}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
 
       <DeferredCreationContext.Provider value={deferredContextValue}>

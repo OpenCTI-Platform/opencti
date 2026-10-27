@@ -13,7 +13,7 @@ import {
   ComboboxTrigger,
 } from '@filigran/design-system';
 import { FilesNativeFieldQuery$data } from '@components/common/form/__generated__/FilesNativeFieldQuery.graphql';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { FileOutline } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
@@ -28,20 +28,16 @@ interface FilesFieldProps {
   helperText?: string;
 }
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
 
-}));
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const filesNativeFieldQuery = graphql`
   query FilesNativeFieldQuery($id: String!) {
@@ -82,7 +78,6 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
   onChange,
   helperText,
 }) => {
-  const classes = useStyles();
   const [files, setFiles] = useState<{
     label: string;
     value: string;
@@ -138,10 +133,10 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
         onValueChange={(value) => (onChange ? onChange(value as { label: string; value: string }[]) : null)}
         renderOption={(option) => (
           <>
-            <div className={classes.icon}>
+            <OptionIcon>
               <FileOutline />
-            </div>
-            <div className={classes.text}>{option.label ?? ''}</div>
+            </OptionIcon>
+            <OptionText>{option.label ?? ''}</OptionText>
           </>
         )}
       >

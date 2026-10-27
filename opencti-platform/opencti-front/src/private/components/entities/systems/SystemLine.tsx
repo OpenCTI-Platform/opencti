@@ -6,8 +6,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { SystemLine_node$key } from '@components/entities/systems/__generated__/SystemLine_node.graphql';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { ListItemButton } from '@mui/material';
@@ -18,22 +17,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface SystemLineProps {
   node: SystemLine_node$key;
@@ -71,31 +55,28 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
   node,
   onLabelClick,
 }) => {
-  const classes = useStyles();
   const { fd } = useFormatter();
   const data = useFragment(systemLineFragment, node);
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       component={Link}
       to={`/dashboard/entities/systems/${data.id}`}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="System" />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
               {data.draftVersion && (<DraftChip />)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -103,23 +84,21 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
                 labels={data.objectLabel}
                 onClick={onLabelClick.bind(this)}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created.width }}
             >
               {fd(data.created)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.modified.width }}
             >
               {fd(data.modified)}
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
@@ -131,10 +110,9 @@ export const SystemLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+    <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -145,8 +123,7 @@ export const SystemLineDummy = ({
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -155,9 +132,8 @@ export const SystemLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
@@ -166,9 +142,8 @@ export const SystemLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created.width }}
             >
               <Skeleton
@@ -177,9 +152,8 @@ export const SystemLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.modified.width }}
             >
               <Skeleton
@@ -188,11 +162,11 @@ export const SystemLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItem>

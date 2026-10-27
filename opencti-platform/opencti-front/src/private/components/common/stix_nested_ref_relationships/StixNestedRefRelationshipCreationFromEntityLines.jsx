@@ -1,47 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import { StixNestedRefRelationshipCreationFromEntityLine, StixNestedRefRelationshipCreationFromEntityLineDummy } from './StixNestedRefRelationshipCreationFromEntityLine';
 import inject18n from '../../../../components/i18n';
 import { setNumberOfElements } from '../../../../utils/Number';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 
 const nbOfRowsToLoad = 50;
-
-const styles = (theme) => ({
-  container: {
-    padding: '20px 0 20px 0',
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  list: {
-    width: '100%',
-  },
-  listItem: {
-    width: '100%',
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-  tooltip: {
-    maxWidth: '80%',
-    lineHeight: 2,
-    padding: 10,
-    backgroundColor: '#323232',
-  },
-});
 
 class StixNestedRefRelationshipCreationFromEntityLinesContainer extends Component {
   componentDidUpdate(prevProps) {
@@ -94,7 +59,6 @@ StixNestedRefRelationshipCreationFromEntityLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   containerRef: PropTypes.object,
   fld: PropTypes.func,
@@ -187,7 +151,4 @@ const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContain
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixNestedRefRelationshipCreationFromEntityLines);
+export default inject18n(StixNestedRefRelationshipCreationFromEntityLines);

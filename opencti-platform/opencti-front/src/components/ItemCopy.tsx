@@ -1,48 +1,13 @@
 import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
 import { ContentCopyOutlined, Check } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/material/styles';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from './i18n';
 import { copyToClipboard } from '../utils/utils';
 import type { Theme } from './Theme';
 import { truncate } from '../utils/String';
 import { Box } from '@mui/material';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  containerInline: {
-    position: 'relative',
-    padding: '2px 25px 2px 5px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    backgroundColor: theme.palette.background.accent,
-    fontFamily: 'Consolas, monaco, monospace',
-    fontSize: 12,
-  },
-  containerWrap: {
-    position: 'relative',
-    paddingRight: 18,
-  },
-  container: {
-    position: 'relative',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  icon: {
-    position: 'absolute',
-    right: 0,
-    top: -3,
-  },
-  iconInline: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-}));
 
 interface ItemCopyProps {
   content: string;
@@ -60,7 +25,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
   focusOnMount = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const textToCopy = value || content;
 
   const textRef = useRef<HTMLDivElement>(null);
@@ -89,10 +54,31 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
     return undefined;
   }, [copied]);
 
-  const classNameVariant = () => {
-    if (variant === 'inLine') return classes.containerInline;
-    if (variant === 'wrap') return classes.containerWrap;
-    return classes.container;
+  const containerSx = () => {
+    if (variant === 'inLine') {
+      return {
+        position: 'relative',
+        padding: '2px 25px 2px 5px',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        backgroundColor: theme.palette.background.accent,
+        fontFamily: 'Consolas, monaco, monospace',
+        fontSize: 12,
+      } as const;
+    }
+    if (variant === 'wrap') {
+      return {
+        position: 'relative',
+        paddingRight: '18px',
+      } as const;
+    }
+    return {
+      position: 'relative',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    } as const;
   };
 
   const handleCopy = (event: React.MouseEvent) => {
@@ -105,7 +91,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
   const textToShow = limit ? truncate(content, limit) : content;
 
   const textElement = (
-    <div className={classNameVariant()}>
+    <Box sx={containerSx()}>
       <Box
         ref={textRef}
         sx={{
@@ -117,7 +103,14 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
       >
         {textToShow}
       </Box>
-      <span className={variant === 'inLine' ? classes.iconInline : classes.icon}>
+      <Box
+        component="span"
+        sx={{
+          position: 'absolute',
+          right: 0,
+          top: variant === 'inLine' ? 0 : -3,
+        }}
+      >
         <Tooltip title={copied ? t_i18n('Copied') : t_i18n('Copy')}>
           <IconButton
             ref={buttonRef}
@@ -134,8 +127,8 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
             )}
           </IconButton>
         </Tooltip>
-      </span>
-    </div>
+      </Box>
+    </Box>
   );
 
   return isTruncated || limit ? (
