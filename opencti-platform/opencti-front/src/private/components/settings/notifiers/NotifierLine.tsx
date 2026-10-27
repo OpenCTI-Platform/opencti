@@ -97,7 +97,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
 export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: '50px' }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

@@ -602,7 +602,7 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
         secondaryAction={<MoreVertOutlined />}
       >
         <ListItemIcon
-          sx={{ color: (theme) => theme.palette.grey[700] }}
+          sx={{ color: 'grey.700' }}
           style={{ minWidth: 40 }}
         >
           <Checkbox

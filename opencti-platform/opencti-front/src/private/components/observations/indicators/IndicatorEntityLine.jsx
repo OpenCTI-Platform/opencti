@@ -673,7 +673,7 @@ class IndicatorEntityLineDummyComponent extends Component {
         divider={true}
         secondaryAction={<MoreVert />}
       >
-        <ListItemIcon sx={{ color: (theme) => theme.palette.grey[700] }}>
+        <ListItemIcon sx={{ color: 'grey.700' }}>
           <Skeleton
             animation="wave"
             variant="circular"

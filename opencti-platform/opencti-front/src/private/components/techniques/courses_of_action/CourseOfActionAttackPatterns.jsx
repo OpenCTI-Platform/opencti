@@ -112,7 +112,7 @@ class CourseOfActionAttackPatternComponent extends Component {
                         sx={{
                           width: 24,
                           height: 24,
-                          backgroundColor: (theme) => theme.palette.primary.main,
+                          backgroundColor: 'primary.main',
                         }}
                       >
                         {attackPattern.name.substring(0, 1)}

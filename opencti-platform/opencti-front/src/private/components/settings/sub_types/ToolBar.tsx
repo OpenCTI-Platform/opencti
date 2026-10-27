@@ -176,7 +176,7 @@ const ToolBar: FunctionComponent<{
             sx={{
               padding: '2px 5px 2px 5px',
               marginRight: '5px',
-              backgroundColor: (theme) => theme.palette.secondary.main,
+              backgroundColor: 'secondary.main',
               color: '#ffffff',
             }}
           >

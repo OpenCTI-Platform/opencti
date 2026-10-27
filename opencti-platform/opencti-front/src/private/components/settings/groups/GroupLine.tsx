@@ -127,7 +127,7 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
       divider={true}
       secondaryAction={<KeyboardArrowRightOutlined />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton
           animation="wave"
           variant="circular"

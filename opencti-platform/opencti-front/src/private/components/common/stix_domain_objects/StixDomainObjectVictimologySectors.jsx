@@ -494,7 +494,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                             )}
                           >
                             <ListItemButton
-                              sx={{ paddingLeft: (theme) => theme.spacing(4) }}
+                              sx={{ paddingLeft: 4 }}
                               onClick={this.handleToggleLine.bind(
                                 this,
                                 subsector.id,
@@ -550,7 +550,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                       )}
                                     >
                                       <ListItemButton
-                                        sx={{ paddingLeft: (theme) => theme.spacing(8) }}
+                                        sx={{ paddingLeft: 8 }}
                                         component={Link}
                                         to={link}
                                       >

@@ -327,7 +327,7 @@ export const EntityStixSightingRelationshipLineDummy = ({
       divider={true}
       secondaryAction={<MoreVertOutlined />}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <HelpOutlined />
       </ListItemIcon>
       <ListItemText

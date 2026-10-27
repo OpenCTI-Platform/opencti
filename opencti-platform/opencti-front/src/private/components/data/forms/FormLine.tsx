@@ -110,7 +110,7 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
     <ListItem
       sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={<MoreVert sx={{ color: (theme) => theme.palette.grey[700] }} />}
+      secondaryAction={<MoreVert sx={{ color: 'grey.700' }} />}
     >
       <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton

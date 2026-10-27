@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Stack, useTheme } from '@mui/material';
+import { Box, Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { useFormatter } from '../../../components/i18n';

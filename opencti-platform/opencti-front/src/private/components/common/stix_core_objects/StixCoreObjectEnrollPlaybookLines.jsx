@@ -86,7 +86,7 @@ const StixCoreObjectEnrollPlaybook = ({
         ) : (
           <Box
             sx={{
-              color: (theme) => theme.palette.text.primary,
+              color: 'text.primary',
               fontSize: 15,
               textAlign: 'center',
               marginTop: '20px',

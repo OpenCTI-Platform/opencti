@@ -196,7 +196,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                         <Typography
                           sx={{
                             fontSize: (theme) => theme.typography.pxToRem(15),
-                            color: (theme) => theme.palette.text.secondary,
+                            color: 'text.secondary',
                           }}
                         >
                           {stixCyberObservables[type].length} {t_i18n('entitie(s)')}

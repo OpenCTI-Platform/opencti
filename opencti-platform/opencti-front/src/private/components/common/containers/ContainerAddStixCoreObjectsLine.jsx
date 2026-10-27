@@ -239,7 +239,7 @@ export const ContainerAddStixCoreObjecstLineDummy = ({ dataColumns }) => {
       style={{ minWidth: 40, paddingLeft: 20 }}
     >
       <ListItemIcon
-        sx={{ color: (theme) => theme.palette.grey[700] }}
+        sx={{ color: 'grey.700' }}
         style={{ minWidth: 44 }}
       >
         <CircleOutlined />

@@ -45,7 +45,7 @@ export const CaseTemplateTasksLine: FunctionComponent<
         />
       )}
     >
-      <ListItemIcon sx={{ color: (theme) => theme.palette.primary?.main }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type="Task" />
       </ListItemIcon>
       <ListItemText
@@ -76,14 +76,14 @@ export const CaseTemplateTasksLineDummy: FunctionComponent<
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
       <ListItemIcon
-        sx={{ color: (theme) => theme.palette.grey?.[700] }}
+        sx={{ color: 'grey.700' }}
         style={{ minWidth: 40 }}
       >
         <Checkbox
           disabled={true}
         />
       </ListItemIcon>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

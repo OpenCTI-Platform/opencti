@@ -159,7 +159,7 @@ const VocabularyEdition = ({
             <Button
               onClick={submitForm}
               disabled={isSubmitting || !isValid}
-              sx={{ marginLeft: (theme) => theme.spacing(2) }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Update')}
             </Button>

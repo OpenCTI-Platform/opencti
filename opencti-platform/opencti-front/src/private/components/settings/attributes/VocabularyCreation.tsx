@@ -155,14 +155,14 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  sx={{ marginLeft: (theme) => theme.spacing(2) }}
+                  sx={{ marginLeft: 2 }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting || !isValid || !dirty}
-                  sx={{ marginLeft: (theme) => theme.spacing(2) }}
+                  sx={{ marginLeft: 2 }}
                 >
                   {t_i18n('Create')}
                 </Button>

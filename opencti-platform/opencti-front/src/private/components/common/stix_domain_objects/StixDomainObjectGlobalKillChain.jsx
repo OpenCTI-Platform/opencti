@@ -194,7 +194,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 3,
-                                paddingLeft: (theme) => theme.spacing(4),
+                                paddingLeft: 4,
                               }}
                             >
                               <ListItemIcon sx={{ color: 'primary.main' }}>

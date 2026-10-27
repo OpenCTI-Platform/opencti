@@ -127,7 +127,7 @@ const relationCreationSx = {
 };
 
 const buttonSx = {
-  marginLeft: (theme) => theme.spacing(2),
+  marginLeft: 2,
 };
 
 export const stixNestedRefRelationshipCreationResolveQuery = graphql`

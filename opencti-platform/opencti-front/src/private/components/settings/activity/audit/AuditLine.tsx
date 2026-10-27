@@ -130,7 +130,7 @@ export const AuditLineDummy = ({
 }) => {
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
-      <ListItemIcon sx={{ color: (theme) => theme.palette.grey?.[700] }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

@@ -113,7 +113,7 @@ const Buttons = styled('div')({
 });
 
 const buttonSx = {
-  marginLeft: (theme) => theme.spacing(2),
+  marginLeft: 2,
 };
 
 const stixNestedRefRelationshipResolveTypes = graphql`

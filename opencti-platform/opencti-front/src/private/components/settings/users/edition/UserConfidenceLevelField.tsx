@@ -77,7 +77,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
             width: '100%',
             overflow: 'visible',
             padding: 0,
-            color: (theme) => theme.palette.text?.secondary,
+            color: 'text.secondary',
           },
         },
       }}

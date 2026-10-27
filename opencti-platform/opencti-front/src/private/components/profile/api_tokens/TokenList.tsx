@@ -113,7 +113,7 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
           sx={{
             textAlign: 'center',
             padding: '20px',
-            color: (theme) => theme.palette.text?.secondary,
+            color: 'text.secondary',
           }}
         >
           {t_i18n('No tokens found. Click "Generate Token" to create one.')}
