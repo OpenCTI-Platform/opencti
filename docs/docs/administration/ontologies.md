@@ -56,3 +56,7 @@ They help to track the progress of the analysis and response activities by defin
 Customizable case templates help to streamline the process of creating cases with predefined lists of tasks.
 
 ![Case templates in OpenCTI](assets/case_templates.png)
+
+## Custom fields
+
+Custom fields add your own attributes to the entities and relationships of the platform. Read the [dedicated page](custom-fields.md) for full details.
