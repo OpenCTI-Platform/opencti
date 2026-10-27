@@ -357,8 +357,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     }
   }
 
-  const ingestionHealthSettings = data.find((inputData) => inputData.key === 'ingestion_health_settings');
-  if (ingestionHealthSettings) {
+  for (const ingestionHealthSettings of data.filter((inputData) => inputData.key === 'ingestion_health_settings')) {
     validateIngestionHealthSettingsInput(ingestionHealthSettings);
   }
 
