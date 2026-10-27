@@ -9,6 +9,22 @@ inputs:
     description: "Use client python from the same commit"
     required: false
     default: "false"
+  tag_version:
+    description: "Value of TAG_VERSION for the backend build (release tag, used to fetch the connectors manifest of the tag). Empty for rolling builds."
+    required: false
+    default: ""
+  connectors_ref:
+    description: "Branch or tag of OpenCTI-Platform/connectors to pack in the tarball"
+    required: false
+    default: "master"
+  include_docker:
+    description: "Pack OpenCTI-Platform/docker (master) in the tarball. Release tarballs do not include it."
+    required: false
+    default: "true"
+  archive_name:
+    description: "File name of the produced tar.gz"
+    required: false
+    default: "opencti.tar.gz"
 
 runs:
   using: "composite"
@@ -25,8 +41,16 @@ runs:
 
     - name: Build platform and package tar.gz
       shell: bash
+      env:
+        TAG_VERSION: ${{ inputs.tag_version }}
       run: |
+        # Only pass TAG_VERSION when set, so rolling builds keep fetching the rolling connectors manifest
+        DOCKER_ENV=()
+        if [ -n "${TAG_VERSION}" ]; then
+          DOCKER_ENV+=(-e "TAG_VERSION=${TAG_VERSION}")
+        fi
         docker run --rm \
+          "${DOCKER_ENV[@]}" \
           -v "${{ github.workspace }}:/workspace" \
           -w /workspace \
           nikolaik/python-nodejs:python3.11-nodejs22 \
@@ -35,11 +59,18 @@ runs:
             npm install -g node-gyp &&
             cd /workspace/opencti-platform/opencti-graphql &&
             yarn install --immutable &&
+            yarn build &&
+            cd /workspace/opencti-platform/opencti-front &&
+            yarn install --immutable &&
             yarn build
           '
 
     - name: Package tar.gz
       shell: bash
+      env:
+        CONNECTORS_REF: ${{ inputs.connectors_ref }}
+        INCLUDE_DOCKER: ${{ inputs.include_docker }}
+        ARCHIVE_NAME: ${{ inputs.archive_name }}
       run: |
         set -eux
         mkdir -p release
@@ -47,18 +78,21 @@ runs:
         rm -rf ./opencti-platform/opencti-graphql/.yarn/cache
         cp -a ./opencti-platform/opencti-graphql release/opencti
         cp -a ./opencti-platform/.yarnrc.yml release/opencti/
+        # The backend serves the UI from public/ in production, as in the Dockerfile
+        cp -a ./opencti-platform/opencti-front/dist release/opencti/public
         cp -a ./opencti-worker/src release/opencti/worker
-        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/opencti/docker
-        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
+        if [ "${INCLUDE_DOCKER}" == "true" ]; then
+          git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/opencti/docker
+        fi
+        git clone --depth 1 --single-branch --branch "${CONNECTORS_REF}" https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
         ls -lart release
         pwd
         ls -lart
-        cd release && tar -zcvf /tmp/opencti.tar.gz opencti
+        cd release && tar -zcvf "/tmp/${ARCHIVE_NAME}" opencti
 
     - name: Upload tar artifact
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: tar-opencti-platform
-        path: /tmp/opencti.tar.gz
+        path: /tmp/${{ inputs.archive_name }}
         retention-days: 10
-

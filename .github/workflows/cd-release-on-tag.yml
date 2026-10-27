@@ -1,0 +1,843 @@
+name: OpenCTI CD Release
+run-name: OpenCTI CD Release ${{ inputs.tag || github.ref_name }}
+# Release pipeline for OpenCTI tags (X.Y.Z and X.Y.Z-lts.N)
+#
+# DRY-RUN ONLY for now: the publish-pycti job is commented out, nothing can be published.
+#
+# When publication is enabled, it must require ALL of the following:
+#   - the run was started manually (workflow_dispatch). Tag pushes are ALWAYS dry-run.
+#   - a "dry_run" boolean input (default true) explicitly unchecked. On tag push it is empty, and in
+#     GitHub expressions null == false is TRUE: the event_name check is what keeps tag pushes in dry-run.
+#   - the repository variable RELEASE_PUBLISH_ENABLED is set to 'true'
+# On top of that, publication jobs run in protected environments (e.g. "pypi") that hold the credentials,
+# so dry-run jobs never get access to them.
+#
+# /!\ The release repository looks up this workflow by its name: if you rename it, update the release scripts.
+
+on:
+  push:
+    tags:
+      # GitHub filter patterns are globs, the strict format is checked by the "validate" job
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-lts.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to build (e.g. 7.261002.0 or 7.260309.0-lts.7)"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  # -----------------------
+  # Validate tag and versions, compute shared outputs
+  # -----------------------
+  validate:
+    name: Validate release tag
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      pycti_version: ${{ steps.tag.outputs.pycti_version }}
+      is_lts: ${{ steps.tag.outputs.is_lts }}
+      commit_sha: ${{ steps.versions.outputs.commit_sha }}
+    steps:
+      - name: Validate tag format
+        id: tag
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${TAG}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$ ]]; then
+            echo "::error::Invalid release tag '${TAG}', expected X.Y.Z or X.Y.Z-lts.N"
+            exit 1
+          fi
+          # Transform tag version to expected PEP 440 package version:
+          #   7.260309.0          -> 7.260309.0    (standard release)
+          #   7.260309.0-lts.N    -> 7.260309.0.N  (lts bug fix N)
+          PYCTI_VERSION="${TAG/-lts./.}"
+          IS_LTS=false
+          [[ "${TAG}" == *-lts.* ]] && IS_LTS=true
+          {
+            echo "tag=${TAG}"
+            echo "pycti_version=${PYCTI_VERSION}"
+            echo "is_lts=${IS_LTS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Always resolve as a tag, so a dispatch with a branch name cannot be used by mistake
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
+
+      - name: Check versions in sources match the tag
+        id: versions
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          PYCTI_VERSION: ${{ steps.tag.outputs.pycti_version }}
+        run: |
+          set -euo pipefail
+          ERRORS=0
+
+          PACKAGE_PYCTI_VERSION="$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' client-python/pycti/__init__.py)"
+          if [ "${PACKAGE_PYCTI_VERSION}" != "${PYCTI_VERSION}" ]; then
+            echo "::error::client-python/pycti/__init__.py version is '${PACKAGE_PYCTI_VERSION}', expected '${PYCTI_VERSION}' for tag ${TAG}"
+            ERRORS=1
+          fi
+
+          for PACKAGE_JSON in opencti-platform/opencti-graphql/package.json opencti-platform/opencti-front/package.json; do
+            PACKAGE_VERSION="$(jq -r '.version' "${PACKAGE_JSON}")"
+            if [ "${PACKAGE_VERSION}" != "${TAG}" ]; then
+              echo "::error::${PACKAGE_JSON} version is '${PACKAGE_VERSION}', expected '${TAG}'"
+              ERRORS=1
+            fi
+          done
+
+          if [ "${ERRORS}" -ne 0 ]; then
+            exit 1
+          fi
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          PYCTI_VERSION: ${{ steps.tag.outputs.pycti_version }}
+          IS_LTS: ${{ steps.tag.outputs.is_lts }}
+          COMMIT_SHA: ${{ steps.versions.outputs.commit_sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          {
+            echo "## OpenCTI release ${TAG}"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Trigger | \`${EVENT_NAME}\` |"
+            echo "| Commit | \`${COMMIT_SHA}\` |"
+            echo "| pycti version | \`${PYCTI_VERSION}\` |"
+            echo "| LTS | ${IS_LTS} |"
+            echo "| Mode | 🧪 dry-run (nothing will be published) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # -----------------------
+  # Client python (pycti)
+  # -----------------------
+  build-pycti:
+    name: Build pycti
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Use the commit validated above, not the tag, in case the tag is moved in between
+          ref: ${{ needs.validate.outputs.commit_sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 #v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install build tools
+        run: pip install "build~=1.5.0" "twine>=6,<7"
+
+      - name: Build sdist and wheel
+        working-directory: client-python
+        run: SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" python -m build
+
+      - name: Check distribution files
+        working-directory: client-python
+        env:
+          PYCTI_VERSION: ${{ needs.validate.outputs.pycti_version }}
+        run: |
+          set -euo pipefail
+          ls -la dist/
+          for EXPECTED in "dist/pycti-${PYCTI_VERSION}-py3-none-any.whl" "dist/pycti-${PYCTI_VERSION}.tar.gz"; do
+            if [ ! -f "${EXPECTED}" ]; then
+              echo "::error::Expected distribution file not found: ${EXPECTED}"
+              exit 1
+            fi
+          done
+          if [ "$(find dist -type f | wc -l)" -ne 2 ]; then
+            echo "::error::Unexpected files in dist/"
+            exit 1
+          fi
+          twine check --strict dist/*
+
+      - name: Upload pycti distribution
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pycti-dist
+          path: client-python/dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  pycti-dry-run:
+    name: Publish pycti (dry-run)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    # wait-connectors: on a tag push CircleCI may not have published pycti yet, the comparison would see a 404
+    needs: [validate, build-pycti, wait-connectors]
+    steps:
+      - name: Download pycti distribution
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: pycti-dist
+          path: dist/
+
+      - name: Compare with the version already on PyPI (if any)
+        # Informative only: a dry run must not fail because PyPI is unreachable
+        continue-on-error: true
+        env:
+          PYCTI_VERSION: ${{ needs.validate.outputs.pycti_version }}
+        run: |
+          set -euo pipefail
+          HTTP_CODE=$(curl --connect-timeout 10 --max-time 30 -sS -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/pycti/${PYCTI_VERSION}/json")
+          if [ "${HTTP_CODE}" == "404" ]; then
+            echo "pycti ${PYCTI_VERSION} is not on PyPI yet: it would be published by a real run."
+            echo "PYPI_STATUS=new version" >> "$GITHUB_ENV"
+            exit 0
+          elif [ "${HTTP_CODE}" != "200" ]; then
+            echo "::warning::Unable to query PyPI for pycti ${PYCTI_VERSION} (HTTP ${HTTP_CODE}), skipping comparison"
+            echo "PYPI_STATUS=unknown (HTTP ${HTTP_CODE})" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          # Typically the case when dry-running on an already released tag: compare wheel contents.
+          echo "::warning::pycti ${PYCTI_VERSION} already exists on PyPI: a real run would fail to upload it."
+          echo "PYPI_STATUS=already published" >> "$GITHUB_ENV"
+          mkdir -p pypi
+          pip download "pycti==${PYCTI_VERSION}" --no-deps --only-binary :all: -d pypi/ --quiet
+          python3 - "dist/pycti-${PYCTI_VERSION}-py3-none-any.whl" "pypi/pycti-${PYCTI_VERSION}-py3-none-any.whl" <<'EOF'
+          import sys, zipfile
+          def record(path):
+              with zipfile.ZipFile(path) as z:
+                  name = next(n for n in z.namelist() if n.endswith(".dist-info/RECORD"))
+                  lines = z.read(name).decode().splitlines()
+              # path -> sha256; WHEEL names the build tool version, which is not pinned, so it is ignored with RECORD
+              entries = (l.split(",") for l in lines if l)
+              return {e[0]: e[1] for e in entries if not e[0].endswith((".dist-info/RECORD", ".dist-info/WHEEL"))}
+          built, published = record(sys.argv[1]), record(sys.argv[2])
+          only_built = sorted(set(built) - set(published))
+          only_published = sorted(set(published) - set(built))
+          changed = sorted(p for p in set(built) & set(published) if built[p] != published[p])
+          for title, items in (("Only in built wheel", only_built), ("Only in PyPI wheel", only_published), ("Different content", changed)):
+              print(f"{title}: {len(items)}")
+              for item in items:
+                  print(f"  {item}")
+          if only_built or only_published or changed:
+              print("::warning::Built wheel differs from the one published on PyPI (see log above)")
+          else:
+              print("Built wheel content is identical to the one published on PyPI")
+          EOF
+
+      - name: Summary
+        env:
+          PYCTI_VERSION: ${{ needs.validate.outputs.pycti_version }}
+        run: |
+          {
+            echo "### 🧪 pycti (dry-run)"
+            echo ""
+            echo "Would publish to PyPI (status of pycti ${PYCTI_VERSION} on PyPI: **${PYPI_STATUS:-unknown}**):"
+            echo ""
+            echo '```'
+            (cd dist && sha256sum -- *)
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Publication disabled until the dry run is validated: no job of this workflow can publish anything.
+  # Re-enabling it also needs the guard of the header (dry_run input and a "publish" output of validate).
+  # publish-pycti:
+  #   name: Publish pycti
+  #   runs-on: ubuntu-26.04
+  #   timeout-minutes: 15
+  #   needs: [validate, build-pycti]
+  #   if: needs.validate.outputs.publish == 'true'
+  #   # Protected environment: holds the PyPI trusted publisher binding, can require reviewers.
+  #   environment:
+  #     name: pypi
+  #     url: https://pypi.org/project/pycti/${{ needs.validate.outputs.pycti_version }}/
+  #   permissions:
+  #     id-token: write # PyPI trusted publishing (OIDC)
+  #   steps:
+  #     - name: Download pycti distribution
+  #       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+  #       with:
+  #         name: pycti-dist
+  #         path: dist/
+
+  #     - name: Publish to PyPI
+  #       uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+  #       with:
+  #         packages-dir: dist/
+
+  # -----------------------
+  # Wait for the connectors release
+  # -----------------------
+  # The platform build needs the connectors manifest of the tag (TAG_VERSION build-arg) and pycti on PyPI:
+  # the release script tags connectors only once pycti is available, so this job gates both.
+  wait-connectors:
+    name: Wait for connectors release
+    runs-on: ubuntu-26.04
+    timeout-minutes: 35
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.validate.outputs.commit_sha }}
+
+      - name: Wait for connectors manifest of the tag
+        env:
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: ./scripts/ci/wait-for-url-200.sh "https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/tags/${TAG}/manifest.json" 1800 30
+
+  # -----------------------
+  # Docker images
+  # -----------------------
+  # Local actions (./.github/actions/*) are taken from the workflow ref (the tag on push, the dispatched branch
+  # on workflow_dispatch); they check out the validated commit themselves to build the release sources.
+  build-builder:
+    name: Build builder image
+    runs-on: ubuntu-26.04
+    timeout-minutes: 30
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/docker-build-builder
+        with:
+          checkout_ref: ${{ needs.validate.outputs.commit_sha }}
+          image_tag: ${{ needs.validate.outputs.tag }}
+          # Toolchain only: app-sbom runs its own install/build on the checkout
+          target: builder
+
+  build-platform:
+    name: Build platform (${{ matrix.variant }}, ${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    needs: [validate, wait-connectors]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { variant: standard, suffix: "", arch: amd64, runner: ubuntu-26.04 }
+          - { variant: standard, suffix: "", arch: arm64, runner: ubuntu-26.04-arm }
+          - { variant: ubi9, suffix: "_ubi9", arch: amd64, runner: ubuntu-26.04 }
+          - { variant: ubi9, suffix: "_ubi9", arch: arm64, runner: ubuntu-26.04-arm }
+          # fips is amd64 only, as with CircleCI
+          - { variant: fips, suffix: "_fips", arch: amd64, runner: ubuntu-26.04 }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/docker-build-platform
+        with:
+          checkout_ref: ${{ needs.validate.outputs.commit_sha }}
+          image_tag: ${{ needs.validate.outputs.tag }}
+          tag_version: ${{ needs.validate.outputs.tag }}
+          revision: ${{ needs.validate.outputs.commit_sha }}
+          docker_image_suffix: ${{ matrix.suffix }}
+          platform: linux/${{ matrix.arch }}
+          artifact_suffix: -${{ matrix.arch }}
+
+  build-worker:
+    name: Build worker (${{ matrix.variant }}, ${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    needs: [validate, wait-connectors]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { variant: standard, suffix: "", arch: amd64, runner: ubuntu-26.04 }
+          - { variant: standard, suffix: "", arch: arm64, runner: ubuntu-26.04-arm }
+          - { variant: ubi9, suffix: "_ubi9", arch: amd64, runner: ubuntu-26.04 }
+          - { variant: ubi9, suffix: "_ubi9", arch: arm64, runner: ubuntu-26.04-arm }
+          # fips is amd64 only, as with CircleCI
+          - { variant: fips, suffix: "_fips", arch: amd64, runner: ubuntu-26.04 }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/docker-build-worker
+        with:
+          checkout_ref: ${{ needs.validate.outputs.commit_sha }}
+          image_tag: ${{ needs.validate.outputs.tag }}
+          revision: ${{ needs.validate.outputs.commit_sha }}
+          docker_image_suffix: ${{ matrix.suffix }}
+          platform: linux/${{ matrix.arch }}
+          artifact_suffix: -${{ matrix.arch }}
+
+  # -----------------------
+  # Platform tarballs (GitHub release assets)
+  # -----------------------
+  # opencti-graphql with the UI in public/ + worker + connectors cloned at the tag,
+  # without the docker repository (unlike rolling tarballs).
+  build-tar:
+    name: Build platform tarball (${{ matrix.variant }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    # wait-connectors: connectors tag to clone, connectors manifest of the tag, pycti on PyPI ("yarn build")
+    needs: [validate, wait-connectors]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { variant: standard, archive_suffix: "" }
+          - { variant: musl, archive_suffix: "_musl" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build tarball (standard)
+        if: matrix.variant == 'standard'
+        uses: ./.github/actions/tar-platform
+        with:
+          checkout_ref: ${{ needs.validate.outputs.commit_sha }}
+          tag_version: ${{ needs.validate.outputs.tag }}
+          connectors_ref: ${{ needs.validate.outputs.tag }}
+          include_docker: "false"
+          archive_name: opencti-${{ needs.validate.outputs.tag }}.tar.gz
+
+      - name: Build tarball (musl)
+        if: matrix.variant == 'musl'
+        uses: ./.github/actions/tar-platform-musl
+        with:
+          checkout_ref: ${{ needs.validate.outputs.commit_sha }}
+          tag_version: ${{ needs.validate.outputs.tag }}
+          connectors_ref: ${{ needs.validate.outputs.tag }}
+          include_docker: "false"
+          archive_name: opencti-${{ needs.validate.outputs.tag }}_musl.tar.gz
+
+      - name: Check tarball content
+        env:
+          ARCHIVE: /tmp/opencti-${{ needs.validate.outputs.tag }}${{ matrix.archive_suffix }}.tar.gz
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          set -euo pipefail
+          ls -la "${ARCHIVE}"
+          tar -tzf "${ARCHIVE}" > /tmp/tar-content.txt
+          ERRORS=0
+          for EXPECTED in opencti/build/back.mjs opencti/package.json opencti/.yarnrc.yml opencti/src/__generated__/opencti-manifest.json opencti/worker/worker.py opencti/connectors/manifest.json opencti/public/index.html; do
+            if ! grep -qx "${EXPECTED}" /tmp/tar-content.txt; then
+              echo "::error::Missing in tarball: ${EXPECTED}"
+              ERRORS=1
+            fi
+          done
+          if grep -qx 'opencti/public/index.html' /tmp/tar-content.txt; then
+            # Every file the UI entry point loads must be in the archive
+            REFS="$(tar -xzOf "${ARCHIVE}" opencti/public/index.html | grep -oE '(src|href)="\./[^"]+"' | sed -E 's/^(src|href)="\.\/(.*)"$/\2/' | sort -u || true)"
+            if ! grep -qE '^assets/.+\.js$' <<< "${REFS}"; then
+              echo "::error::opencti/public/index.html does not load any built script from ./assets/"
+              ERRORS=1
+            fi
+            while IFS= read -r REF; do
+              if [ -n "${REF}" ] && ! grep -qxF "opencti/public/${REF}" /tmp/tar-content.txt; then
+                echo "::error::opencti/public/index.html loads ./${REF}, missing in tarball"
+                ERRORS=1
+              fi
+            done <<< "${REFS}"
+          fi
+          if grep -q '^opencti/docker/' /tmp/tar-content.txt; then
+            echo "::error::Release tarball must not contain the docker repository"
+            ERRORS=1
+          fi
+          VERSION="$(tar -xzOf "${ARCHIVE}" opencti/package.json | jq -r '.version')"
+          if [ "${VERSION}" != "${TAG}" ]; then
+            echo "::error::opencti/package.json version in tarball is '${VERSION}', expected '${TAG}'"
+            ERRORS=1
+          fi
+          {
+            echo "### Tarball $(basename "${ARCHIVE}")"
+            echo ""
+            echo "- Size: $(du -h "${ARCHIVE}" | cut -f1), $(wc -l < /tmp/tar-content.txt) entries"
+            echo "- sha256: \`$(sha256sum "${ARCHIVE}" | cut -d' ' -f1)\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "${ERRORS}"
+
+  # -----------------------
+  # SBOMs (same process as the rolling pipeline, on the release images)
+  # -----------------------
+  app-sbom:
+    name: Build and generate app SBOM
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    needs: [validate, wait-connectors, build-builder]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.validate.outputs.commit_sha }}
+
+      - name: Download builder image
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: docker-image-opencti-builder
+          path: /tmp/
+
+      - name: Load builder image
+        run: docker load --input /tmp/opencti-builder.tar
+
+      - name: Build graphql production and prune devDependencies
+        env:
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql" \
+            -w /opt/opencti/opencti-graphql \
+            "filigran/builder:${TAG}" \
+            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
+
+      - name: Build front production and prune devDependencies
+        env:
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          docker run --rm \
+            -v "${GITHUB_WORKSPACE}/opencti-platform/opencti-front:/opt/opencti/opencti-front" \
+            -w /opt/opencti/opencti-front \
+            "filigran/builder:${TAG}" \
+            sh -c "yarn install --immutable && yarn build && yarn workspaces focus --production"
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+
+      - name: Generate graphql and front SBOMs
+        env:
+          APP_VERSION: ${{ needs.validate.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for APP in graphql front; do
+            DIR="opencti-platform/opencti-${APP}"
+            SBOM="sbom-opencti-${APP}.cdx.json"
+            (cd "${DIR}" && syft dir:. \
+              --config ../../.github/.syft.yaml \
+              --select-catalogers javascript \
+              --output "cyclonedx-json@1.6=${SBOM}")
+            jq --slurpfile mfr .github/sbom-manufacturer.json \
+              --arg version "${APP_VERSION}" \
+              --arg name "opencti-${APP}" \
+              '.metadata.component.manufacturer = $mfr[0]
+              | .metadata.component.name = $name
+              | .metadata.component["bom-ref"] = $name
+              | .metadata.component.version = $version' "${DIR}/${SBOM}" > tmp.cdx.json && mv tmp.cdx.json "${DIR}/${SBOM}"
+          done
+
+      - name: Generate parent SBOM
+        env:
+          APP_VERSION: ${{ needs.validate.outputs.tag }}
+        run: |
+          jq -n \
+            --arg version "${APP_VERSION}" \
+            --slurpfile mfr .github/sbom-manufacturer.json \
+            '{
+              "bomFormat": "CycloneDX",
+              "specVersion": "1.6",
+              "version": 1,
+              "metadata": {
+                "manufacturer": $mfr[0],
+                "component": {
+                  "type": "application",
+                  "group": "io.opencti",
+                  "name": "opencti",
+                  "version": $version,
+                  "manufacturer": $mfr[0]
+                }
+              }
+            }' > opencti-platform/sbom-parent.cdx.json
+
+      - name: Collect app SBOMs
+        run: |
+          mkdir -p sbom-staging
+          cp opencti-platform/opencti-graphql/sbom-opencti-graphql.cdx.json sbom-staging/
+          cp opencti-platform/opencti-front/sbom-opencti-front.cdx.json sbom-staging/
+          cp opencti-platform/sbom-parent.cdx.json sbom-staging/
+
+      - name: Upload app SBOMs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: opencti-app-sbom
+          path: sbom-staging/
+          if-no-files-found: error
+          retention-days: 10
+
+  # Container SBOMs are generated from the amd64 image of each variant, as for rolling.
+  generate-sbom-platform:
+    name: Generate SBOM (platform ${{ matrix.variant }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    needs: [validate, build-platform]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { variant: standard, suffix: "" }
+          - { variant: ubi9, suffix: "_ubi9" }
+          - { variant: fips, suffix: "_fips" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/generate-sbom
+        with:
+          tags: '["${{ needs.validate.outputs.tag }}"]'
+          image_name: "filigran/platform"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-platform${{ matrix.suffix }}-amd64"
+          sbom_name: "opencti-platform${{ matrix.suffix }}"
+
+  generate-sbom-worker:
+    name: Generate SBOM (worker ${{ matrix.variant }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    needs: [validate, build-worker]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { variant: standard, suffix: "" }
+          - { variant: ubi9, suffix: "_ubi9" }
+          - { variant: fips, suffix: "_fips" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/generate-sbom
+        with:
+          tags: '["${{ needs.validate.outputs.tag }}"]'
+          image_name: "filigran/worker"
+          source: "artifact"
+          artifact_name: "docker-image-opencti-worker${{ matrix.suffix }}-amd64"
+          sbom_name: "opencti-worker${{ matrix.suffix }}"
+
+  merge-sbom:
+    name: Merge SBOM (${{ matrix.variant }})
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    needs: [validate, app-sbom, generate-sbom-platform, generate-sbom-worker]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { variant: standard, suffix: "" }
+          - { variant: ubi9, suffix: "_ubi9" }
+          - { variant: fips, suffix: "_fips" }
+    steps:
+      - name: Download app SBOMs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: opencti-app-sbom
+          path: sbom-work/
+
+      - name: Download platform docker SBOM
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: sbom-opencti-platform${{ matrix.suffix }}
+          path: sbom-work/
+
+      - name: Download worker docker SBOM
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: sbom-opencti-worker${{ matrix.suffix }}
+          path: sbom-work/
+
+      - name: Install cyclonedx-cli
+        run: |
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.33.1/cyclonedx-linux-x64 -o "$RUNNER_TEMP/cyclonedx-cli"
+          echo "bfc8b2538da86fe239bc53658bbb63c1c8c510a293c1e6891aa5bea5d3c58746  $RUNNER_TEMP/cyclonedx-cli" | sha256sum --check --strict
+          chmod +x "$RUNNER_TEMP/cyclonedx-cli"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Merge and validate all SBOMs
+        working-directory: sbom-work
+        env:
+          APP_VERSION: ${{ needs.validate.outputs.tag }}
+        run: |
+          set -euo pipefail
+          PLATFORM_SBOM=$(ls sbom-platform-container-*.cdx.json)
+          WORKER_SBOM=$(ls sbom-worker-container-*.cdx.json)
+          for SBOM in "${PLATFORM_SBOM}" "${WORKER_SBOM}"; do
+            jq --arg version "${APP_VERSION}" '.metadata.component.version = $version' "${SBOM}" > tmp.cdx.json && mv tmp.cdx.json "${SBOM}"
+          done
+          cyclonedx-cli merge \
+            --input-files sbom-parent.cdx.json "${PLATFORM_SBOM}" sbom-opencti-front.cdx.json sbom-opencti-graphql.cdx.json "${WORKER_SBOM}" \
+            --output-file "sbom-opencti-platform-${APP_VERSION}.cdx.json" \
+            --hierarchical \
+            --group io.opencti \
+            --name opencti \
+            --version "${APP_VERSION}"
+          cyclonedx-cli validate --input-file "sbom-opencti-platform-${APP_VERSION}.cdx.json" --fail-on-errors
+
+      - name: Upload merged SBOM
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-opencti-platform-${{ needs.validate.outputs.tag }}${{ matrix.suffix }}
+          path: sbom-work/sbom-opencti-platform-*.cdx.json
+          if-no-files-found: error
+          retention-days: 30
+
+  # -----------------------
+  # Consolidated artifacts read by the release repository
+  # -----------------------
+  # /!\ Artifact names, layout and release-manifest.json are a contract with the release repository.
+  bundle:
+    name: Bundle release artifacts
+    runs-on: ubuntu-26.04
+    timeout-minutes: 45
+    needs: [validate, build-platform, build-worker, build-tar, merge-sbom]
+    steps:
+      - name: Download platform images
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          pattern: docker-image-opencti-platform*
+          path: artifacts/
+
+      - name: Download worker images
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          pattern: docker-image-opencti-worker*
+          path: artifacts/
+
+      - name: Download merged SBOMs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          pattern: sbom-opencti-platform-${{ needs.validate.outputs.tag }}*
+          path: artifacts/
+
+      - name: Download tarballs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          pattern: tar-opencti-platform*
+          path: tar-artifacts/
+          merge-multiple: true
+
+      - name: Verify images and write release manifest
+        working-directory: artifacts
+        env:
+          TAG: ${{ needs.validate.outputs.tag }}
+          COMMIT_SHA: ${{ needs.validate.outputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          ERRORS=0
+          IMAGES='[]'
+          for COMPONENT in platform worker; do
+            for SUFFIX in "" _ubi9 _fips; do
+              VARIANT="${SUFFIX#_}"
+              ARCHS="amd64 arm64"
+              [ "${SUFFIX}" == "_fips" ] && ARCHS="amd64"
+              for ARCH in ${ARCHS}; do
+                NAME="opencti-${COMPONENT}${SUFFIX}-${ARCH}"
+                ARCHIVE="docker-image-${NAME}/${NAME}.tar"
+                if [ ! -f "${ARCHIVE}" ]; then
+                  echo "::error::Missing image archive ${ARCHIVE}"
+                  ERRORS=1
+                  continue
+                fi
+                DOCKER_MANIFEST="$(tar -xOf "${ARCHIVE}" manifest.json)"
+                CONFIG_PATH="$(jq -r '.[0].Config' <<< "${DOCKER_MANIFEST}")"
+                CONFIG="$(tar -xOf "${ARCHIVE}" "${CONFIG_PATH}")"
+                # Config is "blobs/sha256/<digest>" or "<digest>.json" depending on the exporter version
+                IMAGE_ID="sha256:$(basename "${CONFIG_PATH}" .json)"
+                CHECKS="$(jq -n -r \
+                  --argjson manifest "${DOCKER_MANIFEST}" \
+                  --argjson config "${CONFIG}" \
+                  --arg ref "filigran/${COMPONENT}:${TAG}" \
+                  --arg arch "${ARCH}" \
+                  --arg tag "${TAG}" \
+                  --arg commit "${COMMIT_SHA}" \
+                  '[
+                    (if ($manifest | length) != 1 then "contains \($manifest | length) images, expected 1" else empty end),
+                    (if ($manifest[0].RepoTags | map(sub("^docker.io/"; ""))) != [$ref] then "tags are \($manifest[0].RepoTags), expected [\($ref)]" else empty end),
+                    (if $config.architecture != $arch then "architecture is \($config.architecture), expected \($arch)" else empty end),
+                    (if $config.config.Labels["org.opencontainers.image.version"] != $tag then "version label is \($config.config.Labels["org.opencontainers.image.version"]), expected \($tag)" else empty end),
+                    (if $config.config.Labels["org.opencontainers.image.revision"] != $commit then "revision label is \($config.config.Labels["org.opencontainers.image.revision"]), expected \($commit)" else empty end)
+                  ] | .[]')"
+                if [ -n "${CHECKS}" ]; then
+                  while IFS= read -r CHECK; do
+                    echo "::error::${ARCHIVE}: ${CHECK}"
+                  done <<< "${CHECKS}"
+                  ERRORS=1
+                fi
+                IMAGES="$(jq \
+                  --arg name "opencti/${COMPONENT}" \
+                  --arg variant "${VARIANT:-standard}" \
+                  --arg arch "${ARCH}" \
+                  --arg archive "${ARCHIVE}" \
+                  --arg sha256 "$(sha256sum "${ARCHIVE}" | cut -d' ' -f1)" \
+                  --arg image_id "${IMAGE_ID}" \
+                  '. + [{name: $name, variant: $variant, arch: $arch, archive: $archive, sha256: $sha256, image_id: $image_id}]' <<< "${IMAGES}")"
+              done
+            done
+          done
+
+          FILES='[]'
+          for SUFFIX in "" _ubi9 _fips; do
+            SBOM="sbom-opencti-platform-${TAG}${SUFFIX}/sbom-opencti-platform-${TAG}.cdx.json"
+            if [ ! -f "${SBOM}" ]; then
+              echo "::error::Missing merged SBOM ${SBOM}"
+              ERRORS=1
+              continue
+            fi
+            FILES="$(jq --arg path "${SBOM}" --arg sha256 "$(sha256sum "${SBOM}" | cut -d' ' -f1)" \
+              '. + [{path: $path, sha256: $sha256}]' <<< "${FILES}")"
+          done
+
+          for TARBALL in "opencti-${TAG}.tar.gz" "opencti-${TAG}_musl.tar.gz"; do
+            if [ ! -f "../tar-artifacts/${TARBALL}" ]; then
+              echo "::error::Missing tarball ${TARBALL}"
+              ERRORS=1
+            fi
+          done
+
+          if [ "${ERRORS}" -ne 0 ]; then
+            exit 1
+          fi
+
+          jq -n --arg tag "${TAG}" --arg commit "${COMMIT_SHA}" --argjson images "${IMAGES}" --argjson files "${FILES}" \
+            '{tag: $tag, commit: $commit, images: $images, files: $files}' > release-manifest.json
+          {
+            echo "### Release manifest"
+            echo ""
+            echo "| Image | Variant | Arch | Image ID |"
+            echo "|---|---|---|---|"
+            # shellcheck disable=SC2016 # backticks are Markdown inside a jq filter
+            jq -r '.images[] | "| `\(.name)` | \(.variant) | \(.arch) | `\(.image_id[0:19])` |"' release-manifest.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload consolidated artifacts except tarballs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: opencti-release
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload consolidated tarballs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tarball-opencti-release
+          path: tar-artifacts/
+          if-no-files-found: error
+          retention-days: 30
+
+  # -----------------------
+  # Summary of what a publication would use
+  # -----------------------
+  summary:
+    name: Release summary
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    needs: [validate, build-pycti, bundle]
+    permissions:
+      actions: read
+    steps:
+      - name: List artifacts of this run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          set -euo pipefail
+          {
+            echo "## Artifacts for ${TAG}"
+            echo ""
+            echo "🧪 Dry run: these are the files a publication would use. Images are published from the release repository, not from here."
+            echo ""
+            echo "| Artifact | Size (MB) |"
+            echo "|---|---|"
+            # shellcheck disable=SC2016 # backticks are Markdown inside a jq filter
+            gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" \
+              --jq '.artifacts[] | "| `\(.name)` | \((.size_in_bytes / 1048576 * 10 | floor) / 10) |"' | sort
+          } >> "$GITHUB_STEP_SUMMARY"
