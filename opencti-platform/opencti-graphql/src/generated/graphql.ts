@@ -4646,7 +4646,8 @@ export type ConfigPresetImportItem = {
 };
 
 export enum ConfigPresetImportOutcome {
-  Completed = 'COMPLETED'
+  Completed = 'COMPLETED',
+  Stopped = 'STOPPED'
 }
 
 export type ConfigPresetImportOutput = {
@@ -4696,6 +4697,7 @@ export type ConfigPresetImportSession = {
 };
 
 export enum ConfigPresetImportSessionEvent {
+  Abort = 'ABORT',
   Close = 'CLOSE',
   Finish = 'FINISH',
   ItemProcessed = 'ITEM_PROCESSED',

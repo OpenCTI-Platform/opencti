@@ -282,6 +282,33 @@ describe('ConfigPresetImportWizard', () => {
     });
   });
 
+  describe('lock', () => {
+    it('keeps the selection and makes Apply usable again after an Apply refused because an import is running', async () => {
+      const saved = session({ revision: 2, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] });
+      const rendered = await renderPreview(saved);
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      await reject(rendered, 'ConfigPresetImportWizardApplyMutation', 'import_running');
+      // The session is read again, still a draft: the step shows no message of its own
+      await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: saved }) });
+      await resolve(rendered, 'ConfigPresetImportPreviewQuery', { Query: () => ({ configPresetImportPreview: preview }) });
+      expect(await screen.findByRole('button', { name: 'Apply' })).toBeEnabled();
+      expect(checkbox('Messages (1/1)')).toHaveAttribute('data-state', 'checked');
+      expect(checkbox('Platform configuration (0/1)')).toHaveAttribute('data-state', 'unchecked');
+      expect(screen.queryByText('An import is already running')).not.toBeInTheDocument();
+    });
+
+    it('shows the result of an import that was stopped like any other outcome', async () => {
+      await renderWizard(session({
+        status: 'FINISHED',
+        outcome: 'STOPPED',
+        counts: { created: 0, overwritten: 1, skipped: 0, failed: 1 },
+        results: [{ type: 'platform', key: 'platform', status: 'OVERWRITTEN', reason: null }, { type: 'messages', key: 'banner', status: 'FAILED', reason: 'Import stopped: lock lost' }],
+      }));
+      expect(screen.getByText('Import stopped: lock lost')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+    });
+  });
+
   describe('simulate', () => {
     const simulated = [
       { type: 'branding', key: 'theme--1', status: 'CREATED', reason: null },

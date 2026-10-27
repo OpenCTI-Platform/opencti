@@ -10,6 +10,7 @@ import { checkConfigPresetImportAccess } from './configPreset-import-utils';
 import { computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
+import { withConfigPresetImportLock } from './configPreset-import-lock';
 import { applyConfigPresetImportEvent, applyConfigPresetImportRunEvent, readConfigPresetImportSession, toSessionSelections } from './configPreset-import-session-domain';
 import type { ConfigPresetImportCounts, ConfigPresetImportItemResult, ConfigPresetImportResultStatus } from './configPreset-import-session';
 import {
@@ -81,6 +82,7 @@ const dryRun = async (context: AuthContext, user: AuthUser, items: ConfigPresetB
 const realImport = async (
   context: AuthContext,
   user: AuthUser,
+  lock: { signal: AbortSignal },
   fileId: string,
   bundle: ConfigPresetBundle,
   items: ConfigPresetBundleItem[],
@@ -111,37 +113,71 @@ const realImport = async (
   const plan: ConfigPresetImportPlan = { created: new Set() };
   const results: ConfigPresetImportItemResult[] = [];
   const labels = new Map<string, string>();
-  for (let i = 0; i < items.length; i += 1) {
-    const item = items[i];
-    // Re-read before each item: the rights of the user may have changed; the origin is kept for the audit
-    const cachedUser = await resolveUserByIdFromCache(importContext, user.id);
-    if (!cachedUser) {
-      throw FunctionalError('The user who started the import no longer exists');
-    }
-    const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
-    const importer = CONFIG_PRESET_FAMILIES.find((family) => family.id === item.type)!.importer!;
-    const computed = await importer.compute(importContext, runUser, item, plan);
-    labels.set(configPresetPlanKey(item.type, item.id), computed.label);
-    let result = toResult(item, computed.status, computed.reason);
-    if (computed.status !== 'failed' && computed.status !== 'skipped') {
-      try {
-        const applied = await importer.apply(importContext, runUser, item, computed);
-        if (applied) {
-          result = toResult(item, applied, computed.reason);
+  // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
+  let stopReason: string | null = null;
+  try {
+    for (let i = 0; i < items.length && !stopReason; i += 1) {
+      const item = items[i];
+      // A lost lock aborts its signal and throws nothing: checked before each item, the item in progress finishes
+      if (lock.signal.aborted) {
+        stopReason = 'Import stopped: lock lost';
+      } else {
+        // Re-read before each item: the rights of the user may have changed; the origin is kept for the audit
+        const cachedUser = await resolveUserByIdFromCache(importContext, user.id);
+        if (!cachedUser) {
+          throw FunctionalError('The user who started the import no longer exists');
         }
-      } catch (err) {
-        // The theme was not created: the items that depend on it fail with it
-        plan.created.delete(configPresetPlanKey(item.type, item.id));
-        result = toResult(item, 'failed', err instanceof Error ? err.message : String(err));
+        const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
+        const importer = CONFIG_PRESET_FAMILIES.find((family) => family.id === item.type)!.importer!;
+        const computed = await importer.compute(importContext, runUser, item, plan);
+        labels.set(configPresetPlanKey(item.type, item.id), computed.label);
+        let result = toResult(item, computed.status, computed.reason);
+        if (computed.status !== 'failed' && computed.status !== 'skipped') {
+          try {
+            const applied = await importer.apply(importContext, runUser, item, computed);
+            if (applied) {
+              result = toResult(item, applied, computed.reason);
+            }
+          } catch (err) {
+            // The theme was not created: the items that depend on it fail with it
+            plan.created.delete(configPresetPlanKey(item.type, item.id));
+            result = toResult(item, 'failed', err instanceof Error ? err.message : String(err));
+          }
+        }
+        results.push(result);
+        await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result });
       }
     }
-    results.push(result);
-    await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result });
+  } catch (err) {
+    if (results.length === 0) {
+      // An error before the first item: back to the draft, the error is returned. A failure here is only logged.
+      await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ABORT', undefined)
+        .catch((abortErr) => logApp.error('[CONFIG PRESET] The import session could not go back to the draft', { cause: abortErr }));
+      throw err;
+    }
+    logApp.error('[CONFIG PRESET] The import was stopped by an unexpected error', { cause: err });
+    stopReason = err instanceof Error ? err.message : String(err);
   }
+  if (stopReason) {
+    // The remaining items are failed with the reason, in the results and, best effort, in the session
+    for (let i = results.length; i < items.length; i += 1) {
+      const result = toResult(items[i], 'failed', stopReason);
+      results.push(result);
+      await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result })
+        .catch((writeErr) => logApp.warn('[CONFIG PRESET] The result of a stopped item could not be written in the session', { cause: writeErr }));
+    }
+  }
+  const outcome = stopReason ? 'STOPPED' : 'COMPLETED';
   // Completed once every selected item has been processed, whatever the failures, and only on a platform with a pending status
-  const { platform_bootstrap_status: bootstrapStatus } = (await getSettings(importContext)) as { platform_bootstrap_status?: string };
-  if (bootstrapStatus === 'pending') {
-    await setPlatformBootstrapStatus(importContext, user, 'completed');
+  if (!stopReason) {
+    try {
+      const { platform_bootstrap_status: bootstrapStatus } = (await getSettings(importContext)) as { platform_bootstrap_status?: string };
+      if (bootstrapStatus === 'pending') {
+        await setPlatformBootstrapStatus(importContext, user, 'completed');
+      }
+    } catch (err) {
+      logApp.warn('[CONFIG PRESET] The platform bootstrap status could not be set to completed', { cause: err });
+    }
   }
   const counts = countResults(results);
   const report = await writeConfigPresetImportReport(importContext, user, fileId, {
@@ -150,9 +186,12 @@ const realImport = async (
     ended_at: new Date().toISOString(),
     bundle: bundle.metadata,
     items: results.map((result) => ({ ...result, label: labels.get(configPresetPlanKey(result.type, result.key)) ?? result.key })),
-    outcome: 'completed',
+    outcome: stopReason ? 'stopped' : 'completed',
   });
-  await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'FINISH', { outcome: 'COMPLETED', counts, report_id: report.reportId });
+  // The session leaves applying before the lock is released, otherwise its owner would read it as interrupted while the engine ends.
+  // A failure here never replaces the result: the session stays applying and the lock is released anyway.
+  await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'FINISH', { outcome, counts, report_id: report.reportId })
+    .catch((finishErr) => logApp.error('[CONFIG PRESET] The end of the import could not be written in the session', { cause: finishErr }));
   if (report.reportId) {
     // The listeners run in a Promise.all: a failing one never fails the import
     try {
@@ -167,12 +206,12 @@ const realImport = async (
       logApp.warn('[CONFIG PRESET] The activity event of the import could not be published', { cause: err });
     }
   }
-  logApp.info('[CONFIG PRESET] Import finished', { user_id: user.id, file_id: fileId, counts });
+  logApp.info('[CONFIG PRESET] Import finished', { user_id: user.id, file_id: fileId, outcome, counts });
   return { results, report_id: report.reportId, settings: await getSettings(importContext) };
 };
 
 // Applies the selected items of the pending zip one by one, required dependencies first, and returns the result of each:
-// the expected result for a dry run. A failed item never stops the next one.
+// the expected result for a dry run. A failed item never stops the next one. A real import runs under a platform-wide lock.
 export const configPresetImport = async (
   context: AuthContext,
   user: AuthUser,
@@ -183,7 +222,17 @@ export const configPresetImport = async (
   checkConfigPresetImportAccess(context, user);
   // A real import goes on if the browser disconnects: its context is detached from the request
   const engineContext: AuthContext = isDryRun ? context : { ...context, requestAbortSignal: undefined };
-  const bundle = await readConfigPresetBundle(await loadConfigPresetImportZip(engineContext, user, fileId));
-  const items = resolveImportItems(bundle, selections);
-  return isDryRun ? dryRun(engineContext, user, items) : realImport(engineContext, user, fileId, bundle, items, selections);
+  const prepare = async () => {
+    const bundle = await readConfigPresetBundle(await loadConfigPresetImportZip(engineContext, user, fileId));
+    return { bundle, items: resolveImportItems(bundle, selections) };
+  };
+  if (isDryRun) {
+    // No lock: a dry run writes nothing and runs even while an import is in progress
+    return dryRun(engineContext, user, (await prepare()).items);
+  }
+  // The lock is taken first, before the zip is read and before any session read: a second import is refused at once
+  return withConfigPresetImportLock(async (lock) => {
+    const { bundle, items } = await prepare();
+    return realImport(engineContext, user, lock, fileId, bundle, items, selections);
+  });
 };

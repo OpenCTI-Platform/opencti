@@ -7,9 +7,9 @@ import { FunctionalError } from '../../config/errors';
 export const CONFIG_PRESET_IMPORT_SESSION_VERSION = 1;
 
 export type ConfigPresetImportSessionStatus = 'DRAFT' | 'APPLYING' | 'FINISHED';
-export type ConfigPresetImportOutcome = 'COMPLETED';
+export type ConfigPresetImportOutcome = 'COMPLETED' | 'STOPPED';
 export type ConfigPresetImportResultStatus = 'CREATED' | 'OVERWRITTEN' | 'SKIPPED' | 'FAILED';
-export type ConfigPresetImportSessionEvent = 'UPLOAD' | 'SAVE' | 'START_OVER' | 'START' | 'ITEM_PROCESSED' | 'FINISH' | 'CLOSE';
+export type ConfigPresetImportSessionEvent = 'UPLOAD' | 'SAVE' | 'START_OVER' | 'START' | 'ITEM_PROCESSED' | 'FINISH' | 'ABORT' | 'CLOSE';
 
 // The stored shape of a selection, not the GraphQL input
 export interface ConfigPresetImportSelection {
@@ -54,6 +54,7 @@ export interface ConfigPresetImportSessionPayloads {
   START: { started_at: string; total: number; selections: ConfigPresetImportSelection[] };
   ITEM_PROCESSED: { result: ConfigPresetImportItemResult };
   FINISH: { outcome: ConfigPresetImportOutcome; counts: ConfigPresetImportCounts; report_id: string | null };
+  ABORT: undefined;
   CLOSE: undefined;
 }
 
@@ -120,6 +121,8 @@ const TRANSITIONS: ConfigPresetImportTransition[] = [
     to: 'FINISHED',
     apply: (session, { outcome, counts, report_id }) => ({ ...session!, status: 'FINISHED', outcome, counts, report_id }),
   },
+  // An error before the first item: back to the draft, the file and the selection are kept
+  { event: 'ABORT', from: 'APPLYING', to: 'DRAFT', apply: (session) => ({ ...session!, status: 'DRAFT', started_at: null, total: 0, results: [] }) },
   { event: 'CLOSE', from: 'FINISHED', to: 'NONE', apply: () => null },
 ];
 

@@ -17,7 +17,7 @@ export interface ConfigPresetImportReportInput {
   source_file_name: string;
   bundle: ConfigPresetBundleMetadata;
   items: (ConfigPresetImportItemResult & { label: string })[];
-  outcome: 'completed';
+  outcome: 'completed' | 'stopped';
 }
 
 // The report of a real import under config_preset/history/<uuid>/ with the uploaded zip copied next to it (entity_id '' so
@@ -48,7 +48,10 @@ export const writeConfigPresetImportReport = async (
         targetEntityId: '',
       });
       if (copy) {
-        await deleteFile(context, user, pending.id, { forceDelete: true });
+        // A stopped import keeps the pending zip
+        if (report.outcome === 'completed') {
+          await deleteFile(context, user, pending.id, { forceDelete: true });
+        }
       } else {
         logApp.warn('[CONFIG PRESET] The uploaded zip could not be copied next to the import report', { file_id: pending.id });
       }

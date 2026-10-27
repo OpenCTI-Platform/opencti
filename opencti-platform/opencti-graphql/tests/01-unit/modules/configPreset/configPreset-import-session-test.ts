@@ -80,10 +80,22 @@ describe('Config preset import session transitions', () => {
     refused(null, 'CLOSE', undefined as never);
   });
 
+  it('goes back to the draft from applying, keeping the file and the selection, and from nowhere else', () => {
+    const back = transition(applying(), 'ABORT', undefined)!;
+    expect(back).toMatchObject({ status: 'DRAFT', file_id: 'file-1', selections, started_at: null, total: 0, results: [] });
+    refused(draft(), 'ABORT', undefined as never);
+    refused(finished(), 'ABORT', undefined as never);
+    refused(null, 'ABORT', undefined as never);
+  });
+
+  it('finishes with the outcome stopped', () => {
+    expect(transition(applying(), 'FINISH', { outcome: 'STOPPED', counts: { created: 0, overwritten: 0, skipped: 0, failed: 2 }, report_id: null })).toMatchObject({ status: 'FINISHED', outcome: 'STOPPED' });
+  });
+
   it('lists the events each state accepts', () => {
     expect(getConfigPresetImportAvailableEvents(null)).toEqual(['UPLOAD']);
     expect(getConfigPresetImportAvailableEvents(draft())).toEqual(['UPLOAD', 'SAVE', 'START_OVER', 'START']);
-    expect(getConfigPresetImportAvailableEvents(applying())).toEqual(['ITEM_PROCESSED', 'FINISH']);
+    expect(getConfigPresetImportAvailableEvents(applying())).toEqual(['ITEM_PROCESSED', 'FINISH', 'ABORT']);
     expect(getConfigPresetImportAvailableEvents(finished())).toEqual(['UPLOAD', 'START_OVER', 'CLOSE']);
   });
 });

@@ -431,13 +431,21 @@ export interface LockHandle {
   unlock: () => Promise<void>;
 }
 
+// The redlock key of a resource: shared by the lock and by the check that tells whether a resource is locked
+const buildLockKey = (id: string, draftId = '') => `{locks}:${id}${draftId}`;
+
+// Whether a resource is locked right now, without taking the lock (no draftId: such a lock is platform-wide)
+export const isResourceLocked = async (id: string): Promise<boolean> => {
+  return (await getClientLock().exists(buildLockKey(id))) > 0;
+};
+
 export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
   const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
   const initialCallStack = getStackTrace();
   const resourcesId = R.uniq(resources).map((id) => `${id}${draftId}`);
-  const locks = R.uniq(resourcesId).map((id) => `{locks}:${id}${draftId}`);
+  const locks = R.uniq(resourcesId).map((id) => buildLockKey(id, draftId));
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');

@@ -17839,6 +17839,7 @@ enum ConfigPresetImportSessionStatus {
 
 enum ConfigPresetImportOutcome {
   COMPLETED
+  STOPPED
 }
 
 enum ConfigPresetImportSessionEvent {
@@ -17848,6 +17849,7 @@ enum ConfigPresetImportSessionEvent {
   START
   ITEM_PROCESSED
   FINISH
+  ABORT
   CLOSE
 }
 

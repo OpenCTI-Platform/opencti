@@ -91,6 +91,8 @@ enum ConfigPresetImportSessionStatus {
 
 enum ConfigPresetImportOutcome {
     COMPLETED
+    # Every item has a result, but the import was stopped before the end (lost lock, unexpected error): the status stays pending.
+    STOPPED
 }
 
 # The events the current state of the session accepts: the wizard enables its buttons from them.
@@ -101,6 +103,7 @@ enum ConfigPresetImportSessionEvent {
     START
     ITEM_PROCESSED
     FINISH
+    ABORT
     CLOSE
 }
 
