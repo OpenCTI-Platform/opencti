@@ -20,16 +20,16 @@ const BodyItem = styled('div')(({ theme }) => ({
 
 const EntityStixCoreRelationshipsContextualViewLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   return (
-    <ListItem sx={(theme) => ({ paddingLeft: theme.spacing(1.5), height: 50 })} divider={true}>
+    <ListItem sx={{ paddingLeft: 1.5, height: 50 }} divider={true}>
       <ListItemIcon
-        sx={(theme) => ({ color: theme.palette.grey?.[700] })}
+        sx={{ color: 'grey.700' }}
         style={{ minWidth: 40 }}
       >
         <Checkbox
           disabled={true}
         />
       </ListItemIcon>
-      <ListItemIcon sx={(theme) => ({ color: theme.palette.primary?.main })}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText

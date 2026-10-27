@@ -99,7 +99,7 @@ const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
       to={`${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`}
     >
       <ListItemIcon
-        sx={(theme) => ({ color: theme.palette.primary?.main })}
+        sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, stixCoreObject)
@@ -113,7 +113,7 @@ const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
           }
         />
       </ListItemIcon>
-      <ListItemIcon sx={(theme) => ({ color: theme.palette.primary?.main })}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText

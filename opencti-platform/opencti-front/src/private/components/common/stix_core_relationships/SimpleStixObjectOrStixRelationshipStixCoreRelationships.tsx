@@ -74,7 +74,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
                 dense={true}
                 divider={true}
               >
-                <ListItemIcon sx={(theme) => ({ marginRight: 0, color: theme.palette.primary.main })}>
+                <ListItemIcon sx={{ marginRight: 0, color: 'primary.main' }}>
                   <Skeleton
                     animation="wave"
                     variant="circular"

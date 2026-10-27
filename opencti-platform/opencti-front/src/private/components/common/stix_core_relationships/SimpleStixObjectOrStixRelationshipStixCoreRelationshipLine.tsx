@@ -689,7 +689,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
       divider={true}
       secondaryAction={<MoreVertOutlined />}
     >
-      <ListItemIcon sx={(theme) => ({ color: theme.palette.grey?.[700] })}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton
           animation="wave"
           variant="circular"

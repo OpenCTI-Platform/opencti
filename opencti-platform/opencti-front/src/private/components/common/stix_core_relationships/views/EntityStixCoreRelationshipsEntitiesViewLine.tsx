@@ -242,7 +242,7 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
       to={`${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`}
     >
       <ListItemIcon
-        sx={(theme) => ({ color: theme.palette.primary?.main })}
+        sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, stixCoreObject)
@@ -256,7 +256,7 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
           }
         />
       </ListItemIcon>
-      <ListItemIcon sx={(theme) => ({ color: theme.palette.primary?.main })}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
@@ -327,14 +327,14 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
   return (
     <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
       <ListItemIcon
-        sx={(theme) => ({ color: theme.palette.grey?.[700] })}
+        sx={{ color: 'grey.700' }}
         style={{ minWidth: 40 }}
       >
         <Checkbox
           disabled={true}
         />
       </ListItemIcon>
-      <ListItemIcon sx={(theme) => ({ color: theme.palette.primary?.main })}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
