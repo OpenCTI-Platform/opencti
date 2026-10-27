@@ -130,7 +130,7 @@ const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
 // Console logs default to JSON for log collectors, and to a human-readable format for a developer watching a terminal
-const defaultConsoleFormat = DEV_MODE && (process.stdout.isTTY || process.env.HOT_RELOAD_WATCH === 'true') ? 'pretty' : 'json';
+const defaultConsoleFormat = DEV_MODE && (process.stdout.isTTY || process.env.WATCH_STDOUT_IS_TTY === 'true') ? 'pretty' : 'json';
 const createConsoleTransport = (formatKey) => {
   const consoleFormat = nconf.get(formatKey) ?? defaultConsoleFormat;
   return new winston.transports.Console(consoleFormat === 'pretty' ? { format: prettyConsoleFormat } : {});
