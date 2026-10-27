@@ -59,6 +59,9 @@ runs:
             npm install -g node-gyp &&
             cd /workspace/opencti-platform/opencti-graphql &&
             yarn install --immutable &&
+            yarn build &&
+            cd /workspace/opencti-platform/opencti-front &&
+            yarn install --immutable &&
             yarn build
           '
 
@@ -75,6 +78,8 @@ runs:
         rm -rf ./opencti-platform/opencti-graphql/.yarn/cache
         cp -a ./opencti-platform/opencti-graphql release/opencti
         cp -a ./opencti-platform/.yarnrc.yml release/opencti/
+        # The backend serves the UI from public/ in production, as in the Dockerfile
+        cp -a ./opencti-platform/opencti-front/dist release/opencti/public
         cp -a ./opencti-worker/src release/opencti/worker
         if [ "${INCLUDE_DOCKER}" == "true" ]; then
           git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/opencti/docker

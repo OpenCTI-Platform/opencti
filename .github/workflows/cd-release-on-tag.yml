@@ -219,8 +219,9 @@ jobs:
               with zipfile.ZipFile(path) as z:
                   name = next(n for n in z.namelist() if n.endswith(".dist-info/RECORD"))
                   lines = z.read(name).decode().splitlines()
-              # path -> sha256, ignoring RECORD itself
-              return {l.split(",")[0]: l.split(",")[1] for l in lines if l and not l.endswith("RECORD,,")}
+              # path -> sha256; WHEEL names the build tool version, which is not pinned, so it is ignored with RECORD
+              entries = (l.split(",") for l in lines if l)
+              return {e[0]: e[1] for e in entries if not e[0].endswith((".dist-info/RECORD", ".dist-info/WHEEL"))}
           built, published = record(sys.argv[1]), record(sys.argv[2])
           only_built = sorted(set(built) - set(published))
           only_published = sorted(set(published) - set(built))
@@ -250,6 +251,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
   # Publication disabled until the dry run is validated: no job of this workflow can publish anything.
+  # Re-enabling it also needs the guard of the header (dry_run input and a "publish" output of validate).
   # publish-pycti:
   #   name: Publish pycti
   #   runs-on: ubuntu-26.04
@@ -369,7 +371,7 @@ jobs:
   # -----------------------
   # Platform tarballs (GitHub release assets)
   # -----------------------
-  # Same content as the CircleCI release tarballs: opencti-graphql + worker + connectors cloned at the tag,
+  # opencti-graphql with the UI in public/ + worker + connectors cloned at the tag,
   # without the docker repository (unlike rolling tarballs).
   build-tar:
     name: Build platform tarball (${{ matrix.variant }})
@@ -415,12 +417,26 @@ jobs:
           ls -la "${ARCHIVE}"
           tar -tzf "${ARCHIVE}" > /tmp/tar-content.txt
           ERRORS=0
-          for EXPECTED in opencti/build/back.mjs opencti/package.json opencti/.yarnrc.yml opencti/src/__generated__/opencti-manifest.json opencti/worker/worker.py opencti/connectors/manifest.json; do
+          for EXPECTED in opencti/build/back.mjs opencti/package.json opencti/.yarnrc.yml opencti/src/__generated__/opencti-manifest.json opencti/worker/worker.py opencti/connectors/manifest.json opencti/public/index.html; do
             if ! grep -qx "${EXPECTED}" /tmp/tar-content.txt; then
               echo "::error::Missing in tarball: ${EXPECTED}"
               ERRORS=1
             fi
           done
+          if grep -qx 'opencti/public/index.html' /tmp/tar-content.txt; then
+            # Every file the UI entry point loads must be in the archive
+            REFS="$(tar -xzOf "${ARCHIVE}" opencti/public/index.html | grep -oE '(src|href)="\./[^"]+"' | sed -E 's/^(src|href)="\.\/(.*)"$/\2/' | sort -u || true)"
+            if ! grep -qE '^assets/.+\.js$' <<< "${REFS}"; then
+              echo "::error::opencti/public/index.html does not load any built script from ./assets/"
+              ERRORS=1
+            fi
+            while IFS= read -r REF; do
+              if [ -n "${REF}" ] && ! grep -qxF "opencti/public/${REF}" /tmp/tar-content.txt; then
+                echo "::error::opencti/public/index.html loads ./${REF}, missing in tarball"
+                ERRORS=1
+              fi
+            done <<< "${REFS}"
+          fi
           if grep -q '^opencti/docker/' /tmp/tar-content.txt; then
             echo "::error::Release tarball must not contain the docker repository"
             ERRORS=1
