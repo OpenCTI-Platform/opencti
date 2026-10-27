@@ -3,7 +3,7 @@ import { graphql, useLazyLoadQuery, usePaginationFragment } from 'react-relay';
 import { Checkbox, Chip, SearchField, Spinner, Text } from '@filigran/design-system';
 import { ArrowBackOutlined } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';

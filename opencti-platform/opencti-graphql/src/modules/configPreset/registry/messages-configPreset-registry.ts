@@ -7,7 +7,7 @@ const MESSAGE_LABELS: Record<string, string> = { banner: 'Banner', login: 'Login
 
 // A message is set when the message itself is filled; a level or a confirm text left alone does not show anything
 const isMessageSet = (id: string, configuration: Record<string, unknown>) => {
-  const [messageField] = CONFIG_PRESET_MESSAGES_FIELDS[id];
+  const [messageField] = CONFIG_PRESET_MESSAGES_FIELDS[id as keyof typeof CONFIG_PRESET_MESSAGES_FIELDS];
   return configuration[messageField] !== null && configuration[messageField] !== undefined && configuration[messageField] !== '';
 };
 

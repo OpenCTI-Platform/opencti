@@ -556,6 +556,7 @@ export const getPlatformDefaultTheme = async (context, user) => {
 
 // The default theme by standard id, built-in or custom (the name is only a hint for messages); null when none is set.
 // The theme can be given (the one the export depends on) so that the reference matches it even if the default changed since.
+/** @param {object | null} [defaultTheme] */
 export const getPlatformConfigPresetConfiguration = async (context, user, defaultTheme = undefined) => {
   const [settings, theme] = await Promise.all([getSettingsFromDatabase(context), defaultTheme === undefined ? getPlatformDefaultTheme(context, user) : defaultTheme]);
   return {
