@@ -127,4 +127,4 @@ Available guards today:
 
 ## Notes
 
-MUI 6.5 + @mui/styles legacy. Theme files: src/components/ThemeDark.ts / ThemeLight.ts.
+MUI 9.5, styled with `sx` and `styled()` from `@mui/material/styles`. Theme files: src/components/ThemeDark.ts / ThemeLight.ts.

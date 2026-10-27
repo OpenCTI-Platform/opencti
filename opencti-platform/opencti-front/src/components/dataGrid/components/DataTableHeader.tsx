@@ -140,8 +140,6 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
         </IconButton>
       )}
 
-      <div />
-
       {variant !== DataTableVariant.inline && variant !== DataTableVariant.widget && (
         <SimpleDraggable
           nodeRef={draggableRef as unknown as RefObject<HTMLDivElement>}
