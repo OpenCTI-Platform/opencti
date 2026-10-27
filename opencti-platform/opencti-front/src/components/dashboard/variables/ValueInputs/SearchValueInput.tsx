@@ -21,7 +21,7 @@ import useVariableValueOptions from './useVariableValueOptions';
  */
 const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn }: ValueInputProps) => {
   const { t_i18n } = useFormatter();
-  const { options, search, hasListingError } = useVariableValueOptions(variable);
+  const { options, search, listingError } = useVariableValueOptions(variable);
   const { labels } = useVariableValueLabels(variable, value ? [value] : []);
   const selected = options.find((option) => option.value === value)
     ?? (value ? { value, label: labels.get(value) ?? '', type: variable.type } : null);
@@ -29,7 +29,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
   return (
     <Combobox<FilterOptionValue>
       disabled={disabled}
-      error={hasListingError}
+      error={!!listingError}
       clearable={commitOn === 'change'}
       options={options}
       value={selected}
@@ -52,11 +52,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
           <ComboboxTrigger />
         </ComboboxControls>
       </ComboboxField>
-      {hasListingError && (
-        <ComboboxHelperText aria-live="polite">
-          {t_i18n('The kill chain phases cannot be listed with your access rights or right now')}
-        </ComboboxHelperText>
-      )}
+      {listingError && <ComboboxHelperText aria-live="polite">{listingError}</ComboboxHelperText>}
       <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={label} />
     </Combobox>
   );

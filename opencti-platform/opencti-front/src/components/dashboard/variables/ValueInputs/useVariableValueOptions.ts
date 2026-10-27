@@ -2,6 +2,7 @@ import { SyntheticEvent, useState } from 'react';
 import type { ComboboxChangeCause } from '@filigran/design-system';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { useFormatter } from '../../../i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import { getOptionsFromEntities } from '../../../../utils/filters/SearchEntitiesUtil';
 import { ME_FILTER_VALUE } from '../../../../utils/filters/filtersUtils';
@@ -14,9 +15,9 @@ export interface VariableValueOptions {
   options: FilterOptionValue[];
   // Runs the search of a text: on each keystroke (`type`), and from an empty text when the field is focused.
   search: (event: SyntheticEvent, text: string, cause?: ComboboxChangeCause) => void;
-  // Listing the phases of a kill chain needs the knowledge access: without it no value can be chosen, and the input
-  // says why instead of showing an empty list.
-  hasListingError: boolean;
+  // Why the values cannot be listed, when a search failed: listing the phases of a kill chain needs the knowledge
+  // access, and the entities of a rule may fail to be listed. The input says so instead of showing an empty list.
+  listingError: string | undefined;
 }
 
 /**
@@ -27,6 +28,7 @@ export interface VariableValueOptions {
  * Shared by the input of one value and the input of the values of a selection.
  */
 const useVariableValueOptions = (variable: DashboardVariableShape): VariableValueOptions => {
+  const { t_i18n } = useFormatter();
   const searchKey = VARIABLE_TYPE_SEARCH[variable.type] ?? 'id';
   const searchScope = variable.type === 'entity' ? { [searchKey]: variable.entityTypes ?? [] } : {};
   // The shared search drops External-Reference from the scope, which it can only search for a regardingOf filter:
@@ -57,7 +59,7 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
       search: (_event, text, cause = 'type') => {
         if (restrictedTypes.length > 0) restrictedEntities.search(cause === 'type' ? text : '');
       },
-      hasListingError: false,
+      listingError: restrictedEntities.error ? t_i18n('The entities matching the rule cannot be listed right now') : undefined,
     };
   }
   const options = isKillChainPhase
@@ -75,7 +77,10 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
     } else if (isSearchable) searchEntities(searchKey, cacheEntities, setCacheEntities, event);
   };
 
-  return { options, search, hasListingError: isKillChainPhase && killChainPhases.error };
+  const listingError = isKillChainPhase && killChainPhases.error
+    ? t_i18n('The kill chain phases cannot be listed with your access rights or right now')
+    : undefined;
+  return { options, search, listingError };
 };
 
 export default useVariableValueOptions;

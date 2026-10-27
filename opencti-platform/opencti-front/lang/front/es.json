@@ -5066,6 +5066,7 @@
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "El proceso de desconexión aún está en curso. Si cierras este cuadro de diálogo, se interrumpirá la desconexión. ¿Estás seguro de que quieres cerrarlo?",
   "the draft processes tab": "la pestaña de procesos de borrador",
   "The end date can't be before start date": "La fecha de finalización no puede ser anterior a la fecha de inicio",
+  "The entities matching the rule cannot be listed right now": "Las entidades que coinciden con la regla no se pueden listar en este momento",
   "The evaluation of the threat activity cannot be provided (lack of data).": "No se puede proporcionar la evaluación de la actividad de amenaza (falta de datos).",
   "The following groups require your attention:": "Los siguientes grupos requieren su atención:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "Los siguientes TTPs no están cubiertos en su catálogo OpenBAS :",

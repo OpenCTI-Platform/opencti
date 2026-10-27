@@ -5066,6 +5066,7 @@
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "Der Verbindungsabbruch ist noch nicht abgeschlossen. Durch das Schließen dieses Dialogfelds wird der Verbindungsabbruch abgebrochen. Möchten Sie das Dialogfeld wirklich schließen?",
   "the draft processes tab": "die Registerkarte Entwurfsprozesse",
   "The end date can't be before start date": "Das Enddatum darf nicht vor dem Startdatum liegen.",
+  "The entities matching the rule cannot be listed right now": "Die Entitäten, die der Regel entsprechen, können derzeit nicht aufgelistet werden",
   "The evaluation of the threat activity cannot be provided (lack of data).": "Die Bewertung der Bedrohungsaktivität kann nicht geliefert werden (Datenmangel).",
   "The following groups require your attention:": "Die folgenden Gruppen erfordern Ihre Aufmerksamkeit:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "Die folgenden TTPs sind in Ihrem OpenBAS-Katalog nicht enthalten:",

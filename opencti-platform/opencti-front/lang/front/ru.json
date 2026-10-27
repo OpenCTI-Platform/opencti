@@ -5066,6 +5066,7 @@
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "Процесс отключения ещё не завершён. Закрытие этого диалогового окна приведёт к прерыванию отключения. Вы действительно хотите закрыть окно?",
   "the draft processes tab": "вкладка \"Черновые процессы",
   "The end date can't be before start date": "Дата окончания не может быть раньше даты начала",
+  "The entities matching the rule cannot be listed right now": "Сущности, соответствующие правилу, сейчас не могут быть показаны",
   "The evaluation of the threat activity cannot be provided (lack of data).": "Оценка активности угрозы не может быть предоставлена (отсутствие данных).",
   "The following groups require your attention:": "Следующие группы требуют вашего внимания:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "Следующие TTP не включены в каталог OpenBAS:",

@@ -29,6 +29,8 @@ export const RESTRICTED_ENTITY_SEARCH_SIZE = 100;
  * Server side search of the entities a variable restricted by filters can take: the entities of its types that match
  * its rule. The shared filters search takes no rule, hence this query of its own. Options are grouped by entity type,
  * like the free search of an entity variable. Only the last search may answer.
+ * `error` is set when a search fails, so that a failure is not read as a rule that matches nothing, and cleared by the
+ * next successful search or when the types or the rule change.
  */
 const useRestrictedEntitySearch = (entityTypes: string[], filters: FilterGroup | undefined) => {
   const environment = useRelayEnvironment();
@@ -39,6 +41,9 @@ const useRestrictedEntitySearch = (entityTypes: string[], filters: FilterGroup |
   const typesSignature = JSON.stringify(entityTypes);
   // The rule as sent: a change that does not alter it (a filter without value yet) neither resets nor searches again.
   const filtersSignature = filters ? serializeFilterGroupForBackend(filters) : 'null';
+  // A failure belongs to the types and the rule it happened for: other ones start with no failure.
+  const searchSignature = `${typesSignature}${filtersSignature}`;
+  const [failedSignature, setFailedSignature] = useState<string | null>(null);
   // Options found for other types or another rule are not offered: they may not match the new one.
   useEffect(() => {
     subscription.current?.unsubscribe();
@@ -65,13 +70,17 @@ const useRestrictedEntitySearch = (entityTypes: string[], filters: FilterGroup |
           }));
           // Grouped options must be contiguous; sorted by label within a type, as the free search.
           setOptions(entities.sort((a, b) => a.group.localeCompare(b.group) || a.label.localeCompare(b.label)));
+          setFailedSignature(null);
         },
-        // A failed search offers nothing rather than the options of a previous text.
-        error: () => setOptions([]),
+        // A failed search offers nothing rather than the options of a previous text, and says so.
+        error: () => {
+          setOptions([]);
+          setFailedSignature(searchSignature);
+        },
       });
-  }, [environment, typesSignature, filtersSignature]);
+  }, [environment, typesSignature, filtersSignature, searchSignature]);
 
-  return { options, search };
+  return { options, search, error: failedSignature === searchSignature };
 };
 
 export default useRestrictedEntitySearch;

@@ -5066,6 +5066,7 @@
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "연결 해제 중입니다. 이 대화 상자를 닫으면 연결 해제가 중단됩니다. 정말 닫으시겠습니까?",
   "the draft processes tab": "초안 프로세스 탭",
   "The end date can't be before start date": "종료일은 시작일보다 앞설 수 없습니다.",
+  "The entities matching the rule cannot be listed right now": "현재 규칙과 일치하는 엔터티를 나열할 수 없습니다",
   "The evaluation of the threat activity cannot be provided (lack of data).": "위협 활동에 대한 평가를 제공할 수 없음(데이터 부족).",
   "The following groups require your attention:": "다음 그룹에 주의가 필요합니다:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "다음 TTP는 OpenBAS 카탈로그에서 다루지 않습니다:",

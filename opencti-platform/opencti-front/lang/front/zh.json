@@ -5066,6 +5066,7 @@
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "断开连接过程仍在进行中。关闭此对话框将终止断开连接。您确定要关闭吗？",
   "the draft processes tab": "草稿进程选项卡",
   "The end date can't be before start date": "结束日期不能早于开始日期",
+  "The entities matching the rule cannot be listed right now": "目前无法列出与规则匹配的实体",
   "The evaluation of the threat activity cannot be provided (lack of data).": "无法提供对威胁活动的评估（缺乏数据）。",
   "The following groups require your attention:": "请您关注以下群体：",
   "The following TTPs are not covered in your OpenBAS catalog : ": "OpenBAS 目录中不包括以下 TTP：",
