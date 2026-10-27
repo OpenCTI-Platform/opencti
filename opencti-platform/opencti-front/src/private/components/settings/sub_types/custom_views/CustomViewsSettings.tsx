@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import Card from '@common/card/Card';
 import Tooltip from '@mui/material/Tooltip';
+import { Stack } from '@mui/material';
 import { Add as AddIcon, CloudUploadOutlined } from '@mui/icons-material';
+import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../../components/i18n';
+import { UserContext } from '../../../../../utils/hooks/useAuth';
+import { useXTMHubResourceLink } from '../../../../../utils/hooks/useXTMHubResourceLink';
 import DashboardHiddenImportInput from '../../../../../components/dashboard/import-export/DashboardHiddenImportInput';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import useCustomViewImport from './import-export/useCustomViewImport';
@@ -18,6 +22,8 @@ const CustomViewsSettings = () => {
   const { subType } = useSubTypeOutletContext();
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const importHelpers = useCustomViewImport({ targetEntityType: subType.id });
+  const { isXTMHubAccessible } = useContext(UserContext);
+  const importFromHubUrl = useXTMHubResourceLink('/redirect/opencti_custom_views');
   return (
     <>
       <DashboardHiddenImportInput helpers={importHelpers} />
@@ -29,7 +35,18 @@ const CustomViewsSettings = () => {
           pt: 2,
         }}
         action={(
-          <>
+          <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+            {isXTMHubAccessible && importFromHubUrl && (
+              <Button
+                gradient
+                href={importFromHubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={t_i18n('Import from Hub')}
+              >
+                {t_i18n('Import from Hub')}
+              </Button>
+            )}
             <Tooltip title={t_i18n('Create a new custom view')}>
               <IconButton
                 aria-label={t_i18n('Create a new custom view')}
@@ -49,7 +66,7 @@ const CustomViewsSettings = () => {
                 <CloudUploadOutlined fontSize="small" color="primary" />
               </IconButton>
             </Tooltip>
-          </>
+          </Stack>
         )}
       >
         <CustomViewsSettingsDataTable targetType={subType.id} />
