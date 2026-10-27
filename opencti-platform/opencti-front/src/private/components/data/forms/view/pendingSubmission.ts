@@ -55,20 +55,26 @@ export const createPendingCollector = (getPending: (id: string) => PendingObject
   const pool = new Map<string, PendingObjectPayload>();
 
   // The files of a pending object go to the uploads of the submission, the object keeps their index.
-  // `embedded[i]` flags the markdown images of its descriptions among its files.
-  const takeFiles = (input: Record<string, unknown>): PendingFilePayload[] => fileHolders(input).flatMap((holder) => {
-    const embedded = Array.isArray(holder.embedded) ? holder.embedded : [];
-    return (Array.isArray(holder.files) ? holder.files as File[] : []).flatMap((file, index) => {
-      if (!(file instanceof File)) return [];
-      files.push(file);
-      return [{
-        name: file.name,
-        mime_type: file.type || undefined,
-        uploadIndex: files.length - 1,
-        ...(embedded[index] === true ? { embedded: true } : {}),
-      }];
+  // `embedded[i]` flags the markdown images of its descriptions among its files. `file` is the content of an Artifact,
+  // given both at the top level and under its type key: it is taken once.
+  const takeFiles = (input: Record<string, unknown>): PendingFilePayload[] => {
+    const taken = new Set<File>();
+    return fileHolders(input).flatMap((holder) => {
+      const embedded = Array.isArray(holder.embedded) ? holder.embedded : [];
+      const holderFiles = [...(Array.isArray(holder.files) ? holder.files : []), holder.file];
+      return holderFiles.flatMap((file, index) => {
+        if (!(file instanceof File) || taken.has(file)) return [];
+        taken.add(file);
+        files.push(file);
+        return [{
+          name: file.name,
+          mime_type: file.type || undefined,
+          uploadIndex: files.length - 1,
+          ...(embedded[index] === true ? { embedded: true } : {}),
+        }];
+      });
     });
-  });
+  };
 
   // A pending id goes to the pool (once), an existing id stays an existing ref.
   const refOf = (id: string): PendingRef => {
