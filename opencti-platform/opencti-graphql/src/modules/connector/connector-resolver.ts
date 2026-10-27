@@ -40,6 +40,8 @@ import {
   registerConnector,
   registerConnectorsManager,
   resetStateConnector,
+  loadConnectorErrors,
+  resolveConnectorInfo,
   managedConnectorAdd,
   managedConnectorEdit,
   updateConnectorCurrentStatus,
@@ -71,6 +73,7 @@ const connectorResolvers: Resolvers = {
     },
   },
   Connector: {
+    connector_info: (cn) => resolveConnectorInfo(cn),
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_priority_group: (cn) => cn.connector_priority_group ?? ConnectorPriorityGroup.Default,
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
@@ -89,6 +92,9 @@ const connectorResolvers: Resolvers = {
     has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
     jwks: () => getConnectorJwks(),
     ...ingestionHealthFieldResolvers,
+  },
+  ConnectorInfo: {
+    errors: (connectorInfo) => loadConnectorErrors(connectorInfo.connector_id),
   },
   ManagedConnector: {
     manager_current_status: (cn) => computeManagedConnectorCurrentStatus(cn),

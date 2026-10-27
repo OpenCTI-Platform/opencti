@@ -114,7 +114,7 @@ const LEVEL = 'x_opencti_cf_review_level';
 const DUE = 'x_opencti_cf_review_due';
 
 const addDefinition = async (input: Record<string, unknown>, entityTypes: { entityType: string; mandatory: boolean }[]) => {
-  const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input } });
+  const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input: { description: `${input.label} description`, ...input } } });
   expect(result.errors).toBeUndefined();
   const { id } = result.data?.customFieldDefinitionAdd ?? {};
   for (const { entityType, mandatory } of entityTypes) {

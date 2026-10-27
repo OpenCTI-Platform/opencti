@@ -156,8 +156,23 @@ describe('customFieldDefinitionAdd', () => {
   const validInput = {
     name: 'x_opencti_cf_score',
     label: 'Score',
+    description: 'Score of the entity',
     field_type: 'integer',
   } as any;
+
+  it('throws when the description is missing or blank', async () => {
+    await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, description: undefined }))
+      .rejects.toThrow('The description of a custom field is required');
+    await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, description: '  ' }))
+      .rejects.toThrow('The description of a custom field is required');
+    expect(Middleware.createEntity).not.toHaveBeenCalled();
+  });
+
+  it.each(['Hello', 'priority', 'x_Priority', 'x_prio-rity', 'x_'])('throws on the malformed alias %s', async (alias) => {
+    await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, aliases: [alias] }))
+      .rejects.toThrow('An alias must start with "x_" and contain only lowercase letters, numbers and underscores');
+    expect(Middleware.createEntity).not.toHaveBeenCalled();
+  });
 
   it('throws when the feature flag is disabled', async () => {
     vi.mocked(Access.enforceEnableFeatureFlag).mockImplementation(() => {
@@ -339,6 +354,24 @@ describe('customFieldDefinitionEdit', () => {
     expect(Middleware.updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'cf-id-1', 'CustomFieldDefinition', edit);
     expect(UserActionListener.publishUserAction).toHaveBeenCalledWith(expect.objectContaining({ event_scope: 'update' }));
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), updatedElem, mockUser);
+  });
+});
+
+describe('customFieldDefinitionEdit - aliases format and description', () => {
+  it('throws when a new alias is malformed', async () => {
+    const edit = [{ key: 'aliases', value: ['x_valid', 'Hello'], operation: EditOperation.Replace } as any];
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit))
+      .rejects.toThrow('An alias must start with "x_" and contain only lowercase letters, numbers and underscores');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['emptied', { key: 'description', value: [''] }],
+    ['removed', { key: 'description', value: ['Current description'], operation: EditOperation.Remove }],
+  ])('throws when the description is %s', async (_, descriptionEdit) => {
+    await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [descriptionEdit as any]))
+      .rejects.toThrow('The description of a custom field is required');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
   });
 });
 
