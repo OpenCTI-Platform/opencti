@@ -334,6 +334,15 @@ describe('loginFromProvider coverage', () => {
 });
 
 describe('Testing buildCompleteUser', () => {
+  it('should never return the password hashes of a user', async () => {
+    const user = await addUser(testContext, ADMIN_USER, { name: 'User without secrets', user_email: 'user.without.secrets@opencti.invalid', password: 'Without-Secrets-1!' });
+    await patchAttribute(testContext, SYSTEM_USER, user.id, ENTITY_TYPE_USER, { password_history: [bcrypt.hashSync('Without-Secrets-0!', 4)] });
+    const userAuth = await findUserById(testContext, ADMIN_USER, user.id);
+    expect(userAuth).not.toHaveProperty('password');
+    expect(userAuth).not.toHaveProperty('password_history');
+    await userDelete(testContext, ADMIN_USER, user.id);
+  });
+
   it('should user organization list be composed of organizations entity only', async () => {
     const testOrgCustom = await addOrganization(testContext, ADMIN_USER, { name: 'CompleteUserOrg' });
     const testSector = await addSector(testContext, ADMIN_USER, { name: 'CompleteUserSector' });

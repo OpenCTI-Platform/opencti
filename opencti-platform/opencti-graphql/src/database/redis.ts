@@ -769,8 +769,21 @@ export const redisDelForgotPassword = async (id: string, email: string) => {
 
 // region - password change throttling
 
-const PASSWORD_CHANGE_MAX_ATTEMPTS = Number(conf.get('app:password_change:max_attempts') || 5);
-const PASSWORD_CHANGE_WINDOW_SECONDS = Number(conf.get('app:password_change:window_seconds') || 900);
+// Only a positive integer is usable: 0 attempts would refuse every change, and a 0 second window never throttles
+export const readPasswordChangeLimit = (key: string, value: unknown, defaultValue: number): number => {
+  if (value === undefined || value === null) {
+    return defaultValue;
+  }
+  const limit = Number(value);
+  if (!Number.isInteger(limit) || limit < 1) {
+    logApp.warn('[PASSWORD_HISTORY] Ignoring an invalid password change limit, using the default', { key, value, default: defaultValue });
+    return defaultValue;
+  }
+  return limit;
+};
+
+const PASSWORD_CHANGE_MAX_ATTEMPTS = readPasswordChangeLimit('app:password_change:max_attempts', conf.get('app:password_change:max_attempts'), 5);
+const PASSWORD_CHANGE_WINDOW_SECONDS = readPasswordChangeLimit('app:password_change:window_seconds', conf.get('app:password_change:window_seconds'), 900);
 
 // Counts one password change attempt on this account by this submitter and tells whether it is still within
 // the limit. One counter per submitter: whoever uses up their attempts on an account never blocks the others,

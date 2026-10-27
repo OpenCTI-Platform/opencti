@@ -300,7 +300,8 @@ export const findById = async (context: AuthContext, user: AuthUser, userId: str
     return INTERNAL_USERS[userId];
   }
   const data = await storeLoadById<BasicStoreEntityUser>(context, user, userId, ENTITY_TYPE_USER);
-  return buildCompleteUser(context, data);
+  // buildCompleteUser strips them too: kept here as a second safeguard
+  return buildCompleteUser(context, data ? withoutUserSecrets(data) : data);
 };
 
 export const findAllUser = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityUser>) => {

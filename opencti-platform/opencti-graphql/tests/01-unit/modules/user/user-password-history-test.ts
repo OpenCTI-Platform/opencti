@@ -241,6 +241,15 @@ describe('bulk clean-up of password histories', () => {
     vi.mocked(elRawUpdateByQuery).mockResolvedValueOnce({ version_conflicts: 2 }).mockResolvedValueOnce({ version_conflicts: 0 });
     await clearAllUsersPasswordHistory();
     expect(elRawUpdateByQuery).toHaveBeenCalledTimes(2);
+    expect(logApp.warn).not.toHaveBeenCalled();
+  });
+
+  it('warns when version conflicts remain after the last attempt', async () => {
+    vi.mocked(elRawUpdateByQuery).mockResolvedValue({ version_conflicts: 1 });
+    await trimAllUsersPasswordHistory(5);
+    expect(elRawUpdateByQuery).toHaveBeenCalledTimes(5);
+    expect(logApp.warn).toHaveBeenCalledWith('[PASSWORD_HISTORY] Some password histories were not updated after repeated version conflicts', { attempts: 5, versionConflicts: 1 });
+    expect(publishCacheResetEvent).toHaveBeenCalledWith('User');
   });
 
   it('warns when histories remain after the clean-up', async () => {

@@ -144,6 +144,7 @@ const usersWithPasswordHistoryQuery = {
 
 // Unlike the password validity updates, external users are included: a local user who switched to SSO keeps no history either.
 const updateAllUsersPasswordHistory = async (script: { source: string; params?: Record<string, unknown> }) => {
+  let versionConflicts = 0;
   for (let attempt = 1; attempt <= BULK_UPDATE_ATTEMPTS; attempt += 1) {
     const result = await elRawUpdateByQuery({
       index: [READ_INDEX_INTERNAL_OBJECTS],
@@ -151,9 +152,13 @@ const updateAllUsersPasswordHistory = async (script: { source: string; params?: 
       conflicts: 'proceed',
       body: { script, query: usersWithPasswordHistoryQuery },
     });
-    if (!result?.version_conflicts) {
+    versionConflicts = result?.version_conflicts ?? 0;
+    if (!versionConflicts) {
       break;
     }
+  }
+  if (versionConflicts) {
+    logApp.warn('[PASSWORD_HISTORY] Some password histories were not updated after repeated version conflicts', { attempts: BULK_UPDATE_ATTEMPTS, versionConflicts });
   }
   await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
