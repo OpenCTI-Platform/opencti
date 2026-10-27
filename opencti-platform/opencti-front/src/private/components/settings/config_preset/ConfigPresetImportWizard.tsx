@@ -16,6 +16,7 @@ import ConfigPresetImportInterrupted from './ConfigPresetImportInterrupted';
 import ConfigPresetImportPreview, { ConfigPresetImportPreviewProps } from './ConfigPresetImportPreview';
 import { ConfigPresetImportProgress, ConfigPresetImportResult } from './ConfigPresetImportResult';
 import ConfigPresetImportUpload from './ConfigPresetImportUpload';
+import ConfigPresetWizardStepper from './ConfigPresetWizardStepper';
 import ConfigPresetWizardWelcome from './ConfigPresetWizardWelcome';
 
 const configPresetImportWizardQuery = graphql`
@@ -270,6 +271,7 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
           description={t_i18n('{processed} of {total}', { values: { processed: otherImport.processed, total: otherImport.total } })}
         />
       )}
+      <ConfigPresetWizardStepper activeStep={{ welcome: 0, upload: 0, preview: 1, progress: 1, interrupted: 1, result: 2 }[step]} />
       {renderStep()}
     </div>
   );

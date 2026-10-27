@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { fetchQuery, graphql, useRelayEnvironment } from 'react-relay';
-import { Alert, Checkbox, Chip, Spinner, Text } from '@filigran/design-system';
+import { Alert, Chip, Spinner, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -20,18 +20,10 @@ import {
   withoutEnterpriseEditionItems,
 } from './configPresetImportEnterpriseEdition';
 import { getConfigPresetErrorReason } from './configPresetImportStep';
-import {
-  buildConfigPresetSelections,
-  ConfigPresetSelection,
-  countConfigPresetCheckedItems,
-  getConfigPresetCheckboxState,
-  getConfigPresetForcedItems,
-  groupConfigPresetTypes,
-  selectAllConfigPresetItems,
-  toggleConfigPresetTypes,
-} from './configPresetSelection';
+import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from './configPresetSelection';
 import { ConfigPresetItemRow } from './ConfigPresetExportItems';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
+import ConfigPresetSelectionAccordion from './ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
 const SAVE_DELAY_MS = 500;
@@ -296,65 +288,57 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   if (!preview) {
     return <Spinner label={t_i18n('Loading')} />;
   }
-  // The counted type of a type: without the items that need the Enterprise Edition on a Community platform
-  const countedOf = (type: PreviewType) => types.find(({ key }) => key === type.key)!;
-  const typeLabel = (type: PreviewType) => {
-    const counted = countedOf(type);
-    return `${t_i18n(type.label)} (${countConfigPresetCheckedItems([counted], selection, forced)}/${counted.itemsPageInfo.globalCount})`;
-  };
   const saveHint = { idle: '', saving: t_i18n('Saving'), saved: t_i18n('Saved'), error: t_i18n('The selection could not be saved') }[saveState];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
-      <Text variant="content-base">{t_i18n('Select the elements to import. The elements you do not select are not touched.')}</Text>
+      <Text variant="title-sm">{preview.bundle_name ?? t_i18n('Configuration bundle')}</Text>
+      <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched.')}</Text>
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
       {!isEnterpriseEdition && Object.values(enterpriseEditionKeys).some((keys) => keys.length > 0) && <EnterpriseEditionButton inLine />}
-      {groupConfigPresetTypes(toCountedTypes(preview.types)).map((group) => (
-        <div key={group.key} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
-          <Text variant="title-sm">{t_i18n(group.label)}</Text>
-          {group.types.map((type) => (
-            <div key={type.key} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
-              <Checkbox
-                label={typeLabel(type)}
-                description={t_i18n(type.description)}
-                checked={getConfigPresetCheckboxState([type], selection, forced)}
-                disabled={isSimulating || countedOf(type).itemsPageInfo.globalCount === 0}
-                onCheckedChange={(checked) => handleSelectionChange(toggleConfigPresetTypes(selection, [type], checked === true))}
-              />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), paddingLeft: theme.spacing(3.5) }}>
-                {type.items.map((item) => (
-                  <div key={item.key} data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
-                    <ConfigPresetItemRow
-                      typeKey={type.key}
-                      item={item}
-                      selection={selection}
-                      forced={forced}
-                      disabled={isSimulating}
-                      requiresEnterpriseEdition={item.requiresEnterpriseEdition}
-                      onSelectionChange={handleSelectionChange}
-                      statusSlot={results?.[`${type.key}/${item.key}`]
-                        ? <ConfigPresetResultLine status={results[`${type.key}/${item.key}`].status} reason={results[`${type.key}/${item.key}`].reason} />
-                        : undefined}
-                    />
-                    <div style={{ paddingLeft: theme.spacing(3.5) }}>
-                      <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
-                        {item.exists ? t_i18n('Already exists, will be overwritten') : t_i18n('New')}
-                      </Text>
-                      {item.fields.map((field) => (
-                        <div key={field.key} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-                          <Text variant="content-compact">{`${field.key}: ${field.value ?? t_i18n('Untouched')}`}</Text>
-                          {field.external_host && <Chip label={t_i18n('External host')} severity="medium" />}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+      <ConfigPresetSelectionAccordion
+        types={toCountedTypes(preview.types)}
+        countedTypes={types}
+        selection={selection}
+        forced={forced}
+        disabled={isSimulating}
+        collapseSingletons={false}
+        expandTypes
+        onSelectionChange={handleSelectionChange}
+        renderItem={(type, item) => (
+          <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
+            <ConfigPresetItemRow
+              typeKey={type.key}
+              item={item}
+              selection={selection}
+              forced={forced}
+              disabled={isSimulating}
+              requiresEnterpriseEdition={item.requiresEnterpriseEdition}
+              onSelectionChange={handleSelectionChange}
+              statusSlot={results?.[`${type.key}/${item.key}`]
+                ? <ConfigPresetResultLine status={results[`${type.key}/${item.key}`].status} reason={results[`${type.key}/${item.key}`].reason} />
+                : undefined}
+            />
+            <div style={{ paddingLeft: theme.spacing(3.5) }}>
+              <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
+                {item.exists ? t_i18n('Already exists, will be overwritten') : t_i18n('New')}
+              </Text>
+              {item.fields.map((field) => (
+                <div key={field.key} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                  <Text variant="content-compact">{`${field.key}: ${field.value ?? t_i18n('Untouched')}`}</Text>
+                  {field.external_host && <Chip label={t_i18n('External host')} severity="medium" />}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ))}
+          </div>
+        )}
+      />
+      <Alert
+        severity="success"
+        elevation={1}
+        title={t_i18n('{count} items. Compatible with your OpenCTI version.', { values: { count: preview.types.reduce((count, type) => count + type.items.length, 0) } })}
+      />
       {isOtherImportRunning && <Text variant="content-compact">{t_i18n('Apply is available once the import in progress is over.')}</Text>}
       {startedBy && <Text variant="content-compact">{t_i18n('Started by {name}', { values: { name: startedBy } })}</Text>}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

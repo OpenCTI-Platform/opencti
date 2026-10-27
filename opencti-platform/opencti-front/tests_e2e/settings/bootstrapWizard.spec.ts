@@ -9,8 +9,8 @@ test.describe('Bootstrap wizard', { tag: ['@ce', '@groupff'] }, () => {
     await experiencePage.goto();
     await expect(experiencePage.getPage('experience-page')).toBeVisible();
     await page.getByRole('button', { name: 'Import Bootstrap Platform Bundle' }).click();
-    await expect(page.getByText('Set up your platform')).toBeVisible();
-    await page.getByRole('button', { name: 'Skip' }).click();
-    await expect(page.getByText('Set up your platform')).not.toBeVisible();
+    await expect(page.getByText('Quick Start - Platform Setup')).toBeVisible();
+    await page.getByRole('button', { name: 'Close' }).click();
+    await expect(page.getByText('Quick Start - Platform Setup')).not.toBeVisible();
   });
 });

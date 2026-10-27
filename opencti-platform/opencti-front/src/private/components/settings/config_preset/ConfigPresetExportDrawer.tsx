@@ -1,11 +1,10 @@
-import React, { FunctionComponent, ReactNode, Suspense, useState } from 'react';
+import React, { FunctionComponent, Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { Checkbox, Input, Text } from '@filigran/design-system';
-import { ChevronRightOutlined, DownloadOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { Input, Text } from '@filigran/design-system';
+import { DownloadOutlined } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -15,19 +14,9 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { ConfigPresetExportDrawerQuery } from './__generated__/ConfigPresetExportDrawerQuery.graphql';
 import { ConfigPresetExportDrawerMutation } from './__generated__/ConfigPresetExportDrawerMutation.graphql';
-import {
-  buildConfigPresetSelections,
-  ConfigPresetSelection,
-  countConfigPresetCheckedItems,
-  countConfigPresetItems,
-  getConfigPresetCheckboxState,
-  getConfigPresetForcedItems,
-  groupConfigPresetTypes,
-  isSingletonConfigPresetType,
-  selectAllConfigPresetItems,
-  toggleConfigPresetTypes,
-} from './configPresetSelection';
-import ConfigPresetExportItems, { ConfigPresetItemRow } from './ConfigPresetExportItems';
+import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from './configPresetSelection';
+import ConfigPresetExportItems from './ConfigPresetExportItems';
+import ConfigPresetSelectionAccordion from './ConfigPresetSelectionAccordion';
 
 const BUNDLE_NAME_MAX_LENGTH = 80;
 
@@ -67,43 +56,6 @@ const configPresetExportDrawerMutation = graphql`
   }
 `;
 
-const toggleKey = (keys: readonly string[], key: string) => (keys.includes(key) ? keys.filter((current) => current !== key) : [...keys, key]);
-
-interface ConfigPresetExpandableRowProps {
-  label: string;
-  description?: string;
-  checked: boolean | 'indeterminate';
-  onCheckedChange: (checked: boolean) => void;
-  expanded: boolean;
-  onToggleExpanded: () => void;
-  children: ReactNode;
-}
-
-// A checkbox with a chevron that shows or hides the rows below it (a group, or a type with several items)
-const ConfigPresetExpandableRow: FunctionComponent<ConfigPresetExpandableRowProps> = ({ label, description, checked, onCheckedChange, expanded, onToggleExpanded, children }) => {
-  const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: theme.spacing(1, 0) }}>
-        <Checkbox label={label} description={description} checked={checked} onCheckedChange={(value) => onCheckedChange(value === true)} />
-        <IconButton
-          aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
-          aria-expanded={expanded}
-          onClick={onToggleExpanded}
-        >
-          {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
-        </IconButton>
-      </div>
-      {expanded && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), padding: theme.spacing(0, 0, 2, 3.5) }}>
-          {children}
-        </div>
-      )}
-    </div>
-  );
-};
-
 type ExportableTypes = ConfigPresetExportDrawerQuery['response']['configPresetExportableTypes'];
 
 interface ConfigPresetExportContentProps {
@@ -115,9 +67,6 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [selection, setSelection] = useState<ConfigPresetSelection>(() => selectAllConfigPresetItems(types));
-  // Groups start expanded, types with several items collapsed
-  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<readonly string[]>([]);
-  const [expandedTypeKeys, setExpandedTypeKeys] = useState<readonly string[]>([]);
   const [bundleName, setBundleName] = useState('');
   // The type whose items are managed in the sub-view, when it has more items than its first page
   const [managedTypeKey, setManagedTypeKey] = useState<string | null>(null);
@@ -148,71 +97,19 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
     );
   }
 
-  const typeLabel = (type: (typeof types)[number]) => `${t_i18n(type.label)} (${countConfigPresetCheckedItems([type], selection, forced)}/${type.itemsPageInfo.globalCount})`;
-
   return (
     <>
       <div style={{ flexGrow: 1, overflowY: 'auto', padding: theme.spacing(3), display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
         <Text variant="content-base">
           {t_i18n('Select all the elements to include in your configuration bundle')}
         </Text>
-        <div>
-          {groupConfigPresetTypes(types).map((group) => (
-            <div key={group.key} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
-              <ConfigPresetExpandableRow
-                label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types, selection, forced)}/${countConfigPresetItems(group.types)})`}
-                checked={getConfigPresetCheckboxState(group.types, selection, forced)}
-                onCheckedChange={(checked) => setSelection(toggleConfigPresetTypes(selection, group.types, checked))}
-                expanded={!collapsedGroupKeys.includes(group.key)}
-                onToggleExpanded={() => setCollapsedGroupKeys((current) => toggleKey(current, group.key))}
-              >
-                {group.types.map((type) => {
-                  if (isSingletonConfigPresetType(type)) {
-                    return (
-                      <Checkbox
-                        key={type.key}
-                        label={t_i18n(type.label)}
-                        description={t_i18n(type.description)}
-                        checked={getConfigPresetCheckboxState([type], selection, forced)}
-                        onCheckedChange={(checked) => setSelection(toggleConfigPresetTypes(selection, [type], checked === true))}
-                      />
-                    );
-                  }
-                  if (type.itemsPageInfo.hasNextPage) {
-                    return (
-                      <div key={type.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Checkbox
-                          label={typeLabel(type)}
-                          description={t_i18n(type.description)}
-                          checked={getConfigPresetCheckboxState([type], selection, forced)}
-                          onCheckedChange={(checked) => setSelection(toggleConfigPresetTypes(selection, [type], checked === true))}
-                        />
-                        <Button variant="tertiary" endIcon={<ChevronRightOutlined />} onClick={() => setManagedTypeKey(type.key)}>
-                          {t_i18n('Manage')}
-                        </Button>
-                      </div>
-                    );
-                  }
-                  return (
-                    <ConfigPresetExpandableRow
-                      key={type.key}
-                      label={typeLabel(type)}
-                      description={t_i18n(type.description)}
-                      checked={getConfigPresetCheckboxState([type], selection, forced)}
-                      onCheckedChange={(checked) => setSelection(toggleConfigPresetTypes(selection, [type], checked))}
-                      expanded={expandedTypeKeys.includes(type.key)}
-                      onToggleExpanded={() => setExpandedTypeKeys((current) => toggleKey(current, type.key))}
-                    >
-                      {type.items.map((item) => (
-                        <ConfigPresetItemRow key={item.key} typeKey={type.key} item={item} selection={selection} forced={forced} onSelectionChange={setSelection} />
-                      ))}
-                    </ConfigPresetExpandableRow>
-                  );
-                })}
-              </ConfigPresetExpandableRow>
-            </div>
-          ))}
-        </div>
+        <ConfigPresetSelectionAccordion
+          types={types}
+          selection={selection}
+          forced={forced}
+          onSelectionChange={setSelection}
+          onManageType={setManagedTypeKey}
+        />
         <Input
           label={t_i18n('Bundle name')}
           value={bundleName}

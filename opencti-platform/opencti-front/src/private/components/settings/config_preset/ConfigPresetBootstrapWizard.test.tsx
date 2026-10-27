@@ -29,46 +29,46 @@ describe('ConfigPresetBootstrapWizard', () => {
 
   it('opens by itself for a BYPASS user on a pending platform', () => {
     renderWizard();
-    expect(screen.getByText('Set up your platform')).toBeInTheDocument();
+    expect(screen.getByText('Quick Start - Platform Setup')).toBeInTheDocument();
   });
 
   it('never opens for a user without BYPASS', () => {
     (useGranted as Mock).mockReturnValue(false);
     renderWizard();
-    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    expect(screen.queryByText('Quick Start - Platform Setup')).not.toBeInTheDocument();
   });
 
   it('does not open when the status is completed, whatever the skip', () => {
     renderWizard({ ...pendingSettings, platform_bootstrap_status: 'completed' });
-    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    expect(screen.queryByText('Quick Start - Platform Setup')).not.toBeInTheDocument();
   });
 
   it('does not open on an existing platform, with the flag off or with the option off', () => {
     renderWizard({ ...pendingSettings, platform_bootstrap_status: null });
-    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    expect(screen.queryByText('Quick Start - Platform Setup')).not.toBeInTheDocument();
     (useHelper as Mock).mockReturnValue({ isFeatureEnable: () => false });
     renderWizard();
-    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    expect(screen.queryByText('Quick Start - Platform Setup')).not.toBeInTheDocument();
     (useHelper as Mock).mockReturnValue({ isFeatureEnable: () => true });
     renderWizard({ ...pendingSettings, platform_bootstrap_wizard_enabled: false });
-    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    expect(screen.queryByText('Quick Start - Platform Setup')).not.toBeInTheDocument();
   });
 
   it('does not open when the user skipped it', () => {
     renderWizard(pendingSettings, true);
-    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    expect(screen.queryByText('Quick Start - Platform Setup')).not.toBeInTheDocument();
   });
 
   it('stays open when the store changes after the first render', () => {
     const { rerender } = renderWizard();
     rerender(<ConfigPresetBootstrapWizard settings={{ ...pendingSettings, platform_bootstrap_status: 'completed' }} />);
-    expect(screen.getByText('Set up your platform')).toBeInTheDocument();
+    expect(screen.getByText('Quick Start - Platform Setup')).toBeInTheDocument();
   });
 
-  it('closes on Skip and stores the skip', async () => {
+  it('closes on Close and stores the skip', async () => {
     const { user, relayEnv } = renderWizard();
-    await user.click(screen.getByRole('button', { name: 'Skip' }));
-    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByText('Quick Start - Platform Setup')).not.toBeInTheDocument();
     await act(async () => {
       expect(relayEnv.mock.getAllOperations().map((operation) => operation.request.node.operation.name)).toContain('ConfigPresetWizardSkipMutation');
     });

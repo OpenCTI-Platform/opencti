@@ -51,9 +51,9 @@ describe('ConfigPresetExportFooter', () => {
   it('opens the import wizard in manual mode and closes it without writing anything', async () => {
     const { user, relayEnv } = testRender(<ConfigPresetExportFooter />);
     await user.click(screen.getByRole('button', { name: 'Import Bootstrap Platform Bundle' }));
-    expect(screen.getByText('Set up your platform')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Skip' }));
-    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    expect(screen.getByText('Quick Start - Platform Setup')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(screen.queryByText('Quick Start - Platform Setup')).not.toBeInTheDocument();
     // Nothing is written: only the import session was read
     expect(relayEnv.mock.getAllOperations().map((operation) => operation.request.node.operation.name)).not.toContain('ConfigPresetWizardSkipMutation');
   });

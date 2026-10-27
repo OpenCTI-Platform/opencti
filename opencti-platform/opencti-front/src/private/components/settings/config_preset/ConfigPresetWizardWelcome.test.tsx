@@ -5,20 +5,23 @@ import testRender from '../../../../utils/tests/test-render';
 import ConfigPresetWizardWelcome from './ConfigPresetWizardWelcome';
 
 describe('ConfigPresetWizardWelcome', () => {
-  it('shows the template choice as coming later, disabled', () => {
+  it('shows the four templates disabled, as coming later, and a disabled Next', () => {
     testRender(<ConfigPresetWizardWelcome />);
-    expect(within(screen.getByTestId('config-preset-wizard-template')).getByRole('button')).toBeDisabled();
-    expect(screen.getByText('Coming later')).toBeInTheDocument();
+    const templates = within(screen.getByTestId('config-preset-wizard-template')).getAllByRole('button');
+    expect(templates).toHaveLength(4);
+    templates.forEach((template) => expect(template).toBeDisabled());
+    ['Classic CTI', 'FIMI/Disinformation', 'Fraud Prevention', 'Incident Management'].forEach((name) => expect(screen.getByText(name)).toBeInTheDocument());
+    expect(screen.getAllByText('Coming later')).toHaveLength(4);
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
   });
 
-  it('disables the import choice without handler and enables it with one', async () => {
+  it('disables Import config without handler and enables it with one', async () => {
     const { unmount } = testRender(<ConfigPresetWizardWelcome />);
-    expect(within(screen.getByTestId('config-preset-wizard-import')).getByRole('button')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Import config' })).toBeDisabled();
     unmount();
     const onImport = vi.fn();
     const { user } = testRender(<ConfigPresetWizardWelcome onImport={onImport} />);
-    expect(screen.getByTestId('config-preset-wizard-import')).toHaveTextContent('Import a configuration');
-    await user.click(within(screen.getByTestId('config-preset-wizard-import')).getByRole('button'));
+    await user.click(screen.getByRole('button', { name: 'Import config' }));
     expect(onImport).toHaveBeenCalledTimes(1);
   });
 });

@@ -13,7 +13,7 @@ describe('ConfigPresetWizard', () => {
 
   it('shows the import steps by default, inside the dialog', () => {
     const { relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose} />);
-    expect(screen.getByText('Set up your platform')).toBeInTheDocument();
+    expect(screen.getByText('Quick Start - Platform Setup')).toBeInTheDocument();
     // The step is derived from the import session of the user
     expect(relayEnv.mock.getAllOperations().map((operation) => operation.request.node.operation.name)).toEqual(['ConfigPresetImportWizardQuery', 'ConfigPresetImportWizardRunningQuery']);
   });
@@ -24,7 +24,7 @@ describe('ConfigPresetWizard', () => {
     expect(screen.queryByTestId('config-preset-wizard-import')).not.toBeInTheDocument();
   });
 
-  it.each(['Skip', 'Close'])('stores the skip on the user with %s in auto mode', async (name) => {
+  it.each(['Close'])('stores the skip on the user with %s in auto mode', async (name) => {
     const { user, relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose}><div /></ConfigPresetWizard>);
     await user.click(screen.getByRole('button', { name }));
     const [operation] = relayEnv.mock.getAllOperations();
@@ -35,7 +35,7 @@ describe('ConfigPresetWizard', () => {
 
   it('closes anyway when the skip write fails', async () => {
     const { user, relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose}><div /></ConfigPresetWizard>);
-    await user.click(screen.getByRole('button', { name: 'Skip' }));
+    await user.click(screen.getByRole('button', { name: 'Close' }));
     await act(async () => {
       relayEnv.mock.rejectMostRecentOperation({ res: { errors: [{ message: 'write failed' }] } } as unknown as Error);
     });
@@ -44,7 +44,7 @@ describe('ConfigPresetWizard', () => {
 
   it('writes nothing in manual mode', async () => {
     const { user, relayEnv } = testRender(<ConfigPresetWizard mode="manual" onClose={onClose}><div /></ConfigPresetWizard>);
-    await user.click(screen.getByRole('button', { name: 'Skip' }));
+    await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -53,6 +53,6 @@ describe('ConfigPresetWizard', () => {
     const { user } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose}><div /></ConfigPresetWizard>);
     await user.keyboard('{Escape}');
     expect(onClose).not.toHaveBeenCalled();
-    expect(screen.getByText('Set up your platform')).toBeInTheDocument();
+    expect(screen.getByText('Quick Start - Platform Setup')).toBeInTheDocument();
   });
 });

@@ -1,12 +1,9 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { graphql } from 'react-relay';
 import { CloseOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/material/styles';
-import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ConfigPresetImportWizard from './ConfigPresetImportWizard';
 
@@ -31,7 +28,6 @@ interface ConfigPresetWizardProps {
 // Clicking outside the dialog or pressing Escape does not close it: the dialog has no onClose.
 const ConfigPresetWizard: FunctionComponent<ConfigPresetWizardProps> = ({ mode, onClose, children }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const [commitSkip] = useApiMutation(configPresetWizardSkipMutation);
   const handleSkip = () => {
     if (mode === 'auto') {
@@ -46,7 +42,7 @@ const ConfigPresetWizard: FunctionComponent<ConfigPresetWizardProps> = ({ mode, 
       size="large"
       title={(
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span>{t_i18n('Set up your platform')}</span>
+          <span>{t_i18n('Quick Start - Platform Setup')}</span>
           <IconButton aria-label={t_i18n('Close')} onClick={handleSkip}>
             <CloseOutlined fontSize="medium" />
           </IconButton>
@@ -54,11 +50,6 @@ const ConfigPresetWizard: FunctionComponent<ConfigPresetWizardProps> = ({ mode, 
       )}
     >
       {children ?? <ConfigPresetImportWizard onFinish={onClose} />}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: theme.spacing(3) }}>
-        <Button variant="secondary" onClick={handleSkip}>
-          {t_i18n('Skip')}
-        </Button>
-      </div>
     </Dialog>
   );
 };
