@@ -5,6 +5,7 @@ import { durationInMs } from '../../utils/format';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../ingestion/ingestion-types';
 import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
 import { redisGetIngestionLogHistory } from '../../database/redis';
+import { findCapabilityDescription } from '../../database/data-initialization';
 
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
 export const HEALTH_CHECK_USER_MISSING_CAPABILITY = 'USER_MISSING_CAPABILITY';
@@ -202,13 +203,17 @@ export const HEALTH_CHECK_REGISTRY = {
     kind: IngestionHealthCheckKind.Configuration,
     label: 'User lacks required capability',
     severity: IngestionHealthCheckSeverity.Blocking,
-    // The front shows the description of the capability, translated
-    message: () => 'User lacks required capability: "{capability}"',
+    // The description of the capability, translated by the front as in the roles
+    message: () => 'User lacks required capability: "{capability_description}"',
     // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
     isEnabled: (ingestor, { user }) => !!user && !user.internal && ingestor.entity_type in REQUIRED_CAPABILITY_BY_ENTITY_TYPE,
     getFailure: (ingestor, { user }) => {
       const capability = REQUIRED_CAPABILITY_BY_ENTITY_TYPE[ingestor.entity_type];
-      return user?.hasCapability(capability) ? null : { capability };
+      if (user?.hasCapability(capability)) {
+        return null;
+      }
+      // Its description, as shown in the roles. A capability without description is shown by its name
+      return { capability, capability_description: findCapabilityDescription(capability) ?? capability };
     },
   },
   // An ingestion should not depend on a person: a regular user leaving or changing rights breaks it

@@ -5733,7 +5733,7 @@
   "User interaction (UI)": "사용자 상호작용(UI)",
   "User Interaction (UI)": "사용자 인터랙션(UI)",
   "User interface": "사용자 인터페이스",
-  "User lacks required capability: \"{capability}\"": "사용자에게 필수 권한이 없습니다: \"{capability}\"",
+  "User lacks required capability: \"{capability_description}\"": "사용자에게 필수 권한이 없습니다: \"{capability_description}\"",
   "User policy": "사용자 정책",
   "User responsible for data creation": "데이터 생성을 담당하는 사용자",
   "User responsible for data creation (empty = System)": "데이터 생성 책임 사용자 (비어 있음 = 시스템)",

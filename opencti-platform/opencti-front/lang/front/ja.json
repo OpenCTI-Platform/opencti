@@ -5733,7 +5733,7 @@
   "User interaction (UI)": "ユーザーとの対話（UI）",
   "User Interaction (UI)": "ユーザー・インタラクション（UI）",
   "User interface": "ユーザーインターフェース",
-  "User lacks required capability: \"{capability}\"": "ユーザーに必要な権限がありません：\"{capability}\"",
+  "User lacks required capability: \"{capability_description}\"": "ユーザーに必要な権限がありません：\"{capability_description}\"",
   "User policy": "ユーザーポリシー",
   "User responsible for data creation": "データ作成担当ユーザー",
   "User responsible for data creation (empty = System)": "データ作成を担当するユーザー (空 = System)",
