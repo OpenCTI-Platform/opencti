@@ -72,7 +72,7 @@ const ALL_ITEMS = { platform: ['platform'], messages: MESSAGE_IDS, hiddenEntityT
 const ALL_COUNTS = { platform: 1, messages: 4, hiddenEntityTypes: 1 };
 const NOW = new Date('2026-10-14T09:05:07.123Z');
 const EXPECTED_FILE_NAME = `opencti-config-20261014-090507-${PLATFORM_VERSION}.zip`;
-const EXPORT_FOLDER = /^config_preset\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const EXPORT_FOLDER = /^config_preset\/export\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const TMP_ZIP_MARKER = 'opencti-config-preset-';
 
 const storedSettings = {
@@ -218,7 +218,7 @@ describe('Config preset export', () => {
     expect(publishedSummary().items).toEqual(ALL_ITEMS);
   });
 
-  it('stores each export in its own random folder under config_preset, with a dated and versioned name', async () => {
+  it('stores each export in its own random folder under config_preset/export, with a dated and versioned name', async () => {
     const first = await configPresetExport(context, bypassUser, ALL_CATEGORIES);
     const second = await configPresetExport(context, bypassUser, ALL_CATEGORIES);
     const firstFolder = path.posix.dirname(first.id);

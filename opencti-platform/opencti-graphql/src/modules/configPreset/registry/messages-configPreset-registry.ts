@@ -1,6 +1,9 @@
 import type { AuthContext } from '../../../types/user';
 import { CONFIG_PRESET_MESSAGES_FIELDS, getMessagesConfigPresetConfigurations } from '../../../domain/settings';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
+import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../configPreset-import-types';
+import { buildImportFields, importFailureReason, isNothingToImport } from '../configPreset-import-utils';
+import { messageConfigurationSchemas } from '../configPreset-import-schemas';
 import { platformSettingsGroup, staticFamily } from './common-configPreset-registry';
 
 const MESSAGE_LABELS: Record<string, string> = { banner: 'Banner', login: 'Login message', consent: 'Consent message', noAccess: 'No access message' };
@@ -24,10 +27,34 @@ const getMessagesItems = async (context: AuthContext): Promise<ConfigPresetItemD
   }));
 };
 
-export const messagesFamily: ConfigPresetFamilyDefinition = staticFamily({
-  id: 'messages',
-  label: 'Messages',
-  description: 'Banner, login and consent messages',
-  group: platformSettingsGroup,
-  directory: 'platform_settings/messages',
-}, getMessagesItems);
+const messagesImporter: ConfigPresetImporter = {
+  compute: async (context, _user, item): Promise<ConfigPresetComputedItem> => {
+    const messageId = item.id as keyof typeof CONFIG_PRESET_MESSAGES_FIELDS;
+    const base = { label: MESSAGE_LABELS[item.id] ?? item.id, translatable: true, exists: true };
+    if (!(messageId in CONFIG_PRESET_MESSAGES_FIELDS)) {
+      return { ...base, status: 'failed', reason: 'Unknown message', fields: [] };
+    }
+    const parsed = messageConfigurationSchemas[messageId].safeParse(item.configuration);
+    if (!parsed.success) {
+      return { ...base, status: 'failed', reason: importFailureReason(parsed.error), fields: [] };
+    }
+    const keys = CONFIG_PRESET_MESSAGES_FIELDS[messageId];
+    const fields = buildImportFields(context, parsed.data, keys);
+    // A message or a field that is absent or null in the bundle is left untouched
+    if (isNothingToImport(parsed.data, keys)) {
+      return { ...base, status: 'skipped', reason: 'Nothing to import', fields };
+    }
+    return { ...base, status: 'overwritten', fields };
+  },
+};
+
+export const messagesFamily: ConfigPresetFamilyDefinition = {
+  ...staticFamily({
+    id: 'messages',
+    label: 'Messages',
+    description: 'Banner, login and consent messages',
+    group: platformSettingsGroup,
+    directory: 'platform_settings/messages',
+  }, getMessagesItems),
+  importer: messagesImporter,
+};

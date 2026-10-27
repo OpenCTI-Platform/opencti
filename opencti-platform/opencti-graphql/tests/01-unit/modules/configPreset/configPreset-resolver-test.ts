@@ -41,6 +41,7 @@ const buildSchema = () => {
         directive @public on FIELD_DEFINITION
         type Query { health: Boolean @public }
         type Mutation { health: Boolean @public }
+        scalar Upload
         type File { id: ID! name: String! }
         type PageInfo { startCursor: String! endCursor: String! hasNextPage: Boolean! hasPreviousPage: Boolean! globalCount: Int! }
       `,

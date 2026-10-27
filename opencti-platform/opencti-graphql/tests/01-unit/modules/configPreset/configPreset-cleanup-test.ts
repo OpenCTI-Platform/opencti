@@ -33,7 +33,7 @@ describe('Config preset expired exports cleanup', () => {
   it('deletes the exports older than one hour, in every export folder', async () => {
     vi.mocked(allFilesForPaths).mockResolvedValue([{ id: 'config_preset/old-folder/old.zip' }] as never);
     await deleteExpiredConfigPresetExports(context, GARBAGE_COLLECTION_MANAGER_USER);
-    expect(allFilesForPaths).toHaveBeenCalledWith(context, GARBAGE_COLLECTION_MANAGER_USER, ['config_preset'], { notModifiedSince: '2026-10-14T08:05:07.123Z' });
+    expect(allFilesForPaths).toHaveBeenCalledWith(context, GARBAGE_COLLECTION_MANAGER_USER, ['config_preset/export'], { notModifiedSince: '2026-10-14T08:05:07.123Z' });
     expect(deleteFile).toHaveBeenCalledWith(context, GARBAGE_COLLECTION_MANAGER_USER, 'config_preset/old-folder/old.zip');
   });
 

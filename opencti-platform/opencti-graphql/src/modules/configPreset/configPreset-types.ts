@@ -1,5 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicConnection } from '../../types/store';
+import type { ConfigPresetImporter } from './configPreset-import-types';
 
 export type ConfigPresetConfiguration = Record<string, unknown>;
 
@@ -69,4 +70,6 @@ export interface ConfigPresetFamilyDefinition {
   listItems: (context: AuthContext, user: AuthUser, args: ConfigPresetListItemsArgs) => Promise<BasicConnection<ConfigPresetItemDefinition>>;
   // Every exportable item (ids null) or only the given ones, without the excluded ones: what the export writes
   resolveItems: (context: AuthContext, user: AuthUser, ids: string[] | null, excludedIds: string[]) => Promise<ConfigPresetItemDefinition[]>;
+  // How the items of this family are imported; a family without importer is reported as not importable
+  importer?: ConfigPresetImporter;
 }

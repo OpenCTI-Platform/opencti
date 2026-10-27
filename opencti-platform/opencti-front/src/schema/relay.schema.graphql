@@ -9224,6 +9224,7 @@ type Query {
   customFieldStixFilterKeys(entityType: String): [String!]
   configPresetExportableTypes: [ConfigPresetExportableType!]!
   configPresetExportableItems(type: ID!, first: Int, after: ID, search: String, ids: [ID!], excludedIds: [ID!]): ConfigPresetExportableItemConnection!
+  configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview!
 }
 
 type Subscription {
@@ -10200,6 +10201,7 @@ type Mutation {
   customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
   configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File!
+  configPresetImportUpload(file: Upload!): File!
 }
 
 enum WorkflowExecutionStatus {
@@ -17790,6 +17792,38 @@ type ConfigPresetExportableType {
   group: ConfigPresetExportableGroup!
   items: [ConfigPresetExportableItem!]!
   itemsPageInfo: PageInfo!
+}
+
+type ConfigPresetImportField {
+  key: String!
+  value: String
+  external_host: Boolean!
+}
+
+type ConfigPresetImportItem {
+  key: String!
+  label: String!
+  translatable: Boolean!
+  isDefault: Boolean!
+  exists: Boolean!
+  fields: [ConfigPresetImportField!]!
+  dependsOn: [ConfigPresetItemReference!]!
+}
+
+type ConfigPresetImportType {
+  key: String!
+  label: String!
+  description: String!
+  group: ConfigPresetExportableGroup!
+  items: [ConfigPresetImportItem!]!
+}
+
+type ConfigPresetImportPreview {
+  bundle_name: String
+  openCTI_version: String!
+  generated_at: String!
+  types: [ConfigPresetImportType!]!
+  ignored: [String!]!
 }
 
 input ConfigPresetSelectionInput {

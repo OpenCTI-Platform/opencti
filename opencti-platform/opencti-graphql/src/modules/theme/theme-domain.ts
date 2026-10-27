@@ -36,7 +36,7 @@ export const findAllThemes = async (context: AuthContext, user: AuthUser, args: 
  * @param excludeThemeId Optional theme id to exclude from the match (e.g. the theme being renamed).
  * @returns True when another theme already uses the given name.
  */
-const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string, excludeThemeId?: string) => {
+export const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string, excludeThemeId?: string) => {
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['name'], values: [themeName], operator: FilterOperator.Eq }],

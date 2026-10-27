@@ -4619,6 +4619,42 @@ export type ConfigPresetExportableType = {
   label: Scalars['String']['output'];
 };
 
+export type ConfigPresetImportField = {
+  __typename?: 'ConfigPresetImportField';
+  external_host: Scalars['Boolean']['output'];
+  key: Scalars['String']['output'];
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+export type ConfigPresetImportItem = {
+  __typename?: 'ConfigPresetImportItem';
+  dependsOn: Array<ConfigPresetItemReference>;
+  exists: Scalars['Boolean']['output'];
+  fields: Array<ConfigPresetImportField>;
+  isDefault: Scalars['Boolean']['output'];
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  translatable: Scalars['Boolean']['output'];
+};
+
+export type ConfigPresetImportPreview = {
+  __typename?: 'ConfigPresetImportPreview';
+  bundle_name?: Maybe<Scalars['String']['output']>;
+  generated_at: Scalars['String']['output'];
+  ignored: Array<Scalars['String']['output']>;
+  openCTI_version: Scalars['String']['output'];
+  types: Array<ConfigPresetImportType>;
+};
+
+export type ConfigPresetImportType = {
+  __typename?: 'ConfigPresetImportType';
+  description: Scalars['String']['output'];
+  group: ConfigPresetExportableGroup;
+  items: Array<ConfigPresetImportItem>;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
+
 export type ConfigPresetItemReference = {
   __typename?: 'ConfigPresetItemReference';
   key: Scalars['String']['output'];
@@ -17532,6 +17568,7 @@ export type Mutation = {
   cityEdit?: Maybe<CityEditMutations>;
   clearWorkflowPendingState: WorkflowInstance;
   configPresetExport: File;
+  configPresetImportUpload: File;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -18332,6 +18369,11 @@ export type MutationClearWorkflowPendingStateArgs = {
 export type MutationConfigPresetExportArgs = {
   bundle_name?: InputMaybe<Scalars['String']['input']>;
   selections: Array<ConfigPresetSelectionInput>;
+};
+
+
+export type MutationConfigPresetImportUploadArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -25074,6 +25116,7 @@ export type Query = {
   city?: Maybe<City>;
   configPresetExportableItems: ConfigPresetExportableItemConnection;
   configPresetExportableTypes: Array<ConfigPresetExportableType>;
+  configPresetImportPreview: ConfigPresetImportPreview;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
   connectorManagers: Array<ConnectorManager>;
@@ -25799,6 +25842,11 @@ export type QueryConfigPresetExportableItemsArgs = {
   ids?: InputMaybe<Array<Scalars['ID']['input']>>;
   search?: InputMaybe<Scalars['String']['input']>;
   type: Scalars['ID']['input'];
+};
+
+
+export type QueryConfigPresetImportPreviewArgs = {
+  file_id: Scalars['ID']['input'];
 };
 
 
@@ -41086,6 +41134,10 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetExportableItemConnection: ResolverTypeWrapper<ConfigPresetExportableItemConnection>;
   ConfigPresetExportableItemEdge: ResolverTypeWrapper<ConfigPresetExportableItemEdge>;
   ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
+  ConfigPresetImportField: ResolverTypeWrapper<ConfigPresetImportField>;
+  ConfigPresetImportItem: ResolverTypeWrapper<ConfigPresetImportItem>;
+  ConfigPresetImportPreview: ResolverTypeWrapper<ConfigPresetImportPreview>;
+  ConfigPresetImportType: ResolverTypeWrapper<ConfigPresetImportType>;
   ConfigPresetItemReference: ResolverTypeWrapper<ConfigPresetItemReference>;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
@@ -42283,6 +42335,10 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetExportableItemConnection: ConfigPresetExportableItemConnection;
   ConfigPresetExportableItemEdge: ConfigPresetExportableItemEdge;
   ConfigPresetExportableType: ConfigPresetExportableType;
+  ConfigPresetImportField: ConfigPresetImportField;
+  ConfigPresetImportItem: ConfigPresetImportItem;
+  ConfigPresetImportPreview: ConfigPresetImportPreview;
+  ConfigPresetImportType: ConfigPresetImportType;
   ConfigPresetItemReference: ConfigPresetItemReference;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
@@ -44686,6 +44742,38 @@ export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType ex
   group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
   items?: Resolver<Array<ResolversTypes['ConfigPresetExportableItem']>, ParentType, ContextType>;
   itemsPageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportField'] = ResolversParentTypes['ConfigPresetImportField']> = ResolversObject<{
+  external_host?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportItem'] = ResolversParentTypes['ConfigPresetImportItem']> = ResolversObject<{
+  dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
+  exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
+  isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportPreview'] = ResolversParentTypes['ConfigPresetImportPreview']> = ResolversObject<{
+  bundle_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  generated_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ignored?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  openCTI_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  types?: Resolver<Array<ResolversTypes['ConfigPresetImportType']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportType'] = ResolversParentTypes['ConfigPresetImportType']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
+  items?: Resolver<Array<ResolversTypes['ConfigPresetImportItem']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -49324,6 +49412,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   clearWorkflowPendingState?: Resolver<ResolversTypes['WorkflowInstance'], ParentType, ContextType, RequireFields<MutationClearWorkflowPendingStateArgs, 'entityId'>>;
   configPresetExport?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetExportArgs, 'selections'>>;
+  configPresetImportUpload?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetImportUploadArgs, 'file'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
@@ -51230,6 +51319,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
   configPresetExportableItems?: Resolver<ResolversTypes['ConfigPresetExportableItemConnection'], ParentType, ContextType, RequireFields<QueryConfigPresetExportableItemsArgs, 'type'>>;
   configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
+  configPresetImportPreview?: Resolver<ResolversTypes['ConfigPresetImportPreview'], ParentType, ContextType, RequireFields<QueryConfigPresetImportPreviewArgs, 'file_id'>>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
   connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
@@ -55569,6 +55659,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetExportableItemConnection?: ConfigPresetExportableItemConnectionResolvers<ContextType>;
   ConfigPresetExportableItemEdge?: ConfigPresetExportableItemEdgeResolvers<ContextType>;
   ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
+  ConfigPresetImportField?: ConfigPresetImportFieldResolvers<ContextType>;
+  ConfigPresetImportItem?: ConfigPresetImportItemResolvers<ContextType>;
+  ConfigPresetImportPreview?: ConfigPresetImportPreviewResolvers<ContextType>;
+  ConfigPresetImportType?: ConfigPresetImportTypeResolvers<ContextType>;
   ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;

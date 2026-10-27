@@ -46,6 +46,43 @@ type ConfigPresetExportableType {
     itemsPageInfo: PageInfo!
 }
 
+# A value the import would write; a null value is left untouched. external_host: a URL whose host is not the platform's.
+type ConfigPresetImportField {
+    key: String!
+    value: String
+    external_host: Boolean!
+}
+
+# An item of an uploaded bundle: type is the bare family id, key the bundle id (the pair the results of the import carry).
+type ConfigPresetImportItem {
+    key: String!
+    label: String!
+    translatable: Boolean!
+    isDefault: Boolean!
+    # The item already exists on the platform.
+    exists: Boolean!
+    fields: [ConfigPresetImportField!]!
+    # Items imported with this one, whatever the selection.
+    dependsOn: [ConfigPresetItemReference!]!
+}
+
+type ConfigPresetImportType {
+    key: String!
+    label: String!
+    description: String!
+    group: ConfigPresetExportableGroup!
+    items: [ConfigPresetImportItem!]!
+}
+
+type ConfigPresetImportPreview {
+    bundle_name: String
+    openCTI_version: String!
+    generated_at: String!
+    types: [ConfigPresetImportType!]!
+    # Paths of the entries of the zip that are not importable.
+    ignored: [String!]!
+}
+
 extend type Query {
     configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Items of one type, by page; ids, the keys of the items, keeps only those items, excludedIds removes those.
@@ -57,6 +94,8 @@ extend type Query {
         ids: [ID!]
         excludedIds: [ID!]
     ): ConfigPresetExportableItemConnection! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # What the uploaded zip of the caller holds; reads only, never changes the import session.
+    configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }
 
 input ConfigPresetSelectionInput {
@@ -72,4 +111,6 @@ input ConfigPresetSelectionInput {
 extend type Mutation {
     # Builds the bundle of the selected items, and of the items they depend on, and returns the stored zip; bundle_name only goes into metadata.json.
     configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Stores the zip of a configuration bundle for the caller (one pending upload per user) and returns its file; the preview and the import only take its id.
+    configPresetImportUpload(file: Upload!): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

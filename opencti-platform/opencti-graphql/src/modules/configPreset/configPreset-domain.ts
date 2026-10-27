@@ -18,7 +18,7 @@ import type {
 } from '../../generated/graphql';
 import { deleteFile, type LoadedFile, uploadToStorage } from '../../database/file-storage';
 import { allFilesForPaths } from '../internal/document/document-domain';
-import { CONFIG_PRESET_STORAGE_PATH } from '../internal/document/document-types';
+import { CONFIG_PRESET_EXPORT_PATH } from '../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../manager/telemetryManager';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemBundleId, configPresetItemFilePath, exportConfigPresetItem } from './configPreset-registry';
@@ -168,11 +168,11 @@ export const buildConfigPresetDependencies = (families: SelectedConfigPresetFami
 };
 
 // Called by the garbage collection manager. A failed deletion does not stop the others: the next run retries it.
-// Lists everything under config_preset/, the folder of each export included.
+// Lists the export folders only: the pending imports and the import reports are never touched.
 export const deleteExpiredConfigPresetExports = async (context: AuthContext, user: AuthUser) => {
   try {
     const notModifiedSince = new Date(Date.now() - CONFIG_PRESET_EXPORT_RETENTION_MS).toISOString();
-    const expiredFiles = await allFilesForPaths(context, user, [CONFIG_PRESET_STORAGE_PATH], { notModifiedSince });
+    const expiredFiles = await allFilesForPaths(context, user, [CONFIG_PRESET_EXPORT_PATH], { notModifiedSince });
     for (let i = 0; i < expiredFiles.length; i += 1) {
       const fileId = expiredFiles[i].id;
       try {
@@ -271,7 +271,7 @@ export const configPresetExport = async (
   const generatedAt = new Date();
   const fileName = buildConfigPresetFileName(generatedAt);
   // Each export in its own folder, like support packages
-  const exportFolder = `${CONFIG_PRESET_STORAGE_PATH}/${crypto.randomUUID()}`;
+  const exportFolder = `${CONFIG_PRESET_EXPORT_PATH}/${crypto.randomUUID()}`;
   const tmpZipPath = path.join(os.tmpdir(), `opencti-config-preset-${crypto.randomUUID()}.zip`);
   try {
     const summary = await writeConfigPresetZip(context, user, families, tmpZipPath, {

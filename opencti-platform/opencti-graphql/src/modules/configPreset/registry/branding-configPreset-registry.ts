@@ -1,15 +1,23 @@
 import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../../generated/graphql';
 import { getPlatformDefaultTheme, getWhitemarkConfigPresetConfiguration } from '../../../domain/settings';
-import { findAllThemes, findThemePaginated, getThemeConfigPresetConfiguration } from '../../theme/theme-domain';
+import { checkExistingTheme, findAllThemes, findById as findThemeById, findThemePaginated, getThemeConfigPresetConfiguration } from '../../theme/theme-domain';
+import { BUILT_IN_THEME_STANDARD_IDS } from '../../theme/theme-constants';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
+import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../configPreset-import-types';
+import { configPresetPlanKey } from '../configPreset-import-types';
+import { buildImportFields, importFailureReason, isNothingToImport } from '../configPreset-import-utils';
+import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS, themeConfigurationSchema, whitemarkConfigurationSchema } from '../configPreset-import-schemas';
 import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup } from './common-configPreset-registry';
 
 export const BRANDING_FAMILY_ID = 'branding';
 
+const WHITEMARK_ID = 'whitemark';
+const WHITEMARK_LABEL = 'Remove Filigran logos';
+
 const whitemarkItem: ConfigPresetItemDefinition = {
-  id: 'whitemark',
-  label: 'Remove Filigran logos',
+  id: WHITEMARK_ID,
+  label: WHITEMARK_LABEL,
   translatable: true,
   fileName: 'whitemark.json',
   exporter: (context) => getWhitemarkConfigPresetConfiguration(context),
@@ -43,8 +51,54 @@ const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | unde
 // The ids of the request that can be themes: an explicit list without the static ids
 const themeIds = (ids?: string[] | null) => ids?.filter((id) => !BRANDING_STATIC_ITEMS.some((item) => item.id === id));
 
+const BUILT_IN_THEME_IDS = Object.values(BUILT_IN_THEME_STANDARD_IDS);
+
+const computeWhitemark = (item: Parameters<ConfigPresetImporter['compute']>[2]): ConfigPresetComputedItem => {
+  const base = { label: WHITEMARK_LABEL, translatable: true, exists: true, fields: [] };
+  const parsed = whitemarkConfigurationSchema.safeParse(item.configuration);
+  if (!parsed.success) {
+    return { ...base, status: 'failed', reason: importFailureReason(parsed.error) };
+  }
+  if (isNothingToImport(parsed.data, ['platform_whitemark'])) {
+    return { ...base, status: 'skipped', reason: 'Nothing to import' };
+  }
+  return { ...base, status: 'overwritten' };
+};
+
+const brandingImporter: ConfigPresetImporter = {
+  compute: async (context, user, item, plan): Promise<ConfigPresetComputedItem> => {
+    if (item.id === WHITEMARK_ID) {
+      return computeWhitemark(item);
+    }
+    const name = typeof item.configuration.name === 'string' ? item.configuration.name : item.id;
+    const base = { label: name, translatable: false };
+    // A built-in theme has the same standard id on every platform: never patched, never created
+    if (BUILT_IN_THEME_IDS.includes(item.id)) {
+      return { ...base, exists: true, status: 'skipped', reason: 'Built-in theme', fields: [] };
+    }
+    if (!THEME_STANDARD_ID_PATTERN.test(item.id) || item.configuration.standard_id !== item.id) {
+      return { ...base, exists: false, status: 'failed', reason: 'The standard id of the theme does not match its id', fields: [] };
+    }
+    const parsed = themeConfigurationSchema.safeParse(item.configuration);
+    if (!parsed.success) {
+      return { ...base, exists: false, status: 'failed', reason: importFailureReason(parsed.error), fields: [] };
+    }
+    const fields = buildImportFields(context, parsed.data, THEME_URL_KEYS, THEME_URL_KEYS);
+    const existing = await findThemeById(context, user, item.id);
+    if (existing) {
+      return { ...base, exists: true, status: 'overwritten', fields };
+    }
+    if (await checkExistingTheme(context, user, parsed.data.name)) {
+      return { ...base, exists: false, status: 'failed', reason: 'Theme name already exists', fields };
+    }
+    plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
+    return { ...base, exists: false, status: 'created', fields };
+  },
+};
+
 // Branding: whitemark pinned first, then the themes, paged and searched through the theme domain
 export const brandingFamily: ConfigPresetFamilyDefinition = {
+  importer: brandingImporter,
   id: BRANDING_FAMILY_ID,
   label: 'Branding',
   description: 'Themes, colors, logos',
