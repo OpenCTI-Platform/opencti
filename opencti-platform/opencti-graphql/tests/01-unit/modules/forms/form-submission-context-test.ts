@@ -1,10 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { redisGetWork } from '../../../../src/database/redis';
+import { describe, expect, it } from 'vitest';
 import { canSubmitFormTo, isVerifiedFormSubmission } from '../../../../src/modules/form/form-submission-context';
-
-vi.mock('../../../../src/database/redis', () => ({
-  redisGetWork: vi.fn(),
-}));
 
 const caps = (...names: string[]) => names.map((name) => ({ name }));
 const applicant = (overrides: Record<string, any> = {}) => ({
@@ -24,54 +19,44 @@ const work = (overrides: Record<string, any> = {}) => ({
 });
 
 describe('isVerifiedFormSubmission', () => {
-  beforeEach(() => {
-    vi.mocked(redisGetWork).mockReset();
-    vi.mocked(redisGetWork).mockResolvedValue(work() as any);
+  it('should verify the import of a form submission made by the form-only applicant', () => {
+    expect(isVerifiedFormSubmission(contextOf(applicant()), work())).toBe(true);
   });
 
-  it('should verify the import of a form submission made by the form-only applicant', async () => {
-    expect(await isVerifiedFormSubmission(contextOf(applicant()))).toBe(true);
-  });
-
-  it('should not trust a request that is not impersonated by a privileged credential', async () => {
+  it('should not trust a request that is not impersonated by a privileged credential', () => {
     // the credential is the applicant's own, or the context does not know who authenticated
-    expect(await isVerifiedFormSubmission(contextOf(applicant(), { real_authentication_id: 'applicant-1' }))).toBe(false);
-    expect(await isVerifiedFormSubmission(contextOf(applicant(), { real_authentication_id: undefined }))).toBe(false);
+    expect(isVerifiedFormSubmission(contextOf(applicant(), { real_authentication_id: 'applicant-1' }), work())).toBe(false);
+    expect(isVerifiedFormSubmission(contextOf(applicant(), { real_authentication_id: undefined }), work())).toBe(false);
   });
 
-  it('should not verify without a work id', async () => {
-    expect(await isVerifiedFormSubmission(contextOf(applicant(), { workId: undefined }))).toBe(false);
-    expect(redisGetWork).not.toHaveBeenCalled();
+  it('should not verify without a work id', () => {
+    expect(isVerifiedFormSubmission(contextOf(applicant(), { workId: undefined }), work())).toBe(false);
   });
 
-  it('should reject a work that is not a live form submission of this applicant', async () => {
+  it('should reject a work that is not a live form submission of this applicant', () => {
     const context = contextOf(applicant());
-    vi.mocked(redisGetWork).mockResolvedValue(work({ is_initialized: 'false' }) as any);
-    expect(await isVerifiedFormSubmission(context)).toBe(false);
-    vi.mocked(redisGetWork).mockResolvedValue({ is_initialized: 'true' } as any); // a work of another kind
-    expect(await isVerifiedFormSubmission(context)).toBe(false);
-    vi.mocked(redisGetWork).mockResolvedValue(work({ form_applicant_id: 'someone-else' }) as any);
-    expect(await isVerifiedFormSubmission(context)).toBe(false);
+    expect(isVerifiedFormSubmission(context, work({ is_initialized: 'false' }))).toBe(false);
+    expect(isVerifiedFormSubmission(context, { is_initialized: 'true' })).toBe(false); // a work of another kind
+    expect(isVerifiedFormSubmission(context, work({ form_applicant_id: 'someone-else' }))).toBe(false);
+    expect(isVerifiedFormSubmission(context, undefined)).toBe(false);
   });
 
-  it('should require the request to target the draft of the submission', async () => {
-    vi.mocked(redisGetWork).mockResolvedValue(work({ form_draft_id: 'draft-1' }) as any);
-    expect(await isVerifiedFormSubmission(contextOf(applicant(), { draft_context: 'draft-1' }))).toBe(true);
-    expect(await isVerifiedFormSubmission(contextOf(applicant(), { draft_context: 'other-draft' }))).toBe(false);
-    expect(await isVerifiedFormSubmission(contextOf(applicant()))).toBe(false);
+  it('should require the request to target the draft of the submission', () => {
+    const inDraft = work({ form_draft_id: 'draft-1' });
+    expect(isVerifiedFormSubmission(contextOf(applicant(), { draft_context: 'draft-1' }), inDraft)).toBe(true);
+    expect(isVerifiedFormSubmission(contextOf(applicant(), { draft_context: 'other-draft' }), inDraft)).toBe(false);
+    expect(isVerifiedFormSubmission(contextOf(applicant()), inDraft)).toBe(false);
     // a submission without draft cannot be replayed inside a draft
-    vi.mocked(redisGetWork).mockResolvedValue(work() as any);
-    expect(await isVerifiedFormSubmission(contextOf(applicant(), { draft_context: 'draft-1' }))).toBe(false);
+    expect(isVerifiedFormSubmission(contextOf(applicant(), { draft_context: 'draft-1' }), work())).toBe(false);
   });
 
-  it('should require the form capability in the scope of the destination', async () => {
+  it('should require the form capability in the scope of the destination', () => {
     const withoutCapability = applicant({ capabilities: caps('KNOWLEDGE_KNASKIMPORT') });
-    expect(await isVerifiedFormSubmission(contextOf(withoutCapability))).toBe(false);
+    expect(isVerifiedFormSubmission(contextOf(withoutCapability), work())).toBe(false);
     // granted in draft only: valid for a draft destination, not for the main one
     const draftOnly = applicant({ capabilities: [], capabilitiesInDraft: caps('KNOWLEDGE_KNFORMINTAKE') });
-    expect(await isVerifiedFormSubmission(contextOf(draftOnly))).toBe(false);
-    vi.mocked(redisGetWork).mockResolvedValue(work({ form_draft_id: 'draft-1' }) as any);
-    expect(await isVerifiedFormSubmission(contextOf(draftOnly, { draft_context: 'draft-1' }))).toBe(true);
+    expect(isVerifiedFormSubmission(contextOf(draftOnly), work())).toBe(false);
+    expect(isVerifiedFormSubmission(contextOf(draftOnly, { draft_context: 'draft-1' }), work({ form_draft_id: 'draft-1' }))).toBe(true);
   });
 });
 
@@ -96,9 +81,8 @@ describe('canSubmitFormTo', () => {
     expect(canSubmitFormTo(importInMain, false)).toBe(false);
   });
 
-  it('should not verify the import of a submission for an applicant that only has Import knowledge', async () => {
-    vi.mocked(redisGetWork).mockResolvedValue(work({ form_draft_id: 'draft-1' }) as any);
+  it('should not verify the import of a submission for an applicant that only has Import knowledge', () => {
     const importInDraft = applicant({ capabilities: [], capabilitiesInDraft: caps('KNOWLEDGE_KNASKIMPORT') });
-    expect(await isVerifiedFormSubmission(contextOf(importInDraft, { draft_context: 'draft-1' }))).toBe(false);
+    expect(isVerifiedFormSubmission(contextOf(importInDraft, { draft_context: 'draft-1' }), work({ form_draft_id: 'draft-1' }))).toBe(false);
   });
 });

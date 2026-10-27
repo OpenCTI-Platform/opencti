@@ -1,5 +1,4 @@
 import { ForbiddenAccess } from '../../config/errors';
-import { redisGetWork } from '../../database/redis';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, SETTINGS_SETKILLCHAINPHASES, SETTINGS_SETLABELS } from '../../utils/access';
 
@@ -50,7 +49,8 @@ export const checkFormSubmissionAccess = (user: AuthUser, isDraft: boolean, { pe
 
 /**
  * Is this request the import of a Form Intake submission made by a user who submits forms with the form
- * capability? All of this must hold, the work id alone grants nothing:
+ * capability? `work` is the live state of the work of the request (its Redis hash, read once by the caller).
+ * All of this must hold, the work id alone grants nothing:
  *  - the caller is a privileged credential (the worker) that impersonates the applicant,
  *  - the work is alive and was created by a form submission of this very applicant,
  *  - the request targets the draft the submission created (or no draft when it created none),
@@ -62,12 +62,11 @@ export const checkFormSubmissionAccess = (user: AuthUser, isDraft: boolean, { pe
  * header to None for a bundle without draft_id, which the http client drops). The import then fails closed:
  * never a grant, only a refusal.
  */
-export const isVerifiedFormSubmission = async (context: AuthContext): Promise<boolean> => {
+export const isVerifiedFormSubmission = (context: AuthContext, work: Record<string, string> | undefined): boolean => {
   const { user, workId } = context;
   if (!user || !workId) return false;
   const isImpersonated = context.real_authentication_id !== undefined && context.real_authentication_id !== user.id;
   if (!isImpersonated) return false;
-  const work = await redisGetWork(workId);
   if (work?.is_initialized !== 'true' || !work.form_id || work.form_applicant_id !== user.id) return false;
   const draftId = work.form_draft_id || undefined;
   if ((context.draft_context || undefined) !== draftId) return false;
