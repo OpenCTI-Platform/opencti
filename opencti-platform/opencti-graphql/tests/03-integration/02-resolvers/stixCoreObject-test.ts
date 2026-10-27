@@ -201,7 +201,8 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
         ...variables,
       },
     });
-    return result.data?.stixCoreObjectsTimeSeriesBreakdown as { truncated: boolean; dates: string[]; series: Serie[] };
+    // DateTime values are Date objects when the query runs in process, ISO strings over HTTP
+    return result.data?.stixCoreObjectsTimeSeriesBreakdown as { truncated: boolean; dates: (Date | string)[]; series: Serie[] };
   };
   const sumOf = (serie: Serie) => serie.values.reduce((total, value) => total + value, 0);
   const expectBreakdownError = (variables: Record<string, unknown>, message: string) => {
@@ -262,7 +263,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     expect(truncated).toEqual(true);
     series.forEach((serie) => expect(sumOf(serie)).toEqual(serie.value));
     // One point per month, from January to March, on dates shared by every serie
-    expect(dates).toEqual(['2021-01-01T00:00:00.000Z', '2021-02-01T00:00:00.000Z', '2021-03-01T00:00:00.000Z']);
+    expect(dates.map((date) => new Date(date).toISOString())).toEqual(['2021-01-01T00:00:00.000Z', '2021-02-01T00:00:00.000Z', '2021-03-01T00:00:00.000Z']);
     expect(series[0].values).toEqual([2, 1, 0]);
     expect(series[1].values).toEqual([0, 1, 1]);
     // With a limit above the number of labels, nothing is left out and the unlabeled report is not a serie
