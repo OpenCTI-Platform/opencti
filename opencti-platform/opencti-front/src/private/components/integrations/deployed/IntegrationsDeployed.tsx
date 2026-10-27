@@ -40,7 +40,7 @@ interface IntegrationsDeployedContentProps {
   data: IntegrationsData;
   connectorsListData: ConnectorsListQuery['response'] | null;
   connectorsStateData: ConnectorsStateQuery['response'] | null;
-  logosBySlug: Map<string, string>;
+  logosByConnectorId: Map<string, string>;
   onConnectorsChange: () => void;
 }
 
@@ -48,7 +48,7 @@ const IntegrationsDeployedContent = ({
   data,
   connectorsListData,
   connectorsStateData,
-  logosBySlug,
+  logosByConnectorId,
   onConnectorsChange,
 }: IntegrationsDeployedContentProps) => {
   const { t_i18n } = useFormatter();
@@ -64,7 +64,7 @@ const IntegrationsDeployedContent = ({
     connectorsStateData,
     feedsData,
     formsData,
-    logosBySlug,
+    logosByConnectorId,
     isConnectorUpdateEnabled,
   });
 
@@ -296,7 +296,7 @@ const IntegrationsDeployed = ({ data }: IntegrationsDeployedProps) => {
   const [connectorsListRef, loadConnectorsList] = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
   const [connectorsStateRef, loadConnectorsState] = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
   const [connectorsLogosRef, loadConnectorsLogos] = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
-  const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(new Map());
+  const [logosByConnectorId, setLogosByConnectorId] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     if (!isConnectorReader) return undefined;
@@ -325,7 +325,7 @@ const IntegrationsDeployed = ({ data }: IntegrationsDeployedProps) => {
       data={data}
       connectorsListData={connectorsListData}
       connectorsStateData={connectorsStateData}
-      logosBySlug={logosBySlug}
+      logosByConnectorId={logosByConnectorId}
       onConnectorsChange={onConnectorsChange}
     />
   );
@@ -347,7 +347,7 @@ const IntegrationsDeployed = ({ data }: IntegrationsDeployedProps) => {
                     <Suspense fallback={null}>
                       <ConnectorsLogos
                         queryRef={connectorsLogosRef}
-                        onLoaded={setLogosBySlug}
+                        onLoaded={setLogosByConnectorId}
                       />
                     </Suspense>
                   )}

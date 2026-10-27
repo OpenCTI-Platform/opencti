@@ -50,6 +50,7 @@ import { PLATFORM_VERSION } from '../../config/conf';
 import { assessConnectorMigration, migrateConnectorToManaged } from './connector-migration';
 import { sinceNowInMinutes } from '../../utils/format';
 import { waitForManagedConnectorAutoUpgrade } from './managed-connector-auto-upgrade-readiness';
+import { connectorCatalogIdentity, connectorCatalogIdentityOptions, connectorCatalogIdentityUpdate } from '../../domain/connector-catalog-identity';
 
 const connectorResolvers: Resolvers = {
   Query: {
@@ -69,6 +70,7 @@ const connectorResolvers: Resolvers = {
     connectorMigrationAssessment: (_, { connectorId, containerImage, configuration }, context) => {
       return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
     },
+    connectorCatalogIdentityOptions: (_, __, context) => connectorCatalogIdentityOptions(context),
   },
   Connector: {
     connector_queue_details: (cn) => queueDetails(cn.id),
@@ -84,6 +86,7 @@ const connectorResolvers: Resolvers = {
     manager_contract_configuration: (cn, _, context) => computeConnectorContractConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeConnectorContractImage(cn),
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
+    catalog_identity: (cn, _, context) => connectorCatalogIdentity(context, context.user, cn),
     update_available: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).update_available,
     latest_compatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).latest_compatible_version,
     has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
@@ -111,6 +114,7 @@ const connectorResolvers: Resolvers = {
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
     pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input as EditInput[]),
+    updateConnectorCatalogIdentity: (_, { id, slug }, context) => connectorCatalogIdentityUpdate(context, context.user, id, slug),
     managedConnectorAdd: (_, { input }, context) => managedConnectorAdd(context, context.user, input!),
     managedConnectorEdit: (_, { input }, context) => managedConnectorEdit(context, context.user, input!),
     updateConnectorManagerStatus: (_, { input }, context) => updateConnectorManagerStatus(context, context.user, input!),

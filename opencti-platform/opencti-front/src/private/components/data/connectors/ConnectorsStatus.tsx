@@ -67,13 +67,13 @@ const bodyItemTextStyle: CSSProperties = {
 interface ConnectorsStatusContentProps {
   connectorsListData: ConnectorsListQuery['response'];
   connectorsStateData: ConnectorsStateQuery['response'];
-  logosBySlug: Map<string, string>;
+  logosByConnectorId: Map<string, string>;
 }
 
 const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> = ({
   connectorsListData,
   connectorsStateData,
-  logosBySlug,
+  logosByConnectorId,
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
 
@@ -337,9 +337,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                   ConnectorIcon = DeveloperBoardOutlined;
                 }
 
-                const connectorLogoSrc = connector.manager_contract_excerpt?.slug
-                  ? logosBySlug.get(connector.manager_contract_excerpt.slug)
-                  : undefined;
+                const connectorLogoSrc = logosByConnectorId.get(connector.id);
 
                 const connectorType = connector.connector_type
                   ? getConnectorMetadata(connector.connector_type as IngestionConnectorType, t_i18n).label
@@ -396,7 +394,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                       <ListItemIcon>
                         {connectorLogoSrc
                           ? (
-                              <Tooltip title={connector.manager_contract_excerpt?.title || ''} placement="top">
+                              <Tooltip title={connector.catalog_identity?.title || ''} placement="top">
                                 <img
                                   src={connectorLogoSrc}
                                   alt="connector logo"
@@ -471,7 +469,7 @@ const ConnectorsStatus: React.FC = () => {
   const [connectorsListRef, loadConnectorsList] = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
   const [connectorsStateRef, loadConnectorsState] = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
   const [connectorsLogosRef, loadConnectorsLogos] = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
-  const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(new Map());
+  const [logosByConnectorId, setLogosByConnectorId] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     loadConnectorsList({}, { fetchPolicy: 'store-and-network' });
@@ -504,13 +502,13 @@ const ConnectorsStatus: React.FC = () => {
                 <ConnectorsStatusContent
                   connectorsListData={connectorsListData}
                   connectorsStateData={connectorsStateData}
-                  logosBySlug={logosBySlug}
+                  logosByConnectorId={logosByConnectorId}
                 />
                 {connectorsLogosRef && (
                   <React.Suspense fallback={null}>
                     <ConnectorsLogos
                       queryRef={connectorsLogosRef}
-                      onLoaded={setLogosBySlug}
+                      onLoaded={setLogosByConnectorId}
                     />
                   </React.Suspense>
                 )}
