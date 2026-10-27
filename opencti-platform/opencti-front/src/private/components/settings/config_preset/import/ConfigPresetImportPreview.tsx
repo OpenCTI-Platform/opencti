@@ -22,6 +22,8 @@ import {
 import { getConfigPresetErrorReason } from './configPresetImportStep';
 import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
+import ConfigPresetImportActions from './ConfigPresetImportActions';
+import ConfigPresetImportMessages, { ConfigPresetSaveState } from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
@@ -50,10 +52,6 @@ const configPresetImportPreviewQuery = graphql`
           isDefault
           exists
           requiresEnterpriseEdition
-          fields {
-            key
-            value
-          }
           dependsOn {
             type
             key
@@ -125,7 +123,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selection, setSelection] = useState<ConfigPresetSelection>({});
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveState, setSaveState] = useState<ConfigPresetSaveState>('idle');
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   // The expected results, by `<type>/<key>`: held here only, never saved; cleared when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
@@ -287,9 +285,10 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   if (!preview) {
     return <Spinner label={t_i18n('Loading')} />;
   }
-  const saveHint = { idle: '', saving: t_i18n('Saving'), saved: t_i18n('Saved'), error: t_i18n('The selection could not be saved') }[saveState];
+  const itemsCount = preview.types.reduce((count, type) => count + type.items.length, 0);
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
+    // The dialog scrolls: a minimum height gives the list room, and the footer sticks to the bottom of the visible part
+    <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
       <Text variant="title-sm">{preview.bundle_name ?? t_i18n('Configuration bundle')}</Text>
       <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched.')}</Text>
       {preview.ignored.length > 0 && (
@@ -323,29 +322,42 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
                 {item.exists ? t_i18n('Already exists, will be overwritten') : t_i18n('New')}
               </Text>
-              {item.fields.map((field) => (
-                <Text key={field.key} variant="content-compact">{`${field.key}: ${field.value ?? t_i18n('Untouched')}`}</Text>
-              ))}
             </div>
           </div>
         )}
       />
-      <Alert
-        severity="success"
-        elevation={1}
-        title={t_i18n('{count} items. Compatible with your OpenCTI version.', { values: { count: preview.types.reduce((count, type) => count + type.items.length, 0) } })}
-      />
-      {isOtherImportRunning && <Text variant="content-compact">{t_i18n('Apply is available once the import in progress is over.')}</Text>}
-      {startedBy && <Text variant="content-compact">{t_i18n('Started by {name}', { values: { name: startedBy } })}</Text>}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text variant="content-compact">
-          {hasPlatformChanged ? t_i18n('The platform changed since your simulation') : (isOutdated ? t_i18n('Simulate again to update') : saveHint)}
-        </Text>
-        <div style={{ display: 'flex', gap: theme.spacing(1) }}>
-          <Button variant="secondary" onClick={() => setConfirmStartOver(true)} disabled={isSimulating}>{t_i18n('Start over')}</Button>
-          <Button variant="secondary" onClick={handleSimulate} disabled={selections.length === 0 || isSimulating}>{t_i18n('Simulate')}</Button>
-          <Button onClick={handleApply} disabled={selections.length === 0 || isSimulating || isOtherImportRunning}>{t_i18n('Apply')}</Button>
-        </div>
+      <div
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 1,
+          marginTop: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: theme.spacing(2),
+          paddingTop: theme.spacing(2),
+          // The surface of the dialog, so that the footer hides what scrolls under it without drawing a box of its own
+          background: 'var(--bg-elevation-default)',
+          // The scroll area of the Dialog has a 4px vertical padding below the sticky footer, where the list would show through
+          boxShadow: `0 ${theme.spacing(0.5)} 0 0 var(--bg-elevation-default)`,
+        }}
+      >
+        <ConfigPresetImportMessages
+          itemsCount={itemsCount}
+          saveState={saveState}
+          isOutdated={isOutdated}
+          hasPlatformChanged={hasPlatformChanged}
+          isOtherImportRunning={isOtherImportRunning}
+          startedBy={startedBy}
+        />
+        <ConfigPresetImportActions
+          hasSelection={selections.length > 0}
+          isSimulating={isSimulating}
+          isOtherImportRunning={isOtherImportRunning}
+          onStartOver={() => setConfirmStartOver(true)}
+          onSimulate={handleSimulate}
+          onApply={handleApply}
+        />
       </div>
       <Dialog open={confirmStartOver} size="small" title={t_i18n('Start over')} onClose={() => setConfirmStartOver(false)}>
         <Text variant="content-base">{t_i18n('The uploaded bundle and your selection will be deleted.')}</Text>
