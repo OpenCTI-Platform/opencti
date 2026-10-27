@@ -23,6 +23,9 @@ import { initializeStreamStack } from '../../src/database/stream/stream-handler'
 import { initializeAuthenticationProviders } from '../../src/modules/authenticationProvider/providers';
 import { initializeAdminUser } from '../../src/modules/user/user-domain';
 import { checkSystemDependencies } from '../../src/boot-utils';
+import { registerModules } from '../../src/composition-root';
+
+registerModules();
 
 /**
  * This is run once before all tests (for setup) and after all (for teardown).
