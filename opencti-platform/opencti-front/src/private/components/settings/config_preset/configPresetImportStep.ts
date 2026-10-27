@@ -1,7 +1,7 @@
-export type ConfigPresetImportSessionStatus = 'DRAFT' | 'APPLYING' | 'FINISHED';
+export type ConfigPresetImportSessionStatus = 'DRAFT' | 'APPLYING' | 'FINISHED' | 'INTERRUPTED';
 
 // The screen of the wizard: the welcome choices, then the upload, the preview with the selection, the progress and the result
-export type ConfigPresetImportStep = 'welcome' | 'upload' | 'preview' | 'progress' | 'result';
+export type ConfigPresetImportStep = 'welcome' | 'upload' | 'preview' | 'progress' | 'interrupted' | 'result';
 
 export interface ConfigPresetImportStepInput {
   // Status of the import session of the user, absent when there is none
@@ -22,6 +22,9 @@ export const getConfigPresetImportStep = ({ status, hasChosenImport, isFileMissi
   if (isFileMissing) {
     return 'upload';
   }
+  if (status === 'INTERRUPTED') {
+    return 'interrupted';
+  }
   if (status === 'DRAFT') {
     return 'preview';
   }
@@ -29,6 +32,12 @@ export const getConfigPresetImportStep = ({ status, hasChosenImport, isFileMissi
     return 'result';
   }
   return hasChosenImport ? 'upload' : 'welcome';
+};
+
+// The name of the administrator whose import runs, in the data of a refusal because an import is running
+export const getConfigPresetStartedBy = (error: unknown): string | undefined => {
+  const errors = (error as { res?: { errors?: { extensions?: { data?: { started_by?: string } } }[] } })?.res?.errors;
+  return errors?.[0]?.extensions?.data?.started_by;
 };
 
 // The reason of a refusal of the backend, read from extensions.data.reason and never from the message

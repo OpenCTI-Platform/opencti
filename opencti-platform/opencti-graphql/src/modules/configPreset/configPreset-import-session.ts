@@ -6,10 +6,11 @@ import { FunctionalError } from '../../config/errors';
 // The values are the ones of the GraphQL enums. `interrupted` is derived when the session is read (chunk 5), never stored.
 export const CONFIG_PRESET_IMPORT_SESSION_VERSION = 1;
 
-export type ConfigPresetImportSessionStatus = 'DRAFT' | 'APPLYING' | 'FINISHED';
+// INTERRUPTED is derived when the session is read (stored as applying, but the import no longer runs), never stored
+export type ConfigPresetImportSessionStatus = 'DRAFT' | 'APPLYING' | 'FINISHED' | 'INTERRUPTED';
 export type ConfigPresetImportOutcome = 'COMPLETED' | 'STOPPED';
 export type ConfigPresetImportResultStatus = 'CREATED' | 'OVERWRITTEN' | 'SKIPPED' | 'FAILED';
-export type ConfigPresetImportSessionEvent = 'UPLOAD' | 'SAVE' | 'START_OVER' | 'START' | 'ITEM_PROCESSED' | 'FINISH' | 'ABORT' | 'CLOSE';
+export type ConfigPresetImportSessionEvent = 'UPLOAD' | 'SAVE' | 'START_OVER' | 'START' | 'ITEM_PROCESSED' | 'FINISH' | 'ABORT' | 'BACK_TO_SELECTION' | 'CLOSE';
 
 // The stored shape of a selection, not the GraphQL input
 export interface ConfigPresetImportSelection {
@@ -55,6 +56,7 @@ export interface ConfigPresetImportSessionPayloads {
   ITEM_PROCESSED: { result: ConfigPresetImportItemResult };
   FINISH: { outcome: ConfigPresetImportOutcome; counts: ConfigPresetImportCounts; report_id: string | null };
   ABORT: undefined;
+  BACK_TO_SELECTION: undefined;
   CLOSE: undefined;
 }
 
@@ -102,6 +104,7 @@ const TRANSITIONS: ConfigPresetImportTransition[] = [
   { event: 'SAVE', from: 'DRAFT', to: 'DRAFT', apply: save },
   { event: 'START_OVER', from: 'DRAFT', to: 'NONE', apply: () => null },
   { event: 'START_OVER', from: 'FINISHED', to: 'NONE', apply: () => null },
+  { event: 'START_OVER', from: 'INTERRUPTED', to: 'NONE', apply: () => null },
   // The selection of the import, with the required dependencies the backend added, replaces the saved one
   {
     event: 'START',
@@ -123,6 +126,8 @@ const TRANSITIONS: ConfigPresetImportTransition[] = [
   },
   // An error before the first item: back to the draft, the file and the selection are kept
   { event: 'ABORT', from: 'APPLYING', to: 'DRAFT', apply: (session) => ({ ...session!, status: 'DRAFT', started_at: null, total: 0, results: [] }) },
+  // From an interrupted import: the file and the selection are kept, the progress and the item results are dropped
+  { event: 'BACK_TO_SELECTION', from: 'INTERRUPTED', to: 'DRAFT', apply: (session) => ({ ...session!, status: 'DRAFT', started_at: null, total: 0, results: [] }) },
   { event: 'CLOSE', from: 'FINISHED', to: 'NONE', apply: () => null },
 ];
 

@@ -87,6 +87,8 @@ enum ConfigPresetImportSessionStatus {
     DRAFT
     APPLYING
     FINISHED
+    # Derived when the session is read, never stored: it is stored as applying but the import no longer runs (a node stopped).
+    INTERRUPTED
 }
 
 enum ConfigPresetImportOutcome {
@@ -104,6 +106,7 @@ enum ConfigPresetImportSessionEvent {
     ITEM_PROCESSED
     FINISH
     ABORT
+    BACK_TO_SELECTION
     CLOSE
 }
 
@@ -158,6 +161,22 @@ type ConfigPresetImportOutput {
     settings: Settings
 }
 
+# The import that runs on the platform, read from its running record: name is null when the user no longer exists.
+type ConfigPresetImportRunningDetails {
+    name: String
+    is_mine: Boolean!
+    started_at: DateTime!
+    processed: Int!
+    total: Int!
+}
+
+type ConfigPresetImportRunning {
+    # Null when no import runs.
+    running: ConfigPresetImportRunningDetails
+    # When the last import ended (completed or stopped), null when unknown: the wizard clears its simulation when it changes.
+    last_finished_at: DateTime
+}
+
 extend type Query {
     configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Items of one type, by page; ids, the keys of the items, keeps only those items, excludedIds removes those.
@@ -173,6 +192,7 @@ extend type Query {
     configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # The import session of the caller, null when there is none.
     configPresetImportSession: ConfigPresetImportSession @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    configPresetImportRunning: ConfigPresetImportRunning! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }
 
 input ConfigPresetSelectionInput {
@@ -196,4 +216,6 @@ extend type Mutation {
     configPresetImportSessionClear(delete_file: Boolean): Boolean! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Applies the selected items of the pending zip of the caller (and the items they depend on); with dry_run nothing is written and the expected results are returned.
     configPresetImport(file_id: String!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # From an interrupted import: back to the selection, with the file and the selection kept.
+    configPresetImportSessionBackToSelection: ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

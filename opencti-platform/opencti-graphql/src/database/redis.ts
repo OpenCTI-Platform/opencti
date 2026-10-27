@@ -1146,4 +1146,66 @@ export const redisGetConfigPresetImportSession = async (userId: string): Promise
 export const redisDeleteConfigPresetImportSession = async (userId: string) => {
   await getClientBase().del(configPresetImportSessionKey(userId));
 };
+
+// The running record of a real import: who, since when, how far. The other administrators read their banner from it.
+// The 24 h TTL is a safety net for a record left by a dead node, set in seconds on every write.
+const CONFIG_PRESET_IMPORT_RUNNING_KEY = 'config_preset_import_running';
+const CONFIG_PRESET_IMPORT_RUNNING_TTL = 24 * 60 * 60;
+const CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY = 'config_preset_import_last_finished';
+const CONFIG_PRESET_IMPORT_LAST_FINISHED_TTL = 30 * 24 * 60 * 60; // 30 days
+
+export const redisSetConfigPresetImportRunning = async (record: object) => {
+  await getClientBase().set(CONFIG_PRESET_IMPORT_RUNNING_KEY, JSON.stringify(record), 'EX', CONFIG_PRESET_IMPORT_RUNNING_TTL);
+};
+
+// The parsed record, null when absent or unreadable; a Redis error is thrown: the callers handle it
+export const redisGetConfigPresetImportRunning = async (): Promise<unknown | null> => {
+  const raw = await getClientBase().get(CONFIG_PRESET_IMPORT_RUNNING_KEY);
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    logApp.warn('[CONFIG PRESET] The running record of the import in Redis could not be parsed');
+    return null;
+  }
+};
+
+// Compare-and-update and compare-and-delete: only while the record still holds this run's user and start date, so that a
+// run that lost its lock never touches the record of the import that took over. The key is KEYS[1]: ioredis prefixes the
+// key arguments only, a key built in the script would miss the namespace.
+const RUNNING_RECORD_UPDATE_SCRIPT = `
+local raw = redis.call('get', KEYS[1])
+if not raw then return 0 end
+local record = cjson.decode(raw)
+if record.user_id ~= ARGV[1] or record.started_at ~= ARGV[2] then return 0 end
+record.processed = tonumber(ARGV[3])
+redis.call('set', KEYS[1], cjson.encode(record), 'EX', ARGV[4])
+return 1
+`;
+const RUNNING_RECORD_DELETE_SCRIPT = `
+local raw = redis.call('get', KEYS[1])
+if not raw then return 0 end
+local record = cjson.decode(raw)
+if record.user_id ~= ARGV[1] or record.started_at ~= ARGV[2] then return 0 end
+redis.call('del', KEYS[1])
+return 1
+`;
+
+export const redisUpdateConfigPresetImportRunning = async (userId: string, startedAt: string, processed: number): Promise<boolean> => {
+  const ttl = String(CONFIG_PRESET_IMPORT_RUNNING_TTL);
+  const updated = await getClientBase().eval(RUNNING_RECORD_UPDATE_SCRIPT, 1, CONFIG_PRESET_IMPORT_RUNNING_KEY, userId, startedAt, String(processed), ttl);
+  return updated === 1;
+};
+
+export const redisDeleteConfigPresetImportRunning = async (userId: string, startedAt: string): Promise<boolean> => {
+  const deleted = await getClientBase().eval(RUNNING_RECORD_DELETE_SCRIPT, 1, CONFIG_PRESET_IMPORT_RUNNING_KEY, userId, startedAt);
+  return deleted === 1;
+};
+
+export const redisSetConfigPresetImportLastFinished = async (finishedAt: string) => {
+  await getClientBase().set(CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY, finishedAt, 'EX', CONFIG_PRESET_IMPORT_LAST_FINISHED_TTL);
+};
+
+export const redisGetConfigPresetImportLastFinished = async (): Promise<string | null> => {
+  return getClientBase().get(CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY);
+};
 // endregion - config preset import session

@@ -92,6 +92,31 @@ describe('Config preset import session transitions', () => {
     expect(transition(applying(), 'FINISH', { outcome: 'STOPPED', counts: { created: 0, overwritten: 0, skipped: 0, failed: 2 }, report_id: null })).toMatchObject({ status: 'FINISHED', outcome: 'STOPPED' });
   });
 
+  describe('interrupted (derived, never stored)', () => {
+    const interrupted = () => ({ ...applying(), results: [{ type: 'messages', key: 'banner', status: 'OVERWRITTEN' as const, reason: null }], status: 'INTERRUPTED' as const });
+
+    it('goes back to the selection keeping the file and the selection, and drops the progress', () => {
+      expect(transition(interrupted(), 'BACK_TO_SELECTION', undefined)).toMatchObject({ status: 'DRAFT', file_id: 'file-1', selections, started_at: null, total: 0, results: [] });
+    });
+
+    it('starts over, and refuses everything else', () => {
+      expect(transition(interrupted(), 'START_OVER', undefined)).toBeNull();
+      refused(interrupted(), 'UPLOAD', { platform_id: 'platform', file_id: 'f' } as never);
+      refused(interrupted(), 'SAVE', { file_id: 'file-1', selections, revision: 9 } as never);
+      refused(interrupted(), 'START', { started_at: 'x', total: 1, selections } as never);
+      refused(interrupted(), 'CLOSE', undefined as never);
+      refused(interrupted(), 'FINISH', { outcome: 'COMPLETED', counts: {}, report_id: null } as never);
+    });
+
+    it('refuses back to the selection from any other state', () => {
+      [null, draft(), applying(), finished()].forEach((session) => refused(session, 'BACK_TO_SELECTION', undefined as never));
+    });
+
+    it('offers back to the selection and start over', () => {
+      expect(getConfigPresetImportAvailableEvents(interrupted())).toEqual(['START_OVER', 'BACK_TO_SELECTION']);
+    });
+  });
+
   it('lists the events each state accepts', () => {
     expect(getConfigPresetImportAvailableEvents(null)).toEqual(['UPLOAD']);
     expect(getConfigPresetImportAvailableEvents(draft())).toEqual(['UPLOAD', 'SAVE', 'START_OVER', 'START']);

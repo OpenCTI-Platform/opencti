@@ -11,6 +11,7 @@ import { computeConfigPresetItems, loadConfigPresetImportZip } from './configPre
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
 import { withConfigPresetImportLock } from './configPreset-import-lock';
+import { endConfigPresetImportRunning, findConfigPresetImportRunning, startConfigPresetImportRunning, updateConfigPresetImportRunning } from './configPreset-import-running';
 import { applyConfigPresetImportEvent, applyConfigPresetImportRunEvent, readConfigPresetImportSession, toSessionSelections } from './configPreset-import-session-domain';
 import type { ConfigPresetImportCounts, ConfigPresetImportItemResult, ConfigPresetImportResultStatus } from './configPreset-import-session';
 import {
@@ -106,8 +107,15 @@ const realImport = async (
       }
     }
   });
-  // A second real import while the session is applying is refused by the transition
-  await applyConfigPresetImportEvent(context, user, 'START', { started_at: startedAt, total: items.length, selections: sessionSelections });
+  // In this order: the lock (taken by the caller), the running record, then the applying transition with the same started_at
+  await startConfigPresetImportRunning(context, user, startedAt, items.length);
+  try {
+    // A second real import while the session is applying is refused by the transition
+    await applyConfigPresetImportEvent(context, user, 'START', { started_at: startedAt, total: items.length, selections: sessionSelections });
+  } catch (err) {
+    await endConfigPresetImportRunning(user, startedAt, false);
+    throw err;
+  }
   logApp.info('[CONFIG PRESET] Import started', { user_id: user.id, file_id: fileId, total: items.length });
   const importContext = context;
   const plan: ConfigPresetImportPlan = { created: new Set() };
@@ -146,6 +154,7 @@ const realImport = async (
         }
         results.push(result);
         await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result });
+        await updateConfigPresetImportRunning(user, startedAt, results.length);
       }
     }
   } catch (err) {
@@ -153,6 +162,7 @@ const realImport = async (
       // An error before the first item: back to the draft, the error is returned. A failure here is only logged.
       await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ABORT', undefined)
         .catch((abortErr) => logApp.error('[CONFIG PRESET] The import session could not go back to the draft', { cause: abortErr }));
+      await endConfigPresetImportRunning(user, startedAt, false);
       throw err;
     }
     logApp.error('[CONFIG PRESET] The import was stopped by an unexpected error', { cause: err });
@@ -192,6 +202,8 @@ const realImport = async (
   // A failure here never replaces the result: the session stays applying and the lock is released anyway.
   await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'FINISH', { outcome, counts, report_id: report.reportId })
     .catch((finishErr) => logApp.error('[CONFIG PRESET] The end of the import could not be written in the session', { cause: finishErr }));
+  // Then the record is deleted and last_finished_at written, then the caller releases the lock
+  await endConfigPresetImportRunning(user, startedAt, true);
   if (report.reportId) {
     // The listeners run in a Promise.all: a failing one never fails the import
     try {
@@ -231,8 +243,8 @@ export const configPresetImport = async (
     return dryRun(engineContext, user, (await prepare()).items);
   }
   // The lock is taken first, before the zip is read and before any session read: a second import is refused at once
-  return withConfigPresetImportLock(async (lock) => {
+  return withConfigPresetImportLock(engineContext, async (lock) => {
     const { bundle, items } = await prepare();
     return realImport(engineContext, user, lock, fileId, bundle, items, selections);
-  });
+  }, async (ctx) => (await findConfigPresetImportRunning(ctx, user)).running?.name);
 };

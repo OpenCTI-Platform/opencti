@@ -3,8 +3,10 @@ import gql from 'graphql-tag';
 import { buildZip, validBundleFiles } from '../../../utils/configPresetBundle';
 import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
-import { getClientBase, redisSetConfigPresetImportSession } from '../../../../src/database/redis';
-import { applyConfigPresetImportEvent, getConfigPresetPlatformId } from '../../../../src/modules/configPreset/configPreset-import-session-domain';
+import { getClientBase, lockResource, redisSetConfigPresetImportSession } from '../../../../src/database/redis';
+import { CONFIG_PRESET_IMPORT_LOCK_KEY } from '../../../../src/modules/configPreset/configPreset-import-lock';
+import { applyConfigPresetImportEvent } from '../../../../src/modules/configPreset/configPreset-import-session-domain';
+import { getConfigPresetPlatformId } from '../../../../src/modules/configPreset/configPreset-import-utils';
 
 const SESSION_FIELDS = 'status file_id revision selections { type items excluded_items } started_at total available_events results { key } outcome';
 
@@ -79,15 +81,21 @@ describe('Config preset import session', () => {
     expect(await zipExists(deleted)).toBe(false);
   });
 
+  // A session stored as applying is read as applying while the import lock is held (see the running and interrupted tests)
   it('refuses an upload while applying, before storing anything', async () => {
     const fileId = await upload();
     await applyConfigPresetImportEvent(testContext, ADMIN_USER, 'START', { started_at: new Date().toISOString(), total: 1, selections: [] });
-    expect((await readSession()).status).toEqual('APPLYING');
-    const content = await buildZip(validBundleFiles());
-    const result = await queryAsAdmin({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(content, 'other.zip') } });
-    expect(result.errors?.[0].message).toContain('An import is in progress');
-    expect(await zipExists(fileId)).toBe(true);
-    expect((await readSession()).file_id).toEqual(fileId);
+    const lock = await lockResource([CONFIG_PRESET_IMPORT_LOCK_KEY]);
+    try {
+      expect((await readSession()).status).toEqual('APPLYING');
+      const content = await buildZip(validBundleFiles());
+      const result = await queryAsAdmin({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(content, 'other.zip') } });
+      expect(result.errors?.[0].message).toContain('An import is in progress');
+      expect(await zipExists(fileId)).toBe(true);
+      expect((await readSession()).file_id).toEqual(fileId);
+    } finally {
+      await lock.unlock();
+    }
   });
 
   it('reads a session of another platform, of an unknown version or status, or unreadable, as no session', async () => {
@@ -113,7 +121,12 @@ describe('Config preset import session', () => {
     const start = applyConfigPresetImportEvent(testContext, ADMIN_USER, 'START', { started_at: new Date().toISOString(), total: 1, selections: [] });
     const save = applyConfigPresetImportEvent(testContext, ADMIN_USER, 'SAVE', { file_id: fileId, selections: [], revision: 9 });
     await Promise.allSettled([start, save]);
-    expect((await readSession()).status).toEqual('APPLYING');
+    const lock = await lockResource([CONFIG_PRESET_IMPORT_LOCK_KEY]);
+    try {
+      expect((await readSession()).status).toEqual('APPLYING');
+    } finally {
+      await lock.unlock();
+    }
   });
 
   it('keeps the session with a TTL of 30 days', async () => {

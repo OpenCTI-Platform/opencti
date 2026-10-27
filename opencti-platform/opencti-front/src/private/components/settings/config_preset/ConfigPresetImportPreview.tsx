@@ -89,6 +89,12 @@ interface SimulatedResult {
 
 export interface ConfigPresetImportPreviewProps {
   session: ConfigPresetImportSession;
+  // An import of another administrator runs: Apply waits for it, the preview and the simulation stay available
+  isOtherImportRunning: boolean;
+  // When the last import ended: a change after a simulation makes its results obsolete
+  lastFinishedAt?: string | null;
+  // The administrator whose import refused the last Apply
+  startedBy?: string | null;
   // Sends the real import: the selection is saved first
   onApply: (selections: ImportSelections) => void;
   // Simulates the import of the selection: reads only, the results come back through onCompleted
@@ -101,7 +107,16 @@ export interface ConfigPresetImportPreviewProps {
   onFileMissing: () => void;
 }
 
-const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProps> = ({ session, onApply, onSimulate, onStartOver, onFileMissing }) => {
+const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProps> = ({
+  session,
+  isOtherImportRunning,
+  lastFinishedAt,
+  startedBy,
+  onApply,
+  onSimulate,
+  onStartOver,
+  onFileMissing,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const environment = useRelayEnvironment();
@@ -114,6 +129,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
   const [isOutdated, setIsOutdated] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [hasPlatformChanged, setHasPlatformChanged] = useState(false);
+  // last_finished_at as it was when the simulation was sent
+  const simulatedAtRef = useRef<string | null | undefined>(undefined);
   const isMountedRef = useRef(true);
   const [commitSave] = useApiMutation<ConfigPresetImportPreviewSaveMutation>(configPresetImportPreviewSaveMutation);
   // The revision only goes up: the backend ignores a lower one
@@ -177,6 +195,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
 
   // A change of the selection clears the expected results: they no longer describe what would be imported
   const clearResults = () => {
+    setHasPlatformChanged(false);
     if (results !== null) {
       setResults(null);
       setIsOutdated(true);
@@ -204,7 +223,18 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     onApply(selections);
   };
 
+  // Another import ended since the simulation was sent: its results no longer describe the platform
+  useEffect(() => {
+    if (results !== null && lastFinishedAt !== simulatedAtRef.current) {
+      setResults(null);
+      setHasPlatformChanged(true);
+    }
+  // Only a change of the end date of the last import clears the results
+  }, [lastFinishedAt]);
+
   const handleSimulate = () => {
+    simulatedAtRef.current = lastFinishedAt;
+    setHasPlatformChanged(false);
     setIsSimulating(true);
     onSimulate(session.file_id, selections, {
       // A response that arrives after the wizard was closed is dropped
@@ -293,12 +323,16 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           ))}
         </div>
       ))}
+      {isOtherImportRunning && <Text variant="content-compact">{t_i18n('Apply is available once the import in progress is over.')}</Text>}
+      {startedBy && <Text variant="content-compact">{t_i18n('Started by {name}', { values: { name: startedBy } })}</Text>}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text variant="content-compact">{isOutdated ? t_i18n('Simulate again to update') : saveHint}</Text>
+        <Text variant="content-compact">
+          {hasPlatformChanged ? t_i18n('The platform changed since your simulation') : (isOutdated ? t_i18n('Simulate again to update') : saveHint)}
+        </Text>
         <div style={{ display: 'flex', gap: theme.spacing(1) }}>
           <Button variant="secondary" onClick={() => setConfirmStartOver(true)} disabled={isSimulating}>{t_i18n('Start over')}</Button>
           <Button variant="secondary" onClick={handleSimulate} disabled={selections.length === 0 || isSimulating}>{t_i18n('Simulate')}</Button>
-          <Button onClick={handleApply} disabled={selections.length === 0 || isSimulating}>{t_i18n('Apply')}</Button>
+          <Button onClick={handleApply} disabled={selections.length === 0 || isSimulating || isOtherImportRunning}>{t_i18n('Apply')}</Button>
         </div>
       </div>
       <Dialog open={confirmStartOver} size="small" title={t_i18n('Start over')} onClose={() => setConfirmStartOver(false)}>

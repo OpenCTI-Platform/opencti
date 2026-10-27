@@ -9,8 +9,8 @@ import type { ConfigPresetImportPreview } from '../../generated/graphql';
 import { allFilesForPaths } from '../internal/document/document-domain';
 import { CONFIG_PRESET_IMPORT_PATH } from '../internal/document/document-types';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from './configPreset-registry';
-import { checkConfigPresetImportAccess } from './configPreset-import-utils';
-import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying, getConfigPresetPlatformId } from './configPreset-import-session-domain';
+import { checkConfigPresetImportAccess, getConfigPresetPlatformId } from './configPreset-import-utils';
+import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
 import { CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, type ConfigPresetItemKey, readConfigPresetBundle, readStreamWithLimit, resolveBundleDependencies } from './configPreset-import-bundle';
 import {
   CONFIG_PRESET_REASON_FILE_MISSING,

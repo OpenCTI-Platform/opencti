@@ -15,7 +15,7 @@ describe('ConfigPresetWizard', () => {
     const { relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose} />);
     expect(screen.getByText('Set up your platform')).toBeInTheDocument();
     // The step is derived from the import session of the user
-    expect(relayEnv.mock.getAllOperations().map((operation) => operation.request.node.operation.name)).toEqual(['ConfigPresetImportWizardQuery']);
+    expect(relayEnv.mock.getAllOperations().map((operation) => operation.request.node.operation.name)).toEqual(['ConfigPresetImportWizardQuery', 'ConfigPresetImportWizardRunningQuery']);
   });
 
   it('renders the step it is given instead of the welcome choices', () => {

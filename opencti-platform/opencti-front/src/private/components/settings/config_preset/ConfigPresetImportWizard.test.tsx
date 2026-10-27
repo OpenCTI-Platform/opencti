@@ -282,6 +282,128 @@ describe('ConfigPresetImportWizard', () => {
     });
   });
 
+  describe('running and interrupted', () => {
+    const running = (overrides: Record<string, unknown> = {}) => ({
+      running: { name: 'Jane', is_mine: false, processed: 4, total: 7 },
+      last_finished_at: null,
+      ...overrides,
+    });
+    const resolveRunning = (rendered: Rendered, value: unknown) => resolve(rendered, 'ConfigPresetImportWizardRunningQuery', { Query: () => ({ configPresetImportRunning: value }) });
+
+    it('shows the import of another administrator in a banner, and disables Apply with the reason', async () => {
+      const rendered = await renderPreview();
+      await resolveRunning(rendered, running());
+      expect(await screen.findByText('Import by Jane in progress')).toBeInTheDocument();
+      expect(screen.getByText('4 of 7')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+      expect(screen.getByText('Apply is available once the import in progress is over.')).toBeInTheDocument();
+      // The preview, the selection and the simulation stay available
+      expect(screen.getByRole('button', { name: 'Simulate' })).toBeEnabled();
+    });
+
+    it('shows no name when the administrator no longer exists, and no banner for the own import', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const rendered = await renderPreview();
+      await resolveRunning(rendered, running({ running: { name: null, is_mine: false, processed: 1, total: 2 } }));
+      expect(await screen.findByText('Import by another administrator in progress')).toBeInTheDocument();
+      await act(async () => {
+        vi.advanceTimersByTime(5000);
+      });
+      await resolveRunning(rendered, running({ running: { name: 'Me', is_mine: true, processed: 1, total: 2 } }));
+      await waitFor(() => expect(screen.queryByText(/Import by/)).not.toBeInTheDocument());
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
+    });
+
+    it('polls the running import every five seconds, and stops with the wizard', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const rendered = await renderWizard(null);
+      const count = () => operationNames(rendered).filter((name) => name === 'ConfigPresetImportWizardRunningQuery').length;
+      expect(count()).toEqual(1);
+      await resolveRunning(rendered, running({ running: null }));
+      await act(async () => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(count()).toEqual(1);
+      rendered.unmount();
+      await resolve(rendered, 'ConfigPresetImportWizardRunningQuery', {}).catch(() => undefined);
+      await act(async () => {
+        vi.advanceTimersByTime(20000);
+      });
+      expect(count()).toBeLessThanOrEqual(1);
+    });
+
+    it('adds who started the running import to a refused Apply, without a message of its own', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      await act(async () => {
+        const target = operation(rendered, 'ConfigPresetImportWizardApplyMutation');
+        rendered.relayEnv.mock.reject(target, { res: { errors: [{ message: 'An import is already running', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'import_running', started_by: 'Jane' } } }] } } as unknown as Error);
+      });
+      await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: session() }) });
+      await resolve(rendered, 'ConfigPresetImportPreviewQuery', { Query: () => ({ configPresetImportPreview: preview }) });
+      expect(await screen.findByText('Started by Jane')).toBeInTheDocument();
+      expect(screen.queryByText('An import is already running')).not.toBeInTheDocument();
+    });
+
+    it('shows no "started by" when the refusal has no name', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      await reject(rendered, 'ConfigPresetImportWizardApplyMutation', 'import_running');
+      await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: session() }) });
+      await resolve(rendered, 'ConfigPresetImportPreviewQuery', { Query: () => ({ configPresetImportPreview: preview }) });
+      expect(await screen.findByRole('button', { name: 'Apply' })).toBeInTheDocument();
+      expect(screen.queryByText(/Started by/)).not.toBeInTheDocument();
+    });
+
+    it('clears the simulation when the last import ended since it was sent', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const rendered = await renderPreview();
+      await resolveRunning(rendered, running({ running: null, last_finished_at: '2026-10-27T10:00:00.000Z' }));
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', { ConfigPresetImportOutput: () => ({ results: [{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }], report_id: null, settings: null }) });
+      expect(await screen.findByText('Overwritten')).toBeInTheDocument();
+      await act(async () => {
+        vi.advanceTimersByTime(5000);
+      });
+      await resolveRunning(rendered, running({ running: null, last_finished_at: '2026-10-27T10:05:00.000Z' }));
+      expect(await screen.findByText('The platform changed since your simulation')).toBeInTheDocument();
+      expect(screen.queryByText('Overwritten')).not.toBeInTheDocument();
+    });
+
+    it('shows the interrupted screen with the results kept, and its two actions', async () => {
+      const rendered = await renderWizard(session({
+        status: 'INTERRUPTED',
+        total: 3,
+        results: [{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }],
+      }));
+      expect(screen.getByText('The import was interrupted')).toBeInTheDocument();
+      expect(screen.getByText('Overwritten')).toBeInTheDocument();
+      await rendered.user.click(screen.getByRole('button', { name: 'Back to selection' }));
+      expect(operationNames(rendered)).toContain('ConfigPresetImportWizardBackMutation');
+      await resolve(rendered, 'ConfigPresetImportWizardBackMutation', {});
+      expect(operationNames(rendered).filter((name) => name === 'ConfigPresetImportWizardQuery')).toHaveLength(1);
+    });
+
+    it('starts over from the interrupted screen after a confirmation', async () => {
+      const rendered = await renderWizard(session({ status: 'INTERRUPTED' }));
+      await rendered.user.click(screen.getByRole('button', { name: 'Start over' }));
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportWizardClearMutation');
+      await rendered.user.click(within(screen.getByRole('dialog', { name: 'Start over' })).getByRole('button', { name: 'Start over' }));
+      expect(operation(rendered, 'ConfigPresetImportWizardClearMutation').request.variables).toEqual({ delete_file: true });
+    });
+
+    it('moves an open wizard from applying to interrupted once the session says so', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const rendered = await renderWizard(session({ status: 'APPLYING', total: 2 }));
+      expect(screen.getByText('Import in progress')).toBeInTheDocument();
+      await act(async () => {
+        vi.advanceTimersByTime(5000);
+      });
+      await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: session({ status: 'INTERRUPTED', total: 2 }) }) });
+      expect(await screen.findByText('The import was interrupted')).toBeInTheDocument();
+    });
+  });
+
   describe('lock', () => {
     it('keeps the selection and makes Apply usable again after an Apply refused because an import is running', async () => {
       const saved = session({ revision: 2, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] });

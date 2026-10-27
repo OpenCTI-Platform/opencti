@@ -9227,6 +9227,7 @@ type Query {
   configPresetExportableItems(type: ID!, first: Int, after: ID, search: String, ids: [ID!], excludedIds: [ID!]): ConfigPresetExportableItemConnection!
   configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview!
   configPresetImportSession: ConfigPresetImportSession
+  configPresetImportRunning: ConfigPresetImportRunning!
 }
 
 type Subscription {
@@ -10207,6 +10208,7 @@ type Mutation {
   configPresetImportSessionSave(file_id: String!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession!
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImport(file_id: String!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput!
+  configPresetImportSessionBackToSelection: ConfigPresetImportSession!
 }
 
 enum WorkflowExecutionStatus {
@@ -17835,6 +17837,7 @@ enum ConfigPresetImportSessionStatus {
   DRAFT
   APPLYING
   FINISHED
+  INTERRUPTED
 }
 
 enum ConfigPresetImportOutcome {
@@ -17850,6 +17853,7 @@ enum ConfigPresetImportSessionEvent {
   ITEM_PROCESSED
   FINISH
   ABORT
+  BACK_TO_SELECTION
   CLOSE
 }
 
@@ -17898,6 +17902,19 @@ type ConfigPresetImportOutput {
   results: [ConfigPresetImportResult!]!
   report_id: String
   settings: Settings
+}
+
+type ConfigPresetImportRunningDetails {
+  name: String
+  is_mine: Boolean!
+  started_at: DateTime!
+  processed: Int!
+  total: Int!
+}
+
+type ConfigPresetImportRunning {
+  running: ConfigPresetImportRunningDetails
+  last_finished_at: DateTime
 }
 
 input ConfigPresetSelectionInput {

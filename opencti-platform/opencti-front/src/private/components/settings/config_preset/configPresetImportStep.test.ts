@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getConfigPresetErrorReason, getConfigPresetImportStep } from './configPresetImportStep';
+import { getConfigPresetErrorReason, getConfigPresetImportStep, getConfigPresetStartedBy } from './configPresetImportStep';
 import { toConfigPresetSelection } from './configPresetImportSelection';
 
 const base = { status: null, hasChosenImport: false, isFileMissing: false, isApplying: false };
@@ -15,6 +15,7 @@ describe('getConfigPresetImportStep', () => {
     expect(getConfigPresetImportStep({ ...base, status: 'DRAFT' })).toEqual('preview');
     expect(getConfigPresetImportStep({ ...base, status: 'APPLYING' })).toEqual('progress');
     expect(getConfigPresetImportStep({ ...base, status: 'FINISHED' })).toEqual('result');
+    expect(getConfigPresetImportStep({ ...base, status: 'INTERRUPTED' })).toEqual('interrupted');
   });
 
   it('shows the progress while the own import runs, whatever the status', () => {
@@ -34,6 +35,14 @@ describe('getConfigPresetErrorReason', () => {
     expect(getConfigPresetErrorReason({ res: { errors: [{ message: 'x', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'file_missing' } } }] } })).toEqual('file_missing');
     expect(getConfigPresetErrorReason({ res: { errors: [{ message: 'file_missing' }] } })).toBeUndefined();
     expect(getConfigPresetErrorReason(new Error('network'))).toBeUndefined();
+  });
+});
+
+describe('getConfigPresetStartedBy', () => {
+  it('reads the name of the administrator from the data of the refusal', () => {
+    expect(getConfigPresetStartedBy({ res: { errors: [{ extensions: { data: { reason: 'import_running', started_by: 'Jane' } } }] } })).toEqual('Jane');
+    expect(getConfigPresetStartedBy({ res: { errors: [{ extensions: { data: { reason: 'import_running' } } }] } })).toBeUndefined();
+    expect(getConfigPresetStartedBy(new Error('x'))).toBeUndefined();
   });
 });
 

@@ -2,7 +2,14 @@ import type { Resolvers, ResolversTypes } from '../../generated/graphql';
 import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from './configPreset-domain';
 import { configPresetImportPreview, configPresetImportUpload } from './configPreset-import-domain';
 import { configPresetImport } from './configPreset-import-engine';
-import { clearConfigPresetImportSession, findConfigPresetImportSession, saveConfigPresetImportSession } from './configPreset-import-session-domain';
+import {
+  backToConfigPresetImportSelection,
+  clearConfigPresetImportSession,
+  findConfigPresetImportSession,
+  saveConfigPresetImportSession,
+} from './configPreset-import-session-domain';
+import { findConfigPresetImportRunning } from './configPreset-import-running';
+import { checkConfigPresetImportAccess } from './configPreset-import-utils';
 
 const configPresetResolvers: Resolvers = {
   Query: {
@@ -10,6 +17,10 @@ const configPresetResolvers: Resolvers = {
     configPresetExportableItems: (_, args, context) => findConfigPresetExportableItems(context, context.user!, args),
     configPresetImportPreview: (_, { file_id }, context) => configPresetImportPreview(context, context.user!, file_id),
     configPresetImportSession: (_, __, context) => findConfigPresetImportSession(context, context.user!) as never,
+    configPresetImportRunning: (_, __, context) => {
+      checkConfigPresetImportAccess(context, context.user!);
+      return findConfigPresetImportRunning(context, context.user!);
+    },
   },
   Mutation: {
     configPresetExport: async (_, { selections, bundle_name }, context) => {
@@ -20,6 +31,7 @@ const configPresetResolvers: Resolvers = {
     configPresetImportSessionSave: (_, { file_id, selections, revision }, context) => {
       return saveConfigPresetImportSession(context, context.user!, file_id, selections, revision) as never;
     },
+    configPresetImportSessionBackToSelection: (_, __, context) => backToConfigPresetImportSelection(context, context.user!) as never,
     configPresetImportSessionClear: (_, { delete_file }, context) => clearConfigPresetImportSession(context, context.user!, delete_file ?? false),
     configPresetImportUpload: async (_, { file }, context) => {
       const upload = await configPresetImportUpload(context, context.user!, file);

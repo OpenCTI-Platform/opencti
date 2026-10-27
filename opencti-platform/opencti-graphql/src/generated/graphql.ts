@@ -4681,6 +4681,21 @@ export enum ConfigPresetImportResultStatus {
   Skipped = 'SKIPPED'
 }
 
+export type ConfigPresetImportRunning = {
+  __typename?: 'ConfigPresetImportRunning';
+  last_finished_at?: Maybe<Scalars['DateTime']['output']>;
+  running?: Maybe<ConfigPresetImportRunningDetails>;
+};
+
+export type ConfigPresetImportRunningDetails = {
+  __typename?: 'ConfigPresetImportRunningDetails';
+  is_mine: Scalars['Boolean']['output'];
+  name?: Maybe<Scalars['String']['output']>;
+  processed: Scalars['Int']['output'];
+  started_at: Scalars['DateTime']['output'];
+  total: Scalars['Int']['output'];
+};
+
 export type ConfigPresetImportSession = {
   __typename?: 'ConfigPresetImportSession';
   available_events: Array<ConfigPresetImportSessionEvent>;
@@ -4698,6 +4713,7 @@ export type ConfigPresetImportSession = {
 
 export enum ConfigPresetImportSessionEvent {
   Abort = 'ABORT',
+  BackToSelection = 'BACK_TO_SELECTION',
   Close = 'CLOSE',
   Finish = 'FINISH',
   ItemProcessed = 'ITEM_PROCESSED',
@@ -4717,7 +4733,8 @@ export type ConfigPresetImportSessionSelection = {
 export enum ConfigPresetImportSessionStatus {
   Applying = 'APPLYING',
   Draft = 'DRAFT',
-  Finished = 'FINISHED'
+  Finished = 'FINISHED',
+  Interrupted = 'INTERRUPTED'
 }
 
 export type ConfigPresetImportType = {
@@ -17644,6 +17661,7 @@ export type Mutation = {
   clearWorkflowPendingState: WorkflowInstance;
   configPresetExport: File;
   configPresetImport: ConfigPresetImportOutput;
+  configPresetImportSessionBackToSelection: ConfigPresetImportSession;
   configPresetImportSessionClear: Scalars['Boolean']['output'];
   configPresetImportSessionSave: ConfigPresetImportSession;
   configPresetImportUpload: File;
@@ -25214,6 +25232,7 @@ export type Query = {
   configPresetExportableItems: ConfigPresetExportableItemConnection;
   configPresetExportableTypes: Array<ConfigPresetExportableType>;
   configPresetImportPreview: ConfigPresetImportPreview;
+  configPresetImportRunning: ConfigPresetImportRunning;
   configPresetImportSession?: Maybe<ConfigPresetImportSession>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
@@ -41240,6 +41259,8 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetImportPreview: ResolverTypeWrapper<ConfigPresetImportPreview>;
   ConfigPresetImportResult: ResolverTypeWrapper<ConfigPresetImportResult>;
   ConfigPresetImportResultStatus: ConfigPresetImportResultStatus;
+  ConfigPresetImportRunning: ResolverTypeWrapper<ConfigPresetImportRunning>;
+  ConfigPresetImportRunningDetails: ResolverTypeWrapper<ConfigPresetImportRunningDetails>;
   ConfigPresetImportSession: ResolverTypeWrapper<ConfigPresetImportSession>;
   ConfigPresetImportSessionEvent: ConfigPresetImportSessionEvent;
   ConfigPresetImportSessionSelection: ResolverTypeWrapper<ConfigPresetImportSessionSelection>;
@@ -42448,6 +42469,8 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetImportOutput: Omit<ConfigPresetImportOutput, 'settings'> & { settings?: Maybe<ResolversParentTypes['Settings']> };
   ConfigPresetImportPreview: ConfigPresetImportPreview;
   ConfigPresetImportResult: ConfigPresetImportResult;
+  ConfigPresetImportRunning: ConfigPresetImportRunning;
+  ConfigPresetImportRunningDetails: ConfigPresetImportRunningDetails;
   ConfigPresetImportSession: ConfigPresetImportSession;
   ConfigPresetImportSessionSelection: ConfigPresetImportSessionSelection;
   ConfigPresetImportType: ConfigPresetImportType;
@@ -44900,6 +44923,19 @@ export type ConfigPresetImportResultResolvers<ContextType = any, ParentType exte
   reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['ConfigPresetImportResultStatus'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportRunningResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportRunning'] = ResolversParentTypes['ConfigPresetImportRunning']> = ResolversObject<{
+  last_finished_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  running?: Resolver<Maybe<ResolversTypes['ConfigPresetImportRunningDetails']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportRunningDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportRunningDetails'] = ResolversParentTypes['ConfigPresetImportRunningDetails']> = ResolversObject<{
+  is_mine?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  processed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  started_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type ConfigPresetImportSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportSession'] = ResolversParentTypes['ConfigPresetImportSession']> = ResolversObject<{
@@ -49566,6 +49602,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   clearWorkflowPendingState?: Resolver<ResolversTypes['WorkflowInstance'], ParentType, ContextType, RequireFields<MutationClearWorkflowPendingStateArgs, 'entityId'>>;
   configPresetExport?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetExportArgs, 'selections'>>;
   configPresetImport?: Resolver<ResolversTypes['ConfigPresetImportOutput'], ParentType, ContextType, RequireFields<MutationConfigPresetImportArgs, 'file_id' | 'selections'>>;
+  configPresetImportSessionBackToSelection?: Resolver<ResolversTypes['ConfigPresetImportSession'], ParentType, ContextType>;
   configPresetImportSessionClear?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationConfigPresetImportSessionClearArgs>>;
   configPresetImportSessionSave?: Resolver<ResolversTypes['ConfigPresetImportSession'], ParentType, ContextType, RequireFields<MutationConfigPresetImportSessionSaveArgs, 'file_id' | 'revision' | 'selections'>>;
   configPresetImportUpload?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetImportUploadArgs, 'file'>>;
@@ -51476,6 +51513,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   configPresetExportableItems?: Resolver<ResolversTypes['ConfigPresetExportableItemConnection'], ParentType, ContextType, RequireFields<QueryConfigPresetExportableItemsArgs, 'type'>>;
   configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
   configPresetImportPreview?: Resolver<ResolversTypes['ConfigPresetImportPreview'], ParentType, ContextType, RequireFields<QueryConfigPresetImportPreviewArgs, 'file_id'>>;
+  configPresetImportRunning?: Resolver<ResolversTypes['ConfigPresetImportRunning'], ParentType, ContextType>;
   configPresetImportSession?: Resolver<Maybe<ResolversTypes['ConfigPresetImportSession']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
@@ -55822,6 +55860,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetImportOutput?: ConfigPresetImportOutputResolvers<ContextType>;
   ConfigPresetImportPreview?: ConfigPresetImportPreviewResolvers<ContextType>;
   ConfigPresetImportResult?: ConfigPresetImportResultResolvers<ContextType>;
+  ConfigPresetImportRunning?: ConfigPresetImportRunningResolvers<ContextType>;
+  ConfigPresetImportRunningDetails?: ConfigPresetImportRunningDetailsResolvers<ContextType>;
   ConfigPresetImportSession?: ConfigPresetImportSessionResolvers<ContextType>;
   ConfigPresetImportSessionSelection?: ConfigPresetImportSessionSelectionResolvers<ContextType>;
   ConfigPresetImportType?: ConfigPresetImportTypeResolvers<ContextType>;

@@ -1,4 +1,5 @@
 import { getBaseUrl } from '../../config/conf';
+import { getSettingsFromDatabase } from '../../domain/settings';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { BYPASS, isUserHasCapability } from '../../utils/access';
 import { getDraftContext } from '../../utils/draftContext';
@@ -63,3 +64,6 @@ export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUs
     throw UnsupportedError('Cannot import configuration presets in draft');
   }
 };
+
+// internal_id of the Settings: an import session or a running record of another platform is no session and no record
+export const getConfigPresetPlatformId = async (context: AuthContext): Promise<string> => (await getSettingsFromDatabase(context))!.internal_id;
