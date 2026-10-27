@@ -92,6 +92,27 @@ describe('createPendingCollector.root', () => {
     expect(other.files).toEqual([{ name: 'b.bin', mime_type: undefined, uploadIndex: 1, embedded: true }]);
     expect(root.input).toEqual({ name: 'M' });
   });
+
+  it('extracts the files and markdown images an observable carries under its type key', () => {
+    const collector = createPendingCollector();
+    const image = new File(['i'], 'pasted.png', { type: 'image/png' });
+    const attached = new File(['a'], 'a.txt', { type: 'text/plain' });
+    const root = collector.root(option('__pending__:ip', 'IPv4-Addr', {
+      type: 'IPv4-Addr',
+      x_opencti_description: '![pasted](opencti-image://temp/00000000-0000-0000-0000-000000000001)',
+      IPv4Addr: { value: '1.2.3.4', files: [image, attached], embedded: [true, false] },
+    }));
+    expect(collector.files).toEqual([image, attached]);
+    expect(root.files).toEqual([
+      { name: 'pasted.png', mime_type: 'image/png', uploadIndex: 0, embedded: true },
+      { name: 'a.txt', mime_type: 'text/plain', uploadIndex: 1 },
+    ]);
+    expect(root.input).toEqual({
+      type: 'IPv4-Addr',
+      x_opencti_description: '![pasted](opencti-image://temp/00000000-0000-0000-0000-000000000001)',
+      IPv4Addr: { value: '1.2.3.4' },
+    });
+  });
 });
 
 describe('prepareFormSubmission', () => {
