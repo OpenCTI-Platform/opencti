@@ -188,7 +188,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
   return (
     // The MUI dialog, as the widget editor: the rule editor of a filters restriction opens the shared MUI filter
     // popovers, which the library Dialog (a modal that blocks and traps everything outside of it) leaves unusable.
-    // FDS-WORKAROUND #70: back to the library Dialog once it can host them (fds-migration/LIBRARY-FEEDBACK.md).
+    // FDS-WORKAROUND #71: back to the library Dialog once it can host them (fds-migration/LIBRARY-FEEDBACK.md).
     <Dialog
       open={open}
       // MUI closes on any Escape, even one a list of the form already handled (and prevented) to close itself.
