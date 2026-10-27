@@ -17047,6 +17047,7 @@ export type MeUser = BasicObject & InternalObject & {
   administrated_organizations: Array<Organization>;
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
   api_tokens: Array<ApiToken>;
+  bootstrap_wizard_skipped?: Maybe<Scalars['Boolean']['output']>;
   can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
   capabilities: Array<Capability>;
   capabilitiesInDraft: Array<Capability>;
@@ -24131,6 +24132,11 @@ export type PirUnflagElementInput = {
   relationshipId: Scalars['ID']['input'];
   sourceId: Scalars['ID']['input'];
 };
+
+export enum PlatformBootstrapStatus {
+  Completed = 'completed',
+  Pending = 'pending'
+}
 
 export type PlatformCriticalAlert = {
   __typename?: 'PlatformCriticalAlert';
@@ -31516,6 +31522,8 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_ai_type?: Maybe<Scalars['String']['output']>;
   platform_banner_level?: Maybe<Scalars['String']['output']>;
   platform_banner_text?: Maybe<Scalars['String']['output']>;
+  platform_bootstrap_status?: Maybe<PlatformBootstrapStatus>;
+  platform_bootstrap_wizard_enabled: Scalars['Boolean']['output'];
   platform_cluster: Cluster;
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
   platform_consent_message?: Maybe<Scalars['String']['output']>;
@@ -41696,6 +41704,7 @@ export type ResolversTypes = ResolversObject<{
   PirScore: ResolverTypeWrapper<PirScore>;
   PirType: PirType;
   PirUnflagElementInput: PirUnflagElementInput;
+  PlatformBootstrapStatus: PlatformBootstrapStatus;
   PlatformCriticalAlert: ResolverTypeWrapper<Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversTypes['PlatformCriticalAlertDetails']> }>;
   PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversTypes['Group']> }>;
   PlatformCriticalAlertType: PlatformCriticalAlertType;
@@ -49043,6 +49052,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   administrated_organizations?: Resolver<Array<ResolversTypes['Organization']>, ParentType, ContextType>;
   allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   api_tokens?: Resolver<Array<ResolversTypes['ApiToken']>, ParentType, ContextType>;
+  bootstrap_wizard_skipped?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   capabilitiesInDraft?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
@@ -52550,6 +52560,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_ai_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_bootstrap_status?: Resolver<Maybe<ResolversTypes['PlatformBootstrapStatus']>, ParentType, ContextType>;
+  platform_bootstrap_wizard_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -207,6 +207,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'date_format',
   'time_format',
   'submenu_show_icons',
+  'bootstrap_wizard_skipped',
   'submenu_auto_collapse',
   'monochrome_labels',
   'unsubscribed_news_feed_types',
@@ -1444,6 +1445,10 @@ export const meEditField = async (context: AuthContext, user: AuthUser & Partial
     }
     // On MeUser only some fields are updatable
     if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
+      throw ForbiddenAccess();
+    }
+    // The bootstrap wizard is for administrators only
+    if (key === 'bootstrap_wizard_skipped' && !isUserHasCapability(user, BYPASS)) {
       throw ForbiddenAccess();
     }
     // Check password confirmation in case of password change

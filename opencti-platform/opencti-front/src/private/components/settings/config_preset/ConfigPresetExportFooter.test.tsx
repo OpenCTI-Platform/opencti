@@ -47,4 +47,13 @@ describe('ConfigPresetExportFooter', () => {
     expect(screen.getByRole('checkbox', { name: 'Platform settings (1/1)' })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Messages' })).toBeInTheDocument();
   });
+
+  it('opens the import wizard in manual mode and closes it without writing anything', async () => {
+    const { user, relayEnv } = testRender(<ConfigPresetExportFooter />);
+    await user.click(screen.getByRole('button', { name: 'Import Bootstrap Platform Bundle' }));
+    expect(screen.getByText('Set up your platform')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Skip' }));
+    expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
 });

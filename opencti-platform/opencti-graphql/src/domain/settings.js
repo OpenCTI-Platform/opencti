@@ -155,6 +155,7 @@ export const getSettings = async (context) => {
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_theme: platformTheme,
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
+    platform_bootstrap_wizard_enabled: nconf.get('app:bootstrap_wizard:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
@@ -301,7 +302,14 @@ const buildAuthorizedSettingsKeys = (user) => {
   return allowed;
 };
 
+// The bootstrap status is written by setPlatformBootstrapStatus only, whatever the capabilities of the caller
+const PLATFORM_BOOTSTRAP_STATUS_KEY = 'platform_bootstrap_status';
+const PLATFORM_BOOTSTRAP_STATUSES = ['pending', 'completed'];
+
 export const settingsEditField = async (context, user, settingsId, input) => {
+  if (input.some((i) => i.key === PLATFORM_BOOTSTRAP_STATUS_KEY)) {
+    throw ForbiddenAccess('The platform bootstrap status cannot be edited');
+  }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
   const allowedKeys = buildAuthorizedSettingsKeys(user);
@@ -581,3 +589,23 @@ export const getWhitemarkConfigPresetConfiguration = async (context) => {
   return { platform_whitemark: settings.platform_whitemark ?? false };
 };
 // endregion
+
+// The only writer of platform_bootstrap_status
+export const setPlatformBootstrapStatus = async (context, user, status) => {
+  if (!PLATFORM_BOOTSTRAP_STATUSES.includes(status)) {
+    throw UnsupportedError(`Invalid platform bootstrap status, expected one of ${PLATFORM_BOOTSTRAP_STATUSES.join(', ')}`);
+  }
+  const settings = await getSettings(context);
+  const data = [{ key: PLATFORM_BOOTSTRAP_STATUS_KEY, value: [status] }];
+  await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, data);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${PLATFORM_BOOTSTRAP_STATUS_KEY}\` for \`platform settings\``,
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: data },
+  });
+  const updatedSettings = await getSettings(context);
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
+};

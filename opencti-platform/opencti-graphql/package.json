@@ -20,7 +20,7 @@
     "start": "run build:dev && node --enable-source-maps build/back.mjs",
     "dev": "node builder/dev/watch.ts",
     "dev:watch-with-graphql": "node builder/dev/watch.ts --graphql",
-    "start:e2e": "run build:dev && APP__BASE_PATH=/e2e APP__ENABLED_DEV_FEATURES='[\"*\"]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.mjs",
+    "start:e2e": "run build:dev && APP__BASE_PATH=/e2e APP__ENABLED_DEV_FEATURES='[\"*\"]' APP__BOOTSTRAP_WIZARD__ENABLED=false EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.mjs",
     "start:light": "NODE_ENV=development node --enable-source-maps build/back.mjs",
     "start:cluster": "NODE_ENV=cluster node --enable-source-maps build/back.mjs",
     "serv": "node --enable-source-maps build/back.mjs",
