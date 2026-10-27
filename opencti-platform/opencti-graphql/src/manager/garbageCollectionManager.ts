@@ -13,7 +13,7 @@ import { lockResources } from '../lock/master-lock';
 import { elUpdateRemovedFiles } from '../database/file-search';
 import type { BasicStoreBase } from '../types/store';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
-import { deleteExpiredConfigPresetExports } from '../modules/configPreset/configPreset-domain';
+import { deleteExpiredConfigPresetExports } from '../modules/configPreset/export/configPreset-export-domain';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const TRASH_ENABLED = booleanConf('app:trash:enabled', true);

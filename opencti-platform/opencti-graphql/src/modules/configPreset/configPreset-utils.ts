@@ -1,6 +1,10 @@
 import { PLATFORM_VERSION } from '../../config/conf';
 import type { UserConfigPresetExportActionContextData, UserConfigPresetImportActionContextData } from '../../listener/UserActionListener';
 
+// The files of a bundle that are not items
+export const CONFIG_PRESET_METADATA_FILE = 'metadata.json';
+export const CONFIG_PRESET_DEPENDENCIES_FILE = 'dependencies.json';
+
 const BUNDLE_NAME_MAX_LENGTH = 80;
 
 // Letters with their combining marks (accents, Indic vowel signs), digits, ZWNJ / ZWJ (Persian, Indic scripts),

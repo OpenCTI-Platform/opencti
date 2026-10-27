@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AVAILABLE_LANGUAGES } from '../user/user-domain';
+import { AVAILABLE_LANGUAGES } from '../../user/user-domain';
 
 // Strict schemas of the configuration of each item: unknown keys are rejected, values are checked
 // because settingsEditField validates none of them, and the theme values reach CSS and url().

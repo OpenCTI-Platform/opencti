@@ -4,26 +4,26 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { finished } from 'node:stream/promises';
 import { ZipArchive } from 'archiver';
-import { logApp, PLATFORM_VERSION } from '../../config/conf';
-import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
-import { BYPASS, isUserHasCapability } from '../../utils/access';
-import { getDraftContext } from '../../utils/draftContext';
-import type { AuthContext, AuthUser } from '../../types/user';
+import { logApp, PLATFORM_VERSION } from '../../../config/conf';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../../config/errors';
+import { BYPASS, isUserHasCapability } from '../../../utils/access';
+import { getDraftContext } from '../../../utils/draftContext';
+import type { AuthContext, AuthUser } from '../../../types/user';
 import type {
   ConfigPresetExportableItem,
   ConfigPresetExportableItemConnection,
   ConfigPresetExportableType,
   ConfigPresetSelectionInput,
   QueryConfigPresetExportableItemsArgs,
-} from '../../generated/graphql';
-import { deleteFile, type LoadedFile, uploadToStorage } from '../../database/file-storage';
-import { allFilesForPaths } from '../internal/document/document-domain';
-import { CONFIG_PRESET_EXPORT_PATH } from '../internal/document/document-types';
-import { type ConfigPresetExportSummary, publishUserAction } from '../../listener/UserActionListener';
-import { addConfigPresetExportCount } from '../../manager/telemetryManager';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemBundleId, configPresetItemFilePath, exportConfigPresetItem } from './configPreset-registry';
-import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from './configPreset-types';
-import { buildConfigPresetFileName, sanitizeBundleName } from './configPreset-utils';
+} from '../../../generated/graphql';
+import { deleteFile, type LoadedFile, uploadToStorage } from '../../../database/file-storage';
+import { allFilesForPaths } from '../../internal/document/document-domain';
+import { CONFIG_PRESET_EXPORT_PATH } from '../../internal/document/document-types';
+import { type ConfigPresetExportSummary, publishUserAction } from '../../../listener/UserActionListener';
+import { addConfigPresetExportCount } from '../../../manager/telemetryManager';
+import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemBundleId, configPresetItemFilePath, exportConfigPresetItem } from '../configPreset-registry';
+import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
+import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
 // The dialog shows a type inline when its first page is its only one
 export const CONFIG_PRESET_FIRST_PAGE_SIZE = 10;
@@ -69,8 +69,6 @@ export const findConfigPresetExportableItems = async (
   return { ...page, edges: page.edges.map(({ cursor, node }) => ({ cursor, node: toExportableItem(node) })) };
 };
 
-export const CONFIG_PRESET_METADATA_FILE = 'metadata.json';
-export const CONFIG_PRESET_DEPENDENCIES_FILE = 'dependencies.json';
 export const CONFIG_PRESET_EXPORT_RETENTION_MS = 60 * 60 * 1000;
 
 type SelectedConfigPresetFamily = ConfigPresetFamilyDefinition & { items: ConfigPresetItemDefinition[] };

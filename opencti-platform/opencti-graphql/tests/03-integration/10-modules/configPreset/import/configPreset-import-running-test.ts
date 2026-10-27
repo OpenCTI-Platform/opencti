@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
-import { buildZip, validBundleFiles } from '../../../utils/configPresetBundle';
-import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
-import * as redisModule from '../../../../src/database/redis';
+import { buildZip, validBundleFiles } from '../../../../utils/configPresetBundle';
+import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
+import * as redisModule from '../../../../../src/database/redis';
 import {
   getClientBase,
   lockResource,
@@ -12,14 +12,14 @@ import {
   redisGetConfigPresetImportRunning,
   redisSetConfigPresetImportRunning,
   redisUpdateConfigPresetImportRunning,
-} from '../../../../src/database/redis';
-import { setPlatformBootstrapStatus } from '../../../../src/domain/settings';
-import { applyConfigPresetImportEvent } from '../../../../src/modules/configPreset/configPreset-import-session-domain';
-import { getConfigPresetPlatformId } from '../../../../src/modules/configPreset/configPreset-import-utils';
-import { CONFIG_PRESET_IMPORT_LOCK_KEY } from '../../../../src/modules/configPreset/configPreset-import-lock';
-import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
-import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
-import { deleteFile } from '../../../../src/database/file-storage';
+} from '../../../../../src/database/redis';
+import { setPlatformBootstrapStatus } from '../../../../../src/domain/settings';
+import { applyConfigPresetImportEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
+import { getConfigPresetPlatformId } from '../../../../../src/modules/configPreset/import/configPreset-import-utils';
+import { CONFIG_PRESET_IMPORT_LOCK_KEY } from '../../../../../src/modules/configPreset/import/configPreset-import-lock';
+import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
+import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
+import { deleteFile } from '../../../../../src/database/file-storage';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetRunningUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`

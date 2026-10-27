@@ -7,45 +7,45 @@ import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } fr
 // @ts-expect-error unzipper ships no type declarations
 import unzipper from 'unzipper';
 
-vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
+vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
-vi.mock('../../../../src/database/file-storage', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/database/file-storage')>()),
+vi.mock('../../../../../src/database/file-storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/database/file-storage')>()),
   uploadToStorage: vi.fn(),
 }));
-vi.mock('../../../../src/listener/UserActionListener', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/listener/UserActionListener')>()),
+vi.mock('../../../../../src/listener/UserActionListener', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/listener/UserActionListener')>()),
   publishUserAction: vi.fn(),
 }));
-vi.mock('../../../../src/manager/telemetryManager', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/manager/telemetryManager')>()),
+vi.mock('../../../../../src/manager/telemetryManager', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/manager/telemetryManager')>()),
   addConfigPresetExportCount: vi.fn(),
 }));
 
-import { fullEntitiesList, topEntitiesList } from '../../../../src/database/middleware-loader';
-import { uploadToStorage } from '../../../../src/database/file-storage';
-import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../src/listener/UserActionListener';
-import { addConfigPresetExportCount } from '../../../../src/manager/telemetryManager';
-import { PLATFORM_VERSION } from '../../../../src/config/conf';
-import '../../../../src/modules/attributes/internalObject-registrationAttributes';
-import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
-import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
-import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
+import { fullEntitiesList, topEntitiesList } from '../../../../../src/database/middleware-loader';
+import { uploadToStorage } from '../../../../../src/database/file-storage';
+import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../../src/listener/UserActionListener';
+import { addConfigPresetExportCount } from '../../../../../src/manager/telemetryManager';
+import { PLATFORM_VERSION } from '../../../../../src/config/conf';
+import '../../../../../src/modules/attributes/internalObject-registrationAttributes';
+import { schemaAttributesDefinition } from '../../../../../src/schema/schema-attributes';
+import { ENTITY_TYPE_ACTIVITY } from '../../../../../src/schema/internalObject';
+import type { ObjectAttribute } from '../../../../../src/schema/attribute-definition';
 import {
   addConfigPresetDependencies,
   buildConfigPresetDependencies,
   configPresetExport,
   resolveConfigPresetSelections,
-} from '../../../../src/modules/configPreset/configPreset-domain';
-import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
-import type { ConfigPresetItemDefinition } from '../../../../src/modules/configPreset/configPreset-types';
-import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from './configPreset-themes-fixtures';
+} from '../../../../../src/modules/configPreset/export/configPreset-export-domain';
+import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
+import type { ConfigPresetItemDefinition } from '../../../../../src/modules/configPreset/configPreset-types';
+import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from '../configPreset-themes-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;

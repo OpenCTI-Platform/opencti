@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
-import { buildZip, validBundleFiles } from '../../../utils/configPresetBundle';
-import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { getClientBase, lockResource } from '../../../../src/database/redis';
-import * as masterLock from '../../../../src/lock/master-lock';
-import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../src/domain/settings';
-import { deleteTheme, findAllThemes } from '../../../../src/modules/theme/theme-domain';
-import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
-import { deleteFile } from '../../../../src/database/file-storage';
-import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
-import { CONFIG_PRESET_IMPORT_LOCK_KEY, isConfigPresetImportLocked } from '../../../../src/modules/configPreset/configPreset-import-lock';
+import { buildZip, validBundleFiles } from '../../../../utils/configPresetBundle';
+import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess } from '../../../../utils/testQueryHelper';
+import { ADMIN_USER, testContext } from '../../../../utils/testQuery';
+import { getClientBase, lockResource } from '../../../../../src/database/redis';
+import * as masterLock from '../../../../../src/lock/master-lock';
+import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../../src/domain/settings';
+import { deleteTheme, findAllThemes } from '../../../../../src/modules/theme/theme-domain';
+import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
+import { deleteFile } from '../../../../../src/database/file-storage';
+import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
+import { CONFIG_PRESET_IMPORT_LOCK_KEY, isConfigPresetImportLocked } from '../../../../../src/modules/configPreset/import/configPreset-import-lock';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetLockUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`

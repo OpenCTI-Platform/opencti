@@ -4,8 +4,8 @@ import {
   CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE,
   readConfigPresetBundle,
   resolveBundleDependencies,
-} from '../../../../src/modules/configPreset/configPreset-import-bundle';
-import { buildZip, CUSTOM_THEME_ID, itemFile, metadataFile, OTHER_THEME_ID, themeConfiguration, validBundleFiles } from '../../../utils/configPresetBundle';
+} from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
+import { buildZip, CUSTOM_THEME_ID, itemFile, metadataFile, OTHER_THEME_ID, themeConfiguration, validBundleFiles } from '../../../../utils/configPresetBundle';
 
 const refusedWith = async (zip: Buffer | Promise<Buffer>) => {
   const error = await readConfigPresetBundle(await zip).catch((err) => err);

@@ -3,7 +3,7 @@ import {
   type ConfigPresetImportSession,
   getConfigPresetImportAvailableEvents,
   transitionConfigPresetImportSession as transition,
-} from '../../../../src/modules/configPreset/configPreset-import-session';
+} from '../../../../../src/modules/configPreset/import/configPreset-import-session';
 
 const selections = [{ type: 'messages', items: ['banner'], excluded_items: null }];
 const draft = (overrides: Partial<ConfigPresetImportSession> = {}): ConfigPresetImportSession => ({

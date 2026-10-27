@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../src/modules/theme/theme-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/modules/theme/theme-domain')>()),
+vi.mock('../../../../../src/modules/theme/theme-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/theme/theme-domain')>()),
   findById: vi.fn(),
   checkExistingTheme: vi.fn(),
 }));
 
-import { findById, checkExistingTheme } from '../../../../src/modules/theme/theme-domain';
-import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
-import type { ConfigPresetBundleItem, ConfigPresetImportPlan } from '../../../../src/modules/configPreset/configPreset-import-types';
-import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { BUILT_IN_THEME_STANDARD_IDS } from '../../../../src/modules/theme/theme-constants';
-import { CUSTOM_THEME_ID, themeConfiguration } from '../../../utils/configPresetBundle';
+import { findById, checkExistingTheme } from '../../../../../src/modules/theme/theme-domain';
+import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
+import type { ConfigPresetBundleItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
+import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import { BUILT_IN_THEME_STANDARD_IDS } from '../../../../../src/modules/theme/theme-constants';
+import { CUSTOM_THEME_ID, themeConfiguration } from '../../../../utils/configPresetBundle';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;

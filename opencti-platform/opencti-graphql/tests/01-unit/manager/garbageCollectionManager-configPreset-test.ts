@@ -17,13 +17,13 @@ vi.mock('../../../src/database/file-storage', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/file-storage')>()),
   loadedFilesListing: vi.fn().mockResolvedValue({ KeyCount: 0 }),
 }));
-vi.mock('../../../src/modules/configPreset/configPreset-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../src/modules/configPreset/configPreset-domain')>()),
+vi.mock('../../../src/modules/configPreset/export/configPreset-export-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/configPreset/export/configPreset-export-domain')>()),
   deleteExpiredConfigPresetExports: vi.fn(),
 }));
 
 import { garbageCollectionHandler } from '../../../src/manager/garbageCollectionManager';
-import { deleteExpiredConfigPresetExports } from '../../../src/modules/configPreset/configPreset-domain';
+import { deleteExpiredConfigPresetExports } from '../../../src/modules/configPreset/export/configPreset-export-domain';
 import { GARBAGE_COLLECTION_MANAGER_USER } from '../../../src/utils/access';
 
 describe('Garbage collection manager - configuration preset exports', () => {

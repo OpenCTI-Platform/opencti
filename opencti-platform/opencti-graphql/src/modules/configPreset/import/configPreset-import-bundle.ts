@@ -2,10 +2,10 @@ import semver from 'semver';
 // @ts-expect-error unzipper ships no type declarations
 import unzipper from 'unzipper';
 import { z } from 'zod';
-import { PLATFORM_VERSION } from '../../config/conf';
-import { FunctionalError } from '../../config/errors';
-import { CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE } from './configPreset-domain';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from './configPreset-registry';
+import { PLATFORM_VERSION } from '../../../config/conf';
+import { FunctionalError } from '../../../config/errors';
+import { CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE } from '../configPreset-utils';
+import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-registry';
 import {
   CONFIG_PRESET_REASON_BUNDLE_REFUSED,
   type ConfigPresetBundle,

@@ -1,15 +1,15 @@
 import type { Resolvers, ResolversTypes } from '../../generated/graphql';
-import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from './configPreset-domain';
-import { configPresetImportPreview, configPresetImportUpload } from './configPreset-import-domain';
-import { configPresetImport } from './configPreset-import-engine';
+import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from './export/configPreset-export-domain';
+import { configPresetImportPreview, configPresetImportUpload } from './import/configPreset-import-domain';
+import { configPresetImport } from './import/configPreset-import-engine';
 import {
   backToConfigPresetImportSelection,
   clearConfigPresetImportSession,
   findConfigPresetImportSession,
   saveConfigPresetImportSession,
-} from './configPreset-import-session-domain';
-import { findConfigPresetImportRunning } from './configPreset-import-running';
-import { checkConfigPresetImportAccess } from './configPreset-import-utils';
+} from './import/configPreset-import-session-domain';
+import { findConfigPresetImportRunning } from './import/configPreset-import-running';
+import { checkConfigPresetImportAccess } from './import/configPreset-import-utils';
 
 const configPresetResolvers: Resolvers = {
   Query: {

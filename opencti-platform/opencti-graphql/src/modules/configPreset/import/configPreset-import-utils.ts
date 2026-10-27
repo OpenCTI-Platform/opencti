@@ -1,8 +1,8 @@
-import { getSettingsFromDatabase } from '../../domain/settings';
-import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
-import { BYPASS, isUserHasCapability } from '../../utils/access';
-import { getDraftContext } from '../../utils/draftContext';
-import type { AuthContext, AuthUser } from '../../types/user';
+import { getSettingsFromDatabase } from '../../../domain/settings';
+import { ForbiddenAccess, UnsupportedError } from '../../../config/errors';
+import { BYPASS, isUserHasCapability } from '../../../utils/access';
+import { getDraftContext } from '../../../utils/draftContext';
+import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigPresetImportField } from './configPreset-import-types';
 
 const DATA_URL = /^data:([^;,]+);base64,(.*)$/;

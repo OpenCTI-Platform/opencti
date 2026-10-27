@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../src/lock/master-lock', () => ({ lockResources: vi.fn() }));
-vi.mock('../../../../src/database/redis', () => ({ isResourceLocked: vi.fn() }));
+vi.mock('../../../../../src/lock/master-lock', () => ({ lockResources: vi.fn() }));
+vi.mock('../../../../../src/database/redis', () => ({ isResourceLocked: vi.fn() }));
 
-import { lockResources } from '../../../../src/lock/master-lock';
-import { isResourceLocked } from '../../../../src/database/redis';
-import { TYPE_LOCK_ERROR } from '../../../../src/config/errors';
-import type { AuthContext } from '../../../../src/types/user';
-import { CONFIG_PRESET_IMPORT_LOCK_KEY, isConfigPresetImportLocked, withConfigPresetImportLock } from '../../../../src/modules/configPreset/configPreset-import-lock';
+import { lockResources } from '../../../../../src/lock/master-lock';
+import { isResourceLocked } from '../../../../../src/database/redis';
+import { TYPE_LOCK_ERROR } from '../../../../../src/config/errors';
+import type { AuthContext } from '../../../../../src/types/user';
+import { CONFIG_PRESET_IMPORT_LOCK_KEY, isConfigPresetImportLocked, withConfigPresetImportLock } from '../../../../../src/modules/configPreset/import/configPreset-import-lock';
 
 const context = { source: 'test' } as AuthContext;
 const handle = () => ({ signal: new AbortController().signal, unlock: vi.fn().mockResolvedValue(undefined) });

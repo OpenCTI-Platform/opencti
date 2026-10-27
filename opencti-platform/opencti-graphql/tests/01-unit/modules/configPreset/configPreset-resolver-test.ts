@@ -16,15 +16,15 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
-vi.mock('../../../../src/modules/configPreset/configPreset-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/modules/configPreset/configPreset-domain')>()),
+vi.mock('../../../../src/modules/configPreset/export/configPreset-export-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/configPreset/export/configPreset-export-domain')>()),
   configPresetExport: vi.fn(),
 }));
 
 import { authDirectiveBuilder } from '../../../../src/graphql/authDirective';
 import { makeFeatureFlagDirectiveTransformer } from '../../../../src/graphql/featureFlagDirective';
 import configPresetResolvers from '../../../../src/modules/configPreset/configPreset-resolver';
-import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from '../../../../src/modules/configPreset/configPreset-domain';
+import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from '../../../../src/modules/configPreset/export/configPreset-export-domain';
 import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { buildPaginationFromEdges } from '../../../../src/database/utils';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';

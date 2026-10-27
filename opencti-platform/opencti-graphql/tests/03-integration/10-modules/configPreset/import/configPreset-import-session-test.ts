@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { buildZip, validBundleFiles } from '../../../utils/configPresetBundle';
-import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
-import { getClientBase, lockResource, redisSetConfigPresetImportSession } from '../../../../src/database/redis';
-import { CONFIG_PRESET_IMPORT_LOCK_KEY } from '../../../../src/modules/configPreset/configPreset-import-lock';
-import { applyConfigPresetImportEvent } from '../../../../src/modules/configPreset/configPreset-import-session-domain';
-import { getConfigPresetPlatformId } from '../../../../src/modules/configPreset/configPreset-import-utils';
+import { buildZip, validBundleFiles } from '../../../../utils/configPresetBundle';
+import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
+import { getClientBase, lockResource, redisSetConfigPresetImportSession } from '../../../../../src/database/redis';
+import { CONFIG_PRESET_IMPORT_LOCK_KEY } from '../../../../../src/modules/configPreset/import/configPreset-import-lock';
+import { applyConfigPresetImportEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
+import { getConfigPresetPlatformId } from '../../../../../src/modules/configPreset/import/configPreset-import-utils';
 
 const SESSION_FIELDS = 'status file_id revision selections { type items excluded_items } started_at total available_events results { key } outcome';
 

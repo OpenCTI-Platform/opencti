@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
-import { buildZip, CUSTOM_THEME_ID, itemFile, metadataFile, themeConfiguration, validBundleFiles } from '../../../utils/configPresetBundle';
-import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
-import { getClientBase } from '../../../../src/database/redis';
-import * as ee from '../../../../src/enterprise-edition/ee';
-import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../src/domain/settings';
-import { addTheme, deleteTheme, findAllThemes, findById as findThemeById } from '../../../../src/modules/theme/theme-domain';
-import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
-import { deleteFile } from '../../../../src/database/file-storage';
-import { configPresetImport } from '../../../../src/modules/configPreset/configPreset-import-engine';
-import { applyConfigPresetImportRunEvent } from '../../../../src/modules/configPreset/configPreset-import-session-domain';
+import { buildZip, CUSTOM_THEME_ID, itemFile, metadataFile, themeConfiguration, validBundleFiles } from '../../../../utils/configPresetBundle';
+import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
+import { getClientBase } from '../../../../../src/database/redis';
+import * as ee from '../../../../../src/enterprise-edition/ee';
+import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../../src/domain/settings';
+import { addTheme, deleteTheme, findAllThemes, findById as findThemeById } from '../../../../../src/modules/theme/theme-domain';
+import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
+import { deleteFile } from '../../../../../src/database/file-storage';
+import { configPresetImport } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
+import { applyConfigPresetImportRunEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetApplyUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`

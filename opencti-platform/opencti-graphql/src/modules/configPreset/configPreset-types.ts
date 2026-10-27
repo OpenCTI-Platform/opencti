@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicConnection } from '../../types/store';
-import type { ConfigPresetImporter } from './configPreset-import-types';
+import type { ConfigPresetImporter } from './import/configPreset-import-types';
 
 export type ConfigPresetConfiguration = Record<string, unknown>;
 

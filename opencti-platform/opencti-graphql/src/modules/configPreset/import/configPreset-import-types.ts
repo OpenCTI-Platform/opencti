@@ -1,5 +1,5 @@
-import type { AuthContext, AuthUser } from '../../types/user';
-import type { ConfigPresetConfiguration } from './configPreset-types';
+import type { AuthContext, AuthUser } from '../../../types/user';
+import type { ConfigPresetConfiguration } from '../configPreset-types';
 
 // Reasons of a refusal, read by the front in extensions.data.reason (the message is only for display)
 export const CONFIG_PRESET_REASON_FILE_MISSING = 'file_missing';

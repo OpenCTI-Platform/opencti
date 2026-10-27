@@ -1,19 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../src/database/file-storage', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/database/file-storage')>()),
+vi.mock('../../../../../src/database/file-storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/database/file-storage')>()),
   deleteFile: vi.fn(),
 }));
-vi.mock('../../../../src/modules/internal/document/document-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/modules/internal/document/document-domain')>()),
+vi.mock('../../../../../src/modules/internal/document/document-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/internal/document/document-domain')>()),
   allFilesForPaths: vi.fn(),
 }));
 
-import { deleteFile } from '../../../../src/database/file-storage';
-import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
-import { deleteExpiredConfigPresetExports } from '../../../../src/modules/configPreset/configPreset-domain';
-import { GARBAGE_COLLECTION_MANAGER_USER } from '../../../../src/utils/access';
-import type { AuthContext } from '../../../../src/types/user';
+import { deleteFile } from '../../../../../src/database/file-storage';
+import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
+import { deleteExpiredConfigPresetExports } from '../../../../../src/modules/configPreset/export/configPreset-export-domain';
+import { GARBAGE_COLLECTION_MANAGER_USER } from '../../../../../src/utils/access';
+import type { AuthContext } from '../../../../../src/types/user';
 
 const context = { source: 'test' } as AuthContext;
 const NOW = new Date('2026-10-14T09:05:07.123Z');

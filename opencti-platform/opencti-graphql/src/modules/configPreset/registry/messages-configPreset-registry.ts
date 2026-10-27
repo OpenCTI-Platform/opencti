@@ -1,9 +1,9 @@
 import type { AuthContext } from '../../../types/user';
 import { CONFIG_PRESET_MESSAGES_FIELDS, getMessagesConfigPresetConfigurations, getSettings, settingsEditField } from '../../../domain/settings';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
-import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../configPreset-import-types';
-import { buildImportFields, importFailureReason, isNothingToImport } from '../configPreset-import-utils';
-import { messageConfigurationSchemas } from '../configPreset-import-schemas';
+import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
+import { buildImportFields, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
+import { messageConfigurationSchemas } from '../import/configPreset-import-schemas';
 import { platformSettingsGroup, staticFamily } from './common-configPreset-registry';
 
 const MESSAGE_LABELS: Record<string, string> = { banner: 'Banner', login: 'Login message', consent: 'Consent message', noAccess: 'No access message' };

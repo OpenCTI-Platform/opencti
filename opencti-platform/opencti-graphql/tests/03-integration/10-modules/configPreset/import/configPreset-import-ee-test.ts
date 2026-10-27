@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
-import { buildZip, itemFile, metadataFile, validBundleFiles } from '../../../utils/configPresetBundle';
-import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { getClientBase } from '../../../../src/database/redis';
-import * as ee from '../../../../src/enterprise-edition/ee';
-import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../src/domain/settings';
-import { deleteTheme, findAllThemes } from '../../../../src/modules/theme/theme-domain';
-import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
-import { deleteFile } from '../../../../src/database/file-storage';
+import { buildZip, itemFile, metadataFile, validBundleFiles } from '../../../../utils/configPresetBundle';
+import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess } from '../../../../utils/testQueryHelper';
+import { ADMIN_USER, testContext } from '../../../../utils/testQuery';
+import { getClientBase } from '../../../../../src/database/redis';
+import * as ee from '../../../../../src/enterprise-edition/ee';
+import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../../src/domain/settings';
+import { deleteTheme, findAllThemes } from '../../../../../src/modules/theme/theme-domain';
+import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
+import { deleteFile } from '../../../../../src/database/file-storage';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetEeUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`

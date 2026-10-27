@@ -4,9 +4,9 @@ import { getPlatformConfigPresetConfiguration, getPlatformDefaultTheme } from '.
 import { findById as findThemeById } from '../../theme/theme-domain';
 import { getSettings, settingsEditField } from '../../../domain/settings';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
-import { type ConfigPresetComputedItem, type ConfigPresetImporter, configPresetPlanKey } from '../configPreset-import-types';
-import { buildImportFields, importFailureReason, isNothingToImport } from '../configPreset-import-utils';
-import { platformConfigurationSchema } from '../configPreset-import-schemas';
+import { type ConfigPresetComputedItem, type ConfigPresetImporter, configPresetPlanKey } from '../import/configPreset-import-types';
+import { buildImportFields, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
+import { platformConfigurationSchema } from '../import/configPreset-import-schemas';
 import { platformSettingsGroup, staticFamily } from './common-configPreset-registry';
 import { BRANDING_FAMILY_ID } from './branding-configPreset-registry';
 

@@ -12,10 +12,10 @@ import {
 import { BUILT_IN_THEME_STANDARD_IDS } from '../../theme/theme-constants';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
-import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../configPreset-import-types';
-import { configPresetPlanKey } from '../configPreset-import-types';
-import { buildImportFields, importFailureReason, isNothingToImport } from '../configPreset-import-utils';
-import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS, themeConfigurationSchema, whitemarkConfigurationSchema } from '../configPreset-import-schemas';
+import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
+import { configPresetPlanKey } from '../import/configPreset-import-types';
+import { buildImportFields, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
+import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS, themeConfigurationSchema, whitemarkConfigurationSchema } from '../import/configPreset-import-schemas';
 import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup } from './common-configPreset-registry';
 
 export const BRANDING_FAMILY_ID = 'branding';

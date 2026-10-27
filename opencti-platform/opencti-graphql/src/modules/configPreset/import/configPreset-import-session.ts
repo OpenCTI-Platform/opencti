@@ -1,4 +1,4 @@
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError } from '../../../config/errors';
 
 // The state machine of the import session, one declarative list of transitions and a lookup, in the shape of
 // WorkflowDefinition (modules/workflow/engine/workflow-definition.ts), copied and not imported: the workflow engine is
