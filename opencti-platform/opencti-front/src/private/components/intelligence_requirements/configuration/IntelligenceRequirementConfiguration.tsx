@@ -46,6 +46,20 @@ const configurationQuery = graphql`
         target_filters
         keyword_fields
         mode
+        conditions {
+          id
+          name
+          applies_to_types
+          filters
+          link { relationship_types group_ids }
+          path_condition {
+            relationship_types
+            direction
+            target_relationship_type
+            target_group_ids
+            targets { id entity_type representative { main } }
+          }
+        }
       }
       ir_relevance_rules {
         id
@@ -54,12 +68,13 @@ const configurationQuery = graphql`
         applies_to_criterion_id
         filters
         points
-        required
         enabled
+        link { relationship_types group_ids }
         path_condition {
           relationship_types
           direction
           target_relationship_type
+          target_group_ids
           targets { id entity_type representative { main } }
         }
       }
@@ -70,6 +85,20 @@ const configurationQuery = graphql`
 type Ir = NonNullable<IntelligenceRequirementConfigurationQuery$data['intelligenceRequirement']>;
 
 const toOption = (e: { id: string; entity_type: string; representative: { main: string } }) => ({ value: e.id, label: e.representative.main, type: e.entity_type });
+
+type IrPathCondition = NonNullable<Ir['ir_relevance_rules'][number]['path_condition']>;
+
+const pathToDraft = (path: IrPathCondition | null | undefined) => (path ? {
+  relationship_types: [...path.relationship_types],
+  direction: path.direction,
+  target_relationship_type: path.target_relationship_type,
+  targets: path.targets.map(toOption),
+  target_group_ids: [...path.target_group_ids],
+} : null);
+
+const linkToDraft = (link: { relationship_types: readonly string[]; group_ids: readonly string[] } | null | undefined) => (link
+  ? { relationship_types: [...link.relationship_types], group_ids: [...link.group_ids] }
+  : null);
 
 const nodeToDraft = (ir: Ir): IrDraft => ({
   name: ir.name,
@@ -104,6 +133,14 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
     target_filters: c.target_filters ?? null,
     keyword_fields: [...c.keyword_fields],
     mode: c.mode,
+    conditions: c.conditions.map((k) => ({
+      id: k.id,
+      name: k.name,
+      applies_to_types: [...k.applies_to_types],
+      filters: k.filters ?? null,
+      link: linkToDraft(k.link),
+      path_condition: pathToDraft(k.path_condition),
+    })),
   })),
   rules: ir.ir_relevance_rules.map((r) => ({
     id: r.id,
@@ -111,14 +148,9 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
     applies_to_types: [...r.applies_to_types],
     applies_to_criterion_id: r.applies_to_criterion_id ?? null,
     filters: r.filters ?? null,
-    path_condition: r.path_condition ? {
-      relationship_types: [...r.path_condition.relationship_types],
-      direction: r.path_condition.direction,
-      target_relationship_type: r.path_condition.target_relationship_type,
-      targets: r.path_condition.targets.map(toOption),
-    } : null,
+    link: linkToDraft(r.link),
+    path_condition: pathToDraft(r.path_condition),
     points: r.points,
-    required: r.required,
     enabled: r.enabled,
   })),
 });

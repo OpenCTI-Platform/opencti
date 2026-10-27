@@ -33,6 +33,26 @@ describe('inputToDraft', () => {
       .toEqual(aiConfig.ir_scope_criteria.map((c) => [c.id, c.kind, c.kind === 'graph' ? c.relationship_types : [], c.direction, c.target_types, c.mode]));
   });
 
+  it('shows the legacy required rules of a proposal as conditions of the criteria bringing their types', () => {
+    const draft = inputToDraft({
+      name: 'x',
+      ir_question: 'q',
+      ir_scope_criteria: [
+        { id: 'c-groups', kind: 'graph', target_types: ['Intrusion-Set', 'Campaign'], mode: 'auto' },
+        { id: 'c-vulns', kind: 'graph', target_types: ['Vulnerability'], mode: 'auto' },
+      ],
+      ir_relevance_rules: [
+        { id: 'r-eu', name: 'Targets Europe (required)', applies_to_types: ['Intrusion-Set'], points: 0, required: true, path_condition: { relationship_types: ['targets'], direction: 'outgoing', target_relationship_type: 'located-at', target_ids: ['europe'] } },
+        { id: 'r-kev', name: 'KEV', applies_to_types: ['Vulnerability'], points: 40 },
+      ],
+    }, new Map());
+    expect(draft.criteria[0].conditions).toMatchObject([{ id: 'r-eu', name: 'Targets Europe', applies_to_types: ['Intrusion-Set'] }]);
+    expect(draft.criteria[1].conditions).toEqual([]);
+    expect(draft.rules.map((r) => r.id)).toEqual(['r-kev']);
+    const input = draftToInput(draft);
+    expect(input.ir_scope_criteria[0].conditions[0].path_condition).toEqual({ relationship_types: ['targets'], direction: 'outgoing', target_relationship_type: 'located-at', target_ids: ['europe'], target_group_ids: [] });
+  });
+
   it('names unknown entities by their id and defaults invalid values', () => {
     const draft = inputToDraft({
       name: 'x',

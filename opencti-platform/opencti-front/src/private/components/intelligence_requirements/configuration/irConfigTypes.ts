@@ -45,6 +45,7 @@ export interface IrCriterionDraft {
   target_filters: string | null;
   keyword_fields: string[];
   mode: IrCriterionMode;
+  conditions: IrConditionDraft[]; // all must be met (AND) for an entity to enter through this criterion
 }
 
 export interface IrPathConditionDraft {
@@ -52,17 +53,35 @@ export interface IrPathConditionDraft {
   direction: IrDirection;
   target_relationship_type: string;
   targets: IrEntityOption[];
+  target_group_ids: string[]; // the members of these subject groups are targets too
 }
 
+// Linked by one of the relationship types to a member of one of the subject groups (object: contains one)
+export interface IrLinkDraft {
+  relationship_types: string[];
+  group_ids: string[];
+}
+
+// A condition of a criterion (scope): what an entity brought by the criterion must also satisfy to enter
+export interface IrConditionDraft {
+  id: string;
+  name: string;
+  applies_to_types: string[]; // empty = every type the criterion brings
+  filters: string | null;
+  link: IrLinkDraft | null;
+  path_condition: IrPathConditionDraft | null;
+}
+
+// A scoring rule (relevance): only ranks the entities of the requirement
 export interface IrRuleDraft {
   id: string;
   name: string;
   applies_to_types: string[];
   applies_to_criterion_id: string | null;
   filters: string | null;
+  link: IrLinkDraft | null;
   path_condition: IrPathConditionDraft | null;
   points: number;
-  required: boolean;
   enabled: boolean;
 }
 
@@ -113,7 +132,12 @@ export const emptyCriterion = (groups: IrGroupDraft[]): IrCriterionDraft => ({
   target_filters: null,
   keyword_fields: ['name', 'description', 'content'],
   mode: 'auto',
+  conditions: [],
 });
+
+export const emptyCondition = (): IrConditionDraft => ({ id: newId('k'), name: '', applies_to_types: [], filters: null, link: null, path_condition: null });
+
+export const emptyLink = (): IrLinkDraft => ({ relationship_types: ['targets'], group_ids: [] });
 
 export const emptyRule = (): IrRuleDraft => ({
   id: newId('r'),
@@ -121,13 +145,13 @@ export const emptyRule = (): IrRuleDraft => ({
   applies_to_types: [],
   applies_to_criterion_id: null,
   filters: null,
+  link: null,
   path_condition: null,
   points: 10,
-  required: false,
   enabled: true,
 });
 
-export const emptyPathCondition = (): IrPathConditionDraft => ({ relationship_types: [], direction: 'incoming', target_relationship_type: 'targets', targets: [] });
+export const emptyPathCondition = (): IrPathConditionDraft => ({ relationship_types: [], direction: 'incoming', target_relationship_type: 'targets', targets: [], target_group_ids: [] });
 
 const parseFilters = (filters: string | null) => {
   if (!filters) return null;
@@ -137,6 +161,16 @@ const parseFilters = (filters: string | null) => {
     return null;
   }
 };
+
+const pathConditionToInput = (path: IrPathConditionDraft | null) => (path && path.relationship_types.length > 0 ? {
+  relationship_types: path.relationship_types,
+  direction: path.direction,
+  target_relationship_type: path.target_relationship_type,
+  target_ids: path.targets.map((t) => t.value),
+  target_group_ids: path.target_group_ids,
+} : null);
+
+const linkToInput = (link: IrLinkDraft | null) => (link && link.group_ids.length > 0 && link.relationship_types.length > 0 ? link : null);
 
 export const parseThresholds = (value: string) => value
   .split(',')
@@ -170,7 +204,7 @@ export const draftToInput = (draft: IrDraft) => ({
     id: c.id,
     name: c.name || c.id,
     kind: c.kind,
-    from_group_ids: c.kind === 'attribute' ? [] : c.from_group_ids,
+    from_group_ids: c.from_group_ids,
     from_in_requirement: c.kind === 'graph' ? c.from_in_requirement : false,
     from_types: c.kind === 'graph' ? c.from_types : [],
     relationship_types: c.kind === 'graph' ? c.relationship_types : [],
@@ -179,6 +213,14 @@ export const draftToInput = (draft: IrDraft) => ({
     target_filters: parseFilters(c.target_filters),
     keyword_fields: c.keyword_fields,
     mode: c.mode,
+    conditions: c.conditions.map((k) => ({
+      id: k.id,
+      name: k.name || k.id,
+      applies_to_types: k.applies_to_types,
+      filters: parseFilters(k.filters),
+      link: linkToInput(k.link),
+      path_condition: pathConditionToInput(k.path_condition),
+    })),
   })),
   ir_relevance_rules: draft.rules.map((r) => ({
     id: r.id,
@@ -186,14 +228,9 @@ export const draftToInput = (draft: IrDraft) => ({
     applies_to_types: r.applies_to_types,
     applies_to_criterion_id: r.applies_to_criterion_id,
     filters: parseFilters(r.filters),
-    path_condition: r.path_condition && r.path_condition.relationship_types.length > 0 ? {
-      relationship_types: r.path_condition.relationship_types,
-      direction: r.path_condition.direction,
-      target_relationship_type: r.path_condition.target_relationship_type,
-      target_ids: r.path_condition.targets.map((t) => t.value),
-    } : null,
+    link: linkToInput(r.link),
+    path_condition: pathConditionToInput(r.path_condition),
     points: r.points,
-    required: r.required,
     enabled: r.enabled,
   })),
 });
@@ -210,8 +247,33 @@ const filtersToString = (filters: unknown): string | null => {
 const str = (value: unknown, fallback = '') => (typeof value === 'string' ? value : fallback);
 const list = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v) => typeof v === 'string') : []);
 
+const directionOf = (value: unknown, fallback: IrDirection): IrDirection => (['outgoing', 'incoming', 'both'].includes(value as string) ? value as IrDirection : fallback);
+
+// Legacy proposals may still carry "required" rules: they are shown as conditions of the criteria bringing their types
+const overlaps = (a: string[], b: string[]) => a.length === 0 || b.length === 0 || a.some((x) => b.some((y) => x === y || x.startsWith(`${y}-`) || y.startsWith(`${x}-`)));
+
 export const inputToDraft = (input: JsonInput, entities: Map<string, IrEntityOption>): IrDraft => {
   const option = (id: string): IrEntityOption => entities.get(id) ?? { value: id, label: id, type: '' };
+  const pathOf = (path: JsonInput | null | undefined): IrPathConditionDraft | null => (path && list(path.relationship_types).length > 0 ? {
+    relationship_types: list(path.relationship_types),
+    direction: directionOf(path.direction, 'incoming'),
+    target_relationship_type: str(path.target_relationship_type, 'targets'),
+    targets: list(path.target_ids).map(option),
+    target_group_ids: list(path.target_group_ids),
+  } : null);
+  const linkOf = (link: JsonInput | null | undefined): IrLinkDraft | null => (link && list(link.group_ids).length > 0
+    ? { relationship_types: list(link.relationship_types), group_ids: list(link.group_ids) }
+    : null);
+  const conditionOf = (k: JsonInput): IrConditionDraft => ({
+    id: str(k.id, newId('k')),
+    name: str(k.name).replace(/\s*\(required\)\s*$/i, ''),
+    applies_to_types: list(k.applies_to_types),
+    filters: filtersToString(k.filters),
+    link: linkOf(k.link),
+    path_condition: pathOf(k.path_condition),
+  });
+  const rules: JsonInput[] = input.ir_relevance_rules ?? [];
+  const required = rules.filter((r) => r.required === true && r.enabled !== false);
   return {
     name: str(input.name),
     description: str(input.description),
@@ -240,26 +302,28 @@ export const inputToDraft = (input: JsonInput, entities: Map<string, IrEntityOpt
       from_in_requirement: c.from_in_requirement === true,
       from_types: list(c.from_types),
       relationship_types: list(c.relationship_types),
-      direction: (['outgoing', 'incoming', 'both'].includes(c.direction) ? c.direction : 'outgoing') as IrDirection,
+      direction: directionOf(c.direction, 'outgoing'),
       target_types: list(c.target_types),
       target_filters: filtersToString(c.target_filters),
       keyword_fields: list(c.keyword_fields).length > 0 ? list(c.keyword_fields) : ['name', 'description', 'content'],
       mode: (['auto', 'propose', 'off'].includes(c.mode) ? c.mode : 'auto') as IrCriterionMode,
+      conditions: [
+        ...(Array.isArray(c.conditions) ? c.conditions : []).map(conditionOf),
+        ...required
+          .filter((r) => (typeof r.applies_to_criterion_id === 'string' ? r.applies_to_criterion_id === c.id : overlaps(list(c.target_types), list(r.applies_to_types))))
+          .filter((r) => !(Array.isArray(c.conditions) ? c.conditions : []).some((k: JsonInput) => k.id === r.id))
+          .map(conditionOf),
+      ],
     })),
-    rules: (input.ir_relevance_rules ?? []).map((r: JsonInput) => ({
+    rules: rules.filter((r) => r.required !== true || (Number.isFinite(r.points) && r.points !== 0)).map((r: JsonInput) => ({
       id: str(r.id, newId('r')),
-      name: str(r.name),
+      name: str(r.name).replace(/\s*\(required\)\s*$/i, ''),
       applies_to_types: list(r.applies_to_types),
       applies_to_criterion_id: typeof r.applies_to_criterion_id === 'string' ? r.applies_to_criterion_id : null,
       filters: filtersToString(r.filters),
-      path_condition: r.path_condition && list(r.path_condition.relationship_types).length > 0 ? {
-        relationship_types: list(r.path_condition.relationship_types),
-        direction: (['outgoing', 'incoming', 'both'].includes(r.path_condition.direction) ? r.path_condition.direction : 'incoming') as IrDirection,
-        target_relationship_type: str(r.path_condition.target_relationship_type, 'targets'),
-        targets: list(r.path_condition.target_ids).map(option),
-      } : null,
+      link: linkOf(r.link),
+      path_condition: pathOf(r.path_condition),
       points: Number.isFinite(r.points) ? r.points : 10,
-      required: r.required === true,
       enabled: r.enabled !== false,
     })),
   };

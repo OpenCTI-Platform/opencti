@@ -10,13 +10,18 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import {
   draftToInput,
+  emptyCondition,
   emptyCriterion,
   emptyGroup,
+  emptyLink,
   emptyPathCondition,
   emptyRule,
+  type IrConditionDraft,
   type IrCriterionDraft,
   type IrDraft,
   type IrGroupDraft,
+  type IrLinkDraft,
+  type IrPathConditionDraft,
   type IrRuleDraft,
   newId,
 } from './irConfigTypes';
@@ -60,15 +65,79 @@ const Row = ({ children, columns }: { children: ReactNode; columns: string }) =>
   <Box sx={{ display: 'grid', gridTemplateColumns: columns, gap: 2, alignItems: 'end', mb: 2 }}>{children}</Box>
 );
 
-const SubCard = ({ children, onDelete, highlight }: { children: ReactNode; onDelete: () => void; highlight?: boolean }) => {
+const SubCard = ({ children, onDelete }: { children: ReactNode; onDelete: () => void }) => {
   const { t_i18n } = useFormatter();
   return (
-    <Box sx={{ border: '1px solid', borderColor: highlight ? 'error.main' : 'divider', borderRadius: 1, p: 2, mb: 1.5, position: 'relative' }}>
+    <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2, mb: 1.5, position: 'relative' }}>
       <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
         <IconButton aria-label={t_i18n('Delete')} onClick={onDelete}><DeleteOutlined fontSize="small" /></IconButton>
       </Box>
       <Box sx={{ pr: 5 }}>{children}</Box>
     </Box>
+  );
+};
+
+type Option = { value: string; label: string };
+
+// Link to subject groups (linked by a relationship to a member of a group), shared by the conditions and the scoring rules
+const GroupLinkFields = ({ value, onChange, relationshipOptions, groupOptions }: {
+  value: IrLinkDraft | null;
+  onChange: (value: IrLinkDraft | null) => void;
+  relationshipOptions: Option[];
+  groupOptions: Option[];
+}) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <>
+      <Box sx={{ mb: 1.5 }}>
+        <Checkbox
+          label={t_i18n('Linked to a subject group')}
+          checked={!!value}
+          onCheckedChange={(checked) => onChange(checked === true ? emptyLink() : null)}
+        />
+      </Box>
+      {value && (
+        <Row columns="1fr 1fr">
+          <IrMultiSelect label={t_i18n('Linked by (object = contains)')} values={value.relationship_types} options={relationshipOptions} onChange={(v) => onChange({ ...value, relationship_types: v })} />
+          <IrMultiSelect label={t_i18n('to a member of')} values={value.group_ids} options={groupOptions} onChange={(v) => onChange({ ...value, group_ids: v })} />
+        </Row>
+      )}
+    </>
+  );
+};
+
+// Path condition (one hop in the graph), shared by the conditions of the scope and the scoring rules
+const PathConditionFields = ({ value, onChange, relationshipOptions, directionOptions, groupOptions }: {
+  value: IrPathConditionDraft | null;
+  onChange: (value: IrPathConditionDraft | null) => void;
+  relationshipOptions: Option[];
+  directionOptions: Option[];
+  groupOptions: Option[];
+}) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <>
+      <Box sx={{ mt: 2 }}>
+        <Checkbox
+          label={t_i18n('Path condition: linked to an entity that has a relationship toward…')}
+          checked={!!value}
+          onCheckedChange={(checked) => onChange(checked === true ? emptyPathCondition() : null)}
+        />
+      </Box>
+      {value && (
+        <Box sx={{ mt: 1.5 }}>
+          <Row columns="1fr 1fr 1fr">
+            <IrMultiSelect label={t_i18n('Linked by')} values={value.relationship_types} options={relationshipOptions} onChange={(v) => onChange({ ...value, relationship_types: v })} />
+            <IrSelect label={t_i18n('Direction')} value={value.direction} options={directionOptions} onChange={(v) => onChange({ ...value, direction: v as IrPathConditionDraft['direction'] })} />
+            <IrSelect label={t_i18n('to an entity that')} value={value.target_relationship_type} options={relationshipOptions} onChange={(v) => onChange({ ...value, target_relationship_type: v })} />
+          </Row>
+          <Row columns="2fr 1fr">
+            <IrEntityPicker label={t_i18n('one of')} value={value.targets} onChange={(targets) => onChange({ ...value, targets })} />
+            <IrMultiSelect label={t_i18n('or a member of')} values={value.target_group_ids} options={groupOptions} onChange={(v) => onChange({ ...value, target_group_ids: v })} />
+          </Row>
+        </Box>
+      )}
+    </>
   );
 };
 
@@ -89,10 +158,14 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
   const setGroup = (id: string, patch: Partial<IrGroupDraft>) => set({ groups: draft.groups.map((g) => (g.id === id ? { ...g, ...patch } : g)) });
   const setCriterion = (id: string, patch: Partial<IrCriterionDraft>) => set({ criteria: draft.criteria.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
   const setRule = (id: string, patch: Partial<IrRuleDraft>) => set({ rules: draft.rules.map((r) => (r.id === id ? { ...r, ...patch } : r)) });
+  const setCondition = (criterion: IrCriterionDraft, id: string, patch: Partial<IrConditionDraft>) => setCriterion(criterion.id, {
+    conditions: criterion.conditions.map((k) => (k.id === id ? { ...k, ...patch } : k)),
+  });
 
   const typeOptions = IR_ENTITY_TYPES.map((t) => ({ value: t, label: t_i18n(`entity_${t}`) }));
   const relationshipOptions = IR_RELATIONSHIP_TYPES.map((r) => ({ value: r, label: r === 'object' ? t_i18n('object (contained in a report or container)') : r }));
   const groupOptions = draft.groups.map((g) => ({ value: g.id, label: g.name || g.id }));
+  const entityGroupOptions = draft.groups.filter((g) => g.kind !== 'keywords').map((g) => ({ value: g.id, label: g.name || g.id }));
   const criterionOptions = draft.criteria.map((c) => ({ value: c.id, label: c.name || c.id }));
   const directionOptions = [
     { value: 'outgoing', label: t_i18n('Outgoing (anchor → target)') },
@@ -220,7 +293,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
       <Block
         step={3}
         title={t_i18n('Scope')}
-        subtitle={t_i18n('entry criteria: what makes an entity enter the requirement')}
+        subtitle={t_i18n('what may enter the requirement: a path in the knowledge, and the conditions an entity must meet (all of them)')}
         action={<Button variant="secondary" size="small" onClick={() => set({ criteria: [...draft.criteria, emptyCriterion(draft.groups)] })}>{t_i18n('Add a criterion')}</Button>}
       >
         {draft.criteria.map((criterion) => (
@@ -230,7 +303,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
               <IrSelect
                 label={t_i18n('Kind')}
                 value={criterion.kind}
-                options={[{ value: 'graph', label: t_i18n('Path in the graph') }, { value: 'attribute', label: t_i18n('Attributes (zero hop)') }, { value: 'keywords', label: t_i18n('Keywords') }]}
+                options={[{ value: 'graph', label: t_i18n('Path in the graph') }, { value: 'attribute', label: t_i18n('Members or attributes (zero hop)') }, { value: 'keywords', label: t_i18n('Keywords') }]}
                 onChange={(v) => setCriterion(criterion.id, { kind: v as IrCriterionDraft['kind'] })}
               />
               <IrSelect
@@ -259,7 +332,13 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
               </>
             )}
             {criterion.kind === 'attribute' && (
-              <Row columns="1fr">
+              <Row columns="1fr 1fr">
+                <IrMultiSelect
+                  label={t_i18n('Members of subject groups (optional)')}
+                  values={criterion.from_group_ids}
+                  options={entityGroupOptions}
+                  onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })}
+                />
                 <IrMultiSelect label={t_i18n('Entity types')} values={criterion.target_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { target_types: v })} />
               </Row>
             )}
@@ -277,6 +356,46 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
             )}
             <Text as="div" variant="content-caption" style={{ marginBottom: 8, opacity: 0.8 }}>{t_i18n('Target filters (optional)')}</Text>
             <IrFilterBuilder value={criterion.target_filters} onChange={(filters) => setCriterion(criterion.id, { target_filters: filters })} />
+            <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px dashed', borderColor: 'divider' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                <Text as="span" variant="content-compact-bold">{t_i18n('Only if (all conditions must be met)')}</Text>
+                <Text as="span" variant="content-caption" style={{ opacity: 0.7 }}>
+                  {criterion.conditions.length > 0
+                    ? `${t_i18n('An entity brought by this path enters only if')} ${criterion.conditions.map((k) => k.name || k.id).join(` ${t_i18n('AND')} `)}`
+                    : t_i18n('No condition: every entity brought by this path enters')}
+                </Text>
+                <Box sx={{ flex: 1 }} />
+                <Button variant="tertiary" size="small" onClick={() => setCriterion(criterion.id, { conditions: [...criterion.conditions, emptyCondition()] })}>{t_i18n('Add a condition')}</Button>
+              </Box>
+              {criterion.conditions.map((condition) => (
+                <SubCard key={condition.id} onDelete={() => setCriterion(criterion.id, { conditions: criterion.conditions.filter((k) => k.id !== condition.id) })}>
+                  <Row columns="1fr 1fr">
+                    <Input label={t_i18n('Condition')} value={condition.name} onChange={(e) => setCondition(criterion, condition.id, { name: e.target.value })} />
+                    <IrMultiSelect
+                      label={t_i18n('Applies to (empty = every type of the criterion)')}
+                      values={condition.applies_to_types}
+                      options={typeOptions}
+                      onChange={(v) => setCondition(criterion, condition.id, { applies_to_types: v })}
+                    />
+                  </Row>
+                  <GroupLinkFields
+                    value={condition.link}
+                    onChange={(link) => setCondition(criterion, condition.id, { link })}
+                    relationshipOptions={relationshipOptions}
+                    groupOptions={entityGroupOptions}
+                  />
+                  <Text as="div" variant="content-caption" style={{ marginBottom: 8, opacity: 0.8 }}>{t_i18n('The entity matches these filters')}</Text>
+                  <IrFilterBuilder value={condition.filters} onChange={(filters) => setCondition(criterion, condition.id, { filters })} />
+                  <PathConditionFields
+                    value={condition.path_condition}
+                    onChange={(path_condition) => setCondition(criterion, condition.id, { path_condition })}
+                    relationshipOptions={relationshipOptions}
+                    directionOptions={directionOptions}
+                    groupOptions={entityGroupOptions}
+                  />
+                </SubCard>
+              ))}
+            </Box>
           </SubCard>
         ))}
       </Block>
@@ -285,19 +404,14 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
       <Block
         step={4}
         title={t_i18n('Relevance')}
-        subtitle={t_i18n('scoring rules: applies to · if · then ± points')}
+        subtitle={t_i18n('scoring rules: rank the entities of the requirement (applies to · if · then ± points)')}
         action={<Button variant="secondary" size="small" onClick={() => set({ rules: [...draft.rules, emptyRule()] })}>{t_i18n('Add a rule')}</Button>}
       >
         {draft.rules.map((rule) => (
-          <SubCard key={rule.id} highlight={rule.required} onDelete={() => set({ rules: draft.rules.filter((r) => r.id !== rule.id) })}>
-            <Row columns="2fr 0.6fr 1fr 1fr">
+          <SubCard key={rule.id} onDelete={() => set({ rules: draft.rules.filter((r) => r.id !== rule.id) })}>
+            <Row columns="2fr 0.6fr 1fr">
               <Input label={t_i18n('Rule name')} value={rule.name} onChange={(e) => setRule(rule.id, { name: e.target.value })} />
               <Input label={t_i18n('Points')} type="number" value={String(rule.points)} onChange={(e) => setRule(rule.id, { points: Number.parseInt(e.target.value || '0', 10) })} />
-              <Checkbox
-                label={t_i18n('Required (excludes if not met)')}
-                checked={rule.required}
-                onCheckedChange={(checked) => setRule(rule.id, { required: checked === true })}
-              />
               <Switch label={t_i18n('Enabled')} checked={rule.enabled} onCheckedChange={(checked) => setRule(rule.id, { enabled: checked })} />
             </Row>
             <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('Applies to')}</Text>
@@ -311,39 +425,20 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId }: Intell
               />
             </Row>
             <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('If')}</Text>
+            <GroupLinkFields
+              value={rule.link}
+              onChange={(link) => setRule(rule.id, { link })}
+              relationshipOptions={relationshipOptions}
+              groupOptions={entityGroupOptions}
+            />
             <IrFilterBuilder value={rule.filters} onChange={(filters) => setRule(rule.id, { filters })} />
-            <Box sx={{ mt: 2 }}>
-              <Checkbox
-                label={t_i18n('Path condition: linked to an entity that has a relationship toward…')}
-                checked={!!rule.path_condition}
-                onCheckedChange={(checked) => setRule(rule.id, { path_condition: checked === true ? emptyPathCondition() : null })}
-              />
-            </Box>
-            {rule.path_condition && (
-              <Box sx={{ mt: 1.5 }}>
-                <Row columns="1fr 1fr 1fr">
-                  <IrMultiSelect
-                    label={t_i18n('Linked by')}
-                    values={rule.path_condition.relationship_types}
-                    options={relationshipOptions}
-                    onChange={(v) => setRule(rule.id, { path_condition: { ...rule.path_condition!, relationship_types: v } })}
-                  />
-                  <IrSelect
-                    label={t_i18n('Direction')}
-                    value={rule.path_condition.direction}
-                    options={directionOptions}
-                    onChange={(v) => setRule(rule.id, { path_condition: { ...rule.path_condition!, direction: v as IrCriterionDraft['direction'] } })}
-                  />
-                  <IrSelect
-                    label={t_i18n('to an entity that')}
-                    value={rule.path_condition.target_relationship_type}
-                    options={relationshipOptions}
-                    onChange={(v) => setRule(rule.id, { path_condition: { ...rule.path_condition!, target_relationship_type: v } })}
-                  />
-                </Row>
-                <IrEntityPicker label={t_i18n('one of')} value={rule.path_condition.targets} onChange={(targets) => setRule(rule.id, { path_condition: { ...rule.path_condition!, targets } })} />
-              </Box>
-            )}
+            <PathConditionFields
+              value={rule.path_condition}
+              onChange={(path_condition) => setRule(rule.id, { path_condition })}
+              relationshipOptions={relationshipOptions}
+              directionOptions={directionOptions}
+              groupOptions={entityGroupOptions}
+            />
           </SubCard>
         ))}
       </Block>
