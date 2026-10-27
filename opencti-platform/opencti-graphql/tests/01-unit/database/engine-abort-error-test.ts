@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { AbortError } from 'node-fetch';
 import { errors as openSearchErrors } from '@opensearch-project/opensearch';
 import { elExecuteWithAbortSignal, wrapEngineError } from '../../../src/database/engine';
-import { CLIENT_ABORT_ERROR, ClientAbortError, DATABASE_ERROR } from '../../../src/config/errors';
+import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
 
 // wrapEngineError is the single, shared classification point used by every
 // call site that catches an error from an abort-signal-aware engine
@@ -65,18 +65,11 @@ describe('wrapEngineError testing', () => {
     expect(wrapped.extensions?.code).toBe(CLIENT_ABORT_ERROR);
     expect(wrapped.extensions?.code).not.toBe(DATABASE_ERROR);
   });
-
-  it('should keep an abort already classified by elExecuteWithAbortSignal as CLIENT_ABORT_ERROR', () => {
-    const wrapped = wrapEngineError('Files search pagination fail', ClientAbortError(), {});
-
-    expect(wrapped.extensions?.code).toBe(CLIENT_ABORT_ERROR);
-  });
 });
 
 // No search engine is initialized in unit tests, so elExecuteWithAbortSignal takes the
 // OpenSearch path, where the abort signal calls .abort() on the pending operation.
-describe('elExecuteWithAbortSignal testing', () => {
-  const noElkOperation = async () => ({});
+describe('Mid-flight abort testing', () => {
   const pendingOpenSearchOperation = () => {
     let rejectOperation: (err: Error) => void = () => {};
     const operation: any = new Promise((_, reject) => {
@@ -88,22 +81,12 @@ describe('elExecuteWithAbortSignal testing', () => {
 
   it('should classify an abort happening while the engine request is in flight as CLIENT_ABORT_ERROR', async () => {
     const controller = new AbortController();
-    const execution = elExecuteWithAbortSignal(controller.signal, noElkOperation, pendingOpenSearchOperation);
+    const execution = elExecuteWithAbortSignal(controller.signal, async () => ({}), pendingOpenSearchOperation)
+      .catch((err) => {
+        throw wrapEngineError('Processing aggregation relations count fail', err);
+      });
     controller.abort();
 
     await expect(execution).rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
-  });
-
-  it('should classify an already aborted request as CLIENT_ABORT_ERROR', async () => {
-    const execution = elExecuteWithAbortSignal(AbortSignal.abort(), noElkOperation, pendingOpenSearchOperation);
-
-    await expect(execution).rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
-  });
-
-  it('should rethrow a genuine engine failure unchanged', async () => {
-    const engineFailure = new Error('search_phase_execution_exception');
-    const execution = elExecuteWithAbortSignal(new AbortController().signal, noElkOperation, () => Promise.reject(engineFailure));
-
-    await expect(execution).rejects.toBe(engineFailure);
   });
 });

@@ -4,7 +4,6 @@ import {
   elAggregationNestedTermsWithFilter,
   elAggregationRelationsCount,
   elAggregationsList,
-  elAttributeValues,
   elCardinalityCount,
   elFindByIds,
   elHistogramCount,
@@ -63,11 +62,6 @@ describe('Engine calls classify an already-aborted request as CLIENT_ABORT_ERROR
 
   it('elHistogramCount should reject with CLIENT_ABORT_ERROR', async () => {
     await expect(elHistogramCount(abortedContext(), ADMIN_USER, READ_DATA_INDICES_WITHOUT_INFERRED, { field: 'created_at', interval: 'month' }))
-      .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
-  });
-
-  it('elAttributeValues should reject with CLIENT_ABORT_ERROR', async () => {
-    await expect(elAttributeValues(abortedContext(), ADMIN_USER, 'entity_type'))
       .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
   });
 

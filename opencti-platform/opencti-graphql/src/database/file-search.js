@@ -30,7 +30,6 @@ import {
   elRawUpdateByQuery,
   ES_MINIMUM_FIXED_PAGINATION,
   isTransitoryNonCircuitBreakingError,
-  wrapEngineError,
 } from './engine';
 
 const buildIndexFileBody = (documentId, file, entity = null) => {
@@ -265,7 +264,7 @@ export const elSearchFiles = async (context, user, options = {}) => {
       return buildFilesSearchResult(data, first, body.search_after, connectionFormat, includeContent);
     })
     .catch((err) => {
-      throw wrapEngineError('Files search pagination fail', err, { query });
+      throw DatabaseError('Files search pagination fail', { cause: err, query });
     });
 };
 

@@ -50,7 +50,6 @@ import {
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
 import {
-  CLIENT_ABORT_ERROR,
   ClientAbortError,
   ComplexSearchError,
   ConfigurationError,
@@ -494,19 +493,12 @@ export const searchEngineInit = async (): Promise<boolean> => {
 };
 export const isRuntimeSortEnable = (): boolean => isRuntimeSortingEnable;
 
-// covers both engine clients: node-fetch's AbortError (ElkClient) and
-// OpenSearch's RequestAbortedError, and an abort already classified by elExecuteWithAbortSignal.
-export const isClientAbortError = (err: any): boolean => {
-  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError'
-    || err?.extensions?.code === CLIENT_ABORT_ERROR;
-};
-
 /**
  * Executes an engine operation with proper abort signal handling for both ElkClient and OpenSearch.
  * - ElkClient: passes the signal as an option natively.
  * - OpenSearch: manually hooks up the abort signal to call .abort() on the promise.
  */
-const elExecuteAbortableOperation = async (
+export const elExecuteWithAbortSignal = async (
   abortSignal: AbortSignal | undefined,
   elkOperation: (opts: { signal: AbortSignal | undefined }) => Promise<any>,
   openSearchOperation: () => Promise<any>,
@@ -533,20 +525,6 @@ const elExecuteAbortableOperation = async (
     if (abortSignal) {
       abortSignal.removeEventListener('abort', abortRequest);
     }
-  }
-};
-
-// A client abort is classified once here, so that every engine call sharing the request signal reports it
-// as a CLIENT_ABORT_ERROR, even when its caller does not catch the error.
-export const elExecuteWithAbortSignal = async (
-  abortSignal: AbortSignal | undefined,
-  elkOperation: (opts: { signal: AbortSignal | undefined }) => Promise<any>,
-  openSearchOperation: () => Promise<any>,
-): Promise<any> => {
-  try {
-    return await elExecuteAbortableOperation(abortSignal, elkOperation, openSearchOperation);
-  } catch (err) {
-    throw isClientAbortError(err) ? ClientAbortError(undefined, { cause: err }) : err;
   }
 };
 
@@ -628,6 +606,12 @@ export const isTransitoryError = (error: any): boolean => {
 // payload itself may trip the breaker (e.g. large attachments): replaying them would only add memory pressure.
 export const isTransitoryNonCircuitBreakingError = (error: any): boolean => {
   return !isCircuitBreakingError(error) && isTransitoryError(error);
+};
+
+// covers both engine clients: node-fetch's AbortError (ElkClient) and
+// OpenSearch's RequestAbortedError.
+export const isClientAbortError = (err: any): boolean => {
+  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
 };
 
 // Use this instead of throwing DatabaseError directly when catching an error
@@ -3515,11 +3499,15 @@ export const elHistogramCount = async (
     body,
   };
   logApp.debug('[SEARCH] histogramCount', { query });
-  return elRawSearch(context, user, types, query).then((data) => {
-    const { buckets } = data.aggregations.count_over_time;
-    const dataToPairs = R.toPairs(buckets);
-    return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
-  });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const { buckets } = data.aggregations.count_over_time;
+      const dataToPairs = R.toPairs(buckets);
+      return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
+    })
+    .catch((err) => {
+      throw wrapEngineError('Histogram computation count fail', err, { query });
+    });
 };
 type AggregationCountOpts = QueryBodyBuilderOpts & {
   field: string;
