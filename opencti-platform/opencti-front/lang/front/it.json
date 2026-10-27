@@ -19,6 +19,7 @@
   "Password reset code expired or not found. Please request a new one.": "Il codice di reimpostazione della password è scaduto o non è stato trovato. Richiederne uno nuovo.",
   "This password has already been used recently. Please choose a different one.": "Questa password è già stata utilizzata di recente. Sceglierne un'altra.",
   "Too many password change attempts. Please try again in a few minutes.": "Troppi tentativi di modifica della password. Riprovare tra qualche minuto.",
+  "In Community Edition, a mandatory custom field can only be made optional": "Nell'edizione Community, un campo personalizzato obbligatorio può solo essere reso facoltativo",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "Selezionando “Sì, sempre” si salva una preferenza. Lo strumento verrà quindi eseguito senza chiedere conferma — anche durante le esecuzioni pianificate a cui nessuno sta assistendo — finché non si revoca l’autorizzazione.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Fare clic per visualizzare tutte le nuove risorse dell'Hub",
   "(no output)": "(nessun output)",

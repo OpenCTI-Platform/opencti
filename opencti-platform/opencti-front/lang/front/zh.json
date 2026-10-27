@@ -19,6 +19,7 @@
   "Password reset code expired or not found. Please request a new one.": "密码重置代码已过期或未找到。请重新申请。",
   "This password has already been used recently. Please choose a different one.": "此密码最近已使用过。请选择其他密码。",
   "Too many password change attempts. Please try again in a few minutes.": "密码更改尝试次数过多。请几分钟后重试。",
+  "In Community Edition, a mandatory custom field can only be made optional": "在 Community Edition 中，必填的自定义字段只能改为可选",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“是，始终”会为您保存该偏好设置。此后，该工具将无需再次询问即可运行——包括在无人监视的定时运行中——直到您撤销该授权为止。",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) 点击查看中枢上的所有新资源",
   "(no output)": "（无输出）",

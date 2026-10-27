@@ -19,6 +19,7 @@
   "Password reset code expired or not found. Please request a new one.": "Password reset code expired or not found. Please request a new one.",
   "This password has already been used recently. Please choose a different one.": "This password has already been used recently. Please choose a different one.",
   "Too many password change attempts. Please try again in a few minutes.": "Too many password change attempts. Please try again in a few minutes.",
+  "In Community Edition, a mandatory custom field can only be made optional": "In Community Edition, a mandatory custom field can only be made optional",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Click to view all the new resources on the Hub",
   "(no output)": "(no output)",

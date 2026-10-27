@@ -19,6 +19,7 @@
   "Password reset code expired or not found. Please request a new one.": "비밀번호 재설정 코드가 만료되었거나 찾을 수 없습니다. 새 코드를 요청하세요.",
   "This password has already been used recently. Please choose a different one.": "이 비밀번호는 최근에 이미 사용되었습니다. 다른 비밀번호를 선택하세요.",
   "Too many password change attempts. Please try again in a few minutes.": "비밀번호 변경 시도 횟수가 너무 많습니다. 몇 분 후에 다시 시도하세요.",
+  "In Community Edition, a mandatory custom field can only be made optional": "Community Edition에서는 필수 사용자 정의 필드를 선택 사항으로만 변경할 수 있습니다",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“예, 항상”을 선택하면 해당 설정이 저장됩니다. 그러면 사용자가 권한을 철회할 때까지, 아무도 지켜보지 않는 예약된 실행 시에도 해당 도구는 별도의 확인 요청 없이 실행됩니다.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) 허브의 모든 새 리소스를 보려면 클릭하세요",
   "(no output)": "(출력 없음)",
