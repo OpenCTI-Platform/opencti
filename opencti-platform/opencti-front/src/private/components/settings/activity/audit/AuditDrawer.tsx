@@ -10,6 +10,8 @@ import ChangesTable, { Change } from '../../../../../components/common/table/Cha
 import { useFormatter } from '../../../../../components/i18n';
 import { useGenerateAuditMessage } from '../../../../../utils/history';
 import useAuth from '../../../../../utils/hooks/useAuth';
+import useGranted, { BYPASS } from '../../../../../utils/hooks/useGranted';
+import { APP_BASE_PATH } from '../../../../../relay/environment';
 import { AuditDrawerQuery } from './__generated__/AuditDrawerQuery.graphql';
 import MarkdownDisplay from '../../../../../components/markdownDisplay/MarkdownDisplay';
 
@@ -35,6 +37,7 @@ const auditDrawerQuery = graphql`
       }
       raw_data
       context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
+        file_id
         entity_id
         entity_type
         entity_name
@@ -54,6 +57,7 @@ const auditDrawerQuery = graphql`
 const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => {
   const { t_i18n } = useFormatter();
   const { tz, locale, unitSystem } = useAuth();
+  const isBypass = useGranted([BYPASS]);
   const variables = { id: logId, tz, locale, unit_system: unitSystem };
   const data = useLazyLoadQuery<AuditDrawerQuery>(auditDrawerQuery, variables);
   const log = data.audit;
@@ -96,6 +100,14 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
         <div>
           <Label>{t_i18n('Instance context')}</Label>
           <Link to={log.context_uri}>{t_i18n('View the element')}</Link>
+        </div>
+      )}
+
+      {/* The file of an import report is BYPASS only, while the activity is readable with a lower capability */}
+      {isBypass && log.context_data?.file_id && (
+        <div>
+          <Label>{t_i18n('Import report')}</Label>
+          <a href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(log.context_data.file_id)}`}>{t_i18n('Download report')}</a>
         </div>
       )}
 

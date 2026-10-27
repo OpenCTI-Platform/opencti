@@ -54,6 +54,7 @@ describe('ConfigPresetExportFooter', () => {
     expect(screen.getByText('Set up your platform')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Skip' }));
     expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
-    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+    // Nothing is written: only the import session was read
+    expect(relayEnv.mock.getAllOperations().map((operation) => operation.request.node.operation.name)).not.toContain('ConfigPresetWizardSkipMutation');
   });
 });

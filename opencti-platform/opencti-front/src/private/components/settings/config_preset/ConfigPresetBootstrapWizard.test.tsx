@@ -70,7 +70,7 @@ describe('ConfigPresetBootstrapWizard', () => {
     await user.click(screen.getByRole('button', { name: 'Skip' }));
     expect(screen.queryByText('Set up your platform')).not.toBeInTheDocument();
     await act(async () => {
-      expect(relayEnv.mock.getAllOperations()).toHaveLength(1);
+      expect(relayEnv.mock.getAllOperations().map((operation) => operation.request.node.operation.name)).toContain('ConfigPresetWizardSkipMutation');
     });
   });
 });

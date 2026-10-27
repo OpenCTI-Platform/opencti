@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen, within } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import ConfigPresetWizard from './ConfigPresetWizard';
 
@@ -11,13 +11,11 @@ describe('ConfigPresetWizard', () => {
     onClose.mockReset();
   });
 
-  it('shows the two choices disabled, the import one with its test id', () => {
-    testRender(<ConfigPresetWizard mode="auto" onClose={onClose} />);
+  it('shows the import steps by default, inside the dialog', () => {
+    const { relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose} />);
     expect(screen.getByText('Set up your platform')).toBeInTheDocument();
-    expect(screen.getByTestId('config-preset-wizard-import')).toHaveTextContent('Import a configuration');
-    expect(within(screen.getByTestId('config-preset-wizard-import')).getByRole('button')).toBeDisabled();
-    expect(within(screen.getByTestId('config-preset-wizard-template')).getByRole('button')).toBeDisabled();
-    expect(screen.getByText('Coming later')).toBeInTheDocument();
+    // The step is derived from the import session of the user
+    expect(relayEnv.mock.getAllOperations().map((operation) => operation.request.node.operation.name)).toEqual(['ConfigPresetImportWizardQuery']);
   });
 
   it('renders the step it is given instead of the welcome choices', () => {
@@ -27,7 +25,7 @@ describe('ConfigPresetWizard', () => {
   });
 
   it.each(['Skip', 'Close'])('stores the skip on the user with %s in auto mode', async (name) => {
-    const { user, relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose} />);
+    const { user, relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose}><div /></ConfigPresetWizard>);
     await user.click(screen.getByRole('button', { name }));
     const [operation] = relayEnv.mock.getAllOperations();
     expect(operation.request.node.operation.name).toEqual('ConfigPresetWizardSkipMutation');
@@ -36,7 +34,7 @@ describe('ConfigPresetWizard', () => {
   });
 
   it('closes anyway when the skip write fails', async () => {
-    const { user, relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose} />);
+    const { user, relayEnv } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose}><div /></ConfigPresetWizard>);
     await user.click(screen.getByRole('button', { name: 'Skip' }));
     await act(async () => {
       relayEnv.mock.rejectMostRecentOperation({ res: { errors: [{ message: 'write failed' }] } } as unknown as Error);
@@ -45,14 +43,14 @@ describe('ConfigPresetWizard', () => {
   });
 
   it('writes nothing in manual mode', async () => {
-    const { user, relayEnv } = testRender(<ConfigPresetWizard mode="manual" onClose={onClose} />);
+    const { user, relayEnv } = testRender(<ConfigPresetWizard mode="manual" onClose={onClose}><div /></ConfigPresetWizard>);
     await user.click(screen.getByRole('button', { name: 'Skip' }));
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('does not close on Escape', async () => {
-    const { user } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose} />);
+    const { user } = testRender(<ConfigPresetWizard mode="auto" onClose={onClose}><div /></ConfigPresetWizard>);
     await user.keyboard('{Escape}');
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.getByText('Set up your platform')).toBeInTheDocument();
