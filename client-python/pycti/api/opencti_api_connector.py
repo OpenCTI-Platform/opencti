@@ -16,6 +16,10 @@ def _is_errors_field_rejected(error: ValueError) -> bool:
     return any(message in reason for message in _ERRORS_FIELD_REJECTED_MESSAGES)
 
 
+def _without_errors(connector_info: Dict) -> Dict:
+    return {key: value for key, value in connector_info.items() if key != "errors"}
+
+
 class OpenCTIApiConnector:
     """OpenCTI Connector API class.
 
@@ -32,6 +36,8 @@ class OpenCTIApiConnector:
         :type api: OpenCTIApiClient
         """
         self.api = api
+        # Learnt on the first rejection: until a restart, errors are no longer sent to this platform
+        self._errors_supported = True
 
     def read(self, connector_id: str) -> Dict:
         """Read the connector and its details.
@@ -147,6 +153,10 @@ class OpenCTIApiConnector:
                 }
             }
            """
+        sends_errors = bool(connector_info) and "errors" in connector_info
+        if sends_errors and not self._errors_supported:
+            connector_info = _without_errors(connector_info)
+            sends_errors = False
         variables = {
             "id": connector_id,
             "state": json.dumps(connector_state),
@@ -155,22 +165,16 @@ class OpenCTIApiConnector:
         try:
             result = self.api.query(query, variables)
         except ValueError as e:
-            if (
-                not connector_info
-                or not connector_info.get("errors")
-                or not _is_errors_field_rejected(e)
-            ):
+            if not sends_errors or not _is_errors_field_rejected(e):
                 raise
             # Platforms older than errors support reject the field: the ping itself must still go through.
+            self._errors_supported = False
             self.api.app_logger.warning(
-                "Ping rejected with connector errors, retrying without them",
+                "Platform does not support connector errors, they are no longer sent",
                 {"reason": str(e)},
             )
-            connector_info_without_errors = {
-                key: value for key, value in connector_info.items() if key != "errors"
-            }
             result = self.api.query(
-                query, {**variables, "connectorInfo": connector_info_without_errors}
+                query, {**variables, "connectorInfo": _without_errors(connector_info)}
             )
         return result["data"]["pingConnector"]
 

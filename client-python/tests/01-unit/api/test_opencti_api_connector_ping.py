@@ -125,3 +125,33 @@ def test_ping_does_not_drop_errors_on_unrelated_failure(failure):
         OpenCTIApiConnector(api).ping("connector-id", {}, CONNECTOR_INFO_WITH_ERRORS)
     assert api.query.call_count == 1
     api.app_logger.warning.assert_not_called()
+
+
+def test_ping_remembers_the_rejection_and_stops_sending_errors():
+    api = MagicMock()
+    api.query.side_effect = [
+        graphql_error(GRAPHQL_17_REJECTION),
+        PING_RESULT,
+        PING_RESULT,
+    ]
+    connector_api = OpenCTIApiConnector(api)
+
+    connector_api.ping("connector-id", {}, CONNECTOR_INFO_WITH_ERRORS)
+    connector_api.ping("connector-id", {}, CONNECTOR_INFO_WITH_ERRORS)
+
+    assert api.query.call_count == 3
+    assert sent_connector_info(api, 2) == CONNECTOR_INFO
+    api.app_logger.warning.assert_called_once()
+
+
+@pytest.mark.parametrize("errors", [[], None], ids=["empty-list", "null"])
+def test_ping_retries_without_an_empty_or_null_errors_field(errors):
+    api = MagicMock()
+    api.query.side_effect = [graphql_error(GRAPHQL_16_REJECTION), PING_RESULT]
+
+    OpenCTIApiConnector(api).ping(
+        "connector-id", {}, {**CONNECTOR_INFO, "errors": errors}
+    )
+
+    assert api.query.call_count == 2
+    assert sent_connector_info(api, 1) == CONNECTOR_INFO

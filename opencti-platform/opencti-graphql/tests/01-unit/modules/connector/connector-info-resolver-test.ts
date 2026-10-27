@@ -18,17 +18,13 @@ describe('ConnectorInfo errors resolution', () => {
     vi.mocked(redisGetConnectorErrors).mockReset();
   });
 
-  it('should pass the connector id to connector_info without reading the errors', () => {
+  it('should resolve connector_info without reading the errors', () => {
     expect(connectorInfoResolver({ internal_id: 'connector-1', connector_info: connectorInfo })).toEqual({ ...connectorInfo, connector_id: 'connector-1' });
     expect(redisGetConnectorErrors).not.toHaveBeenCalled();
   });
 
-  it('should resolve no connector_info for a connector that never sent it', () => {
-    expect(connectorInfoResolver({ internal_id: 'connector-1' })).toBeNull();
-  });
-
   it('should read the errors of the connector only when they are requested', async () => {
-    vi.mocked(redisGetConnectorErrors).mockResolvedValue([{ code: 'API_UNREACHABLE', message: '503', criticity: 2, last_seen_at: Date.now() }]);
+    vi.mocked(redisGetConnectorErrors).mockResolvedValue([{ code: 'API_UNREACHABLE', message: '503', criticity: 2 }]);
 
     expect(await errorsResolver({ ...connectorInfo, connector_id: 'connector-1' })).toEqual([{ code: 'API_UNREACHABLE', message: '503', criticity: 2 }]);
     expect(redisGetConnectorErrors).toHaveBeenCalledWith('connector-1');

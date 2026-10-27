@@ -3,7 +3,7 @@ import { pingConnector, resetStateConnector } from '../../../src/modules/connect
 import { patchAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { registerConnectorQueues, purgeConnectorQueues } from '../../../src/modules/connector/connector-rabbitmq';
-import { redisGetConnectorErrors, redisSaveConnectorErrors } from '../../../src/modules/connector/connector-redis';
+import { redisSetConnectorErrors } from '../../../src/modules/connector/connector-redis';
 import { logApp } from '../../../src/config/conf';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
@@ -50,8 +50,7 @@ vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal)
   ...(await importOriginal<typeof import('../../../src/modules/connector/connector-redis')>()),
   redisSetConnectorHeartbeat: vi.fn(),
   redisGetConnectorHeartbeat: vi.fn().mockResolvedValue(null),
-  redisGetConnectorErrors: vi.fn(),
-  redisSaveConnectorErrors: vi.fn(),
+  redisSetConnectorErrors: vi.fn(),
 }));
 
 vi.mock('../../../src/listener/UserActionListener', () => ({
@@ -155,55 +154,42 @@ describe('pingConnector errors', () => {
     vi.clearAllMocks();
     vi.mocked(storeLoadById).mockReset();
     vi.mocked(patchAttribute).mockReset();
-    vi.mocked(redisGetConnectorErrors).mockReset();
-    vi.mocked(redisSaveConnectorErrors).mockReset();
+    vi.mocked(redisSetConnectorErrors).mockReset();
     vi.mocked(registerConnectorQueues).mockResolvedValue(undefined as never);
-    vi.mocked(redisGetConnectorErrors).mockResolvedValue([]);
     vi.mocked(storeLoadById).mockResolvedValueOnce({ ...baseConnector } as never);
     vi.mocked(patchAttribute).mockResolvedValueOnce({ element: { ...baseConnector } } as never);
   });
 
-  it('should record sanitized errors in redis and not in elasticsearch', async () => {
+  it('should replace the recorded errors with the sanitized list, in redis and not in elasticsearch', async () => {
     await pingConnector(testContext, testUser, 'connector-1', 'state', connectorInfo);
 
-    expect(redisSaveConnectorErrors).toHaveBeenCalledWith('connector-1', [
-      { code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 2, last_seen_at: expect.any(Number) },
-      { code: 'RATE_LIMITED', message: 'Too many requests', criticity: 1, last_seen_at: expect.any(Number) },
-    ], []);
+    expect(redisSetConnectorErrors).toHaveBeenCalledWith('connector-1', [
+      { code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 2 },
+      { code: 'RATE_LIMITED', message: 'Too many requests', criticity: 1 },
+    ]);
     const patch = vi.mocked(patchAttribute).mock.calls[0][4] as { connector_info: Record<string, unknown> };
     expect(patch.connector_info).not.toHaveProperty('errors');
   });
 
-  it('should merge reported errors with the stored ones', async () => {
-    const stored = { code: 'PREVIOUS', message: 'From a previous ping', criticity: 3, last_seen_at: Date.now() - 1000 };
-    vi.mocked(redisGetConnectorErrors).mockResolvedValue([stored]);
+  it('should clear the recorded errors on an explicit empty list', async () => {
+    await pingConnector(testContext, testUser, 'connector-1', 'state', { ...baseConnectorInfo, errors: [] });
 
-    await pingConnector(testContext, testUser, 'connector-1', 'state', connectorInfo);
-
-    const [, kept, removedCodes] = vi.mocked(redisSaveConnectorErrors).mock.calls[0];
-    expect(kept.map(({ code }) => code)).toEqual(['PREVIOUS', 'API_UNREACHABLE', 'RATE_LIMITED']);
-    expect(removedCodes).toEqual([]);
+    expect(redisSetConnectorErrors).toHaveBeenCalledWith('connector-1', []);
   });
 
   it.each([
-    ['without errors', baseConnectorInfo],
-    ['with only invalid errors', { ...baseConnectorInfo, errors: [{ code: '   ', message: 'blank code', criticity: 1 }] }],
-  ])('should not touch the recorded errors on a ping %s', async (_, info) => {
-    await pingConnector(testContext, testUser, 'connector-1', 'state', info);
+    ['without an errors list', baseConnectorInfo],
+    ['with a null errors list', { ...baseConnectorInfo, errors: null }],
+    ['without connector info (legacy ping)', undefined],
+  ])('should leave the recorded errors untouched on a ping %s', async (_, info) => {
+    await pingConnector(testContext, testUser, 'connector-1', 'state', info as never);
 
-    expect(redisGetConnectorErrors).not.toHaveBeenCalled();
-    expect(redisSaveConnectorErrors).not.toHaveBeenCalled();
-  });
-
-  it('should leave the recorded errors untouched on a legacy ping without connector info', async () => {
-    await pingConnector(testContext, testUser, 'connector-1', 'state', undefined as never);
-
-    expect(redisSaveConnectorErrors).not.toHaveBeenCalled();
+    expect(redisSetConnectorErrors).not.toHaveBeenCalled();
   });
 
   it('should not fail the ping when errors cannot be recorded', async () => {
     const warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
-    vi.mocked(redisGetConnectorErrors).mockRejectedValueOnce(new Error('redis down'));
+    vi.mocked(redisSetConnectorErrors).mockRejectedValueOnce(new Error('redis down'));
 
     const result = await pingConnector(testContext, testUser, 'connector-1', 'state', connectorInfo);
 

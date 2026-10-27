@@ -1,12 +1,13 @@
 import logging
 from unittest.mock import MagicMock
 
+import pytest
+
 from pycti.connector.opencti_connector_helper import (
     CONNECTOR_ERROR_CODE_MAX_LENGTH,
     CONNECTOR_ERROR_MESSAGE_MAX_LENGTH,
     CONNECTOR_ERRORS_MAX_COUNT,
     ConnectorInfo,
-    ConnectorRunError,
     PingAlive,
 )
 
@@ -35,12 +36,39 @@ def test_errors_from_constructor_are_copied():
     assert info.errors == [API_ERROR]
 
 
-def test_sent_errors_coerce_field_types():
+def test_sent_errors_coerce_field_types_of_assigned_errors():
     info = ConnectorInfo()
-    info.add_error(404, None, 1)
+    info.errors = [{"code": 404, "message": None, "criticity": 1}]
     assert info.all_details["errors"] == [
         {"code": "404", "message": "", "criticity": 1}
     ]
+
+
+@pytest.mark.parametrize(
+    "code, message, criticity",
+    [
+        (404, "m", 1),
+        ("A", None, 1),
+        ("A", "m", "2"),
+        ("A", "m", True),
+        ("A", "m", 2**31),
+    ],
+    ids=["int-code", "none-message", "str-criticity", "bool-criticity", "out-of-int"],
+)
+def test_add_error_ignores_an_invalid_error_with_a_warning(code, message, criticity):
+    logger = MagicMock()
+    info = ConnectorInfo(logger=logger)
+    info.add_error(code, message, criticity)
+    assert info.errors == []
+    assert "errors" not in info.all_details
+    logger.warning.assert_called_once()
+    assert logger.warning.call_args.args[0] == "Malformed error ignored by add_error"
+
+
+def test_add_error_without_logger_ignores_an_invalid_error_silently():
+    info = ConnectorInfo()
+    info.add_error("A", "m", "2")
+    assert info.errors == []
 
 
 def test_sent_errors_trim_and_truncate_strings():
@@ -87,11 +115,11 @@ def test_sent_errors_keep_most_critical_up_to_the_limit():
     assert sent_errors[-1]["code"] == f"LOW_{CONNECTOR_ERRORS_MAX_COUNT - 2}"
 
 
-def test_non_iterable_errors_are_not_sent():
+def test_non_iterable_errors_are_sent_as_an_empty_list():
     info = ConnectorInfo()
     info.errors = [API_ERROR]
     info._errors = 42
-    assert "errors" not in info.all_details
+    assert info.all_details["errors"] == []
 
 
 def test_errors_setter_replaces_and_accepts_none():
@@ -106,7 +134,7 @@ def test_clear_errors():
     info = ConnectorInfo(errors=[API_ERROR, RATE_ERROR])
     info.clear_errors()
     assert info.errors == []
-    assert "errors" not in info.all_details
+    assert info.all_details["errors"] == []
 
 
 def test_all_details_errors_is_a_snapshot():
@@ -165,11 +193,6 @@ def test_ping_alive_does_not_log_errors_on_each_ping():
 
     connector_logger.info.assert_not_called()
     connector_logger.error.assert_not_called()
-
-
-def test_connector_run_error_objects_are_sent():
-    info = ConnectorInfo(errors=[ConnectorRunError.model_validate(API_ERROR)])
-    assert info.all_details["errors"] == [API_ERROR]
 
 
 def test_sent_errors_keep_the_last_report_of_a_repeated_code():

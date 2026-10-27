@@ -9,7 +9,6 @@ import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../../
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import {
-  CONNECTOR_ERRORS_TTL_SECONDS,
   type ConnectorHealthMetrics,
   redisDeleteConnectorErrors,
   redisDeleteConnectorHeartbeat,
@@ -19,7 +18,7 @@ import {
   redisGetConnectorLogs,
   redisGetConnectorsHeartbeats,
   redisGetManagedConnectorAutoUpgradeStatus,
-  redisSaveConnectorErrors,
+  redisSetConnectorErrors,
   redisSetConnectorHealthMetrics,
   redisSetConnectorHeartbeat,
   redisSetConnectorLogs,
@@ -45,7 +44,7 @@ import type {
   CachedConnector,
   ConnectorInfo,
   ConnectorInfoError,
-  StoredConnectorInfoError,
+  ResolvedConnectorInfo,
   StoreEntityConnector,
   StoreEntityConnectorManager,
 } from './connector-types';
@@ -631,39 +630,36 @@ export const CONNECTOR_ERRORS_MAX_COUNT = 20;
 export const CONNECTOR_ERROR_CODE_MAX_LENGTH = 256;
 export const CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024;
 
-// Truncate on code points so a cut never leaves a lone surrogate that the engine would reject.
+// Truncate on code points so a cut never splits a character in two.
 const truncate = (value: string, maxLength: number) => Array.from(value.trim()).slice(0, maxLength).join('');
 
-const invalidConnectorErrorReason = ({ code, criticity }: ConnectorInfoError) => {
-  if (code.length === 0) {
-    return 'blank code';
-  }
-  if (!Number.isInteger(criticity)) {
-    return 'non-integer criticity';
-  }
-  return undefined;
-};
-
 // Errors are only reported by the connector: invalid entries are dropped, never thrown, so ping keeps working.
-export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null | undefined, connectorId?: string): ConnectorInfoError[] => {
-  const validErrors = (errors ?? [])
+// GraphQL already enforces the field types, only a blank code can be invalid.
+export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[], connectorId?: string): ConnectorInfoError[] => {
+  const validErrors = errors
     .map(({ code, message, criticity }) => ({
-      code: truncate(code ?? '', CONNECTOR_ERROR_CODE_MAX_LENGTH),
-      message: truncate(message ?? '', CONNECTOR_ERROR_MESSAGE_MAX_LENGTH),
+      code: truncate(code, CONNECTOR_ERROR_CODE_MAX_LENGTH),
+      message: truncate(message, CONNECTOR_ERROR_MESSAGE_MAX_LENGTH),
       criticity,
     }))
     .filter((error) => {
-      const reason = invalidConnectorErrorReason(error);
-      if (reason) {
-        logApp.info('[CONNECTOR] Invalid error reported on ping, entry dropped', { connectorId, reason, code: error.code, criticity: error.criticity });
+      if (error.code.length === 0) {
+        logApp.debug('[OPENCTI-MODULE] Connector error with a blank code reported on ping, entry dropped', { connectorId, criticity: error.criticity });
+        return false;
       }
-      return reason === undefined;
+      return true;
     });
-  // Errors are merged by code, the last report wins: deduplicated before ranking so a repeated code takes a single slot
+  // A repeated code takes a single slot, its last report wins
   const lastErrorByCode = new Map<string, ConnectorInfoError>();
   validErrors.forEach((error) => lastErrorByCode.set(error.code, error));
-  // Not limited here: a dropped update would let the stored report of its code win the merge, which applies the limit
-  return [...lastErrorByCode.values()].sort((a, b) => b.criticity - a.criticity);
+  return [...lastErrorByCode.values()]
+    .sort((a, b) => b.criticity - a.criticity)
+    .slice(0, CONNECTOR_ERRORS_MAX_COUNT);
+};
+
+// The errors of connector_info live in redis: resolved by connector id, only when requested.
+export const resolveConnectorInfo = (connector: BasicStoreEntityConnector): ResolvedConnectorInfo | null => {
+  return connector.connector_info ? { ...connector.connector_info, connector_id: connector.internal_id } : null;
 };
 
 export const updateConnectorWithConnectorInfo = async (
@@ -698,39 +694,10 @@ export const updateConnectorWithConnectorInfo = async (
   return element;
 };
 
-const isRecentConnectorError = (error: StoredConnectorInfoError, nowMs: number) => nowMs - error.last_seen_at < CONNECTOR_ERRORS_TTL_SECONDS * 1000;
-
-// Most critical first, then most recently seen.
-const sortAndCapConnectorErrors = (errors: StoredConnectorInfoError[]) => [...errors]
-  .sort((a, b) => b.criticity - a.criticity || b.last_seen_at - a.last_seen_at)
-  .slice(0, CONNECTOR_ERRORS_MAX_COUNT);
-
-// Errors accumulate across pings by code, the last report of a code wins: a ping without errors clears nothing,
-// each error expires 10 minutes after the last ping that reported it.
-export const mergeConnectorErrors = (stored: StoredConnectorInfoError[], reported: ConnectorInfoError[], nowMs: number) => {
-  const errorsByCode = new Map(stored.filter((error) => isRecentConnectorError(error, nowMs)).map((error) => [error.code, error]));
-  reported.forEach((error) => errorsByCode.set(error.code, { ...error, last_seen_at: nowMs }));
-  const kept = sortAndCapConnectorErrors([...errorsByCode.values()]);
-  const keptCodes = new Set(kept.map((error) => error.code));
-  const removedCodes = stored.map((error) => error.code).filter((code) => !keptCodes.has(code));
-  return { kept, removedCodes };
-};
-
-export const selectActiveConnectorErrors = (stored: StoredConnectorInfoError[], nowMs: number): ConnectorInfoError[] => {
-  return sortAndCapConnectorErrors(stored.filter((error) => isRecentConnectorError(error, nowMs)))
-    .map(({ code, message, criticity }) => ({ code, message, criticity }));
-};
-
 // Best effort: errors are informative, failing to record them must never fail the ping.
-const recordConnectorErrors = async (connectorEntity: BasicStoreEntityConnector, connectorInfo: ConnectorInfo) => {
-  const reported = sanitizeConnectorInfoErrors(connectorInfo.errors, connectorEntity.id);
-  if (reported.length === 0) {
-    return;
-  }
+const recordConnectorErrors = async (connectorEntity: BasicStoreEntityConnector, errors: ConnectorInfoError[]) => {
   try {
-    const stored = await redisGetConnectorErrors(connectorEntity.internal_id);
-    const { kept, removedCodes } = mergeConnectorErrors(stored, reported, Date.now());
-    await redisSaveConnectorErrors(connectorEntity.internal_id, kept, removedCodes);
+    await redisSetConnectorErrors(connectorEntity.internal_id, sanitizeConnectorInfoErrors(errors, connectorEntity.id));
   } catch (err) {
     logApp.warn('[OPENCTI-MODULE] Unable to record connector errors', { cause: err, connectorId: connectorEntity.id });
   }
@@ -739,7 +706,7 @@ const recordConnectorErrors = async (connectorEntity: BasicStoreEntityConnector,
 // Best effort: failing to read errors must not fail the loading of the connector.
 export const loadConnectorErrors = async (connectorId: string) => {
   try {
-    return selectActiveConnectorErrors(await redisGetConnectorErrors(connectorId), Date.now());
+    return await redisGetConnectorErrors(connectorId);
   } catch (err) {
     logApp.warn('[OPENCTI-MODULE] Unable to read connector errors', { cause: err, connectorId });
     return [];
@@ -767,9 +734,10 @@ export const pingConnector = async (
   // the connector, which never received the reset state, write back its stale one on its next ping
   await redisSetConnectorHeartbeat(connectorEntity.internal_id, lastSeenAt);
   const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
-  // A legacy ping without connector info leaves the reported errors to their expiration
-  if (connectorInfo) {
-    await recordConnectorErrors(connectorEntity, connectorInfo);
+  // Only an explicit list, even empty, replaces the recorded errors: without one (legacy ping included) they are left to their expiration
+  const reportedErrors = connectorInfo?.errors;
+  if (Array.isArray(reportedErrors)) {
+    await recordConnectorErrors(connectorEntity, reportedErrors);
   }
   return completeConnector(updatedConnector, lastSeenAt);
 };

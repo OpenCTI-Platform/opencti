@@ -50,7 +50,7 @@ from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
 from jwt import PyJWKSet
 from pika.exceptions import NackError, UnroutableError
-from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector import opencti_connector_build
@@ -1812,29 +1812,33 @@ CONNECTOR_ERROR_CODE_MAX_LENGTH = 256
 CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024
 
 
-class ConnectorRunError(BaseModel):
+# The platform only accepts a GraphQL Int (32 bits)
+_GRAPHQL_INT_MIN = -(2**31)
+_GRAPHQL_INT_MAX = 2**31 - 1
+
+
+# Private for now: returned dicts and add_error are the documented contract, exporting it later stays compatible
+class _ConnectorRunError(BaseModel):
     """Error returned by a connector run"""
 
     model_config = ConfigDict(strict=True, extra="forbid")
 
     code: str
     message: str
-    criticity: int
+    criticity: int = Field(ge=_GRAPHQL_INT_MIN, le=_GRAPHQL_INT_MAX)
 
 
 def _parse_criticity(value) -> int:
-    # bool is an int subclass, and the platform only accepts a GraphQL Int (32 bits).
+    # bool is an int subclass
     if isinstance(value, bool) or not isinstance(value, int):
         raise TypeError(f"criticity must be an integer, got {type(value).__name__}")
-    if not -(2**31) <= value < 2**31:
+    if not _GRAPHQL_INT_MIN <= value <= _GRAPHQL_INT_MAX:
         raise ValueError(f"criticity {value} is out of the GraphQL Int range")
     return value
 
 
 def _sanitize_connector_error(error) -> Optional[Dict]:
     try:
-        if isinstance(error, ConnectorRunError):
-            error = error.model_dump()
         code = error.get("code")
         if code is None:
             return None
@@ -1908,6 +1912,7 @@ class ConnectorInfo:
         next_run_datetime: datetime = None,
         last_run_datetime: datetime = None,
         errors: Optional[List[Dict]] = None,
+        logger=None,
     ):
         """Initialize ConnectorInfo with runtime parameters.
 
@@ -1925,6 +1930,7 @@ class ConnectorInfo:
         :type last_run_datetime: datetime or None
         :param errors: Errors to report (dicts with code, message, criticity)
         :type errors: list or None
+        :param logger: Connector logger, used to warn about an error that add_error ignores
         """
         self._run_and_terminate = run_and_terminate
         self._buffering = buffering
@@ -1933,6 +1939,9 @@ class ConnectorInfo:
         self._next_run_datetime = next_run_datetime
         self._last_run_datetime = last_run_datetime
         self._errors: List[Dict] = list(errors) if errors else []
+        # Until errors are reported, none are sent: a restarted process must not clear the previous one's
+        self._errors_reported = errors is not None
+        self.logger = logger
 
     @property
     def all_details(self):
@@ -1949,10 +1958,9 @@ class ConnectorInfo:
             "next_run_datetime": self._next_run_datetime,
             "last_run_datetime": self._last_run_datetime,
         }
-        errors = _sanitize_connector_errors(self._errors)
-        # Platforms without errors support reject the key, and a missing key reports no new error.
-        if errors:
-            details["errors"] = errors
+        # An explicit list, even empty, replaces the errors stored by the platform
+        if self._errors_reported:
+            details["errors"] = _sanitize_connector_errors(self._errors)
         return details
 
     @property
@@ -2080,6 +2088,7 @@ class ConnectorInfo:
         :type value: list or None
         """
         self._errors = list(value) if value else []
+        self._errors_reported = True
 
     def add_error(
         self,
@@ -2087,11 +2096,12 @@ class ConnectorInfo:
         message: str,
         criticity: int,
     ) -> None:
-        """Add an error to report on the next ping.
+        """Add an error, sent on every ping until the errors are cleared.
 
-        Errors are sanitized when sent: entries without a code or with a
-        non-integer criticity are dropped, code and message are truncated, and
-        only the most critical ones are kept.
+        A scheduled connector's errors are cleared before each run. An invalid
+        error is ignored with a warning, never raised. When sent, code and
+        message are truncated, a repeated code keeps its last report, and only
+        the most critical errors are kept.
 
         :param code: Error code
         :type code: str
@@ -2100,11 +2110,24 @@ class ConnectorInfo:
         :param criticity: Criticity level, higher is more critical
         :type criticity: int
         """
-        self._errors.append({"code": code, "message": message, "criticity": criticity})
+        try:
+            error = _ConnectorRunError.model_validate(
+                {"code": code, "message": message, "criticity": criticity}
+            )
+        except ValidationError as e:
+            if self.logger is not None:
+                self.logger.warning(
+                    "Malformed error ignored by add_error",
+                    {"received": repr((code, message, criticity)), "reason": str(e)},
+                )
+            return
+        self._errors.append(error.model_dump())
+        self._errors_reported = True
 
     def clear_errors(self) -> None:
         """Remove all reported errors."""
         self._errors = []
+        self._errors_reported = True
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
@@ -2528,6 +2551,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             bundle_send_to_queue=self.bundle_send_to_queue,
         )
         self.connector_logger = self.api.logger_class(self.connect_name)
+        self.connector_info.logger = self.connector_logger
         # For retro compatibility
         self.log_debug = self.connector_logger.debug
         self.log_info = self.connector_logger.info
@@ -3231,6 +3255,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # Errors belong to a run: cleared before it so those added with add_error during it are kept
         self.connector_info.clear_errors()
         error_list = message_callback()
+        # Other non-list returns (True, a status string...) predate errors reporting and stay silent
+        if isinstance(error_list, Mapping):
+            self.connector_logger.warning(
+                "Connector run returned a single error instead of a list, ignored",
+                {"received": repr(error_list)},
+            )
         # Strings, bytes and mappings are iterable but are not a list of errors
         if isinstance(error_list, Iterable) and not isinstance(
             error_list, (str, bytes, Mapping)
@@ -3239,7 +3269,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             for error in error_list:
                 try:
                     returned_errors.append(
-                        ConnectorRunError.model_validate(error).model_dump()
+                        _ConnectorRunError.model_validate(error).model_dump()
                     )
                 except ValidationError as e:
                     self.connector_logger.warning(

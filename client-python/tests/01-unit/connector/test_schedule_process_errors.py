@@ -60,15 +60,28 @@ def test_none_result_clears_errors():
         42,
         3.14,
         True,
-        API_ERROR,
         object(),
     ],
-    ids=["str", "bytes", "int", "float", "bool", "single-dict", "object"],
+    ids=["str", "bytes", "int", "float", "bool", "object"],
 )
 def test_non_list_result_is_handled_like_none(callback_result):
     helper = _run(callback_result)
     assert helper.connector_info.errors == []
     helper.connector_logger.warning.assert_not_called()
+
+
+def test_single_error_dict_is_ignored_with_a_warning():
+    helper = _run(API_ERROR)
+    assert helper.connector_info.errors == []
+    helper.connector_logger.warning.assert_called_once()
+    message, meta = helper.connector_logger.warning.call_args.args
+    assert message == "Connector run returned a single error instead of a list, ignored"
+    assert meta["received"] == repr(API_ERROR)
+
+
+def test_run_without_errors_sends_an_empty_list():
+    helper = _run(None)
+    assert helper.connector_info.all_details["errors"] == []
 
 
 @pytest.mark.parametrize(
@@ -86,6 +99,8 @@ def test_non_list_result_is_handled_like_none(callback_result):
         {**API_ERROR, "code": None},
         {**API_ERROR, "message": None},
         {**API_ERROR, "extra": "not allowed"},
+        {**API_ERROR, "criticity": 2**31},
+        {**API_ERROR, "criticity": -(2**31) - 1},
     ],
     ids=[
         "str",
@@ -100,6 +115,8 @@ def test_non_list_result_is_handled_like_none(callback_result):
         "code-as-none",
         "message-as-none",
         "extra-field",
+        "criticity-above-graphql-int",
+        "criticity-below-graphql-int",
     ],
 )
 def test_list_of_malformed_errors_is_dropped_and_logged(malformed_error):
@@ -283,10 +300,10 @@ def test_run_and_terminate_keeps_errors_added_during_the_run():
     assert helper.connector_info.errors == [API_ERROR]
 
 
-def test_run_and_terminate_without_errors_sends_none():
+def test_run_and_terminate_without_errors_sends_an_empty_list():
     helper, sent_on_force_ping = _run_and_terminate(lambda: None)
     assert helper.connector_info.errors == []
-    assert sent_on_force_ping[0] is None
+    assert sent_on_force_ping[0] == []
 
 
 def test_run_and_terminate_buffering_skips_the_run():

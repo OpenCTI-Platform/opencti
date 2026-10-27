@@ -67,8 +67,7 @@ vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal)
   redisGetConnectorHeartbeat: vi.fn(),
   redisGetConnectorsHeartbeats: vi.fn(),
   redisDeleteConnectorHeartbeat: vi.fn(),
-  redisGetConnectorErrors: vi.fn(),
-  redisSaveConnectorErrors: vi.fn(),
+  redisSetConnectorErrors: vi.fn(),
   redisDeleteConnectorErrors: vi.fn(),
 }));
 

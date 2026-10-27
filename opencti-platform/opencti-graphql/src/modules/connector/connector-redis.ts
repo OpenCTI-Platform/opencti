@@ -1,5 +1,5 @@
 import { getClientBase } from '../../database/redis';
-import type { StoredConnectorInfoError } from './connector-types';
+import type { ConnectorInfoError } from './connector-types';
 
 export interface ConnectorHealthMetrics {
   restart_count: number;
@@ -82,28 +82,22 @@ export const redisDeleteConnectorHeartbeat = async (connectorId: string) => {
 // endregion
 
 // region connector errors
-// Errors reported on ping are transient and kept out of Elasticsearch: one hash per connector, one field per error code.
-// Each error expires 10 minutes after the last ping that reported it (see mergeConnectorErrors), the key itself
-// expires 10 minutes after the last ping that reported any error.
+// Errors reported on ping are transient and kept out of Elasticsearch: each explicit list replaces the previous one,
+// and expires 10 minutes after the last ping that sent it.
 export const CONNECTOR_ERRORS_TTL_SECONDS = 600;
 export const connectorErrorsKey = (connectorId: string) => `connector-${connectorId}-errors`;
 
-export const redisGetConnectorErrors = async (connectorId: string): Promise<StoredConnectorInfoError[]> => {
-  const rawErrors = await getClientBase().hgetall(connectorErrorsKey(connectorId));
-  return Object.values(rawErrors).map((rawError) => JSON.parse(rawError));
+export const redisSetConnectorErrors = async (connectorId: string, errors: ConnectorInfoError[]) => {
+  if (errors.length === 0) {
+    await getClientBase().del(connectorErrorsKey(connectorId));
+    return;
+  }
+  await getClientBase().set(connectorErrorsKey(connectorId), JSON.stringify(errors), 'EX', CONNECTOR_ERRORS_TTL_SECONDS);
 };
 
-export const redisSaveConnectorErrors = async (connectorId: string, kept: StoredConnectorInfoError[], removedCodes: string[]) => {
-  const key = connectorErrorsKey(connectorId);
-  const transaction = getClientBase().multi();
-  if (removedCodes.length > 0) {
-    transaction.hdel(key, ...removedCodes);
-  }
-  if (kept.length > 0) {
-    transaction.hset(key, Object.fromEntries(kept.map((error) => [error.code, JSON.stringify(error)])));
-    transaction.expire(key, CONNECTOR_ERRORS_TTL_SECONDS);
-  }
-  await transaction.exec();
+export const redisGetConnectorErrors = async (connectorId: string): Promise<ConnectorInfoError[]> => {
+  const rawErrors = await getClientBase().get(connectorErrorsKey(connectorId));
+  return rawErrors ? JSON.parse(rawErrors) : [];
 };
 
 export const redisDeleteConnectorErrors = async (connectorId: string) => {

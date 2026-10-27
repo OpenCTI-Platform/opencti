@@ -558,20 +558,24 @@ describe('Connector resolver standard behaviour', () => {
       expect(storedConnector.connector_info).not.toHaveProperty('errors');
     });
 
-    it('should accumulate errors of distinct pings by code', async () => {
+    it('should replace stored errors with each explicit list', async () => {
       await pingWithErrors({ ...baseConnectorInfo, errors: [errors[1]] });
-      expect(await pingWithErrors({ ...baseConnectorInfo, errors: [errors[0]] })).toEqual(errors);
-      const updatedError = { code: 'RATE_LIMITED', message: 'Still too many requests', criticity: 3 };
-      expect(await pingWithErrors({ ...baseConnectorInfo, errors: [updatedError] })).toEqual([updatedError, errors[0]]);
+      expect(await pingWithErrors({ ...baseConnectorInfo, errors: [errors[0]] })).toEqual([errors[0]]);
     });
 
-    it('should keep stored errors on a ping without errors or a legacy ping', async () => {
+    it('should clear stored errors on an explicit empty list', async () => {
+      await pingWithErrors({ ...baseConnectorInfo, errors });
+      expect(await pingWithErrors({ ...baseConnectorInfo, errors: [] })).toEqual([]);
+      expect(await getClientBase().exists(connectorErrorsKey(TEST_CN_ID))).toBe(0);
+    });
+
+    it('should keep stored errors on a ping without errors list or a legacy ping', async () => {
       await pingWithErrors({ ...baseConnectorInfo, errors });
       expect(await pingWithErrors(baseConnectorInfo)).toEqual(errors);
       expect(await pingWithErrors(undefined)).toEqual(errors);
     });
 
-    it('should truncate an error message too long to be indexed', async () => {
+    it('should truncate an error message too long to be stored', async () => {
       const connectorInfo = { ...baseConnectorInfo, errors: [{ code: 'STACK_TRACE', message: 'M'.repeat(40000), criticity: 1 }] };
       expect(await pingWithErrors(connectorInfo)).toEqual([
         { code: 'STACK_TRACE', message: 'M'.repeat(CONNECTOR_ERROR_MESSAGE_MAX_LENGTH), criticity: 1 },
@@ -583,22 +587,12 @@ describe('Connector resolver standard behaviour', () => {
       expect(await pingWithErrors(connectorInfo)).toEqual(errors);
     });
 
-    it('should apply the downgrade of a stored code reported in an oversized payload', async () => {
-      await pingWithErrors({ ...baseConnectorInfo, errors: [{ code: 'DOWNGRADED', message: '', criticity: 3 }] });
-      const others = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `OTHER_${index}`, message: '', criticity: 1 }));
-      const storedErrors = await pingWithErrors({ ...baseConnectorInfo, errors: [{ code: 'DOWNGRADED', message: '', criticity: 0 }, ...others] });
-      expect(storedErrors).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
-      expect(storedErrors.map(({ code }) => code)).not.toContain('DOWNGRADED');
-    });
-
-    it('should keep only the most critical errors across pings', async () => {
+    it('should keep only the most critical errors of a ping', async () => {
       const lowErrors = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `LOW_${index}`, message: '', criticity: 0 }));
-      await pingWithErrors({ ...baseConnectorInfo, errors: lowErrors });
       const criticalError = { code: 'CRITICAL', message: '', criticity: 3 };
-      const storedErrors = await pingWithErrors({ ...baseConnectorInfo, errors: [criticalError] });
+      const storedErrors = await pingWithErrors({ ...baseConnectorInfo, errors: [...lowErrors, criticalError] });
       expect(storedErrors).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
       expect(storedErrors[0]).toEqual(criticalError);
-      expect(await getClientBase().hlen(connectorErrorsKey(TEST_CN_ID))).toBe(CONNECTOR_ERRORS_MAX_COUNT);
     });
 
     it('should reject an error missing a mandatory field', async () => {

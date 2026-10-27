@@ -4,19 +4,15 @@ import {
   CONNECTOR_ERROR_CODE_MAX_LENGTH,
   CONNECTOR_ERROR_MESSAGE_MAX_LENGTH,
   CONNECTOR_ERRORS_MAX_COUNT,
-  mergeConnectorErrors,
+  resolveConnectorInfo,
   sanitizeConnectorInfoErrors,
-  selectActiveConnectorErrors,
 } from '../../../../src/modules/connector/connector-domain';
-import { CONNECTOR_ERRORS_TTL_SECONDS } from '../../../../src/modules/connector/connector-redis';
-import type { ConnectorInfoError, StoredConnectorInfoError } from '../../../../src/modules/connector/connector-types';
+import type { BasicStoreEntityConnector, ConnectorInfoError } from '../../../../src/modules/connector/connector-types';
 
 const API_ERROR: ConnectorInfoError = { code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 2 };
 
 describe('sanitizeConnectorInfoErrors', () => {
-  it('should return an empty list for missing errors', () => {
-    expect(sanitizeConnectorInfoErrors(undefined)).toEqual([]);
-    expect(sanitizeConnectorInfoErrors(null)).toEqual([]);
+  it('should return an empty list for an empty list', () => {
     expect(sanitizeConnectorInfoErrors([])).toEqual([]);
   });
 
@@ -33,67 +29,45 @@ describe('sanitizeConnectorInfoErrors', () => {
     expect(error.message).toBe('M'.repeat(CONNECTOR_ERROR_MESSAGE_MAX_LENGTH));
   });
 
-  it('should not split a surrogate pair when truncating', () => {
+  it('should not split a character when truncating', () => {
     const [error] = sanitizeConnectorInfoErrors([{ code: 'EMOJI', message: '🔥'.repeat(2000), criticity: 0 }]);
     expect(error.message).toBe('🔥'.repeat(CONNECTOR_ERROR_MESSAGE_MAX_LENGTH));
   });
 
-  it('should drop errors with a blank code or a non-integer criticity', () => {
-    const errors = [
-      API_ERROR,
-      { code: '   ', message: 'blank code', criticity: 0 },
-      { code: 'NO_CRITICITY', message: 'missing criticity' },
-      { code: 'STRING_CRITICITY', message: 'string criticity', criticity: 'HIGH' },
-      { code: 'DECIMAL_CRITICITY', message: 'decimal criticity', criticity: 1.5 },
-      { code: null, message: 'null code', criticity: 0 },
-    ] as ConnectorInfoError[];
-    expect(sanitizeConnectorInfoErrors(errors)).toEqual([API_ERROR]);
+  it('should drop errors with a blank code', () => {
+    expect(sanitizeConnectorInfoErrors([API_ERROR, { code: '   ', message: 'blank code', criticity: 3 }])).toEqual([API_ERROR]);
   });
 
   it('should sort errors from the most to the least critical', () => {
-    const criticities = [1, 3, 0, 2];
-    const errors = criticities.map((criticity) => ({ code: `CRITICITY_${criticity}`, message: '', criticity }));
-    expect(sanitizeConnectorInfoErrors(errors).map(({ criticity }) => criticity)).toEqual([
-      3,
-      2,
-      1,
-      0,
-    ]);
+    const errors = [1, 3, 0, 2].map((criticity) => ({ code: `CRITICITY_${criticity}`, message: '', criticity }));
+    expect(sanitizeConnectorInfoErrors(errors).map(({ criticity }) => criticity)).toEqual([3, 2, 1, 0]);
   });
 
-  it('should not limit the reported errors, the merge does', () => {
+  it('should keep the most critical errors up to the limit', () => {
     const lowErrors = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `LOW_${index}`, message: '', criticity: 0 }));
     const criticalError = { code: 'CRITICAL', message: '', criticity: 3 };
     const sanitized = sanitizeConnectorInfoErrors([...lowErrors, criticalError]);
-    expect(sanitized).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT + 1);
+    expect(sanitized).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
     expect(sanitized[0]).toEqual(criticalError);
+    expect(sanitized[sanitized.length - 1].code).toBe(`LOW_${CONNECTOR_ERRORS_MAX_COUNT - 2}`);
   });
 
   it('should keep the last report of a repeated code', () => {
     const errors = [
-      { code: 'API_UNREACHABLE', message: 'old', criticity: 1 },
+      { code: 'API_UNREACHABLE', message: 'old', criticity: 3 },
       { code: 'RATE_LIMITED', message: '', criticity: 2 },
-      { code: 'API_UNREACHABLE', message: 'latest', criticity: 3 },
+      { code: 'API_UNREACHABLE', message: 'latest', criticity: 1 },
     ];
     expect(sanitizeConnectorInfoErrors(errors)).toEqual([
-      { code: 'API_UNREACHABLE', message: 'latest', criticity: 3 },
       { code: 'RATE_LIMITED', message: '', criticity: 2 },
+      { code: 'API_UNREACHABLE', message: 'latest', criticity: 1 },
     ]);
   });
 
-  it('should keep a repeated code once', () => {
+  it('should count a repeated code once against the limit', () => {
     const repeated = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, () => ({ code: 'REPEATED', message: '', criticity: 3 }));
     const distinct = { code: 'DISTINCT', message: '', criticity: 2 };
     expect(sanitizeConnectorInfoErrors([...repeated, distinct]).map(({ code }) => code)).toEqual(['REPEATED', 'DISTINCT']);
-  });
-
-  it('should keep the latest report of a code once merged, even with a lower criticity', () => {
-    const errors = [
-      { code: 'API_UNREACHABLE', message: 'old', criticity: 3 },
-      { code: 'API_UNREACHABLE', message: 'latest', criticity: 1 },
-    ];
-    const { kept } = mergeConnectorErrors([], sanitizeConnectorInfoErrors(errors), 0);
-    expect(kept).toEqual([{ code: 'API_UNREACHABLE', message: 'latest', criticity: 1, last_seen_at: 0 }]);
   });
 
   describe('dropped entries logging', () => {
@@ -101,77 +75,31 @@ describe('sanitizeConnectorInfoErrors', () => {
       vi.restoreAllMocks();
     });
 
-    it('should log each dropped entry with the connector id and the reason', () => {
-      const infoSpy = vi.spyOn(logApp, 'info').mockImplementation(() => {});
-      const errors = [
-        API_ERROR,
-        { code: '   ', message: 'blank code', criticity: 0 },
-        { code: 'STRING_CRITICITY', message: 'string criticity', criticity: 'HIGH' },
-      ] as ConnectorInfoError[];
-      sanitizeConnectorInfoErrors(errors, 'connector-id');
-      expect(infoSpy.mock.calls).toEqual([
-        ['[CONNECTOR] Invalid error reported on ping, entry dropped', { connectorId: 'connector-id', reason: 'blank code', code: '', criticity: 0 }],
-        ['[CONNECTOR] Invalid error reported on ping, entry dropped', { connectorId: 'connector-id', reason: 'non-integer criticity', code: 'STRING_CRITICITY', criticity: 'HIGH' }],
+    it('should log each dropped entry at debug level with the connector id', () => {
+      const debugSpy = vi.spyOn(logApp, 'debug').mockImplementation(() => {});
+      sanitizeConnectorInfoErrors([API_ERROR, { code: '   ', message: 'blank code', criticity: 3 }], 'connector-id');
+      expect(debugSpy.mock.calls).toEqual([
+        ['[OPENCTI-MODULE] Connector error with a blank code reported on ping, entry dropped', { connectorId: 'connector-id', criticity: 3 }],
       ]);
     });
 
     it('should not log when every entry is valid', () => {
-      const infoSpy = vi.spyOn(logApp, 'info').mockImplementation(() => {});
+      const debugSpy = vi.spyOn(logApp, 'debug').mockImplementation(() => {});
       sanitizeConnectorInfoErrors([API_ERROR], 'connector-id');
-      expect(infoSpy).not.toHaveBeenCalled();
+      expect(debugSpy).not.toHaveBeenCalled();
     });
   });
 });
 
-const NOW = 1_800_000_000_000;
-const TTL_MS = CONNECTOR_ERRORS_TTL_SECONDS * 1000;
-const stored = (code: string, criticity: number, ageMs: number, message = ''): StoredConnectorInfoError => ({ code, message, criticity, last_seen_at: NOW - ageMs });
+describe('resolveConnectorInfo', () => {
+  const connectorInfo = { run_and_terminate: false, buffering: false, queue_threshold: 500, queue_messages_size: 0 };
 
-describe('mergeConnectorErrors', () => {
-  it('should accumulate errors with distinct codes from successive pings', () => {
-    const { kept, removedCodes } = mergeConnectorErrors([stored('FIRST', 1, 1000)], [{ code: 'SECOND', message: '', criticity: 1 }], NOW);
-    expect(kept.map(({ code }) => code)).toEqual(['SECOND', 'FIRST']);
-    expect(removedCodes).toEqual([]);
+  it('should add the connector id so errors can be resolved when requested', () => {
+    const connector = { internal_id: 'connector-1', connector_info: connectorInfo } as BasicStoreEntityConnector;
+    expect(resolveConnectorInfo(connector)).toEqual({ ...connectorInfo, connector_id: 'connector-1' });
   });
 
-  it('should keep the latest report of a code and refresh when it was seen', () => {
-    const { kept } = mergeConnectorErrors([stored('API_UNREACHABLE', 1, 1000, 'old message')], [{ code: 'API_UNREACHABLE', message: 'new message', criticity: 3 }], NOW);
-    expect(kept).toEqual([{ code: 'API_UNREACHABLE', message: 'new message', criticity: 3, last_seen_at: NOW }]);
-  });
-
-  it('should drop errors not reported for 10 minutes', () => {
-    const { kept, removedCodes } = mergeConnectorErrors([stored('EXPIRED', 3, TTL_MS), stored('RECENT', 1, TTL_MS - 1)], [{ code: 'NEW', message: '', criticity: 1 }], NOW);
-    expect(kept.map(({ code }) => code)).toEqual(['NEW', 'RECENT']);
-    expect(removedCodes).toEqual(['EXPIRED']);
-  });
-
-  it('should keep the most critical errors up to the limit and remove the others', () => {
-    const lowErrors = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => stored(`LOW_${index}`, 0, index + 1));
-    const { kept, removedCodes } = mergeConnectorErrors(lowErrors, [{ code: 'CRITICAL', message: '', criticity: 3 }], NOW);
-    expect(kept).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
-    expect(kept[0].code).toBe('CRITICAL');
-    expect(removedCodes).toEqual([`LOW_${CONNECTOR_ERRORS_MAX_COUNT - 1}`]);
-  });
-});
-
-describe('sanitized then merged errors', () => {
-  it('should apply the downgrade of a stored code reported in an oversized payload', () => {
-    const others = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `OTHER_${index}`, message: '', criticity: 1 }));
-    const reported = sanitizeConnectorInfoErrors([{ code: 'A', message: 'downgraded', criticity: 0 }, ...others]);
-    const { kept, removedCodes } = mergeConnectorErrors([stored('A', 3, 1000)], reported, NOW);
-    expect(kept).toHaveLength(CONNECTOR_ERRORS_MAX_COUNT);
-    expect(kept.map(({ code }) => code)).not.toContain('A');
-    expect(removedCodes).toEqual(['A']);
-  });
-});
-
-describe('selectActiveConnectorErrors', () => {
-  it('should return recent errors sorted by criticity then recency, without the seen date', () => {
-    const errors = [stored('EXPIRED', 3, TTL_MS), stored('OLDER', 2, 2000), stored('NEWER', 2, 1000), stored('LOW', 1, 500)];
-    expect(selectActiveConnectorErrors(errors, NOW)).toEqual([
-      { code: 'NEWER', message: '', criticity: 2 },
-      { code: 'OLDER', message: '', criticity: 2 },
-      { code: 'LOW', message: '', criticity: 1 },
-    ]);
+  it('should resolve no connector_info for a connector that never sent it', () => {
+    expect(resolveConnectorInfo({ internal_id: 'connector-1' } as BasicStoreEntityConnector)).toBeNull();
   });
 });
