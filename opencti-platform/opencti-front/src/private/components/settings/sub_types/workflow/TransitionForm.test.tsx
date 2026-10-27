@@ -451,21 +451,21 @@ describe('TransitionForm – closing reason section', () => {
 
   it('is hidden for entity types without a closing reason', () => {
     renderForm({ event: 'approve', syncActions: [] });
-    expect(screen.queryByRole('checkbox', { name: /enable closing reason/i })).toBeNull();
+    expect(screen.queryByRole('switch', { name: /enable closing reason/i })).toBeNull();
   });
 
   it('is disabled by default on domain objects', () => {
     renderForm({ event: 'close', syncActions: [] }, vi.fn(), 'Case-Incident');
-    expect((screen.getByRole('checkbox', { name: /enable closing reason/i }) as HTMLInputElement).checked).toBe(false);
-    expect((screen.getByRole('checkbox', { name: /closing reason required/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('switch', { name: /enable closing reason/i }) as HTMLInputElement).checked).toBe(false);
+    expect((screen.getByRole('switch', { name: /closing reason required/i }) as HTMLInputElement).disabled).toBe(true);
   });
 
   it('sets closingReason to "required" when enabled then required', async () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'close', syncActions: [] }, onSubmit, 'Case-Incident');
 
-    await user.click(screen.getByRole('checkbox', { name: /enable closing reason/i }));
-    await user.click(screen.getByRole('checkbox', { name: /closing reason required/i }));
+    await user.click(screen.getByRole('switch', { name: /enable closing reason/i }));
+    await user.click(screen.getByRole('switch', { name: /closing reason required/i }));
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
     await waitFor(() => {
@@ -475,12 +475,12 @@ describe('TransitionForm – closing reason section', () => {
 
   it('cannot be enabled on a transition into a status other transitions leave', () => {
     renderForm({ event: 'close', syncActions: [] }, vi.fn(), 'Case-Incident', { status: 'Closed', events: ['reopen', 'archive'] });
-    expect((screen.getByRole('checkbox', { name: /enable closing reason/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('switch', { name: /enable closing reason/i }) as HTMLInputElement).disabled).toBe(true);
     expect(screen.getByText("Only on a transition into a final state: 'Closed' is left by 'reopen', 'archive'.")).toBeTruthy();
   });
 
   it('can still be turned off when it was enabled before the status was left by a transition', () => {
     renderForm({ event: 'close', syncActions: [], closingReason: CommentMode.allowed }, vi.fn(), 'Case-Incident', { status: 'Closed', events: ['reopen'] });
-    expect((screen.getByRole('checkbox', { name: /enable closing reason/i }) as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByRole('switch', { name: /enable closing reason/i }) as HTMLInputElement).disabled).toBe(false);
   });
 });

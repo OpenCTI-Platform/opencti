@@ -21,7 +21,15 @@ import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { AccessOperation, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser, isUserHasCapability, validateUserAccessOperation } from '../../../utils/access';
+import {
+  AccessOperation,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
+  SYSTEM_USER,
+  WORKFLOW_MANAGER_USER,
+  isBypassUser,
+  isUserHasCapability,
+  validateUserAccessOperation,
+} from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
@@ -1327,7 +1335,7 @@ const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || 
 // stays in one: a bypass or an external status write moving it to a state it can leave clears it.
 // It does not look at the stored reason: the entity may be read before the lock, and clearing an empty one changes nothing.
 // Workflows asking for no closing reason never touch it.
-const clearsClosingReason = (transitions: Pick<WorkflowSerializedTransition, 'from' | 'to' | 'closingReason'>[] | undefined, fromState: string, toState: string) => {
+const clearsClosingReason = (transitions: Pick<WorkflowSerializedTransition, 'from' | 'closingReason'>[] | undefined, fromState: string, toState: string) => {
   const allTransitions = transitions ?? [];
   return fromState !== toState
     && allTransitions.some((t) => isClosingReasonMode(t.closingReason))

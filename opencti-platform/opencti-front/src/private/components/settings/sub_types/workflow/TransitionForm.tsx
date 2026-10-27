@@ -238,7 +238,7 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
                     checked={closingReasonMode === CommentMode.required}
                     disabled={!enableClosingReason}
                     onChange={(e) => setFieldValue('closingReason', e.target.checked ? CommentMode.required : CommentMode.allowed)}
-                    inputProps={{ 'aria-label': t_i18n('Closing reason required') }}
+                    slotProps={{ input: { 'aria-label': t_i18n('Closing reason required') } }}
                   />
                 )}
                 label={t_i18n('Required')}
