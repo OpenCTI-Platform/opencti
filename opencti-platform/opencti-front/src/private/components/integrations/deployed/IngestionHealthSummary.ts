@@ -2,7 +2,7 @@ import { graphql, readInlineData } from 'react-relay';
 import { AccessTimeOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { useIngestionHealthColor, type HealthIssueSeverity } from '@components/data/connectors/ingestionHealthDisplay';
-import { type HealthCheckMessageSource } from '@components/data/connectors/ingestionHealthMessage';
+import { type HealthCheckMessageSource } from '@components/data/connectors/useHealthCheckMessage';
 import type { IngestionHealthSummary_ingestionHealth$key } from './__generated__/IngestionHealthSummary_ingestionHealth.graphql';
 
 // Read as plain data, outside of any component: the integrations page aggregates the health of every item.

@@ -4,7 +4,7 @@ import { Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { ArrowForwardOutlined } from '@mui/icons-material';
 import { useHealthIssueDisplay, type HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
-import { getHealthCheckMessage } from '@components/data/connectors/ingestionHealthMessage';
+import useHealthCheckMessage from '@components/data/connectors/useHealthCheckMessage';
 import { useFormatter } from '../../../../components/i18n';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import { paperBorder } from '../paperSurface';
@@ -18,6 +18,7 @@ interface IngestionHealthTileBannerProps {
 // Strip on top of a deployed integration tile: critical = red / warning, degraded = orange / clock, both leading to Review.
 const IngestionHealthTileBanner = ({ issue, to }: IngestionHealthTileBannerProps) => {
   const { t_i18n } = useFormatter();
+  const { getHealthCheckMessage } = useHealthCheckMessage();
   const theme = useTheme();
   const { color, Icon } = useHealthIssueDisplay(issue.severity);
   return (
@@ -44,7 +45,7 @@ const IngestionHealthTileBanner = ({ issue, to }: IngestionHealthTileBannerProps
     >
       <Icon sx={{ fontSize: 18 }} />
       <Typography noWrap sx={{ flex: 1, minWidth: 0, color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit' }}>
-        {issue.check ? getHealthCheckMessage(issue.check, t_i18n) : t_i18n(capitalizeFirstLetter(issue.severity))}
+        {issue.check ? getHealthCheckMessage(issue.check) : t_i18n(capitalizeFirstLetter(issue.severity))}
       </Typography>
       <Typography sx={{ color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', whiteSpace: 'nowrap' }}>
         {t_i18n('Review')}
