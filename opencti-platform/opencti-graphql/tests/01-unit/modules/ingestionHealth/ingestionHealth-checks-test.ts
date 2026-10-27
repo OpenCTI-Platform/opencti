@@ -595,8 +595,9 @@ describe('computeHealthTransition', () => {
       expect(computeHealthTransition(health(status, AFTER_DELAY), at(10 * DEFAULT_HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
     });
 
-    it.each(Object.values(IngestionHealthStatus))('should report %s when the last event is at its start: strictly after is required', (status) => {
-      expect(computeHealthTransition(health(status, SINCE), AFTER_DELAY)).not.toBeNull();
+    it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event is at its start: notified with a delay of 0', (status) => {
+      expect(computeHealthTransition(health(status, SINCE), AFTER_DELAY)).toBeNull();
+      expect(computeHealthTransition(health(status, SINCE), at(1), 0)).toBeNull();
       expect(computeHealthTransition(dueHealth(status), AFTER_DELAY)).not.toBeNull();
     });
   });
@@ -672,7 +673,7 @@ describe('computeHealthTransition', () => {
       if (status === Degraded) return [USER_MISSING];
       return [];
     };
-    const run = (steps: [number, IngestionHealthStatus][]) => {
+    const run = (steps: [number, IngestionHealthStatus][], notificationDelay = DEFAULT_HEALTH_NOTIFICATION_DELAY_MS) => {
       let current: IngestionHealthFields = {};
       const events: [number, HealthTransition][] = [];
       steps.forEach(([minute, status]) => {
@@ -681,7 +682,7 @@ describe('computeHealthTransition', () => {
         const runtimeData = status === Healthy ? { [HEALTH_CHECK_HEARTBEAT_MISSING]: evaluatedAt } : {};
         const patch = computeIngestionHealthPatch(current, checksOf(status), { ...CONTEXT, ...PINGING, evaluatedAt, runtimeData });
         let next = patch ? patch.ingestion_health : current.ingestion_health;
-        const transition = computeHealthTransition(next, evaluatedAt);
+        const transition = computeHealthTransition(next, evaluatedAt, notificationDelay);
         if (transition) {
           events.push([minute, transition]);
           next = next ? markHealthNotified(next, evaluatedAt) : next;
@@ -769,6 +770,16 @@ describe('computeHealthTransition', () => {
         [11 + DELAY_MINUTES, HealthTransition.Recovered],
         [21 + DELAY_MINUTES, HealthTransition.Critical],
         [31 + DELAY_MINUTES, HealthTransition.Recovered],
+      ]);
+    });
+
+    // Notified in the period the status starts: the event is at its start, and must count as notified at the next periods
+    it('should report each status change once at its first period with a delay of 0, and never again while it lasts', () => {
+      expect(run([...minutes(0, 10, Degraded), ...minutes(11, 20, Critical), ...minutes(21, 30, Healthy), ...minutes(31, 40, Critical)], 0)).toEqual([
+        [0, HealthTransition.Degraded],
+        [11, HealthTransition.Critical],
+        [21, HealthTransition.Recovered],
+        [31, HealthTransition.Critical],
       ]);
     });
 
