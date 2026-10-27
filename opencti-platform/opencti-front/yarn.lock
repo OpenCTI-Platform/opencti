@@ -5405,7 +5405,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript/old@npm:typescript@^6":
+"@typescript/old@npm:typescript@6.0.3":
   version: 6.0.3
   resolution: "typescript@npm:6.0.3"
   bin:

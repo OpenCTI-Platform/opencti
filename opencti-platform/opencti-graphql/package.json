@@ -233,6 +233,7 @@
     "vitest": "5.0.5"
   },
   "resolutions": {
+    "@typescript/old": "npm:typescript@6.0.3",
     "axios": "1.20.0",
     "chokidar": "6.0.0",
     "ioredis": "5.11.1",

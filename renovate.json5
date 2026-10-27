@@ -142,6 +142,18 @@
       enabled: false,
       description: 'Do not update openid-clientv5/jose resolution to major versions',
     },
+    // @typescript/old is the TS 6 compiler behind the `typescript` alias (@typescript/typescript6),
+    // pinned by a resolution. It must stay on 6.x until typescript-eslint supports the TS 7.1 API.
+    {
+      matchDepNames: [
+        '@typescript/old',
+      ],
+      matchDepTypes: [
+        'resolutions',
+      ],
+      allowedVersions: '<7',
+      description: 'Keep the @typescript/old resolution (TS 6 API for typescript-eslint) at version 6.x',
+    },
     {
       description: 'Disable updates of images intentionally pinned to older versions for compatibility testing',
       matchFileNames: [
