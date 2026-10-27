@@ -167,6 +167,9 @@ export class ChunkReads {
 
   private convertedNotTaken = new Map<string, any>(); // elements converted by loadRefs and not handed out by take yet
 
+  // `readByChunk`: what the chunk read before (its finder), by any id: refs found there are neither looked up nor read again
+  constructor(private readByChunk: (id: string) => any | null | undefined = () => undefined) {}
+
   async load(targets: DocRef[]) {
     await this.loadDocuments(targets);
     await this.loadRefs(targets.map((target) => target.id));
@@ -186,7 +189,7 @@ export class ChunkReads {
     if (raws.length === 0) return;
     const elements = await toElements(raws);
     elements.forEach((element) => this.convertedNotTaken.set(element.internal_id, element));
-    const refIds = R.uniq(elements.flatMap(refIdsOf)).map((id) => id.toLowerCase());
+    const refIds = R.uniq(elements.flatMap(refIdsOf)).map((id) => id.toLowerCase()).filter((id) => this.readByChunk(id) === undefined);
     const refOwners = await lookupKeys(refIds);
     this.recordLookup(refOwners, refIds);
     const refRaws = await mgetRaw(uniqueLiveOwners([...refOwners.values()]).map(documentOf), { light: true });
@@ -231,13 +234,17 @@ export class ChunkReads {
   // The element's referenced elements: a copy of each ref loadRefs read, then a realtime load of the refs whose
   // owner the chunk never looked up
   private async refsOf(element: any) {
-    const refIds = refIdsOf(element);
+    const allRefIds = refIdsOf(element);
+    // A copy of each ref the chunk read before, as each use gets its own copy; null: not found then
+    const readBefore = allRefIds.map((refId) => this.readByChunk(refId)).filter((ref) => ref !== undefined);
+    const readBeforeRefs = R.uniqBy((ref: any) => ref.internal_id, readBefore.filter(Boolean)).map((ref) => structuredClone(ref));
+    const refIds = allRefIds.filter((refId) => this.readByChunk(refId) === undefined);
     // Both decided before any await, from what the chunk has read so far
     const notLookedUp = refIds.filter((refId) => !this.lookedUpIds.has(refId.toLowerCase()));
     const liveRefOwners = uniqueLiveOwners(refIds.map((refId) => this.owners.get(refId.toLowerCase())));
     const readRefRaws = liveRefOwners.map((owner) => this.refDocuments.get(owner.owner_id)).filter((raw): raw is RawDoc => raw !== undefined);
     const readRefs = await toElements(readRefRaws);
     const loadedRefs = notLookedUp.length > 0 ? await loadByAnyIds(notLookedUp, { light: true }) : [];
-    return [...readRefs, ...loadedRefs];
+    return [...readBeforeRefs, ...readRefs, ...loadedRefs];
   }
 }

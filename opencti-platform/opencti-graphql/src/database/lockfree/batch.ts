@@ -4,9 +4,11 @@
 // reference are done, with those references (the client's placeholders) replaced by the real ids. Their creates
 // do not write one by one: the collector holds them until every running operation waits on one, then writes them
 // as one lock-free chunk, as a DataLoader batches loads.
+import * as R from 'ramda';
 import { type DocumentNode, execute, type GraphQLSchema, Kind, parse, validate } from 'graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { inferIndexFromConceptType } from '../utils';
+import { getInstanceIds } from '../../schema/identifier';
 import { FunctionalError } from '../../config/errors';
 import { mgetRaw, toElements } from './load';
 import { newCounters } from './store';
@@ -18,18 +20,20 @@ const FLUSHES_AT_ONCE = 4; // chunk writes in flight, as parallel writers
 // A create held by the collector until its chunk is written; settled with the stored element or the error
 interface PendingCreate { user: AuthUser; type: string; input: Record<string, any>; resolve: (element: any) => void; reject: (error: unknown) => void }
 
-// The elements as stored, read by id in one realtime get, as createEntity / createRelation return them: without
-// the rel_* lists, as today's loads (a busy object lists thousands of ids there), and without the raw document the
-// lock-free reads attach (both would go out with every notification of the element)
+// The elements as createEntity / createRelation return them: the one the write holds, as today, or else (a merge known
+// to change nothing reads nothing) the stored one, read by id in one realtime get. Without the rel_* lists, as today's
+// loads (a busy object lists thousands of ids there), and without the raw document the lock-free reads attach (both
+// would go out with every notification of the element)
+export const withoutListsAndRaw = (element: Record<string, any>) => R.pickBy((_, key: string) => !key.startsWith('rel_') && key !== 'i_raw', element);
 const storedElements = async (results: ItemResult[], types: string[]) => {
-  const refs = results.flatMap((result, i) => (result.id ? [{ id: result.id, index: inferIndexFromConceptType(types[i]) }] : []));
+  const refs = results.flatMap((result, i) => (result.id && !result.element ? [{ id: result.id, index: inferIndexFromConceptType(types[i]) }] : []));
   const raws = await mgetRaw(refs, { light: true });
   const found = await toElements([...raws.values()]);
   found.forEach((element) => delete element.i_raw);
   const byId = new Map(found.map((element) => [element.internal_id, element]));
   return results.map((result, i) => {
     if (result.status === 'error') return { error: result.cause };
-    const element = result.id ? byId.get(result.id) : undefined;
+    const element = result.element ? withoutListsAndRaw(result.element) : byId.get(result.id ?? '');
     if (element) return { element };
     return { error: FunctionalError('Lock-free write cannot read its element', { id: result.id, type: types[i] }) };
   });
@@ -43,6 +47,11 @@ export class WriteCollector {
   private entities: PendingCreate[] = [];
 
   private relations: PendingCreate[] = [];
+
+  // Elements the request read, by lowercased id, shared by its finders (each chunk's, and a domain's that resolves refs
+  // before creating): the refs most objects share (markings, author, external references) are read once per request.
+  // Whatever the request writes is dropped from it, so that nothing reads an older version than the request wrote.
+  readRefs = new Map<string, any>();
 
   constructor(private context: AuthContext) {}
 
@@ -93,10 +102,10 @@ export class WriteCollector {
       const entities = this.entities.splice(0, MAX_CHUNK);
       const relations = this.relations.splice(0, MAX_CHUNK);
       await this.write(entities, (user, creates) => {
-        return writeEntityChunk(this.writeContext(), user, creates.map(({ type, input }) => ({ type, input })), newCounters(), { missingEnds: 'error' });
+        return writeEntityChunk(this.writeContext(), user, creates.map(({ type, input }) => ({ type, input })), newCounters(), { missingEnds: 'error', readRefs: this.readRefs });
       });
       await this.write(relations, (user, creates) => {
-        return writeRelationChunk(this.writeContext(), user, creates.map(({ input }) => input), newCounters(), { missingEnds: 'error' });
+        return writeRelationChunk(this.writeContext(), user, creates.map(({ input }) => input), newCounters(), { missingEnds: 'error', readRefs: this.readRefs });
       });
     } finally {
       this.flushing -= 1;
@@ -119,6 +128,10 @@ export class WriteCollector {
     for (const creates of byUser.values()) {
       try {
         const results = await writeChunk(creates[0].user, creates);
+        results.filter((result) => result.status === 'created' || result.status === 'merged').forEach((result) => {
+          const ids = result.element ? getInstanceIds(result.element) : [result.id];
+          ids.forEach((id: string) => this.readRefs.delete(id.toLowerCase()));
+        });
         const outcomes = await storedElements(results, creates.map((create) => create.type));
         outcomes.forEach((outcome, i) => {
           if (outcome.element) creates[i].resolve(outcome.element);

@@ -22,8 +22,8 @@ import { userFilterStoreElements } from '../../utils/access';
 import { appendPairs, pairEntryOf, pairKey, removeFromPair } from './pairs';
 import { enqueue, type Task } from './queue';
 import { newCounters } from './store';
-import { type ItemResult, loadWithAccessFields, writeEntityChunk, writeRelationChunk } from './writer';
-import { executeOperations, type Operation, type WriteCollector } from './batch';
+import { chunkFinder, type ItemResult, loadWithAccessFields, writeEntityChunk, writeRelationChunk } from './writer';
+import { executeOperations, type Operation, withoutListsAndRaw, type WriteCollector } from './batch';
 import type { GraphQLSchema } from 'graphql';
 
 export { LOCKFREE_INGESTION_ENABLED };
@@ -68,6 +68,7 @@ export const isLockFreeIngestion = async (context: AuthContext, user: AuthUser, 
 const storedElement = async (result: ItemResult, type: string) => {
   if (result.status === 'error') throw result.cause;
   if (!result.id) throw FunctionalError('Lock-free write returned no element', { status: result.status, type });
+  if (result.element) return withoutListsAndRaw(result.element);
   const raws = await mgetRaw([{ id: result.id, index: inferIndexFromConceptType(type) }]);
   const raw = raws.get(result.id);
   if (!raw) throw FunctionalError('Lock-free write cannot read its element', { id: result.id, type });
@@ -80,6 +81,12 @@ const storedElement = async (result: ItemResult, type: string) => {
 export const findByIdsRealtime = async (context: AuthContext, user: AuthUser, ids: string[]) => {
   if (ids.length === 0) return [];
   return userFilterStoreElements(context, user, await loadWithAccessFields(ids));
+};
+
+// The finder of a lock-free import for a resolution outside a chunk: a domain that resolves an input's refs before
+// creating it (addIndicator, for its decay rules) reads them by id, as the chunk will, instead of searching every index
+export const lockFreeFinderFor = async (context: AuthContext, user: AuthUser, type: string) => {
+  return (await isLockFreeIngestion(context, user, type)) ? chunkFinder(context, user, batchCollectorOf(context)?.readRefs) : undefined;
 };
 
 const lockFreeContext = (context: AuthContext): AuthContext => ({ ...context, lockfree_write: true } as AuthContext);

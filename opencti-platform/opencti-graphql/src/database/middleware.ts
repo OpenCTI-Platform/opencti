@@ -1163,7 +1163,8 @@ export const inputResolveRefs = async (
     // TODO Improve type restriction from targeted ref inferred types
     // This information must be added in the model
     const idsToFetch = Array.from(fetchingIdsMap.keys());
-    const simpleResolutionsPromise = opts.finder ? opts.finder(idsToFetch) : internalFindByIds(context, user, idsToFetch);
+    const finder = opts.finder ?? (LOCKFREE_INGESTION_ENABLED ? await (await import('./lockfree/ingestion')).lockFreeFinderFor(context, user, type) : undefined);
+    const simpleResolutionsPromise = finder ? finder(idsToFetch) : internalFindByIds(context, user, idsToFetch);
     let embeddedFromPromise;
     if (embeddedFromResolution) {
       fetchingIdsMap.set(embeddedFromResolution, [{ id: embeddedFromResolution, destKey: 'from', multiple: false }]);

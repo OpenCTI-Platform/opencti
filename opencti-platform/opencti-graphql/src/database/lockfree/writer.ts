@@ -68,6 +68,7 @@ export interface ItemResult {
   id?: string;
   error?: string;
   cause?: unknown; // the error itself, for a caller that rethrows it
+  element?: Record<string, any>; // what createEntity / createRelation return, when the write holds it (not read again)
 }
 
 // Today's path, called for what the lock-free path leaves to it: marked so the platform does not send it back here
@@ -96,20 +97,27 @@ export const loadWithAccessFields = async (ids: string[]) => {
   return toElements([...light.values()], { owned: true });
 };
 
-// The finder handed to inputResolveRefs: reads by id, remembers what it read for the chunk, filters by the user's access
-const chunkFinder = (context: AuthContext, user: AuthUser) => {
+// The finder handed to inputResolveRefs: reads by id, remembers what it read for the chunk, filters by the user's access.
+// `shared`: what the batch request read before (elements only: an object not found yet may be created by the batch).
+// `cached` hands the chunk's later reads what it read: an element, null when not found, undefined when never read
+export const chunkFinder = (context: AuthContext, user: AuthUser, shared?: Map<string, any>) => {
   const cache = new Map<string, any | null>();
-  return async (ids: string[]) => {
-    const missing = R.uniq(ids.filter((id) => id && !cache.has(id.toLowerCase())));
+  const known = (id: string) => shared?.get(id.toLowerCase()) ?? cache.get(id.toLowerCase());
+  const find = async (ids: string[]) => {
+    const missing = R.uniq(ids.filter((id) => id && known(id) === undefined));
     if (missing.length > 0) {
       const loaded = await loadWithAccessFields(missing);
       const searched = await findUnknownBySearch(context, missing, loaded);
       missing.forEach((id) => cache.set(id.toLowerCase(), null));
-      [...loaded, ...searched].forEach((element) => getInstanceIds(element).forEach((id: string) => cache.set(id.toLowerCase(), element)));
+      [...loaded, ...searched].forEach((element) => getInstanceIds(element).forEach((id: string) => {
+        cache.set(id.toLowerCase(), element);
+        shared?.set(id.toLowerCase(), element);
+      }));
     }
-    const elements = R.uniqBy((element: any) => element.internal_id, ids.map((id) => cache.get(id?.toLowerCase())).filter(Boolean));
+    const elements = R.uniqBy((element: any) => element.internal_id, ids.filter(Boolean).map(known).filter(Boolean));
     return userFilterStoreElements(context, user, elements) as Promise<any[]>;
   };
+  return Object.assign(find, { cached: known });
 };
 
 // Phases write each input's outcome into results, at the input's position
@@ -470,7 +478,7 @@ const afterEntityCreation = async ({ context, user, results }: Chunk, created: B
     await triggerCreateEntityAutoEnrichment(context, user, element);
     const workflowConfig = workflowConfigs.get(element.entity_type);
     if (workflowConfig) await initializeEntityWorkflow(context, user, element, workflowConfig);
-    results[entity.i] = { status: 'created', id: entity.element.internal_id };
+    results[entity.i] = { status: 'created', id: entity.element.internal_id, element };
   });
 };
 
@@ -490,11 +498,11 @@ const mergeEntityWithRetry = async (
       if (result.workflowStatusChanged && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
         await syncWorkflowInstanceFromExternalWrite(context, user, result.element, result.element.x_opencti_workflow_id);
       }
-      return { status: 'merged', id: target.owner_id };
+      return { status: 'merged', id: target.owner_id, element: result.element };
     }
     add(counters, 'entities_unchanged');
     if (result.pure && attemptPatch === patch) remember?.(result.version);
-    return { status: 'unchanged', id: target.owner_id };
+    return { status: 'unchanged', id: target.owner_id, element: result.element };
   };
   try {
     return await upsert(patch);
@@ -506,14 +514,14 @@ const mergeEntityWithRetry = async (
 
 // The merges of a chunk with what they need, read once: grouped by target (one target in order, targets in
 // parallel), the target documents, and which merges are known to change nothing on the version read
-const planEntityMerges = async ({ context, user }: Chunk, { merges, firstTarget }: EntityDecisions) => {
+const planEntityMerges = async ({ context, user, finder }: Chunk, { merges, firstTarget }: EntityDecisions) => {
   const targetOf = (merge: EntityMerge) => merge.target ?? (merge.follow ? firstTarget.get(merge.follow.i) : undefined);
   const groups = groupsOf(merges, (merge) => targetOf(merge)?.owner_id ?? `none-${merge.item.i}`);
   // A merge known to change nothing on the version read is answered without computing it (see unchanged.ts)
   const epoch = await chunkEpoch(context, user);
   const fingerprints = new Map(merges.filter((merge) => (merge.reconcile ?? []).length === 0 && targetOf(merge))
     .map((merge) => [merge, fingerprintOf(epoch, merge.item.type, merge.item.entitySetting, merge.patch ?? merge.item.resolvedInput)]));
-  const reads = new ChunkReads();
+  const reads = new ChunkReads(finder.cached);
   const fingerprinted = [...fingerprints].filter(([, fingerprint]) => fingerprint);
   const targets = merges.map(targetOf).filter((target): target is Owner => !!target).map((target) => ({ index: target.owner_index, id: target.owner_id }));
   const [known] = await Promise.all([
@@ -562,7 +570,7 @@ export const writeEntityChunk = async (
 ): Promise<ItemResult[]> => {
   const bench = benchTimer('lf_entity');
   const results: ItemResult[] = new Array(items.length);
-  const chunk: Chunk = { context, user, finder: chunkFinder(context, user), counters, opts, results };
+  const chunk: Chunk = { context, user, finder: chunkFinder(context, user, opts.readRefs), counters, opts, results };
   await chunk.finder(R.uniq(items.flatMap((item) => refInputIds(item.type, item.input))));
   bench.step('prefetch');
   const prepared = await settleAll(items, (_, i) => i, (item, i) => prepareEntity(chunk, item, i), results);
@@ -776,11 +784,11 @@ const relationTargetOf = (merge: RelationMerge): DocRef | undefined => {
 };
 
 // As planEntityMerges
-const planRelationMerges = async ({ context, user }: Chunk, merges: RelationMerge[]) => {
+const planRelationMerges = async ({ context, user, finder }: Chunk, merges: RelationMerge[]) => {
   const groups = groupsOf(merges, (merge) => relationTargetOf(merge)?.id ?? `none-${merge.item.i}`);
   const epoch = await chunkEpoch(context, user);
   const fingerprints = new Map(merges.map((merge) => [merge, fingerprintOf(epoch, merge.item.type, merge.item.entitySetting, merge.item.resolvedInput)]));
-  const reads = new ChunkReads();
+  const reads = new ChunkReads(finder.cached);
   const fingerprinted = merges.filter((merge) => relationTargetOf(merge) && fingerprints.get(merge));
   const targets = merges.map(relationTargetOf).filter((target): target is DocRef => !!target);
   const [known] = await Promise.all([
@@ -820,7 +828,7 @@ const mergeRelation = async (chunk: Chunk, plan: Awaited<ReturnType<typeof planR
     const fingerprint = plan.fingerprints.get(merge);
     if (result.status === 'unchanged' && result.pure && fingerprint) unchangedSeen.push({ objectId: target.id, fingerprint, version: result.version });
     add(counters, result.status === 'merged' ? 'relations_merged' : 'relations_unchanged');
-    results[item.i] = { status: result.status, id: target.id };
+    results[item.i] = { status: result.status, id: target.id, element: result.element };
   } catch (e) {
     results[item.i] = errorResult(e);
   }
@@ -831,7 +839,7 @@ export const writeRelationChunk = async (
 ): Promise<ItemResult[]> => {
   const bench = benchTimer('lf_relation');
   const results: ItemResult[] = new Array(rawInputs.length);
-  const chunk: Chunk = { context, user, finder: chunkFinder(context, user), counters, opts, results };
+  const chunk: Chunk = { context, user, finder: chunkFinder(context, user, opts.readRefs), counters, opts, results };
   await chunk.finder(R.uniq(rawInputs.flatMap((input) => refInputIds(input.relationship_type, input))));
   bench.step('prefetch');
   const pendingItems: PendingItem[] = [];
@@ -847,7 +855,7 @@ export const writeRelationChunk = async (
   bench.step('build');
   const created = await createRelations(chunk, built, merges, bench);
   created.forEach((relation) => {
-    results[relation.i] = { status: 'created', id: relation.element.internal_id };
+    results[relation.i] = { status: 'created', id: relation.element.internal_id, element: { ...relation.resolvedInput, ...relation.element } };
   });
   await touchSecurityCoverages(chunk, created);
   // Merges into existing relationships, and into ones created above

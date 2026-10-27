@@ -77,6 +77,7 @@ import { add, type Counters } from './store';
 export interface WriteOptions {
   waitForSearch?: boolean; // each write searchable when the call returns (refresh wait_for), as today
   missingEnds?: 'pending' | 'error'; // a relationship whose end is missing waits (default) or fails as today
+  readRefs?: Map<string, any>; // elements a batch request read, by lowercased id, shared by its finders (see WriteCollector)
 }
 
 const metaId = (relationType: string, fromId: string, toId: string) => deterministicId(`${relationType}|${fromId}|${toId}`);
