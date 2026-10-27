@@ -444,6 +444,13 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         updated_at
         x_opencti_reliability
       }
+      ... on CitizenshipDocument {
+        name
+        description
+        x_opencti_citizenship_document_type
+        modified
+        updated_at
+      }
       ... on Region {
         name
         description

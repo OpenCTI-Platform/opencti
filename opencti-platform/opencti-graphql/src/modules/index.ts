@@ -87,6 +87,7 @@ import './retentionRules/retentionRules';
 import './dataSanity/dataSanity';
 import './xtm/hub/news-feed/news-feed';
 import './user/user';
+import './citizenshipDocument/citizenshipDocument';
 
 // incomplete modules
 import './report/report';
@@ -181,6 +182,7 @@ import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
 import './configPreset/configPreset-graphql';
+import './citizenshipDocument/citizenshipDocument-graphql';
 // endregion
 
 // region modules static init

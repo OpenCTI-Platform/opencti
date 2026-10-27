@@ -170,6 +170,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/observations/observables';
     case 'AuthenticationProvider':
       return '/dashboard/settings/accesses/authentications';
+    case 'Citizenship-Document':
+      return '/dashboard/entities/citizenship_documents';
     default:
       return null;
   }
@@ -188,6 +190,9 @@ export const resolveIdentityClass = (identityType: string): string => {
   if (identityType === 'SecurityPlatform') {
     return 'securityplatform';
   }
+  if (identityType === 'Citizenship-Document') {
+    return 'citizenship-document';
+  }
   return 'organization';
 };
 
@@ -203,6 +208,9 @@ export const resolveIdentityType = (identityClass: string): string => {
   }
   if (identityClass === 'securityplatform') {
     return 'SecurityPlatform';
+  }
+  if (identityClass === 'citizenshipdocument') {
+    return 'CitizenshipDocument';
   }
   return 'Organization';
 };

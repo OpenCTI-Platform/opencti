@@ -332,6 +332,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_location_type: string;
   x_opencti_reliability: string;
   x_opencti_organization_type: string;
+  x_opencti_citizenship_document_type: string;
   // Course-Of-Action specific
   x_opencti_threat_hunting: string;
   x_opencti_log_sources: Array<string>;
