@@ -61,6 +61,8 @@ type ConfigPresetImportItem {
     isDefault: Boolean!
     # The item already exists on the platform.
     exists: Boolean!
+    # The item needs the Enterprise Edition: on a Community platform it is disabled in the preview and skipped by the import. Static, never a "is available" flag, which would be stale once a license is entered.
+    requiresEnterpriseEdition: Boolean!
     fields: [ConfigPresetImportField!]!
     # Items imported with this one, whatever the selection.
     dependsOn: [ConfigPresetItemReference!]!

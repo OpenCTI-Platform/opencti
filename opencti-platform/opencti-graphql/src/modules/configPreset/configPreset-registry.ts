@@ -23,6 +23,14 @@ export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, i
 
 export const configPresetItemBundleId = (item: ConfigPresetItemDefinition) => item.bundleId ?? item.id;
 
+// Whether an item of a bundle needs the Enterprise Edition: the flag of the item, else the one of its family, else false.
+// familyId is the bare family id (the type of an item file is `<group>.<family>`).
+export const configPresetRequiresEnterpriseEdition = (familyId: string, bundleId: string): boolean => {
+  const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === familyId);
+  const item = family?.staticItems?.find((candidate) => configPresetItemBundleId(candidate) === bundleId);
+  return item?.requiresEnterpriseEdition ?? family?.requiresEnterpriseEdition ?? false;
+};
+
 // The type written in the item files and in dependencies.json: `<group id>.<category id>`
 export const configPresetFamilyType = (family: ConfigPresetFamilyDefinition) => `${family.group.id}.${family.id}`;
 

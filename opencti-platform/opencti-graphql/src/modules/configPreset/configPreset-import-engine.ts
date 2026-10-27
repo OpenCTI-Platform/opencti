@@ -7,7 +7,9 @@ import type { ConfigPresetSelectionInput } from '../../generated/graphql';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { CONFIG_PRESET_FAMILIES } from './configPreset-registry';
 import { checkConfigPresetImportAccess } from './configPreset-import-utils';
-import { computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
+import { computeConfigPresetItems, loadConfigPresetImportZip, skipEnterpriseEditionItem } from './configPreset-import-domain';
+import { configPresetRequiresEnterpriseEdition } from './configPreset-registry';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
 import { withConfigPresetImportLock } from './configPreset-import-lock';
@@ -77,7 +79,7 @@ const toOutput = (results: { item: ConfigPresetBundleItem; computed: ConfigPrese
 
 // Reads only: what the import would do, nothing is written, no session change, no audit event
 const dryRun = async (context: AuthContext, user: AuthUser, items: ConfigPresetBundleItem[]): Promise<ConfigPresetImportOutput> => {
-  return { results: toOutput(await computeConfigPresetItems(context, user, items)), report_id: null, settings: null };
+  return { results: toOutput(await computeConfigPresetItems(context, user, items, { skipEnterpriseEdition: true })), report_id: null, settings: null };
 };
 
 const realImport = async (
@@ -123,6 +125,8 @@ const realImport = async (
   const labels = new Map<string, string>();
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
   let stopReason: string | null = null;
+  // Read once per run: the Enterprise Edition items are skipped on a Community platform, whatever their value
+  const isEE = await isEnterpriseEdition(importContext);
   try {
     for (let i = 0; i < items.length && !stopReason; i += 1) {
       const item = items[i];
@@ -137,7 +141,10 @@ const realImport = async (
         }
         const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
         const importer = CONFIG_PRESET_FAMILIES.find((family) => family.id === item.type)!.importer!;
-        const computed = await importer.compute(importContext, runUser, item, plan);
+        // Checked before compute and apply, and before every other rule of the item
+        const computed = !isEE && configPresetRequiresEnterpriseEdition(item.type, item.id)
+          ? skipEnterpriseEditionItem(item)
+          : await importer.compute(importContext, runUser, item, plan);
         labels.set(configPresetPlanKey(item.type, item.id), computed.label);
         let result = toResult(item, computed.status, computed.reason);
         if (computed.status !== 'failed' && computed.status !== 'skipped') {

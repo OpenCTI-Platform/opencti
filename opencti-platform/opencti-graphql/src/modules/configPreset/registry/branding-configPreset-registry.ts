@@ -28,6 +28,8 @@ const whitemarkItem: ConfigPresetItemDefinition = {
   label: WHITEMARK_LABEL,
   translatable: true,
   fileName: 'whitemark.json',
+  // The switch of the whitemark is disabled on a Community platform: the import does not set it either
+  requiresEnterpriseEdition: true,
   exporter: (context) => getWhitemarkConfigPresetConfiguration(context),
 };
 // Listed before the themes, on the first page only
@@ -136,6 +138,7 @@ const brandingImporter: ConfigPresetImporter = {
 // Branding: whitemark pinned first, then the themes, paged and searched through the theme domain
 export const brandingFamily: ConfigPresetFamilyDefinition = {
   importer: brandingImporter,
+  staticItems: BRANDING_STATIC_ITEMS,
   id: BRANDING_FAMILY_ID,
   label: 'Branding',
   description: 'Themes, colors, logos',

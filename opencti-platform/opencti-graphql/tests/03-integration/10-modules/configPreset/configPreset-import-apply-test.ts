@@ -1,9 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { buildZip, CUSTOM_THEME_ID, itemFile, metadataFile, themeConfiguration, validBundleFiles } from '../../../utils/configPresetBundle';
 import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
 import { getClientBase } from '../../../../src/database/redis';
+import * as ee from '../../../../src/enterprise-edition/ee';
 import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../src/domain/settings';
 import { addTheme, deleteTheme, findAllThemes, findById as findThemeById } from '../../../../src/modules/theme/theme-domain';
 import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
@@ -66,10 +67,13 @@ describe('Config preset import: apply', () => {
   let before: Awaited<ReturnType<typeof readSettings>>;
 
   beforeEach(async () => {
+    // The whitemark needs the Enterprise Edition: the Community case is tested with the items that need it
+    vi.spyOn(ee, 'isEnterpriseEdition').mockResolvedValue(true);
     before = await readSettings();
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     const settings = await getSettings(testContext);
     await settingsEditField(testContext, ADMIN_USER, settings.id, [
       { key: 'platform_title', value: [before.platform_title] },

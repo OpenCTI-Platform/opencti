@@ -4642,6 +4642,7 @@ export type ConfigPresetImportItem = {
   isDefault: Scalars['Boolean']['output'];
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
+  requiresEnterpriseEdition: Scalars['Boolean']['output'];
   translatable: Scalars['Boolean']['output'];
 };
 
@@ -44901,6 +44902,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  requiresEnterpriseEdition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 

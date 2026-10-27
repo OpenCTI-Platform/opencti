@@ -9,7 +9,16 @@ import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
+import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { toConfigPresetSelection } from './configPresetImportSelection';
+import {
+  addEnterpriseEditionExclusions,
+  dropEnterpriseEditionItems,
+  excludeEnterpriseEditionItems,
+  getEnterpriseEditionKeys,
+  withoutEnterpriseEditionItems,
+} from './configPresetImportEnterpriseEdition';
 import { getConfigPresetErrorReason } from './configPresetImportStep';
 import {
   buildConfigPresetSelections,
@@ -48,6 +57,7 @@ const configPresetImportPreviewQuery = graphql`
           translatable
           isDefault
           exists
+          requiresEnterpriseEdition
           fields {
             key
             value
@@ -75,7 +85,7 @@ type Preview = ConfigPresetImportPreviewQuery$data['configPresetImportPreview'];
 type PreviewType = Preview['types'][number];
 
 // The list takes its counts from the items it was given: a bundle is read at once, there is no next page
-const toCountedTypes = (types: Preview['types']) => types.map((type) => ({ ...type, itemsPageInfo: { globalCount: type.items.length } }));
+const toCountedTypes = (types: ReadonlyArray<PreviewType>) => types.map((type) => ({ ...type, itemsPageInfo: { globalCount: type.items.length } }));
 
 type ImportSelections = ReturnType<typeof buildConfigPresetSelections>;
 
@@ -120,6 +130,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const environment = useRelayEnvironment();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selection, setSelection] = useState<ConfigPresetSelection>({});
@@ -151,7 +162,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           setPreview(loaded);
           // A new upload has no saved selection yet: every item starts selected, as in the export
           const isNew = session.revision === 0 && session.selections.length === 0;
-          setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
+          const restored = isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections);
+          // A license that expired since the selection was saved: the items that need it are dropped
+          setSelection(isEnterpriseEdition ? restored : dropEnterpriseEditionItems(restored, getEnterpriseEditionKeys(loaded.types)));
         }
       })
       .catch((err) => {
@@ -202,9 +215,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     }
   };
 
-  const types = preview ? toCountedTypes(preview.types) : [];
+  // What the selection helpers see: without the Enterprise Edition, the items that need it are left out
+  const types = preview ? toCountedTypes(withoutEnterpriseEditionItems(preview.types, isEnterpriseEdition)) : [];
+  const enterpriseEditionKeys = preview ? getEnterpriseEditionKeys(preview.types) : {};
   const forced = getConfigPresetForcedItems(types, selection);
-  const selections = buildConfigPresetSelections(types, selection);
+  // The backend never receives the items that need the Enterprise Edition on a Community platform
+  const selections = addEnterpriseEditionExclusions(buildConfigPresetSelections(types, selection), isEnterpriseEdition ? {} : enterpriseEditionKeys);
 
   const handleSelectionChange = (next: ConfigPresetSelection) => {
     setSelection(next);
@@ -222,6 +238,17 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     flushSave();
     onApply(selections);
   };
+
+  // A license entered in the wizard: the items it unlocks are not ticked, and the results computed without it are cleared
+  const wasEnterpriseEditionRef = useRef(isEnterpriseEdition);
+  useEffect(() => {
+    if (isEnterpriseEdition && !wasEnterpriseEditionRef.current) {
+      setSelection((current) => excludeEnterpriseEditionItems(current, enterpriseEditionKeys));
+      clearResults();
+    }
+    wasEnterpriseEditionRef.current = isEnterpriseEdition;
+  // Only a change of the license matters
+  }, [isEnterpriseEdition]);
 
   // Another import ended since the simulation was sent: its results no longer describe the platform
   useEffect(() => {
@@ -269,8 +296,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   if (!preview) {
     return <Spinner label={t_i18n('Loading')} />;
   }
-  const typeLabel = (type: PreviewType & { itemsPageInfo: { globalCount: number } }) => {
-    return `${t_i18n(type.label)} (${countConfigPresetCheckedItems([type], selection, forced)}/${type.itemsPageInfo.globalCount})`;
+  // The counted type of a type: without the items that need the Enterprise Edition on a Community platform
+  const countedOf = (type: PreviewType) => types.find(({ key }) => key === type.key)!;
+  const typeLabel = (type: PreviewType) => {
+    const counted = countedOf(type);
+    return `${t_i18n(type.label)} (${countConfigPresetCheckedItems([counted], selection, forced)}/${counted.itemsPageInfo.globalCount})`;
   };
   const saveHint = { idle: '', saving: t_i18n('Saving'), saved: t_i18n('Saved'), error: t_i18n('The selection could not be saved') }[saveState];
   return (
@@ -279,6 +309,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
+      {!isEnterpriseEdition && Object.values(enterpriseEditionKeys).some((keys) => keys.length > 0) && <EnterpriseEditionButton inLine />}
       {groupConfigPresetTypes(toCountedTypes(preview.types)).map((group) => (
         <div key={group.key} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
           <Text variant="title-sm">{t_i18n(group.label)}</Text>
@@ -288,7 +319,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                 label={typeLabel(type)}
                 description={t_i18n(type.description)}
                 checked={getConfigPresetCheckboxState([type], selection, forced)}
-                disabled={isSimulating}
+                disabled={isSimulating || countedOf(type).itemsPageInfo.globalCount === 0}
                 onCheckedChange={(checked) => handleSelectionChange(toggleConfigPresetTypes(selection, [type], checked === true))}
               />
               <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), paddingLeft: theme.spacing(3.5) }}>
@@ -300,6 +331,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                       selection={selection}
                       forced={forced}
                       disabled={isSimulating}
+                      requiresEnterpriseEdition={item.requiresEnterpriseEdition}
                       onSelectionChange={handleSelectionChange}
                       statusSlot={results?.[`${type.key}/${item.key}`]
                         ? <ConfigPresetResultLine status={results[`${type.key}/${item.key}`].status} reason={results[`${type.key}/${item.key}`].reason} />
