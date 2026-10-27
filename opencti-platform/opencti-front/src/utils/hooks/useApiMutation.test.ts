@@ -24,11 +24,11 @@ vi.mock('../../relay/environment', () => ({
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const fakeQuery = {} as GraphQLTaggedNode;
+const fakeQuery = (rootField: string) => ({ kind: 'Request', operation: { selections: [{ kind: 'LinkedField', name: rootField }] } }) as unknown as GraphQLTaggedNode;
 
 /** Render the hook and return the commit function. */
-const renderCommit = () => {
-  const { result } = renderHook(() => useApiMutation(fakeQuery));
+const renderCommit = (rootField = 'malwareAdd') => {
+  const { result } = renderHook(() => useApiMutation(fakeQuery(rootField)));
   const [commit] = result.current;
   return commit;
 };
@@ -102,6 +102,17 @@ describe('useApiMutation – deferred mode (isDeferredMode = true)', () => {
     commit({ variables: { input: { name: 'Test' } }, onCompleted } as Parameters<typeof commit>[0]);
 
     expect(onCompleted).toHaveBeenCalledWith({}, null);
+  });
+
+  it('sends a mutation that does not create anything, such as Ask AI, without capturing it', () => {
+    const commit = renderCommit('aiFixSpelling');
+    const onCompleted = vi.fn();
+
+    commit({ variables: { id: 'x', content: 'txt' }, onCompleted } as Parameters<typeof commit>[0]);
+
+    expect(mockCommit).toHaveBeenCalledOnce();
+    expect(captureInput).not.toHaveBeenCalled();
+    expect(onCompleted).not.toHaveBeenCalled(); // called by relay, not by us
   });
 
   it('does not throw when onCompleted is absent', () => {
