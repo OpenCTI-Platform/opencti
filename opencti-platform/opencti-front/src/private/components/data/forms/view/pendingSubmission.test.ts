@@ -113,6 +113,15 @@ describe('createPendingCollector.root', () => {
       IPv4Addr: { value: '1.2.3.4' },
     });
   });
+
+  it('sends the content of an Artifact once, given at the top level and under its type key', () => {
+    const collector = createPendingCollector();
+    const sample = new File(['x'], 'sample.bin');
+    const root = collector.root(option('__pending__:a', 'Artifact', { type: 'Artifact', file: sample, Artifact: { file: sample, mime_type: 'x' } }));
+    expect(collector.files).toEqual([sample]);
+    expect(root.files).toEqual([{ name: 'sample.bin', mime_type: undefined, uploadIndex: 0 }]);
+    expect(root.input).toEqual({ type: 'Artifact', Artifact: { mime_type: 'x' } });
+  });
 });
 
 describe('prepareFormSubmission', () => {
