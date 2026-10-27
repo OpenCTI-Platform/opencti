@@ -1,11 +1,11 @@
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import type { StixDataSanity, StoreEntityDataSanity } from './dataSanity-types';
 import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from './dataSanity-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertDataSanityToStix from './dataSanity-converter';
 import { v4 as uuidv4 } from 'uuid';
 
-const DATA_SANITY_DEFINITION: ModuleDefinition<StoreEntityDataSanity, StixDataSanity> = {
+export const DATA_SANITY_DEFINITION: ModuleDefinition<StoreEntityDataSanity, StixDataSanity> = {
   type: {
     id: 'dataSanity',
     name: ENTITY_TYPE_DATA_SANITY_EXECUTION,
@@ -33,5 +33,3 @@ const DATA_SANITY_DEFINITION: ModuleDefinition<StoreEntityDataSanity, StixDataSa
   },
   converter_2_1: convertDataSanityToStix,
 };
-
-registerDefinition(DATA_SANITY_DEFINITION);
