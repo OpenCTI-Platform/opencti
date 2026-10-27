@@ -1,4 +1,4 @@
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { DATA_SANITY_MANAGER_USER, executionContext } from '../utils/access';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -98,7 +98,7 @@ export const dataSanityHandler = async () => {
   logApp.info('[DATA_SANITY_MANAGER] Data sanity manager handler complete', { manager: DATA_SANITY_MANAGER_ID });
 };
 
-const DATA_SANITY_MANAGER_DEFINITION: ManagerDefinition = {
+export const DATA_SANITY_MANAGER_DEFINITION: ManagerDefinition = {
   id: DATA_SANITY_MANAGER_ID,
   label: 'Data sanity manager',
   executionContext: DATA_SANITY_MANAGER_CONTEXT,
@@ -115,5 +115,3 @@ const DATA_SANITY_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(DATA_SANITY_MANAGER_DEFINITION);

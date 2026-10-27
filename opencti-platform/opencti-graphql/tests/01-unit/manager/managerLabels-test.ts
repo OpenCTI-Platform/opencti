@@ -2,15 +2,19 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { MODULE_DESCRIPTORS } from '../../../src/composition-root';
 
 // Settings > Parameters renders t_i18n(module.id) for every manager reported by the cluster: a manager id without
 // a label in a language file reaches the screen as a raw id. Managers are collected from the sources, nothing is
-// imported or started: the legacy managers whose status() clusterManager.ts reports, and every registerManager() call.
+// started: the legacy managers whose status() clusterManager.ts reports, every registerManager() call, and the
+// managers of the module descriptors (plain data, so they are imported and read rather than parsed).
 
 const GRAPHQL_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const SRC_ROOT = path.join(GRAPHQL_ROOT, 'src');
 const LANG_ROOT = path.resolve(GRAPHQL_ROOT, '../opencti-front/lang');
 const CLUSTER_MANAGER_FILE = path.join(SRC_ROOT, 'manager', 'clusterManager.ts');
+// Its registerManager() call registers the managers of the module descriptors, collected from MODULE_DESCRIPTORS.
+const COMPOSITION_ROOT_FILE = path.join(SRC_ROOT, 'composition-root.ts');
 const SOURCE_EXTENSIONS = ['.ts', '.js'];
 
 // text: comments blanked; code: comments and the content of string, template and regex literals blanked.
@@ -323,7 +327,11 @@ const collectRegisteredManagersOf = (source: SourceFile, errors: string[]): Mana
 };
 
 const collectRegisteredManagers = (errors: string[]): ManagerId[] => listSourceFiles(SRC_ROOT)
+  .filter((file) => file !== COMPOSITION_ROOT_FILE)
   .flatMap((file) => collectRegisteredManagersOf(loadSource(file), errors));
+
+const collectDescriptorManagers = (): ManagerId[] => MODULE_DESCRIPTORS
+  .flatMap(({ id: moduleId, managers = [] }) => managers.map(({ id }) => ({ id, file: `module descriptor ${moduleId}` })));
 
 const collectClusterManagers = (errors: string[]): ManagerId[] => {
   const cluster = loadSource(CLUSTER_MANAGER_FILE);
@@ -374,7 +382,7 @@ const DICTIONARIES = new Map(LANGUAGES.map((language) => [language, {
 }]));
 
 const resolutionErrors: string[] = [];
-const MANAGERS = [...collectClusterManagers(resolutionErrors), ...collectRegisteredManagers(resolutionErrors)];
+const MANAGERS = [...collectClusterManagers(resolutionErrors), ...collectRegisteredManagers(resolutionErrors), ...collectDescriptorManagers()];
 const MANAGER_IDS = [...new Set(MANAGERS.map(({ id }) => id))].sort();
 
 describe('Manager labels of the Settings > Parameters page', () => {
@@ -431,9 +439,10 @@ describe('Manager labels of the Settings > Parameters page', () => {
     ]);
   });
 
-  it('should collect the managers of both registration paths', () => {
-    // RULE_ENGINE and HISTORY_MANAGER are reported by clusterManager.ts, the others go through registerManager().
-    expect(MANAGER_IDS).toEqual(expect.arrayContaining(['RULE_ENGINE', 'HISTORY_MANAGER', 'TELEMETRY_MANAGER', 'RETENTION_MANAGER', 'CATALOG_MANAGER']));
+  it('should collect the managers of every registration path', () => {
+    // RULE_ENGINE and HISTORY_MANAGER are reported by clusterManager.ts, DATA_SANITY_MANAGER is declared by a module
+    // descriptor, the others go through registerManager().
+    expect(MANAGER_IDS).toEqual(expect.arrayContaining(['RULE_ENGINE', 'HISTORY_MANAGER', 'TELEMETRY_MANAGER', 'RETENTION_MANAGER', 'CATALOG_MANAGER', 'DATA_SANITY_MANAGER']));
   });
 
   it('should treat a label that renders like the raw id as missing', () => {
