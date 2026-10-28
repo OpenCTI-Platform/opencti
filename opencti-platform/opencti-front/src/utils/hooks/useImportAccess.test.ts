@@ -151,12 +151,22 @@ describe('Hook: useImportAccess - form intake capability', () => {
     expect(hook.result.current.isForcedImportToDraft).toBe(false);
   });
 
-  it('should force a draft when the form intake capability is only granted in draft', () => {
+  it('should force the form submission to a draft, not the file import, when the form intake capability is only granted in draft', () => {
     const { hook } = testRenderHook(
       () => useImportAccess(),
       { userContext: buildUserContext([], [KNOWLEDGE_KNFORMINTAKE]) },
     );
-    expect(hook.result.current.isForcedImportToDraft).toBe(true);
+    expect(hook.result.current.isForcedFormSubmissionToDraft).toBe(true);
+    expect(hook.result.current.isForcedImportToDraft).toBe(false);
+  });
+
+  it('should keep the file import of a user with Import knowledge in main out of a draft when the form capability is in draft only', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([KNOWLEDGE_KNASKIMPORT], [KNOWLEDGE_KNFORMINTAKE]) },
+    );
+    expect(hook.result.current.isForcedImportToDraft).toBe(false);
+    expect(hook.result.current.isForcedFormSubmissionToDraft).toBe(true);
   });
 
   it('should not force a draft when the form intake capability is in draft but Create / Update knowledge is in main', () => {
@@ -230,7 +240,7 @@ describe('Hook: useImportAccess - isForcedFormSubmissionToDraft', () => {
     { capabilities: [KNOWLEDGE_KNFORMINTAKE], capabilitiesInDraft: [KNOWLEDGE_KNUPDATE], expected: false },
     { capabilities: [KNOWLEDGE_KNFORMINTAKE], capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT], expected: false },
     { capabilities: [KNOWLEDGE_KNFORMINTAKE], capabilitiesInDraft: [], expected: false },
-    // without it, the forcing of the import applies
+    // without it, a submission goes to a draft when the form capability or Create / Update knowledge is in draft only
     { capabilities: [], capabilitiesInDraft: [KNOWLEDGE_KNFORMINTAKE], expected: true },
     { capabilities: [], capabilitiesInDraft: [KNOWLEDGE_KNUPDATE], expected: true },
     { capabilities: [KNOWLEDGE_KNUPDATE], capabilitiesInDraft: [], expected: false },
