@@ -531,10 +531,10 @@ export const planSubmission = async (
 
   const isBypass = isUserHasCapability(user, BYPASS);
   validateFormSubmission(schema, values, isBypass);
+  validatePendingPayload(values, input.files?.length ?? 0);
   if (!isBypass) {
     checkFormSubmissionAccess(user, finalIsDraft, { pendingLabels: countPendingLabels(values), pendingKillChainPhases: countPendingKillChainPhases(values) });
   }
-  validatePendingPayload(values, input.files?.length ?? 0);
   validatePendingRoots(schema, values);
   const uploads = await readUploads(input.files, getPendingUploadCopies(values));
   values = resolvePendingFieldRefs(values, schema, uploads);

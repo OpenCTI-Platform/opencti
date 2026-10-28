@@ -773,6 +773,12 @@ describe('formSubmit - access to the destination', () => {
     expect(allowed.success).toBe(true);
   });
 
+  it('should reject a malformed payload with its validation error before checking the access', async () => {
+    const malformed = JSON.stringify({ name: 'Test Individual', mainEntityLookupPending: [null] });
+    const formOnly = { ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') };
+    await expect(formSubmit(mockContext, formOnly, { formId: 'form-1', values: malformed }, false)).rejects.toThrow('An object created in a form must be an object');
+  });
+
   it('should reject a main submission when the capability is only granted in draft', async () => {
     const draftOnly = { ...mockUser, capabilities: [], capabilitiesInDraft: caps('KNOWLEDGE_KNFORMINTAKE') };
     await expect(submit(draftOnly, false)).rejects.toThrow('You are not allowed to submit forms in this destination.');
