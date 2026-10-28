@@ -787,7 +787,7 @@ const RELATIONSHIP_REFS: Record<string, string> = {
   killChainPhases: 'kill-chain-phase',
   externalReferences: 'external-reference',
 };
-const RELATIONSHIP_ATTRIBUTES: Record<string, { type: string; format?: string }> = {
+const RELATIONSHIP_ATTRIBUTES: Record<string, { type: string; format?: string; vocabularyCategory?: string }> = {
   creator_id: { type: 'string', format: 'id' },
   relationship_type: { type: 'string', format: 'short' },
   entity_type: { type: 'string', format: 'short' },
