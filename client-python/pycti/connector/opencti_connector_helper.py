@@ -57,7 +57,10 @@ from pycti.connector import opencti_connector_build
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
-from pycti.utils.opencti_tls import get_tls_reject_unauthorized
+from pycti.utils.opencti_tls import (
+    get_tls_reject_unauthorized,
+    log_tls_verification_disabled,
+)
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 """List of string values considered as boolean True."""
@@ -2558,6 +2561,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.connector_logger = self.api.logger_class(self.connect_name)
         self.connector_info.logger = self.connector_logger
+        log_tls_verification_disabled(self.connector_logger, config)
         # For retro compatibility
         self.log_debug = self.connector_logger.debug
         self.log_info = self.connector_logger.info

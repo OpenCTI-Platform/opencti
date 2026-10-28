@@ -254,11 +254,12 @@ class OpenCTIApiClient:
         self.logger_class = logger(log_level.upper(), json_logging)
         self.app_logger = self.logger_class("api")
         self.admin_logger = self.logger_class("admin")
-        if self.ssl_verify is False:
-            log_tls_verification_disabled(self.app_logger)
 
         # Setup proxy certificates if provided
         self._setup_proxy_certificates()
+        # Proxy certificates enable the verification, warn only when the global default still disables it
+        if ssl_verify is None and self.ssl_verify is False:
+            log_tls_verification_disabled(self.app_logger)
 
         # Define API
         self.api_token = token
