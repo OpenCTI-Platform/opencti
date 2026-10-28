@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { ImportStatus } from '../../../types/import';
+import type { ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetConfiguration } from '../configPreset-types';
 
 // Reasons of a refusal, read by the front in extensions.data.reason (the message is only for display)
@@ -25,7 +25,7 @@ export interface ConfigPresetBundleItem {
 
 // What an importer decides for an item, without writing anything
 export interface ConfigPresetComputedItem {
-  status: ImportStatus;
+  status: ConfigImportStatus;
   reason?: string;
   label: string;
   // True when the label is a static string the UI translates
@@ -47,7 +47,7 @@ export interface ConfigPresetImporter {
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan) => Promise<ConfigPresetComputedItem>;
   // Writes the item with one domain call, so that a failure never leaves it half written; an error makes the item failed.
   // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten).
-  apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem) => Promise<ImportStatus | void>;
+  apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem) => Promise<ConfigImportStatus | void>;
 }
 
 // Content of metadata.json

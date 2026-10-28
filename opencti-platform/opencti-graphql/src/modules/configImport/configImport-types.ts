@@ -3,17 +3,18 @@
 // A dry run decides the same result and writes nothing, publishes nothing.
 // The export is the other way round: each module owns the format of its configuration, and the schema that validates the import
 // is the one the export is built from.
-export type ImportMode = 'add' | 'overwrite';
+// add: an item that exists is refused. overwrite: it is patched, and an item that does not exist is created.
+export type ConfigImportMode = 'add' | 'overwrite';
 
-export type ImportStatus = 'created' | 'overwritten' | 'skipped' | 'failed';
+export type ConfigImportStatus = 'created' | 'overwritten' | 'skipped' | 'failed';
 
-export interface ImportOptions {
-  mode: ImportMode;
+export interface ConfigImportOptions {
+  mode: ConfigImportMode;
   dryRun?: boolean;
 }
 
-export interface ImportResult<TConfiguration = unknown, TCode extends string = string> {
-  status: ImportStatus;
+export interface ConfigImportResult<TConfiguration = unknown, TCode extends string = string> {
+  status: ConfigImportStatus;
   // Why nothing is imported, the codes are the ones of the module
   code?: TCode;
   // The text shown to the user

@@ -3,7 +3,7 @@ import { FunctionalError } from '../../../config/errors';
 import { getSettings, setPlatformBootstrapStatus } from '../../../domain/settings';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { ImportStatus } from '../../../types/import';
+import type { ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetSelectionInput } from '../../../generated/graphql';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
@@ -32,7 +32,7 @@ export interface ConfigPresetImportOutput {
   settings: unknown | null;
 }
 
-const toResult = (item: ConfigPresetBundleItem, status: ImportStatus, reason?: string): ConfigPresetImportItemResult => ({
+const toResult = (item: ConfigPresetBundleItem, status: ConfigImportStatus, reason?: string): ConfigPresetImportItemResult => ({
   type: item.type,
   key: item.id,
   status: status.toUpperCase() as ConfigPresetImportResultStatus,

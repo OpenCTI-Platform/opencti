@@ -2,7 +2,7 @@ import type { FileHandle } from 'fs/promises';
 import { FunctionalError } from '../../config/errors';
 import type { EditInput } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { ImportOptions, ImportResult } from '../../types/import';
+import type { ConfigImportOptions, ConfigImportResult } from '../configImport/configImport-types';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { BUILT_IN_THEME_STANDARD_IDS } from './theme-constants';
 import { addTheme, checkExistingTheme, fieldPatchTheme, findById } from './theme-domain';
@@ -11,7 +11,7 @@ import { type ThemeImportConfiguration, themeImportSchema } from './theme-import
 export type ThemeImportCode = 'invalid' | 'standard_id_required' | 'exists' | 'name_conflict' | 'built_in';
 
 // add: the theme must not exist yet. overwrite: a theme with the same standard id is patched, else it is created.
-export type ThemeImportResult = ImportResult<ThemeImportConfiguration, ThemeImportCode> & {
+export type ThemeImportResult = ConfigImportResult<ThemeImportConfiguration, ThemeImportCode> & {
   // The theme written, absent on a dry run
   theme?: Awaited<ReturnType<typeof addTheme>>;
 };
@@ -30,7 +30,7 @@ export const importTheme = async (
   context: AuthContext,
   user: AuthUser,
   configuration: unknown,
-  { mode, dryRun = false }: ImportOptions,
+  { mode, dryRun = false }: ConfigImportOptions,
 ): Promise<ThemeImportResult> => {
   const parsed = themeImportSchema.safeParse(configuration);
   if (!parsed.success) {
