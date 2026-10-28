@@ -70,6 +70,7 @@ def test_api_client_explicit_ssl_verify_wins_over_global_switch():
     assert client.ssl_verify is True
 
 
+@patch.dict(os.environ, {}, clear=True)
 def test_tls_verification_disabled_warning_is_logged_once():
     app_logger = MagicMock()
     with patch.object(opencti_tls, "_tls_warning_logged", False):
@@ -77,3 +78,57 @@ def test_tls_verification_disabled_warning_is_logged_once():
         log_tls_verification_disabled(app_logger)
     app_logger.warning.assert_called_once()
     assert "OPENCTI_TLS_REJECT_UNAUTHORIZED=true" in app_logger.warning.call_args[0][0]
+
+
+@pytest.mark.parametrize(
+    "env, config",
+    [
+        ({"OPENCTI_TLS_REJECT_UNAUTHORIZED": "true"}, None),
+        ({}, {"opencti": {"tls_reject_unauthorized": True}}),
+    ],
+)
+def test_tls_verification_disabled_warning_is_skipped_when_enabled_globally(
+    env, config
+):
+    app_logger = MagicMock()
+    with patch.dict(os.environ, env, clear=True), patch.object(
+        opencti_tls, "_tls_warning_logged", False
+    ):
+        log_tls_verification_disabled(app_logger, config)
+    app_logger.warning.assert_not_called()
+
+
+def _build_api_client(setup_proxy_certificates=None, **kwargs):
+    with patch.object(
+        OpenCTIApiClient,
+        "_setup_proxy_certificates",
+        autospec=True,
+        side_effect=setup_proxy_certificates,
+    ), patch(
+        "pycti.api.opencti_api_client.log_tls_verification_disabled"
+    ) as log_warning:
+        OpenCTIApiClient(
+            url="http://localhost:4000",
+            token="test-token",
+            perform_health_check=False,
+            **kwargs,
+        )
+    return log_warning
+
+
+@patch.dict(os.environ, {}, clear=True)
+def test_api_client_warns_when_using_the_disabled_global_default():
+    _build_api_client().assert_called_once()
+
+
+@patch.dict(os.environ, {}, clear=True)
+def test_api_client_does_not_warn_on_explicit_ssl_verify():
+    _build_api_client(ssl_verify=False).assert_not_called()
+
+
+@patch.dict(os.environ, {}, clear=True)
+def test_api_client_does_not_warn_when_proxy_certificates_enable_verification():
+    def use_proxy_bundle(client):
+        client.ssl_verify = "/tmp/combined-ca-bundle.crt"
+
+    _build_api_client(setup_proxy_certificates=use_proxy_bundle).assert_not_called()

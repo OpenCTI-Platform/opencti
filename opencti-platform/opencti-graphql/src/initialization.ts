@@ -37,7 +37,7 @@ export const checkFeatureFlags = () => {
 
 export const checkTlsVerification = () => {
   if (!TLS_REJECT_UNAUTHORIZED) {
-    logApp.warn('[OPENCTI] TLS certificate verification is disabled for outgoing connections (tls:reject_unauthorized=false). '
+    logApp.warn('[OPENCTI] TLS certificate verification is disabled for the outgoing connections that do not set their own option (tls:reject_unauthorized=false). '
       + 'It will be enabled by default in an upcoming version: set TLS__REJECT_UNAUTHORIZED=true to opt in now.');
   }
 };

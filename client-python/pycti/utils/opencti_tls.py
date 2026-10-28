@@ -34,18 +34,22 @@ def get_tls_reject_unauthorized(config: Optional[Dict] = None) -> bool:
 _tls_warning_logged = False
 
 
-def log_tls_verification_disabled(app_logger) -> None:
-    """Warn once per process that TLS certificate verification is disabled.
+def log_tls_verification_disabled(app_logger, config: Optional[Dict] = None) -> None:
+    """Warn once per process when the global TLS switch is not enabled.
 
     :param app_logger: Logger used to emit the warning
     :type app_logger: AppLogger
+    :param config: Configuration dictionary loaded from YAML file
+    :type config: Dict, optional
     """
     global _tls_warning_logged
-    if _tls_warning_logged:
+    if _tls_warning_logged or get_tls_reject_unauthorized(config):
         return
     _tls_warning_logged = True
     app_logger.warning(
-        "TLS certificate verification is disabled. It will be enabled by default "
-        "in an upcoming version: set " + TLS_REJECT_UNAUTHORIZED_ENV + "=true "
-        "to opt in now."
+        "TLS certificate verification is disabled for the connections that do "
+        "not set their own option (" + TLS_REJECT_UNAUTHORIZED_ENV + "=false). "
+        "It will be enabled by default in an upcoming version: set "
+        + TLS_REJECT_UNAUTHORIZED_ENV
+        + "=true to opt in now."
     )

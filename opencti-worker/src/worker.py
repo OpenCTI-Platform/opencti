@@ -19,7 +19,10 @@ from pycti.connector.opencti_connector_helper import (
     get_config_variable,
     parse_boolean_config,
 )
-from pycti.utils.opencti_tls import get_tls_reject_unauthorized
+from pycti.utils.opencti_tls import (
+    get_tls_reject_unauthorized,
+    log_tls_verification_disabled,
+)
 
 from listen_handler import ListenHandler
 from message_queue_consumer import MessageQueueConsumer
@@ -206,6 +209,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             provider="worker/" + __version__,
         )
         self.worker_logger = self.api.logger_class("worker")
+        log_tls_verification_disabled(self.worker_logger, config)
 
     def build_pika_parameters(
         self, connector_config: Dict[str, Any]
