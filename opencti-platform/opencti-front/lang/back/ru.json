@@ -151,6 +151,8 @@
   "Connector manager image": "Изображение менеджера коннекторов",
   "Connector manager requested status": "Запрошенное состояние менеджера коннектора",
   "Connector name": "Название коннектора",
+  "Connector reported a critical error": "Коннектор сообщил о критической ошибке",
+  "Connector reported an error": "Коннектор сообщил об ошибке",
   "Connector scope": "Область применения коннектора",
   "Connector slug": "Корпус разъема",
   "Connector state": "Состояние коннектора",

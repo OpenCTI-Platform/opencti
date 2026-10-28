@@ -3,7 +3,8 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../../schema/internalOb
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../connector/connector-types';
 import { durationInMs } from '../../utils/format';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../ingestion/ingestion-types';
-import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
+import { redisGetConnectorErrors, redisGetConnectorsHeartbeats } from '../connector/connector-redis';
+import type { ConnectorInfoError } from '../connector/connector-types';
 import { redisGetIngestionLogHistory } from '../../database/redis';
 import { findCapabilityDescription } from '../../database/data-initialization';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -16,9 +17,17 @@ export const HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT = 'USER_NOT_SERVICE_ACCOUNT';
 export const HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED = 'FEED_AND_SYNC_EXECUTION_FAILED';
 export const HEALTH_CHECK_SOURCE_ACCESS_DENIED = 'SOURCE_ACCESS_DENIED';
 export const HEALTH_CHECK_LAST_RUN_FAILED = 'LAST_RUN_FAILED';
+export const HEALTH_CHECK_CONNECTOR_ERROR_REPORTED = 'CONNECTOR_ERROR_REPORTED';
+export const HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED = 'CONNECTOR_CRITICAL_ERROR_REPORTED';
+
+// A connector reports its errors with a criticity (higher is worse): from this one the most critical error is blocking, below it is advisory
+// ponytail: arbitrary default, tune it once real connectors report errors
+export const CONNECTOR_ERROR_BLOCKING_CRITICITY = 2;
 
 // Every check of the registry: adding a check adds its code here
 export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
+  | typeof HEALTH_CHECK_CONNECTOR_ERROR_REPORTED
+  | typeof HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED
   | typeof HEALTH_CHECK_USER_MISSING_CAPABILITY
   | typeof HEALTH_CHECK_HEARTBEAT_MISSING
   | typeof HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT
@@ -208,6 +217,26 @@ const scrubWorkError = (message: string) => message
   .replace(URL_QUERY_STRING, '')
   .slice(0, MAX_WORK_ERROR_LENGTH);
 
+/**
+ * Reads the most critical error reported on ping by each connector (they expire 10 minutes after the last ping that sent them).
+ * Only the top one: it is what the check stores, and the metadata must stay the same while the failure lasts.
+ * A connector reporting no error is omitted: one not pinging has none, which is not a failure.
+ */
+const getConnectorsTopReportedError = async (ingestors: HealthCheckIngestor[]): Promise<Map<string, ConnectorInfoError>> => {
+  const errorsByConnector = await Promise.all(ingestors.map((ingestor) => redisGetConnectorErrors(ingestor.internal_id)));
+  const topErrors = new Map<string, ConnectorInfoError>();
+  errorsByConnector.forEach((errors, index) => {
+    const top = errors.reduce<ConnectorInfoError | undefined>((max, error) => (!max || error.criticity > max.criticity ? error : max), undefined);
+    if (top) {
+      topErrors.set(ingestors[index].internal_id, top);
+    }
+  });
+  return topErrors;
+};
+
+// Scrubbed like a work error: the message is written by the connector and may quote a url with a secret
+const toReportedErrorMetadata = ({ code, message }: ConnectorInfoError): HealthCheckMetadata => ({ error_code: code, error_message: scrubWorkError(message) });
+
 // Same window as the connector liveness (isConnectorActive).
 // A heartbeat in the future (clock skew between nodes) is alive
 export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: string): boolean => {
@@ -330,6 +359,29 @@ export const HEALTH_CHECK_REGISTRY = {
       const message = failure.messages[0];
       return message ? { error: scrubWorkError(message) } : {};
     },
+  }),
+  // Errors the connector reports itself on ping. Every connector: one not pinging reported nothing, which is no failure.
+  // The most critical error under the threshold: advisory, the connector may still ingest
+  [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED]: defineRuntimeCheck({
+    kind: IngestionHealthCheckKind.Runtime,
+    label: 'Connector reported an error',
+    severity: IngestionHealthCheckSeverity.Advisory,
+    message: () => 'Connector reported an error: {error_code} - {error_message}',
+    isEnabled: (ingestor) => ingestor.entity_type === ENTITY_TYPE_CONNECTOR,
+    getRuntimeData: (ingestors) => getConnectorsTopReportedError(ingestors),
+    // When the error is critical, CONNECTOR_CRITICAL_ERROR_REPORTED tells it: only that one is reported
+    supersededBy: HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED,
+    getFailure: (error) => (error && error.criticity < CONNECTOR_ERROR_BLOCKING_CRITICITY ? toReportedErrorMetadata(error) : null),
+  }),
+  // The most critical error reaching the threshold: blocking
+  [HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]: defineRuntimeCheck({
+    kind: IngestionHealthCheckKind.Runtime,
+    label: 'Connector reported a critical error',
+    severity: IngestionHealthCheckSeverity.Blocking,
+    message: () => 'Connector reported a critical error: {error_code} - {error_message}',
+    isEnabled: (ingestor) => ingestor.entity_type === ENTITY_TYPE_CONNECTOR,
+    getRuntimeData: (ingestors) => getConnectorsTopReportedError(ingestors),
+    getFailure: (error) => (error && error.criticity >= CONNECTOR_ERROR_BLOCKING_CRITICITY ? toReportedErrorMetadata(error) : null),
   }),
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
 

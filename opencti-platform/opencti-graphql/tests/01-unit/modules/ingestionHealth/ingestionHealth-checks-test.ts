@@ -14,6 +14,9 @@ import {
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
 import {
+  CONNECTOR_ERROR_BLOCKING_CRITICITY,
+  HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED,
+  HEALTH_CHECK_CONNECTOR_ERROR_REPORTED,
   HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_LAST_RUN_FAILED,
@@ -28,6 +31,7 @@ import {
   type RuntimeDataReadContext,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/connector/connector-types';
+import { redisGetConnectorErrors } from '../../../../src/modules/connector/connector-redis';
 import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
 import { type ConnectorWorkError, loadConnectorsRuntimeState } from '../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks';
@@ -36,6 +40,10 @@ import { HealthTransition, type IngestionHealthFields, type StoredHealthCheck, t
 vi.mock('../../../../src/database/redis', async (importActual) => ({
   ...(await importActual<typeof import('../../../../src/database/redis')>()),
   redisGetIngestionLogHistory: vi.fn(),
+}));
+vi.mock('../../../../src/modules/connector/connector-redis', async (importActual) => ({
+  ...(await importActual<typeof import('../../../../src/modules/connector/connector-redis')>()),
+  redisGetConnectorErrors: vi.fn(),
 }));
 vi.mock('../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks', async (importActual) => ({
   ...(await importActual<typeof import('../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks')>()),
@@ -255,8 +263,13 @@ describe('isRuntimeCheckEnabled', () => {
     expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING })).toBe(true);
   });
 
-  it('should be false for a connector not pinging continuously whose last work is not read: a stream', () => {
-    expect(isRuntimeCheckEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
+  it('should be true for a stream not pinging continuously: its reported errors are read', () => {
+    expect(isRuntimeCheckEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
+  });
+
+  it('should be false for a stream once the reported errors checks are disabled on the platform: nothing to read', () => {
+    const disabledHealthChecks = [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED];
+    expect(isRuntimeCheckEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks })).toBe(false);
   });
 
   it('should be true for a connector not pinging continuously whose last work is read: not a stream', () => {
@@ -275,9 +288,11 @@ describe('isRuntimeCheckEnabled', () => {
   });
 
   it('should be false when the only runtime check enabled for the ingestion is disabled on the platform: nothing to read', () => {
-    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_HEARTBEAT_MISSING] })).toBe(false);
+    const connectorChecks = [HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_LAST_RUN_FAILED, HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED];
+    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: connectorChecks })).toBe(false);
     const failingFeed = { ...FEED, last_execution_status: 'error' };
-    expect(isRuntimeCheckEnabled(failingFeed, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(false);
+    const feedChecks = [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, HEALTH_CHECK_SOURCE_ACCESS_DENIED];
+    expect(isRuntimeCheckEnabled(failingFeed, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks: feedChecks })).toBe(false);
     // Another check disabled: still read
     expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(true);
   });
@@ -602,6 +617,57 @@ describe('last run failed check', () => {
     const read = {} as RuntimeDataReadContext;
     expect(await HEALTH_CHECK_REGISTRY[HEALTH_CHECK_LAST_RUN_FAILED].getRuntimeData([IMPORT_CONNECTOR], read)).toBe(state);
     expect(loadConnectorsRuntimeState).toHaveBeenCalledWith([IMPORT_CONNECTOR], read);
+  });
+});
+
+describe('connector reported errors checks', () => {
+  const LOW = CONNECTOR_ERROR_BLOCKING_CRITICITY - 1;
+  const HIGH = CONNECTOR_ERROR_BLOCKING_CRITICITY;
+  const evaluate = (topError: object | undefined) => computeIngestionHealthChecks(CONNECTOR, {
+    ...CONTEXT,
+    runtimeData: topError ? { [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED]: topError as never, [HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]: topError as never } : {},
+  });
+  const metadata = (message: string) => ({ error_code: 'RATE_LIMITED', error_message: message });
+
+  it('should report an error under the threshold as advisory, degrading the status', () => {
+    const checks = evaluate({ code: 'RATE_LIMITED', message: 'Too many requests', criticity: LOW });
+    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, health_check_metadata: metadata('Too many requests') }]);
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+
+  it('should report an error reaching the threshold as blocking, making the status critical', () => {
+    const checks = evaluate({ code: 'RATE_LIMITED', message: 'Too many requests', criticity: HIGH });
+    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED, health_check_metadata: metadata('Too many requests') }]);
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+  });
+
+  it('should pass when the connector reported nothing', () => {
+    expect(evaluate(undefined)).toEqual([]);
+  });
+
+  it('should scrub the query string of the message', () => {
+    const [check] = evaluate({ code: 'RATE_LIMITED', message: 'GET https://api.example.com/x?key=secret failed', criticity: LOW });
+    expect(check.health_check_metadata?.error_message).toBe('GET https://api.example.com/x failed');
+  });
+
+  it('should be enabled for every connector, pinging or not, and nothing else', () => {
+    [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED].forEach((code) => {
+      const { isEnabled } = HEALTH_CHECK_REGISTRY[code];
+      expect(isEnabled(CONNECTOR, NOT_PINGING)).toBe(true);
+      expect(isEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, NOT_PINGING)).toBe(true);
+      expect(isEnabled(FEED, NOT_PINGING)).toBe(false);
+      expect(isEnabled(SYNC, NOT_PINGING)).toBe(false);
+    });
+  });
+
+  it('should read the most critical error of each connector, omitting the ones without error', async () => {
+    const other = { ...CONNECTOR, internal_id: 'other-id' };
+    const top = { code: 'B', message: 'worse', criticity: 3 };
+    vi.mocked(redisGetConnectorErrors).mockImplementation(async (id) => (id === CONNECTOR.internal_id
+      ? [{ code: 'A', message: 'minor', criticity: 1 }, top]
+      : []));
+    const values = await HEALTH_CHECK_REGISTRY[HEALTH_CHECK_CONNECTOR_ERROR_REPORTED].getRuntimeData([CONNECTOR, other], {} as RuntimeDataReadContext);
+    expect(values).toEqual(new Map([[CONNECTOR.internal_id, top]]));
   });
 });
 

@@ -151,6 +151,8 @@
   "Connector manager image": "コネクタマネージャイメージ",
   "Connector manager requested status": "コネクタマネージャ要求ステータス",
   "Connector name": "コネクタ名",
+  "Connector reported a critical error": "コネクタから重大なエラーが報告されました",
+  "Connector reported an error": "コネクタからエラーが報告されました",
   "Connector scope": "コネクタスコープ",
   "Connector slug": "コネクタ・スラグ",
   "Connector state": "コネクタの状態",

@@ -151,6 +151,8 @@
   "Connector manager image": "Bild des Verbindungsmanagers",
   "Connector manager requested status": "Verbindungsmanager angeforderter Status",
   "Connector name": "Name des Verbinders",
+  "Connector reported a critical error": "Der Connector hat einen kritischen Fehler gemeldet",
+  "Connector reported an error": "Der Connector hat einen Fehler gemeldet",
   "Connector scope": "Konnektorumfang",
   "Connector slug": "Connector-Slug",
   "Connector state": "Zustand des Verbinders",

@@ -151,6 +151,8 @@
   "Connector manager image": "连接器管理器图像",
   "Connector manager requested status": "连接器管理器请求状态",
   "Connector name": "连接器名称",
+  "Connector reported a critical error": "连接器报告了一个严重错误",
+  "Connector reported an error": "连接器报告了一个错误",
   "Connector scope": "连接器范围",
   "Connector slug": "连接器核心",
   "Connector state": "连接器状态",

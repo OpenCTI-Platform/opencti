@@ -151,6 +151,8 @@
   "Connector manager image": "Connector manager image",
   "Connector manager requested status": "Connector manager requested status",
   "Connector name": "Connector name",
+  "Connector reported a critical error": "Connector reported a critical error",
+  "Connector reported an error": "Connector reported an error",
   "Connector scope": "Connector scope",
   "Connector slug": "Connector slug",
   "Connector state": "Connector state",
