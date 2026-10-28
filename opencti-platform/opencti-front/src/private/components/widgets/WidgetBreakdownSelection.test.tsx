@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent } from '@testing-library/react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import type { FilterDefinition } from '../../../utils/hooks/useAuth';
 import type { WidgetDataSelection } from '../../../utils/widget/widget';
@@ -8,6 +8,8 @@ import type { WidgetDataSelection } from '../../../utils/widget/widget';
 const mocks = vi.hoisted(() => ({
   setConfigWidget: vi.fn(),
   widget: {} as Record<string, unknown>,
+  variables: undefined as unknown[] | undefined,
+  fetchSavedFilterContent: vi.fn(),
 }));
 
 const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
@@ -33,6 +35,12 @@ vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
       ]),
     },
   }),
+}));
+vi.mock('../../../components/dashboard/DashboardVariablesContext', () => ({
+  useOptionalDashboardVariableDefinitions: () => mocks.variables,
+}));
+vi.mock('../../../components/dashboard/dashboardVizUtils', () => ({
+  fetchSavedFilterContent: mocks.fetchSavedFilterContent,
 }));
 vi.mock('./WidgetConfigContext', () => ({
   useWidgetConfigContext: () => ({
@@ -65,6 +73,7 @@ const setWidget = (overrides: Record<string, unknown>) => {
 describe('WidgetBreakdownSelection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.variables = undefined;
   });
 
   const isDisabled = (element: HTMLElement) => element.hasAttribute('disabled') || element.getAttribute('data-disabled') !== null;
@@ -145,6 +154,62 @@ describe('WidgetBreakdownSelection', () => {
     expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
       parameters: { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
     }));
+  });
+
+  describe('saved filters and dashboard variables', () => {
+    const TYPE_VARIABLE_ID = '6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f';
+    const typeVariable = (restriction: Record<string, unknown>) => ({ id: TYPE_VARIABLE_ID, name: 'type', type: 'entityType', defaultValue: null, restriction });
+    const byTypeVariable = {
+      perspective: 'entities',
+      filters: { mode: 'and', filters: [{ key: 'entity_type', values: [`$var:${TYPE_VARIABLE_ID}`], operator: 'eq', mode: 'or' }], filterGroups: [] },
+    } as unknown as WidgetDataSelection;
+
+    it('offers the fields of the types a type variable allows, and keeps a chosen one', () => {
+      mocks.variables = [typeVariable({ mode: 'selection', values: ['Report'] })];
+      setWidget({ dataSelection: [byTypeVariable], parameters: { breakdownBy: 'report_types' } });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+
+      expect(getAllByRole('combobox')[0].textContent).toContain('Report types');
+      expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+    });
+
+    it('only offers the fields of any type for a type variable that may hold any type', () => {
+      mocks.variables = [typeVariable({ mode: 'none' })];
+      setWidget({ dataSelection: [byTypeVariable], parameters: { breakdownBy: 'report_types' } });
+      testRender(<WidgetBreakdownSelection />);
+
+      expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
+        parameters: { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
+      }));
+    });
+
+    it('offers the fields of the types of the saved filter, once it is read', async () => {
+      let readSavedFilter: (filters: unknown) => void = () => {};
+      mocks.fetchSavedFilterContent.mockReturnValue(new Promise((resolve) => {
+        readSavedFilter = resolve;
+      }));
+      const savedFilter = { perspective: 'entities', filters_id: 'saved-filter', filters: undefined } as unknown as WidgetDataSelection;
+      setWidget({ dataSelection: [savedFilter], parameters: { breakdownBy: 'report_types' } });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+
+      // The types are unknown until then: the field is kept
+      expect(mocks.fetchSavedFilterContent).toHaveBeenCalledWith('saved-filter');
+      expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+      readSavedFilter(reports.filters);
+      await waitFor(() => expect(getAllByRole('combobox')[0].textContent).toContain('Report types'));
+      expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+    });
+
+    it('keeps the field of a saved filter that cannot be read', async () => {
+      mocks.fetchSavedFilterContent.mockResolvedValue(null);
+      const savedFilter = { perspective: 'entities', filters_id: 'deleted-filter', filters: undefined } as unknown as WidgetDataSelection;
+      setWidget({ dataSelection: [savedFilter], parameters: { breakdownBy: 'report_types' } });
+      testRender(<WidgetBreakdownSelection />);
+
+      await waitFor(() => expect(mocks.fetchSavedFilterContent).toHaveBeenCalled());
+      await act(async () => {});
+      expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+    });
   });
 
   describe('audits', () => {

@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
   error: null as unknown,
   dashboardViz: vi.fn(),
+  resolvedDataSelection: null as unknown[] | null,
   bars: vi.fn(),
   lines: vi.fn(),
   areas: vi.fn(),
@@ -29,7 +30,9 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: (args: unknown) => {
     mocks.dashboardViz(args);
-    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {} };
+    // Resolved as is, unless the test sets what its saved filters and variables resolve to
+    const resolvedDataSelection = mocks.resolvedDataSelection ?? (args as { dataSelection: unknown[] }).dataSelection;
+    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {}, resolvedDataSelection };
   },
 }));
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
@@ -141,6 +144,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     vi.clearAllMocks();
     mocks.width = 1200;
     mocks.error = null;
+    mocks.resolvedDataSelection = null;
   });
 
   it('queries one breakdown with the dataset filters, date attribute and series limit', () => {
@@ -375,8 +379,37 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
   it('does not query a breakdown field the dataset does not support, and says so', () => {
     const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection));
-    expect(mocks.dashboardViz).not.toHaveBeenCalled();
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
+    expect(buildQueryVariables(dataSelection, config, parameters)).toBeNull();
     expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+    expect(mocks.lines).not.toHaveBeenCalled();
+  });
+
+  it('checks the field on the dataset its saved filters and variables resolve to, as it is queried', async () => {
+    // The type is a dashboard variable: only the resolved dataset says it is a report, which has assignees
+    const variableSelection = {
+      ...selection,
+      filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['$var:6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+    } as unknown as WidgetDataSelection;
+    mocks.resolvedDataSelection = [selection];
+    respond([{ label: 'user-1', entity: null, values: dailyValues(3) }]);
+    render(makeWidget('line', { breakdownBy: 'objectAssignee' }, variableSelection));
+    const { buildQueryVariables, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
+    expect(buildQueryVariables([selection], config, parameters)).toMatchObject({ field: 'objectAssignee', types: ['Report'] });
+    await drawn(mocks.lines);
+
+    // A dataset whose saved filter resolves to any entity: the same field is refused, without query
+    mocks.resolvedDataSelection = [noTypeSelection];
+    const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }, { ...selection, filters_id: 'saved-filter' } as WidgetDataSelection));
+    expect(mocks.dashboardViz.mock.lastCall?.[0].buildQueryVariables([noTypeSelection], config, parameters)).toBeNull();
+    expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+  });
+
+  it('accepts the entity type for a dataset resolved to a single type, a type variable may hold one', () => {
+    respond([]);
+    render(makeWidget('line', { breakdownBy: 'entity_type' }, selection));
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
+    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ field: 'entity_type', types: ['Report'] });
   });
 
   it('shows the no data state without any series', () => {
