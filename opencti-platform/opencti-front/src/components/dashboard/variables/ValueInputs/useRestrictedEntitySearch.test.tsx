@@ -77,7 +77,8 @@ describe('useRestrictedEntitySearch', () => {
     act(() => relayEnv.mock.rejectMostRecentOperation(new Error('FORBIDDEN_ACCESS')));
     expect(hook.result.current.options).toEqual([]);
     expect(hook.result.current.error).toBe(true);
-    act(() => hook.result.current.search(''));
+    // Another text: the empty one is answered from the store, with no operation to resolve.
+    act(() => hook.result.current.search('acme'));
     act(() => relayEnv.mock.resolveMostRecentOperation(answer([['org-1', 'Acme Corp']])));
     expect(hook.result.current.error).toBe(false);
   });
