@@ -2,11 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import convertTaxiiCollectionToStix from './taxiiCollection-converter';
 import { ENTITY_TYPE_TAXII_COLLECTION, type StoreEntityTaxiiCollection, type StixTaxiiCollection } from './taxiiCollection-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
-const TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityTaxiiCollection, StixTaxiiCollection> = {
+export const TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityTaxiiCollection, StixTaxiiCollection> = {
   type: {
     id: 'taxii-collection',
     name: ENTITY_TYPE_TAXII_COLLECTION,
@@ -34,5 +34,3 @@ const TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityTaxiiCollection, 
   },
   converter_2_1: convertTaxiiCollectionToStix,
 };
-
-registerDefinition(TAXII_COLLECTION_DEFINITION);

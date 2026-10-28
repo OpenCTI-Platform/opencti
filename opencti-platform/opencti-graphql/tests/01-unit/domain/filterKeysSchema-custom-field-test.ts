@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import * as cacheModule from '../../../src/database/cache';
 import * as customFieldCache from '../../../src/modules/customField/custom-field-cache';
 import { generateFilterKeysSchema } from '../../../src/domain/filterKeysSchema';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
+
+registerModules();
 
 describe('Filter keys schema for custom fields', () => {
   it('should keep all the entity types of a custom field attached to several types, as a standard attribute', async () => {

@@ -2,11 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { ENTITY_TYPE_NOTIFIER, type StixNotifier, type StoreEntityNotifier } from './notifier-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
 import { convertNotifierToStix } from './notifier-converter';
 import { authorizedAuthorities, authorizedMembers, created } from '../../schema/attribute-definition';
 
-const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> = {
+export const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> = {
   type: {
     id: 'notifiers',
     name: ENTITY_TYPE_NOTIFIER,
@@ -34,4 +33,3 @@ const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> =
   },
   converter_2_1: convertNotifierToStix,
 };
-registerDefinition(NOTIFIER_DEFINITION);

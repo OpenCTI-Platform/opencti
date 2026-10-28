@@ -1,4 +1,4 @@
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { redisGetExclusionListStatus } from '../database/redis';
 import { executionContext } from '../utils/access';
@@ -23,7 +23,7 @@ export const exclusionListCacheBuildHandler = async () => {
   }
 };
 
-const EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION: ManagerDefinition = {
+export const EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'EXCLUSION_LIST_CACHE_BUILD_MANAGER',
   label: 'Exclusion list cache build manager',
   executionContext: 'exclusion_list_cache_build_manager',
@@ -40,5 +40,3 @@ const EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION);

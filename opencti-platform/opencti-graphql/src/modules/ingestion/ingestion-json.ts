@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_JSON, type StixIngestionJson, type StoreEntityIngestionJson } from './ingestion-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
@@ -23,7 +23,7 @@ import { convertIngestionJsonToStix } from './ingestion-converter';
 import { ENTITY_TYPE_JSON_MAPPER } from '../internal/jsonMapper/jsonMapper-types';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
-const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, StixIngestionJson> = {
+export const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, StixIngestionJson> = {
   type: {
     id: 'ingestion-json',
     name: ENTITY_TYPE_INGESTION_JSON,
@@ -70,5 +70,3 @@ const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, Stix
   },
   converter_2_1: convertIngestionJsonToStix,
 };
-
-registerDefinition(INGESTION_JSON_DEFINITION);

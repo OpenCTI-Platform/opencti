@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type StixPublicDashboard, type StoreEntityPublicDashboard } from './publicDashboard-types';
 import convertPublicDashboardToStix from './publicDashboard-converter';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
@@ -36,5 +35,3 @@ export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDash
   },
   converter_2_1: convertPublicDashboardToStix,
 };
-
-registerDefinition(PUBLIC_DASHBOARD_DEFINITION);

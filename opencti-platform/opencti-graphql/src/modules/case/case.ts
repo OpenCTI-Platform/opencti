@@ -1,13 +1,12 @@
 import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import convertCaseToStix from './case-converter';
 import { ENTITY_TYPE_CONTAINER_CASE, type StixCase, type StoreEntityCase } from './case-types';
 import { ENTITY_TYPE_CASE_TEMPLATE } from './case-template/case-template-types';
 
-const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
+export const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   type: {
     id: 'cases',
     name: ENTITY_TYPE_CONTAINER_CASE,
@@ -38,5 +37,3 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   },
   converter_2_1: convertCaseToStix,
 };
-
-registerDefinition(CASE_DEFINITION);

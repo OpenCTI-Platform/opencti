@@ -1,4 +1,5 @@
 import { UnsupportedError } from '../../config/errors';
+import { UserMergeDisposition as GraphQLUserMergeDisposition } from '../../generated/graphql';
 import { USER_MERGE_REGISTER, UserMergeDisposition, type UserMergeRegisterRow } from './userMerge-register';
 import type { UserMergeHandler } from './userMerge-handler';
 import { userMergeHandlers } from './userMerge-registry';
@@ -96,29 +97,29 @@ export const buildUserMergeCoverage = (
  * mapping is explicit rather than derived from the string, so renaming one side is a
  * compilation error instead of a silently empty filter.
  */
-const GRAPHQL_DISPOSITIONS: Record<string, UserMergeDisposition> = {
-  TRANSFER: UserMergeDisposition.Transfer,
-  INVALIDATE: UserMergeDisposition.Invalidate,
-  CONDITIONAL: UserMergeDisposition.Conditional,
-  RETAIN: UserMergeDisposition.Retain,
-  OUT_OF_SCOPE: UserMergeDisposition.OutOfScope,
+const GRAPHQL_DISPOSITIONS: Record<GraphQLUserMergeDisposition, UserMergeDisposition> = {
+  [GraphQLUserMergeDisposition.Transfer]: UserMergeDisposition.Transfer,
+  [GraphQLUserMergeDisposition.Invalidate]: UserMergeDisposition.Invalidate,
+  [GraphQLUserMergeDisposition.Conditional]: UserMergeDisposition.Conditional,
+  [GraphQLUserMergeDisposition.Retain]: UserMergeDisposition.Retain,
+  [GraphQLUserMergeDisposition.OutOfScope]: UserMergeDisposition.OutOfScope,
 };
 
 export const toRegisterDisposition = (value?: string | null): UserMergeDisposition | undefined => {
   if (!value) {
     return undefined;
   }
-  const disposition = GRAPHQL_DISPOSITIONS[value];
-  if (!disposition) {
+  const graphQLDisposition = Object.values(GraphQLUserMergeDisposition).find((disposition) => disposition === value);
+  if (!graphQLDisposition) {
     // Silently dropping the filter would answer a different question than the one asked, on
     // the very manifest that decides whether the source account may be deleted.
     throw UnsupportedError('Unknown merge register disposition', { disposition: value });
   }
-  return disposition;
+  return GRAPHQL_DISPOSITIONS[graphQLDisposition];
 };
 
-export const toGraphQLDisposition = (disposition: UserMergeDisposition): string => {
-  const found = Object.keys(GRAPHQL_DISPOSITIONS).find((key) => GRAPHQL_DISPOSITIONS[key] === disposition);
+export const toGraphQLDisposition = (disposition: UserMergeDisposition): GraphQLUserMergeDisposition => {
+  const found = Object.values(GraphQLUserMergeDisposition).find((graphQLDisposition) => GRAPHQL_DISPOSITIONS[graphQLDisposition] === disposition);
   if (!found) {
     throw new Error(`Unmapped register disposition: ${disposition}`);
   }
@@ -130,7 +131,7 @@ export interface UserMergeApiCoverageRow extends Omit<UserMergeCoverageRow, 'dis
    * A GraphQL enum value such as `TRANSFER`, deliberately not typed with the register enum:
    * its values are kebab-case, so a comparison against it would compile and never match.
    */
-  disposition: string;
+  disposition: GraphQLUserMergeDisposition;
 }
 
 /** Coverage as the API exposes it: same content, GraphQL disposition values. */

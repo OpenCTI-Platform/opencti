@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_DECAY_RULE, type StixDecayRule, type StoreEntityDecayRule } from './decayRule-types';
 import convertDecayRuleToStix from './decayRule-converter';
 
-const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRule> = {
+export const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRule> = {
   type: {
     id: 'decayRule',
     name: ENTITY_TYPE_DECAY_RULE,
@@ -34,5 +34,3 @@ const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRul
   },
   converter_2_1: convertDecayRuleToStix,
 };
-
-registerDefinition(DECAY_RULE_DEFINITION);

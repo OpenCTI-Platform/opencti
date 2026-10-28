@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { EXPECTED_MALWARE, MALWARE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/arsenal/malware';
 import { EXPECTED_REPORT, REPORT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/report';
 import { EXPECTED_OBSERVED_DATA, OBSERVED_DATA_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/observed-data';
@@ -185,6 +185,8 @@ import { LABEL_INSTANCE, EXPECTED_LABEL } from './stix-2-0-converter-fixtures/SM
 import { KILL_CHAIN_PHASE_INSTANCE, EXPECTED_KILL_CHAIN_PHASE } from './stix-2-0-converter-fixtures/SMOs/kill-chain-phase';
 import { EXTERNAL_REFERENCE_INSTANCE, EXPECTED_EXTERNAL_REFERENCE } from './stix-2-0-converter-fixtures/SMOs/external-reference';
 import { EXPECTED_INFRASTRUCTURE, INFRASTRUCTURE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/observations/infrastructure';
+
+registerModules();
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs

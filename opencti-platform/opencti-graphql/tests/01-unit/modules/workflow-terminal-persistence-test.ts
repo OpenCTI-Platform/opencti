@@ -8,7 +8,11 @@ import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { validateDataBeforeIndexing } from '../../../src/schema/schema-attributes';
 import { validateUserAccessOperation } from '../../../src/utils/access';
-import '../../../src/modules/workflow/storage/workflow-instance-entity';
+import { registerDefinition } from '../../../src/schema/module';
+import { WORKFLOW_INSTANCE_DEFINITION } from '../../../src/modules/workflow/storage/workflow-instance-entity';
+
+// The definition alone: the workflow descriptor imports modules this file's mocks don't cover
+registerDefinition(WORKFLOW_INSTANCE_DEFINITION);
 
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(), createRelation: vi.fn(), deleteElementById: vi.fn(), loadEntity: vi.fn(), updateAttribute: vi.fn(),

@@ -4,7 +4,7 @@ import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -47,7 +47,9 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRela
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
-import { FUZZY_HASH_ALGORITHMS } from '../../../src/schema/fieldDataAdapter'; // Need to import registration files
+import { FUZZY_HASH_ALGORITHMS } from '../../../src/schema/fieldDataAdapter';
+
+registerModules(); // Need to import registration files
 
 describe('identifier', () => {
   it('should name correctly normalize', () => {

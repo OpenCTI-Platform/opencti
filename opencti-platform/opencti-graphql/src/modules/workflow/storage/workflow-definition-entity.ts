@@ -1,6 +1,6 @@
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import type { MappingDefinition } from '../../../schema/attribute-definition';
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import type { ModuleDefinition } from '../../../schema/module';
 import convertWorkflowToStix from '../engine/workflow-converter';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../types/workflow-types';
 
@@ -41,7 +41,7 @@ const versionMappings: MappingDefinition<any>[] = [
   },
 ];
 
-const WORKFLOW_DEFINITION_DEFINITION: ModuleDefinition<any, any> = {
+export const WORKFLOW_DEFINITION_DEFINITION: ModuleDefinition<any, any> = {
   type: {
     id: 'workflowdefinitions',
     name: ENTITY_TYPE_WORKFLOW_DEFINITION,
@@ -100,5 +100,3 @@ const WORKFLOW_DEFINITION_DEFINITION: ModuleDefinition<any, any> = {
     return stix.name;
   },
 };
-
-registerDefinition(WORKFLOW_DEFINITION_DEFINITION);

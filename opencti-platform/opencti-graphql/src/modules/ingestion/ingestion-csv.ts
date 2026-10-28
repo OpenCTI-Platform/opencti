@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_CSV, type StixIngestionCsv, type StoreEntityIngestionCsv } from './ingestion-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
@@ -8,7 +8,7 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
-const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIngestionCsv> = {
+export const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIngestionCsv> = {
   type: {
     id: 'ingestion-csv',
     name: ENTITY_TYPE_INGESTION_CSV,
@@ -51,5 +51,3 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
   },
   converter_2_1: convertIngestionCsvToStix,
 };
-
-registerDefinition(INGESTION_CSV_DEFINITION);

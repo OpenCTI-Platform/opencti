@@ -1,4 +1,4 @@
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
 import { coverageInformation, createdAt, creators, updatedAt } from '../../schema/attribute-definition';
@@ -16,7 +16,7 @@ import { COVERED_ENTITIES_TYPE, securityCoverageStixBundle } from './securityCov
 import type { StoreEntity } from '../../types/store';
 import { ATTRIBUTE_RESULT_OF, ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF, RELATION_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
 
-const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
+export const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
   type: {
     id: 'security-coverage',
     name: ENTITY_TYPE_SECURITY_COVERAGE,
@@ -100,5 +100,3 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
   converter_2_1: convertSecurityCoverageToStix,
   bundleResolver: securityCoverageStixBundle,
 };
-
-registerDefinition(SECURITY_COVERAGE_DEFINITION);

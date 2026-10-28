@@ -5,6 +5,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
+import { withinRegistration } from './schema-types';
 import { isFeatureEnabled } from '../config/conf';
 
 export const depsKeysRegister = {
@@ -176,7 +177,7 @@ export const schemaAttributesDefinition = {
       // it's not a problem because if 2 attributes have the same name, they also have the same type
       this.allAttributes.set(registeredAttribute.name, registeredAttribute);
     });
-    const parentAttributes = new Map(getParentTypes(entityType)
+    const parentAttributes = new Map(withinRegistration(() => getParentTypes(entityType))
       .map((type) => Array.from((this.attributes[type] ?? new Map()).values()))
       .flat()
       .map((e) => [e.name, e]));

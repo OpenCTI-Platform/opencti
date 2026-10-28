@@ -1,4 +1,4 @@
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import conf, { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import { redisGetExclusionListStatus } from '../database/redis';
 import { getIsCacheInitialized, syncExclusionListCache } from '../database/exclusionListCache';
@@ -19,7 +19,7 @@ const exclusionListCacheSyncHandler = async () => {
   }
 };
 
-const EXCLUSION_LIST_CACHE_SYNC_MANAGER: ManagerDefinition = {
+export const EXCLUSION_LIST_CACHE_SYNC_MANAGER: ManagerDefinition = {
   id: 'EXCLUSION_LIST_CACHE_SYNC_MANAGER',
   label: 'Exclusion list cache sync manager',
   executionContext: 'exclusion_list_cache_sync_manager',
@@ -36,5 +36,3 @@ const EXCLUSION_LIST_CACHE_SYNC_MANAGER: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(EXCLUSION_LIST_CACHE_SYNC_MANAGER);

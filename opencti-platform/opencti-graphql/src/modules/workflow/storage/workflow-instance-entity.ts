@@ -1,9 +1,9 @@
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import type { ModuleDefinition } from '../../../schema/module';
 import convertWorkflowToStix from '../engine/workflow-converter';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../types/workflow-types';
 
-const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
+export const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
   type: {
     id: 'workflowinstances',
     name: ENTITY_TYPE_WORKFLOW_INSTANCE,
@@ -32,5 +32,3 @@ const WORKFLOW_INSTANCE_DEFINITION: ModuleDefinition<any, any> = {
     return stix.currentState;
   },
 };
-
-registerDefinition(WORKFLOW_INSTANCE_DEFINITION);

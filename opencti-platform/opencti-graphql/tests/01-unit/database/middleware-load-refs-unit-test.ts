@@ -39,12 +39,14 @@ vi.mock('../../../src/config/conf', async () => {
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { elFindByIds } from '../../../src/database/engine';
 import { fullRelationsList } from '../../../src/database/middleware-loader';
 import { storeLoadByIdsWithRefs } from '../../../src/database/middleware';
 import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+
+registerModules();
 
 const context = {} as any;
 const user = { id: 'user-id' } as any;

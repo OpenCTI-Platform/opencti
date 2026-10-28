@@ -17,4 +17,6 @@ export const stixSightingRelationshipsAttributes: Array<AttributeDefinition> = [
   customFieldValues,
 ];
 
-schemaAttributesDefinition.registerAttributes(STIX_SIGHTING_RELATIONSHIP, stixSightingRelationshipsAttributes);
+export const registerStixSightingRelationshipAttributes = () => {
+  schemaAttributesDefinition.registerAttributes(STIX_SIGHTING_RELATIONSHIP, stixSightingRelationshipsAttributes);
+};

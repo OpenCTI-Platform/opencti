@@ -2,9 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import convertExclusionListToStix from './exclusionList-converter';
 import { ENTITY_TYPE_EXCLUSION_LIST, type StixExclusionList, type StoreEntityExclusionList } from './exclusionList-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 
-const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, StixExclusionList> = {
+export const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, StixExclusionList> = {
   type: {
     id: 'exclusion-list',
     name: ENTITY_TYPE_EXCLUSION_LIST,
@@ -100,5 +100,3 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
   },
   converter_2_1: convertExclusionListToStix,
 };
-
-registerDefinition(EXCLUSION_LIST_DEFINITION);

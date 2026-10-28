@@ -1,10 +1,10 @@
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import type { StixManagerConfiguration, StoreEntityManagerConfiguration } from './managerConfiguration-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertManagerConfigurationToStix from './managerConfiguration-converter';
 
-const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfiguration, StixManagerConfiguration> = {
+export const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfiguration, StixManagerConfiguration> = {
   type: {
     id: 'managerConfigurations',
     name: ENTITY_TYPE_MANAGER_CONFIGURATION,
@@ -34,5 +34,3 @@ const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfi
   },
   converter_2_1: convertManagerConfigurationToStix,
 };
-
-registerDefinition(MANAGER_CONFIGURATION_DEFINITION);

@@ -93,7 +93,7 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
     message: `creates retention rule \`${retentionRule.name}\``,
     context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input },
   });
-  return retentionRule;
+  return findById(context, user, retentionRuleId);
 };
 
 export const retentionRuleEditField = async (context: AuthContext, user: AuthUser, retentionRuleId: string, input: EditInput[]) => {

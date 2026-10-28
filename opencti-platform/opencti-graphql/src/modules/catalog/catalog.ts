@@ -1,4 +1,4 @@
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import {
   type BasicStoreEntityCatalogContract,
@@ -42,7 +42,7 @@ export const CATALOG_CONTRACT_MAPPINGS: AttributeDefinition[] = [
 
 // CatalogContract = one persisted entry per (slug, contract_version).
 // All connector metadata lives here since any field can vary between versions.
-const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, any> = {
+export const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, any> = {
   type: {
     id: 'catalogContracts',
     name: ENTITY_TYPE_CATALOG_CONTRACT,
@@ -67,9 +67,7 @@ const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, 
   },
 };
 
-registerDefinition<StoreEntityCatalogContract, any>(CATALOG_CONTRACT_DEFINITION);
-
-const CATALOG_DEFINITION: ModuleDefinition<StoreEntityCatalog, any> = {
+export const CATALOG_DEFINITION: ModuleDefinition<StoreEntityCatalog, any> = {
   type: {
     id: 'catalogs',
     name: ENTITY_TYPE_CATALOG,
@@ -100,7 +98,5 @@ const CATALOG_DEFINITION: ModuleDefinition<StoreEntityCatalog, any> = {
     throw UnsupportedError('Catalog converter_2_1 should not be called');
   },
 };
-
-registerDefinition<StoreEntityCatalog, any>(CATALOG_DEFINITION);
 
 export type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalog };

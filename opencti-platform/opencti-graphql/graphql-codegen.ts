@@ -85,6 +85,7 @@ const config: CodegenConfig = {
           TaxiiCollection: '../modules/dataSharing/taxiiCollection-types#BasicStoreEntityTaxiiCollection',
           StreamCollection: '../modules/dataSharing/streamCollection-types#BasicStoreEntityStreamCollection',
           RetentionRule: '../modules/retentionRules/retentionRules-types#BasicStoreEntityRetentionRule',
+          WorkflowSerializedTransition: '../modules/workflow/engine/workflow-schema#SerializedTransition',
           Vulnerability: '../modules/vulnerability/vulnerability-types#BasicStoreEntityVulnerability',
           User: '../modules/user/user-types#BasicStoreEntityUser',
           Role: '../types/store.d#BasicStoreEntity',

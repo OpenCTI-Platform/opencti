@@ -1,4 +1,4 @@
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import type { Stix2Organization, StixOrganization, StoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
@@ -28,7 +28,7 @@ import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/
 import convertOrganizationToStix, { convertOrganizationToStix_2_0 } from './organization-converter';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 
-const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrganization, Stix2Organization> = {
+export const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrganization, Stix2Organization> = {
   type: {
     id: 'organization',
     name: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -115,4 +115,3 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
   converter_2_1: convertOrganizationToStix,
   converter_2_0: convertOrganizationToStix_2_0,
 };
-registerDefinition(ORGANIZATION_DEFINITION);

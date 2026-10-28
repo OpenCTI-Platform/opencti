@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import * as cacheModule from '../../../src/database/cache';
 import { buildRelationData } from '../../../src/database/data-builder';
 import { ADMIN_USER } from '../../utils/testQuery';
+
+registerModules();
 
 const customFieldValues = [{ field_id: 'cf-1', field_name: 'x_opencti_cf_note', string_value: 'note' }];
 const from = { internal_id: 'from-id', standard_id: 'malware--8b3e1c3a-2a6f-4a8e-9c3a-1b2c3d4e5f60', entity_type: 'Malware' };

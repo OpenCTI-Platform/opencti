@@ -1,13 +1,13 @@
 import { computeAccountStatusChoices } from '../../config/conf';
 import { draftChange, draftContext } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { registerDefinition, type ModuleDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import { normalizeEmail } from '../../utils/email';
 import convertUserToStix from './user-converter';
 import { apiTokens, ENTITY_TYPE_USER, type StixUser, type StoreEntityUser } from './user-types';
 
-const USER_DEFINITION: ModuleDefinition<StoreEntityUser, StixUser> = {
+export const USER_DEFINITION: ModuleDefinition<StoreEntityUser, StixUser> = {
   type: {
     id: 'user',
     name: ENTITY_TYPE_USER,
@@ -107,5 +107,3 @@ const USER_DEFINITION: ModuleDefinition<StoreEntityUser, StixUser> = {
   },
   converter_2_1: convertUserToStix,
 };
-
-registerDefinition(USER_DEFINITION);

@@ -32,7 +32,8 @@ import { uploadToStorage } from '../../../../src/database/file-storage';
 import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../src/listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../../src/manager/telemetryManager';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
-import '../../../../src/modules/attributes/internalObject-registrationAttributes';
+import { registerModules } from '../../../../src/composition-root';
+import configPresetModule from '../../../../src/modules/configPreset/configPreset-module';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
@@ -46,6 +47,9 @@ import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/con
 import type { ConfigPresetItemDefinition } from '../../../../src/modules/configPreset/configPreset-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from './configPreset-themes-fixtures';
+
+// Registers the abstract types too, among them the Activity attributes the export publishes
+registerModules([configPresetModule]);
 
 const context = { source: 'test' } as AuthContext;
 const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;

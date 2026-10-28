@@ -3,10 +3,8 @@
  */
 
 import type { OverviewLayoutCustomization } from '../entitySetting/entitySetting-types';
-import { registerEntityOverviewLayoutCustomization } from '../../schema/overviewLayoutCustomization-register';
-import { ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
 
-const intrusionSetDefaultOverviewLayout: OverviewLayoutCustomization[] = [
+export const intrusionSetDefaultOverviewLayout: OverviewLayoutCustomization[] = [
   { key: 'details', width: 6, label: 'Entity details' },
   { key: 'basicInformation', width: 6, label: 'Basic information' },
   { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },
@@ -15,9 +13,3 @@ const intrusionSetDefaultOverviewLayout: OverviewLayoutCustomization[] = [
   { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
   { key: 'notes', width: 12, label: 'Notes about this entity' },
 ];
-
-// Register only the default layout
-registerEntityOverviewLayoutCustomization(
-  ENTITY_TYPE_INTRUSION_SET,
-  intrusionSetDefaultOverviewLayout,
-);
