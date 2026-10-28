@@ -32,16 +32,18 @@ const whitemarkItem: ConfigPresetItemDefinition = {
 // Listed before the themes, on the first page only
 const BRANDING_STATIC_ITEMS = [whitemarkItem];
 
-// Built-in themes are listed and exported like the others, with their standard id (the same on every platform)
+// Built-in themes are neither listed nor exported: they are the same on every platform, and an import never writes them.
+// A built-in default theme is still referenced by the platform item, by its standard id.
 const themesArgs = (ids?: string[] | null, excludedIds?: string[] | null) => {
   const filters = [
+    { key: ['built_in'], values: ['true'], operator: FilterOperator.NotEq },
     ...(ids ? [{ key: ['internal_id'], values: ids }] : []),
     ...(excludedIds && excludedIds.length > 0 ? [{ key: ['internal_id'], values: excludedIds, operator: FilterOperator.NotEq }] : []),
   ];
   return {
     orderBy: ThemeOrdering.Name,
     orderMode: OrderingMode.Asc,
-    filters: filters.length > 0 ? { mode: FilterMode.And, filters, filterGroups: [] } : undefined,
+    filters: { mode: FilterMode.And, filters, filterGroups: [] },
   };
 };
 

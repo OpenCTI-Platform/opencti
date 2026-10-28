@@ -70,13 +70,13 @@ describe('Config preset registry', () => {
     })));
     expect(families).toEqual([
       { id: 'platform', label: 'Platform configuration', description: 'Title, favicon, default theme, language', group: 'platformSettings', itemIds: ['platform'] },
-      // Whitemark first, then the themes by name, built-in ones included
+      // Whitemark first, then the themes by name, without the built-in ones
       {
         id: 'branding',
         label: 'Branding',
         description: 'Themes, colors, logos',
         group: 'platformSettings',
-        itemIds: ['whitemark', otherCustomTheme.id, builtInTheme.id, customTheme.id],
+        itemIds: ['whitemark', otherCustomTheme.id, customTheme.id],
       },
       { id: 'messages', label: 'Messages', description: 'Banner, login and consent messages', group: 'platformSettings', itemIds: ['banner', 'login', 'consent', 'noAccess'] },
       { id: 'hiddenEntityTypes', label: 'Hidden entity types', description: 'Entity types hidden in the platform', group: 'dataModel', itemIds: ['hiddenEntityTypes'] },
@@ -89,7 +89,6 @@ describe('Config preset registry', () => {
       ['Platform configuration', true],
       ['Remove Filigran logos', true],
       ['Customer ACME', false],
-      ['Filigran Dark', false],
       ['SOC night', false],
       ['Banner', true],
       ['Login message', true],
@@ -108,7 +107,6 @@ describe('Config preset registry', () => {
       'platform_settings/platform.json',
       'platform_settings/branding/whitemark.json',
       `platform_settings/branding/${otherCustomTheme.standard_id}.json`,
-      `platform_settings/branding/${builtInTheme.standard_id}.json`,
       `platform_settings/branding/${customTheme.standard_id}.json`,
       'platform_settings/messages/banner.json',
       'platform_settings/messages/login.json',
@@ -260,19 +258,21 @@ describe('Config preset registry', () => {
     });
 
     it('opens the first page with whitemark, then the themes by name, and counts both', async () => {
-      const page = await branding.listItems(context, user, { first: 3 });
-      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Theme'], { first: 2, after: undefined, search: undefined, orderBy: 'name', orderMode: 'asc', filters: undefined });
-      expect(page.edges.map(({ node }) => node.id)).toEqual(['whitemark', otherCustomTheme.id, builtInTheme.id]);
+      const page = await branding.listItems(context, user, { first: 2 });
+      // The built-in themes are filtered out by the query, so the count and the pages do not include them
+      const notBuiltIn = { mode: 'and', filters: [{ key: ['built_in'], values: ['true'], operator: 'not_eq' }], filterGroups: [] };
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Theme'], { first: 1, after: undefined, search: undefined, orderBy: 'name', orderMode: 'asc', filters: notBuiltIn });
+      expect(page.edges.map(({ node }) => node.id)).toEqual(['whitemark', otherCustomTheme.id]);
       // The next page and its cursor come from the themes
-      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[2].cursor, globalCount: 4 });
-      expect(page.edges.map(({ node }) => [node.id, node.isDefault ?? false])).toEqual([['whitemark', false], [otherCustomTheme.id, false], [builtInTheme.id, false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[1].cursor, globalCount: 3 });
+      expect(page.edges.map(({ node }) => [node.id, node.isDefault ?? false])).toEqual([['whitemark', false], [otherCustomTheme.id, false]]);
     });
 
     it('lists only themes after a cursor, still counting whitemark', async () => {
       const page = await branding.listItems(context, user, { first: 2, after: 'cursor' });
       expect(vi.mocked(pageEntitiesConnection).mock.calls[0][3]).toMatchObject({ first: 2, after: 'cursor' });
       expect(page.edges.map(({ node }) => node.id)).not.toContain('whitemark');
-      expect(page.pageInfo.globalCount).toBe(4);
+      expect(page.pageInfo.globalCount).toBe(3);
     });
 
     it('keeps the page size across whitemark and the themes', async () => {
@@ -283,7 +283,7 @@ describe('Config preset registry', () => {
       vi.mocked(pageEntitiesConnection).mockClear();
       const one = await branding.listItems(context, user, { first: 1 });
       expect(one.edges.map(({ node }) => node.id)).toEqual(['whitemark']);
-      expect(one.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'whitemark', globalCount: 4 });
+      expect(one.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'whitemark', globalCount: 3 });
       expect(vi.mocked(pageEntitiesConnection).mock.calls[0][3]).toMatchObject({ first: 1 });
     });
 
@@ -295,11 +295,13 @@ describe('Config preset registry', () => {
 
     it('applies search to the themes only, and ids and excluded ids to whitemark and to the themes', async () => {
       // Whitemark is a static item the UI translates: the search does not hide it
-      expect(await pageIds({ search: 'filigran' })).toEqual(['whitemark', builtInTheme.id]);
+      expect(await pageIds({ search: 'filigran' })).toEqual(['whitemark']);
       expect(await pageIds({ search: 'soc' })).toEqual(['whitemark', customTheme.id]);
       expect((await branding.listItems(context, user, { search: 'soc' })).pageInfo.globalCount).toBe(2);
       expect(await pageIds({ ids: [customTheme.id] })).toEqual([customTheme.id]);
-      expect(await pageIds({ excludedIds: ['whitemark', customTheme.id] })).toEqual([otherCustomTheme.id, builtInTheme.id]);
+      expect(await pageIds({ excludedIds: ['whitemark', customTheme.id] })).toEqual([otherCustomTheme.id]);
+      // A built-in theme is not an item, even when it is asked for
+      expect(await pageIds({ ids: [builtInTheme.id] })).toEqual([]);
       vi.mocked(pageEntitiesConnection).mockClear();
       // Only static ids, or none: no theme query, whose empty filter would match every theme
       expect(await pageIds({ ids: ['whitemark'] })).toEqual(['whitemark']);
@@ -314,9 +316,10 @@ describe('Config preset registry', () => {
 
     it('resolves whitemark and the themes to export the same way', async () => {
       const ids = async (selected: string[] | null, excluded: string[]) => (await branding.resolveItems(context, user, selected, excluded)).map((item) => item.id);
-      expect(await ids(null, [])).toEqual(['whitemark', otherCustomTheme.id, builtInTheme.id, customTheme.id]);
-      expect(await ids(null, ['whitemark', otherCustomTheme.id, builtInTheme.id])).toEqual([customTheme.id]);
-      expect(await ids([customTheme.id, builtInTheme.id], [])).toEqual([builtInTheme.id, customTheme.id]);
+      expect(await ids(null, [])).toEqual(['whitemark', otherCustomTheme.id, customTheme.id]);
+      expect(await ids(null, ['whitemark', otherCustomTheme.id])).toEqual([customTheme.id]);
+      // A built-in theme is not an item, even when it is asked for
+      expect(await ids([customTheme.id, builtInTheme.id], [])).toEqual([customTheme.id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids(['whitemark'], [])).toEqual(['whitemark']);
       expect(await ids([], [])).toEqual([]);

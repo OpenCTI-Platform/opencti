@@ -96,9 +96,9 @@ describe('Config preset exportable types query', () => {
         label: 'Branding',
         description: 'Themes, colors, logos',
         group: platformSettings,
-        // Whitemark first, then every theme, built-in ones included
-        items: [staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false), themeItem(builtInTheme, false), themeItem(customTheme, true)],
-        itemsPageInfo: onePage(4),
+        // Whitemark first, then every theme but the built-in ones
+        items: [staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false), themeItem(customTheme, true)],
+        itemsPageInfo: onePage(3),
       },
       {
         key: 'hiddenEntityTypes',
@@ -194,12 +194,12 @@ describe('Config preset exportable items query', () => {
     contextValue: { user },
   });
 
-  it('pages and searches the items of a type, whitemark first, built-in themes included', async () => {
+  it('pages and searches the items of a type, whitemark first, built-in themes excluded', async () => {
     const first = await queryItems({ type: 'branding', first: 2 });
     expect(first.errors).toBeUndefined();
     const connection = first.data?.configPresetExportableItems as { pageInfo: { hasNextPage: boolean; globalCount: number }; edges: { node: unknown }[] };
     expect(connection.edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false)]);
-    expect(connection.pageInfo).toMatchObject({ hasNextPage: true, globalCount: 4 });
+    expect(connection.pageInfo).toMatchObject({ hasNextPage: true, globalCount: 3 });
     const searched = await queryItems({ type: 'branding', search: 'soc' });
     // The search applies to the themes: whitemark, a static item, is always listed
     expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(customTheme, false)]);

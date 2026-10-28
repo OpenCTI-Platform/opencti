@@ -349,7 +349,7 @@ describe('Config preset export', () => {
 
   it('exports the platform configuration with the custom default theme it depends on, even when excluded from the branding', async () => {
     withDefaultTheme(customTheme.id);
-    await configPresetExport(context, bypassUser, [{ type: 'platform' }, { type: 'branding', excluded_items: [customTheme.id, builtInTheme.id] }]);
+    await configPresetExport(context, bypassUser, [{ type: 'platform' }, { type: 'branding', excluded_items: [customTheme.id] }]);
     const entries = await readZip(uploadedZip!);
     const customThemeFile = `platform_settings/branding/${customTheme.standard_id}.json`;
     const otherThemeFile = `platform_settings/branding/${otherCustomTheme.standard_id}.json`;
@@ -393,18 +393,17 @@ describe('Config preset export', () => {
     expect(entries['dependencies.json']).toEqual({});
   });
 
-  it('exports a selected built-in theme, and references a built-in default theme without depending on it', async () => {
-    await configPresetExport(context, bypassUser, [{ type: 'platform' }, { type: 'branding', items: [builtInTheme.id] }]);
+  it('references a built-in default theme without depending on it, and does not export the built-in theme', async () => {
+    await configPresetExport(context, bypassUser, [{ type: 'platform' }]);
     const entries = await readZip(uploadedZip!);
     expect(entries['platform_settings/platform.json'].configuration.default_theme).toEqual({ standard_id: builtInTheme.standard_id, name: 'Filigran Dark' });
-    const builtInThemeFile = entries[`platform_settings/branding/${builtInTheme.standard_id}.json`];
-    expect(builtInThemeFile).toMatchObject({ type: 'platformSettings.branding', id: builtInTheme.standard_id, configuration: { standard_id: builtInTheme.standard_id, name: 'Filigran Dark' } });
-    // Not part of the theme import format
-    expect(builtInThemeFile.configuration).not.toHaveProperty('built_in');
     expect(entries['dependencies.json']).toEqual({});
-    // Without the theme selected, only the reference
-    await configPresetExport(context, bypassUser, [{ type: 'platform' }]);
+    expect(Object.keys(entries).filter((path) => path.startsWith('platform_settings/branding/'))).toEqual([]);
     expect(publishedSummary().items).toEqual({ platform: ['platform'] });
+  });
+
+  it('refuses to export a built-in theme: it is the same on every platform, and an import never writes it', async () => {
+    await expect(configPresetExport(context, bypassUser, [{ type: 'branding', items: [builtInTheme.id] }])).rejects.toThrow('Unknown configuration preset item');
   });
 
   it('fails the export, before any write, when a dependency cannot be exported', async () => {
@@ -460,15 +459,15 @@ describe('Config preset selections', () => {
   });
 
   it('takes every item but the excluded ones, and refuses excluded items with an explicit list', async () => {
-    expect(await resolveIds([{ type: 'branding', excluded_items: [customTheme.id] }])).toEqual([['branding', ['whitemark', otherCustomTheme.id, builtInTheme.id]]]);
-    expect(await resolveIds([{ type: 'branding', items: null, excluded_items: [] }])).toEqual([['branding', ['whitemark', otherCustomTheme.id, builtInTheme.id, customTheme.id]]]);
+    expect(await resolveIds([{ type: 'branding', excluded_items: [customTheme.id] }])).toEqual([['branding', ['whitemark', otherCustomTheme.id]]]);
+    expect(await resolveIds([{ type: 'branding', items: null, excluded_items: [] }])).toEqual([['branding', ['whitemark', otherCustomTheme.id, customTheme.id]]]);
     expect(await resolveIds([{ type: 'messages', excluded_items: MESSAGE_IDS }, { type: 'platform' }])).toEqual([['platform', ['platform']]]);
     await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'branding', items: [customTheme.id], excluded_items: [otherCustomTheme.id] }]))
       .rejects.toThrow('Excluded items require a selection of every item of the type');
     await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'branding', items: [], excluded_items: [customTheme.id] }]))
       .rejects.toThrow('Excluded items require a selection of every item of the type');
     // Excluding everything leaves nothing to export
-    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'branding', excluded_items: ['whitemark', customTheme.id, otherCustomTheme.id, builtInTheme.id] }]))
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'branding', excluded_items: ['whitemark', customTheme.id, otherCustomTheme.id] }]))
       .rejects.toThrow('Select at least one configuration item to export');
   });
 
@@ -476,15 +475,15 @@ describe('Config preset selections', () => {
     expect(await resolveIds([
       { type: 'branding', excluded_items: [customTheme.id, otherCustomTheme.id] },
       { type: 'branding', excluded_items: [customTheme.id] },
-    ])).toEqual([['branding', ['whitemark', otherCustomTheme.id, builtInTheme.id]]]);
+    ])).toEqual([['branding', ['whitemark', otherCustomTheme.id]]]);
     expect(await resolveIds([
       { type: 'branding', excluded_items: [customTheme.id] },
       { type: 'branding', items: [customTheme.id] },
-    ])).toEqual([['branding', ['whitemark', otherCustomTheme.id, builtInTheme.id, customTheme.id]]]);
+    ])).toEqual([['branding', ['whitemark', otherCustomTheme.id, customTheme.id]]]);
   });
 
-  it('takes a built-in theme like any other', async () => {
-    expect(await resolveIds([{ type: 'branding', items: [builtInTheme.id] }])).toEqual([['branding', [builtInTheme.id]]]);
+  it('does not take a built-in theme', async () => {
+    await expect(resolveConfigPresetSelections(context, bypassUser, [{ type: 'branding', items: [builtInTheme.id] }])).rejects.toThrow('Unknown configuration preset item');
   });
 
   it('still rejects an unknown item merged with a null selection', async () => {
