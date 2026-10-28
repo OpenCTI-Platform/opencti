@@ -366,7 +366,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   }
 
   for (const ingestionHealthSettings of data.filter((inputData) => inputData.key === 'ingestion_health_settings')) {
-    validateIngestionHealthSettingsInput(ingestionHealthSettings);
+    await validateIngestionHealthSettingsInput(context, ingestionHealthSettings, settings);
   }
 
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
