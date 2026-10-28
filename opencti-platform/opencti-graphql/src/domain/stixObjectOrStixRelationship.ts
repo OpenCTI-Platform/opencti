@@ -2,7 +2,7 @@ import { elLoadById } from '../database/engine';
 import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { type EntityOptions, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError, MissingReferenceError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship, RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { pageEntitiesOrRelationsConnection, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
