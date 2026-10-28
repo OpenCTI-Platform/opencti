@@ -96,7 +96,7 @@ const IntelligenceRequirements = () => {
       },
       ir_activity: {
         id: 'ir_activity',
-        label: 'Activity (30 days)',
+        label: 'Activity (7 days)',
         percentWidth: 14,
         isSortable: false,
         render: ({ ir_activity }: IntelligenceRequirementsLine_node$data) => <IrSparkline points={ir_activity} width={120} height={28} />,

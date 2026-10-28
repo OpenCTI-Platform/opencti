@@ -28,7 +28,7 @@ export const intelligenceRequirementLineFragment = graphql`
     creators { id name }
     ir_entities_count
     ir_inbox_open_count
-    ir_activity(days: 30) { date value }
+    ir_activity(days: 7) { date value }
   }
 `;
 
