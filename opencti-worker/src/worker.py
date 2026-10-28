@@ -19,6 +19,7 @@ from pycti.connector.opencti_connector_helper import (
     get_config_variable,
     parse_boolean_config,
 )
+from pycti.utils.opencti_tls import get_tls_reject_unauthorized
 
 from listen_handler import ListenHandler
 from message_queue_consumer import MessageQueueConsumer
@@ -81,7 +82,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 "OPENCTI_SSL_VERIFY",
                 ["opencti", "ssl_verify"],
                 config,
-                default=True,
+                default=get_tls_reject_unauthorized(config),
                 isBoolean=False,
             ),
             strict=False,
@@ -135,7 +136,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 "WORKER_LISTEN_API_SSL_VERIFY",
                 ["worker", "listen_api_ssl_verify"],
                 config,
-                default=True,
+                default=get_tls_reject_unauthorized(config),
                 isBoolean=False,
             ),
             strict=False,

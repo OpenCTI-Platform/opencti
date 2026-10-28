@@ -10,7 +10,6 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 | Change                                                                                                              | Deprecated in | Changed in |
 |:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
-| [TLS certificate verification enabled by default](#tls-certificate-verification)                                    | -             | 7.XXXXXX.0 |
 | [Removal of filter script](#filter-script-api)                                                                      | -             | 7.260401.0 |
 | [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
 | [Update license for SSO (& migration to UI)](#SSO-update-license)                                                   |               | 7.260224.0 |
@@ -20,20 +19,6 @@ This table regroups all the breaking changes introduced, with the corresponding 
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                    |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                |               | 5.12       |
-
-## OpenCTI 7.XXXXXX.0
-
-### Breaking changes
-
-<a id="tls-certificate-verification"></a>
-#### TLS certificate verification enabled by default
-
-Outgoing TLS connections of the platform, the Python client, the workers and the connectors now verify the server certificate by default.
-A connection to a server whose certificate is not trusted (self-signed, internal authority, expired) fails after the upgrade.
-
-The new global option `TLS__REJECT_UNAUTHORIZED` (default `true`) controls the platform connections that do not define their own option.
-
-For more details, see [this migration guide](./breaking-changes/7.XXXXXX.0-tls-certificate-verification.md).
 
 <a id="filter-script-api"></a>
 ### Removal of filter script

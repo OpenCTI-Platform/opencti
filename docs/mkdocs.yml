@@ -160,7 +160,6 @@ nav:
     - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:
-            - TLS certificate verification: deployment/breaking-changes/7.XXXXXX.0-tls-certificate-verification.md
             - SSO Migration from environment variable to UI: deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md
             - Metrics renamed in Client Python: deployment/breaking-changes/6.8-client-python-metrics.md
             - OpenBAS scenario generation: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
