@@ -42,6 +42,15 @@ describe('usePublicDashboardWidgets', () => {
     expect(queryByTestId('line')).toBeNull();
   });
 
+  it('should keep refusing an audits widget, even broken down', () => {
+    const { hook } = testRenderHook(() => usePublicDashboardWidgets('public-key', { relativeDate: null, startDate: null, endDate: null }));
+    const widget = makeWidget({ perspective: 'audits', parameters: { breakdownBy: 'event_scope', interval: 'month' } });
+    const { getByText, queryByTestId } = testRender(<>{hook.result.current.auditWidget(widget)}</>);
+
+    expect(getByText('Audits are not supported in public dashboards')).toBeTruthy();
+    expect(queryByTestId('breakdown')).toBeNull();
+  });
+
   it('should keep rendering a widget without breakdown as before', () => {
     const { getByTestId, queryByTestId } = renderEntityWidget(makeWidget({ parameters: { interval: 'month' } }));
 

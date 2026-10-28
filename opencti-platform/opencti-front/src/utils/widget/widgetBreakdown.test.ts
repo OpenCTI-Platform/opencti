@@ -4,6 +4,7 @@ import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import { daysAgo, monthsAgo } from '../Time';
 import {
+  AUDITS_BREAKDOWN_FIELDS,
   BREAKDOWN_ALLOWED_REFS,
   coarsenSeriesForRendering,
   getBreakdownEntityTypes,
@@ -12,12 +13,16 @@ import {
   getBreakdownTickAmount,
   getRenderedBarsBudget,
   getRenderedPointsBudget,
+  getWidgetBreakdownFieldOptions,
   getWidgetBreakdownLimit,
+  getWidgetBreakdownLockReason,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   hasWidgetBreakdown,
   isBreakdownFieldSupported,
+  isEntityTypeBreakdownField,
   isWidgetBreakdownActive,
+  isWidgetBreakdownConfigurable,
   isSameBreakdown,
   isWidgetBreakdownEligible,
   MAX_RENDERED_BARS,
@@ -394,5 +399,78 @@ describe('coarsenSeriesForRendering', () => {
     const result = coarsenSeriesForRendering(series, 'year', 1);
     expect(result.interval).toEqual('year');
     expect(result.series).toBe(series);
+  });
+});
+
+describe('audits breakdown', () => {
+  const emptyMap = new Map<string, Map<string, FilterDefinition>>();
+  const makeAuditsWidget = (overrides: Partial<Widget> = {}, selectionOverrides: Record<string, unknown> = {}): Widget => ({
+    id: 'audits-widget',
+    type: 'line',
+    perspective: 'audits',
+    dataSelection: [{ attribute: 'user_id', filters: { mode: 'and', filters: [], filterGroups: [] }, ...selectionOverrides }],
+    parameters: { breakdownBy: 'event_scope' },
+    ...overrides,
+  } as unknown as Widget);
+
+  it('accepts every audits time series visualization of a workspace dashboard', () => {
+    ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
+      expect(isWidgetBreakdownActive(makeAuditsWidget({ type }), workspace)).toBe(true);
+    });
+    expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(isWidgetBreakdownActive(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(false);
+    // ...but still knows the widget is broken down, to refuse it elsewhere
+    expect(hasWidgetBreakdown(makeAuditsWidget())).toBe(true);
+  });
+
+  it('refuses a dataset counting distinct values, the breakdown counting every event', () => {
+    ['line', 'area'].forEach((type) => {
+      expect(isWidgetBreakdownEligible(makeAuditsWidget({ type }, { unique: true }), workspace)).toBe(false);
+    });
+    // Bars and heatmaps never count distinct values: a leftover setting does not matter
+    expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'vertical-bar' }, { unique: true }), workspace)).toBe(true);
+    // The entities never count distinct values either
+    expect(isWidgetBreakdownEligible(makeWidget({ type: 'line', dataSelection: [{ ...makeWidget().dataSelection[0], unique: true }] }), workspace)).toBe(true);
+  });
+
+  it('shows the controls of a widget with several datasets or distinct values, locked with the reason', () => {
+    const widget = makeAuditsWidget();
+    const severalDatasets = { ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] };
+    const distinct = makeAuditsWidget({}, { unique: true });
+
+    expect(isWidgetBreakdownConfigurable(widget, workspace)).toBe(true);
+    expect(getWidgetBreakdownLockReason(widget)).toBeUndefined();
+    expect(isWidgetBreakdownConfigurable(severalDatasets, workspace)).toBe(true);
+    expect(getWidgetBreakdownLockReason(severalDatasets)).toEqual('several-datasets');
+    expect(isWidgetBreakdownConfigurable(distinct, workspace)).toBe(true);
+    expect(getWidgetBreakdownLockReason(distinct)).toEqual('distinct-values');
+    expect(isWidgetBreakdownConfigurable(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(isWidgetBreakdownConfigurable(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(false);
+  });
+
+  it('offers exactly the fields the API accepts for the logs, whatever the filters', () => {
+    // Mirror of HISTORY_BREAKDOWN_FIELDS in opencti-graphql/src/database/middleware.ts
+    const apiFields = ['event_type', 'event_scope', 'user_id', 'group_ids', 'organization_ids', 'entity_type', 'context_data.entity_type'];
+    expect(AUDITS_BREAKDOWN_FIELDS.map(({ key }) => key)).toEqual(apiFields);
+    expect(getWidgetBreakdownFieldOptions(emptyMap, makeAuditsWidget()).map(({ key }) => key)).toEqual(apiFields);
+    ['context_data.id', 'context_data.search', 'context_data.message', 'creator_id', 'createdBy'].forEach((key) => {
+      expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: key } }))).toBe(false);
+    });
+    apiFields.forEach((key) => {
+      expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: key } }))).toBe(true);
+    });
+  });
+
+  it('keeps the entities fields to the entities', () => {
+    // An entities field carried over to an audits widget is not supported, and the reverse
+    expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: 'objectLabel' } }))).toBe(false);
+    expect(isBreakdownFieldSupported(emptyMap, makeWidget({ parameters: { breakdownBy: 'event_scope' } }))).toBe(false);
+  });
+
+  it('names the values of the entity type fields after the entity types', () => {
+    expect(isEntityTypeBreakdownField('entity_type')).toBe(true);
+    expect(isEntityTypeBreakdownField('context_data.entity_type')).toBe(true);
+    expect(isEntityTypeBreakdownField('event_scope')).toBe(false);
+    expect(isEntityTypeBreakdownField(null)).toBe(false);
   });
 });

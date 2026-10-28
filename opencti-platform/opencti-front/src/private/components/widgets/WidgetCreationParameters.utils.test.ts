@@ -171,6 +171,19 @@ describe('applyBreakdownCompatibility', () => {
     expect(severalDatasets.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
   });
 
+  it('keeps the breakdown of every audits time series visualization', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'audits' as const, type }, workspace);
+      expect(parameters).toEqual(brokenDownLine.parameters);
+    });
+  });
+
+  it('drops the breakdown of audits lines and areas counting distinct values', () => {
+    const distinct = { ...brokenDownLine, perspective: 'audits' as const, dataSelection: [{ ...selection, unique: true }] };
+    expect(applyBreakdownCompatibility(distinct, workspace).parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+    expect(applyBreakdownCompatibility({ ...distinct, type: 'vertical-bar' }, workspace).parameters).toEqual(brokenDownLine.parameters);
+  });
+
   it('returns the widget untouched without breakdown', () => {
     const widget = { ...brokenDownLine, type: 'donut', parameters: { title: 'Donut' } };
     expect(applyBreakdownCompatibility(widget, workspace)).toBe(widget);

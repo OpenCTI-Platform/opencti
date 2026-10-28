@@ -131,6 +131,44 @@ describe('WidgetBreakdownSelection', () => {
     }));
   });
 
+  describe('audits', () => {
+    const logs = { perspective: 'audits', filters: { mode: 'and', filters: [], filterGroups: [] } } as unknown as WidgetDataSelection;
+    const setAuditsWidget = (overrides: Record<string, unknown>) => setWidget({ perspective: 'audits', type: 'line', dataSelection: [logs], ...overrides });
+
+    it('offers the fields of the logs and keeps a chosen one', () => {
+      setAuditsWidget({ parameters: { breakdownBy: 'context_data.entity_type' } });
+      const { getAllByRole, getByText } = testRender(<WidgetBreakdownSelection />);
+
+      expect(getAllByRole('combobox')[0].textContent).toContain('Type of related entity');
+      expect(getByText('Include Other')).toBeTruthy();
+      expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+    });
+
+    it('drops an entities field the logs do not have', () => {
+      setAuditsWidget({ parameters: { breakdownBy: 'report_types', breakdownLimit: 20 } });
+      testRender(<WidgetBreakdownSelection />);
+
+      expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
+        parameters: { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
+      }));
+    });
+
+    it('disables every control of a dataset counting distinct values', () => {
+      setAuditsWidget({ dataSelection: [{ ...logs, unique: true }] });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+
+      expect(isDisabled(getAllByRole('combobox')[0])).toBe(true);
+      expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+    });
+
+    it('is shown for bars, which never count distinct values', () => {
+      setAuditsWidget({ type: 'vertical-bar', dataSelection: [{ ...logs, unique: true }] });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+
+      expect(isDisabled(getAllByRole('combobox')[0])).toBe(false);
+    });
+  });
+
   it('is not shown for widgets that cannot be broken down', () => {
     setWidget({ perspective: 'relationships' });
     const { queryByTestId } = testRender(<WidgetBreakdownSelection />);
