@@ -8,6 +8,7 @@ import WidgetContainer from './WidgetContainer';
 import WidgetNoData from './WidgetNoData';
 import WidgetRenderContent, { type WidgetRenderGuards } from './WidgetRenderContent';
 import WidgetTimeSeriesBreakdown, { type WidgetTimeSeriesBreakdownData } from './WidgetTimeSeriesBreakdown';
+import WidgetBreakdownErrorBoundary from './WidgetBreakdownErrorBoundary';
 import useDashboardViz from './useDashboardViz';
 import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters, WidgetPerspective } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
@@ -110,15 +111,17 @@ const BreakdownViz = <TQuery extends OperationType>({
         queryRef={queryRef}
         host={host}
       >
-        <BreakdownChart<TQuery>
-          query={query}
-          queryRef={queryRef!}
-          getBreakdown={getBreakdown}
-          type={widget.type}
-          parameters={parameters}
-          onMounted={setChart}
-          onWarningChange={setWarning}
-        />
+        <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+          <BreakdownChart<TQuery>
+            query={query}
+            queryRef={queryRef!}
+            getBreakdown={getBreakdown}
+            type={widget.type}
+            parameters={parameters}
+            onMounted={setChart}
+            onWarningChange={setWarning}
+          />
+        </WidgetBreakdownErrorBoundary>
       </RenderContent>
     </WidgetContainer>
   );

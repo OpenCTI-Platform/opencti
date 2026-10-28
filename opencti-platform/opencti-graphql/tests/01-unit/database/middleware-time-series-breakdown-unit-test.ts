@@ -48,6 +48,7 @@ import {
 import { READ_INDEX_HISTORY } from '../../../src/database/utils';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
+import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../../../src/database/utils';
 
 // ── Shared fixtures ──────────────────────────────────────────────────────────
 
@@ -156,19 +157,104 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['user-d', 'user-c']);
   });
 
-  it('should order the candidates aggregation by value, like the selection', async () => {
+  it('should rank the candidates on their number of entities, in the order of the selection', async () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('user-a', 10)]);
     vi.mocked(engine.elFindByIds).mockResolvedValue({ 'user-a': makeEntity('user-a', 'Alice') } as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
 
     await breakdown({ field: 'creator_id', order: 'asc' });
-    expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).bucketsOrder).toEqual('asc');
+    expect(vi.mocked(engine.elAggregationCount).mock.lastCall?.[3]).toMatchObject({ rankByCount: true, bucketsOrder: 'asc' });
 
-    // Not the default order by number of entities: inferred entities weigh differently
     for (const order of ['desc', null, undefined]) {
       await breakdown({ field: 'creator_id', order });
-      expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).bucketsOrder).toEqual('desc');
+      expect(vi.mocked(engine.elAggregationCount).mock.lastCall?.[3]).toMatchObject({ rankByCount: true, bucketsOrder: 'desc' });
     }
+  });
+
+  it('should give each series its weighted total from the histogram, not the number of entities used to rank it', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('user-a', 10)]);
+    vi.mocked(engine.elFindByIds).mockResolvedValue({ 'user-a': makeEntity('user-a', 'Alice') } as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map([
+      ['user-a', [{ date: '2026-01-01', value: 2 }, { date: '2026-01-03', value: 1.5 }]],
+    ]));
+
+    const result = await breakdown({ field: 'creator_id' });
+
+    expect(result.series[0].values).toEqual([2, 0, 1.5]);
+    expect(result.series[0].value).toEqual(3.5);
+  });
+
+  it('should use one filter per value in the histogram only when the field has many values', async () => {
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+    const types = (count: number) => Array.from({ length: count }, (_, i) => ({ key: `type-${i}`, label: `Type-${i}`, value: 100 - i, count: 100 - i }));
+
+    // A handful of values: the restricted terms aggregation is faster
+    vi.mocked(engine.elAggregationCount).mockResolvedValue(types(5));
+    await breakdown({ field: 'entity_type', limit: 5 });
+    expect((vi.mocked(engine.elHistogramBreakdownCount).mock.lastCall?.[3] as any).filterPerKey).toBe(false);
+
+    // Three times more values than series
+    vi.mocked(engine.elAggregationCount).mockResolvedValue(types(15));
+    await breakdown({ field: 'entity_type', limit: 5 });
+    expect((vi.mocked(engine.elHistogramBreakdownCount).mock.lastCall?.[3] as any).filterPerKey).toBe(true);
+
+    // A full candidates page, whatever the limit
+    vi.mocked(engine.elAggregationCount).mockResolvedValue(types(engine.MAX_AGGREGATION_SIZE));
+    await breakdown({ field: 'entity_type', limit: 50 });
+    expect((vi.mocked(engine.elHistogramBreakdownCount).mock.lastCall?.[3] as any).filterPerKey).toBe(true);
+  });
+
+  it('should only resolve the candidates needed to fill the limit and know whether more exist', async () => {
+    const users = Array.from({ length: 40 }, (_, i) => `user-${i}`);
+    vi.mocked(engine.elAggregationCount).mockResolvedValue(users.map((id, i) => bucket(id, 100 - i)));
+    vi.mocked(engine.elFindByIds).mockImplementation(async (_context, _user, ids) => Object.fromEntries(
+      (ids as string[]).map((id) => [id, makeEntity(id, id)]),
+    ) as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await breakdown({ field: 'creator_id', limit: 5 });
+
+    // limit + 10 values at once, enough to fill the limit and see a sixth one
+    expect(engine.elFindByIds).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(engine.elFindByIds).mock.calls[0][2]).toEqual(users.slice(0, 15));
+    expect(result.series).toHaveLength(5);
+    expect(result.truncated).toBe(true);
+  });
+
+  it('should resolve the next candidates when the first ones cannot be resolved', async () => {
+    const users = Array.from({ length: 30 }, (_, i) => `user-${i}`);
+    vi.mocked(engine.elAggregationCount).mockResolvedValue(users.map((id, i) => bucket(id, 100 - i)));
+    // The 13 first values are unknown entities (like deleted users)
+    vi.mocked(engine.elFindByIds).mockImplementation(async (_context, _user, ids) => Object.fromEntries(
+      (ids as string[]).filter((id) => Number(id.split('-')[1]) >= 13).map((id) => [id, makeEntity(id, id)]),
+    ) as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await breakdown({ field: 'creator_id', limit: 2 });
+
+    expect(engine.elFindByIds).toHaveBeenCalledTimes(2);
+    expect(result.series.map((serie) => serie.label)).toEqual(['user-13', 'user-14']);
+    expect(result.truncated).toBe(true);
+  });
+
+  it('should only query the entities indices', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([]);
+
+    await breakdown({ field: 'entity_type' });
+    expect(vi.mocked(engine.elAggregationCount).mock.lastCall?.[2]).toEqual(READ_ENTITIES_INDICES);
+
+    await breakdown({ field: 'entity_type', onlyInferred: true });
+    expect(vi.mocked(engine.elAggregationCount).mock.lastCall?.[2]).toEqual([READ_INDEX_INFERRED_ENTITIES]);
+  });
+
+  it('should keep a vocabulary value named unknown like any other value', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('unknown', 50), bucket('malicious-activity', 10)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await breakdown({ field: 'report_types' });
+
+    expect(result.series.map((serie) => serie.label)).toEqual(['unknown', 'malicious-activity']);
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['unknown', 'malicious-activity']);
   });
 
   it('should not order the aggregation of the distribution APIs, whose order only sorts their result', async () => {
@@ -260,7 +346,9 @@ describe('timeSeriesBreakdownEntities', () => {
   });
 
   it('should still count the Other series when no usable value is found', async () => {
-    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('unknown', 3)]);
+    // Not resolvable, like the SYSTEM user
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('system', 3)]);
+    vi.mocked(engine.elFindByIds).mockResolvedValue({} as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map([
       [engine.HISTOGRAM_BREAKDOWN_OTHER_KEY, [{ date: '2026-01-02', value: 3 }]],
     ]));
@@ -303,10 +391,9 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(engine.elAggregationCount).not.toHaveBeenCalled();
   });
 
-  it('should drop unknown and unresolved values before applying the limit', async () => {
+  it('should drop unresolved values before applying the limit', async () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([
       bucket('user-a', 10),
-      bucket('unknown', 8),
       bucket('system', 7), // not resolvable, like the SYSTEM user
       bucket('user-b', 5),
       bucket('user-c', 3),
@@ -331,7 +418,7 @@ describe('timeSeriesBreakdownEntities', () => {
   });
 
   it('should not be truncated when every usable value fits in the limit', async () => {
-    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('user-a', 10), bucket('unknown', 2)]);
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('user-a', 10), bucket('system', 2)]);
     vi.mocked(engine.elFindByIds).mockResolvedValue({ 'user-a': makeEntity('user-a', 'Alice') } as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
 
@@ -388,7 +475,7 @@ describe('timeSeriesBreakdownEntities', () => {
   });
 
   it('should skip the histogram query when no value is found', async () => {
-    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('unknown', 3)]);
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([]);
 
     const result = await breakdown({ field: 'creator_id' });
 
@@ -555,16 +642,17 @@ describe('timeSeriesBreakdownHistory', () => {
     expect(result.dates).toHaveLength(3);
   });
 
-  it('should keep the raw values of the event fields, without entity', async () => {
-    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('create', 6), bucket('unknown', 5), bucket('update', 2)]);
+  it('should keep the raw values of the event fields, without entity, ranked on their number of events', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('update', 2), bucket('create', 6)]);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map([['create', [{ date: '2026-01-02', value: 6 }]]]));
 
-    const result = await historyBreakdown({ field: 'event_scope' });
+    const result = await historyBreakdown({ field: 'event_scope', order: 'desc' });
 
+    expect(vi.mocked(engine.elAggregationCount).mock.calls[0][3]).toMatchObject({ rankByCount: true, bucketsOrder: 'desc' });
     expect(engine.elFindByIds).not.toHaveBeenCalled();
     expect(result.series.map((serie) => serie.label)).toEqual(['create', 'update']);
     expect(result.series.every((serie) => serie.entity === null)).toBe(true);
-    expect(result.series[0].values).toEqual([0, 6, 0]);
+    expect(result.series[0]).toMatchObject({ value: 6, values: [0, 6, 0] });
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['create', 'update']);
   });
 

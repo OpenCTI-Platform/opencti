@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Widget } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
@@ -18,10 +18,14 @@ import {
   hasWidgetBreakdown,
   isBreakdownFieldSupported,
   isWidgetBreakdownActive,
+  isSameBreakdown,
   isWidgetBreakdownEligible,
   MAX_RENDERED_BARS,
+  MAX_RENDERED_HEATMAP_CELLS,
+  MAX_RENDERED_LINE_POINTS,
   MIN_RENDERED_BARS,
   nextBreakdownChartWidth,
+  scheduleChartDraw,
 } from './widgetBreakdown';
 
 const workspace = { kind: 'workspace' } as const;
@@ -236,7 +240,7 @@ describe('rendered points budget', () => {
 
   it('gives each line or area series a point every 2 pixels', () => {
     expect(getRenderedPointsBudget('line', 700, 1)).toEqual(350);
-    expect(getRenderedPointsBudget('area', 700, 50)).toEqual(350 * 50);
+    expect(getRenderedPointsBudget('area', 700, 10)).toEqual(350 * 10);
   });
 
   it('gives each heatmap series a cell every 6 pixels', () => {
@@ -246,6 +250,74 @@ describe('rendered points budget', () => {
   it('keeps a few points per series on a tiny or unknown width', () => {
     expect(getRenderedPointsBudget('heatmap', 12, 2)).toEqual(10 * 2);
     expect(getRenderedPointsBudget('line', 0, 1)).toEqual((MAX_RENDERED_BARS * 2) / 2);
+  });
+
+  it('caps the points of a wide chart with many series, keeping a few points per series', () => {
+    expect(getRenderedPointsBudget('line', 2000, 50)).toEqual(MAX_RENDERED_LINE_POINTS);
+    expect(getRenderedPointsBudget('heatmap', 1200, 20)).toEqual(MAX_RENDERED_HEATMAP_CELLS);
+    expect(getRenderedPointsBudget('heatmap', 600, 200)).toEqual(10 * 200);
+  });
+});
+
+describe('isSameBreakdown', () => {
+  const breakdown = (values: number[], overrides = {}) => ({
+    truncated: false,
+    dates: ['2025-10-01T00:00:00.000Z', '2025-10-02T00:00:00.000Z'],
+    series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values }],
+    ...overrides,
+  });
+
+  it('finds a refreshed breakdown with the same values the same', () => {
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2]))).toBe(true);
+    expect(isSameBreakdown(null, null)).toBe(true);
+  });
+
+  it('finds a breakdown with other values, dates, series or names different', () => {
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 3]))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { truncated: true }))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { dates: ['2025-10-02T00:00:00.000Z', '2025-10-03T00:00:00.000Z'] }))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { series: [] }))).toBe(false);
+    const renamed = breakdown([1, 2], { series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Bob' }, values: [1, 2] }] });
+    expect(isSameBreakdown(breakdown([1, 2]), renamed)).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), null)).toBe(false);
+  });
+});
+
+describe('scheduleChartDraw', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.runAllTimers();
+    vi.useRealTimers();
+  });
+
+  it('draws the first chart at once, and the charts drawn with it one per task', () => {
+    const draws: string[] = [];
+    scheduleChartDraw(() => draws.push('first'));
+    scheduleChartDraw(() => draws.push('second'));
+    scheduleChartDraw(() => draws.push('third'));
+    expect(draws).toEqual(['first']);
+    vi.advanceTimersToNextTimer();
+    expect(draws).toEqual(['first', 'second']);
+    vi.advanceTimersToNextTimer();
+    expect(draws).toEqual(['first', 'second', 'third']);
+
+    // Once every chart is drawn, the next one is drawn at once
+    vi.runAllTimers();
+    scheduleChartDraw(() => draws.push('later'));
+    expect(draws).toEqual(['first', 'second', 'third', 'later']);
+  });
+
+  it('does not draw a cancelled chart', () => {
+    const draws: string[] = [];
+    scheduleChartDraw(() => draws.push('first'));
+    const cancel = scheduleChartDraw(() => draws.push('second'));
+    scheduleChartDraw(() => draws.push('third'));
+    cancel();
+    vi.advanceTimersToNextTimer();
+    expect(draws).toEqual(['first', 'third']);
   });
 });
 
