@@ -35,7 +35,17 @@ vi.mock('../../../src/config/conf', async () => {
 
 import * as engine from '../../../src/database/engine';
 import * as accessModule from '../../../src/utils/access';
-import { BREAKDOWN_ALLOWED_REFS, distributionEntities, distributionHistory, resolveBreakdownField, timeSeriesBreakdownEntities } from '../../../src/database/middleware';
+import {
+  BREAKDOWN_ALLOWED_REFS,
+  distributionEntities,
+  distributionHistory,
+  resolveBreakdownField,
+  resolveRelationshipBreakdownField,
+  timeSeriesBreakdownEntities,
+  timeSeriesBreakdownRelations,
+} from '../../../src/database/middleware';
+import { stixRelationshipsMultiTimeSeries, stixRelationshipsTimeSeriesBreakdown } from '../../../src/domain/stixRelationship';
+import { INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../../../src/database/utils';
@@ -505,5 +515,298 @@ describe('resolveBreakdownField', () => {
   it('should only accept a field carried by every requested type', () => {
     expect(resolveBreakdownField(['Report', 'Malware'], 'objectLabel').resolveEntities).toBe(true);
     expect(() => resolveBreakdownField(['Report', 'Malware'], 'report_types')).toThrow('does not support this field');
+  });
+});
+
+// Minimal relationship schema: every relationship type carries an author, labels, markings, kill chain phases,
+// external references and creators. Uses alone has a vocabulary.
+const RELATIONSHIP_REFS: Record<string, string> = {
+  createdBy: 'created-by',
+  objectLabel: 'object-label',
+  objectMarking: 'object-marking',
+  killChainPhases: 'kill-chain-phase',
+  externalReferences: 'external-reference',
+};
+const RELATIONSHIP_ATTRIBUTES: Record<string, { type: string; format?: string }> = {
+  creator_id: { type: 'string', format: 'id' },
+  relationship_type: { type: 'string', format: 'short' },
+  entity_type: { type: 'string', format: 'short' },
+  description: { type: 'string', format: 'text' },
+  confidence: { type: 'numeric' },
+  start_time: { type: 'date' },
+  usage_types: { type: 'string', format: 'vocabulary' },
+};
+const mockRelationshipSchema = () => {
+  vi.spyOn(schemaRelationsRefDefinition, 'getRelationRef').mockImplementation((_type, name) => (
+    name && RELATIONSHIP_REFS[name] ? { name, databaseName: RELATIONSHIP_REFS[name] } as any : null
+  ));
+  vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockImplementation((type, name) => {
+    if (name === 'usage_types' && type !== 'uses') return undefined;
+    return RELATIONSHIP_ATTRIBUTES[name] ? { name, isFilterable: true, ...RELATIONSHIP_ATTRIBUTES[name] } as any : undefined;
+  });
+};
+
+describe('resolveRelationshipBreakdownField', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRelationshipSchema();
+  });
+
+  it('should break relationships down by their type, as indexed', () => {
+    expect(resolveRelationshipBreakdownField(['stix-relationship'], 'relationship_type')).toEqual({
+      aggregationField: 'relationship_type',
+      resolveEntities: false,
+    });
+  });
+
+  it('should break relationships down by the type of their source or of their target', () => {
+    expect(resolveRelationshipBreakdownField(['uses'], 'fromTypes')).toEqual({ aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'from' });
+    expect(resolveRelationshipBreakdownField(['uses'], 'toTypes')).toEqual({ aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'to' });
+  });
+
+  it('should accept the author, labels, markings and creators of the relationships', () => {
+    const types = ['uses', 'targets'];
+    expect(resolveRelationshipBreakdownField(types, 'createdBy')).toEqual({ aggregationField: 'rel_created-by.internal_id', resolveEntities: true });
+    expect(resolveRelationshipBreakdownField(types, 'objectLabel')).toEqual({ aggregationField: 'rel_object-label.internal_id', resolveEntities: true });
+    expect(resolveRelationshipBreakdownField(types, 'objectMarking')).toEqual({ aggregationField: 'rel_object-marking.internal_id', resolveEntities: true });
+    expect(resolveRelationshipBreakdownField(types, 'creator_id')).toEqual({ aggregationField: 'creator_id', resolveEntities: true });
+  });
+
+  it('should refuse the source and target themselves, and the fields that cannot be broken down', () => {
+    // fromId, toId and objects have an unbounded cardinality; entity_type is the relationship type itself
+    ['fromId', 'toId', 'objects', 'externalReferences', 'killChainPhases', 'entity_type', 'description', 'confidence', 'start_time', 'regardingOf', 'constructor']
+      .forEach((field) => {
+        expect(() => resolveRelationshipBreakdownField(['uses'], field)).toThrow('does not support this field for these relationship types');
+      });
+  });
+
+  it('should only accept a vocabulary carried by every requested relationship type', () => {
+    expect(resolveRelationshipBreakdownField(['uses'], 'usage_types')).toEqual({ aggregationField: 'usage_types', resolveEntities: false });
+    expect(() => resolveRelationshipBreakdownField(['uses', 'targets'], 'usage_types')).toThrow('does not support this field');
+  });
+
+  it('should keep the relationships fields out of the entities breakdown', () => {
+    mockSchema();
+    ['relationship_type', 'fromTypes', 'toTypes'].forEach((field) => {
+      expect(() => resolveBreakdownField(['Report'], field)).toThrow('does not support this field for these entity types');
+    });
+  });
+});
+
+const relationsBreakdown = (args: Record<string, unknown>, relationshipTypes = ['uses', 'targets']) => timeSeriesBreakdownRelations(
+  mockContext,
+  accessModule.SYSTEM_USER,
+  relationshipTypes,
+  { startDate, endDate, interval: 'day', ...args } as any,
+);
+
+describe('timeSeriesBreakdownRelations', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(accessModule, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+    mockRelationshipSchema();
+  });
+
+  it('should reject a limit out of bounds and the fields that cannot be broken down', async () => {
+    await expect(relationsBreakdown({ field: 'relationship_type', limit: 0 })).rejects.toThrow('Time series breakdown limit');
+    await expect(relationsBreakdown({ field: 'relationship_type', limit: 51 })).rejects.toThrow('Time series breakdown limit');
+    await expect(relationsBreakdown({ field: 'fromId' })).rejects.toThrow('does not support this field for these relationship types');
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
+    expect(engine.elConnectionTypesAggregationCount).not.toHaveBeenCalled();
+  });
+
+  it('should count the relationships of the requested types in the relationships indices', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('uses', 5)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+    const filters = { mode: 'and', filters: [{ key: ['confidence'], values: ['50'], operator: 'gt' }], filterGroups: [] };
+
+    await relationsBreakdown({ field: 'relationship_type', dateAttribute: 'start_time', filters });
+
+    const [, , discoveryIndices, discoveryOptions] = vi.mocked(engine.elAggregationCount).mock.calls[0] as any[];
+    const [, , histogramIndices, histogramOptions] = vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0] as any[];
+    expect(discoveryIndices).toEqual(READ_RELATIONSHIPS_INDICES);
+    expect(histogramIndices).toEqual(READ_RELATIONSHIPS_INDICES);
+    for (const options of [discoveryOptions, histogramOptions]) {
+      expect(options.types).toEqual(['uses', 'targets']);
+      expect(options.field).toEqual('relationship_type');
+      expect(options.dateAttribute).toEqual('start_time');
+      expect(options.intervalInclude).toBe(true);
+      expect(options.filters).toEqual(filters);
+    }
+
+    await relationsBreakdown({ field: 'relationship_type', onlyInferred: true });
+    expect(vi.mocked(engine.elAggregationCount).mock.lastCall?.[2]).toEqual(INDEX_INFERRED_RELATIONSHIPS);
+  });
+
+  it('should keep the relationship type as label, without entity', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('uses', 5), bucket('targets', 3)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map([
+      ['uses', [{ date: '2026-01-02', value: 5 }]],
+      ['targets', [{ date: '2026-01-01', value: 1 }, { date: '2026-01-03', value: 2 }]],
+    ]));
+
+    const result = await relationsBreakdown({ field: 'relationship_type' });
+
+    expect(engine.elFindByIds).not.toHaveBeenCalled();
+    expect(engine.elConnectionTypesAggregationCount).not.toHaveBeenCalled();
+    // Ranked on their number of relationships, like the fields of the entities
+    expect(vi.mocked(engine.elAggregationCount).mock.calls[0][3]).toMatchObject({ field: 'relationship_type', rankByCount: true, bucketsOrder: 'desc' });
+    expect(result.series.map((serie) => [serie.label, serie.value, serie.entity])).toEqual([['uses', 5, null], ['targets', 3, null]]);
+    expect(result.series.map((serie) => serie.values)).toEqual([[0, 5, 0], [1, 0, 2]]);
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].connectionSide).toBeUndefined();
+  });
+
+  it('should break down by the type of the source through the connections of the relationships', async () => {
+    vi.mocked(engine.elConnectionTypesAggregationCount).mockResolvedValue([
+      { key: 'malware', label: 'Malware', value: 4, count: 4 },
+      { key: 'intrusion-set', label: 'Intrusion-Set', value: 2, count: 2 },
+    ]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map([
+      ['malware', [{ date: '2026-01-01', value: 4 }]],
+      [engine.HISTOGRAM_BREAKDOWN_OTHER_KEY, [{ date: '2026-01-03', value: 1 }]],
+    ]));
+
+    const result = await relationsBreakdown({ field: 'fromTypes', includeOther: true });
+
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
+    const discoveryOptions = vi.mocked(engine.elConnectionTypesAggregationCount).mock.calls[0][3];
+    expect(discoveryOptions).toMatchObject({ connectionSide: 'from', bucketsOrder: 'desc', types: ['uses', 'targets'], intervalInclude: true });
+    const histogramOptions = vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3];
+    expect(histogramOptions).toMatchObject({ connectionSide: 'from', keys: ['malware', 'intrusion-set'], withOther: true });
+    expect(result.series.map((serie) => [serie.label, serie.value, serie.entity, serie.isOther])).toEqual([
+      ['Malware', 4, null, false],
+      // The value of a series is the sum of its values: no histogram bucket, no relationship
+      ['Intrusion-Set', 0, null, false],
+      ['Other', 1, null, true],
+    ]);
+    expect(result.series[2].values).toEqual([0, 0, 1]);
+  });
+
+  it('should break down by the type of the target, lowest values first in asc order', async () => {
+    vi.mocked(engine.elConnectionTypesAggregationCount).mockResolvedValue([
+      { key: 'sector', label: 'Sector', value: 6, count: 6 },
+      { key: 'country', label: 'Country', value: 1, count: 1 },
+    ]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await relationsBreakdown({ field: 'toTypes', order: 'asc', limit: 1 });
+
+    expect(vi.mocked(engine.elConnectionTypesAggregationCount).mock.calls[0][3]).toMatchObject({ connectionSide: 'to', bucketsOrder: 'asc' });
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3]).toMatchObject({ connectionSide: 'to', keys: ['country'] });
+    expect(result.truncated).toBe(true);
+    expect(result.series.map((serie) => serie.label)).toEqual(['Country']);
+  });
+
+  it('should resolve the authors of the relationships, restricted ones included', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('identity-a', 3), bucket('identity-b', 2)]);
+    vi.mocked(engine.elFindByIds).mockResolvedValue({
+      'identity-a': makeEntity('identity-a', 'Filigran'),
+      'identity-b': makeEntity('identity-b', 'Secret'),
+    } as any);
+    vi.mocked(accessModule.isUserCanAccessStoreElement).mockImplementation(async (_context, _user, element: any) => element.internal_id === 'identity-a');
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await relationsBreakdown({ field: 'createdBy' });
+
+    expect((vi.mocked(engine.elAggregationCount).mock.calls[0][3] as any).field).toEqual('rel_created-by.internal_id');
+    expect(result.series.map((serie) => (serie.entity as any)?.name)).toEqual(['Filigran', 'Restricted']);
+  });
+
+  it('should count the Other series in the maximum number of buckets and end the period now', async () => {
+    const thousandDaysLater = new Date('2028-09-26T12:00:00.000Z');
+    await expect(relationsBreakdown({ field: 'relationship_type', limit: 50, endDate: thousandDaysLater, includeOther: true })).rejects.toThrow('too large');
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
+
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('uses', 1)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+    const before = Date.now();
+    const result = await relationsBreakdown({ field: 'relationship_type', startDate: new Date(Date.now() - 2 * 86400000), endDate: undefined });
+    const histogramOptions = vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3] as any;
+    expect(histogramOptions.endDate.getTime()).toBeGreaterThanOrEqual(before);
+    expect(result.dates).toHaveLength(3);
+  });
+
+  it('should reject an unsupported interval before querying', async () => {
+    const actualEngine = await vi.importActual<typeof engine>('../../../src/database/engine');
+    vi.mocked(engine.getHistogramDateFormat).mockImplementation(actualEngine.getHistogramDateFormat);
+
+    await expect(relationsBreakdown({ field: 'fromTypes', interval: 'minute' })).rejects.toThrow('Unsupported interval');
+    expect(engine.elConnectionTypesAggregationCount).not.toHaveBeenCalled();
+  });
+
+  it('should not break the entities down through the connections', async () => {
+    mockSchema();
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('report', 1)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    await breakdown({ field: 'entity_type' });
+
+    expect(engine.elConnectionTypesAggregationCount).not.toHaveBeenCalled();
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].connectionSide).toBeUndefined();
+  });
+});
+
+describe('stixRelationshipsTimeSeriesBreakdown', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRelationshipSchema();
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('targets', 4)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+    vi.mocked(engine.elHistogramCount).mockResolvedValue([]);
+  });
+
+  const filters = { mode: 'and', filters: [{ key: ['relationship_type'], values: ['targets'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+  const dynamicFrom = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+  const dynamicTo = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Sector'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+
+  it('should restrict the relationships exactly as the relationships time series does', async () => {
+    const timeSeries = await stixRelationshipsMultiTimeSeries(mockContext, accessModule.SYSTEM_USER, {
+      operation: 'count',
+      startDate,
+      endDate,
+      interval: 'day',
+      timeSeriesParameters: [{ field: 'start_time', filters, dynamicFrom, dynamicTo }],
+    });
+    await Promise.all(timeSeries.map((serie) => serie.data));
+    const timeSeriesOptions = vi.mocked(engine.elHistogramCount).mock.calls[0][3] as any;
+
+    await stixRelationshipsTimeSeriesBreakdown(mockContext, accessModule.SYSTEM_USER, {
+      field: 'relationship_type',
+      dateAttribute: 'start_time',
+      startDate,
+      endDate,
+      interval: 'day',
+      filters,
+      dynamicFrom,
+      dynamicTo,
+    });
+    const discoveryOptions = vi.mocked(engine.elAggregationCount).mock.calls[0][3] as any;
+    const histogramOptions = vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3] as any;
+
+    // The dynamic source and target are applied as filters, on all the relationships without relationship type
+    expect(JSON.stringify(timeSeriesOptions.filters)).toContain('dynamicFrom');
+    expect(JSON.stringify(timeSeriesOptions.filters)).toContain('dynamicTo');
+    for (const options of [discoveryOptions, histogramOptions]) {
+      expect(options.filters).toEqual(timeSeriesOptions.filters);
+      expect(options.types).toEqual(timeSeriesOptions.types);
+      expect(options.types).toEqual(['stix-relationship']);
+      expect(options.dateAttribute).toEqual(timeSeriesOptions.field);
+    }
+  });
+
+  it('should check the field against the requested relationship types', async () => {
+    await stixRelationshipsTimeSeriesBreakdown(mockContext, accessModule.SYSTEM_USER, {
+      field: 'usage_types', startDate, endDate, interval: 'day', relationship_type: ['uses'],
+    });
+    expect((vi.mocked(engine.elAggregationCount).mock.calls[0][3] as any).types).toEqual(['uses']);
+    await expect(stixRelationshipsTimeSeriesBreakdown(mockContext, accessModule.SYSTEM_USER, {
+      field: 'usage_types', startDate, endDate, interval: 'day', relationship_type: ['uses', 'targets'],
+    })).rejects.toThrow('does not support this field');
+  });
+
+  it('should refuse relationship types that are not relationships', async () => {
+    await expect(stixRelationshipsTimeSeriesBreakdown(mockContext, accessModule.SYSTEM_USER, {
+      field: 'relationship_type', startDate, endDate, interval: 'day', relationship_type: ['Malware'],
+    })).rejects.toThrow('relationship_type is not a stix-relationship');
   });
 });

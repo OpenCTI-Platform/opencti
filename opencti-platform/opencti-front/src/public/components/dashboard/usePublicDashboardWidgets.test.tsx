@@ -12,6 +12,14 @@ vi.mock('./stix_core_objects/PublicStixCoreObjectsTimeSeriesBreakdown', () => ({
 vi.mock('./stix_core_objects/PublicStixCoreObjectsMultiLineChart', () => ({
   default: () => <div data-testid="line" />,
 }));
+vi.mock('./stix_relationships/PublicStixRelationshipsTimeSeriesBreakdown', () => ({
+  default: ({ uriKey, widget }: { uriKey: string; widget: Widget }) => (
+    <div data-testid="relationships-breakdown">{`${uriKey}/${widget.id}`}</div>
+  ),
+}));
+vi.mock('./stix_relationships/PublicStixRelationshipsMultiLineChart', () => ({
+  default: () => <div data-testid="relationships-line" />,
+}));
 
 // Public manifests keep one entry per dataset but strip its filters
 const makeWidget = (overrides: Partial<Widget> = {}): Widget => ({
@@ -23,14 +31,15 @@ const makeWidget = (overrides: Partial<Widget> = {}): Widget => ({
   ...overrides,
 } as unknown as Widget);
 
-const renderEntityWidget = (widget: Widget) => {
+const renderWidget = (widget: Widget, kind: 'entityWidget' | 'relationshipWidget') => {
   const { hook } = testRenderHook(() => usePublicDashboardWidgets('public-key', {
     relativeDate: null,
     startDate: null,
     endDate: null,
   }));
-  return testRender(<>{hook.result.current.entityWidget(widget)}</>);
+  return testRender(<>{hook.result.current[kind](widget)}</>);
 };
+const renderEntityWidget = (widget: Widget) => renderWidget(widget, 'entityWidget');
 
 describe('usePublicDashboardWidgets', () => {
   it('should render a broken down widget with the breakdown component', () => {
@@ -47,5 +56,21 @@ describe('usePublicDashboardWidgets', () => {
 
     expect(getByTestId('line')).toBeTruthy();
     expect(queryByTestId('breakdown')).toBeNull();
+  });
+
+  it('should render a broken down relationships widget with the relationships breakdown component', () => {
+    const relationships = makeWidget({ perspective: 'relationships', parameters: { breakdownBy: 'toTypes', interval: 'day' } });
+    const { getByTestId, queryByTestId } = renderWidget(relationships, 'relationshipWidget');
+
+    expect(getByTestId('relationships-breakdown').textContent).toEqual('public-key/public-widget-1');
+    expect(queryByTestId('relationships-line')).toBeNull();
+  });
+
+  it('should keep rendering a relationships widget without breakdown as before', () => {
+    const relationships = makeWidget({ perspective: 'relationships', parameters: { interval: 'day' } });
+    const { getByTestId, queryByTestId } = renderWidget(relationships, 'relationshipWidget');
+
+    expect(getByTestId('relationships-line')).toBeTruthy();
+    expect(queryByTestId('relationships-breakdown')).toBeNull();
   });
 });

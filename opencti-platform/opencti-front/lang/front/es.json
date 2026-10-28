@@ -2514,6 +2514,7 @@
   "Groups restriction": "Restricción de grupos",
   "Groups splitter": "Separador de grupos",
   "Groups the entities that have none of the displayed values, including entities without a value.": "Agrupa las entidades que no tienen ninguno de los valores mostrados, incluidas las entidades sin valor.",
+  "Groups the relationships that have none of the displayed values, including relationships without a value.": "Agrupa las relaciones que no tienen ninguno de los valores mostrados, incluidas las relaciones sin valor.",
   "Groups using this role": "Grupos que utilizan este rol",
   "Groups with this role": "Grupos con este rol",
   "gt": "Superior a",

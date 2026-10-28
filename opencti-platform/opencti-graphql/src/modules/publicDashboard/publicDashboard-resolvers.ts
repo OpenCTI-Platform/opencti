@@ -17,6 +17,7 @@ import {
   publicStixRelationshipsDistribution,
   publicStixRelationshipsMultiTimeSeries,
   publicStixRelationshipsNumber,
+  publicStixRelationshipsTimeSeriesBreakdown,
 } from './publicDashboard-domain';
 import { findById as findWorkspaceById } from '../workspace/workspace-domain';
 import { loadCreator } from '../../database/members';
@@ -30,6 +31,7 @@ const publicDashboardResolvers: Resolvers = {
     publicStixCoreObjectsMultiTimeSeries: (_, args, context) => publicStixCoreObjectsMultiTimeSeries(context, args),
     publicStixCoreObjectsTimeSeriesBreakdown: (_, args, context) => publicStixCoreObjectsTimeSeriesBreakdown(context, args),
     publicStixRelationshipsMultiTimeSeries: (_, args, context) => publicStixRelationshipsMultiTimeSeries(context, args),
+    publicStixRelationshipsTimeSeriesBreakdown: (_, args, context) => publicStixRelationshipsTimeSeriesBreakdown(context, args),
     publicStixRelationshipsNumber: (_, args, context) => publicStixRelationshipsNumber(context, args),
     publicStixCoreObjectsDistribution: (_, args, context) => publicStixCoreObjectsDistribution(context, args),
     publicStixRelationshipsDistribution: (_, args, context) => publicStixRelationshipsDistribution(context, args),

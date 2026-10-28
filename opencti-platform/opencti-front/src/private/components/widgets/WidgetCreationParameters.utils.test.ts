@@ -162,8 +162,18 @@ describe('applyBreakdownCompatibility', () => {
     expect(widget.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
   });
 
-  it('drops the breakdown for the relationships perspective, several datasets or another host', () => {
-    expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'relationships' as const }, workspace).parameters.breakdownBy).toBeNull();
+  it('keeps the breakdown of every relationships time series visualization', () => {
+    const relationships = { ...brokenDownLine, perspective: 'relationships' as const, parameters: { ...brokenDownLine.parameters, breakdownBy: 'toTypes' } };
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      expect(applyBreakdownCompatibility({ ...relationships, type }, workspace).parameters).toEqual(relationships.parameters);
+    });
+    // A relationships widget left with an entities dataset cannot be broken down as relationships
+    const entitiesDataset = { ...selection, perspective: 'entities' as const };
+    expect(applyBreakdownCompatibility({ ...relationships, dataSelection: [entitiesDataset] }, workspace).parameters.breakdownBy).toBeNull();
+  });
+
+  it('drops the breakdown for the audits perspective, several datasets or another host', () => {
+    expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'audits' as const }, workspace).parameters.breakdownBy).toBeNull();
     expect(applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace).parameters.breakdownBy).toBeNull();
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
     expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters.breakdownBy).toBeNull();

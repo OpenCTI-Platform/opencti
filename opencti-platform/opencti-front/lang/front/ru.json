@@ -2514,6 +2514,7 @@
   "Groups restriction": "Ограничение групп",
   "Groups splitter": "Разделитель групп",
   "Groups the entities that have none of the displayed values, including entities without a value.": "Объединяет сущности, не имеющие ни одного из отображаемых значений, включая сущности без значения.",
+  "Groups the relationships that have none of the displayed values, including relationships without a value.": "Объединяет связи, не имеющие ни одного из отображаемых значений, включая связи без значения.",
   "Groups using this role": "Группы, использующие эту роль",
   "Groups with this role": "Группы с этой ролью",
   "gt": "gt",
