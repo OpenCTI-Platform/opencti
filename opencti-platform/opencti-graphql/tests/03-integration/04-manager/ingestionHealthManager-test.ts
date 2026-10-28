@@ -38,6 +38,9 @@ describe('Ingestion health manager: connector running as a regular user', () => 
   let connectorUserId: string;
   let publishUserActionSpy: MockInstance;
   let resolveSettingsSpy: MockInstance;
+  // Recorded here, not read from publishUserActionSpy.mock.calls: vitest clears the calls of the mocks before each test (clearMocks),
+  // and the scenario expects the events of the previous tests
+  const publishedActions: Parameters<typeof userActionListener.publishUserAction>[0][] = [];
 
   // Registered at each start of the connector, with the user of its token
   const registerAsUser = (userId: string) => registerConnector(
@@ -69,12 +72,14 @@ describe('Ingestion health manager: connector running as a regular user', () => 
   };
 
   // The manager evaluates every ingestion of the platform: only the events of the connector of the test are looked at
-  const connectorHealthEvents = () => publishUserActionSpy.mock.calls
-    .map(([action]) => action)
+  const connectorHealthEvents = () => publishedActions
     .filter((action) => action.event_type === 'ingestion_health' && action.context_data?.id === CONNECTOR_ID);
 
   beforeAll(async () => {
-    publishUserActionSpy = vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue([]);
+    publishUserActionSpy = vi.spyOn(userActionListener, 'publishUserAction').mockImplementation(async (action) => {
+      publishedActions.push(action);
+      return [];
+    });
     // Notified at the first period of a status: no need to wait for the default delay
     resolveSettingsSpy = vi.spyOn(ingestionHealthSettings, 'resolveIngestionHealthSettings').mockReturnValue({ notification_delay: 0, disabled_health_checks: [] });
     const connectorGroupId = await getGroupIdByName(CONNECTOR_GROUP.name);
