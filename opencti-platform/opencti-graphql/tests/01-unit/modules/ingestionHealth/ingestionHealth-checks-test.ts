@@ -76,6 +76,7 @@ describe('computeIngestionHealthPatch', () => {
         status_since: PREVIOUS_SINCE,
         health_checks: [USER_MISSING],
         last_event_date: PREVIOUS_SINCE,
+        last_event_status: IngestionHealthStatus.Degraded,
       },
     };
     expect(computeIngestionHealthPatch(current, [], CONTEXT)).toEqual({
@@ -84,6 +85,7 @@ describe('computeIngestionHealthPatch', () => {
         status_since: EVALUATED_AT,
         health_checks: [],
         last_event_date: PREVIOUS_SINCE,
+        last_event_status: IngestionHealthStatus.Degraded,
       },
     });
   });
@@ -493,9 +495,12 @@ describe('computeHealthTransition', () => {
   const AFTER_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS);
   const BEFORE_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS - 1);
   const { Critical, Degraded, Healthy, Unknown } = IngestionHealthStatus;
-  const health = (status: IngestionHealthStatus, last_event_date?: string): StoredIngestionHealth => (
-    { status, status_since: SINCE, health_checks: [], ...(last_event_date ? { last_event_date } : {}) }
+  // last_event_status absent: no event published yet
+  const health = (status: IngestionHealthStatus, last_event_status?: IngestionHealthStatus, last_event_date = OLD_EVENT): StoredIngestionHealth => (
+    { status, status_since: SINCE, health_checks: [], ...(last_event_status ? { last_event_date, last_event_status } : {}) }
   );
+  // A health whose event is due once stable: a failure never reported, or an end of failure after a failure reported
+  const dueHealth = (status: IngestionHealthStatus) => health(status, status === Critical || status === Degraded ? undefined : Critical);
 
   it('should return null without health: never evaluated with a status, or stopped', () => {
     expect(computeHealthTransition(undefined, AFTER_DELAY)).toBeNull();
@@ -504,22 +509,12 @@ describe('computeHealthTransition', () => {
 
   describe('delay', () => {
     it.each(Object.values(IngestionHealthStatus))('should defer %s inside the delay', (status) => {
-      expect(computeHealthTransition(health(status, OLD_EVENT), SINCE)).toBeNull();
-      expect(computeHealthTransition(health(status, OLD_EVENT), BEFORE_DELAY)).toBeNull();
+      expect(computeHealthTransition(dueHealth(status), SINCE)).toBeNull();
+      expect(computeHealthTransition(dueHealth(status), BEFORE_DELAY)).toBeNull();
     });
 
     it.each(Object.values(IngestionHealthStatus))('should report %s exactly when the delay is elapsed', (status) => {
-      expect(computeHealthTransition(health(status, OLD_EVENT), AFTER_DELAY)).not.toBeNull();
-    });
-  });
-
-  describe('already notified', () => {
-    it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event is after its start', (status) => {
-      expect(computeHealthTransition(health(status, AFTER_DELAY), at(10 * HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
-    });
-
-    it.each(Object.values(IngestionHealthStatus))('should report %s when the last event is at its start: strictly after is required', (status) => {
-      expect(computeHealthTransition(health(status, SINCE), AFTER_DELAY)).not.toBeNull();
+      expect(computeHealthTransition(dueHealth(status), AFTER_DELAY)).not.toBeNull();
     });
   });
 
@@ -527,30 +522,37 @@ describe('computeHealthTransition', () => {
     it.each([
       [Critical, HealthTransition.Critical],
       [Degraded, HealthTransition.Degraded],
-    ])('should report %s, whatever the last event', (status, expected) => {
+    ])('should report %s when the last event published is not %s, or when none is', (status, expected) => {
       expect(computeHealthTransition(health(status), AFTER_DELAY)).toBe(expected);
-      expect(computeHealthTransition(health(status, OLD_EVENT), AFTER_DELAY)).toBe(expected);
+      Object.values(IngestionHealthStatus).filter((lastStatus) => lastStatus !== status).forEach((lastStatus) => {
+        expect(computeHealthTransition(health(status, lastStatus), AFTER_DELAY)).toBe(expected);
+      });
+    });
+
+    it.each([Critical, Degraded])('should not report %s again when the last event published already reports it, whatever its date', (status) => {
+      expect(computeHealthTransition(health(status, status, OLD_EVENT), AFTER_DELAY)).toBeNull();
+      expect(computeHealthTransition(health(status, status, AFTER_DELAY), at(10 * HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
     });
   });
 
   describe('recovery', () => {
-    it.each([Healthy, Unknown])('should report a recovery when %s follows a failure reported and not recovered yet', (status) => {
-      expect(computeHealthTransition(health(status, OLD_EVENT), AFTER_DELAY)).toBe(HealthTransition.Recovered);
+    it.each([
+      [Healthy, Critical], [Healthy, Degraded], [Unknown, Critical], [Unknown, Degraded],
+    ])('should report a recovery when %s follows a last event published %s', (status, lastStatus) => {
+      expect(computeHealthTransition(health(status, lastStatus), AFTER_DELAY)).toBe(HealthTransition.Recovered);
     });
 
-    it.each([Healthy, Unknown])('should not report %s when no failure is reported, never or already recovered: nothing to recover from', (status) => {
+    it.each([Healthy, Unknown])('should not report %s when the last event published is not a failure, or when none is: nothing to recover from', (status) => {
       expect(computeHealthTransition(health(status), AFTER_DELAY)).toBeNull();
+      expect(computeHealthTransition(health(status, Healthy), AFTER_DELAY)).toBeNull();
+      expect(computeHealthTransition(health(status, Unknown), AFTER_DELAY)).toBeNull();
     });
   });
 
   describe('markHealthNotified', () => {
-    it.each([HealthTransition.Critical, HealthTransition.Degraded])('should keep the date of the %s event reported', (transition) => {
-      expect(markHealthNotified(health(Critical, OLD_EVENT), transition, AFTER_DELAY)).toEqual(health(Critical, AFTER_DELAY));
-      expect(markHealthNotified(health(Critical), transition, AFTER_DELAY)).toEqual(health(Critical, AFTER_DELAY));
-    });
-
-    it('should remove the failure reported once its recovery is published', () => {
-      expect(markHealthNotified(health(Healthy, OLD_EVENT), HealthTransition.Recovered, AFTER_DELAY)).toEqual(health(Healthy));
+    it.each(Object.values(IngestionHealthStatus))('should store the date of the event and the %s status it reports, replacing the previous event', (status) => {
+      expect(markHealthNotified(health(status), AFTER_DELAY)).toEqual(health(status, status, AFTER_DELAY));
+      expect(markHealthNotified(health(status, Critical, OLD_EVENT), AFTER_DELAY)).toEqual(health(status, status, AFTER_DELAY));
     });
   });
 
@@ -575,7 +577,7 @@ describe('computeHealthTransition', () => {
         const transition = computeHealthTransition(next, evaluatedAt);
         if (transition) {
           events.push([minute, transition]);
-          next = next ? markHealthNotified(next, transition, evaluatedAt) : next;
+          next = next ? markHealthNotified(next, evaluatedAt) : next;
         }
         current = { ingestion_health: next };
       });
@@ -631,17 +633,26 @@ describe('computeHealthTransition', () => {
 
     it('should report nothing when healthy becomes unknown, even right after the recovery of a notified failure', () => {
       expect(run([...minutes(0, 10, Healthy), ...minutes(11, 30, Unknown)])).toEqual([]);
-      // The recovery removed the failure reported: unknown, then healthy again, have nothing left to recover from
+      // The last event published is the recovery: unknown, then healthy again, have nothing left to recover from
       expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, Healthy), ...minutes(21, 40, Unknown), ...minutes(41, 60, Healthy)])).toEqual([
         [DELAY_MINUTES, HealthTransition.Critical],
         [11 + DELAY_MINUTES, HealthTransition.Recovered],
       ]);
     });
 
-    it('should report a failure again after going back to it inside the delay: the delay runs on the status', () => {
+    it('should not report a failure again after going back to it inside the delay: the last event published already reports it', () => {
       expect(run([...minutes(0, 10, Critical), [11, Healthy], ...minutes(12, 30, Critical)])).toEqual([
         [DELAY_MINUTES, HealthTransition.Critical],
-        [12 + DELAY_MINUTES, HealthTransition.Critical],
+      ]);
+      expect(run([...minutes(0, 10, Degraded), ...minutes(11, 12, Critical), ...minutes(13, 30, Degraded)])).toEqual([
+        [DELAY_MINUTES, HealthTransition.Degraded],
+      ]);
+    });
+
+    it('should report the recovery of a failure reported, even when the failure just before the recovery was never reported', () => {
+      expect(run([...minutes(0, 10, Degraded), ...minutes(11, 13, Critical), ...minutes(14, 30, Healthy)])).toEqual([
+        [DELAY_MINUTES, HealthTransition.Degraded],
+        [14 + DELAY_MINUTES, HealthTransition.Recovered],
       ]);
     });
 
