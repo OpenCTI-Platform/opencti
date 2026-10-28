@@ -28,20 +28,25 @@ const findHealthCheckDefinition = (code: string): HealthCheckDefinition | undefi
  * @param definition the check, whose isEnabled is already true for the ingestor
  * @param ingestor the connector, feed or sync evaluated
  * @param context the evaluation context, holding the runtime values of the ingestor
- * @returns null when the check passes; the metadata of the failure when it fails, {} when there is nothing to tell
+ * @returns the metadata of each failure of the check, one failure per element; none when the check passes.
+ * A failure with nothing to tell has {} as metadata
  */
-const getHealthCheckFailure = (
+const getHealthCheckFailures = (
   code: HealthCheckCode,
   definition: HealthCheckDefinition,
   ingestor: HealthCheckIngestor,
   context: SourceIngestionHealthContext,
-): HealthCheckMetadata | null => {
-  if (definition.kind === IngestionHealthCheckKind.Runtime) {
-    // The value type depends on each check, which a loop over all the checks cannot express: it is checked where the check is declared
-    const runtimeData: Record<string, unknown> = context.runtimeData ?? {};
-    return definition.getFailure(runtimeData[code], context);
+): HealthCheckMetadata[] => {
+  // The value type depends on each check, which a loop over all the checks cannot express: it is checked where the check is declared
+  const runtimeData: Record<string, unknown> = context.runtimeData ?? {};
+  const failures = definition.kind === IngestionHealthCheckKind.Runtime
+    ? definition.getFailure(runtimeData[code], context)
+    : definition.getFailure(ingestor, context);
+  if (!failures) {
+    return [];
   }
-  return definition.getFailure(ingestor, context);
+  // An empty list is a single failure with nothing to tell
+  return failures.length > 0 ? failures : [{}];
 };
 
 // Whether a runtime check is enabled for the ingestor: its runtime data must be read before it is evaluated.
@@ -73,8 +78,8 @@ export const computeIngestionHealthChecks = (
     if (context.disabledHealthChecks?.includes(code)) {
       return [];
     }
-    const metadata = definition.isEnabled(ingestor, context) ? getHealthCheckFailure(code, definition, ingestor, context) : null;
-    return metadata ? [{ code, definition, metadata }] : [];
+    const metadataList = definition.isEnabled(ingestor, context) ? getHealthCheckFailures(code, definition, ingestor, context) : [];
+    return metadataList.map((metadata) => ({ code, definition, metadata }));
   });
   // Decided once every check is evaluated. A disabled check never fails: it supersedes nothing
   const failedCodes = new Set(failures.map(({ code }) => code));
@@ -110,7 +115,9 @@ export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, 
 
 const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[] => {
   const normalized = checks.map((check) => ({ health_check_code: check.health_check_code, health_check_metadata: check.health_check_metadata ?? {} }));
-  return normalized.sort((a, b) => a.health_check_code.localeCompare(b.health_check_code));
+  // A check may fail several times (one failure per connector error): the metadata orders the failures of a same code, whatever the order they are read in
+  return normalized.sort((a, b) => a.health_check_code.localeCompare(b.health_check_code)
+    || JSON.stringify(a.health_check_metadata).localeCompare(JSON.stringify(b.health_check_metadata)));
 };
 
 // Returns the fields to write, or null when neither the status nor the checks changed.

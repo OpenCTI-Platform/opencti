@@ -623,30 +623,53 @@ describe('last run failed check', () => {
 describe('connector reported errors checks', () => {
   const LOW = CONNECTOR_ERROR_BLOCKING_CRITICITY - 1;
   const HIGH = CONNECTOR_ERROR_BLOCKING_CRITICITY;
-  const evaluate = (topError: object | undefined) => computeIngestionHealthChecks(CONNECTOR, {
+  // The errors reported by the connector: both checks read the same list
+  const evaluate = (errors: object[] | undefined) => computeIngestionHealthChecks(CONNECTOR, {
     ...CONTEXT,
-    runtimeData: topError ? { [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED]: topError as never, [HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]: topError as never } : {},
+    runtimeData: errors ? { [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED]: errors as never, [HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]: errors as never } : {},
   });
-  const metadata = (message: string) => ({ error_code: 'RATE_LIMITED', error_message: message });
+  const reported = (code: string, error_code: string, error_message: string) => ({ health_check_code: code, health_check_metadata: { error_code, error_message } });
 
   it('should report an error under the threshold as advisory, degrading the status', () => {
-    const checks = evaluate({ code: 'RATE_LIMITED', message: 'Too many requests', criticity: LOW });
-    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, health_check_metadata: metadata('Too many requests') }]);
+    const checks = evaluate([{ code: 'RATE_LIMITED', message: 'Too many requests', criticity: LOW }]);
+    expect(checks).toEqual([reported(HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, 'RATE_LIMITED', 'Too many requests')]);
     expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
   });
 
   it('should report an error reaching the threshold as blocking, making the status critical', () => {
-    const checks = evaluate({ code: 'RATE_LIMITED', message: 'Too many requests', criticity: HIGH });
-    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED, health_check_metadata: metadata('Too many requests') }]);
+    const checks = evaluate([{ code: 'RATE_LIMITED', message: 'Too many requests', criticity: HIGH }]);
+    expect(checks).toEqual([reported(HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED, 'RATE_LIMITED', 'Too many requests')]);
     expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+  });
+
+  it('should store every error as a check of its own, on the side of the threshold of its criticity', () => {
+    const checks = evaluate([
+      { code: 'B', message: 'second', criticity: LOW },
+      { code: 'A', message: 'first', criticity: LOW },
+      { code: 'C', message: 'critical', criticity: HIGH },
+    ]);
+    expect(checks).toEqual([
+      reported(HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, 'B', 'second'),
+      reported(HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, 'A', 'first'),
+      reported(HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED, 'C', 'critical'),
+    ]);
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+  });
+
+  it('should not rewrite the health when the same errors are reported in another order', () => {
+    const first = { code: 'A', message: 'first', criticity: LOW };
+    const second = { code: 'B', message: 'second', criticity: LOW };
+    const health = computeIngestionHealthPatch({}, evaluate([first, second]), CONTEXT) as IngestionHealthFields;
+    expect(computeIngestionHealthPatch(health, evaluate([second, first]), CONTEXT)).toBeNull();
   });
 
   it('should pass when the connector reported nothing', () => {
     expect(evaluate(undefined)).toEqual([]);
+    expect(evaluate([])).toEqual([]);
   });
 
   it('should scrub the query string of the message', () => {
-    const [check] = evaluate({ code: 'RATE_LIMITED', message: 'GET https://api.example.com/x?key=secret failed', criticity: LOW });
+    const [check] = evaluate([{ code: 'RATE_LIMITED', message: 'GET https://api.example.com/x?key=secret failed', criticity: LOW }]);
     expect(check.health_check_metadata?.error_message).toBe('GET https://api.example.com/x failed');
   });
 
@@ -660,14 +683,12 @@ describe('connector reported errors checks', () => {
     });
   });
 
-  it('should read the most critical error of each connector, omitting the ones without error', async () => {
+  it('should read the errors of each connector, omitting the ones without error', async () => {
     const other = { ...CONNECTOR, internal_id: 'other-id' };
-    const top = { code: 'B', message: 'worse', criticity: 3 };
-    vi.mocked(redisGetConnectorErrors).mockImplementation(async (id) => (id === CONNECTOR.internal_id
-      ? [{ code: 'A', message: 'minor', criticity: 1 }, top]
-      : []));
+    const errors = [{ code: 'A', message: 'minor', criticity: 1 }, { code: 'B', message: 'worse', criticity: 3 }];
+    vi.mocked(redisGetConnectorErrors).mockImplementation(async (id) => (id === CONNECTOR.internal_id ? errors : []));
     const values = await HEALTH_CHECK_REGISTRY[HEALTH_CHECK_CONNECTOR_ERROR_REPORTED].getRuntimeData([CONNECTOR, other], {} as RuntimeDataReadContext);
-    expect(values).toEqual(new Map([[CONNECTOR.internal_id, top]]));
+    expect(values).toEqual(new Map([[CONNECTOR.internal_id, errors]]));
   });
 });
 
@@ -675,30 +696,45 @@ describe('check metadata', () => {
   const TEST_CODE = 'TEST_CHECK';
   const registry = HEALTH_CHECK_REGISTRY as Record<string, unknown>;
   const checksContext = { ...CONTEXT, ...NOT_PINGING };
-  const failWith = (metadata: Record<string, unknown> | null) => {
+  // What getFailure returns: null when the check passes, else the metadata of each failure
+  const failWith = (failures: Record<string, unknown>[] | null) => {
     registry[TEST_CODE] = {
       kind: IngestionHealthCheckKind.Configuration,
       severity: IngestionHealthCheckSeverity.Advisory,
       message: (data: Record<string, unknown>) => `Failing for ${data.reason}`,
       isEnabled: () => true,
-      getFailure: () => metadata,
+      getFailure: () => failures,
     };
   };
+  const testChecks = () => computeIngestionHealthChecks(CONNECTOR, checksContext).filter((check) => check.health_check_code === TEST_CODE);
 
   afterEach(() => {
     delete registry[TEST_CODE];
   });
 
   it('should store the metadata of a failing check, and give it to its message', () => {
-    failWith({ reason: 'test' });
-    const checks = computeIngestionHealthChecks(CONNECTOR, checksContext);
-    expect(checks).toContainEqual({ health_check_code: TEST_CODE, health_check_metadata: { reason: 'test' } });
-    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type).find((check) => check.health_check_code === TEST_CODE)?.health_check_message).toBe('Failing for test');
+    failWith([{ reason: 'test' }]);
+    const checks = testChecks();
+    expect(checks).toEqual([{ health_check_code: TEST_CODE, health_check_metadata: { reason: 'test' } }]);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('Failing for test');
   });
 
-  it('should not store a check that passes', () => {
+  it('should not store a check that passes: null', () => {
     failWith(null);
-    expect(computeIngestionHealthChecks(CONNECTOR, checksContext).map((check) => check.health_check_code)).not.toContain(TEST_CODE);
+    expect(testChecks()).toEqual([]);
+  });
+
+  it('should store a failure with nothing to tell for an empty list: not a check that passes', () => {
+    failWith([]);
+    expect(testChecks()).toEqual([{ health_check_code: TEST_CODE, health_check_metadata: {} }]);
+  });
+
+  it('should store a check of its own for each failure of a check', () => {
+    failWith([{ reason: 'one' }, { reason: 'two' }]);
+    expect(testChecks()).toEqual([
+      { health_check_code: TEST_CODE, health_check_metadata: { reason: 'one' } },
+      { health_check_code: TEST_CODE, health_check_metadata: { reason: 'two' } },
+    ]);
   });
 });
 

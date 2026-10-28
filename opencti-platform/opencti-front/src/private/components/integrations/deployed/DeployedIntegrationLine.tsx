@@ -4,7 +4,7 @@ import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined, ScheduleOutlined } from '@mui/icons-material';
-import { useHealthIssueDisplay } from '@components/integrations/deployed/IngestionHealthSummary';
+import { formatOthersCount, useHealthIssueDisplay } from '@components/integrations/deployed/IngestionHealthSummary';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
@@ -289,6 +289,11 @@ const DeployedIntegrationLine = ({
                   ? getHealthCheckMessage(healthIssue.check)
                   : t_i18n(capitalizeFirstLetter(healthIssue.severity))}
               </Typography>
+              {healthIssue.check && healthIssue.othersCount > 0 && (
+                <Typography sx={{ fontSize: 12, color: 'inherit', whiteSpace: 'nowrap' }}>
+                  {formatOthersCount(healthIssue.othersCount)}
+                </Typography>
+              )}
             </Stack>
           )}
         </Box>

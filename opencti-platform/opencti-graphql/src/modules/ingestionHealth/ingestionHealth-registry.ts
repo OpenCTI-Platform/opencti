@@ -104,12 +104,16 @@ interface BaseHealthCheckDefinition {
   message?: (metadata: HealthCheckMetadata, entityType: string) => string;
 }
 
-// getFailure returns null when the check passes, and the metadata of the failure when it fails ({} when there is nothing to tell)
+// getFailure returns null when the check passes, else the metadata of each failure of the check: one failure per element.
+// A check fails once in most cases (a single element), several for a check with several occurrences at once (one per error a connector reports).
+// An empty list is a single failure with nothing to tell
+export type HealthCheckFailures = HealthCheckMetadata[] | null;
+
 interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
   kind: IngestionHealthCheckKind.Configuration;
   // Whether the ingestor is evaluated for this check
   isEnabled: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => boolean;
-  getFailure: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
+  getFailure: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => HealthCheckFailures;
 }
 
 // What a getRuntimeData may read through the platform, besides Redis: as the user of the ingestion health manager
@@ -130,7 +134,7 @@ export interface RuntimeCheckDefinition<T> extends BaseHealthCheckDefinition {
   // Whether the ingestor is evaluated for this check. Called before the runtime data is read, to know what to read
   isEnabled: (ingestor: HealthCheckIngestor, context: GlobalIngestionHealthContext) => boolean;
   getRuntimeData: (ingestors: HealthCheckIngestor[], read: RuntimeDataReadContext) => Promise<Map<string, T>>;
-  getFailure: (value: T | undefined, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
+  getFailure: (value: T | undefined, context: SourceIngestionHealthContext) => HealthCheckFailures;
 }
 
 // The type of the value is inferred from getRuntimeData, so that getFailure is checked against it
@@ -218,24 +222,31 @@ const scrubWorkError = (message: string) => message
   .slice(0, MAX_WORK_ERROR_LENGTH);
 
 /**
- * Reads the most critical error reported on ping by each connector (they expire 10 minutes after the last ping that sent them).
- * Only the top one: it is what the check stores, and the metadata must stay the same while the failure lasts.
+ * Reads the errors reported on ping by each connector (they expire 10 minutes after the last ping that sent them).
  * A connector reporting no error is omitted: one not pinging has none, which is not a failure.
  */
-const getConnectorsTopReportedError = async (ingestors: HealthCheckIngestor[]): Promise<Map<string, ConnectorInfoError>> => {
+const getConnectorsReportedErrors = async (ingestors: HealthCheckIngestor[]): Promise<Map<string, ConnectorInfoError[]>> => {
   const errorsByConnector = await Promise.all(ingestors.map((ingestor) => redisGetConnectorErrors(ingestor.internal_id)));
-  const topErrors = new Map<string, ConnectorInfoError>();
+  const reportedErrors = new Map<string, ConnectorInfoError[]>();
   errorsByConnector.forEach((errors, index) => {
-    const top = errors.reduce<ConnectorInfoError | undefined>((max, error) => (!max || error.criticity > max.criticity ? error : max), undefined);
-    if (top) {
-      topErrors.set(ingestors[index].internal_id, top);
+    if (errors.length > 0) {
+      reportedErrors.set(ingestors[index].internal_id, errors);
     }
   });
-  return topErrors;
+  return reportedErrors;
 };
 
-// Scrubbed like a work error: the message is written by the connector and may quote a url with a secret
-const toReportedErrorMetadata = ({ code, message }: ConnectorInfoError): HealthCheckMetadata => ({ error_code: code, error_message: scrubWorkError(message) });
+/**
+ * One failure per error reported on its side of the threshold, null when there is no such error.
+ * Messages are scrubbed like a work error (written by the connector, they may quote a url with a secret).
+ * Only the code and the message: the metadata must stay the same while the failure lasts, the criticity only sets the side.
+ */
+const getReportedErrorsFailures = (errors: ConnectorInfoError[] | undefined, isOnSide: (criticity: number) => boolean): HealthCheckFailures => {
+  const failures = (errors ?? [])
+    .filter(({ criticity }) => isOnSide(criticity))
+    .map(({ code, message }) => ({ error_code: code, error_message: scrubWorkError(message) }));
+  return failures.length > 0 ? failures : null;
+};
 
 // Same window as the connector liveness (isConnectorActive).
 // A heartbeat in the future (clock skew between nodes) is alive
@@ -259,7 +270,7 @@ export const HEALTH_CHECK_REGISTRY = {
     severity: IngestionHealthCheckSeverity.Advisory,
     // A required user, or an optional one that was set: it must exist
     isEnabled: (ingestor) => isUserRequired(ingestor) || !!getIngestorUserId(ingestor),
-    getFailure: (_, { user }) => (user ? null : {}),
+    getFailure: (_, { user }) => (user ? null : []),
   },
   // Without it the platform refuses what the ingestor does (a connector cannot register nor ping)
   [HEALTH_CHECK_USER_MISSING_CAPABILITY]: {
@@ -276,7 +287,7 @@ export const HEALTH_CHECK_REGISTRY = {
         return null;
       }
       // Its description, as shown in the roles. A capability without description is shown by its name
-      return { capability, capability_description: findCapabilityDescription(capability) ?? capability };
+      return [{ capability, capability_description: findCapabilityDescription(capability) ?? capability }];
     },
   },
   // An ingestion should not depend on a person: a regular user leaving or changing rights breaks it
@@ -286,7 +297,7 @@ export const HEALTH_CHECK_REGISTRY = {
     severity: IngestionHealthCheckSeverity.Advisory,
     // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
     isEnabled: (_, { user }) => !!user && !user.internal,
-    getFailure: (_, { user }) => (user?.user_service_account ? null : {}),
+    getFailure: (_, { user }) => (user?.user_service_account ? null : []),
   },
   // A running process pings regularly: no heartbeat means it is down
   [HEALTH_CHECK_HEARTBEAT_MISSING]: defineRuntimeCheck({
@@ -297,7 +308,7 @@ export const HEALTH_CHECK_REGISTRY = {
     isEnabled: (ingestor, { pingingConnectorsIds }) => pingingConnectorsIds.has(ingestor.internal_id),
     // The heartbeats of every connector are read at once: the ingestors are not needed
     getRuntimeData: () => redisGetConnectorsHeartbeats(),
-    getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : {}),
+    getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : []),
   }),
   // Any failure of the last execution of a feed or a sync (source unreachable, not found, unauthorized, invalid data...):
   // nothing is ingested until it succeeds again. Known from the feed or sync itself, the next success clears it
@@ -319,7 +330,7 @@ export const HEALTH_CHECK_REGISTRY = {
     // Their description fills the message: stored with them, it is the same for the same details
     getFailure: (details) => {
       const failureDescription = details ? describeFeedAndSyncExecutionFailure(details) : undefined;
-      return { ...details, ...(failureDescription ? { failure_description: failureDescription } : {}) };
+      return [{ ...details, ...(failureDescription ? { failure_description: failureDescription } : {}) }];
     },
   }),
   // The source refuses the credentials of the feed or the sync (HTTP 401, 402, 403): nothing is ingested until they are fixed.
@@ -335,7 +346,7 @@ export const HEALTH_CHECK_REGISTRY = {
     // Only the status: the metadata must stay the same while the failure lasts
     getFailure: (details) => {
       const httpStatus = details?.http_status;
-      return httpStatus !== undefined && ACCESS_DENIED_HTTP_STATUSES.includes(httpStatus) ? { http_status: httpStatus } : null;
+      return httpStatus !== undefined && ACCESS_DENIED_HTTP_STATUSES.includes(httpStatus) ? [{ http_status: httpStatus }] : null;
     },
   }),
   // The last run of the connector ended with an error. Advisory: the connector may still ingest, and the next successful run clears it.
@@ -357,31 +368,29 @@ export const HEALTH_CHECK_REGISTRY = {
       }
       // The first message is the one of the connector. Not dated: the metadata must stay the same while the failure lasts
       const message = failure.messages[0];
-      return message ? { error: scrubWorkError(message) } : {};
+      return message ? [{ error: scrubWorkError(message) }] : [];
     },
   }),
   // Errors the connector reports itself on ping. Every connector: one not pinging reported nothing, which is no failure.
-  // The most critical error under the threshold: advisory, the connector may still ingest
+  // Each error under the threshold is a failure of its own: advisory, the connector may still ingest
   [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
     label: 'Connector reported an error',
     severity: IngestionHealthCheckSeverity.Advisory,
     message: () => 'Connector reported an error: {error_code} - {error_message}',
     isEnabled: (ingestor) => ingestor.entity_type === ENTITY_TYPE_CONNECTOR,
-    getRuntimeData: (ingestors) => getConnectorsTopReportedError(ingestors),
-    // When the error is critical, CONNECTOR_CRITICAL_ERROR_REPORTED tells it: only that one is reported
-    supersededBy: HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED,
-    getFailure: (error) => (error && error.criticity < CONNECTOR_ERROR_BLOCKING_CRITICITY ? toReportedErrorMetadata(error) : null),
+    getRuntimeData: (ingestors) => getConnectorsReportedErrors(ingestors),
+    getFailure: (errors) => getReportedErrorsFailures(errors, (criticity) => criticity < CONNECTOR_ERROR_BLOCKING_CRITICITY),
   }),
-  // The most critical error reaching the threshold: blocking
+  // Each error reaching the threshold is a failure of its own: blocking
   [HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
     label: 'Connector reported a critical error',
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'Connector reported a critical error: {error_code} - {error_message}',
     isEnabled: (ingestor) => ingestor.entity_type === ENTITY_TYPE_CONNECTOR,
-    getRuntimeData: (ingestors) => getConnectorsTopReportedError(ingestors),
-    getFailure: (error) => (error && error.criticity >= CONNECTOR_ERROR_BLOCKING_CRITICITY ? toReportedErrorMetadata(error) : null),
+    getRuntimeData: (ingestors) => getConnectorsReportedErrors(ingestors),
+    getFailure: (errors) => getReportedErrorsFailures(errors, (criticity) => criticity >= CONNECTOR_ERROR_BLOCKING_CRITICITY),
   }),
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
 
