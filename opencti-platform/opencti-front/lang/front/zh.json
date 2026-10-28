@@ -1965,7 +1965,6 @@
   "Enter valid STIX patterns (e.g., [ipv4-addr:value = '192.168.1.1'])": "请输入有效的 STIX 模式（例如：[ipv4-addr:value = '192.168.1.1'）",
   "Enterprise": "企业",
   "Enterprise Edition": "企业版",
-  "Enterprise Edition required": "需要企业版",
   "entitie(s)": "实体",
   "Entities": "实体",
   "entities": "实体",

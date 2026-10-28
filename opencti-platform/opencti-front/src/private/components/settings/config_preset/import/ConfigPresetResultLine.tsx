@@ -35,7 +35,6 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   switch (reason) {
     case 'Already exists': return t_i18n('Already exists');
     case 'Nothing to import': return t_i18n('Nothing to import');
-    case 'Enterprise Edition required': return t_i18n('Enterprise Edition required');
     case 'Unexpected item id': return t_i18n('Unexpected item id');
     case 'Unknown message': return t_i18n('Unknown message');
     case 'The standard id of the theme does not match its id': return t_i18n('The standard id of the theme does not match its id');

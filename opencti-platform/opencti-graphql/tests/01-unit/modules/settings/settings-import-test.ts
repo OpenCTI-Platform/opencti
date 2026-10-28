@@ -8,7 +8,7 @@ vi.mock('../../../../src/modules/theme/theme-domain', () => ({ findById: vi.fn()
 
 import { getSettings, settingsEditField } from '../../../../src/domain/settings';
 import { findById } from '../../../../src/modules/theme/theme-domain';
-import { importMessage, importPlatformConfiguration, importWhitemark } from '../../../../src/modules/settings/settings-import';
+import { importMessage, importPlatformConfiguration } from '../../../../src/modules/settings/settings-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { CUSTOM_THEME_ID } from '../../../utils/configPresetBundle';
@@ -22,33 +22,6 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(getSettings).mockResolvedValue({ id: 'settings-id' } as never);
   vi.mocked(findById).mockResolvedValue(undefined as never);
-});
-
-describe('importWhitemark', () => {
-  it('writes the whitemark, and a dry run decides the same without writing', async () => {
-    expect(await importWhitemark(context, user, { platform_whitemark: true }, dryRun)).toMatchObject({ status: 'overwritten', exists: true });
-    expect(settingsEditField).not.toHaveBeenCalled();
-    expect(await importWhitemark(context, user, { platform_whitemark: false }, overwrite)).toMatchObject({ status: 'overwritten' });
-    expect(settingsEditField).toHaveBeenCalledWith(context, user, 'settings-id', [{ key: 'platform_whitemark', value: [false] }]);
-  });
-
-  it('leaves the whitemark as it is when there is nothing to import', async () => {
-    expect(await importWhitemark(context, user, {}, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import', reason: 'Nothing to import' });
-    expect(await importWhitemark(context, user, { platform_whitemark: null }, overwrite)).toMatchObject({ status: 'skipped' });
-    expect(settingsEditField).not.toHaveBeenCalled();
-  });
-
-  it('has no copy and no add: any mode but overwrite leaves it as it is', async () => {
-    const results = await Promise.all([ConfigImportMode.Copy, ConfigImportMode.Add].map((mode) => importWhitemark(context, user, { platform_whitemark: true }, { mode })));
-    results.forEach((result) => expect(result).toMatchObject({ status: 'skipped', code: 'not_overwrite', reason: 'Already exists', exists: true }));
-    expect(settingsEditField).not.toHaveBeenCalled();
-  });
-
-  it('refuses an invalid configuration with its reason, without writing', async () => {
-    expect(await importWhitemark(context, user, { platform_whitemark: 'yes' }, overwrite)).toMatchObject({ status: 'failed', code: 'invalid', reason: expect.stringContaining('platform_whitemark') });
-    expect(await importWhitemark(context, user, { platform_whitemark: true, extra: 1 }, overwrite)).toMatchObject({ status: 'failed', code: 'invalid' });
-    expect(settingsEditField).not.toHaveBeenCalled();
-  });
 });
 
 describe('importMessage', () => {
@@ -65,6 +38,12 @@ describe('importMessage', () => {
 
   it('skips a message with only null values', async () => {
     expect(await importMessage(context, user, 'login', { platform_login_message: null }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('has no copy and no add: any mode but overwrite leaves it as it is', async () => {
+    const results = await Promise.all([ConfigImportMode.Copy, ConfigImportMode.Add].map((mode) => importMessage(context, user, 'banner', { platform_banner_text: 'Hello' }, { mode })));
+    results.forEach((result) => expect(result).toMatchObject({ status: 'skipped', code: 'not_overwrite', reason: 'Already exists', exists: true }));
     expect(settingsEditField).not.toHaveBeenCalled();
   });
 

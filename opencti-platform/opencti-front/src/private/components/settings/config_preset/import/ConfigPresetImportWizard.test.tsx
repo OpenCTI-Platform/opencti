@@ -5,10 +5,6 @@ import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import ConfigPresetImportWizard from './ConfigPresetImportWizard';
 
-// The license dialogs are Relay-bound and irrelevant to what these tests assert
-vi.mock('@components/cases/feedbacks/FeedbackCreation', () => ({ default: () => null }));
-vi.mock('@components/common/entreprise_edition/EnterpriseEditionAgreement', () => ({ default: () => null }));
-
 type Rendered = ReturnType<typeof testRender>;
 
 const platformSettings = { key: 'platformSettings', label: 'Platform settings' };
@@ -18,7 +14,6 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   translatable: true,
   isDefault: false,
   exists: true,
-  requiresEnterpriseEdition: false,
   dependsOn: [],
   ...overrides,
 });
@@ -43,7 +38,6 @@ const preview = {
     ]),
     previewType('branding', 'Branding', [
       previewItem('theme--1', 'Import theme', { translatable: false, exists: false, isDefault: true }),
-      previewItem('whitemark', 'Remove Filigran logos', { requiresEnterpriseEdition: true }),
     ], ['OVERWRITE', 'COPY']),
     previewType('messages', 'Messages', [previewItem('banner', 'Banner')]),
   ],
@@ -81,19 +75,17 @@ const reject = async ({ relayEnv }: Rendered, name: string, reason: string) => {
 };
 
 const onFinish = vi.fn();
-// The wizard is for BYPASS users, who get the license dialog and never the feedback fallback
-const userContextWith = (isEnterpriseEdition: boolean) => createMockUserContext({
+// The wizard is for BYPASS users
+const userContext = createMockUserContext({
   me: { name: 'admin', capabilities: [{ name: 'BYPASS' }], userSubscriptions: { edges: [] } },
-  settings: { platform_enterprise_edition: { license_validated: isEnterpriseEdition } },
 });
-// The tests run on an Enterprise Edition platform unless they say otherwise
-const renderWizard = async (currentSession: unknown, isEnterpriseEdition = true) => {
-  const rendered = testRender(<ConfigPresetImportWizard onFinish={onFinish} />, { userContext: userContextWith(isEnterpriseEdition) });
+const renderWizard = async (currentSession: unknown) => {
+  const rendered = testRender(<ConfigPresetImportWizard onFinish={onFinish} />, { userContext });
   await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: currentSession }) });
   return rendered;
 };
-const renderPreview = async (currentSession = session(), isEnterpriseEdition = true) => {
-  const rendered = await renderWizard(currentSession, isEnterpriseEdition);
+const renderPreview = async (currentSession = session()) => {
+  const rendered = await renderWizard(currentSession);
   await resolve(rendered, 'ConfigPresetImportPreviewQuery', { Query: () => ({ configPresetImportPreview: preview }) });
   await screen.findByRole('button', { name: 'Apply' });
   return rendered;
@@ -132,7 +124,7 @@ describe('ConfigPresetImportWizard', () => {
       const rendered = await renderPreview();
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
       ['Platform configuration (1/1)', 'Messages (1/1)'].forEach((name) => expect(checkbox(name)).toHaveAttribute('data-state', 'checked'));
-      expect(checkbox('Branding (2/2)')).toHaveAttribute('data-state', 'checked');
+      expect(checkbox('Branding (1/1)')).toHaveAttribute('data-state', 'checked');
       expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
     });
 
@@ -140,7 +132,7 @@ describe('ConfigPresetImportWizard', () => {
       await renderPreview(session({ revision: 2, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] }));
       expect(checkbox('Messages (1/1)')).toHaveAttribute('data-state', 'checked');
       expect(checkbox('Platform configuration (0/1)')).toHaveAttribute('data-state', 'unchecked');
-      expect(checkbox('Branding (0/2)')).toHaveAttribute('data-state', 'unchecked');
+      expect(checkbox('Branding (0/1)')).toHaveAttribute('data-state', 'unchecked');
     });
 
     it('shows the required dependencies checked and disabled with their item', async () => {
@@ -154,7 +146,7 @@ describe('ConfigPresetImportWizard', () => {
     it('disables Apply with nothing selected', async () => {
       const { user } = await renderPreview();
       await user.click(checkbox('Platform configuration (1/1)'));
-      await user.click(checkbox('Branding (2/2)'));
+      await user.click(checkbox('Branding (1/1)'));
       await user.click(checkbox('Messages (1/1)'));
       expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
     });
@@ -283,79 +275,6 @@ describe('ConfigPresetImportWizard', () => {
       expect(onFinish).not.toHaveBeenCalled();
       await resolve(rendered, 'ConfigPresetImportWizardClearMutation', {});
       await waitFor(() => expect(onFinish).toHaveBeenCalledTimes(1));
-    });
-  });
-
-  describe('Enterprise Edition items', () => {
-    const whitemarkRow = () => screen.getByTestId('config-preset-import-item-branding-whitemark');
-
-    it('shows an item that needs the Enterprise Edition disabled and unchecked, with the EE chip, on a Community platform', async () => {
-      await renderPreview(session(), false);
-      const checkboxOfRow = within(whitemarkRow()).getByRole('checkbox');
-      expect(checkboxOfRow).toBeDisabled();
-      expect(checkboxOfRow).toHaveAttribute('data-state', 'unchecked');
-      expect(within(whitemarkRow()).getByText('EE')).toBeInTheDocument();
-    });
-
-    it('leaves it out of the counts and of the checkbox of its type, which is ticked when every other item is', async () => {
-      await renderPreview(session(), false);
-      expect(checkbox('Branding (1/1)')).toHaveAttribute('data-state', 'checked');
-    });
-
-    it('shows a normal row, with no chip and no license button, on an Enterprise Edition platform', async () => {
-      await renderPreview(session(), true);
-      expect(within(whitemarkRow()).getByRole('checkbox')).toBeEnabled();
-      expect(within(whitemarkRow()).queryByText('EE')).not.toBeInTheDocument();
-      expect(checkbox('Branding (2/2)')).toBeInTheDocument();
-    });
-
-    it('shows the license button above the preview on a Community platform only', async () => {
-      const community = await renderPreview(session(), false);
-      expect(screen.getByRole('button', { name: 'Manage your Enterprise Edition license' })).toBeInTheDocument();
-      community.unmount();
-      await renderPreview(session(), true);
-      expect(screen.queryByRole('button', { name: 'Manage your Enterprise Edition license' })).not.toBeInTheDocument();
-    });
-
-    it('does not toggle the row when the chip is clicked', async () => {
-      const { user } = await renderPreview(session(), false);
-      await user.click(within(whitemarkRow()).getByText('EE'));
-      expect(within(whitemarkRow()).getByRole('checkbox')).toHaveAttribute('data-state', 'unchecked');
-    });
-
-    it('adds the keys of these items to the excluded items of a type sent in "all" mode, so that the backend never receives them', async () => {
-      const rendered = await renderPreview(session(), false);
-      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
-      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables.selections).toEqual([
-        { type: 'platform', items: null },
-        { type: 'branding', items: null, excluded_items: ['whitemark'] },
-        { type: 'messages', items: null },
-      ]);
-    });
-
-    it('sends the whitemark with the Enterprise Edition', async () => {
-      const rendered = await renderPreview(session(), true);
-      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
-      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables.selections).toEqual([
-        { type: 'platform', items: null },
-        { type: 'branding', items: null },
-        { type: 'messages', items: null },
-      ]);
-    });
-
-    it('drops them from a restored selection while on a Community platform', async () => {
-      const rendered = await renderPreview(session({ revision: 1, selections: [{ type: 'branding', items: ['whitemark', 'theme--1'], excluded_items: null }] }), false);
-      expect(within(whitemarkRow()).getByRole('checkbox')).toHaveAttribute('data-state', 'unchecked');
-      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
-      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables.selections).toEqual([{ type: 'branding', items: ['theme--1'] }]);
-    });
-
-    it('keeps Apply disabled when only items that need the Enterprise Edition are left', async () => {
-      const rendered = await renderWizard(session({ revision: 1, selections: [{ type: 'branding', items: ['whitemark'], excluded_items: null }] }), false);
-      await resolve(rendered, 'ConfigPresetImportPreviewQuery', { Query: () => ({ configPresetImportPreview: preview }) });
-      await screen.findByRole('button', { name: 'Apply' });
-      expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
-      expect(screen.getByRole('button', { name: 'Simulate' })).toBeDisabled();
     });
   });
 
@@ -537,7 +456,6 @@ describe('ConfigPresetImportWizard', () => {
       expect(within(platform).getByText('Failed')).toBeInTheDocument();
       expect(within(platform).getByText('Default theme Import theme could not be imported')).toBeInTheDocument();
       expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByText('Overwritten')).not.toBeInTheDocument();
-      expect(within(screen.getByTestId('config-preset-import-item-branding-whitemark')).queryByText(/Created|Overwritten|Skipped|Failed/)).not.toBeInTheDocument();
     });
 
     it('shows the default tag and the result together', async () => {

@@ -27,12 +27,12 @@ const singleton = (key: string, group = platformSettings, dependsOn: { type: str
 // The platform configuration depends on the custom default theme
 const platform = singleton('platform', platformSettings, [{ type: 'branding', key: 'theme-default' }]);
 const hiddenEntityTypes = singleton('hiddenEntityTypes', dataModel);
-// Whitemark and 40 themes, the first page holds 3 items
+// 40 themes, the first page holds 3 items
 const branding = {
   key: 'branding',
   group: platformSettings,
-  items: [{ key: 'whitemark', dependsOn: [] }, { key: 'theme-1', dependsOn: [] }, { key: 'theme-default', dependsOn: [] }],
-  itemsPageInfo: { globalCount: 41 },
+  items: [{ key: 'theme-0', dependsOn: [] }, { key: 'theme-1', dependsOn: [] }, { key: 'theme-default', dependsOn: [] }],
+  itemsPageInfo: { globalCount: 40 },
 };
 const messages = { key: 'messages', group: platformSettings, items: [{ key: 'banner', dependsOn: [] }, { key: 'login', dependsOn: [] }], itemsPageInfo: { globalCount: 2 } };
 const types = [platform, hiddenEntityTypes, branding, messages];
@@ -57,8 +57,8 @@ describe('configPresetSelection', () => {
     const all = selectAllConfigPresetItems(types);
     expect(all.branding).toEqual({ mode: 'all', ids: [] });
     expect(isConfigPresetItemSelected(all, 'branding', 'theme-39')).toBe(true);
-    expect(countConfigPresetCheckedItems(types, all, NO_FORCED)).toBe(45);
-    expect(countConfigPresetItems(types)).toBe(45);
+    expect(countConfigPresetCheckedItems(types, all, NO_FORCED)).toBe(44);
+    expect(countConfigPresetItems(types)).toBe(44);
   });
 
   it('checks or unchecks one item, as an exception of all or as a member of some', () => {
@@ -92,7 +92,7 @@ describe('configPresetSelection', () => {
     const selection: ConfigPresetSelection = { platform: { mode: 'all', ids: [] }, branding: { mode: 'all', ids: ['theme-default', 'theme-1'] } };
     const forced = getConfigPresetForcedItems(types, selection);
     expect(forced).toEqual({ branding: ['theme-default'] });
-    expect(countConfigPresetCheckedItems([branding], selection, forced)).toBe(40);
+    expect(countConfigPresetCheckedItems([branding], selection, forced)).toBe(39);
     expect(countConfigPresetCheckedItems([branding], { branding: { mode: 'some', ids: ['theme-1'] } }, forced)).toBe(2);
     // Without the platform configuration, nothing is forced
     expect(getConfigPresetForcedItems(types, toggleConfigPresetItem(selection, 'platform', 'platform', false))).toEqual({});

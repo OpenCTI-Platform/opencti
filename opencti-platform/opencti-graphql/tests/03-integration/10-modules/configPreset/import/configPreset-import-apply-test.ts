@@ -4,7 +4,6 @@ import { buildZip, CUSTOM_THEME_ID, itemFile, metadataFile, themeConfiguration, 
 import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
 import { getClientBase } from '../../../../../src/database/redis';
-import * as ee from '../../../../../src/enterprise-edition/ee';
 import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../../src/domain/settings';
 import { addTheme, deleteTheme, findAllThemes, findById as findThemeById } from '../../../../../src/modules/theme/theme-domain';
 import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
@@ -36,7 +35,6 @@ const SETTINGS_QUERY = gql`
       platform_language
       platform_banner_text
       platform_banner_level
-      platform_whitemark
       platform_bootstrap_status
       platform_theme { id name standard_id }
     }
@@ -67,8 +65,6 @@ describe('Config preset import: apply', () => {
   let before: Awaited<ReturnType<typeof readSettings>>;
 
   beforeEach(async () => {
-    // The whitemark needs the Enterprise Edition: the Community case is tested with the items that need it
-    vi.spyOn(ee, 'isEnterpriseEdition').mockResolvedValue(true);
     before = await readSettings();
   });
 
@@ -82,7 +78,6 @@ describe('Config preset import: apply', () => {
       { key: 'platform_theme', value: [before.platform_theme.id] },
       { key: 'platform_banner_text', value: [before.platform_banner_text ?? ''] },
       { key: 'platform_banner_level', value: [before.platform_banner_level ?? ''] },
-      { key: 'platform_whitemark', value: [before.platform_whitemark ?? false] },
     ]);
     await setPlatformBootstrapStatus(testContext, ADMIN_USER, 'pending');
     const themes = await customThemes();
@@ -103,8 +98,8 @@ describe('Config preset import: apply', () => {
     expect(dry.settings).toBeNull();
     expect(dry.report_id).toBeNull();
     // Required dependencies first, the platform item is expected overwritten with a new custom default theme
-    expect(dry.results.map((result: { key: string }) => result.key)).toEqual([CUSTOM_THEME_ID, 'platform', 'whitemark', 'banner']);
-    expect(dry.results.map((result: { status: string }) => result.status)).toEqual(['CREATED', 'OVERWRITTEN', 'OVERWRITTEN', 'OVERWRITTEN']);
+    expect(dry.results.map((result: { key: string }) => result.key)).toEqual([CUSTOM_THEME_ID, 'platform', 'banner']);
+    expect(dry.results.map((result: { status: string }) => result.status)).toEqual(['CREATED', 'OVERWRITTEN', 'OVERWRITTEN']);
     expect(await readSettings()).toEqual(before);
     expect(await customThemes()).toHaveLength(0);
     expect((await queryAsAdminWithSuccess({ query: SESSION_QUERY })).data?.configPresetImportSession).toMatchObject({ status: 'DRAFT', file_id: fileId });
@@ -120,13 +115,12 @@ describe('Config preset import: apply', () => {
     expect(output.results).toEqual([
       { type: 'branding', key: CUSTOM_THEME_ID, status: 'CREATED', reason: null },
       { type: 'platform', key: 'platform', status: 'OVERWRITTEN', reason: null },
-      { type: 'branding', key: 'whitemark', status: 'OVERWRITTEN', reason: null },
       { type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null },
     ]);
     const theme = await findThemeById(testContext, ADMIN_USER, CUSTOM_THEME_ID);
     expect(theme).toMatchObject({ name: 'Import test theme', built_in: false, standard_id: CUSTOM_THEME_ID, theme_primary: '#ff0000' });
     const settings = await readSettings();
-    expect(settings).toMatchObject({ platform_title: 'Imported title', platform_language: 'fr-fr', platform_banner_text: 'Hello', platform_banner_level: 'GREEN', platform_whitemark: true });
+    expect(settings).toMatchObject({ platform_title: 'Imported title', platform_language: 'fr-fr', platform_banner_text: 'Hello', platform_banner_level: 'GREEN' });
     expect(settings.platform_theme.id).toEqual(theme!.id);
     // The mutation returns the settings so that the front store learns the new values
     expect(output.settings).toMatchObject({ platform_title: 'Imported title', platform_bootstrap_status: 'completed', platform_theme: { name: 'Import test theme' } });
@@ -147,8 +141,8 @@ describe('Config preset import: apply', () => {
       await importData(await upload(validBundleFiles()), ALL);
       const output = await importData(await upload(validBundleFiles()), BRANDING('COPY'));
       expect(resultOf(output, CUSTOM_THEME_ID)).toMatchObject({ status: 'CREATED', reason: 'Added as "Import test theme (1)"' });
-      // A setting has no copy
-      expect(resultOf(output, 'whitemark')).toMatchObject({ status: 'SKIPPED', reason: 'Already exists' });
+      // The mode of the branding does not change what the other types do
+      expect(resultOf(output, 'banner')).toMatchObject({ status: 'OVERWRITTEN' });
       const themes = await customThemes();
       expect(themes.map((theme) => theme.name).sort()).toEqual(['Import test theme', 'Import test theme (1)']);
       // The original keeps the standard id of the bundle: the default theme is still the one of the bundle
@@ -188,7 +182,6 @@ describe('Config preset import: apply', () => {
     const settings = await readSettings();
     expect(settings.platform_title).toEqual('Imported title');
     expect(settings.platform_banner_text).toEqual(before.platform_banner_text);
-    expect(settings.platform_whitemark).toEqual(before.platform_whitemark);
   });
 
   it('fails the theme on a name clash, and the platform item with it, without stopping the other items', async () => {

@@ -50,11 +50,11 @@ describe('toConfigPresetSelection', () => {
   it('maps the saved selection of the session to the selection of the list', () => {
     expect(toConfigPresetSelection([
       { type: 'messages', items: ['banner'], excluded_items: null },
-      { type: 'branding', items: null, excluded_items: ['whitemark'] },
+      { type: 'branding', items: null, excluded_items: ['theme-1'] },
       { type: 'platform', items: null, excluded_items: null },
     ])).toEqual({
       messages: { mode: 'some', ids: ['banner'] },
-      branding: { mode: 'all', ids: ['whitemark'] },
+      branding: { mode: 'all', ids: ['theme-1'] },
       platform: { mode: 'all', ids: [] },
     });
   });

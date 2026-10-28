@@ -17812,7 +17812,6 @@ type ConfigPresetImportItem {
   translatable: Boolean!
   isDefault: Boolean!
   exists: Boolean!
-  requiresEnterpriseEdition: Boolean!
   fields: [ConfigPresetImportField!]!
   dependsOn: [ConfigPresetItemReference!]!
 }

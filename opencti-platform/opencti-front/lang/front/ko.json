@@ -1965,7 +1965,6 @@
   "Enter valid STIX patterns (e.g., [ipv4-addr:value = '192.168.1.1'])": "유효한 STIX 패턴을 입력하세요(예: [ipv4-addr:value = '192.168.1.1']).",
   "Enterprise": "기업",
   "Enterprise Edition": "엔터프라이즈 에디션",
-  "Enterprise Edition required": "Enterprise Edition이 필요합니다",
   "entitie(s)": "엔터티(들)",
   "Entities": "엔터티",
   "entities": "엔터티",

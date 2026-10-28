@@ -4,8 +4,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { configImportValidationReason } from '../configImport/configImport-utils';
 import { findById as findThemeById } from '../theme/theme-domain';
-import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS } from './settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema } from './settings-import-schema';
+import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS } from './settings-export';
+import { messageConfigurationSchemas, platformConfigurationSchema } from './settings-import-schema';
 
 export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'default_theme_missing';
 
@@ -64,10 +64,6 @@ const importFields = async (
     await writeSettings(context, user, toInput(parsed.data, keys));
   }
   return { status: 'overwritten', exists: true, configuration: parsed.data };
-};
-
-export const importWhitemark = (context: AuthContext, user: AuthUser, configuration: unknown, options: ConfigImportOptions) => {
-  return importFields(context, user, whitemarkConfigurationSchema, SETTINGS_WHITEMARK_FIELDS, configuration, options);
 };
 
 // A message is one of the keys of SETTINGS_MESSAGES_FIELDS

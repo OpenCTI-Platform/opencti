@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { buildZip, validBundleFiles } from '../../../../utils/configPresetBundle';
+import { buildZip, CUSTOM_THEME_ID, validBundleFiles } from '../../../../utils/configPresetBundle';
 import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
 import { getClientBase, lockResource, redisSetConfigPresetImportSession } from '../../../../../src/database/redis';
@@ -27,7 +27,7 @@ const upload = async () => {
 };
 const readSession = async () => (await queryAsAdminWithSuccess({ query: SESSION_QUERY })).data?.configPresetImportSession;
 const zipExists = async (fileId: string) => (await queryAsAdmin({ query: PREVIEW_QUERY, variables: { file_id: fileId } })).errors === undefined;
-const selections = [{ type: 'messages', items: ['banner'] }, { type: 'branding', excluded_items: ['whitemark'] }];
+const selections = [{ type: 'messages', items: ['banner'] }, { type: 'branding', excluded_items: [CUSTOM_THEME_ID] }];
 
 describe('Config preset import session', () => {
   afterEach(async () => {
@@ -55,7 +55,7 @@ describe('Config preset import session', () => {
     const saved = await queryAsAdminWithSuccess({ query: SAVE_MUTATION, variables: { file_id: fileId, selections, revision: 2 } });
     expect(saved.data?.configPresetImportSessionSave).toMatchObject({
       revision: 2,
-      selections: [{ type: 'messages', items: ['banner'], excluded_items: null, mode: null }, { type: 'branding', items: null, excluded_items: ['whitemark'], mode: null }],
+      selections: [{ type: 'messages', items: ['banner'], excluded_items: null, mode: null }, { type: 'branding', items: null, excluded_items: [CUSTOM_THEME_ID], mode: null }],
     });
     const stale = await queryAsAdminWithSuccess({ query: SAVE_MUTATION, variables: { file_id: fileId, selections: [], revision: 1 } });
     expect(stale.data?.configPresetImportSessionSave).toMatchObject({ revision: 2, selections: expect.any(Array) });
@@ -64,7 +64,7 @@ describe('Config preset import session', () => {
 
   it('saves the mode of a type, null for a type that has none', async () => {
     const fileId = await upload();
-    const withMode = [{ type: 'messages', items: ['banner'] }, { type: 'branding', excluded_items: ['whitemark'], mode: 'COPY' }];
+    const withMode = [{ type: 'messages', items: ['banner'] }, { type: 'branding', excluded_items: [CUSTOM_THEME_ID], mode: 'COPY' }];
     const saved = await queryAsAdminWithSuccess({ query: SAVE_MUTATION, variables: { file_id: fileId, selections: withMode, revision: 1 } });
     expect(saved.data?.configPresetImportSessionSave.selections).toMatchObject([{ type: 'messages', mode: null }, { type: 'branding', mode: 'COPY' }]);
     expect((await readSession()).selections).toMatchObject([{ type: 'messages', mode: null }, { type: 'branding', mode: 'COPY' }]);

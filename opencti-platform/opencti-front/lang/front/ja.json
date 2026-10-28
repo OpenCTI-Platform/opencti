@@ -1965,7 +1965,6 @@
   "Enter valid STIX patterns (e.g., [ipv4-addr:value = '192.168.1.1'])": "有効な STIX パターンを入力してください（例：[ipv4-addr:value = '192.168.1.1'）",
   "Enterprise": "企業",
   "Enterprise Edition": "エンタープライズ版",
-  "Enterprise Edition required": "Enterprise Edition が必要です",
   "entitie(s)": "エンティティ",
   "Entities": "エンティティ",
   "entities": "エンティティ",

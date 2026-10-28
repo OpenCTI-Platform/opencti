@@ -6,18 +6,14 @@ vi.mock('../../../../src/domain/settings', () => ({
 }));
 
 import { getPlatformDefaultTheme, getSettingsFromDatabase } from '../../../../src/domain/settings';
-import {
-  getMessagesConfigPresetConfigurations,
-  getPlatformConfigPresetConfiguration,
-  getWhitemarkConfigPresetConfiguration,
-} from '../../../../src/modules/settings/settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema } from '../../../../src/modules/settings/settings-import-schema';
+import { getMessagesConfigPresetConfigurations, getPlatformConfigPresetConfiguration } from '../../../../src/modules/settings/settings-export';
+import { messageConfigurationSchemas, platformConfigurationSchema } from '../../../../src/modules/settings/settings-import-schema';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { CUSTOM_THEME_ID } from '../../../utils/configPresetBundle';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;
-// A secret the allowlists must never let through
+// Settings the allowlists must never let through: a secret, and the whitemark, which a configuration does not carry
 const storedSettings = {
   platform_title: 'My platform',
   platform_favicon: 'https://example.com/favicon.ico',
@@ -65,15 +61,8 @@ describe('settings export', () => {
     });
   });
 
-  it('exports the whitemark, off when it was never set', async () => {
-    expect(await getWhitemarkConfigPresetConfiguration(context)).toEqual({ platform_whitemark: true });
-    vi.mocked(getSettingsFromDatabase).mockResolvedValue({} as never);
-    expect(await getWhitemarkConfigPresetConfiguration(context)).toEqual({ platform_whitemark: false });
-  });
-
   it('is accepted by the strict import validation, as it is', async () => {
     expect(platformConfigurationSchema.safeParse(await getPlatformConfigPresetConfiguration(context, user)).success).toBe(true);
-    expect(whitemarkConfigurationSchema.safeParse(await getWhitemarkConfigPresetConfiguration(context)).success).toBe(true);
     const messages = await getMessagesConfigPresetConfigurations(context);
     Object.entries(messages).forEach(([id, configuration]) => {
       expect(messageConfigurationSchemas[id as keyof typeof messageConfigurationSchemas].safeParse(configuration).success).toBe(true);

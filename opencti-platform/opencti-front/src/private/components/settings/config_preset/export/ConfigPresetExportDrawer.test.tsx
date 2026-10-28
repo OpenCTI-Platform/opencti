@@ -36,11 +36,10 @@ const entityCatalog = [type('observedData', 'Observed datas', [
   item('entity', 'Observed datas', { translatable: false }),
 ])];
 
-// Branding: whitemark first, then the themes, a built-in one like the others. The platform configuration depends on the custom default theme.
-const whitemark = item('whitemark', 'Remove Filigran logos');
+// Branding: the themes, the built-in ones are not exported. The platform configuration depends on the custom default theme.
 const themeItems = [
   item('theme-acme', 'ACME', { translatable: false }),
-  item('theme-dark', 'Filigran Dark', { translatable: false }),
+  item('theme-night', 'Night shift', { translatable: false }),
   item('theme-soc', 'SOC night', { translatable: false, isDefault: true }),
 ];
 const platformType = (dependsOn: unknown[]) => type('platform', 'Platform configuration', [item('platform', 'Platform configuration', { dependsOn })], {
@@ -49,13 +48,13 @@ const platformType = (dependsOn: unknown[]) => type('platform', 'Platform config
 const messagesType = type('messages', 'Messages', [item('banner', 'Banner'), item('login', 'Login message')]);
 const tableCatalog = (brandingOverrides: Record<string, unknown> = {}) => [
   platformType([{ type: 'branding', key: 'theme-soc' }]),
-  type('branding', 'Branding', [whitemark, ...themeItems], brandingOverrides),
+  type('branding', 'Branding', themeItems, brandingOverrides),
   messagesType,
 ];
-// The default theme is built-in: the platform configuration has no dependency
+// The default theme is built-in, so it is not listed: the platform configuration has no dependency
 const builtInDefaultCatalog = () => [
   platformType([]),
-  type('branding', 'Branding', [whitemark, item('theme-acme', 'ACME', { translatable: false }), item('theme-dark', 'Filigran Dark', { translatable: false, isDefault: true })]),
+  type('branding', 'Branding', [item('theme-acme', 'ACME', { translatable: false }), item('theme-night', 'Night shift', { translatable: false })]),
 ];
 // More themes than the first page
 const pagedBrandingCatalog = () => tableCatalog({ itemsPageInfo: { hasNextPage: true, globalCount: 30 } });
@@ -216,42 +215,42 @@ describe('ConfigPresetExportDrawer', () => {
     expect(screen.getByText('Messages description')).toBeInTheDocument();
   });
 
-  it('lists the items of a small type inline, whitemark first, built-in themes as ordinary rows, forced dependencies checked and disabled', async () => {
+  it('lists the items of a small type inline, forced dependencies checked and disabled', async () => {
     const { user } = await renderOpenDrawer(vi.fn(), tableCatalog());
-    expect(screen.getByRole('checkbox', { name: 'Platform settings (7/7)' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Platform settings (6/6)' })).toBeInTheDocument();
     // Branding and messages are categories with several items
     for (const chevron of screen.getAllByRole('button', { name: 'Expand' })) {
       await user.click(chevron);
     }
-    const brandingRows = ['Remove Filigran logos', 'ACME', 'Filigran Dark', 'SOC night'].map((name) => screen.getByRole('checkbox', { name }));
+    const brandingRows = ['ACME', 'Night shift', 'SOC night'].map((name) => screen.getByRole('checkbox', { name }));
     brandingRows.slice(1).forEach((row, index) => expect(brandingRows[index].compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
-    expect(screen.getByRole('checkbox', { name: 'Branding (4/4)' })).toHaveAttribute('data-state', 'checked');
-    // A built-in theme can be unticked like any other
-    expect(screen.getByRole('checkbox', { name: 'Filigran Dark' })).toBeEnabled();
-    await user.click(screen.getByRole('checkbox', { name: 'Filigran Dark' }));
-    expect(screen.getByRole('checkbox', { name: 'Branding (3/4)' })).toHaveAttribute('data-state', 'indeterminate');
+    expect(screen.getByRole('checkbox', { name: 'Branding (3/3)' })).toHaveAttribute('data-state', 'checked');
+    // A theme can be unticked
+    expect(screen.getByRole('checkbox', { name: 'Night shift' })).toBeEnabled();
+    await user.click(screen.getByRole('checkbox', { name: 'Night shift' }));
+    expect(screen.getByRole('checkbox', { name: 'Branding (2/3)' })).toHaveAttribute('data-state', 'indeterminate');
     // The custom default theme is a dependency of the platform configuration
     expect(screen.getByRole('checkbox', { name: 'SOC night' })).toHaveAttribute('data-state', 'checked');
     expect(screen.getByRole('checkbox', { name: 'SOC night' })).toBeDisabled();
     expect(screen.getByText('default')).toBeInTheDocument();
     // Unchecking the branding keeps the forced theme
-    await user.click(screen.getByRole('checkbox', { name: 'Branding (3/4)' }));
-    await user.click(screen.getByRole('checkbox', { name: 'Branding (4/4)' }));
-    expect(screen.getByRole('checkbox', { name: 'Branding (1/4)' })).toHaveAttribute('data-state', 'indeterminate');
-    expect(screen.getByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'unchecked');
+    await user.click(screen.getByRole('checkbox', { name: 'Branding (2/3)' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Branding (3/3)' }));
+    expect(screen.getByRole('checkbox', { name: 'Branding (1/3)' })).toHaveAttribute('data-state', 'indeterminate');
+    expect(screen.getByRole('checkbox', { name: 'ACME' })).toHaveAttribute('data-state', 'unchecked');
     // Without the platform configuration nothing is forced
     await user.click(screen.getByRole('checkbox', { name: 'Platform configuration' }));
     expect(screen.getByRole('checkbox', { name: 'SOC night' })).toBeEnabled();
-    expect(screen.getByRole('checkbox', { name: 'Branding (0/4)' })).toHaveAttribute('data-state', 'unchecked');
+    expect(screen.getByRole('checkbox', { name: 'Branding (0/3)' })).toHaveAttribute('data-state', 'unchecked');
   });
 
-  it('does not force a built-in default theme: it is tagged default and can be unticked', async () => {
+  it('forces nothing when the default theme is built-in, which is not listed', async () => {
     const { user } = await renderOpenDrawer(vi.fn(), builtInDefaultCatalog());
     await user.click(screen.getByRole('button', { name: 'Expand' }));
-    expect(screen.getByText('default')).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Filigran Dark' })).toBeEnabled();
-    await user.click(screen.getByRole('checkbox', { name: 'Filigran Dark' }));
-    expect(screen.getByRole('checkbox', { name: 'Branding (2/3)' })).toHaveAttribute('data-state', 'indeterminate');
+    expect(screen.queryByText('default')).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'ACME' })).toBeEnabled();
+    await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
+    expect(screen.getByRole('checkbox', { name: 'Branding (1/2)' })).toHaveAttribute('data-state', 'indeterminate');
   });
 
   describe('sub-view of a type with more items than its first page', () => {
@@ -290,16 +289,15 @@ describe('ConfigPresetExportDrawer', () => {
     const openThemes = async () => {
       const rendered = await renderOpenDrawer(vi.fn(), pagedBrandingCatalog());
       await rendered.user.click(screen.getByRole('button', { name: 'Manage' }));
-      await resolveItems(rendered.relayEnv, [whitemark, ...themeItems], true);
+      await resolveItems(rendered.relayEnv, themeItems, true);
       return rendered;
     };
 
-    it('shows Manage instead of the items, then opens the sub-view with whitemark and every theme as rows', async () => {
+    it('shows Manage instead of the items, then opens the sub-view with every theme as rows', async () => {
       const { relayEnv } = await openThemes();
       expect(screen.queryByRole('button', { name: 'Export Platform Bundle' })).not.toBeInTheDocument();
       expect(screen.getByText('30 / 30 selected')).toBeInTheDocument();
-      expect(screen.getByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
-      expect(screen.getByRole('checkbox', { name: 'Filigran Dark' })).toBeEnabled();
+      expect(screen.getByRole('checkbox', { name: 'Night shift' })).toBeEnabled();
       expect(screen.getByRole('checkbox', { name: 'ACME' })).toHaveAttribute('data-state', 'checked');
       expect(screen.getByText('All 30 selected')).toBeInTheDocument();
       // Infinite scroll

@@ -9,8 +9,7 @@ import type { ConfigPresetImportPreview } from '../../../generated/graphql';
 import type { ConfigImportMode } from '../../configImport/configImport-types';
 import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_IMPORT_PATH } from '../../internal/document/document-types';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetRequiresEnterpriseEdition } from '../configPreset-registry';
-import { isEnterpriseEdition } from '../../../enterprise-edition/ee';
+import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-registry';
 import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetPlatformId } from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
 import { CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, type ConfigPresetItemKey, readConfigPresetBundle, readStreamWithLimit, resolveBundleDependencies } from './configPreset-import-bundle';
@@ -97,37 +96,19 @@ export const readConfigPresetImportBundle = async (context: AuthContext, user: A
 };
 
 // compute of every item, required dependencies first: reads only, the plan records what would be created
-// An item that needs the Enterprise Edition is skipped on a Community platform, before anything else is decided about it
-export const CONFIG_PRESET_EE_REQUIRED_REASON = 'Enterprise Edition required';
-
-export const skipEnterpriseEditionItem = (item: ConfigPresetBundleItem): ConfigPresetComputedItem => ({
-  status: 'skipped',
-  reason: CONFIG_PRESET_EE_REQUIRED_REASON,
-  label: item.id,
-  translatable: false,
-  exists: true,
-  fields: [],
-});
-
-// skipEnterpriseEdition: a dry run skips the items that need the Enterprise Edition on a Community platform, the preview does not
 // modes: the mode of each family, OVERWRITE for the families that have none (the preview, the dependencies)
 export const computeConfigPresetItems = async (
   context: AuthContext,
   user: AuthUser,
   items: ConfigPresetBundleItem[],
-  { skipEnterpriseEdition = false, modes = new Map() }: { skipEnterpriseEdition?: boolean; modes?: Map<string, ConfigImportMode> } = {},
+  { modes = new Map() }: { modes?: Map<string, ConfigImportMode> } = {},
 ): Promise<{ item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[]> => {
   const plan: ConfigPresetImportPlan = { created: new Set() };
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
-  // Read once per run
-  const isEE = skipEnterpriseEdition ? await isEnterpriseEdition(context) : true;
   for (let i = 0; i < items.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;
     const mode = configPresetImportMode(modes, items[i].type);
-    const computed = !isEE && configPresetRequiresEnterpriseEdition(items[i].type, items[i].id)
-      ? skipEnterpriseEditionItem(items[i])
-      : await family.importer!.compute(context, user, items[i], plan, mode);
-    results.push({ item: items[i], computed });
+    results.push({ item: items[i], computed: await family.importer!.compute(context, user, items[i], plan, mode) });
   }
   return results;
 };
@@ -153,8 +134,6 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
         translatable: computed.translatable,
         isDefault: family.id === 'branding' && defaultThemeId?.standard_id === item.id,
         exists: computed.exists,
-        // Static: the front disables the item on a Community platform, whatever it knows of the license
-        requiresEnterpriseEdition: configPresetRequiresEnterpriseEdition(family.id, item.id),
         fields: computed.fields,
         dependsOn: bundle.items
           .filter((dependency) => dependencyPaths.includes(dependency.path))

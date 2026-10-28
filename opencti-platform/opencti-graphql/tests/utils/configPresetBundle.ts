@@ -40,7 +40,7 @@ export const themeConfiguration = (overrides: Record<string, unknown> = {}) => (
   ...overrides,
 });
 
-// A bundle with a platform item depending on a custom default theme, a message and the whitemark
+// A bundle with a platform item depending on a custom default theme, and a message
 export const validBundleFiles = (): Record<string, string> => ({
   'metadata.json': metadataFile(),
   'dependencies.json': JSON.stringify({
@@ -53,6 +53,5 @@ export const validBundleFiles = (): Record<string, string> => ({
     default_theme: { standard_id: CUSTOM_THEME_ID, name: 'Import test theme' },
   }),
   [`platform_settings/branding/${CUSTOM_THEME_ID}.json`]: itemFile('platformSettings.branding', CUSTOM_THEME_ID, themeConfiguration()),
-  'platform_settings/branding/whitemark.json': itemFile('platformSettings.branding', 'whitemark', { platform_whitemark: true }),
   'platform_settings/messages/banner.json': itemFile('platformSettings.messages', 'banner', { platform_banner_text: 'Hello', platform_banner_level: 'GREEN' }),
 });

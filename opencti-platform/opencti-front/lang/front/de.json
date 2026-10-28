@@ -1965,7 +1965,6 @@
   "Enter valid STIX patterns (e.g., [ipv4-addr:value = '192.168.1.1'])": "Geben Sie gültige STIX-Muster ein (z. B. [ipv4-addr:value = „192.168.1.1“])",
   "Enterprise": "Unternehmen",
   "Enterprise Edition": "Enterprise Edition",
-  "Enterprise Edition required": "Enterprise Edition erforderlich",
   "entitie(s)": "berechtigung(en)",
   "Entities": "Entitäten",
   "entities": "entitäten",

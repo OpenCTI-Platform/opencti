@@ -12,7 +12,6 @@ export const SETTINGS_MESSAGES_FIELDS = {
   consent: ['platform_consent_message', 'platform_consent_confirm_text'],
   noAccess: ['platform_no_access_message'],
 };
-export const SETTINGS_WHITEMARK_FIELDS = ['platform_whitemark'];
 
 // The Settings entity always exists on a platform that runs
 const readSettings = async (context: AuthContext) => (await getSettingsFromDatabase(context)) as unknown as Record<string, unknown>;
@@ -43,9 +42,4 @@ export const getPlatformConfigPresetConfiguration = async (
 export const getMessagesConfigPresetConfigurations = async (context: AuthContext) => {
   const settings = await readSettings(context);
   return Object.fromEntries(Object.entries(SETTINGS_MESSAGES_FIELDS).map(([id, fields]) => [id, pickFields(settings, fields)]));
-};
-
-export const getWhitemarkConfigPresetConfiguration = async (context: AuthContext) => {
-  const settings = await readSettings(context);
-  return { platform_whitemark: settings.platform_whitemark ?? false };
 };

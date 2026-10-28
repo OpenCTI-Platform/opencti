@@ -82,9 +82,8 @@ describe('Config preset import: upload and preview', () => {
       { key: 'platform_title', value: 'Imported title' },
       { key: 'platform_favicon', value: 'https://example.com/favicon.ico' },
     ]);
-    const [whitemark, theme] = result.types[1].items.sort((a: { key: string }) => (a.key === 'whitemark' ? -1 : 1));
-    expect(whitemark).toMatchObject({ key: 'whitemark', exists: true, translatable: true });
-    expect(theme).toMatchObject({ key: CUSTOM_THEME_ID, label: 'Import test theme', exists: false, isDefault: true, translatable: false });
+    expect(result.types[1].items).toHaveLength(1);
+    expect(result.types[1].items[0]).toMatchObject({ key: CUSTOM_THEME_ID, label: 'Import test theme', exists: false, isDefault: true, translatable: false });
   });
 
   it('refuses a bundle at preview with the reason, and keeps the zip', async () => {
@@ -106,7 +105,7 @@ describe('Config preset import: upload and preview', () => {
 
   it('answers file_missing for an unknown file and for a file outside config_preset/import', async () => {
     expect((await preview('config_preset/import/unknown/nothing.zip')).errors?.[0].extensions?.data).toMatchObject({ reason: 'file_missing' });
-    const exported = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: { selections: [{ type: 'messages', items: [] }, { type: 'branding', items: ['whitemark'] }] } });
+    const exported = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: { selections: [{ type: 'platform', items: ['platform'] }] } });
     const exportId = exported.data?.configPresetExport.id as string;
     expect(exportId).toMatch(/^config_preset\/export\//);
     expect((await preview(exportId)).errors?.[0].extensions?.data).toMatchObject({ reason: 'file_missing' });
@@ -117,13 +116,13 @@ describe('Config preset import: upload and preview', () => {
   it('reads a zip produced by the real export', async () => {
     const exported = await queryAsAdminWithSuccess({
       query: EXPORT_MUTATION,
-      variables: { selections: [{ type: 'platform', items: ['platform'] }, { type: 'branding', items: ['whitemark'] }, { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'] }] },
+      variables: { selections: [{ type: 'platform', items: ['platform'] }, { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'] }] },
     });
     const zip = await readZip(exported.data?.configPresetExport.id);
     const fileId = await upload(zip, 'exported.zip');
     const { data, errors } = await preview(fileId);
     expect(errors).toBeUndefined();
-    expect(data?.configPresetImportPreview.types.map((type: { key: string }) => type.key)).toEqual(['platform', 'branding']);
+    expect(data?.configPresetImportPreview.types.map((type: { key: string }) => type.key)).toEqual(['platform']);
     // The hidden entity types have no importer
     expect(data?.configPresetImportPreview.ignored).toEqual(['data_model/hidden_entity_types.json']);
   });

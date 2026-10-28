@@ -96,9 +96,9 @@ describe('Config preset exportable types query', () => {
         label: 'Branding',
         description: 'Themes, colors, logos',
         group: platformSettings,
-        // Whitemark first, then every theme but the built-in ones
-        items: [staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false), themeItem(customTheme, true)],
-        itemsPageInfo: onePage(3),
+        // Every theme but the built-in ones
+        items: [themeItem(otherCustomTheme, false), themeItem(customTheme, true)],
+        itemsPageInfo: onePage(2),
       },
       {
         key: 'hiddenEntityTypes',
@@ -194,15 +194,14 @@ describe('Config preset exportable items query', () => {
     contextValue: { user },
   });
 
-  it('pages and searches the items of a type, whitemark first, built-in themes excluded', async () => {
-    const first = await queryItems({ type: 'branding', first: 2 });
+  it('pages and searches the items of a type, built-in themes excluded', async () => {
+    const first = await queryItems({ type: 'branding', first: 1 });
     expect(first.errors).toBeUndefined();
     const connection = first.data?.configPresetExportableItems as { pageInfo: { hasNextPage: boolean; globalCount: number }; edges: { node: unknown }[] };
-    expect(connection.edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false)]);
-    expect(connection.pageInfo).toMatchObject({ hasNextPage: true, globalCount: 3 });
+    expect(connection.edges.map(({ node }) => node)).toEqual([themeItem(otherCustomTheme, false)]);
+    expect(connection.pageInfo).toMatchObject({ hasNextPage: true, globalCount: 2 });
     const searched = await queryItems({ type: 'branding', search: 'soc' });
-    // The search applies to the themes: whitemark, a static item, is always listed
-    expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(customTheme, false)]);
+    expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([themeItem(customTheme, false)]);
   });
 
   it('passes the paging, search and id filters to the family', async () => {

@@ -191,14 +191,4 @@ describe('Branding import (compute)', () => {
     expect(result.reason).toBeUndefined();
     expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
   });
-
-  it('skips the whitemark when the themes are copied, there is no copy of a setting', async () => {
-    expect(await compute('branding', 'whitemark', { platform_whitemark: true }, undefined, ConfigImportMode.Copy)).toMatchObject({ status: 'skipped', reason: 'Already exists' });
-  });
-
-  it('overwrites the whitemark, skips a null value and fails on an invalid one', async () => {
-    expect(await compute('branding', 'whitemark', { platform_whitemark: true })).toMatchObject({ status: 'overwritten' });
-    expect(await compute('branding', 'whitemark', { platform_whitemark: null })).toMatchObject({ status: 'skipped' });
-    expect(await compute('branding', 'whitemark', { platform_whitemark: 'yes' })).toMatchObject({ status: 'failed' });
-  });
 });

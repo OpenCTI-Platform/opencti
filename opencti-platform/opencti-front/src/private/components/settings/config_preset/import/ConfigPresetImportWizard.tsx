@@ -52,7 +52,7 @@ const configPresetImportWizardQuery = graphql`
 `;
 
 // The same document applies and simulates. The real import returns the settings, so that the store learns completed, the
-// theme, the title and the whitemark; a dry run returns them null and writes nothing.
+// theme and the title; a dry run returns them null and writes nothing.
 const configPresetImportWizardApplyMutation = graphql`
   mutation ConfigPresetImportWizardApplyMutation($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean!) {
     configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) {

@@ -89,8 +89,6 @@ export interface ConfigPresetAccordionType {
 
 interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionType> {
   types: ReadonlyArray<T>;
-  // The types the counts and the checkboxes are computed on, when they differ from the ones shown (default: the types shown)
-  countedTypes?: ReadonlyArray<ConfigPresetAccordionType>;
   selection: ConfigPresetSelection;
   forced: ConfigPresetForcedItems;
   onSelectionChange: (selection: ConfigPresetSelection) => void;
@@ -110,7 +108,6 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
 // The groups, types and items of a bundle with their checkboxes, counts and chevrons: shared by the export drawer and the import preview
 const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   types,
-  countedTypes,
   selection,
   forced,
   onSelectionChange,
@@ -125,11 +122,10 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   // Groups start expanded, types with several items collapsed
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<readonly string[]>([]);
   const [toggledTypeKeys, setToggledTypeKeys] = useState<readonly string[]>([]);
-  const counted = (type: T): ConfigPresetAccordionType => (countedTypes ?? types).find(({ key }) => key === type.key) ?? type;
   const isExpanded = (type: T) => toggledTypeKeys.includes(type.key) !== expandTypes;
-  const typeLabel = (type: T) => `${t_i18n(type.label)} (${countConfigPresetCheckedItems([counted(type)], selection, forced)}/${counted(type).itemsPageInfo.globalCount})`;
-  const typeState = (type: T) => getConfigPresetCheckboxState([counted(type)], selection, forced);
-  const isEmpty = (type: T) => counted(type).itemsPageInfo.globalCount === 0;
+  const typeLabel = (type: T) => `${t_i18n(type.label)} (${countConfigPresetCheckedItems([type], selection, forced)}/${type.itemsPageInfo.globalCount})`;
+  const typeState = (type: T) => getConfigPresetCheckboxState([type], selection, forced);
+  const isEmpty = (type: T) => type.itemsPageInfo.globalCount === 0;
   const toggleType = (type: T, checked: boolean) => onSelectionChange(toggleConfigPresetTypes(selection, [type], checked));
   const theme = useTheme<Theme>();
   return (
@@ -137,8 +133,8 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
       {groupConfigPresetTypes(types).map((group) => (
         <div key={group.key} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
           <ConfigPresetExpandableRow
-            label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types.map(counted), selection, forced)}/${group.types.reduce((count, type) => count + counted(type).itemsPageInfo.globalCount, 0)})`}
-            checked={getConfigPresetCheckboxState(group.types.map(counted), selection, forced)}
+            label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types, selection, forced)}/${group.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0)})`}
+            checked={getConfigPresetCheckboxState(group.types, selection, forced)}
             disabled={disabled}
             onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetTypes(selection, group.types, checked))}
             expanded={!collapsedGroupKeys.includes(group.key)}

@@ -2,8 +2,6 @@ import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../.
 import { getPlatformDefaultTheme } from '../../../domain/settings';
 import { FunctionalError } from '../../../config/errors';
 import { ConfigImportMode } from '../../configImport/configImport-types';
-import { getWhitemarkConfigPresetConfiguration } from '../../settings/settings-export';
-import { importWhitemark } from '../../settings/settings-import';
 import { findAllThemes, findThemePaginated } from '../../theme/theme-domain';
 import { getThemeConfigPresetConfiguration } from '../../theme/theme-export';
 import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS } from '../../theme/theme-import-schema';
@@ -13,24 +11,9 @@ import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '.
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
 import { buildImportFields } from '../import/configPreset-import-utils';
-import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
+import { buildConfigPresetConnection, platformSettingsGroup } from './common-configPreset-registry';
 
 export const BRANDING_FAMILY_ID = 'branding';
-
-const WHITEMARK_ID = 'whitemark';
-const WHITEMARK_LABEL = 'Remove Filigran logos';
-
-const whitemarkItem: ConfigPresetItemDefinition = {
-  id: WHITEMARK_ID,
-  label: WHITEMARK_LABEL,
-  translatable: true,
-  fileName: 'whitemark.json',
-  // The switch of the whitemark is disabled on a Community platform: the import does not set it either
-  requiresEnterpriseEdition: true,
-  exporter: (context) => getWhitemarkConfigPresetConfiguration(context),
-};
-// Listed before the themes, on the first page only
-const BRANDING_STATIC_ITEMS = [whitemarkItem];
 
 // Built-in themes are neither listed nor exported: they are the same on every platform, and an import never writes them.
 // A built-in default theme is still referenced by the platform item, by its standard id.
@@ -57,14 +40,8 @@ const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | unde
   exporter: async () => getThemeConfigPresetConfiguration(theme),
 });
 
-// The ids of the request that can be themes: an explicit list without the static ids
-const themeIds = (ids?: string[] | null) => ids?.filter((id) => !BRANDING_STATIC_ITEMS.some((item) => item.id === id));
-
 const brandingImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
-    if (item.id === WHITEMARK_ID) {
-      return toComputedItem({ label: WHITEMARK_LABEL, translatable: true }, await importWhitemark(context, user, item.configuration, { mode, dryRun: true }), []);
-    }
     const name = typeof item.configuration.name === 'string' ? item.configuration.name : item.id;
     const base = { label: name, translatable: false };
     // The bundle id of a theme is its standard id
@@ -82,9 +59,6 @@ const brandingImporter: ConfigPresetImporter = {
     return { ...base, exists: result.exists, status: result.status, reason: result.reason, fields };
   },
   apply: async (context, user, item, computed, mode) => {
-    if (item.id === WHITEMARK_ID) {
-      return toAppliedStatus(await importWhitemark(context, user, item.configuration, { mode }), computed);
-    }
     // Decided again by the theme module as it writes: a theme with this standard id created since compute is overwritten, never duplicated
     const result = await importTheme(context, user, item.configuration, { mode });
     if (result.status !== 'created' && result.status !== 'overwritten') {
@@ -94,12 +68,11 @@ const brandingImporter: ConfigPresetImporter = {
   },
 };
 
-// Branding: whitemark pinned first, then the themes, paged and searched through the theme domain
+// Branding: the themes, paged and searched through the theme domain
 export const brandingFamily: ConfigPresetFamilyDefinition = {
   importer: brandingImporter,
   // The themes that exist can be overwritten or copied
   importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
-  staticItems: BRANDING_STATIC_ITEMS,
   id: BRANDING_FAMILY_ID,
   label: 'Branding',
   description: 'Themes, colors, logos',
@@ -107,39 +80,22 @@ export const brandingFamily: ConfigPresetFamilyDefinition = {
   directory: 'platform_settings/branding',
   listItems: async (context, user, args) => {
     const { first, after, search, ids, excludedIds } = args;
-    const matchingStatics = BRANDING_STATIC_ITEMS.filter((item) => matchesListArgs(item, args));
-    // The static items open the list: a cursor on a theme is after all of them, a cursor on a static item after it
-    const afterStaticIndex = matchingStatics.findIndex((item) => item.id === after);
-    let statics = matchingStatics;
-    if (after) {
-      statics = afterStaticIndex >= 0 ? matchingStatics.slice(afterStaticIndex + 1) : [];
+    // An empty list of ids is no theme: as a filter value it would match every theme
+    if (ids?.length === 0) {
+      return buildConfigPresetConnection(args, [], 0, false);
     }
-    const pageStatics = first ? statics.slice(0, first) : statics;
-    const staticEdges = pageStatics.map((node) => ({ node, cursor: node.id }));
-    const moreStatics = pageStatics.length < statics.length;
-    const requestedThemeIds = themeIds(ids);
-    // Only static ids requested: an empty filter value would match every theme
-    if (requestedThemeIds?.length === 0) {
-      return buildConfigPresetConnection(args, staticEdges, matchingStatics.length, moreStatics);
-    }
-    // The page size bounds the static items and the themes together: no room left for a theme, the next page starts with them
-    const themesFirst = first ? first - pageStatics.length : first;
-    const themesAfter = afterStaticIndex >= 0 ? undefined : after;
     const [page, defaultTheme] = await Promise.all([
-      findThemePaginated(context, user, { first: themesFirst === 0 ? 1 : themesFirst, after: themesAfter, search, ...themesArgs(requestedThemeIds, excludedIds) }),
+      findThemePaginated(context, user, { first, after, search, ...themesArgs(ids, excludedIds) }),
       getPlatformDefaultTheme(context, user),
     ]);
-    const themeEdges = themesFirst === 0 ? [] : page.edges.map(({ cursor, node }) => ({ cursor, node: toThemeItem(node, defaultTheme?.id) }));
-    const hasNextPage = moreStatics || (themesFirst === 0 ? page.edges.length > 0 : page.pageInfo.hasNextPage);
-    return buildConfigPresetConnection(args, [...staticEdges, ...themeEdges], page.pageInfo.globalCount + matchingStatics.length, hasNextPage);
+    const edges = page.edges.map(({ cursor, node }) => ({ cursor, node: toThemeItem(node, defaultTheme?.id) }));
+    return buildConfigPresetConnection(args, edges, page.pageInfo.globalCount, page.pageInfo.hasNextPage);
   },
   resolveItems: async (context, user, ids, excludedIds) => {
-    const statics = BRANDING_STATIC_ITEMS.filter((item) => matchesListArgs(item, { ids, excludedIds }));
-    const requestedThemeIds = themeIds(ids);
-    if (requestedThemeIds?.length === 0) {
-      return statics;
+    if (ids?.length === 0) {
+      return [];
     }
-    const [themes, defaultTheme] = await Promise.all([findAllThemes(context, user, themesArgs(requestedThemeIds, excludedIds)), getPlatformDefaultTheme(context, user)]);
-    return [...statics, ...themes.map((theme) => toThemeItem(theme, defaultTheme?.id))];
+    const [themes, defaultTheme] = await Promise.all([findAllThemes(context, user, themesArgs(ids, excludedIds)), getPlatformDefaultTheme(context, user)]);
+    return themes.map((theme) => toThemeItem(theme, defaultTheme?.id));
   },
 };

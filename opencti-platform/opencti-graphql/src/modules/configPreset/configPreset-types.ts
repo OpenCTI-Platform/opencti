@@ -33,8 +33,6 @@ export interface ConfigPresetItemDefinition {
   fileName?: string;
   // The platform default (the default theme)
   isDefault?: boolean;
-  // The item needs the Enterprise Edition: on a Community platform the import skips it
-  requiresEnterpriseEdition?: boolean;
   // Items exported with this one, whatever the selection
   dependsOn?: ConfigPresetItemReference[];
   // Returns the allowlisted configuration of the item, never secrets
@@ -73,10 +71,6 @@ export interface ConfigPresetFamilyDefinition {
   listItems: (context: AuthContext, user: AuthUser, args: ConfigPresetListItemsArgs) => Promise<BasicConnection<ConfigPresetItemDefinition>>;
   // Every exportable item (ids null) or only the given ones, without the excluded ones: what the export writes
   resolveItems: (context: AuthContext, user: AuthUser, ids: string[] | null, excludedIds: string[]) => Promise<ConfigPresetItemDefinition[]>;
-  // Every item of the family needs the Enterprise Edition, including the ones with no item on the target platform (a playbook that does not exist yet)
-  requiresEnterpriseEdition?: boolean;
-  // The items known without reading the platform, so that their requirements can be read without it
-  staticItems?: ConfigPresetItemDefinition[];
   // How the items of this family are imported; a family without importer is reported as not importable
   importer?: ConfigPresetImporter;
   // What an import can do with the items that already exist: OVERWRITE when absent. The dialog offers a choice from two modes.

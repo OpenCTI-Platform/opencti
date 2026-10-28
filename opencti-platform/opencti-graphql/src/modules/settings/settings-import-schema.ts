@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { AVAILABLE_LANGUAGES } from '../user/user-domain';
 
-// Strict schemas of the settings a configuration can set (the platform, the messages, the whitemark): unknown keys are rejected,
+// Strict schemas of the settings a configuration can set (the platform, the messages): unknown keys are rejected,
 // values are checked because settingsEditField validates none of them. The themes have their own rules, in the theme module.
 const MAX_TEXT_LENGTH = 5000;
 const MAX_SHORT_LENGTH = 255;
@@ -24,5 +24,3 @@ export const messageConfigurationSchemas = {
   consent: z.strictObject({ platform_consent_message: text, platform_consent_confirm_text: text }),
   noAccess: z.strictObject({ platform_no_access_message: text }),
 };
-
-export const whitemarkConfigurationSchema = z.strictObject({ platform_whitemark: z.boolean().nullish() });

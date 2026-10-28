@@ -19,7 +19,7 @@ describe('Config preset bundle reader', () => {
     const bundle = await readConfigPresetBundle(await buildZip(files));
     expect(bundle.metadata).toEqual({ openCTI_version: expect.any(String), generated_at: '2026-10-20T10:00:00.000Z', bundle_name: 'Test bundle' });
     expect(bundle.items.map(({ type, id }) => `${type}/${id}`).sort()).toEqual([
-      `branding/${CUSTOM_THEME_ID}`, 'branding/whitemark', 'messages/banner', 'messages/login', 'platform/platform',
+      `branding/${CUSTOM_THEME_ID}`, 'messages/banner', 'messages/login', 'platform/platform',
     ]);
     expect(bundle.items.find((item) => item.id === 'login')?.path).toEqual('somewhere/else/banner-renamed.json');
     expect(bundle.ignored).toEqual([]);
@@ -34,13 +34,13 @@ describe('Config preset bundle reader', () => {
       'data_model/hidden_entity_types.json': itemFile('dataModel.hiddenEntityTypes', 'hiddenEntityTypes', { hidden_entity_types: [] }),
     };
     const bundle = await readConfigPresetBundle(await buildZip(files));
-    expect(bundle.items).toHaveLength(4);
+    expect(bundle.items).toHaveLength(3);
     expect(bundle.ignored.sort()).toEqual(['README.txt', 'data_model/hidden_entity_types.json', 'other/not-an-item.json', 'other/unknown.json']);
   });
 
   it('accepts the same version with a -dev suffix and an older version', async () => {
-    expect((await readConfigPresetBundle(await buildZip({ ...validBundleFiles(), 'metadata.json': metadataFile('0.0.1-dev') }))).items).toHaveLength(4);
-    expect((await readConfigPresetBundle(await buildZip({ ...validBundleFiles(), 'metadata.json': metadataFile('1.0.0') }))).items).toHaveLength(4);
+    expect((await readConfigPresetBundle(await buildZip({ ...validBundleFiles(), 'metadata.json': metadataFile('0.0.1-dev') }))).items).toHaveLength(3);
+    expect((await readConfigPresetBundle(await buildZip({ ...validBundleFiles(), 'metadata.json': metadataFile('1.0.0') }))).items).toHaveLength(3);
   });
 
   it('refuses a bundle from a more recent platform and an unreadable version, without a TypeError', async () => {

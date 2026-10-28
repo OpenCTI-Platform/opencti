@@ -20,7 +20,7 @@ const IMPORT_MUTATION = gql`
 `;
 const SESSION_QUERY = gql`query ConfigPresetLockSession { configPresetImportSession { status file_id outcome counts { failed } results { key status reason } } }`;
 const PREVIEW_QUERY = gql`query ConfigPresetLockPreview($file_id: ID!) { configPresetImportPreview(file_id: $file_id) { openCTI_version } }`;
-const SETTINGS_QUERY = gql`query ConfigPresetLockSettings { settings { id platform_title platform_bootstrap_status platform_banner_text platform_banner_level platform_language platform_favicon platform_whitemark platform_theme { id } } }`;
+const SETTINGS_QUERY = gql`query ConfigPresetLockSettings { settings { id platform_title platform_bootstrap_status platform_banner_text platform_banner_level platform_language platform_favicon platform_theme { id } } }`;
 
 const upload = async () => {
   const content = await buildZip(validBundleFiles());
@@ -51,7 +51,6 @@ describe('Config preset import lock', () => {
       { key: 'platform_theme', value: [before.platform_theme.id] },
       { key: 'platform_banner_text', value: [before.platform_banner_text ?? ''] },
       { key: 'platform_banner_level', value: [before.platform_banner_level ?? ''] },
-      { key: 'platform_whitemark', value: [before.platform_whitemark ?? false] },
     ]);
     await setPlatformBootstrapStatus(testContext, ADMIN_USER, 'pending');
     const themes = (await findAllThemes(testContext, ADMIN_USER)).filter((theme) => !theme.built_in);
