@@ -122,7 +122,8 @@ nconf.file('default', resolveEnvFile('default'));
 
 // Global TLS certificate verification, fallback for every outgoing TLS connection
 // that does not define its own reject_unauthorized option.
-export const TLS_REJECT_UNAUTHORIZED = booleanConf('tls:reject_unauthorized', true);
+// Disabled by default for now, it will be enabled by default in an upcoming version.
+export const TLS_REJECT_UNAUTHORIZED = booleanConf('tls:reject_unauthorized', false);
 
 // Setup SSO/SAML auth_payload_body_size
 // Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html

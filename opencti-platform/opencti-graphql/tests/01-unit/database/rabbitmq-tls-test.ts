@@ -38,14 +38,14 @@ const loadRabbitmq = async (tlsRejectUnauthorized: boolean, rabbitmqConfig: Reco
 };
 
 describe('rabbitmq TLS certificate verification', () => {
-  it('should verify certificates by default', async () => {
+  it('should verify certificates when enabled globally', async () => {
     const { rabbitmqConnectionOptions, rabbitmqManagementClient } = await loadRabbitmq(true);
 
     expect(rabbitmqConnectionOptions()).toMatchObject({ rejectUnauthorized: true });
     expect(await rabbitmqManagementClient()).toMatchObject({ rejectUnauthorized: true });
   });
 
-  it('should follow the global TLS option when no rabbitmq option is set', async () => {
+  it('should not verify certificates when disabled globally', async () => {
     const { rabbitmqConnectionOptions, rabbitmqManagementClient } = await loadRabbitmq(false);
 
     expect(rabbitmqConnectionOptions()).toMatchObject({ rejectUnauthorized: false });

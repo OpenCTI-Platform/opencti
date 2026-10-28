@@ -1,0 +1,79 @@
+"""Tests for the global TLS certificate verification switch."""
+
+import os
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from pycti import OpenCTIApiClient
+from pycti.utils import opencti_tls
+from pycti.utils.opencti_tls import (
+    get_tls_reject_unauthorized,
+    log_tls_verification_disabled,
+)
+
+
+@patch.dict(os.environ, {}, clear=True)
+def test_tls_reject_unauthorized_is_disabled_by_default():
+    assert get_tls_reject_unauthorized() is False
+    assert get_tls_reject_unauthorized({"opencti": None}) is False
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [("true", True), ("True", True), ("yes", True), ("false", False), ("", False)],
+)
+def test_tls_reject_unauthorized_reads_environment(value, expected):
+    with patch.dict(os.environ, {"OPENCTI_TLS_REJECT_UNAUTHORIZED": value}, clear=True):
+        assert get_tls_reject_unauthorized() is expected
+
+
+@patch.dict(os.environ, {}, clear=True)
+def test_tls_reject_unauthorized_reads_config():
+    assert get_tls_reject_unauthorized({"opencti": {"tls_reject_unauthorized": True}})
+    assert not get_tls_reject_unauthorized(
+        {"opencti": {"tls_reject_unauthorized": "false"}}
+    )
+
+
+@patch.dict(os.environ, {"OPENCTI_TLS_REJECT_UNAUTHORIZED": "false"}, clear=True)
+def test_tls_reject_unauthorized_environment_wins_over_config():
+    assert not get_tls_reject_unauthorized(
+        {"opencti": {"tls_reject_unauthorized": True}}
+    )
+
+
+@pytest.mark.parametrize(
+    "env, expected", [({}, False), ({"OPENCTI_TLS_REJECT_UNAUTHORIZED": "true"}, True)]
+)
+def test_api_client_ssl_verify_defaults_to_global_switch(env, expected):
+    with patch.dict(os.environ, env, clear=True), patch.object(
+        OpenCTIApiClient, "_setup_proxy_certificates"
+    ):
+        client = OpenCTIApiClient(
+            url="http://localhost:4000",
+            token="test-token",
+            perform_health_check=False,
+        )
+    assert client.ssl_verify is expected
+
+
+@patch.dict(os.environ, {"OPENCTI_TLS_REJECT_UNAUTHORIZED": "false"}, clear=True)
+def test_api_client_explicit_ssl_verify_wins_over_global_switch():
+    with patch.object(OpenCTIApiClient, "_setup_proxy_certificates"):
+        client = OpenCTIApiClient(
+            url="http://localhost:4000",
+            token="test-token",
+            ssl_verify=True,
+            perform_health_check=False,
+        )
+    assert client.ssl_verify is True
+
+
+def test_tls_verification_disabled_warning_is_logged_once():
+    app_logger = MagicMock()
+    with patch.object(opencti_tls, "_tls_warning_logged", False):
+        log_tls_verification_disabled(app_logger)
+        log_tls_verification_disabled(app_logger)
+    app_logger.warning.assert_called_once()
+    assert "OPENCTI_TLS_REJECT_UNAUTHORIZED=true" in app_logger.warning.call_args[0][0]

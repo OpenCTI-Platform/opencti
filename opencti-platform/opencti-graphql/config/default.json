@@ -159,7 +159,7 @@
   },
   "demo_mode": false,
   "tls": {
-    "reject_unauthorized": true
+    "reject_unauthorized": false
   },
   "http_proxy": "",
   "https_proxy": "",

@@ -6,14 +6,22 @@ import type { TLSSocket } from 'node:tls';
 import { Readable } from 'node:stream';
 import { gzipSync } from 'node:zlib';
 import { ProxyAgent } from 'undici';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { getPlatformHttpProxyAgent } from '../../../src/config/conf';
 import { getHttpClient, getResponseError, HttpClientError } from '../../../src/utils/http-client';
 import { buildSelfSignedCertificate } from '../../utils/selfSignedCertificate';
 
+// Global tls:reject_unauthorized switch, the real configuration value is used when not overridden
+const tlsConfig = vi.hoisted(() => ({ rejectUnauthorized: undefined as boolean | undefined }));
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
-  return { ...actual, getPlatformHttpProxyAgent: vi.fn(() => undefined) };
+  return {
+    ...actual,
+    getPlatformHttpProxyAgent: vi.fn(() => undefined),
+    get TLS_REJECT_UNAUTHORIZED() {
+      return tlsConfig.rejectUnauthorized ?? actual.TLS_REJECT_UNAUTHORIZED;
+    },
+  };
 });
 
 interface ReceivedRequest {
@@ -400,11 +408,31 @@ describe('getHttpClient', () => {
     expect(unverified.data).toBe('plain text');
   });
 
-  it.each([undefined, null])('should verify the certificate by default when rejectUnauthorized is %s', async (rejectUnauthorized) => {
-    const error = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized }).get('/not-json').catch((e) => e);
+  describe('global tls:reject_unauthorized switch', () => {
+    afterEach(() => {
+      tlsConfig.rejectUnauthorized = undefined;
+    });
 
-    expect(error).toBeInstanceOf(HttpClientError);
-    expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+    it.each([undefined, null])('should not verify the certificate by default when rejectUnauthorized is %s', async (rejectUnauthorized) => {
+      const response = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized }).get('/not-json');
+
+      expect(response.data).toBe('plain text');
+    });
+
+    it.each([undefined, null])('should verify the certificate when enabled globally and rejectUnauthorized is %s', async (rejectUnauthorized) => {
+      tlsConfig.rejectUnauthorized = true;
+      const error = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized }).get('/not-json').catch((e) => e);
+
+      expect(error).toBeInstanceOf(HttpClientError);
+      expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+    });
+
+    it('should let rejectUnauthorized override the global switch', async () => {
+      tlsConfig.rejectUnauthorized = true;
+      const response = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false }).get('/not-json');
+
+      expect(response.data).toBe('plain text');
+    });
   });
 
   it('should always verify the certificate on call', async () => {

@@ -57,6 +57,7 @@ from pycti.connector import opencti_connector_build
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
+from pycti.utils.opencti_tls import get_tls_reject_unauthorized
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 """List of string values considered as boolean True."""
@@ -407,6 +408,7 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
         - MQ_USE_SSL_CERT: Client certificate for mutual TLS
         - MQ_USE_SSL_KEY: Client private key for mutual TLS
         - MQ_USE_SSL_REJECT_UNAUTHORIZED: Whether to verify server certificate
+          (default: OPENCTI_TLS_REJECT_UNAUTHORIZED)
         - MQ_USE_SSL_PASSPHRASE: Optional passphrase for private key
 
     :param config: Configuration dictionary containing MQ SSL settings
@@ -425,7 +427,7 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
         ["mq", "use_ssl_reject_unauthorized"],
         config,
         False,
-        True,
+        get_tls_reject_unauthorized(config),
     )
     use_ssl_passphrase = get_config_variable(
         "MQ_USE_SSL_PASSPHRASE", ["mq", "use_ssl_passphrase"], config
@@ -2210,7 +2212,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             default=None,
         )
         self.opencti_ssl_verify = get_config_variable(
-            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, True
+            "OPENCTI_SSL_VERIFY",
+            ["opencti", "ssl_verify"],
+            config,
+            False,
+            get_tls_reject_unauthorized(config),
         )
         self.opencti_json_logging = get_config_variable(
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, False, True

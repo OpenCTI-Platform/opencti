@@ -38,7 +38,7 @@ describe('enrichWithRemoteCredentials TLS certificate verification', () => {
     mockGet.mockResolvedValue({ status: 200, data: { Content: 'user:secret' } });
   });
 
-  it('should verify the CyberArk certificate by default', async () => {
+  it('should verify the CyberArk certificate when enabled globally', async () => {
     setCyberArkConfig();
 
     const result = await enrichWithRemoteCredentials('redis', {});
