@@ -1,23 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
+import NavToolbarMenu from '../common/menus/NavToolbarMenu';
+import { menuEntries } from './ActivityMenu.entries';
 
-const ActivityMenu: FunctionComponent = () => {
-  const entries: MenuEntry[] = [
-    {
-      path: '/dashboard/settings/activity/audit',
-      label: 'Events',
-    },
-    {
-      path: '/dashboard/settings/activity/configuration',
-      label: 'Configuration',
-    },
-    {
-      path: '/dashboard/settings/activity/alerting',
-      label: 'Alerting',
-    },
-  ];
-
-  return <NavToolbarMenu entries={entries} />;
-};
+const ActivityMenu: FunctionComponent = () => <NavToolbarMenu entries={menuEntries} />;
 
 export default ActivityMenu;

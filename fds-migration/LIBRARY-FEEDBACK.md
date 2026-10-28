@@ -2698,3 +2698,40 @@ components) or an `anchor` point on `Menu`, both opening from the keyboard.
 library anchor, delete the marker, and check that a right click on a node of a
 report graph opens the menu at the pointer, that Shift+F10 opens it for the
 entity of the keyboard list, and that Escape gives the focus back.
+
+---
+
+## 71. No component pairs `SearchField` with a suggestions dropdown, so the top-bar pages list is a MUI `Popper`
+
+**Where.** `SearchInput.jsx` (top bar variant) and
+`search/NavSearchSuggestions.tsx`. Typing in the top-bar search lists the
+platform pages matching the keyword, with a last `Search: <keyword>` row.
+The list is keyboard-navigable (ArrowUp/ArrowDown), Enter on a page opens it,
+and Enter with nothing highlighted starts the classic search.
+
+**Gap.** `Combobox` owns its own input (`ComboboxInput`) and treats Enter as
+"pick the highlighted option": there is always a value to commit, and no
+"nothing highlighted, Enter submits the typed text" state. `SearchField`, the
+field this bar uses (#20, #54), has no listbox or popup slot, no
+`aria-activedescendant` wiring and no highlighted-row state. `HeaderSearch`
+does not fit either (#54). So neither can host a free-text search with a
+suggestions list.
+
+**Workaround.** `SearchField` stays the input. A MUI `Popper` (not in the
+enforced list) renders the rows from `List` and `ListItemButton`. The field
+and rows are wired by hand: `role="combobox"`, `aria-expanded`,
+`aria-controls`, `aria-activedescendant`, and `role="listbox"` / `"option"` on
+the rows. The surface is a `Box` rather than `Paper`, which is enforced.
+Marked `FDS-WORKAROUND #71`.
+
+**Ask.** Either a `suggestions` slot on `SearchField` (and `HeaderSearch`)
+that owns the popup, the ARIA wiring and the highlighted row, with Enter
+submitting the typed text when no row is highlighted. Or a `Combobox` mode
+where the input value is free text and Enter submits it unless an option is
+highlighted.
+
+**Removal test.** Replace the `Popper` by the library slot: typing must list
+the pages, ArrowDown must highlight the first row (the screen reader announces
+it), Enter on a page opens it, Enter with no highlight starts the classic
+search, Escape closes the list without clearing the field, and a click on a
+row must not blur the input first.
