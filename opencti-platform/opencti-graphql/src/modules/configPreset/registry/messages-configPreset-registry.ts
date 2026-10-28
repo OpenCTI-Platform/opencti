@@ -1,17 +1,16 @@
 import type { AuthContext } from '../../../types/user';
-import { CONFIG_PRESET_MESSAGES_FIELDS, getMessagesConfigPresetConfigurations, getSettings, settingsEditField } from '../../../domain/settings';
-import { configImportValidationReason } from '../../configImport/configImport-utils';
+import { getMessagesConfigPresetConfigurations, SETTINGS_MESSAGES_FIELDS } from '../../settings/settings-export';
+import { importMessage } from '../../settings/settings-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { buildImportFields, isNothingToImport } from '../import/configPreset-import-utils';
-import { messageConfigurationSchemas } from '../import/configPreset-import-schemas';
-import { platformSettingsGroup, staticFamily } from './common-configPreset-registry';
+import { buildImportFields } from '../import/configPreset-import-utils';
+import { platformSettingsGroup, staticFamily, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
 
 const MESSAGE_LABELS: Record<string, string> = { banner: 'Banner', login: 'Login message', consent: 'Consent message', noAccess: 'No access message' };
 
 // A message is set when the message itself is filled; a level or a confirm text left alone does not show anything
 const isMessageSet = (id: string, configuration: Record<string, unknown>) => {
-  const [messageField] = CONFIG_PRESET_MESSAGES_FIELDS[id as keyof typeof CONFIG_PRESET_MESSAGES_FIELDS];
+  const [messageField] = SETTINGS_MESSAGES_FIELDS[id as keyof typeof SETTINGS_MESSAGES_FIELDS];
   return configuration[messageField] !== null && configuration[messageField] !== undefined && configuration[messageField] !== '';
 };
 
@@ -29,32 +28,13 @@ const getMessagesItems = async (context: AuthContext): Promise<ConfigPresetItemD
 };
 
 const messagesImporter: ConfigPresetImporter = {
-  compute: async (context, _user, item): Promise<ConfigPresetComputedItem> => {
-    const messageId = item.id as keyof typeof CONFIG_PRESET_MESSAGES_FIELDS;
-    const base = { label: MESSAGE_LABELS[item.id] ?? item.id, translatable: true, exists: true };
-    if (!(messageId in CONFIG_PRESET_MESSAGES_FIELDS)) {
-      return { ...base, status: 'failed', reason: 'Unknown message', fields: [] };
-    }
-    const parsed = messageConfigurationSchemas[messageId].safeParse(item.configuration);
-    if (!parsed.success) {
-      return { ...base, status: 'failed', reason: configImportValidationReason(parsed.error), fields: [] };
-    }
-    const keys = CONFIG_PRESET_MESSAGES_FIELDS[messageId];
-    const fields = buildImportFields(parsed.data, keys);
-    // A message or a field that is absent or null in the bundle is left untouched
-    if (isNothingToImport(parsed.data, keys)) {
-      return { ...base, status: 'skipped', reason: 'Nothing to import', fields };
-    }
-    return { ...base, status: 'overwritten', fields };
+  compute: async (context, user, item, _plan, mode): Promise<ConfigPresetComputedItem> => {
+    const result = await importMessage(context, user, item.id, item.configuration, { mode, dryRun: true });
+    const fields = result.configuration ? buildImportFields(result.configuration, SETTINGS_MESSAGES_FIELDS[item.id as keyof typeof SETTINGS_MESSAGES_FIELDS]) : [];
+    return toComputedItem({ label: MESSAGE_LABELS[item.id] ?? item.id, translatable: true }, result, fields);
   },
-  // One settingsEditField call per message, with the fields that are not null
-  apply: async (context, user, item) => {
-    const messageId = item.id as keyof typeof CONFIG_PRESET_MESSAGES_FIELDS;
-    const configuration = messageConfigurationSchemas[messageId].parse(item.configuration) as Record<string, unknown>;
-    const input = CONFIG_PRESET_MESSAGES_FIELDS[messageId]
-      .filter((key) => configuration[key] !== null && configuration[key] !== undefined)
-      .map((key) => ({ key, value: [configuration[key]] }));
-    await settingsEditField(context, user, (await getSettings(context)).id, input);
+  apply: async (context, user, item, computed, mode) => {
+    return toAppliedStatus(await importMessage(context, user, item.id, item.configuration, { mode }), computed);
   },
 };
 

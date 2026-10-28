@@ -546,49 +546,11 @@ export const getCriticalAlerts = async (context, user) => {
   return [];
 };
 
-// region config preset
-// Allowlists of the Settings fields a configuration preset carries. Anything not listed here
-// (credentials, license, providers) never leaves the platform through a preset.
-export const CONFIG_PRESET_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
-// One configuration preset item per message
-// The first field of a message is the message itself: the message is set when it is filled, the others only qualify it
-export const CONFIG_PRESET_MESSAGES_FIELDS = {
-  banner: ['platform_banner_text', 'platform_banner_level'],
-  login: ['platform_login_message'],
-  consent: ['platform_consent_message', 'platform_consent_confirm_text'],
-  noAccess: ['platform_no_access_message'],
-};
-
-const pickConfigPresetFields = (settings, fields) => Object.fromEntries(fields.map((field) => [field, settings[field] ?? null]));
-
 // The default theme of the platform, undefined when none is set or it no longer exists
 export const getPlatformDefaultTheme = async (context, user) => {
   const settings = await getSettingsFromDatabase(context);
   return settings.platform_theme ? findThemeById(context, user, settings.platform_theme) : undefined;
 };
-
-// The default theme by standard id, built-in or custom (the name is only a hint for messages); null when none is set.
-// The theme can be given (the one the export depends on) so that the reference matches it even if the default changed since.
-/** @param {object | null} [defaultTheme] */
-export const getPlatformConfigPresetConfiguration = async (context, user, defaultTheme = undefined) => {
-  const [settings, theme] = await Promise.all([getSettingsFromDatabase(context), defaultTheme === undefined ? getPlatformDefaultTheme(context, user) : defaultTheme]);
-  return {
-    ...pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS),
-    default_theme: theme ? { standard_id: theme.standard_id, name: theme.name } : null,
-  };
-};
-
-// The configuration of each message, by message id
-export const getMessagesConfigPresetConfigurations = async (context) => {
-  const settings = await getSettingsFromDatabase(context);
-  return Object.fromEntries(Object.entries(CONFIG_PRESET_MESSAGES_FIELDS).map(([id, fields]) => [id, pickConfigPresetFields(settings, fields)]));
-};
-
-export const getWhitemarkConfigPresetConfiguration = async (context) => {
-  const settings = await getSettingsFromDatabase(context);
-  return { platform_whitemark: settings.platform_whitemark ?? false };
-};
-// endregion
 
 // The only writer of platform_bootstrap_status
 export const setPlatformBootstrapStatus = async (context, user, status) => {

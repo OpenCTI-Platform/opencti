@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { AVAILABLE_LANGUAGES } from '../../user/user-domain';
+import { AVAILABLE_LANGUAGES } from '../user/user-domain';
 
-// Strict schemas of the configuration of each item: unknown keys are rejected, values are checked
-// because settingsEditField validates none of them. The themes have their own rules, in the theme module.
+// Strict schemas of the settings a configuration can set (the platform, the messages, the whitemark): unknown keys are rejected,
+// values are checked because settingsEditField validates none of them. The themes have their own rules, in the theme module.
 const MAX_TEXT_LENGTH = 5000;
 const MAX_SHORT_LENGTH = 255;
 const MAX_URL_LENGTH = 2048;

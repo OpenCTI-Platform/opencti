@@ -1,8 +1,9 @@
 import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../../generated/graphql';
-import { getPlatformDefaultTheme, getSettings, getWhitemarkConfigPresetConfiguration, settingsEditField } from '../../../domain/settings';
+import { getPlatformDefaultTheme } from '../../../domain/settings';
 import { FunctionalError } from '../../../config/errors';
 import { ConfigImportMode } from '../../configImport/configImport-types';
-import { configImportValidationReason } from '../../configImport/configImport-utils';
+import { getWhitemarkConfigPresetConfiguration } from '../../settings/settings-export';
+import { importWhitemark } from '../../settings/settings-import';
 import { findAllThemes, findThemePaginated } from '../../theme/theme-domain';
 import { getThemeConfigPresetConfiguration } from '../../theme/theme-export';
 import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS } from '../../theme/theme-import-schema';
@@ -11,9 +12,8 @@ import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
-import { buildImportFields, CONFIG_PRESET_ALREADY_EXISTS_REASON, isNothingToImport } from '../import/configPreset-import-utils';
-import { whitemarkConfigurationSchema } from '../import/configPreset-import-schemas';
-import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup } from './common-configPreset-registry';
+import { buildImportFields } from '../import/configPreset-import-utils';
+import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
 
 export const BRANDING_FAMILY_ID = 'branding';
 
@@ -58,26 +58,10 @@ const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | unde
 // The ids of the request that can be themes: an explicit list without the static ids
 const themeIds = (ids?: string[] | null) => ids?.filter((id) => !BRANDING_STATIC_ITEMS.some((item) => item.id === id));
 
-const computeWhitemark = (item: Parameters<ConfigPresetImporter['compute']>[2], mode: ConfigImportMode): ConfigPresetComputedItem => {
-  const base = { label: WHITEMARK_LABEL, translatable: true, exists: true, fields: [] };
-  const parsed = whitemarkConfigurationSchema.safeParse(item.configuration);
-  if (!parsed.success) {
-    return { ...base, status: 'failed', reason: configImportValidationReason(parsed.error) };
-  }
-  // A setting has no copy: it is left as it is
-  if (mode === ConfigImportMode.Copy) {
-    return { ...base, status: 'skipped', reason: CONFIG_PRESET_ALREADY_EXISTS_REASON };
-  }
-  if (isNothingToImport(parsed.data, ['platform_whitemark'])) {
-    return { ...base, status: 'skipped', reason: 'Nothing to import' };
-  }
-  return { ...base, status: 'overwritten' };
-};
-
 const brandingImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
     if (item.id === WHITEMARK_ID) {
-      return computeWhitemark(item, mode);
+      return toComputedItem({ label: WHITEMARK_LABEL, translatable: true }, await importWhitemark(context, user, item.configuration, { mode, dryRun: true }), []);
     }
     const name = typeof item.configuration.name === 'string' ? item.configuration.name : item.id;
     const base = { label: name, translatable: false };
@@ -97,9 +81,7 @@ const brandingImporter: ConfigPresetImporter = {
   },
   apply: async (context, user, item, computed, mode) => {
     if (item.id === WHITEMARK_ID) {
-      const { platform_whitemark: whitemark } = whitemarkConfigurationSchema.parse(item.configuration);
-      await settingsEditField(context, user, (await getSettings(context)).id, [{ key: 'platform_whitemark', value: [whitemark] }]);
-      return undefined;
+      return toAppliedStatus(await importWhitemark(context, user, item.configuration, { mode }), computed);
     }
     // Decided again by the theme module as it writes: a theme with this standard id created since compute is overwritten, never duplicated
     const result = await importTheme(context, user, item.configuration, { mode });
