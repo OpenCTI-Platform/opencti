@@ -450,7 +450,7 @@ export interface SyncFileReferenceCopyProps {
   entityId: string;
   externalReferenceId?: string;
   noTriggerImport?: boolean;
-  importContextEntities?: BasicStoreEntity[];
+  importContextEntities: BasicStoreEntity[];
 }
 
 export interface SyncFileReferenceCopyResult {
@@ -593,7 +593,7 @@ const triggerSyncFileImport = async (context: AuthContext, user: AuthUser, reque
   try {
     const isImportEligiblePath = request.props.filePath.startsWith('import/') && !request.props.filePath.startsWith('import/pending');
     if (!request.props.noTriggerImport && isImportEligiblePath) {
-      await triggerJobImport(context, user, request.file, request.props.importContextEntities ?? []);
+      await triggerJobImport(context, user, request.file, request.props.importContextEntities);
     }
   } catch (triggerErr) {
     logApp.warn('[FILE STORAGE] Copied referenced sync file, but failed to trigger its import enrichment job', { cause: triggerErr, syncId: request.props.syncId, targetId: request.file.id });
