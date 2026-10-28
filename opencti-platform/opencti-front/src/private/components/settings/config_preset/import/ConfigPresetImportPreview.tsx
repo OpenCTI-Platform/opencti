@@ -284,7 +284,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     // The dialog scrolls: a minimum height gives the list room, and the footer sticks to the bottom of the visible part
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
       <Text variant="title-sm">{preview.bundle_name ?? t_i18n('Configuration bundle')}</Text>
-      <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched.')}</Text>
+      <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched. Existing items are overwritten: use Simulate to see the outcome of each one before you apply.')}</Text>
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
@@ -312,11 +312,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                 ? <ConfigPresetResultLine status={results[`${type.key}/${item.key}`].status} reason={results[`${type.key}/${item.key}`].reason} />
                 : undefined}
             />
-            <div style={{ paddingLeft: theme.spacing(3.5) }}>
-              <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
-                {item.exists ? t_i18n('Already exists, will be overwritten') : t_i18n('New')}
-              </Text>
-            </div>
           </div>
         )}
       />

@@ -129,13 +129,6 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
     });
 
-    it('shows whether each item already exists', async () => {
-      await renderPreview();
-      const platform = screen.getByTestId('config-preset-import-item-platform-platform');
-      expect(platform).toHaveTextContent('Already exists, will be overwritten');
-      expect(screen.getByTestId('config-preset-import-item-branding-theme--1')).toHaveTextContent('New');
-    });
-
     it('restores the saved selection', async () => {
       await renderPreview(session({ revision: 2, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] }));
       expect(checkbox('Messages (1/1)')).toHaveAttribute('data-state', 'checked');
