@@ -29,6 +29,7 @@ import {
   FROM_TEMPLATE_STORAGE_PATH,
   IMPORT_STORAGE_PATH,
   SUPPORT_STORAGE_PATH,
+  SYNC_INFLIGHT_STORAGE_PATH,
 } from '../modules/internal/document/document-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { BYPASS, isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
@@ -109,6 +110,11 @@ const isConfigPresetFileRestricted = (user: AuthUser, filePath: string) => {
   return removeDraftFilePrefix(filePath).startsWith(`${CONFIG_PRESET_STORAGE_PATH}/`) && !isUserHasCapability(user, BYPASS);
 };
 
+// Staged sync files are only consumed through raw storage calls: no user, system included, can read them
+const isSyncInflightFile = (filePath: string) => {
+  return removeDraftFilePrefix(filePath).startsWith(`${SYNC_INFLIGHT_STORAGE_PATH}/`);
+};
+
 /**
  * Get file metadata from database, or else from S3.
  */
@@ -123,6 +129,12 @@ export const loadFile = async (
       throw FunctionalError('File path not specified');
     }
     const pathForPermissionChecks = removeDraftFilePrefix(fileS3Path);
+    if (isSyncInflightFile(fileS3Path)) {
+      if (opts.dontThrow) {
+        return undefined;
+      }
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
     // 01. Check if user as enough capability to get support packages
     if (pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
       if (opts.dontThrow) {
