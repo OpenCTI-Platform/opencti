@@ -71,8 +71,7 @@ import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import { styled, useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
@@ -132,122 +131,42 @@ import {
 
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  buttonAdd: {
-    width: '100%',
-    height: 36,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  aliases: {
-    margin: '0 7px 7px 0',
-  },
-  title: {
-    flex: '1 1 100%',
-    fontSize: '12px',
-    marginBottom: '1px',
-  },
-  editButtons: {
-    display: 'flex',
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
+
+const EditButtons = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  '& > span': {
+    display: 'inline-flex',
     alignItems: 'center',
-    gap: 4,
-    '& > span': {
-      display: 'inline-flex',
-      alignItems: 'center',
-    },
   },
-  chipValue: {
-    margin: 0,
-  },
-  filter: {
-    margin: '5px 10px 5px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '5px 10px 5px 0',
-  },
-  step: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.background.accent}`,
-    borderRadius: 5,
-    display: 'flex',
-  },
-  formControl: {
-    width: '100%',
-  },
-  stepType: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepField: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepValues: {
-    paddingRight: 20,
-    margin: 0,
-  },
-  stepCloseButton: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  noResult: {
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 20,
-  },
+});
+
+const Step = styled('div')(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  margin: '0 0 20px 0',
+  padding: 15,
+  verticalAlign: 'middle',
+  border: `1px solid ${theme.palette.background.accent}`,
+  borderRadius: 5,
+  display: 'flex',
+}));
+
+const StepCloseButton = styled(IconButton)({
+  position: 'absolute',
+  top: 4,
+  right: 4,
 });
 
 const notMergableTypes = ['Playbook', 'Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
@@ -1570,7 +1489,7 @@ class DataTableToolBar extends Component {
   }
 
   renderValuesOptions(i, selectedTypes, userStatuses) {
-    const { t, classes } = this.props;
+    const { t } = this.props;
 
     const { actionsInputs } = this.state;
 
@@ -1641,10 +1560,10 @@ class DataTableToolBar extends Component {
               onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
               renderOption={(option) => (
                 <>
-                  <div className={classes.icon}>
+                  <OptionIcon>
                     <ItemIcon type={option.type} />
-                  </div>
-                  <div className={classes.text}>{option.label}</div>
+                  </OptionIcon>
+                  <OptionText>{option.label}</OptionText>
                 </>
               )}
             >
@@ -1696,10 +1615,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon} style={{ color: option.color }}>
+                <OptionIcon style={{ color: option.color }}>
                   <CenterFocusStrong />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -1735,10 +1654,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon} style={{ color: option.color }}>
+                <OptionIcon style={{ color: option.color }}>
                   <LabelOutline />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -1771,10 +1690,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -1805,7 +1724,7 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <Avatar
                     variant="square"
                     style={{
@@ -1816,8 +1735,8 @@ class DataTableToolBar extends Component {
                   >
                     {option.order}
                   </Avatar>
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -1851,10 +1770,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon} style={{ color: option.color }}>
+                <OptionIcon style={{ color: option.color }}>
                   <LanguageOutlined />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -1890,10 +1809,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -1929,10 +1848,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -1969,7 +1888,7 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.text}>{option.label}</div>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -2004,7 +1923,7 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.text}>{option.label}</div>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -2037,10 +1956,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -2086,10 +2005,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon} style={{ color: option.color }}>
+                <OptionIcon style={{ color: option.color }}>
                   <ItemIcon type="Kill-Chain-Phase" />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -2138,10 +2057,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -2177,10 +2096,10 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -2213,7 +2132,7 @@ class DataTableToolBar extends Component {
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
             renderOption={(option) => (
               <>
-                <div className={classes.text}>{option.label}</div>
+                <OptionText>{option.label}</OptionText>
               </>
             )}
           >
@@ -2328,7 +2247,6 @@ class DataTableToolBar extends Component {
     const {
       t,
       n,
-      classes,
       numberOfSelectedElements,
       handleClearSelectedElements,
       selectedElements,
@@ -2479,10 +2397,12 @@ class DataTableToolBar extends Component {
               <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8, alignItems: 'center' }} data-testid="opencti-toolbar">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
-                    className={classes.title}
                     variant="subtitle1"
                     sx={{
                       color: 'inherit',
+                      flex: '1 1 100%',
+                      fontSize: '12px',
+                      marginBottom: '1px',
                     }}
                   >
                     <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
@@ -2498,7 +2418,7 @@ class DataTableToolBar extends Component {
                   </IconButton>
                 </div>
                 {displayEditButtons && (
-                  <div className={classes.editButtons}>
+                  <EditButtons>
                     {markAsReadEnabled && (
                       <>
                         <Tooltip title={t('Mark as read')}>
@@ -2835,7 +2755,7 @@ class DataTableToolBar extends Component {
                         </Tooltip>
                       </Security>
                     )}
-                  </div>
+                  </EditButtons>
                 )}
               </Toolbar>
               <Dialog
@@ -2892,11 +2812,11 @@ class DataTableToolBar extends Component {
                         <TableCell>{t('N/A')}</TableCell>
                         <TableCell>
                           {selectAll ? (
-                            <div className={classes.filters}>
+                            <div>
                               {search && search.length > 0 && (
                                 <span>
                                   <Chip
-                                    classes={{ root: classes.filter }}
+                                    sx={{ margin: '5px 10px 5px 0' }}
                                     label={(
                                       <div>
                                         <strong>{t('Search')}</strong>: {search}
@@ -2997,19 +2917,18 @@ class DataTableToolBar extends Component {
                   {Array(actionsInputs.length)
                     .fill(0)
                     .map((item, i) => (
-                      <div key={i} className={classes.step}>
-                        <IconButton
+                      <Step key={i}>
+                        <StepCloseButton
                           disabled={actionsInputs.length === 1}
                           aria-label="Delete"
-                          className={classes.stepCloseButton}
                           onClick={this.handleRemoveStep.bind(this, i)}
                           size="small"
                         >
                           <CancelOutlined fontSize="small" />
-                        </IconButton>
+                        </StepCloseButton>
                         <Grid container={true} spacing={3} sx={{ flex: 1 }}>
                           <Grid size={3}>
-                            <FormControl className={classes.formControl}>
+                            <FormControl sx={{ width: '100%' }}>
                               <Select
                                 value={actionsInputs[i]?.type ?? ''}
                                 onValueChange={this.handleChangeActionInput.bind(
@@ -3033,7 +2952,7 @@ class DataTableToolBar extends Component {
                             </FormControl>
                           </Grid>
                           <Grid size={3}>
-                            <FormControl className={classes.formControl}>
+                            <FormControl sx={{ width: '100%' }}>
                               {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, customFieldDefinitionsOfTypes)}
                             </FormControl>
                           </Grid>
@@ -3051,16 +2970,16 @@ class DataTableToolBar extends Component {
                             </Grid>
                           )}
                         </Grid>
-                      </div>
+                      </Step>
                     ))}
-                  <div className={classes.add}>
+                  <div>
                     <IconButton
                       aria-label={t('Add step')}
                       disabled={!this.areStepValid()}
                       variant="secondary"
                       size="small"
                       onClick={this.handleAddStep.bind(this)}
-                      classes={{ root: classes.buttonAdd }}
+                      sx={{ width: '100%', height: 36 }}
                     >
                       <AddOutlined fontSize="small" />
                     </IconButton>
@@ -3069,7 +2988,7 @@ class DataTableToolBar extends Component {
                     <Button
                       disabled={!this.areStepValid()}
                       onClick={this.handleLaunchUpdate.bind(this)}
-                      classes={{ root: classes.button }}
+                      sx={{ marginLeft: theme.spacing(2) }}
                     >
                       {t('Update')}
                     </Button>
@@ -3354,10 +3273,10 @@ class DataTableToolBar extends Component {
                   onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, 0))(next, meta.event)}
                   renderOption={(option) => (
                     <>
-                      <div className={classes.icon}>
+                      <OptionIcon>
                         <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
+                      </OptionIcon>
+                      <OptionText>{option.label}</OptionText>
                     </>
                   )}
                   disableClearable
@@ -3472,10 +3391,10 @@ class DataTableToolBar extends Component {
                   onValueChange={(next) => this.setState({ shareOrganizations: next })}
                   renderOption={(option) => (
                     <>
-                      <div className={classes.icon}>
+                      <OptionIcon>
                         <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
+                      </OptionIcon>
+                      <OptionText>{option.label}</OptionText>
                     </>
                   )}
                   disableClearable
@@ -3552,10 +3471,10 @@ class DataTableToolBar extends Component {
                   onValueChange={(next) => this.setState({ shareOrganizations: next })}
                   renderOption={(option) => (
                     <>
-                      <div className={classes.icon}>
+                      <OptionIcon>
                         <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
+                      </OptionIcon>
+                      <OptionText>{option.label}</OptionText>
                     </>
                   )}
                   disableClearable
@@ -3619,7 +3538,6 @@ class DataTableToolBar extends Component {
 
 DataTableToolBar.propTypes = {
   customFieldDefinitions: PropTypes.array,
-  classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
   numberOfSelectedElements: PropTypes.number,
@@ -3645,12 +3563,13 @@ DataTableToolBar.propTypes = {
   taskScope: PropTypes.string,
 };
 
-const DataTableToolBarComponent = R.compose(inject18n, withTheme, withStyles(styles))(DataTableToolBar);
+const DataTableToolBarComponent = inject18n(DataTableToolBar);
 
 // The update entities drawer offers the custom fields: their definitions are loaded once elements are selected
 const DataTableToolBarWithCustomFields = (props) => {
+  const theme = useTheme();
   const customFieldDefinitions = useCustomFieldDefinitions(props.numberOfSelectedElements > 0);
-  return <DataTableToolBarComponent {...props} customFieldDefinitions={customFieldDefinitions} />;
+  return <DataTableToolBarComponent {...props} theme={theme} customFieldDefinitions={customFieldDefinitions} />;
 };
 
 export default DataTableToolBarWithCustomFields;

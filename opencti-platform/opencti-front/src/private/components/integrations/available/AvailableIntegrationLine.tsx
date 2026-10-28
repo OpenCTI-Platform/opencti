@@ -288,9 +288,7 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
         ) : shouldRenderDeploy ? (
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {showEnterpriseUpsell ? (
-              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-              </Box>
+              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip inLine />
             ) : (
               <DisabledReasonTooltip reason={compatibilityMessage}>
                 <Button size="small" disabled={!canDeploy} onClick={onClickDeploy}>

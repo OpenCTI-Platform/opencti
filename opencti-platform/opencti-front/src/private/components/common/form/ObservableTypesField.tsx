@@ -1,21 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    paddingRight: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  paddingRight: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
 
 interface ObservableTypesFieldProps {
@@ -36,7 +31,6 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   disabled,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { schema } = useAuth();
@@ -58,9 +52,9 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
       style={style}
       renderOption={(option: string) => (
         <>
-          <div className={classes.icon}>
+          <OptionIcon>
             <ItemIcon type={option} />
-          </div>
+          </OptionIcon>
           <span>{t_i18n(`entity_${option}`)}</span>
         </>
       )}

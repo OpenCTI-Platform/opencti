@@ -30,6 +30,7 @@ import {
   UnsupportedError,
   ValidationError,
 } from '../../config/errors';
+import { checkDateDisplayInput } from '../../utils/dateDisplay';
 import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
@@ -209,6 +210,8 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'default_dashboard',
   'default_time_field',
   'unit_system',
+  'date_format',
+  'time_format',
   'submenu_show_icons',
   'submenu_auto_collapse',
   'monochrome_labels',
@@ -1256,6 +1259,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       throw FunctionalError('The password must be changed on its own', { userId });
     }
   }
+  checkDateDisplayInput(rawInputs, 'date_format', 'time_format');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     // The password history is only ever written by the password change below

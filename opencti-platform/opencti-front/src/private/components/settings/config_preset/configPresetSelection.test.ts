@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildConfigPresetItemsFilter,
   buildConfigPresetSelections,
+  clearConfigPresetTypeSelection,
+  ConfigPresetSelection,
   countConfigPresetCheckedItems,
   countConfigPresetItems,
   getConfigPresetCheckboxState,
+  getConfigPresetForcedItems,
   groupConfigPresetTypes,
+  isConfigPresetItemSelected,
   isSingletonConfigPresetType,
   selectAllConfigPresetItems,
   toggleConfigPresetItem,
@@ -13,73 +18,112 @@ import {
 
 const platformSettings = { key: 'platformSettings', label: 'Platform settings' };
 const dataModel = { key: 'dataModel', label: 'Data model' };
-const platform = { key: 'platform', group: platformSettings, items: [{ key: 'platform' }] };
-const messages = { key: 'messages', group: platformSettings, items: [{ key: 'messages' }] };
-const hiddenEntityTypes = { key: 'hiddenEntityTypes', group: dataModel, items: [{ key: 'hiddenEntityTypes' }] };
-// A type listing entities, as entity-backed types will
-const templates = { key: 'templates', group: platformSettings, items: [{ key: 'template-1' }, { key: 'template-2' }] };
-const types = [platform, hiddenEntityTypes, messages, templates];
+const singleton = (key: string, group = platformSettings, dependsOn: { type: string; key: string }[] = []) => ({
+  key,
+  group,
+  items: [{ key, dependsOn }],
+  itemsPageInfo: { globalCount: 1 },
+});
+// The platform configuration depends on the custom default theme
+const platform = singleton('platform', platformSettings, [{ type: 'branding', key: 'theme-default' }]);
+const hiddenEntityTypes = singleton('hiddenEntityTypes', dataModel);
+// Whitemark and 40 themes, the first page holds 3 items
+const branding = {
+  key: 'branding',
+  group: platformSettings,
+  items: [{ key: 'whitemark', dependsOn: [] }, { key: 'theme-1', dependsOn: [] }, { key: 'theme-default', dependsOn: [] }],
+  itemsPageInfo: { globalCount: 41 },
+};
+const messages = { key: 'messages', group: platformSettings, items: [{ key: 'banner', dependsOn: [] }, { key: 'login', dependsOn: [] }], itemsPageInfo: { globalCount: 2 } };
+const types = [platform, hiddenEntityTypes, branding, messages];
+const NO_FORCED = {};
 
 describe('configPresetSelection', () => {
-  it('groups the types by export group, in catalog order', () => {
+  it('groups the types by export group, in their order', () => {
     expect(groupConfigPresetTypes(types)).toEqual([
-      { key: 'platformSettings', label: 'Platform settings', types: [platform, messages, templates] },
+      { key: 'platformSettings', label: 'Platform settings', types: [platform, branding, messages] },
       { key: 'dataModel', label: 'Data model', types: [hiddenEntityTypes] },
     ]);
   });
 
   it('recognizes a singleton type: one item with the key of the type', () => {
     expect(isSingletonConfigPresetType(platform)).toBe(true);
-    expect(isSingletonConfigPresetType(templates)).toBe(false);
-    expect(isSingletonConfigPresetType({ key: 'templates', items: [{ key: 'template-1' }] })).toBe(false);
+    expect(isSingletonConfigPresetType(branding)).toBe(false);
+    expect(isSingletonConfigPresetType({ key: 'branding', items: [{ key: 'theme-1' }] })).toBe(false);
     expect(isSingletonConfigPresetType({ key: 'empty', items: [] })).toBe(false);
   });
 
-  it('selects every item of every type', () => {
-    expect(selectAllConfigPresetItems(types)).toEqual({
-      platform: ['platform'],
-      hiddenEntityTypes: ['hiddenEntityTypes'],
-      messages: ['messages'],
-      templates: ['template-1', 'template-2'],
-    });
+  it('selects every item of every type, including the items not loaded yet', () => {
+    const all = selectAllConfigPresetItems(types);
+    expect(all.branding).toEqual({ mode: 'all', ids: [] });
+    expect(isConfigPresetItemSelected(all, 'branding', 'theme-39')).toBe(true);
+    expect(countConfigPresetCheckedItems(types, all, NO_FORCED)).toBe(45);
+    expect(countConfigPresetItems(types)).toBe(45);
   });
 
-  it('counts the items and the checked items of several types, ignoring ids that are not in the catalog', () => {
-    const group = [platform, messages, templates];
-    expect(countConfigPresetItems(group)).toBe(4);
-    expect(countConfigPresetCheckedItems(group, {})).toBe(0);
-    expect(countConfigPresetCheckedItems(group, { messages: ['messages', 'unknown'], templates: ['template-2'] })).toBe(2);
-    expect(countConfigPresetCheckedItems(group, selectAllConfigPresetItems(types))).toBe(4);
+  it('checks or unchecks one item, as an exception of all or as a member of some', () => {
+    const allButOne = toggleConfigPresetItem(selectAllConfigPresetItems(types), 'branding', 'theme-1', false);
+    expect(allButOne.branding).toEqual({ mode: 'all', ids: ['theme-1'] });
+    expect(isConfigPresetItemSelected(allButOne, 'branding', 'theme-1')).toBe(false);
+    expect(toggleConfigPresetItem(allButOne, 'branding', 'theme-1', true).branding).toEqual({ mode: 'all', ids: [] });
+    const one = toggleConfigPresetItem({}, 'branding', 'theme-1', true);
+    expect(one.branding).toEqual({ mode: 'some', ids: ['theme-1'] });
+    // No duplicates
+    expect(toggleConfigPresetItem(one, 'branding', 'theme-1', true).branding).toEqual({ mode: 'some', ids: ['theme-1'] });
+    expect(toggleConfigPresetItem(one, 'branding', 'theme-1', false).branding).toEqual({ mode: 'some', ids: [] });
   });
 
-  it('computes the checkbox state of a type or a group from its checked items', () => {
-    expect(getConfigPresetCheckboxState([templates], {})).toBe(false);
-    expect(getConfigPresetCheckboxState([templates], { templates: [] })).toBe(false);
-    expect(getConfigPresetCheckboxState([templates], { templates: ['template-1'] })).toBe('indeterminate');
-    expect(getConfigPresetCheckboxState([platform], { platform: ['platform'] })).toBe(true);
-    expect(getConfigPresetCheckboxState([platform, messages], { platform: ['platform'] })).toBe('indeterminate');
-    expect(getConfigPresetCheckboxState([platform, messages], selectAllConfigPresetItems(types))).toBe(true);
+  it('switches a whole type to all or none, clearing its exceptions', () => {
+    const allButOne = toggleConfigPresetItem(selectAllConfigPresetItems(types), 'branding', 'theme-1', false);
+    expect(toggleConfigPresetTypes(allButOne, [branding], false).branding).toEqual({ mode: 'some', ids: [] });
+    expect(toggleConfigPresetTypes(allButOne, [branding], true).branding).toEqual({ mode: 'all', ids: [] });
+    expect(clearConfigPresetTypeSelection(allButOne, 'branding').branding).toEqual({ mode: 'some', ids: [] });
   });
 
-  it('checks or unchecks all the items of a type or a group at once', () => {
-    const unchecked = toggleConfigPresetTypes(selectAllConfigPresetItems(types), [platform, templates], false);
-    expect(unchecked).toEqual({ platform: [], hiddenEntityTypes: ['hiddenEntityTypes'], messages: ['messages'], templates: [] });
-    expect(toggleConfigPresetTypes(unchecked, [templates], true).templates).toEqual(['template-1', 'template-2']);
+  it('computes the checkbox state of a type or a group from its counts', () => {
+    const all = selectAllConfigPresetItems(types);
+    expect(getConfigPresetCheckboxState([branding], {}, NO_FORCED)).toBe(false);
+    expect(getConfigPresetCheckboxState([branding], all, NO_FORCED)).toBe(true);
+    expect(getConfigPresetCheckboxState([branding], toggleConfigPresetItem(all, 'branding', 'theme-1', false), NO_FORCED)).toBe('indeterminate');
+    expect(getConfigPresetCheckboxState([platform, messages], toggleConfigPresetTypes(all, [messages], false), NO_FORCED)).toBe('indeterminate');
   });
 
-  it('checks or unchecks one item, without duplicates', () => {
-    const withTemplate = toggleConfigPresetItem({}, 'templates', 'template-1', true);
-    expect(withTemplate).toEqual({ templates: ['template-1'] });
-    expect(toggleConfigPresetItem(withTemplate, 'templates', 'template-1', true)).toEqual({ templates: ['template-1'] });
-    expect(toggleConfigPresetItem(withTemplate, 'templates', 'template-1', false)).toEqual({ templates: [] });
+  it('forces the items a selected item depends on, which count as checked and cannot be excluded', () => {
+    const selection: ConfigPresetSelection = { platform: { mode: 'all', ids: [] }, branding: { mode: 'all', ids: ['theme-default', 'theme-1'] } };
+    const forced = getConfigPresetForcedItems(types, selection);
+    expect(forced).toEqual({ branding: ['theme-default'] });
+    expect(countConfigPresetCheckedItems([branding], selection, forced)).toBe(40);
+    expect(countConfigPresetCheckedItems([branding], { branding: { mode: 'some', ids: ['theme-1'] } }, forced)).toBe(2);
+    // Without the platform configuration, nothing is forced
+    expect(getConfigPresetForcedItems(types, toggleConfigPresetItem(selection, 'platform', 'platform', false))).toEqual({});
+    expect(getConfigPresetForcedItems(types, toggleConfigPresetTypes(selection, [platform], false))).toEqual({});
   });
 
-  it('builds the mutation selections in catalog order, without empty types', () => {
-    const selection = { templates: ['template-2', 'template-1'], platform: ['platform'], messages: [] };
+  it('builds the items query filters of the sub-view from the selection and the forced items', () => {
+    const forced = { branding: ['theme-default'] };
+    const allBut: ConfigPresetSelection = { branding: { mode: 'all', ids: ['theme-1', 'theme-default'] } };
+    expect(buildConfigPresetItemsFilter(allBut, forced, 'branding', 'all')).toEqual({});
+    expect(buildConfigPresetItemsFilter(allBut, forced, 'branding', 'selected')).toEqual({ excludedIds: ['theme-1'] });
+    expect(buildConfigPresetItemsFilter(allBut, forced, 'branding', 'excluded')).toEqual({ ids: ['theme-1'] });
+    const some: ConfigPresetSelection = { branding: { mode: 'some', ids: ['theme-1'] } };
+    expect(buildConfigPresetItemsFilter(some, forced, 'branding', 'selected')).toEqual({ ids: ['theme-1', 'theme-default'] });
+    expect(buildConfigPresetItemsFilter(some, forced, 'branding', 'excluded')).toEqual({ excludedIds: ['theme-1', 'theme-default'] });
+  });
+
+  it('builds the mutation selections in type order: all with its exclusions, an explicit list, nothing for empty types', () => {
+    const selection: ConfigPresetSelection = {
+      branding: { mode: 'all', ids: ['theme-1'] },
+      platform: { mode: 'all', ids: [] },
+      messages: { mode: 'some', ids: [] },
+      hiddenEntityTypes: { mode: 'some', ids: ['hiddenEntityTypes'] },
+    };
     expect(buildConfigPresetSelections(types, selection)).toEqual([
-      { type: 'platform', items: ['platform'] },
-      { type: 'templates', items: ['template-1', 'template-2'] },
+      { type: 'platform', items: null },
+      { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'] },
+      { type: 'branding', items: null, excluded_items: ['theme-1'] },
     ]);
+    // A singleton unchecked as an item: all mode with its only item excluded
+    expect(buildConfigPresetSelections([platform], toggleConfigPresetItem(selection, 'platform', 'platform', false))).toEqual([]);
     expect(buildConfigPresetSelections(types, {})).toEqual([]);
   });
 });

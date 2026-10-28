@@ -1,10 +1,9 @@
 import { Close } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import * as R from 'ramda';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import type { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';
 import useBus, { dispatch } from '../../../../utils/hooks/useBus';
 import useLocalStorage from '../../../../utils/hooks/useLocalStorage';
@@ -47,31 +46,29 @@ const settingsSubscription = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    position: 'fixed',
-    zIndex: 1202,
-    backgroundColor: '#ffecb3',
-    borderLeft: '8px solid #ffc107',
-    color: '#000000',
-    width: '100%',
-    padding: 4,
-  },
-  message: {
-    textAlign: 'center',
-    marginRight: theme.spacing(1),
-    color: '#663c00',
-    fontWeight: 500,
-  },
-  button: {
-    color: '#663c00',
-    position: 'absolute',
-    top: '1px',
-    right: '8px',
-  },
+const Banner = styled('div')({
+  position: 'fixed',
+  zIndex: 1202,
+  backgroundColor: '#ffecb3',
+  borderLeft: '8px solid #ffc107',
+  color: '#000000',
+  width: '100%',
+  padding: 4,
+});
+
+const Message = styled('div')(({ theme }) => ({
+  textAlign: 'center',
+  marginRight: theme.spacing(1),
+  color: '#663c00',
+  fontWeight: 500,
 }));
+
+const DismissButton = styled(IconButton)({
+  color: '#663c00',
+  position: 'absolute',
+  top: '1px',
+  right: '8px',
+});
 
 const BANNER_LOCAL_STORAGE_KEY = 'banner';
 const BANNER_DIV = 'banner_div';
@@ -132,7 +129,6 @@ const SettingsMessagesBannerComponent = ({
 }: {
   queryRef: PreloadedQuery<SettingsMessagesBannerQuery>;
 }) => {
-  const classes = useStyles();
   const { bannerSettings } = useAuth();
   const { height: topBannerHeight } = useTopBanner();
   const topOffset = topBannerHeight + bannerSettings.bannerHeightNumber;
@@ -208,31 +204,29 @@ const SettingsMessagesBannerComponent = ({
   );
 
   return (
-    <div
+    <Banner
       ref={ref}
       id={BANNER_DIV}
-      className={classes.container}
       style={{
         top: `${topOffset}px`,
         backgroundColor,
         borderLeft,
       }}
     >
-      <div className={classes.message} style={{ color }}>
+      <Message style={{ color }}>
         {extractUrlsFromText(messageToDisplay.message)}
-      </div>
+      </Message>
       {messageToDisplay.dismissible && (
-        <IconButton
+        <DismissButton
           aria-label="close"
           size="small"
-          className={classes.button}
           style={{ color }}
           onClick={handleDismiss}
         >
           <Close fontSize="inherit" />
-        </IconButton>
+        </DismissButton>
       )}
-    </div>
+    </Banner>
   );
 };
 

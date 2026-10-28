@@ -1288,6 +1288,38 @@ describe('meUser specific resolvers', async () => {
     expect(queryResult.data?.meEdit.language).toEqual('en-us');
   });
 
+  it('User should update the date and time display of tables', async () => {
+    const ME_EDIT_DATE_DISPLAY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) {
+          id
+          date_format
+          time_format
+        }
+      }
+    `;
+    let queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_DATE_DISPLAY,
+      variables: { input: [{ key: 'date_format', value: 'iso' }, { key: 'time_format', value: 'seconds' }] },
+    });
+    expect(queryResult.data?.meEdit.date_format).toEqual('iso');
+    expect(queryResult.data?.meEdit.time_format).toEqual('seconds');
+    // Back to the platform display
+    queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_DATE_DISPLAY,
+      variables: { input: [{ key: 'date_format', value: 'auto' }, { key: 'time_format', value: 'auto' }] },
+    });
+    expect(queryResult.data?.meEdit.date_format).toEqual('auto');
+    expect(queryResult.data?.meEdit.time_format).toEqual('auto');
+  });
+
+  it('User should NOT update the time display of tables with an unsupported value', async () => {
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: ME_EDIT,
+      variables: { input: [{ key: 'time_format', value: 'hours' }] },
+    }, 'Unsupported time format');
+  });
+
   it('User should NOT update password without providing proper current password', async () => {
     const variables = {
       password: 'incorrect_current_password',

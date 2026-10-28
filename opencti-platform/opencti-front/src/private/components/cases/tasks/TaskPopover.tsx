@@ -5,7 +5,7 @@ import IconButton from '@common/button/IconButton';
 import ToggleButton from '@mui/material/ToggleButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,14 +20,6 @@ import { deleteNode } from '../../../../utils/store';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 const taskPopoverDeletionMutation = graphql`
   mutation TaskPopoverDeletionMutation($id: ID!) {
@@ -46,7 +38,6 @@ const TaskPopover = ({
   paginationOptions?: CaseTasksLinesQuery$variables;
   variant?: string;
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -99,7 +90,7 @@ const TaskPopover = ({
   };
 
   return (
-    <div className={classes.container}>
+    <Box sx={{ margin: 0 }}>
       {variant === 'inLine' ? (
         <IconButton
           onClick={handleOpen}
@@ -152,7 +143,7 @@ const TaskPopover = ({
           />
         </React.Suspense>
       )}
-    </div>
+    </Box>
   );
 };
 

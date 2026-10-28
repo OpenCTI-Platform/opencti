@@ -1,13 +1,11 @@
 import { MoreVertOutlined } from '@mui/icons-material';
 import { ListItemButton, Stack, Typography } from '@mui/material';
-import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { AutoFix } from 'mdi-material-ui';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
@@ -26,35 +24,24 @@ import {
 } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery.graphql';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    fontSize: 13,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 0,
-    width: '100%',
-  },
-  bodyItemText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
+const BodyItem = styled('div')({
+  fontSize: 13,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+  display: 'flex',
+  alignItems: 'center',
+  minWidth: 0,
+  width: '100%',
+});
 
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItemText = styled('span')({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  minWidth: 0,
+});
 
 const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = graphql`
   fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node on StixCoreRelationship {
@@ -588,9 +575,8 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
   entityLink,
   connectionKey,
 }: SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineProps) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
-  const { t_i18n, fsd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
 
   const data = useFragment<SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node$key>(SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment, node);
 
@@ -629,7 +615,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
       )}
     >
       <ListItemButton
-        classes={{ root: classes.item }}
+        sx={{ height: 50 }}
         component={Link}
         to={link}
       >
@@ -639,16 +625,14 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
         <ListItemText
           primary={(
             <Stack direction="row">
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.relationship_type.width }}
               >
                 <ItemEntityType
                   entityType={data.relationship_type}
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.entity_type.width }}
               >
                 <ItemEntityType
@@ -656,15 +640,17 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                   showIcon
                   isRestricted={!row}
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.name.width }}
               >
                 <Stack
                   direction="row"
-                  className={classes.bodyItemText}
                   sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    minWidth: 0,
                     gap: 0.5,
                     alignItems: 'center',
                   }}
@@ -678,15 +664,14 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                   </Tooltip>
                   {element.draftVersion && (<DraftChip />)}
                 </Stack>
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.created_at.width }}
               >
-                <span className={classes.bodyItemText}>
-                  {fsd(data.created_at)}
-                </span>
-              </div>
+                <BodyItemText>
+                  {ftd(data.created_at)}
+                </BodyItemText>
+              </BodyItem>
             </Stack>
           )}
         />
@@ -698,18 +683,13 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
 export default SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine;
 
 export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ height: 50 }}
       divider={true}
-      secondaryAction={(
-        <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined />
-        </Box>
-      )}
+      secondaryAction={<MoreVertOutlined />}
     >
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -720,8 +700,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.relationship_type.width }}
             >
               <Skeleton
@@ -730,9 +709,8 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <Skeleton
@@ -741,9 +719,8 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -752,9 +729,8 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
               <Skeleton
@@ -763,9 +739,8 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.confidence.width }}
             >
               <Skeleton
@@ -774,7 +749,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
                 width={100}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

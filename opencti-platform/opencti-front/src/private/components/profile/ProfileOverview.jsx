@@ -5,11 +5,10 @@ import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Dialog from '@common/dialog/Dialog';
 import { useTheme } from '@mui/material/styles';
-import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import qrcode from 'qrcode';
-import { compose, pick } from 'ramda';
+import { pick } from 'ramda';
 import { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router';
@@ -37,25 +36,7 @@ import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 import TextareaField from '../../../components/TextareaField';
-
-const styles = () => ({
-  container: {
-    width: 900,
-    margin: '0 auto',
-  },
-  paper: {
-    width: '100%',
-    margin: '0 auto',
-    marginBottom: 24,
-    padding: 20,
-    textAlign: 'left',
-    borderRadius: 4,
-    position: 'relative',
-  },
-  switchField: {
-    padding: '20px 0 0',
-  },
-});
+import { dateFormatOptions, timeFormatOptions } from '../../../utils/dateDisplay';
 
 const profileOverviewFieldPatch = graphql`
   mutation ProfileOverviewFieldPatchMutation(
@@ -106,6 +87,8 @@ const userValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   otp_activated: Yup.boolean(),
   unit_system: Yup.string().nullable(),
+  date_format: Yup.string().nullable(),
+  time_format: Yup.string().nullable(),
   submenu_show_icons: Yup.boolean(),
   submenu_auto_collapse: Yup.boolean(),
   monochrome_labels: Yup.boolean(),
@@ -204,7 +187,7 @@ const OtpComponent = ({ closeFunction }) => (
 );
 
 const ProfileOverviewComponent = (props) => {
-  const { t, me, classes, about, settings, themes } = props;
+  const { t, me, about, settings, themes } = props;
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
   const { isPlaygroundEnable } = useHelper();
@@ -226,6 +209,8 @@ const ProfileOverviewComponent = (props) => {
     'language',
     'otp_activated',
     'unit_system',
+    'date_format',
+    'time_format',
     'submenu_show_icons',
     'submenu_auto_collapse',
     'monochrome_labels',
@@ -433,6 +418,30 @@ const ProfileOverviewComponent = (props) => {
                 <SelectItem value="Imperial">{t('Imperial')}</SelectItem>
                 <SelectItem value="Metric">{t('Metric')}</SelectItem>
               </Field>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="date_format"
+                label={t('Date format in tables')}
+                fullWidth={true}
+                inputProps={{ name: 'date_format', id: 'date_format' }}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitField}
+              >
+                {dateFormatOptions(t, 'user').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+              </Field>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="time_format"
+                label={t('Time in tables')}
+                fullWidth={true}
+                inputProps={{ name: 'time_format', id: 'time_format' }}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitField}
+              >
+                {timeFormatOptions(t, 'user').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+              </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText
                   primary={t('Show left navigation submenu icons')}
@@ -502,7 +511,7 @@ const ProfileOverviewComponent = (props) => {
               type="button"
               startIcon={<NoEncryptionOutlined />}
               onClick={disableOtp}
-              classes={{ root: classes.button }}
+              keepMui
               disabled={settings.otp_mandatory}
             >
               {t('Disable two-factor authentication')}
@@ -514,7 +523,7 @@ const ProfileOverviewComponent = (props) => {
               color="secondary"
               startIcon={<LockOutlined />}
               onClick={() => setDisplay2FA(true)}
-              classes={{ root: classes.button }}
+              keepMui
             >
               {t('Enable two-factor authentication')}
             </Button>
@@ -572,7 +581,7 @@ const ProfileOverviewComponent = (props) => {
                     type="button"
                     onClick={submitForm}
                     disabled={external || isSubmitting}
-                    classes={{ root: classes.button }}
+                    keepMui
                   >
                     {t('Update')}
                   </Button>
@@ -626,8 +635,6 @@ const ProfileOverviewComponent = (props) => {
 };
 
 ProfileOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   me: PropTypes.object,
   about: PropTypes.object,
@@ -649,6 +656,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       otp_activated
       description
       unit_system
+      date_format
+      time_format
       submenu_show_icons
       submenu_auto_collapse
       monochrome_labels
@@ -680,4 +689,4 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ProfileOverview);
+export default inject18n(ProfileOverview);

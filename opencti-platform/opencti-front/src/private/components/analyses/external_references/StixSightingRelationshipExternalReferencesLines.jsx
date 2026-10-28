@@ -13,7 +13,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
@@ -39,43 +38,6 @@ import ExternalReferencePopover from './ExternalReferencePopover';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const interval$ = interval(FIVE_SECONDS);
-
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  buttonExpand: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    height: 25,
-    color: theme.palette.primary.main,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    '&:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
-    },
-  },
-});
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -167,7 +129,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
   }
 
   render() {
-    const { t, classes, stixSightingRelationshipId, data } = this.props;
+    const { t, stixSightingRelationshipId, data } = this.props;
     const { expanded } = this.state;
     const externalReferencesEdges = data.stixSightingRelationship.externalReferences.edges;
     const expandable = externalReferencesEdges.length > 7;
@@ -370,7 +332,26 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
               aria-label={expanded ? t('Collapse') : t('Expand')}
               size="small"
               onClick={this.handleToggleExpand.bind(this)}
-              classes={{ root: classes.buttonExpand }}
+              sx={(theme) => ({
+                position: 'absolute',
+                left: 0,
+                bottom: 0,
+                width: '100%',
+                height: 25,
+                color: theme.palette.primary.main,
+                backgroundColor:
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, .1)'
+                    : 'rgba(0, 0, 0, .1)',
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                '&:hover': {
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, .2)'
+                      : 'rgba(0, 0, 0, .2)',
+                },
+              })}
               aria-expanded={expanded}
             >
               {expanded ? (
@@ -436,7 +417,6 @@ StixSightingRelationshipExternalReferencesLinesContainer.propTypes = {
   stixSightingRelationshipId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -541,7 +521,4 @@ const StixSightingRelationshipExternalReferencesLines = createPaginationContaine
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipExternalReferencesLines);
+export default inject18n(StixSightingRelationshipExternalReferencesLines);

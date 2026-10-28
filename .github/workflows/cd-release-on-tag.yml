@@ -417,22 +417,24 @@ jobs:
           ls -la "${ARCHIVE}"
           tar -tzf "${ARCHIVE}" > /tmp/tar-content.txt
           ERRORS=0
-          for EXPECTED in opencti/build/back.mjs opencti/package.json opencti/.yarnrc.yml opencti/src/__generated__/opencti-manifest.json opencti/worker/worker.py opencti/connectors/manifest.json opencti/public/index.html; do
+          # The tarball keeps the Yarn workspace layout: root metadata in opencti/, the API in its workspace folder
+          API=opencti/opencti-platform/opencti-graphql
+          for EXPECTED in opencti/package.json opencti/yarn.lock opencti/.yarnrc.yml "${API}/build/back.mjs" "${API}/package.json" "${API}/src/__generated__/opencti-manifest.json" opencti/worker/worker.py opencti/connectors/manifest.json "${API}/public/index.html"; do
             if ! grep -qx "${EXPECTED}" /tmp/tar-content.txt; then
               echo "::error::Missing in tarball: ${EXPECTED}"
               ERRORS=1
             fi
           done
-          if grep -qx 'opencti/public/index.html' /tmp/tar-content.txt; then
+          if grep -qx "${API}/public/index.html" /tmp/tar-content.txt; then
             # Every file the UI entry point loads must be in the archive
-            REFS="$(tar -xzOf "${ARCHIVE}" opencti/public/index.html | grep -oE '(src|href)="\./[^"]+"' | sed -E 's/^(src|href)="\.\/(.*)"$/\2/' | sort -u || true)"
+            REFS="$(tar -xzOf "${ARCHIVE}" "${API}/public/index.html" | grep -oE '(src|href)="\./[^"]+"' | sed -E 's/^(src|href)="\.\/(.*)"$/\2/' | sort -u || true)"
             if ! grep -qE '^assets/.+\.js$' <<< "${REFS}"; then
-              echo "::error::opencti/public/index.html does not load any built script from ./assets/"
+              echo "::error::${API}/public/index.html does not load any built script from ./assets/"
               ERRORS=1
             fi
             while IFS= read -r REF; do
-              if [ -n "${REF}" ] && ! grep -qxF "opencti/public/${REF}" /tmp/tar-content.txt; then
-                echo "::error::opencti/public/index.html loads ./${REF}, missing in tarball"
+              if [ -n "${REF}" ] && ! grep -qxF "${API}/public/${REF}" /tmp/tar-content.txt; then
+                echo "::error::${API}/public/index.html loads ./${REF}, missing in tarball"
                 ERRORS=1
               fi
             done <<< "${REFS}"
@@ -441,9 +443,9 @@ jobs:
             echo "::error::Release tarball must not contain the docker repository"
             ERRORS=1
           fi
-          VERSION="$(tar -xzOf "${ARCHIVE}" opencti/package.json | jq -r '.version')"
+          VERSION="$(tar -xzOf "${ARCHIVE}" "${API}/package.json" | jq -r '.version')"
           if [ "${VERSION}" != "${TAG}" ]; then
-            echo "::error::opencti/package.json version in tarball is '${VERSION}', expected '${TAG}'"
+            echo "::error::${API}/package.json version in tarball is '${VERSION}', expected '${TAG}'"
             ERRORS=1
           fi
           {
@@ -476,49 +478,70 @@ jobs:
       - name: Load builder image
         run: docker load --input /tmp/opencti-builder.tar
 
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+
+      # Both builds share the single Yarn installation of the repository root, and each production
+      # focus prunes the other workspace: every SBOM is generated right after the build of its workspace.
       - name: Build graphql production and prune devDependencies
         env:
           TAG: ${{ needs.validate.outputs.tag }}
         run: |
           docker run --rm \
-            -v "${GITHUB_WORKSPACE}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql" \
-            -w /opt/opencti/opencti-graphql \
+            -v "${GITHUB_WORKSPACE}:/opt/opencti" \
+            -w /opt/opencti/opencti-platform/opencti-graphql \
             "filigran/builder:${TAG}" \
-            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
+            sh -c "yarn workspaces focus opencti-graphql && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production opencti-graphql"
+
+      - name: Generate graphql SBOM
+        env:
+          APP: graphql
+          APP_VERSION: ${{ needs.validate.outputs.tag }}
+        run: |
+          set -euo pipefail
+          DIR="opencti-platform/opencti-${APP}"
+          SBOM="sbom-opencti-${APP}.cdx.json"
+          (cd "${DIR}" && syft dir:. \
+            --config ../../.github/.syft.yaml \
+            --select-catalogers javascript \
+            --output "cyclonedx-json@1.6=${SBOM}")
+          jq --slurpfile mfr .github/sbom-manufacturer.json \
+            --arg version "${APP_VERSION}" \
+            --arg name "opencti-${APP}" \
+            '.metadata.component.manufacturer = $mfr[0]
+            | .metadata.component.name = $name
+            | .metadata.component["bom-ref"] = $name
+            | .metadata.component.version = $version' "${DIR}/${SBOM}" > tmp.cdx.json && mv tmp.cdx.json "${DIR}/${SBOM}"
 
       - name: Build front production and prune devDependencies
         env:
           TAG: ${{ needs.validate.outputs.tag }}
         run: |
           docker run --rm \
-            -v "${GITHUB_WORKSPACE}/opencti-platform/opencti-front:/opt/opencti/opencti-front" \
-            -w /opt/opencti/opencti-front \
+            -v "${GITHUB_WORKSPACE}:/opt/opencti" \
+            -w /opt/opencti/opencti-platform/opencti-front \
             "filigran/builder:${TAG}" \
-            sh -c "yarn install --immutable && yarn build && yarn workspaces focus --production"
+            sh -c "yarn workspaces focus opencti-front && yarn build && yarn workspaces focus --production opencti-front"
 
-      - name: Install Syft
-        uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
-
-      - name: Generate graphql and front SBOMs
+      - name: Generate front SBOM
         env:
+          APP: front
           APP_VERSION: ${{ needs.validate.outputs.tag }}
         run: |
           set -euo pipefail
-          for APP in graphql front; do
-            DIR="opencti-platform/opencti-${APP}"
-            SBOM="sbom-opencti-${APP}.cdx.json"
-            (cd "${DIR}" && syft dir:. \
-              --config ../../.github/.syft.yaml \
-              --select-catalogers javascript \
-              --output "cyclonedx-json@1.6=${SBOM}")
-            jq --slurpfile mfr .github/sbom-manufacturer.json \
-              --arg version "${APP_VERSION}" \
-              --arg name "opencti-${APP}" \
-              '.metadata.component.manufacturer = $mfr[0]
-              | .metadata.component.name = $name
-              | .metadata.component["bom-ref"] = $name
-              | .metadata.component.version = $version' "${DIR}/${SBOM}" > tmp.cdx.json && mv tmp.cdx.json "${DIR}/${SBOM}"
-          done
+          DIR="opencti-platform/opencti-${APP}"
+          SBOM="sbom-opencti-${APP}.cdx.json"
+          (cd "${DIR}" && syft dir:. \
+            --config ../../.github/.syft.yaml \
+            --select-catalogers javascript \
+            --output "cyclonedx-json@1.6=${SBOM}")
+          jq --slurpfile mfr .github/sbom-manufacturer.json \
+            --arg version "${APP_VERSION}" \
+            --arg name "opencti-${APP}" \
+            '.metadata.component.manufacturer = $mfr[0]
+            | .metadata.component.name = $name
+            | .metadata.component["bom-ref"] = $name
+            | .metadata.component.version = $version' "${DIR}/${SBOM}" > tmp.cdx.json && mv tmp.cdx.json "${DIR}/${SBOM}"
 
       - name: Generate parent SBOM
         env:

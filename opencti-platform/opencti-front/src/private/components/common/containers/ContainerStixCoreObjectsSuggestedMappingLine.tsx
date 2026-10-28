@@ -6,14 +6,13 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { CloseOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
 import { Chip } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
 import {
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key,
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
-import { Theme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
@@ -25,21 +24,12 @@ import { DataColumns } from '../../../../components/list_lines';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-}));
+const itemSx = {
+  paddingLeft: '10px',
+  height: 50,
+};
+
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface ContainerStixCoreObjectsSuggestedMappingLineComponentProps {
   dataColumns: DataColumns;
@@ -85,13 +75,12 @@ const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
 export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
   ContainerStixCoreObjectsSuggestedMappingLineComponentProps
 > = ({ dataColumns, contentMappingCount, node, handleRemoveSuggestedMappingLine }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const mappedEntityData = useFragment(ContainerStixCoreObjectsSuggestedMappingFragment, node);
   const { matchedString, matchedEntity } = mappedEntityData;
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={itemSx}
       divider={true}
       disablePadding
       secondaryAction={(
@@ -105,60 +94,54 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
     >
       <ListItemButton
         component={Link}
-        classes={{ root: classes.item }}
+        sx={itemSx}
         to={`${resolveLink(matchedEntity.entity_type)}/${matchedEntity.id}`}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <ItemIcon type={matchedEntity.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={(
             <>
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.entity_type.width }}
               >
                 <Chip
                   entity={itemEntity(matchedEntity.entity_type)}
                   label={t_i18n(`entity_${matchedEntity.entity_type}`)}
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.createdBy.width }}
               >
                 {matchedEntity.createdBy?.name ?? EMPTY_VALUE}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.value.width }}
               >
                 {matchedEntity.representative?.main}
                 {matchedEntity.draftVersion && (<DraftChip />)}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <ItemMarkings
                   markingDefinitions={matchedEntity.objectMarking ?? []}
                   limit={1}
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.matched_text.width }}
               >
                 {matchedString}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.mapping.width }}
               >
                 <Chip
                   label={String(contentMappingCount[matchedString] ?? 0)}
                 />
-              </div>
+              </BodyItem>
             </>
           )}
         />
@@ -168,33 +151,31 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
 };
 
 export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: ContainerStixCoreObjectsSuggestedMappingLineComponentProps) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { dataColumns } = props;
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={itemSx}
       divider={true}
       secondaryAction={(
         <IconButton
           disabled={true}
           aria-label={t_i18n('Open menu')}
-          classes={classes.itemIconDisabled}
+          keepMui
         >
           <MoreVert />
         </IconButton>
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 <Skeleton
@@ -203,7 +184,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
                   width="90%"
                   height={20}
                 />
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}

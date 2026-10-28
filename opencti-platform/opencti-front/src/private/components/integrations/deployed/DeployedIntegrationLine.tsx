@@ -103,7 +103,7 @@ export interface DeployedIntegrationLineProps {
 // Compact row variant of DeployedIntegrationCard for the lines view. Cells
 // share their geometry with DeployedIntegrationLinesHeader so rows align.
 const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProps) => {
-  const { t_i18n, n, nsdt, rd } = useFormatter();
+  const { t_i18n, n, ftdt, rd } = useFormatter();
   const theme = useTheme();
   const { isFeatureEnable } = useHelper();
   const typeMetadata = useDeployedTypeMetadata();
@@ -291,7 +291,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       <Box sx={cellSx('date')}>
         {lastDate ? (
           <Tooltip
-            title={`${lastDateLabel}: ${nsdt(lastDate)}`}
+            title={`${lastDateLabel}: ${ftdt(lastDate)}`}
             // Neutralize the global tooltip lowercasing: this is a sentence.
             slotProps={{ popper: { sx: { textTransform: 'none' } } }}
           >

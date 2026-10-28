@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { compose } from 'ramda';
 import { Link } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
@@ -21,29 +19,9 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
 
-const styles = (theme) => ({
-  list: {
-    padding: 0,
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
-
 class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component {
   render() {
-    const { t, classes, entityId, data, paginationOptions } = this.props;
+    const { t, entityId, data, paginationOptions } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Card
@@ -60,7 +38,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
             </Security>
           )}
         >
-          <List classes={{ root: classes.list }}>
+          <List sx={{ padding: 0 }}>
             {data.stixCoreRelationships.edges.map(
               (stixCoreRelationshipEdge) => {
                 const stixCoreRelationship = stixCoreRelationshipEdge.node;
@@ -135,7 +113,6 @@ StixCoreRelationshipStixCoreRelationshipsLinesContainer.propTypes = {
   paginationOptions: PropTypes.object,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -405,7 +382,4 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipStixCoreRelationshipsLines);
+export default inject18n(StixCoreRelationshipStixCoreRelationshipsLines);

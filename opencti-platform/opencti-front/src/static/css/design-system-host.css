@@ -61,7 +61,7 @@
    (1300).
 
    ONE element does flip, and it is deliberately left alone: the Suspense
-   fallback of the top bar (TopBar.tsx, `classes.appBar`) is an
+   fallback of the top bar (TopBar.tsx) is an
    `AppBar position="fixed"` at `theme.zIndex.drawer - 1` = 1199, full width from
    x=0, so it overlaps the rail and now passes UNDER it where it passed over the
    legacy rail. Do NOT "fix" this by giving it a left offset. That bar is the

@@ -5,7 +5,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Slide from '@mui/material/Slide';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
-import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -28,24 +27,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const styles = () => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
-});
 
 export const StixCoreRelationshipsExportCreationMutation = graphql`
   mutation StixCoreRelationshipsExportCreationMutation(
@@ -300,7 +281,6 @@ const StixCoreRelationshipsExportCreations = createFragmentContainer(
 );
 
 StixCoreRelationshipsExportCreations.propTypes = {
-  classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   data: PropTypes.object,
   exportContext: PropTypes.object,
@@ -310,7 +290,4 @@ StixCoreRelationshipsExportCreations.propTypes = {
   onClose: PropTypes.func,
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipsExportCreations);
+export default inject18n(StixCoreRelationshipsExportCreations);

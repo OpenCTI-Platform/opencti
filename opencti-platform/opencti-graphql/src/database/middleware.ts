@@ -1384,6 +1384,15 @@ const partialInstanceWithInputs = (instance: Record<string, any>, inputs: EditIn
     ...inputData,
   };
 };
+// Apply a json patch on a single attribute and return its patched value.
+// Only this attribute is cloned, cloning the whole instance is too expensive for big entities.
+// Operations rooted on other attributes cannot change this one, so they are skipped.
+const patchAttributeValue = (key: string, currentValue: any, patch: ReadonlyArray<jsonpatch.Operation>) => {
+  const keyPath = `/${key}`;
+  const keyPatch = patch.filter((operation) => operation.path === keyPath || operation.path.startsWith(`${keyPath}/`));
+  const document = { [key]: structuredClone(currentValue) };
+  return jsonpatch.applyPatch(document, keyPatch).newDocument[key];
+};
 const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Record<string, any>): EditInput | object => {
   const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
@@ -1433,8 +1442,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
             });
           }
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else {
         finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
       }
@@ -1458,8 +1466,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
@@ -1470,8 +1477,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
         const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
         const patch = [{ op: 'replace' as const, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else { // Replace general
         finalVal = value;
       }
@@ -1484,13 +1490,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
     const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
     const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
     const patch = [{ op: operation as EditOperation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-    const clonedInstance = structuredClone(instance);
-    clonedInstance[key] = clonedInstance[key] ?? {}; // Patch on complete empty value is not supported by jsonpatch
-    const patchedInstance = jsonpatch.applyPatch(clonedInstance, patch).newDocument;
-    if (compareUnsorted(patchedInstance[key], instance[key])) {
+    // Patch on complete empty value is not supported by jsonpatch
+    const patchedValue = patchAttributeValue(key, instance[key] ?? {}, patch);
+    if (compareUnsorted(patchedValue, instance[key])) {
       return {}; // No need to update the attribute
     }
-    finalVal = [patchedInstance[key]];
+    finalVal = [patchedValue];
   } else {
     // now we  check if the new value would actually result in no change in database
     let evaluateValue = value ? R.head(value) : null;
@@ -1537,8 +1542,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   return { key, value: finalVal, operation };
 };
-const mergeInstanceWithUpdateInputs = (base: Record<string, any>, inputs: EditInput[]) => {
-  const instance = structuredClone(base);
+// The instance is not mutated, no need to clone it.
+// The result shares the nested values of the attributes that are not updated with the instance: do not mutate it.
+const mergeInstanceWithUpdateInputs = (instance: Record<string, any>, inputs: EditInput[]) => {
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(instance.entity_type), ...schemaRelationsRefDefinition.getInputNames(instance.entity_type)];
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));

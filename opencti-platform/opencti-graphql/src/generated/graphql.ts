@@ -4590,20 +4590,43 @@ export type ConfigPresetExportableGroup = {
 
 export type ConfigPresetExportableItem = {
   __typename?: 'ConfigPresetExportableItem';
+  dependsOn: Array<ConfigPresetItemReference>;
+  isDefault: Scalars['Boolean']['output'];
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
   translatable: Scalars['Boolean']['output'];
 };
 
+export type ConfigPresetExportableItemConnection = {
+  __typename?: 'ConfigPresetExportableItemConnection';
+  edges: Array<ConfigPresetExportableItemEdge>;
+  pageInfo: PageInfo;
+};
+
+export type ConfigPresetExportableItemEdge = {
+  __typename?: 'ConfigPresetExportableItemEdge';
+  cursor: Scalars['String']['output'];
+  node: ConfigPresetExportableItem;
+};
+
 export type ConfigPresetExportableType = {
   __typename?: 'ConfigPresetExportableType';
+  description: Scalars['String']['output'];
   group: ConfigPresetExportableGroup;
   items: Array<ConfigPresetExportableItem>;
+  itemsPageInfo: PageInfo;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
 };
 
+export type ConfigPresetItemReference = {
+  __typename?: 'ConfigPresetItemReference';
+  key: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+};
+
 export type ConfigPresetSelectionInput = {
+  excluded_items?: InputMaybe<Array<Scalars['ID']['input']>>;
   items?: InputMaybe<Array<Scalars['ID']['input']>>;
   type: Scalars['ID']['input'];
 };
@@ -7363,6 +7386,11 @@ export enum DataSourcesOrdering {
   Name = 'name',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
+}
+
+export enum DateFormat {
+  Auto = 'auto',
+  Iso = 'iso'
 }
 
 export type DecayChartData = {
@@ -17023,6 +17051,7 @@ export type MeUser = BasicObject & InternalObject & {
   can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
   capabilities: Array<Capability>;
   capabilitiesInDraft: Array<Capability>;
+  date_format?: Maybe<DateFormat>;
   default_dashboard?: Maybe<Workspace>;
   default_dashboards: Array<Workspace>;
   default_hidden_types: Array<Maybe<Scalars['String']['output']>>;
@@ -17057,6 +17086,7 @@ export type MeUser = BasicObject & InternalObject & {
   submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
   submenu_show_icons?: Maybe<Scalars['Boolean']['output']>;
   theme?: Maybe<Scalars['String']['output']>;
+  time_format?: Maybe<TimeFormat>;
   unit_system?: Maybe<UnitSystem>;
   unsubscribed_news_feed_types?: Maybe<Array<Scalars['String']['output']>>;
   user_confidence_level?: Maybe<ConfidenceLevel>;
@@ -25038,6 +25068,7 @@ export type Query = {
   channels?: Maybe<ChannelConnection>;
   cities?: Maybe<CityConnection>;
   city?: Maybe<City>;
+  configPresetExportableItems: ConfigPresetExportableItemConnection;
   configPresetExportableTypes: Array<ConfigPresetExportableType>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
@@ -25754,6 +25785,16 @@ export type QueryCitiesArgs = {
 
 export type QueryCityArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryConfigPresetExportableItemsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  excludedIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  type: Scalars['ID']['input'];
 };
 
 
@@ -31482,6 +31523,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
   platform_consent_message?: Maybe<Scalars['String']['output']>;
   platform_critical_alerts: Array<PlatformCriticalAlert>;
+  platform_date_format?: Maybe<DateFormat>;
   platform_demo?: Maybe<Scalars['Boolean']['output']>;
   platform_email?: Maybe<Scalars['String']['output']>;
   platform_email_configurable: Scalars['Boolean']['output'];
@@ -31514,6 +31556,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_session_max_concurrent?: Maybe<Scalars['Int']['output']>;
   platform_session_timeout?: Maybe<Scalars['Int']['output']>;
   platform_theme?: Maybe<Theme>;
+  platform_time_format?: Maybe<TimeFormat>;
   platform_title?: Maybe<Scalars['String']['output']>;
   platform_translations?: Maybe<Scalars['String']['output']>;
   platform_trash_enabled: Scalars['Boolean']['output'];
@@ -36606,6 +36649,13 @@ export enum ThreatActorsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum TimeFormat {
+  Auto = 'auto',
+  Minutes = 'minutes',
+  None = 'none',
+  Seconds = 'seconds'
+}
+
 export type TimeSeries = {
   __typename?: 'TimeSeries';
   date: Scalars['DateTime']['output'];
@@ -37526,6 +37576,7 @@ export type User = BasicObject & InternalObject & {
   capabilitiesInDraft: Array<Maybe<Capability>>;
   created_at: Scalars['DateTime']['output'];
   creator?: Maybe<Creator>;
+  date_format?: Maybe<DateFormat>;
   default_hidden_types: Array<Scalars['String']['output']>;
   default_time_field?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -37560,6 +37611,7 @@ export type User = BasicObject & InternalObject & {
   submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
   submenu_show_icons?: Maybe<Scalars['Boolean']['output']>;
   theme?: Maybe<Scalars['String']['output']>;
+  time_format?: Maybe<TimeFormat>;
   unit_system?: Maybe<UnitSystem>;
   unsubscribed_news_feed_types?: Maybe<Array<Scalars['String']['output']>>;
   updated_at: Scalars['DateTime']['output'];
@@ -41026,7 +41078,10 @@ export type ResolversTypes = ResolversObject<{
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   ConfigPresetExportableGroup: ResolverTypeWrapper<ConfigPresetExportableGroup>;
   ConfigPresetExportableItem: ResolverTypeWrapper<ConfigPresetExportableItem>;
+  ConfigPresetExportableItemConnection: ResolverTypeWrapper<ConfigPresetExportableItemConnection>;
+  ConfigPresetExportableItemEdge: ResolverTypeWrapper<ConfigPresetExportableItemEdge>;
   ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
+  ConfigPresetItemReference: ResolverTypeWrapper<ConfigPresetItemReference>;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -41133,6 +41188,7 @@ export type ResolversTypes = ResolversObject<{
   DataSourceConnection: ResolverTypeWrapper<Omit<DataSourceConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataSourceEdge']>>> }>;
   DataSourceEdge: ResolverTypeWrapper<Omit<DataSourceEdge, 'node'> & { node: ResolversTypes['DataSource'] }>;
   DataSourcesOrdering: DataSourcesOrdering;
+  DateFormat: DateFormat;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   DecayChartData: ResolverTypeWrapper<DecayChartData>;
   DecayData: ResolverTypeWrapper<DecayData>;
@@ -41956,6 +42012,7 @@ export type ResolversTypes = ResolversObject<{
   ThreatActorIndividualEdge: ResolverTypeWrapper<Omit<ThreatActorIndividualEdge, 'node'> & { node: ResolversTypes['ThreatActorIndividual'] }>;
   ThreatActorsIndividualOrdering: ThreatActorsIndividualOrdering;
   ThreatActorsOrdering: ThreatActorsOrdering;
+  TimeFormat: TimeFormat;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
   TokenDuration: TokenDuration;
   TokenGenerated: ResolverTypeWrapper<TokenGenerated>;
@@ -42217,7 +42274,10 @@ export type ResolversParentTypes = ResolversObject<{
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
   ConfigPresetExportableGroup: ConfigPresetExportableGroup;
   ConfigPresetExportableItem: ConfigPresetExportableItem;
+  ConfigPresetExportableItemConnection: ConfigPresetExportableItemConnection;
+  ConfigPresetExportableItemEdge: ConfigPresetExportableItemEdge;
   ConfigPresetExportableType: ConfigPresetExportableType;
+  ConfigPresetItemReference: ConfigPresetItemReference;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;
@@ -44598,16 +44658,35 @@ export type ConfigPresetExportableGroupResolvers<ContextType = any, ParentType e
 }>;
 
 export type ConfigPresetExportableItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItem'] = ResolversParentTypes['ConfigPresetExportableItem']> = ResolversObject<{
+  dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
+  isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
+export type ConfigPresetExportableItemConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItemConnection'] = ResolversParentTypes['ConfigPresetExportableItemConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['ConfigPresetExportableItemEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetExportableItemEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableItemEdge'] = ResolversParentTypes['ConfigPresetExportableItemEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['ConfigPresetExportableItem'], ParentType, ContextType>;
+}>;
+
 export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetExportableType'] = ResolversParentTypes['ConfigPresetExportableType']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
   items?: Resolver<Array<ResolversTypes['ConfigPresetExportableItem']>, ParentType, ContextType>;
+  itemsPageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetItemReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemReference'] = ResolversParentTypes['ConfigPresetItemReference']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type ConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connector'] = ResolversParentTypes['Connector']> = ResolversObject<{
@@ -48970,6 +49049,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   capabilitiesInDraft?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
+  date_format?: Resolver<Maybe<ResolversTypes['DateFormat']>, ParentType, ContextType>;
   default_dashboard?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   default_dashboards?: Resolver<Array<ResolversTypes['Workspace']>, ParentType, ContextType>;
   default_hidden_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -49004,6 +49084,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submenu_show_icons?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  time_format?: Resolver<Maybe<ResolversTypes['TimeFormat']>, ParentType, ContextType>;
   unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   unsubscribed_news_feed_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   user_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
@@ -51141,6 +51222,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   channels?: Resolver<Maybe<ResolversTypes['ChannelConnection']>, ParentType, ContextType, Partial<QueryChannelsArgs>>;
   cities?: Resolver<Maybe<ResolversTypes['CityConnection']>, ParentType, ContextType, Partial<QueryCitiesArgs>>;
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
+  configPresetExportableItems?: Resolver<ResolversTypes['ConfigPresetExportableItemConnection'], ParentType, ContextType, RequireFields<QueryConfigPresetExportableItemsArgs, 'type'>>;
   configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
@@ -52477,6 +52559,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_critical_alerts?: Resolver<Array<ResolversTypes['PlatformCriticalAlert']>, ParentType, ContextType>;
+  platform_date_format?: Resolver<Maybe<ResolversTypes['DateFormat']>, ParentType, ContextType>;
   platform_demo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_email_configurable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -52507,6 +52590,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_session_max_concurrent?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_session_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_theme?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType>;
+  platform_time_format?: Resolver<Maybe<ResolversTypes['TimeFormat']>, ParentType, ContextType>;
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_translations?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_trash_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -54427,6 +54511,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   capabilitiesInDraft?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  date_format?: Resolver<Maybe<ResolversTypes['DateFormat']>, ParentType, ContextType>;
   default_hidden_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   default_time_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -54461,6 +54546,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submenu_show_icons?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  time_format?: Resolver<Maybe<ResolversTypes['TimeFormat']>, ParentType, ContextType>;
   unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   unsubscribed_news_feed_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -55473,7 +55559,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfidenceLevelOverride?: ConfidenceLevelOverrideResolvers<ContextType>;
   ConfigPresetExportableGroup?: ConfigPresetExportableGroupResolvers<ContextType>;
   ConfigPresetExportableItem?: ConfigPresetExportableItemResolvers<ContextType>;
+  ConfigPresetExportableItemConnection?: ConfigPresetExportableItemConnectionResolvers<ContextType>;
+  ConfigPresetExportableItemEdge?: ConfigPresetExportableItemEdgeResolvers<ContextType>;
   ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
+  ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;

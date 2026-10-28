@@ -6,7 +6,6 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
@@ -20,29 +19,18 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { removeEmptyFields } from '../../../../utils/utils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1100,
-  },
-  speedDial: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  speedDialButton: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
+// Material UI 9 reads the action buttons' props from `slotProps.fab` only: `FabProps` is ignored there.
+const speedDialActionSlotProps = {
+  fab: {
+    sx: {
+      bgcolor: 'primary.main',
+      color: 'primary.contrastText',
+      '&:hover': {
+        bgcolor: 'primary.main',
+      },
     },
   },
-}));
+};
 
 const ContainerAddStixCoreObjects = (props) => {
   const {
@@ -62,7 +50,6 @@ const ContainerAddStixCoreObjects = (props) => {
     handleClose,
     enableReferences,
   } = props;
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
@@ -195,7 +182,7 @@ const ContainerAddStixCoreObjects = (props) => {
     return (
       <>
         <SpeedDial
-          className={classes.createButton}
+          sx={{ position: 'fixed', bottom: 30, right: 30, zIndex: 1100 }}
           ariaLabel="Create"
           icon={<SpeedDialIcon />}
           onClose={() => setOpenSpeedDial(false)}
@@ -210,18 +197,14 @@ const ContainerAddStixCoreObjects = (props) => {
             icon={<HexagonOutline />}
             tooltipTitle={t_i18n('Create an observable')}
             onClick={() => handleOpenCreateObservable()}
-            FabProps={{
-              classes: { root: classes.speedDialButton },
-            }}
+            slotProps={speedDialActionSlotProps}
           />
           <SpeedDialAction
             title={t_i18n('Create an entity')}
             icon={<GlobeModel />}
             tooltipTitle={t_i18n('Create an entity')}
             onClick={() => handleOpenCreateEntity()}
-            FabProps={{
-              classes: { root: classes.speedDialButton },
-            }}
+            slotProps={speedDialActionSlotProps}
           />
         </SpeedDial>
         <StixDomainObjectCreation

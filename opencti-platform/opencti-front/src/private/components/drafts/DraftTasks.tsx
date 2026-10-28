@@ -139,7 +139,7 @@ const DraftTasks: FunctionComponent<DraftTasksProps> = ({ draftId }) => {
     created_at: {
       percentWidth: 25,
       isSortable: true,
-      render: ({ created_at }, h) => defaultRender(h.nsdt(created_at)),
+      render: ({ created_at }, h) => defaultRender(h.ftdt(created_at)),
     },
     task_expected_number: {
       id: 'Impacted elements',

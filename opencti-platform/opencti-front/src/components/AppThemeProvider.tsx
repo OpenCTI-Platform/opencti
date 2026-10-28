@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { createTheme, ThemeOptions } from '@mui/material/styles';
-import MuiThemeProvider from './MuiThemeProvider';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import themeDark, {
   THEME_DARK_DEFAULT_ACCENT,
   THEME_DARK_DEFAULT_BACKGROUND,
@@ -129,7 +128,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   });
   useDocumentThemeModifier(themeMode);
 
-  return <MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>;
+  return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
 };
 
 export const ConnectedThemeProvider = createFragmentContainer(

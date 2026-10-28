@@ -6,27 +6,59 @@ import testRender from '../../../../utils/tests/test-render';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
 
 const platformSettings = { key: 'platformSettings', label: 'Platform settings' };
+const item = (key: string, label: string, overrides: Record<string, unknown> = {}) => ({
+  key,
+  label,
+  translatable: true,
+  isDefault: false,
+  dependsOn: [],
+  ...overrides,
+});
+const type = (key: string, label: string, items: ReturnType<typeof item>[], overrides: Record<string, unknown> = {}) => ({
+  key,
+  label,
+  description: `${label} description`,
+  group: platformSettings,
+  items,
+  itemsPageInfo: { hasNextPage: false, globalCount: items.length },
+  ...overrides,
+});
+const singleton = (key: string, label: string, overrides: Record<string, unknown> = {}) => type(key, label, [item(key, label)], overrides);
 const catalog = [
-  { key: 'platform', label: 'Platform configuration', group: platformSettings, items: [{ key: 'platform', label: 'Platform configuration', translatable: true }] },
-  { key: 'messages', label: 'Messages', group: platformSettings, items: [{ key: 'messages', label: 'Messages', translatable: true }] },
-  {
-    key: 'hiddenEntityTypes',
-    label: 'Hidden entity types',
-    group: { key: 'dataModel', label: 'Data model' },
-    items: [{ key: 'hiddenEntityTypes', label: 'Hidden entity types', translatable: true }],
-  },
+  singleton('platform', 'Platform configuration'),
+  singleton('messages', 'Messages'),
+  singleton('hiddenEntityTypes', 'Hidden entity types', { group: { key: 'dataModel', label: 'Data model' } }),
 ];
 
-// A type with several items, as entity-backed types will have: 'Observed datas' is an i18n key translated to 'Observed data'
-const entityCatalog = [{
-  key: 'observedData',
-  label: 'Observed datas',
-  group: platformSettings,
-  items: [
-    { key: 'static', label: 'Observed datas', translatable: true },
-    { key: 'entity', label: 'Observed datas', translatable: false },
-  ],
-}];
+// A type with several items: 'Observed datas' is an i18n key translated to 'Observed data'
+const entityCatalog = [type('observedData', 'Observed datas', [
+  item('static', 'Observed datas'),
+  item('entity', 'Observed datas', { translatable: false }),
+])];
+
+// Branding: whitemark first, then the themes, a built-in one like the others. The platform configuration depends on the custom default theme.
+const whitemark = item('whitemark', 'Remove Filigran logos');
+const themeItems = [
+  item('theme-acme', 'ACME', { translatable: false }),
+  item('theme-dark', 'Filigran Dark', { translatable: false }),
+  item('theme-soc', 'SOC night', { translatable: false, isDefault: true }),
+];
+const platformType = (dependsOn: unknown[]) => type('platform', 'Platform configuration', [item('platform', 'Platform configuration', { dependsOn })], {
+  description: 'Title, favicon, default theme, language',
+});
+const messagesType = type('messages', 'Messages', [item('banner', 'Banner'), item('login', 'Login message')]);
+const tableCatalog = (brandingOverrides: Record<string, unknown> = {}) => [
+  platformType([{ type: 'branding', key: 'theme-soc' }]),
+  type('branding', 'Branding', [whitemark, ...themeItems], brandingOverrides),
+  messagesType,
+];
+// The default theme is built-in: the platform configuration has no dependency
+const builtInDefaultCatalog = () => [
+  platformType([]),
+  type('branding', 'Branding', [whitemark, item('theme-acme', 'ACME', { translatable: false }), item('theme-dark', 'Filigran Dark', { translatable: false, isDefault: true })]),
+];
+// More themes than the first page
+const pagedBrandingCatalog = () => tableCatalog({ itemsPageInfo: { hasNextPage: true, globalCount: 30 } });
 
 const renderOpenDrawer = async (onClose = vi.fn(), types: unknown[] = catalog) => {
   const rendered = testRender(<ConfigPresetExportDrawer open onClose={onClose} />);
@@ -107,6 +139,7 @@ describe('ConfigPresetExportDrawer', () => {
     expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Observed data (2/2)' })).toHaveAttribute('data-state', 'checked');
     expect(screen.getAllByRole('checkbox')).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: 'Manage' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Expand' }));
     // Static labels are translated, user data labels are shown as is
@@ -166,7 +199,7 @@ describe('ConfigPresetExportDrawer', () => {
 
     const operation = relayEnv.mock.getMostRecentOperation();
     expect(operation.request.variables).toEqual({
-      selections: [{ type: 'platform', items: ['platform'] }, { type: 'messages', items: ['messages'] }],
+      selections: [{ type: 'platform', items: null }, { type: 'messages', items: null }],
       bundle_name: 'Prod preset',
     });
     await act(async () => {
@@ -174,5 +207,163 @@ describe('ConfigPresetExportDrawer', () => {
     });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(window.location.href).toBe('/storage/get/export%2Fconfig_preset%2Fopencti-config.zip');
+  });
+
+  it('shows the description of each category under its name', async () => {
+    await renderOpenDrawer(vi.fn(), tableCatalog());
+    expect(screen.getByText('Title, favicon, default theme, language')).toBeInTheDocument();
+    expect(screen.getByText('Branding description')).toBeInTheDocument();
+    expect(screen.getByText('Messages description')).toBeInTheDocument();
+  });
+
+  it('lists the items of a small type inline, whitemark first, built-in themes as ordinary rows, forced dependencies checked and disabled', async () => {
+    const { user } = await renderOpenDrawer(vi.fn(), tableCatalog());
+    expect(screen.getByRole('checkbox', { name: 'Platform settings (7/7)' })).toBeInTheDocument();
+    // Branding and messages are categories with several items
+    for (const chevron of screen.getAllByRole('button', { name: 'Expand' })) {
+      await user.click(chevron);
+    }
+    const brandingRows = ['Remove Filigran logos', 'ACME', 'Filigran Dark', 'SOC night'].map((name) => screen.getByRole('checkbox', { name }));
+    brandingRows.slice(1).forEach((row, index) => expect(brandingRows[index].compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
+    expect(screen.getByRole('checkbox', { name: 'Branding (4/4)' })).toHaveAttribute('data-state', 'checked');
+    // A built-in theme can be unticked like any other
+    expect(screen.getByRole('checkbox', { name: 'Filigran Dark' })).toBeEnabled();
+    await user.click(screen.getByRole('checkbox', { name: 'Filigran Dark' }));
+    expect(screen.getByRole('checkbox', { name: 'Branding (3/4)' })).toHaveAttribute('data-state', 'indeterminate');
+    // The custom default theme is a dependency of the platform configuration
+    expect(screen.getByRole('checkbox', { name: 'SOC night' })).toHaveAttribute('data-state', 'checked');
+    expect(screen.getByRole('checkbox', { name: 'SOC night' })).toBeDisabled();
+    expect(screen.getByText('default')).toBeInTheDocument();
+    // Unchecking the branding keeps the forced theme
+    await user.click(screen.getByRole('checkbox', { name: 'Branding (3/4)' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Branding (4/4)' }));
+    expect(screen.getByRole('checkbox', { name: 'Branding (1/4)' })).toHaveAttribute('data-state', 'indeterminate');
+    expect(screen.getByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'unchecked');
+    // Without the platform configuration nothing is forced
+    await user.click(screen.getByRole('checkbox', { name: 'Platform configuration' }));
+    expect(screen.getByRole('checkbox', { name: 'SOC night' })).toBeEnabled();
+    expect(screen.getByRole('checkbox', { name: 'Branding (0/4)' })).toHaveAttribute('data-state', 'unchecked');
+  });
+
+  it('does not force a built-in default theme: it is tagged default and can be unticked', async () => {
+    const { user } = await renderOpenDrawer(vi.fn(), builtInDefaultCatalog());
+    await user.click(screen.getByRole('button', { name: 'Expand' }));
+    expect(screen.getByText('default')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Filigran Dark' })).toBeEnabled();
+    await user.click(screen.getByRole('checkbox', { name: 'Filigran Dark' }));
+    expect(screen.getByRole('checkbox', { name: 'Branding (2/3)' })).toHaveAttribute('data-state', 'indeterminate');
+  });
+
+  describe('sub-view of a type with more items than its first page', () => {
+    let intersect: (() => void) | undefined;
+
+    beforeEach(() => {
+      intersect = undefined;
+      vi.stubGlobal('IntersectionObserver', class {
+        constructor(callback: (entries: { isIntersecting: boolean }[]) => void) {
+          intersect = () => callback([{ isIntersecting: true }]);
+        }
+
+        observe() {}
+
+        disconnect() {}
+      });
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    const resolveItems = async (relayEnv: Awaited<ReturnType<typeof renderOpenDrawer>>['relayEnv'], nodes: unknown[], hasNextPage = false) => {
+      await act(async () => {
+        relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+          Query: () => ({
+            configPresetExportableItems: {
+              edges: nodes.map((node) => ({ node, cursor: (node as { key: string }).key })),
+              pageInfo: { hasNextPage, endCursor: 'next', globalCount: 30 },
+            },
+          }),
+        }));
+      });
+    };
+
+    const openThemes = async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), pagedBrandingCatalog());
+      await rendered.user.click(screen.getByRole('button', { name: 'Manage' }));
+      await resolveItems(rendered.relayEnv, [whitemark, ...themeItems], true);
+      return rendered;
+    };
+
+    it('shows Manage instead of the items, then opens the sub-view with whitemark and every theme as rows', async () => {
+      const { relayEnv } = await openThemes();
+      expect(screen.queryByRole('button', { name: 'Export Platform Bundle' })).not.toBeInTheDocument();
+      expect(screen.getByText('30 / 30 selected')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
+      expect(screen.getByRole('checkbox', { name: 'Filigran Dark' })).toBeEnabled();
+      expect(screen.getByRole('checkbox', { name: 'ACME' })).toHaveAttribute('data-state', 'checked');
+      expect(screen.getByText('All 30 selected')).toBeInTheDocument();
+      // Infinite scroll
+      act(() => intersect?.());
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ type: 'branding', cursor: 'next', count: 25 });
+    });
+
+    it('goes back to the bundle with the arrow or the button, keeping the selection', async () => {
+      const { user } = await openThemes();
+      await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
+      expect(screen.getByText('29 / 30 selected')).toBeInTheDocument();
+      expect(screen.getByText('29 selected, 1 excluded')).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Back' }));
+      expect(screen.getByRole('checkbox', { name: 'Branding (29/30)' })).toHaveAttribute('data-state', 'indeterminate');
+      await user.click(screen.getByRole('button', { name: 'Manage' }));
+      await user.click(screen.getByRole('button', { name: 'Back to bundle' }));
+      expect(screen.getByRole('button', { name: 'Export Platform Bundle' })).toBeInTheDocument();
+    });
+
+    it('queries the excluded or selected items, and searches from the first page', async () => {
+      const { user, relayEnv } = await openThemes();
+      await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
+      await user.click(screen.getByRole('button', { name: 'Excluded 1' }));
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ type: 'branding', ids: ['theme-acme'], search: '' });
+      await resolveItems(relayEnv, [themeItems[0]]);
+      await user.click(screen.getByRole('button', { name: 'Selected 29' }));
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ excludedIds: ['theme-acme'] });
+      await resolveItems(relayEnv, [themeItems[1]]);
+      await user.type(screen.getByRole('searchbox', { name: 'Search' }), 'soc');
+      await waitFor(() => expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ search: 'soc', excludedIds: ['theme-acme'] }));
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).not.toHaveProperty('cursor', 'next');
+    });
+
+    it('applies a filter chosen while a search is waiting with that search, and the search does not undo it', async () => {
+      const { user, relayEnv } = await openThemes();
+      await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
+      await user.type(screen.getByRole('searchbox', { name: 'Search' }), 'soc');
+      await user.click(screen.getByRole('button', { name: 'Excluded 1' }));
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ search: 'soc', ids: ['theme-acme'] });
+      // Past the delay of the search: the filter is still the chosen one
+      await new Promise((resolve) => {
+        setTimeout(resolve, 400);
+      });
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ search: 'soc', ids: ['theme-acme'] });
+    });
+
+    it('clears the selection of the type', async () => {
+      const { user } = await openThemes();
+      await user.click(screen.getByRole('button', { name: 'Clear selection' }));
+      // The default theme stays: the platform configuration depends on it
+      expect(screen.getByText('1 / 30 selected')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: 'ACME' })).toHaveAttribute('data-state', 'unchecked');
+    });
+
+    it('exports every theme but the excluded ones', async () => {
+      const { user, relayEnv } = await openThemes();
+      await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
+      await user.click(screen.getByRole('button', { name: 'Back to bundle' }));
+      await user.click(screen.getByRole('button', { name: 'Export Platform Bundle' }));
+      expect(relayEnv.mock.getMostRecentOperation().request.variables.selections).toEqual([
+        { type: 'platform', items: null },
+        { type: 'branding', items: null, excluded_items: ['theme-acme'] },
+        { type: 'messages', items: null },
+      ]);
+    });
   });
 });

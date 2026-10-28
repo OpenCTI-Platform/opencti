@@ -31,7 +31,7 @@ import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
-import { CguStatus, PlatformType } from '../generated/graphql';
+import { CguStatus, DateFormat, PlatformType, TimeFormat } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
@@ -75,6 +75,8 @@ const settingsResolvers = {
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
     platform_enterprise_edition: (settings) => getEnterpriseEditionInfo(settings),
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
+    platform_date_format: (settings) => settings.platform_date_format ?? DateFormat.Auto,
+    platform_time_format: (settings) => settings.platform_time_format ?? TimeFormat.Auto,
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
     platform_notifier_auto_trigger_assignee: (settings) => settings.platform_notifier_auto_trigger_assignee ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,

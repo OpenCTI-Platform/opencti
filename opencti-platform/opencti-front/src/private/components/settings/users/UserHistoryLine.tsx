@@ -7,8 +7,7 @@ import { deepOrange, deepPurple, green, indigo, lightGreen, orange, pink, red, t
 import DialogActions from '@mui/material/DialogActions';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
@@ -17,56 +16,45 @@ import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    marginBottom: 5,
-  },
-  line: {
-    content: ' ',
-    display: 'block',
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    width: 1,
-    height: 18,
-  },
-  avatar: {
-    float: 'left',
-    width: 30,
-    height: 30,
-    margin: '7px 0 0 0',
-  },
-  content: {
-    width: 'auto',
-    overflow: 'hidden',
-  },
-  tooltip: {
-    maxWidth: '80%',
-    lineHeight: 2,
-    padding: 10,
-  },
-  paper: {
-    width: '100%',
-    height: '100%',
-    padding: '8px 15px 0 15px',
-    background: 0,
-  },
-  description: {
-    height: '100%',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  date: {
-    float: 'right',
-    textAlign: 'right',
-    width: 180,
-    paddingTop: 4,
-    fontSize: 11,
-  },
-}));
+const Container = styled('div')({
+  marginBottom: 5,
+});
+
+const Line = styled('div')({
+  display: 'block',
+  position: 'absolute',
+  top: 50,
+  left: 20,
+  width: 1,
+  height: 18,
+});
+
+const AvatarContainer = styled('div')({
+  float: 'left',
+  width: 30,
+  height: 30,
+  margin: '7px 0 0 0',
+});
+
+const Content = styled('div')({
+  width: 'auto',
+  overflow: 'hidden',
+});
+
+const Description = styled('div')({
+  height: '100%',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+});
+
+const LogDate = styled('div')({
+  float: 'right',
+  textAlign: 'right',
+  width: 180,
+  paddingTop: 4,
+  fontSize: 11,
+});
 
 export const userHistoryLineFragment = graphql`
   fragment UserHistoryLine_node on Log {
@@ -98,8 +86,7 @@ interface UserHistoryLineProps {
 
 const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
   const theme = useTheme<Theme>();
-  const classes = useStyles();
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const [open, setOpen] = useState(false);
   const log = useFragment<UserHistoryLine_node$key>(userHistoryLineFragment, node);
   const handleOpen = () => {
@@ -334,12 +321,11 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
   };
 
   return (
-    <div className={classes.container}>
-      <div className={classes.avatar}>
+    <Container>
+      <AvatarContainer>
         {renderIcon(log.event_scope, false, log.context_data?.message, log.context_data?.commit)}
-      </div>
-      <div
-        className={classes.content}
+      </AvatarContainer>
+      <Content
         style={{
           height:
             log.context_data
@@ -349,10 +335,25 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               : 40,
         }}
       >
-        <Paper classes={{ root: classes.paper }}>
-          <div className={classes.date}>{nsdt(log.timestamp)}</div>
+        <Paper
+          sx={{
+            width: '100%',
+            height: '100%',
+            padding: '8px 15px 0 15px',
+            background: 0,
+          }}
+        >
+          <LogDate>{ftdt(log.timestamp)}</LogDate>
           <Tooltip
-            classes={{ tooltip: classes.tooltip }}
+            slotProps={{
+              tooltip: {
+                sx: {
+                  maxWidth: '80%',
+                  lineHeight: 2,
+                  padding: '10px',
+                },
+              },
+            }}
             title={(
               <MarkdownDisplay
                 content={`\`${log.user?.name}\` ${log.context_data?.message}`}
@@ -361,17 +362,17 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               />
             )}
           >
-            <div className={classes.description}>
+            <Description>
               <MarkdownDisplay
                 content={`\`${log.user?.name}\` ${log.context_data?.message}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
-            </div>
+            </Description>
           </Tooltip>
         </Paper>
-      </div>
-      <div className={classes.line} />
+      </Content>
+      <Line />
       <Dialog
         open={open}
         onClose={handleClose}
@@ -388,7 +389,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Container>
   );
 };
 

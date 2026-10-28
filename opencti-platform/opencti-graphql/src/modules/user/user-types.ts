@@ -58,6 +58,8 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
   merged_into: string;
   administrated_organizations: string;
   unit_system: string;
+  date_format: string;
+  time_format: string;
   submenu_show_icons: boolean;
   submenu_auto_collapse: boolean;
   monochrome_labels: boolean;
