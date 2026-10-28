@@ -55,15 +55,18 @@ export const resolveDateDisplay = (
   timeFormat: resolveFormat(TIME_FORMATS, me.time_format, settings.platform_time_format),
 });
 
+export type ColumnMonth = 'short' | 'long' | 'numeric';
+
 /**
- * Date of a table cell. The column decides whether its time is shown by default,
- * the date display of the user can force it and write the date as ISO 8601.
+ * Date of a table cell. The column decides whether its time is shown by default and how its month is written,
+ * the date display of the user can force the time and write the date as ISO 8601.
  */
 export const formatTableDate = (
   intl: IntlShape,
   date: string | Date,
   { dateFormat, timeFormat }: DateDisplay,
   columnTime: 'none' | 'seconds',
+  columnMonth: ColumnMonth = 'short',
 ) => {
   if (!moment(date).isValid()) return EMPTY_VALUE;
   const time = timeFormat === 'auto' ? columnTime : timeFormat;
@@ -72,7 +75,7 @@ export const formatTableDate = (
   }
   return intl.formatDate(date, {
     day: 'numeric',
-    month: 'short',
+    month: columnMonth,
     year: 'numeric',
     ...(time !== 'none' && { hour: 'numeric', minute: 'numeric' }),
     ...(time === 'seconds' && { second: 'numeric' }),

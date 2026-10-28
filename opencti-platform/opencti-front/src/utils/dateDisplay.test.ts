@@ -28,6 +28,14 @@ describe('dateDisplay', () => {
       .toEqual(intl.formatDate(date, { second: 'numeric', minute: 'numeric', hour: 'numeric', day: 'numeric', month: 'short', year: 'numeric' }));
   });
 
+  it('should keep the month of the column, unless the date is written as ISO 8601', () => {
+    expect(formatTableDate(intl, date, DEFAULT_DATE_DISPLAY, 'seconds', 'long'))
+      .toEqual(intl.formatDate(date, { second: 'numeric', minute: 'numeric', hour: 'numeric', day: 'numeric', month: 'long', year: 'numeric' }));
+    expect(formatTableDate(intl, date, { dateFormat: 'auto', timeFormat: 'none' }, 'seconds', 'numeric'))
+      .toEqual(intl.formatDate(date, { day: 'numeric', month: 'numeric', year: 'numeric' }));
+    expect(formatTableDate(intl, date, { dateFormat: 'iso', timeFormat: 'none' }, 'seconds', 'long')).toEqual('2024-02-06');
+  });
+
   it('should force the time of every column', () => {
     expect(formatTableDate(intl, date, { dateFormat: 'auto', timeFormat: 'minutes' }, 'none'))
       .toEqual(intl.formatDate(date, { minute: 'numeric', hour: 'numeric', hourCycle: 'h23', day: 'numeric', month: 'short', year: 'numeric' }));

@@ -271,14 +271,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Last result',
     percentWidth: 12,
     isSortable: true,
-    render: ({ coverage_last_result }, { fndt }) => fndt(coverage_last_result),
+    render: ({ coverage_last_result }, { ftdt }) => defaultRender(ftdt(coverage_last_result, 'numeric')),
   },
   coverage_last_modified_date: {
     id: 'coverage_last_modified_date',
     label: 'Coverage Last modified date',
     percentWidth: 16,
     isSortable: false,
-    render: ({ updated_at }, { fldt }) => (updated_at ? fldt(updated_at) : '-'),
+    render: ({ updated_at }, { ftdt }) => defaultRender(ftdt(updated_at, 'long')),
   },
   coverage: {
     id: 'coverage',
