@@ -326,6 +326,7 @@ describe('audits time series breakdown query', () => {
       await queryAsAdminWithError(
         { query: AUDITS_TIME_SERIES_BREAKDOWN_QUERY, variables: breakdownVariables({ field }) },
         'Time series breakdown does not support this field for the history and activity logs',
+        'FUNCTIONAL_ERROR',
       );
     }
   });
