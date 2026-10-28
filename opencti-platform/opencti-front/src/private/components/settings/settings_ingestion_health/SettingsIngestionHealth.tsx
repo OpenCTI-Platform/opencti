@@ -88,7 +88,7 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
   };
 
   return (
-    <Card title={t_i18n('Ingestion health')} data-testid="settings-ingestion-health">
+    <Card title={t_i18n('Ingestion health monitoring')} data-testid="settings-ingestion-health">
       <Formik
         onSubmit={() => {}}
         enableReinitialize={true}

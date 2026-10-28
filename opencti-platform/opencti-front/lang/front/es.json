@@ -2800,6 +2800,7 @@
   "Ingestion": "Ingestión",
   "Ingestion and connectors": "Ingesta y conectores",
   "Ingestion health": "Estado de la ingestión",
+  "Ingestion health monitoring": "Monitorización del estado de la ingestión",
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "El gestor de ingestión está deshabilitado o no configurado, por favor vaya a la configuración de la plataforma para habilitarlo.",
   "Ingestion monitoring": "Monitorización de la ingesta",
   "Ingestion monitoring | Ingestion | Data": "Monitorización de la ingestión | Ingestión | Datos",
