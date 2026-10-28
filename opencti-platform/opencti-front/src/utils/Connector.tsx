@@ -67,7 +67,10 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
 // Only the fields the status reads: a connector of any query carrying them fits, whatever its other fragments
 export type ConnectorStatusSource = Partial<Pick<ConnectorsStateQuery$data['connectors'][0], 'manager_current_status' | 'manager_requested_status' | 'active'>>;
 
-export const computeConnectorStatus = ({
+// Reduced status of an integration (connector, feed...): decides the color of its status chip and the status facet
+export type IntegrationStatus = 'active' | 'inactive' | 'processing';
+
+const computeStatus = ({
   manager_current_status,
   manager_requested_status,
   active,
@@ -116,4 +119,13 @@ export const computeConnectorStatus = ({
     processing: false,
     label: active ? 'Active' : 'Inactive',
   };
+};
+
+// status is the manager one (starting, stopped...); integrationStatus is the reduced one, shown by the status chip
+export const computeConnectorStatus = (connector: ConnectorStatusSource) => {
+  const result = computeStatus(connector);
+  let integrationStatus: IntegrationStatus = 'inactive';
+  if (result.processing) integrationStatus = 'processing';
+  else if (result.status === 'active') integrationStatus = 'active';
+  return { ...result, integrationStatus };
 };

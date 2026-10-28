@@ -158,7 +158,6 @@ describe('useDeployedIntegrations', () => {
         states: [makeState({ manager_current_status: 'stopped', manager_requested_status: 'starting' })],
       });
       expect(result.current[0].status).toBe('processing');
-      expect(result.current[0].statusLabel).toBe('starting');
     });
 
     it('sums push and listen queue messages per connector', () => {

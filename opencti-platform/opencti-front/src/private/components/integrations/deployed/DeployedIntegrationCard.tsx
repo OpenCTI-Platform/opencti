@@ -10,7 +10,7 @@ import IngestionHealthTileBanner from '@components/integrations/deployed/Ingesti
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
-import ItemBoolean from '../../../../components/ItemBoolean';
+import IntegrationStatusChip from '@components/data/connectors/IntegrationStatusChip';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { paperBorder } from '../paperSurface';
@@ -62,18 +62,6 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
   const { isFeatureEnable } = useHelper();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
   const healthIssue = isFeatureEnable('INGESTION_HEALTH') ? item.healthIssue : null;
-
-  const statusText = (() => {
-    if (item.status === 'processing') return t_i18n('Processing');
-    if (item.status === 'active') return t_i18n('Active');
-    return t_i18n('Inactive');
-  })();
-
-  const statusChip = (() => {
-    if (item.status === 'processing') return <ItemBoolean status={undefined} label={statusText} />;
-    if (item.status === 'inactive') return <ItemBoolean status={null} neutralLabel={statusText} />;
-    return <ItemBoolean status label={statusText} />;
-  })();
 
   return (
     <Box
@@ -274,7 +262,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
                 }}
               >
                 {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
-                {statusChip}
+                <IntegrationStatusChip status={item.status} />
               </Stack>
             </Stack>
           </Card>

@@ -21,6 +21,7 @@ import IngestionJsonLogsTab from '@components/data/ingestionJson/IngestionJsonLo
 import SyncLogsTab from '@components/data/sync/SyncLogsTab';
 import { ConnectorWorksSection } from '@components/data/connectors/Connector';
 import ConnectorHealthAlerts from '@components/data/connectors/ConnectorHealthAlerts';
+import IntegrationStatusChip from '@components/data/connectors/IntegrationStatusChip';
 import type { ConnectorHealthAlerts_ingestionHealth$key } from '@components/data/connectors/__generated__/ConnectorHealthAlerts_ingestionHealth.graphql';
 import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -430,10 +431,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                 </span>
               </Tooltip>
               <div style={{ display: 'flex', flexShrink: 0, gap: theme.spacing(1) }}>
-                <ItemBoolean
-                  status={running}
-                  label={running ? t_i18n('Active') : t_i18n('Inactive')}
-                />
+                <IntegrationStatusChip status={running ? 'active' : 'inactive'} />
               </div>
             </TitleMainEntity>
             {node.description && (

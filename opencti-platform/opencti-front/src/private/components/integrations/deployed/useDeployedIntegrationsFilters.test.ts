@@ -12,7 +12,6 @@ const makeItem = (overrides: Partial<DeployedIntegrationItem> = {}): DeployedInt
   name: 'Connector A',
   description: null,
   status: 'active',
-  statusLabel: 'active',
   messagesCount: 0,
   throughputRate: null,
   lastRunDate: null,

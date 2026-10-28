@@ -12,7 +12,7 @@ import DeployedIntegrationPopover from '@components/integrations/deployed/Deploy
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
-import ItemBoolean from '../../../../components/ItemBoolean';
+import IntegrationStatusChip from '@components/data/connectors/IntegrationStatusChip';
 import { capitalizeFirstLetter, EMPTY_VALUE } from '../../../../utils/String';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
@@ -138,12 +138,6 @@ const DeployedIntegrationLine = ({
   const { isFeatureEnable } = useHelper();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
-
-  const statusText = (() => {
-    if (item.status === 'processing') return t_i18n('Processing');
-    if (item.status === 'active') return t_i18n('Active');
-    return t_i18n('Inactive');
-  })();
 
   const lastDate = item.lastRunDate ?? item.lastSeenAt ?? item.updatedAt;
   const lastDateLabel = (() => {
@@ -438,15 +432,7 @@ const DeployedIntegrationLine = ({
               hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion}
             />
           )}
-          {item.status === 'processing' && (
-            <ItemBoolean status={undefined} label={statusText} />
-          )}
-          {item.status === 'active' && (
-            <ItemBoolean status label={statusText} />
-          )}
-          {item.status === 'inactive' && (
-            <ItemBoolean status={null} neutralLabel={statusText} />
-          )}
+          <IntegrationStatusChip status={item.status} />
         </Stack>
       </Box>
       {/* Health status column: forms are not ingestions, they have no health. Only a failure is shown */}
