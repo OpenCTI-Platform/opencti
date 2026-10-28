@@ -146,6 +146,10 @@ export const PIXELS_PER_BAR = 2;
 export const PIXELS_PER_LINE_POINT = 2;
 export const PIXELS_PER_HEATMAP_CELL = 6;
 const MIN_RENDERED_POINTS_PER_SERIES = 10;
+// Whatever the width, a chart draws at most this many points: past them, a wide chart with many series
+// still blocks the main thread (about 0.12 ms per heatmap cell)
+export const MAX_RENDERED_LINE_POINTS = 5000;
+export const MAX_RENDERED_HEATMAP_CELLS = 1500;
 export const PIXELS_PER_X_LABEL = 60;
 // Animating more points than this blocks the main thread for seconds, whatever the chart type
 export const ANIMATION_POINTS_THRESHOLD = 300;
@@ -167,9 +171,78 @@ export const getRenderedBarsBudget = (width: number) => {
 export const getRenderedPointsBudget = (type: string, width: number, seriesCount: number) => {
   if (type === 'vertical-bar') return getRenderedBarsBudget(width);
   const chartWidth = width > 0 ? width : MAX_RENDERED_BARS * PIXELS_PER_BAR;
-  const pixelsPerPoint = type === 'heatmap' ? PIXELS_PER_HEATMAP_CELL : PIXELS_PER_LINE_POINT;
+  const isHeatmap = type === 'heatmap';
+  const pixelsPerPoint = isHeatmap ? PIXELS_PER_HEATMAP_CELL : PIXELS_PER_LINE_POINT;
+  const series = Math.max(1, seriesCount);
   const pointsPerSeries = Math.max(MIN_RENDERED_POINTS_PER_SERIES, Math.floor(chartWidth / pixelsPerPoint));
-  return pointsPerSeries * Math.max(1, seriesCount);
+  const maxPoints = Math.max(isHeatmap ? MAX_RENDERED_HEATMAP_CELLS : MAX_RENDERED_LINE_POINTS, MIN_RENDERED_POINTS_PER_SERIES * series);
+  return Math.min(pointsPerSeries * series, maxPoints);
+};
+
+type ComparableBreakdown = {
+  readonly truncated: boolean;
+  readonly dates: ReadonlyArray<unknown>;
+  readonly series: ReadonlyArray<{
+    readonly label: string;
+    readonly isOther: boolean;
+    readonly entity?: { readonly id?: string; readonly name?: string; readonly representative?: { readonly main: string } } | null;
+    readonly values: ReadonlyArray<number>;
+  }>;
+};
+
+/**
+ * Whether two breakdowns draw the same chart. A refresh hands a new breakdown even when nothing changed
+ * (its end date moved), and redrawing every chart of a dashboard for nothing blocks the page for seconds.
+ */
+export const isSameBreakdown = (a?: ComparableBreakdown | null, b?: ComparableBreakdown | null) => {
+  if (a === b) return true;
+  if (!a || !b || a.truncated !== b.truncated || a.dates.length !== b.dates.length || a.series.length !== b.series.length) {
+    return false;
+  }
+  if (a.dates.some((date, index) => date !== b.dates[index])) return false;
+  return a.series.every((serie, index) => {
+    const other = b.series[index];
+    return serie.label === other.label
+      && serie.isOther === other.isOther
+      && serie.entity?.id === other.entity?.id
+      && serie.entity?.name === other.entity?.name
+      && serie.entity?.representative?.main === other.entity?.representative?.main
+      && serie.values.length === other.values.length
+      && serie.values.every((value, valueIndex) => value === other.values[valueIndex]);
+  });
+};
+
+// Charts measured together (a dashboard mounting its widgets) would all be drawn in one long task:
+// the first one is drawn at once, the next ones one per task, so that the page responds between them
+const pendingChartDraws: (() => void)[] = [];
+let isChartDrawTaskBusy = false;
+const drawNextChart = () => {
+  const draw = pendingChartDraws.shift();
+  if (draw) {
+    draw();
+    setTimeout(drawNextChart, 0);
+  } else {
+    isChartDrawTaskBusy = false;
+  }
+};
+
+/**
+ * Runs the first draw of a chart, at once or in a later task when another chart was just drawn.
+ * Returns a function cancelling the draw if it did not run yet.
+ */
+export const scheduleChartDraw = (draw: () => void) => {
+  if (!isChartDrawTaskBusy) {
+    isChartDrawTaskBusy = true;
+    draw();
+    setTimeout(drawNextChart, 0);
+    return () => {};
+  }
+  const pendingDraw = () => draw();
+  pendingChartDraws.push(pendingDraw);
+  return () => {
+    const index = pendingChartDraws.indexOf(pendingDraw);
+    if (index >= 0) pendingChartDraws.splice(index, 1);
+  };
 };
 
 /**

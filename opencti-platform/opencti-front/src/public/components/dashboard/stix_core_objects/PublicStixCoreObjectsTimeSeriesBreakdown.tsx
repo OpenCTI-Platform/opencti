@@ -7,6 +7,7 @@ import usePublicDashboardViz from '../usePublicDashboardViz';
 import usePublicWidgetDefaultDates from '../usePublicWidgetDefaultDates';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetTimeSeriesBreakdown from '../../../../components/dashboard/WidgetTimeSeriesBreakdown';
+import WidgetBreakdownErrorBoundary from '../../../../components/dashboard/WidgetBreakdownErrorBoundary';
 import { PublicStixCoreObjectsTimeSeriesBreakdownQuery } from './__generated__/PublicStixCoreObjectsTimeSeriesBreakdownQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Widget } from '../../../../utils/widget/widget';
@@ -118,13 +119,15 @@ const PublicStixCoreObjectsTimeSeriesBreakdown = ({
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixCoreObjectsTimeSeriesBreakdownComponent
-            queryRef={queryRef}
-            type={type}
-            parameters={parameters}
-            onMounted={setChart}
-            onWarningChange={setWarning}
-          />
+          <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+            <PublicStixCoreObjectsTimeSeriesBreakdownComponent
+              queryRef={queryRef}
+              type={type}
+              parameters={parameters}
+              onMounted={setChart}
+              onWarningChange={setWarning}
+            />
+          </WidgetBreakdownErrorBoundary>
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />

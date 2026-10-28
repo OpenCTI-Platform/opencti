@@ -6,6 +6,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeSeriesBreakdown from '../../../../components/dashboard/WidgetTimeSeriesBreakdown';
+import WidgetBreakdownErrorBoundary from '../../../../components/dashboard/WidgetBreakdownErrorBoundary';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -191,13 +192,15 @@ const StixCoreObjectsTimeSeriesBreakdownViz = ({
         queryRef={queryRef}
         host={host}
       >
-        <StixCoreObjectsTimeSeriesBreakdownComponent
-          queryRef={queryRef!}
-          type={widget.type}
-          parameters={parameters}
-          onMounted={setChart}
-          onWarningChange={setWarning}
-        />
+        <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+          <StixCoreObjectsTimeSeriesBreakdownComponent
+            queryRef={queryRef!}
+            type={widget.type}
+            parameters={parameters}
+            onMounted={setChart}
+            onWarningChange={setWarning}
+          />
+        </WidgetBreakdownErrorBoundary>
       </WidgetRenderContent>
     </WidgetContainer>
   );

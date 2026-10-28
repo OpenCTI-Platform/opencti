@@ -2,7 +2,7 @@ import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
-import { verticalBarsChartOptions } from '../../utils/Charts';
+import { verticalBarsChartOptions, withChartAnimations } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
 import type { Theme } from '../Theme';
 import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
@@ -13,6 +13,8 @@ interface WidgetVerticalBarsProps {
   isStacked?: boolean;
   hasLegend?: boolean;
   isAnimated?: boolean;
+  // Off: the chart is drawn with its animations, but its updates are not animated
+  isUpdateAnimated?: boolean;
   hasHoverFilter?: boolean;
   tickAmount?: number;
   onMounted?: OpenCTIChartProps['onMounted'];
@@ -24,6 +26,7 @@ const WidgetVerticalBars = ({
   isStacked = false,
   hasLegend = false,
   isAnimated = true,
+  isUpdateAnimated = true,
   hasHoverFilter = true,
   tickAmount,
   onMounted,
@@ -50,11 +53,8 @@ const WidgetVerticalBars = ({
       tickAmount ?? 'dataPoints',
       hasHoverFilter,
     ) as ApexOptions;
-    if (isAnimated) {
-      return chartOptions;
-    }
-    return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
-  }, [theme, formatter, isStacked, hasLegend, isAnimated, hasHoverFilter, tickAmount]);
+    return withChartAnimations(chartOptions, isAnimated, isUpdateAnimated) as ApexOptions;
+  }, [theme, formatter, isStacked, hasLegend, isAnimated, hasHoverFilter, tickAmount, isUpdateAnimated]);
 
   return (
     <Chart
