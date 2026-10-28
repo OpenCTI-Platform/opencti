@@ -121,6 +121,8 @@ describe('Data initialization test', () => {
     const connectorCapabilityNames = connectorCapabilities.map((capability) => capability.name);
 
     expect(connectorCapabilityNames).toContain('CONNECTORAPI');
+    // the form capability is granted with Create / Update knowledge, as the migration does on an upgraded platform
+    expect(connectorCapabilityNames).toContain('KNOWLEDGE_KNFORMINTAKE');
     expect(connectorCapabilityNames).not.toContain('INGESTION');
     expect(connectorCapabilityNames).not.toContain('INGESTION_SETINGESTIONS');
   });

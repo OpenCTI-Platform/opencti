@@ -436,6 +436,8 @@ const createBasicRolesAndCapabilities = async (context) => {
       'SETTINGS_SETLABELS',
       'SETTINGS_SETVOCABULARIES',
       'SETTINGS_SETKILLCHAINPHASES',
+      // Granted to every role with Create / Update knowledge by the migration that added it: same on a fresh install
+      'KNOWLEDGE_KNFORMINTAKE',
     ],
     can_manage_sensitive_config: false,
   };
