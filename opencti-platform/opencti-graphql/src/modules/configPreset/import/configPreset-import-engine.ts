@@ -2,6 +2,7 @@ import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { getSettings, setPlatformBootstrapStatus } from '../../../domain/settings';
 import { publishUserAction } from '../../../listener/UserActionListener';
+import { findAllEntitySettings } from '../../entitySetting/entitySetting-domain';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetSelectionInput } from '../../../generated/graphql';
@@ -29,6 +30,7 @@ export interface ConfigPresetImportOutput {
   results: ConfigPresetImportItemResult[];
   report_id: string | null;
   settings: unknown | null;
+  entity_settings: unknown[] | null;
 }
 
 const toResult = (item: ConfigPresetBundleItem, status: ConfigImportStatus, reason?: string): ConfigPresetImportItemResult => ({
@@ -89,7 +91,7 @@ const dryRun = async (
   items: ConfigPresetBundleItem[],
   modes: Map<string, ConfigImportMode>,
 ): Promise<ConfigPresetImportOutput> => {
-  return { results: toOutput(await computeConfigPresetItems(context, user, items, { modes })), report_id: null, settings: null };
+  return { results: toOutput(await computeConfigPresetItems(context, user, items, { modes })), report_id: null, settings: null, entity_settings: null };
 };
 
 const realImport = async (
@@ -233,7 +235,7 @@ const realImport = async (
     }
   }
   logApp.info('[CONFIG PRESET] Import finished', { user_id: user.id, file_id: fileId, outcome, counts });
-  return { results, report_id: report.reportId, settings: await getSettings(importContext) };
+  return { results, report_id: report.reportId, settings: await getSettings(importContext), entity_settings: await findAllEntitySettings(importContext, user) };
 };
 
 // Applies the selected items of the pending zip one by one, required dependencies first, and returns the result of each:

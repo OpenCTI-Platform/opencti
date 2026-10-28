@@ -17915,6 +17915,7 @@ type ConfigPresetImportOutput {
   results: [ConfigPresetImportResult!]!
   report_id: String
   settings: Settings
+  entity_settings: [EntitySetting!]
 }
 
 type ConfigPresetImportRunningDetails {

@@ -123,9 +123,8 @@ describe('Config preset import: upload and preview', () => {
     const fileId = await upload(zip, 'exported.zip');
     const { data, errors } = await preview(fileId);
     expect(errors).toBeUndefined();
-    expect(data?.configPresetImportPreview.types.map((type: { key: string }) => type.key)).toEqual(['platform']);
-    // The hidden entity types have no importer
-    expect(data?.configPresetImportPreview.ignored).toEqual(['data_model/hidden_entity_types.json']);
+    expect(data?.configPresetImportPreview.types.map((type: { key: string }) => type.key)).toEqual(['platform', 'hiddenEntityTypes']);
+    expect(data?.configPresetImportPreview.ignored).toEqual([]);
   });
 
   it('refuses the upload and the preview to a user without BYPASS', async () => {

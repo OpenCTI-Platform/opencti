@@ -275,6 +275,17 @@ describe('ConfigPresetImportWizard', () => {
       expect(await screen.findByText('The uploaded file no longer exists')).toBeInTheDocument();
     });
 
+    it('hands the entity settings that the import returns to the store, so that the hidden entity types need no refresh', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.node.params.text).toContain('entity_settings');
+      await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', {
+        EntitySetting: () => ({ id: 'entity-setting-1', platform_hidden_type: true }),
+        ConfigPresetImportOutput: () => ({ results: [], report_id: null, settings: null }),
+      });
+      expect(rendered.relayEnv.getStore().getSource().get('entity-setting-1')).toMatchObject({ platform_hidden_type: true });
+    });
+
     it('resumes on the progress screen when the session is applying, and polls every five seconds until it changes', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       const applying = session({ status: 'APPLYING', total: 4, results: [{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }] });

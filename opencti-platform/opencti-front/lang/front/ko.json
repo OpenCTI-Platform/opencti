@@ -2004,6 +2004,7 @@
   "Entity Type": "엔티티 유형",
   "Entity types": "엔터티 유형",
   "Entity Types | Customization | Settings": "엔티티 유형 | 사용자 지정 | 설정",
+  "Entity types that cannot be hidden: {types}": "숨길 수 없는 엔티티 유형: {types}",
   "Entity usage": "엔터티 사용",
   "entity_Activity": "활동 (감사)",
   "entity_Administrative-Area": "지역",

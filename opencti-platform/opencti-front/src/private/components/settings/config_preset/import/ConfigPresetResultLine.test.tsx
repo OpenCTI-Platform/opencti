@@ -22,6 +22,7 @@ describe('ConfigPresetResultLine', () => {
     ['Built-in theme', 'Built-in theme'],
     ['Added as "Dark (1)"', 'Added as "Dark (1)"'],
     ['Default theme Dark could not be imported', 'Default theme Dark could not be imported'],
+    ['Entity types that cannot be hidden: Foo, Bar', 'Entity types that cannot be hidden: Foo, Bar'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();

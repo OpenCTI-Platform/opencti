@@ -2004,6 +2004,7 @@
   "Entity Type": "Entity Type",
   "Entity types": "Entity types",
   "Entity Types | Customization | Settings": "Entity Types | Customization | Settings",
+  "Entity types that cannot be hidden: {types}": "Entity types that cannot be hidden: {types}",
   "Entity usage": "Entity usage",
   "entity_Activity": "Activity (audit)",
   "entity_Administrative-Area": "Area",

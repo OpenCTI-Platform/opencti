@@ -4658,6 +4658,7 @@ export enum ConfigPresetImportOutcome {
 
 export type ConfigPresetImportOutput = {
   __typename?: 'ConfigPresetImportOutput';
+  entity_settings?: Maybe<Array<EntitySetting>>;
   report_id?: Maybe<Scalars['String']['output']>;
   results: Array<ConfigPresetImportResult>;
   settings?: Maybe<Settings>;
@@ -41276,7 +41277,7 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetImportField: ResolverTypeWrapper<ConfigPresetImportField>;
   ConfigPresetImportItem: ResolverTypeWrapper<ConfigPresetImportItem>;
   ConfigPresetImportOutcome: ConfigPresetImportOutcome;
-  ConfigPresetImportOutput: ResolverTypeWrapper<Omit<ConfigPresetImportOutput, 'settings'> & { settings?: Maybe<ResolversTypes['Settings']> }>;
+  ConfigPresetImportOutput: ResolverTypeWrapper<Omit<ConfigPresetImportOutput, 'entity_settings' | 'settings'> & { entity_settings?: Maybe<Array<ResolversTypes['EntitySetting']>>, settings?: Maybe<ResolversTypes['Settings']> }>;
   ConfigPresetImportPreview: ResolverTypeWrapper<ConfigPresetImportPreview>;
   ConfigPresetImportResult: ResolverTypeWrapper<ConfigPresetImportResult>;
   ConfigPresetImportResultStatus: ConfigPresetImportResultStatus;
@@ -42489,7 +42490,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetImportCounts: ConfigPresetImportCounts;
   ConfigPresetImportField: ConfigPresetImportField;
   ConfigPresetImportItem: ConfigPresetImportItem;
-  ConfigPresetImportOutput: Omit<ConfigPresetImportOutput, 'settings'> & { settings?: Maybe<ResolversParentTypes['Settings']> };
+  ConfigPresetImportOutput: Omit<ConfigPresetImportOutput, 'entity_settings' | 'settings'> & { entity_settings?: Maybe<Array<ResolversParentTypes['EntitySetting']>>, settings?: Maybe<ResolversParentTypes['Settings']> };
   ConfigPresetImportPreview: ConfigPresetImportPreview;
   ConfigPresetImportResult: ConfigPresetImportResult;
   ConfigPresetImportRunning: ConfigPresetImportRunning;
@@ -44930,6 +44931,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
 }>;
 
 export type ConfigPresetImportOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportOutput'] = ResolversParentTypes['ConfigPresetImportOutput']> = ResolversObject<{
+  entity_settings?: Resolver<Maybe<Array<ResolversTypes['EntitySetting']>>, ParentType, ContextType>;
   report_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   results?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
   settings?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;

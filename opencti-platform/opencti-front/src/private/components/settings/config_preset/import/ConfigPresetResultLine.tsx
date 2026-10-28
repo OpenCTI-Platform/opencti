@@ -48,6 +48,10 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   if (copyName) {
     return t_i18n('Added as "{name}"', { values: { name: copyName } });
   }
+  const hiddenTypes = reason.match(/^Entity types that cannot be hidden: (.+)$/)?.[1];
+  if (hiddenTypes) {
+    return t_i18n('Entity types that cannot be hidden: {types}', { values: { types: hiddenTypes } });
+  }
   const defaultThemeName = reason.match(/^Default theme (.+) could not be imported$/)?.[1];
   if (defaultThemeName) {
     return t_i18n('Default theme {name} could not be imported', { values: { name: defaultThemeName } });

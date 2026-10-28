@@ -8,6 +8,9 @@ import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../.
 import { addTheme, deleteTheme, findAllThemes, findById as findThemeById } from '../../../../../src/modules/theme/theme-domain';
 import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
 import { deleteFile } from '../../../../../src/database/file-storage';
+import { fullEntitiesList } from '../../../../../src/database/middleware-loader';
+import { entitySettingsEditField, getPlatformHiddenEntityTypes } from '../../../../../src/modules/entitySetting/entitySetting-domain';
+import { ENTITY_TYPE_ENTITY_SETTING, type BasicStoreEntityEntitySetting } from '../../../../../src/modules/entitySetting/entitySetting-types';
 import { configPresetImport } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
 import { applyConfigPresetImportRunEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 
@@ -18,6 +21,7 @@ const IMPORT_MUTATION = gql`
       results { type key status reason }
       report_id
       settings { id platform_title platform_bootstrap_status platform_theme { id name } }
+      entity_settings { target_type platform_hidden_type }
     }
   }
 `;
@@ -58,6 +62,21 @@ const importData = async (fileId: string, selections: unknown[], dryRun = false)
 };
 const resultOf = (output: { results: { type: string; key: string; status: string; reason: string | null }[] }, key: string) => output.results.find((result) => result.key === key);
 const ALL = [{ type: 'platform' }, { type: 'branding' }, { type: 'messages' }];
+
+const hiddenEntityTypesBundle = (types: string[]) => ({
+  'metadata.json': metadataFile(),
+  'data_model/hidden_entity_types.json': itemFile('dataModel.hiddenEntityTypes', 'hiddenEntityTypes', { hidden_entity_types: types }),
+});
+// Puts the hidden entity types of the platform back to what they were
+const restoreHiddenEntityTypes = async (hidden: string[]) => {
+  const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(testContext, ADMIN_USER, [ENTITY_TYPE_ENTITY_SETTING]);
+  // The settings that are not in the state they were in: to hide, or to show
+  const ids = (hide: boolean) => entitySettings
+    .filter((entitySetting) => hidden.includes(entitySetting.target_type) === hide && !!entitySetting.platform_hidden_type !== hide)
+    .map(({ id }) => id);
+  await entitySettingsEditField(testContext, ADMIN_USER, ids(true), [{ key: 'platform_hidden_type', value: [true] }]);
+  await entitySettingsEditField(testContext, ADMIN_USER, ids(false), [{ key: 'platform_hidden_type', value: [false] }]);
+};
 
 const customThemes = async () => (await findAllThemes(testContext, ADMIN_USER)).filter((theme) => !theme.built_in);
 
@@ -189,6 +208,42 @@ describe('Config preset import: apply', () => {
       const fileId = await upload(validBundleFiles());
       const { errors } = await runImport(fileId, [{ type: 'messages', item_modes: [{ key: 'banner', mode: 'COPY' }] }], true);
       expect(errors?.[0].message).toContain('Unsupported import mode');
+    });
+  });
+
+  describe('hidden entity types', () => {
+    const HIDDEN = [{ type: 'hiddenEntityTypes' }];
+
+    it('hides the entity types of the bundle and shows the others again, a dry run writing nothing', async () => {
+      const hiddenBefore = await getPlatformHiddenEntityTypes(testContext, ADMIN_USER);
+      try {
+        const fileId = await upload(hiddenEntityTypesBundle(['Malware']));
+        const dry = await importData(fileId, HIDDEN, true);
+        expect(await getPlatformHiddenEntityTypes(testContext, ADMIN_USER)).toEqual(hiddenBefore);
+        expect(dry.entity_settings).toBeNull();
+        const real = await importData(fileId, HIDDEN);
+        // The mutation returns the entity settings, so that the front store learns the hidden types without a refresh
+        expect(real.entity_settings.filter((entitySetting: { platform_hidden_type: boolean }) => entitySetting.platform_hidden_type).map((entitySetting: { target_type: string }) => entitySetting.target_type)).toEqual(['Malware']);
+        expect(real.results).toEqual(dry.results);
+        expect(real.results).toEqual([{ type: 'hiddenEntityTypes', key: 'hiddenEntityTypes', status: 'OVERWRITTEN', reason: null }]);
+        expect(await getPlatformHiddenEntityTypes(testContext, ADMIN_USER)).toEqual(['Malware']);
+        // The platform is now what the bundle says: nothing left to import
+        const again = await importData(await upload(hiddenEntityTypesBundle(['Malware'])), HIDDEN);
+        expect(resultOf(again, 'hiddenEntityTypes')).toMatchObject({ status: 'SKIPPED', reason: 'Nothing to import' });
+      } finally {
+        await restoreHiddenEntityTypes(hiddenBefore);
+      }
+    });
+
+    it('refuses a type that cannot be hidden on this platform, and hides none of the others', async () => {
+      const hiddenBefore = await getPlatformHiddenEntityTypes(testContext, ADMIN_USER);
+      try {
+        const output = await importData(await upload(hiddenEntityTypesBundle(['Malware', 'Not-An-Entity-Type'])), HIDDEN);
+        expect(resultOf(output, 'hiddenEntityTypes')).toMatchObject({ status: 'FAILED', reason: 'Entity types that cannot be hidden: Not-An-Entity-Type' });
+        expect(await getPlatformHiddenEntityTypes(testContext, ADMIN_USER)).toEqual(hiddenBefore);
+      } finally {
+        await restoreHiddenEntityTypes(hiddenBefore);
+      }
     });
   });
 

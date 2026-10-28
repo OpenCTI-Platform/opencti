@@ -44,6 +44,7 @@ const buildSchema = () => {
         scalar Upload
         scalar DateTime
         type Settings { id: ID! }
+        type EntitySetting { id: ID! target_type: String! platform_hidden_type: Boolean }
         type File { id: ID! name: String! }
         type PageInfo { startCursor: String! endCursor: String! hasNextPage: Boolean! hasPreviousPage: Boolean! globalCount: Int! }
       `,

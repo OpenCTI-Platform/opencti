@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import {
   CONFIG_PRESET_IMPORT_MAX_ENTRIES,
   CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE,
@@ -25,17 +26,38 @@ describe('Config preset bundle reader', () => {
     expect(bundle.ignored).toEqual([]);
   });
 
-  it('ignores and reports an unknown type, an unknown file and a family without importer', async () => {
+  it('ignores and reports an unknown type and an unknown file', async () => {
     const files = {
       ...validBundleFiles(),
       'other/unknown.json': itemFile('platformSettings.unknown', 'x', {}),
       'other/not-an-item.json': JSON.stringify({ hello: 'world' }),
       'README.txt': 'hello',
-      'data_model/hidden_entity_types.json': itemFile('dataModel.hiddenEntityTypes', 'hiddenEntityTypes', { hidden_entity_types: [] }),
     };
     const bundle = await readConfigPresetBundle(await buildZip(files));
     expect(bundle.items).toHaveLength(3);
-    expect(bundle.ignored.sort()).toEqual(['README.txt', 'data_model/hidden_entity_types.json', 'other/not-an-item.json', 'other/unknown.json']);
+    expect(bundle.ignored.sort()).toEqual(['README.txt', 'other/not-an-item.json', 'other/unknown.json']);
+  });
+
+  it('reads the hidden entity types as an item of the bundle', async () => {
+    const files = { ...validBundleFiles(), 'data_model/hidden_entity_types.json': itemFile('dataModel.hiddenEntityTypes', 'hiddenEntityTypes', { hidden_entity_types: ['Malware'] }) };
+    const bundle = await readConfigPresetBundle(await buildZip(files));
+    expect(bundle.items).toHaveLength(4);
+    expect(bundle.items.find((item) => item.type === 'hiddenEntityTypes')).toMatchObject({ id: 'hiddenEntityTypes', configuration: { hidden_entity_types: ['Malware'] } });
+    expect(bundle.ignored).toEqual([]);
+  });
+
+  it('reports the items of a family without importer as not importable', async () => {
+    const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'hiddenEntityTypes')!;
+    const { importer } = family;
+    family.importer = undefined;
+    try {
+      const files = { ...validBundleFiles(), 'data_model/hidden_entity_types.json': itemFile('dataModel.hiddenEntityTypes', 'hiddenEntityTypes', { hidden_entity_types: [] }) };
+      const bundle = await readConfigPresetBundle(await buildZip(files));
+      expect(bundle.items).toHaveLength(3);
+      expect(bundle.ignored).toEqual(['data_model/hidden_entity_types.json']);
+    } finally {
+      family.importer = importer;
+    }
   });
 
   it('accepts the same version with a -dev suffix and an older version', async () => {

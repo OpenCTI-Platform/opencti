@@ -179,6 +179,8 @@ type ConfigPresetImportOutput {
     # The import report, null for a dry run or when it could not be written.
     report_id: String
     settings: Settings
+    # The entity settings after a real import (null for a dry run), so that the front store learns the hidden entity types.
+    entity_settings: [EntitySetting!]
 }
 
 # The import that runs on the platform, read from its running record: name is null when the user no longer exists.
