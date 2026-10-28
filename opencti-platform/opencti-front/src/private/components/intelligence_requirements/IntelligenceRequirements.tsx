@@ -16,7 +16,6 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
-import IntelligenceRequirementsStats from './IntelligenceRequirementsStats';
 import IntelligenceRequirementsCards, {
   intelligenceRequirementLineFragment,
   intelligenceRequirementsLinesFragment,
@@ -170,9 +169,6 @@ const IntelligenceRequirements = () => {
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('PIR (generic)'), current: true }]} />
-      <Suspense fallback={<Box sx={{ height: 190 }}><Loader variant={LoaderVariant.inElement} /></Box>}>
-        <IntelligenceRequirementsStats />
-      </Suspense>
       {viewStorage.view === 'cards' ? renderCards() : renderList()}
       <IrDeleteDialog
         ir={toDelete}
