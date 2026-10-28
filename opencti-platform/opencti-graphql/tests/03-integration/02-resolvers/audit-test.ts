@@ -8,7 +8,7 @@ import {
   queryAsUserWithSuccess,
   queryUnauthenticatedIsExpectedForbidden,
 } from '../../utils/testQueryHelper';
-import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_PLATFORM_ADMIN, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 import { addReport } from '../../../src/domain/report';
 import { stixDomainObjectDelete, stixDomainObjectEditField } from '../../../src/domain/stixDomainObject';
 import { utcDate } from '../../../src/utils/format';
@@ -301,14 +301,6 @@ describe('audits time series breakdown query', () => {
     await queryUnauthenticatedIsExpectedForbidden({
       query: AUDITS_TIME_SERIES_BREAKDOWN_QUERY,
       variables: breakdownVariables({ field: 'event_scope' }),
-    });
-  });
-
-  it('should a user without knowledge access not break down the history', async () => {
-    // The platform administrator can see the activity, not the history of the knowledge
-    await queryAsUserIsExpectedForbidden(USER_PLATFORM_ADMIN, {
-      query: AUDITS_TIME_SERIES_BREAKDOWN_QUERY,
-      variables: breakdownVariables({ field: 'event_scope', types: ['History'] }),
     });
   });
 

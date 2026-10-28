@@ -285,6 +285,12 @@ describe('auditsTimeSeriesBreakdown — applies computeAuditTypes like auditsMul
     expect(timeSeriesBreakdownHistory).not.toHaveBeenCalled();
   });
 
+  // Not an integration test: every user of the platform gets the default group, and its knowledge access
+  it('a security activity user without knowledge access is denied a history breakdown and does not query', () => {
+    expect(() => auditsTimeSeriesBreakdown(context, securityUser, { ...breakdownArgs, types: [ENTITY_TYPE_HISTORY] })).toThrowError();
+    expect(timeSeriesBreakdownHistory).not.toHaveBeenCalled();
+  });
+
   it('a user with no audit capability is denied, whatever the requested types', () => {
     expect(() => auditsTimeSeriesBreakdown(context, noAuditUser, breakdownArgs)).toThrowError();
     expect(() => auditsTimeSeriesBreakdown(context, noAuditUser, { ...breakdownArgs, types: [ENTITY_TYPE_HISTORY] })).toThrowError();
