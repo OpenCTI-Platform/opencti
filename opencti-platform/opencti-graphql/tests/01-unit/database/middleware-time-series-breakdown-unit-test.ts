@@ -79,10 +79,11 @@ const REFS: Record<string, string> = {
   objects: 'object',
   externalReferences: 'external-reference',
 };
-const ATTRIBUTES: Record<string, { type: string; format?: string }> = {
+const ATTRIBUTES: Record<string, { type: string; format?: string; vocabularyCategory?: string; values?: string[] }> = {
   creator_id: { type: 'string', format: 'id' },
   pir_ids: { type: 'string', format: 'id' },
-  report_types: { type: 'string', format: 'vocabulary' },
+  report_types: { type: 'string', format: 'vocabulary', vocabularyCategory: 'report_types_ov' },
+  x_opencti_cvss_base_severity: { type: 'string', format: 'enum', values: ['CRITICAL', 'HIGH', 'Unknown'] },
   description: { type: 'string', format: 'text' },
   published: { type: 'date' },
 };
@@ -107,6 +108,7 @@ describe('timeSeriesBreakdownEntities', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(accessModule, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+    vi.mocked(engine.elList).mockResolvedValue([]);
     mockSchema();
   });
 
@@ -442,6 +444,39 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(result.series).toHaveLength(50);
   });
 
+  it('should name the vocabulary values after their vocabulary, read for the values kept only', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('reseau interne', 9), bucket('threat-report', 5), bucket('no-vocabulary', 3), bucket('dropped', 1)]);
+    vi.mocked(engine.elList).mockResolvedValue([{ name: 'Réseau Interne' }, { name: 'threat-report' }] as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await breakdown({ field: 'report_types', limit: 3 });
+
+    // A value without vocabulary keeps its indexed form
+    expect(result.series.map((serie) => serie.label)).toEqual(['Réseau Interne', 'threat-report', 'no-vocabulary']);
+    // The histogram still targets the indexed values
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['reseau interne', 'threat-report', 'no-vocabulary']);
+    expect(engine.elList).toHaveBeenCalledTimes(1);
+    const [, vocabularyUser, , vocabularyOptions] = vi.mocked(engine.elList).mock.calls[0] as any[];
+    expect(vocabularyUser).toBe(accessModule.SYSTEM_USER);
+    const collectFilters = (group: any): any[] => [...group.filters, ...group.filterGroups.flatMap(collectFilters)];
+    const vocabularyFilters = collectFilters(vocabularyOptions.filters);
+    expect(vocabularyFilters).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: ['category'], values: ['report_types_ov'] }),
+      expect.objectContaining({ key: ['name'], values: ['reseau interne', 'threat-report', 'no-vocabulary'] }),
+    ]));
+  });
+
+  it('should name the enum values as they are written in the schema, without reading anything', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('critical', 4), bucket('unknown', 2), bucket('not-in-schema', 1)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await breakdown({ field: 'x_opencti_cvss_base_severity' });
+
+    expect(result.series.map((serie) => serie.label)).toEqual(['CRITICAL', 'Unknown', 'not-in-schema']);
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['critical', 'unknown', 'not-in-schema']);
+    expect(engine.elList).not.toHaveBeenCalled();
+  });
+
   it('should keep the converted label and no entity for entity types', async () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([
       { key: 'intrusion-set', label: 'Intrusion-Set', value: 6, count: 6 },
@@ -485,6 +520,16 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(result).toEqual({ truncated: false, dates: [], series: [] });
     expect(engine.elHistogramBreakdownCount).not.toHaveBeenCalled();
   });
+
+  it('should not read the vocabularies when only the Other series is counted', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await breakdown({ field: 'report_types', includeOther: true });
+
+    expect(result.series.map((serie) => serie.isOther)).toEqual([true]);
+    expect(engine.elList).not.toHaveBeenCalled();
+  });
 });
 
 describe('resolveBreakdownField', () => {
@@ -499,7 +544,8 @@ describe('resolveBreakdownField', () => {
 
   it('should aggregate id, vocabulary and enum attributes as they are', () => {
     expect(resolveBreakdownField(['Report'], 'creator_id')).toEqual({ aggregationField: 'creator_id', resolveEntities: true });
-    expect(resolveBreakdownField(['Report'], 'report_types')).toEqual({ aggregationField: 'report_types', resolveEntities: false });
+    expect(resolveBreakdownField(['Report'], 'report_types')).toEqual({ aggregationField: 'report_types', resolveEntities: false, vocabularyCategories: ['report_types_ov'] });
+    expect(resolveBreakdownField(['Report'], 'x_opencti_cvss_base_severity')).toMatchObject({ aggregationField: 'x_opencti_cvss_base_severity', resolveEntities: false });
     expect(resolveBreakdownField(['Report', 'Malware'], 'entity_type')).toEqual({ aggregationField: 'entity_type', resolveEntities: false });
   });
 
@@ -741,14 +787,14 @@ const RELATIONSHIP_REFS: Record<string, string> = {
   killChainPhases: 'kill-chain-phase',
   externalReferences: 'external-reference',
 };
-const RELATIONSHIP_ATTRIBUTES: Record<string, { type: string; format?: string }> = {
+const RELATIONSHIP_ATTRIBUTES: Record<string, { type: string; format?: string; vocabularyCategory?: string }> = {
   creator_id: { type: 'string', format: 'id' },
   relationship_type: { type: 'string', format: 'short' },
   entity_type: { type: 'string', format: 'short' },
   description: { type: 'string', format: 'text' },
   confidence: { type: 'numeric' },
   start_time: { type: 'date' },
-  usage_types: { type: 'string', format: 'vocabulary' },
+  usage_types: { type: 'string', format: 'vocabulary', vocabularyCategory: 'usage_types_ov' },
 };
 const mockRelationshipSchema = () => {
   vi.spyOn(schemaRelationsRefDefinition, 'getRelationRef').mockImplementation((_type, name) => (
@@ -795,7 +841,7 @@ describe('resolveRelationshipBreakdownField', () => {
   });
 
   it('should only accept a vocabulary carried by every requested relationship type', () => {
-    expect(resolveRelationshipBreakdownField(['uses'], 'usage_types')).toEqual({ aggregationField: 'usage_types', resolveEntities: false });
+    expect(resolveRelationshipBreakdownField(['uses'], 'usage_types')).toEqual({ aggregationField: 'usage_types', resolveEntities: false, vocabularyCategories: ['usage_types_ov'] });
     expect(() => resolveRelationshipBreakdownField(['uses', 'targets'], 'usage_types')).toThrow('does not support this field');
   });
 

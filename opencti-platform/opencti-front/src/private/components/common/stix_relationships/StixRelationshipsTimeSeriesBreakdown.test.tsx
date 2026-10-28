@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
   error: null as unknown,
   dashboardViz: vi.fn(),
+  resolvedDataSelection: null as unknown[] | null,
   bars: vi.fn(),
   lines: vi.fn(),
 }));
@@ -26,7 +27,9 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: (args: unknown) => {
     mocks.dashboardViz(args);
-    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {} };
+    // Resolved as is, unless the test sets what its saved filters and variables resolve to
+    const resolvedDataSelection = mocks.resolvedDataSelection ?? (args as { dataSelection: unknown[] }).dataSelection;
+    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {}, resolvedDataSelection };
   },
 }));
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
@@ -194,11 +197,16 @@ describe('StixRelationshipsTimeSeriesBreakdown', () => {
 
   it('does not query a field the relationships do not support, and says so', () => {
     const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }));
-    expect(mocks.dashboardViz).not.toHaveBeenCalled();
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
+    expect(buildQueryVariables(dataSelection, config, parameters)).toBeNull();
     expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
-    // a single relationship type already is the relationship type
+  });
+
+  it('accepts the relationship type for a single relationship type, a type variable may resolve to one', () => {
+    respond([]);
     render(makeWidget('line', { breakdownBy: 'relationship_type' }));
-    expect(mocks.dashboardViz).not.toHaveBeenCalled();
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
+    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ field: 'relationship_type' });
   });
 
   it('says why the API refused the breakdown', () => {

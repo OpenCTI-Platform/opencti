@@ -90,9 +90,13 @@ describe('DashboardAuditsViz', () => {
     expect(distinct.getByTestId('audits-line-chart')).toBeTruthy();
   });
 
-  it('only renders breakdowns in workspace dashboards', () => {
+  it('renders breakdowns in workspace dashboards and custom views, not in fintel templates', () => {
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    const { getByTestId } = testRender(<DashboardAuditsViz widget={makeWidget('area', withBreakdown)} config={config} host={customView} />);
+    const inCustomView = testRender(<DashboardAuditsViz widget={makeWidget('area', withBreakdown)} config={config} host={customView} />);
+    expect(inCustomView.getByTestId('audits-time-series-breakdown')).toBeTruthy();
+    inCustomView.unmount();
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    const { getByTestId } = testRender(<DashboardAuditsViz widget={makeWidget('area', withBreakdown)} config={config} host={fintelTemplate} />);
     expect(getByTestId('audits-area-chart')).toBeTruthy();
   });
 

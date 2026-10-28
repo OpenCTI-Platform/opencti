@@ -1,12 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
-import useAuth from '../../../utils/hooks/useAuth';
 import useHelper from '../../../utils/hooks/useHelper';
 import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
 import {
   BREAKDOWN_LIMIT_OPTIONS,
-  getWidgetBreakdownFieldOptions,
   getWidgetBreakdownLimit,
   getWidgetBreakdownLockReason,
   getWidgetBreakdownOrder,
@@ -15,6 +13,7 @@ import {
   isWidgetBreakdownConfigurable,
 } from '../../../utils/widget/widgetBreakdown';
 import { useWidgetConfigContext } from './WidgetConfigContext';
+import useWidgetBreakdownFieldOptions from './useWidgetBreakdownFieldOptions';
 
 // Cleared together with the field: they only make sense for a broken down widget
 const NO_BREAKDOWN = { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null };
@@ -25,7 +24,6 @@ const NO_BREAKDOWN = { breakdownBy: null, breakdownLimit: null, breakdownOrder: 
  */
 const WidgetBreakdownSelection = () => {
   const { t_i18n } = useFormatter();
-  const { schema: { filterKeysSchema } } = useAuth();
   const { isFeatureEnable } = useHelper();
   const { config, setConfigWidget, host } = useWidgetConfigContext();
   const { dataSelection, parameters, perspective } = config.widget;
@@ -36,10 +34,7 @@ const WidgetBreakdownSelection = () => {
   // Several datasets or distinct values: the controls are shown, disabled, with the reason
   const lockReason = getWidgetBreakdownLockReason(config.widget);
   const isEditable = !lockReason;
-  const fieldOptions = useMemo(
-    () => (isSupported ? getWidgetBreakdownFieldOptions(filterKeysSchema, { perspective, dataSelection }) : []),
-    [isSupported, filterKeysSchema, perspective, dataSelection],
-  );
+  const { fieldOptions, isResolved } = useWidgetBreakdownFieldOptions({ perspective, dataSelection }, isSupported);
   const breakdownBy = isBreakdownField(parameters.breakdownBy) ? parameters.breakdownBy : null;
   const isFieldAvailable = fieldOptions.some(({ key }) => key === breakdownBy);
 
@@ -47,12 +42,13 @@ const WidgetBreakdownSelection = () => {
     setConfigWidget({ ...config.widget, parameters: { ...config.widget.parameters, ...changes } });
   };
 
-  // Filters changed to types without this field: drop the breakdown rather than keeping a field the API refuses
+  // Filters changed to types without this field: drop the breakdown rather than keeping a field the API refuses.
+  // Not before the saved filter is read: its types are unknown until then.
   useEffect(() => {
-    if (isEnabled && isEditable && breakdownBy && !isFieldAvailable) {
+    if (isEnabled && isEditable && isResolved && breakdownBy && !isFieldAvailable) {
       setParameters(NO_BREAKDOWN);
     }
-  }, [isEnabled, isEditable, breakdownBy, isFieldAvailable]);
+  }, [isEnabled, isEditable, isResolved, breakdownBy, isFieldAvailable]);
 
   if (!isSupported) {
     return null;
