@@ -8,16 +8,17 @@ import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
 import { selectExpandIds } from './investigation-enrichment.utils';
 import { useInvestigationEnrichmentExpandTouchedElementsQuery$data } from './__generated__/useInvestigationEnrichmentExpandTouchedElementsQuery.graphql';
 
-// The touched elements of one work, with what the graph needs to draw them (see graphNodeFragment).
+// The touched elements of works, with what the graph needs to draw them (see graphNodeFragment).
 // Fetched only on expand: the list of works is polled and only needs ids and types.
 const touchedElementsQuery = graphql`
   query useInvestigationEnrichmentExpandTouchedElementsQuery(
     $id: String!
+    $first: Int
     $entityIds: [String!]
     $filters: FilterGroup
   ) {
     workspace(id: $id) {
-      enrichmentWorks(entityIds: $entityIds, filters: $filters) {
+      enrichmentWorks(first: $first, entityIds: $entityIds, filters: $filters) {
         edges {
           node {
             touchedElements {
@@ -120,17 +121,17 @@ const useInvestigationEnrichmentExpand = (
 
   /**
    * Adds to the graph the touched entities of the given types, and the touched
-   * relationships of the given types with their ends.
+   * relationships of the given types with their ends, for all the works at once.
    */
-  const expandWork = async (
-    work: InvestigationEnrichmentWork,
+  const expandWorks = async (
+    works: InvestigationEnrichmentWork[],
     {
       entityTypes,
       relationshipTypes,
     }: ExpandTypes = {},
   ) => {
-    const sourceId = work.eventSource?.id;
-    if (!sourceId) {
+    const sourceIds = [...new Set(works.flatMap((work) => (work.eventSource?.id ? [work.eventSource.id] : [])))];
+    if (sourceIds.length === 0) {
       return;
     }
 
@@ -140,16 +141,18 @@ const useInvestigationEnrichmentExpand = (
         touchedElementsQuery,
         {
           id: investigationId,
-          entityIds: [sourceId],
+          first: works.length,
+          entityIds: sourceIds,
           filters: {
             mode: 'and',
-            filters: [{ key: 'ids', values: [work.id] }],
+            filters: [{ key: 'ids', values: works.map((work) => work.id) }],
             filterGroups: [],
           },
         },
       ).toPromise()) as useInvestigationEnrichmentExpandTouchedElementsQuery$data;
 
-      const touchedElements = (workspace?.enrichmentWorks?.edges?.[0]?.node.touchedElements ?? [])
+      const touchedElements = (workspace?.enrichmentWorks?.edges ?? [])
+        .flatMap((edge) => edge?.node.touchedElements ?? [])
         .flatMap((element) => (element?.id ? [element] : []));
 
       // Ends of relationships first, so that a touched element replaces the end it also is.
@@ -190,7 +193,7 @@ const useInvestigationEnrichmentExpand = (
 
   return {
     graphIds,
-    expandWork,
+    expandWorks,
   };
 };
 

@@ -71,6 +71,9 @@ interface DrawerProps {
   size?: DrawerSize;
   sx?: SxProps;
   disableBackdropClose?: boolean;
+  // Lets the focus leave the drawer, for a design system (Radix) dialog opened from it: two focus traps
+  // pulling the focus back to their own content recurse until "Maximum call stack size exceeded".
+  disableEnforceFocus?: boolean;
 }
 
 const getDrawerWidth = (size: DrawerSize) => {
@@ -95,6 +98,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   containerStyle,
   size = 'large',
   disableBackdropClose = false,
+  disableEnforceFocus = false,
 }: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -202,6 +206,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         anchor="right"
         variant="temporary"
         elevation={1}
+        disableEnforceFocus={disableEnforceFocus}
         onClose={disableBackdropClose
           ? (_, reason) => {
               if (reason !== 'backdropClick') {

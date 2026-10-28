@@ -806,7 +806,7 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "investigation enrichment: the review dialog of an enrichment work (size md, the 640px the MUI dialog had; title-md title), replacing the MUI Dialog. layerInputVars is re-declared on the content, as in the dashboard variables dialog. It renders the expand form, or the empty state when everything is already on the graph.",
+      "reason": "investigation enrichment: the review dialog of one enrichment work, or of all the works to review (size md, the 640px the MUI dialog had; title-md title), replacing the MUI Dialog. layerInputVars is re-declared on the content, as in the dashboard variables dialog. It renders the expand form, or the empty state when everything is already on the graph.",
       "files": [
         "opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentExpand.tsx"
       ]
@@ -864,6 +864,17 @@
       "reason": "graph toolbar: the title (title-md) of the expand dialog.",
       "files": [
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarExpandTools.tsx"
+      ]
+    },
+    {
+      "component": "Button",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "investigation enrichment: the Review all button of the To review tab (secondary), opening one review of all the works to review.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentDrawer.tsx"
       ]
     },
     {

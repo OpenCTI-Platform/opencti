@@ -12,16 +12,16 @@ import useInvestigationEnrichmentExpand from './useInvestigationEnrichmentExpand
 interface InvestigationEnrichmentExpandProps {
   investigationId: string;
   canEdit: boolean;
-  work?: InvestigationEnrichmentWork;
+  works: InvestigationEnrichmentWork[];
   onClose: () => void;
-  onDismiss: (workId: string) => void;
+  onDismiss: (workIds: string[]) => void;
   onExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const InvestigationEnrichmentExpand = ({
   investigationId,
   canEdit,
-  work,
+  works,
   onClose,
   onDismiss,
   onExpand,
@@ -29,7 +29,7 @@ const InvestigationEnrichmentExpand = ({
   const { t_i18n } = useFormatter();
   const {
     graphIds,
-    expandWork,
+    expandWorks,
   } = useInvestigationEnrichmentExpand(investigationId, onExpand);
 
   /**
@@ -46,40 +46,44 @@ const InvestigationEnrichmentExpand = ({
   };
 
   const { targets, relationships } = useMemo(() => {
-    const counts = countExpandOptions(toExpandElements(work), graphIds);
+    const counts = countExpandOptions(toExpandElements(works), graphIds);
     return {
       targets: mapToOptions(counts.targets),
       relationships: mapToOptions(counts.relationships, true),
     };
-  }, [work, graphIds]);
+  }, [works, graphIds]);
 
   const hasNothingToAdd = targets.length === 0 && relationships.length === 0;
+  const workIds = works.map((work) => work.id);
+  const title = works.length === 1
+    ? getMainRepresentative(works[0].eventSource)
+    : t_i18n('{count} enrichments', { values: { count: works.length } });
 
   /**
    * Adds to the graph the touched entities of a ticked type, and the touched
-   * relationships of a ticked type with their ends, then marks the work as reviewed.
+   * relationships of a ticked type with their ends, then marks the works as reviewed.
    */
   const onSubmitExpand: InvestigationExpandFormProps['onSubmit'] = async (
     { entity_types, relationship_types },
     { resetForm },
   ) => {
-    if (!work || (entity_types.length === 0 && relationship_types.length === 0)) {
+    if (works.length === 0 || (entity_types.length === 0 && relationship_types.length === 0)) {
       // Do not expand if nothing has been checked.
       return;
     }
 
-    await expandWork(work, {
+    await expandWorks(works, {
       entityTypes: entity_types.map((o) => o.value),
       relationshipTypes: relationship_types.map((o) => o.value),
     });
     resetForm();
-    // Expanding reviews the work: it moves to done, which also closes the dialog.
-    onDismiss(work.id);
+    // Expanding reviews the works: they move to done, which also closes the dialog.
+    onDismiss(workIds);
   };
 
   return (
     <Dialog
-      open={!!work}
+      open={works.length > 0}
       onOpenChange={(isOpen) => {
         if (!isOpen) onClose();
       }}
@@ -87,20 +91,20 @@ const InvestigationEnrichmentExpand = ({
       <DialogContent size="md">
         <DialogTitle>
           <Text variant="title-md">
-            {t_i18n('Enrichment Results')} - {getMainRepresentative(work?.eventSource)}
+            {t_i18n('Enrichment Results')} - {title}
           </Text>
         </DialogTitle>
         {hasNothingToAdd ? (
           <InvestigationEnrichmentExpandEmpty
             onClose={onClose}
-            onDismiss={() => onDismiss(work!.id)}
+            onDismiss={() => onDismiss(workIds)}
             canEdit={canEdit}
           />
         ) : (
           <InvestigationExpandForm
             onReset={onClose}
             onSubmit={onSubmitExpand}
-            onDismiss={() => onDismiss(work!.id)}
+            onDismiss={() => onDismiss(workIds)}
             targets={targets}
             relationships={relationships}
             disabled={!canEdit}

@@ -25,19 +25,24 @@ export interface ExpandElement {
 }
 
 /**
- * The touched elements of a work, from the ids and types loaded with the list of works.
+ * The touched elements of works, from the ids and types loaded with the list of works.
+ * An element touched by several works is kept once, so that it is counted once.
  */
-export const toExpandElements = (work?: InvestigationEnrichmentWork): ExpandElement[] => {
-  return (work?.touchedElements ?? []).flatMap((element) => (
-    element?.id && element.entity_type
-      ? [{
+export const toExpandElements = (works: InvestigationEnrichmentWork[]): ExpandElement[] => {
+  const elements = new Map<string, ExpandElement>();
+  works.forEach((work) => {
+    (work.touchedElements ?? []).forEach((element) => {
+      if (element?.id && element.entity_type) {
+        elements.set(element.id, {
           id: element.id,
           entity_type: element.entity_type,
           fromId: element.fromId,
           toId: element.toId,
-        }]
-      : []
-  ));
+        });
+      }
+    });
+  });
+  return [...elements.values()];
 };
 
 /**

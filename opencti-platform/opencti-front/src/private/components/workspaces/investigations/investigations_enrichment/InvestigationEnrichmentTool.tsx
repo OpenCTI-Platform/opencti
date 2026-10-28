@@ -1,11 +1,10 @@
 import { startTransition, Suspense, useEffect, useMemo, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { CloudRefreshOutline } from 'mdi-material-ui';
 import GraphToolbarItem from '../../../../../components/graph/components/GraphToolbarItem';
 import { useFormatter } from '../../../../../components/i18n';
 import { GraphEntity } from '../../../../../components/graph/graph.types';
 import InvestigationEnrichmentDrawer from './InvestigationEnrichmentDrawer';
-import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
 import { InvestigationEnrichmentToolQuery } from './__generated__/InvestigationEnrichmentToolQuery.graphql';
 import useIntervalBoostable from '../../../../../utils/hooks/useIntervalBoostable';
 import InvestigationEnrichmentButton from './InvestigationEnrichmentButton';
@@ -161,19 +160,25 @@ const InvestigationEnrichmentTool = ({
   const selectionIds = [...selectedNodes, ...selectedLinks].map((selected) => selected.id);
   const selectionKey = [...selectionIds].sort().join(',');
 
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<InvestigationEnrichmentToolQuery>(
-    investigationQuery,
-    { id: entity.id },
-  );
+  // Loaded by refetch only: a second load in the same tick as the first one, one urgent and one in a transition,
+  // makes Relay release a reference React still renders ("Expected preloadedQuery to not be disposed yet").
+  const [queryRef, loadQuery] = useQueryLoader<InvestigationEnrichmentToolQuery>(investigationQuery);
 
+  /**
+   * Loads the works of the selection. The first load is urgent, so that the fallback shows meanwhile;
+   * the next ones are transitions, so that the loaded works stay on screen until the new ones arrive.
+   */
   const refetch = () => {
     const variables = {
       id: entity.id,
       entityIds: selectionIds.length > 0 ? selectionIds : undefined,
     };
-    startTransition(() => {
-      loadQuery(variables, { fetchPolicy: 'network-only' });
-    });
+    const load = () => loadQuery(variables, { fetchPolicy: 'network-only' });
+    if (!queryRef) {
+      load();
+    } else {
+      startTransition(load);
+    }
   };
 
   useEffect(() => {

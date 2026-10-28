@@ -1,11 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { countExpandOptions, ExpandElement, isNothingToExpand, selectExpandIds } from './investigation-enrichment.utils';
+import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
+import { countExpandOptions, ExpandElement, isNothingToExpand, selectExpandIds, toExpandElements } from './investigation-enrichment.utils';
 
 const malware: ExpandElement = { id: 'malware-1', entity_type: 'Malware' };
 const indicator: ExpandElement = { id: 'indicator-1', entity_type: 'Indicator' };
 const otherIndicator: ExpandElement = { id: 'indicator-2', entity_type: 'Indicator' };
 const indicates: ExpandElement = { id: 'rel-1', entity_type: 'indicates', fromId: 'indicator-1', toId: 'malware-1' };
 const uses: ExpandElement = { id: 'rel-2', entity_type: 'uses', fromId: 'source-id', toId: 'tool-1' };
+
+/**
+ * A work reduced to its touched elements, the only field toExpandElements reads.
+ */
+const workTouching = (elements: ExpandElement[]) => ({ touchedElements: elements }) as unknown as InvestigationEnrichmentWork;
+
+describe('Function: toExpandElements', () => {
+  it('keeps once an element touched by several works', () => {
+    expect(toExpandElements([workTouching([malware, indicates]), workTouching([malware, indicator])]))
+      .toEqual([malware, indicates, indicator]);
+  });
+
+  it('leaves out an element without id or type', () => {
+    expect(toExpandElements([workTouching([malware, { id: '', entity_type: 'Tool' }])])).toEqual([malware]);
+  });
+});
 
 describe('Function: countExpandOptions', () => {
   it('counts the entities by type and the relationships by type', () => {

@@ -76,12 +76,12 @@ const TOUCHED_IDS_COMPLETION_SCRIPT = `
   }`;
 
 // Written in the same update, after the touched ids. A work of an investigation is put to review at its first
-// completion, and again at any later completion bringing new touched ids: new results reopen a work already reviewed
+// completion, and again at any later completion bringing new touched ids: new results reopen a work already reviewed≠
 // (DONE), while a repeated completion with nothing new (an empty read) leaves the review status as it is.
 const INVESTIGATION_STATUS_COMPLETION_SCRIPT = `
   if (ctx._source.investigation_id != null
     && (ctx._source.investigation_status == null || params.touched_ids.size() > 0)) {
-    ctx._source.investigation_status = ${WORK_INVESTIGATION_STATUS_TO_REVIEW};
+    ctx._source.investigation_status = "${WORK_INVESTIGATION_STATUS_TO_REVIEW}";
   }`;
 
 /**
