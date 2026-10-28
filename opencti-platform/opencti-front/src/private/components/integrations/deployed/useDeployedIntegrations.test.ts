@@ -125,10 +125,26 @@ describe('useDeployedIntegrations', () => {
       expect(result.current.map((item) => item.id)).toEqual(['connector-1']);
     });
 
-    it('reports an inactive status when the connector state is inactive', () => {
+    it('reports an active status for a connector that cannot be stopped, whatever its heartbeat', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],
         states: [makeState({ active: false })],
+      });
+      expect(result.current[0].status).toBe('active');
+    });
+
+    it('reports an active status for a managed connector that is not stopped on purpose', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        states: [makeState({ active: false, manager_current_status: 'starting', manager_requested_status: 'starting' })],
+      });
+      expect(result.current[0].status).toBe('active');
+    });
+
+    it('reports an inactive status for a managed connector stopped on purpose', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        states: [makeState({ manager_current_status: 'stopped', manager_requested_status: 'stopped' })],
       });
       expect(result.current[0].status).toBe('inactive');
     });

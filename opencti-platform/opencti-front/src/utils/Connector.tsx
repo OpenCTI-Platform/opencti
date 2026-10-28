@@ -65,67 +65,27 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
 };
 
 // Only the fields the status reads: a connector of any query carrying them fits, whatever its other fragments
-export type ConnectorStatusSource = Partial<Pick<ConnectorsStateQuery$data['connectors'][0], 'manager_current_status' | 'manager_requested_status' | 'active'>>;
+export type ConnectorStatusSource = Partial<Pick<ConnectorsStateQuery$data['connectors'][0], 'manager_current_status' | 'manager_requested_status'>>;
 
 // Reduced status of an integration (connector, feed...): decides the color of its status chip and the status facet
 export type IntegrationStatus = 'active' | 'inactive' | 'processing';
 
-const computeStatus = ({
+// Inactive only when stopped on purpose: only a managed connector can be (see isConnectorStopped in the backend).
+// Any other connector is active: a missing heartbeat is a failure reported by its health, not a stop
+export const computeConnectorStatus = ({
   manager_current_status,
   manager_requested_status,
-  active,
 }: ConnectorStatusSource) => {
+  let integrationStatus: IntegrationStatus = 'active';
   if (manager_requested_status) {
     // On connector created, manager_current_status is null
     const isTransitioning = (manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5);
-
     if (isTransitioning) {
-      const isProcessing = ['starting', 'stopping'].includes(manager_requested_status);
-
-      if (isProcessing) {
-        return {
-          status: 'processing',
-          processing: true,
-          label: manager_requested_status,
-        };
-      }
-
-      if (manager_requested_status === 'stopped') {
-        return {
-          status: 'stopped',
-          processing: false,
-          label: manager_requested_status,
-        };
-      }
-
-      return {
-        status: 'active',
-        processing: false,
-        label: manager_requested_status,
-      };
+      if (['starting', 'stopping'].includes(manager_requested_status)) integrationStatus = 'processing';
+      else if (manager_requested_status === 'stopped') integrationStatus = 'inactive';
+    } else if (manager_current_status === 'stopped') {
+      integrationStatus = 'inactive';
     }
-
-    const isStarted = manager_current_status === 'started';
-    return {
-      status: isStarted ? 'active' : 'inactive',
-      processing: false,
-      label: manager_current_status || '',
-    };
   }
-
-  // No manager status - use regular active/inactive
-  return {
-    status: active ? 'active' : 'inactive',
-    processing: false,
-    label: active ? 'Active' : 'Inactive',
-  };
-};
-
-// status is the manager one (starting, stopped...); integrationStatus is the reduced one, shown by the status chip
-export const computeConnectorStatus = (connector: ConnectorStatusSource) => {
-  const result = computeStatus(connector);
-  let integrationStatus: IntegrationStatus = 'inactive';
-  if (result.processing) integrationStatus = 'processing';
-  else if (result.status === 'active') integrationStatus = 'active';
-  return { ...result, integrationStatus };
+  return { integrationStatus, processing: integrationStatus === 'processing' };
 };
