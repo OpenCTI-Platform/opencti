@@ -114,6 +114,13 @@ const WidgetBreakdownSelection = () => {
     </Select>
   );
 
+  // What the Other series groups: entities, relationships or events
+  let otherTooltip = t_i18n('Groups the entities that have none of the displayed values, including entities without a value.');
+  if (perspective === 'relationships') {
+    otherTooltip = t_i18n('Groups the relationships that have none of the displayed values, including relationships without a value.');
+  } else if (perspective === 'audits') {
+    otherTooltip = t_i18n('Groups the events that have none of the displayed values, including events without a value.');
+  }
   const otherSwitch = (
     <div style={{ width: 'fit-content' }}>
       <Switch
@@ -139,9 +146,7 @@ const WidgetBreakdownSelection = () => {
               <Tooltip>
                 <TooltipTrigger asChild>{otherSwitch}</TooltipTrigger>
                 <TooltipContent>
-                  {perspective === 'audits'
-                    ? t_i18n('Groups the events that have none of the displayed values, including events without a value.')
-                    : t_i18n('Groups the entities that have none of the displayed values, including entities without a value.')}
+                  {otherTooltip}
                 </TooltipContent>
               </Tooltip>
             ) : otherSwitch}

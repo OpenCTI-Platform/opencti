@@ -2516,6 +2516,7 @@
   "Groups splitter": "组分隔符",
   "Groups the entities that have none of the displayed values, including entities without a value.": "将不具有任何所显示值的实体（包括没有值的实体）归为一组。",
   "Groups the events that have none of the displayed values, including events without a value.": "将不具有任何所显示值的事件（包括没有值的事件）归为一组。",
+  "Groups the relationships that have none of the displayed values, including relationships without a value.": "将不具有任何所显示值的关系（包括没有值的关系）归为一组。",
   "Groups using this role": "使用此角色的组",
   "Groups with this role": "具有此角色的組",
   "gt": "大于",

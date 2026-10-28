@@ -23,6 +23,13 @@ vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
           ['createdBy', definition('createdBy', 'id', 'Author', ['Report'])],
           ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
         ])],
+        ['stix-relationship', new Map([
+          ['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets'])],
+          ['fromId', definition('fromId', 'id', 'Source entity', ['stix-relationship', 'targets'])],
+        ])],
+        ['targets', new Map([
+          ['objectMarking', definition('objectMarking', 'id', 'Marking', ['targets'])],
+        ])],
       ]),
     },
   }),
@@ -40,6 +47,15 @@ import WidgetBreakdownSelection from './WidgetBreakdownSelection';
 const reports = {
   perspective: 'entities',
   filters: { mode: 'and', filters: [{ key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+} as unknown as WidgetDataSelection;
+
+const relationships = {
+  perspective: 'relationships',
+  filters: { mode: 'and', filters: [], filterGroups: [] },
+} as unknown as WidgetDataSelection;
+const targets = {
+  ...relationships,
+  filters: { mode: 'and', filters: [{ key: 'relationship_type', values: ['targets'], operator: 'eq', mode: 'or' }], filterGroups: [] },
 } as unknown as WidgetDataSelection;
 
 const setWidget = (overrides: Record<string, unknown>) => {
@@ -170,8 +186,52 @@ describe('WidgetBreakdownSelection', () => {
   });
 
   it('is not shown for widgets that cannot be broken down', () => {
-    setWidget({ perspective: 'relationships' });
+    setWidget({ perspective: 'audits' });
     const { queryByTestId } = testRender(<WidgetBreakdownSelection />);
     expect(queryByTestId('widget-breakdown-selection')).toBeNull();
+    // A relationships widget left with an entities dataset
+    setWidget({ perspective: 'relationships' });
+    expect(testRender(<WidgetBreakdownSelection />).queryByTestId('widget-breakdown-selection')).toBeNull();
+  });
+
+  describe('relationships', () => {
+    const openFieldOptions = (getAllByRole: (role: string) => HTMLElement[]) => {
+      const [fieldSelect] = getAllByRole('combobox');
+      fireEvent.pointerDown(fieldSelect, { button: 0, ctrlKey: false, pointerType: 'mouse' });
+      fireEvent.click(fieldSelect);
+      return getAllByRole('option').map((option) => option.textContent);
+    };
+
+    it('offers the relationships fields the API accepts, the relationship type with several types', () => {
+      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [relationships] });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+      expect(openFieldOptions(getAllByRole)).toEqual(['None', 'Marking', 'Relationship type', 'Source type', 'Target type']);
+    });
+
+    it('offers the fields of a single relationship type, without the relationship type', () => {
+      setWidget({ perspective: 'relationships', type: 'heatmap', dataSelection: [targets] });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+      expect(openFieldOptions(getAllByRole)).toEqual(['None', 'Marking', 'Source type', 'Target type']);
+    });
+
+    it('keeps a relationships field, and drops one the relationship types no longer carry', () => {
+      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets], parameters: { breakdownBy: 'fromTypes' } });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+      expect(getAllByRole('combobox')[0].textContent).toContain('Source type');
+      expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+
+      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets], parameters: { breakdownBy: 'relationship_type' } });
+      testRender(<WidgetBreakdownSelection />);
+      expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
+        parameters: { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
+      }));
+    });
+
+    it('disables every control with several relationships datasets', () => {
+      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets, targets], parameters: { breakdownBy: 'toTypes' } });
+      const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
+      getAllByRole('combobox').forEach((combobox) => expect(isDisabled(combobox)).toBe(true));
+      expect(isDisabled(getByRole('switch'))).toBe(true);
+    });
   });
 });

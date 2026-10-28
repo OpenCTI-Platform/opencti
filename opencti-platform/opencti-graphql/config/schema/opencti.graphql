@@ -14935,6 +14935,22 @@ type Query {
     timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
     relationship_type: [String!]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixRelationshipsTimeSeriesBreakdown(
+    field: String!
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int
+    order: OrderingMode
+    includeOther: Boolean
+    onlyInferred: Boolean
+    relationship_type: [String!]
+    filters: FilterGroup
+    dynamicFrom: FilterGroup
+    dynamicTo: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsDistribution(
     field: String!
     operation: StatsOperation!

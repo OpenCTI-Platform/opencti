@@ -20,7 +20,7 @@ import {
   getWidgetBreakdownOther,
   hasWidgetBreakdown,
   isBreakdownFieldSupported,
-  isEntityTypeBreakdownField,
+  isBreakdownTypeField,
   isWidgetBreakdownActive,
   isWidgetBreakdownConfigurable,
   isSameBreakdown,
@@ -50,6 +50,23 @@ const makeWidget = (overrides: Partial<Widget> = {}, entityTypes: string[] = ['R
   ...overrides,
 } as unknown as Widget);
 
+const makeRelationshipsWidget = (overrides: Partial<Widget> = {}, relationshipTypes: string[] = ['targets']): Widget => ({
+  id: 'widget',
+  type: 'line',
+  perspective: 'relationships',
+  dataSelection: [{
+    perspective: 'relationships',
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'relationship_type', values: relationshipTypes, operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    },
+    dynamicFrom: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+  }],
+  parameters: { breakdownBy: 'toTypes' },
+  ...overrides,
+} as unknown as Widget);
+
 // One point per UTC day, starting on a given date
 const daily = (start: string, values: number[]) => values.map((y, i) => {
   const x = new Date(start);
@@ -64,9 +81,30 @@ describe('widget breakdown eligibility', () => {
     });
   });
 
+  it('accepts every relationships time series visualization of a workspace dashboard', () => {
+    ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
+      expect(isWidgetBreakdownActive(makeRelationshipsWidget({ type }), workspace)).toBe(true);
+    });
+    // Older datasets carry no perspective of their own
+    const withoutDatasetPerspective = makeRelationshipsWidget();
+    withoutDatasetPerspective.dataSelection = [{ ...withoutDatasetPerspective.dataSelection[0], perspective: undefined }];
+    expect(isWidgetBreakdownEligible(withoutDatasetPerspective, workspace)).toBe(true);
+  });
+
+  it('rejects the relationships widgets that cannot be broken down', () => {
+    expect(isWidgetBreakdownEligible(makeRelationshipsWidget({ type: 'donut' }), workspace)).toBe(false);
+    const widget = makeRelationshipsWidget();
+    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
+    // A relationships widget can hold an entities dataset: it is not a dataset of relationships
+    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...widget.dataSelection[0], perspective: 'entities' }] }, workspace)).toBe(false);
+    const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
+    expect(isWidgetBreakdownActive(widget, customView)).toBe(false);
+    expect(hasWidgetBreakdown(widget)).toBe(true);
+  });
+
   it('rejects other visualizations, perspectives, several datasets and drafts', () => {
     expect(isWidgetBreakdownEligible(makeWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownEligible(makeWidget({ perspective: 'relationships' }), workspace)).toBe(false);
+    expect(isWidgetBreakdownEligible(makeWidget({ perspective: null }), workspace)).toBe(false);
     const widget = makeWidget();
     expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
     expect(isWidgetBreakdownEligible(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
@@ -96,6 +134,13 @@ describe('widget breakdown eligibility', () => {
     expect(getWidgetBreakdownOther(undefined)).toBe(false);
     expect(getWidgetBreakdownOther({ breakdownOther: null })).toBe(false);
     expect(getWidgetBreakdownOther({ breakdownOther: true })).toBe(true);
+  });
+});
+
+describe('isBreakdownTypeField', () => {
+  it('knows the fields whose values are entity or relationship types', () => {
+    ['entity_type', 'relationship_type', 'fromTypes', 'toTypes'].forEach((field) => expect(isBreakdownTypeField(field)).toBe(true));
+    ['objectLabel', 'creator_id', null, undefined].forEach((field) => expect(isBreakdownTypeField(field)).toBe(false));
   });
 });
 
@@ -130,6 +175,17 @@ describe('getBreakdownEntityTypes', () => {
       { key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' },
       { key: 'objectLabel', values: ['label-id'], operator: 'eq', mode: 'or' },
     ], 'or'))).toEqual([]);
+  });
+
+  it('reads the relationship types of a relationships dataset', () => {
+    const filters = group([
+      { key: 'relationship_type', values: ['targets', 'uses'], operator: 'eq', mode: 'or' },
+      { key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' },
+    ]);
+    expect(getBreakdownEntityTypes(filters, 'relationships')).toEqual(['targets', 'uses']);
+    expect(getBreakdownEntityTypes(filters)).toEqual(['Report']);
+    expect(getBreakdownEntityTypes(group([{ key: 'relationship_type', values: ['uses'], operator: 'not_eq', mode: 'or' }]), 'relationships')).toEqual([]);
+    expect(getBreakdownEntityTypes(filters, 'audits')).toEqual([]);
   });
 });
 
@@ -185,6 +241,86 @@ describe('getBreakdownFieldOptions', () => {
 
   it('offers the fields of the abstract type without type filter', () => {
     expect(keys([])).toEqual(['createdBy', 'entity_type']);
+  });
+
+  it('does not offer the custom fields, which the API cannot break down', () => {
+    const withCustomField = new Map(schema);
+    withCustomField.set('Report', new Map([
+      ...(schema.get('Report') ?? new Map()),
+      ['x_opencti_cf_priority', definition('x_opencti_cf_priority', 'enum', 'Priority', ['Report'])],
+    ]));
+    expect(getBreakdownFieldOptions(withCustomField, ['Report']).map(({ key }) => key)).toEqual(['createdBy', 'objectLabel', 'report_types']);
+  });
+
+  describe('relationships', () => {
+    const relationshipsSchema = new Map<string, Map<string, FilterDefinition>>([
+      ['stix-relationship', new Map([
+        ['relationship_type', definition('relationship_type', 'string', 'Relationship type', ['stix-relationship', 'targets', 'uses'])],
+        ['createdBy', definition('createdBy', 'id', 'Author', ['stix-relationship', 'targets', 'uses'])],
+        ['objectLabel', definition('objectLabel', 'id', 'Label', ['stix-relationship', 'targets', 'uses'])],
+        ['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets', 'uses'])],
+        ['creator_id', definition('creator_id', 'id', 'Creators', ['stix-relationship', 'targets', 'uses'])],
+        ['externalReferences', definition('externalReferences', 'id', 'External reference', ['stix-relationship', 'targets', 'uses'])],
+        ['confidence', definition('confidence', 'integer', 'Confidence', ['stix-relationship', 'targets', 'uses'])],
+        ['objects', definition('objects', 'id', 'Contains', ['stix-relationship', 'targets', 'uses'])],
+      ])],
+      ['targets', new Map([
+        ['createdBy', definition('createdBy', 'id', 'Author', ['targets'])],
+        ['objectMarking', definition('objectMarking', 'id', 'Marking', ['targets'])],
+        ['fromId', definition('fromId', 'id', 'Source entity', ['targets'])],
+        ['toId', definition('toId', 'id', 'Target entity', ['targets'])],
+        ['fromTypes', definition('fromTypes', 'string', 'Source type', ['targets'])],
+        ['killChainPhases', definition('killChainPhases', 'id', 'Kill chain phase', ['targets'])],
+        ['workflow_id', definition('workflow_id', 'id', 'Status', ['targets'])],
+      ])],
+      ['uses', new Map([
+        ['createdBy', definition('createdBy', 'id', 'Author', ['uses'])],
+        ['usage_types', definition('usage_types', 'vocabulary', 'Usage types', ['uses'])],
+      ])],
+    ]);
+    const relationshipKeys = (relationshipTypes: string[]) => getBreakdownFieldOptions(relationshipsSchema, relationshipTypes, 'relationships').map(({ key }) => key);
+
+    it('offers the fields of every relationship, their type and the types of their source and target', () => {
+      expect(relationshipKeys([])).toEqual(['createdBy', 'creator_id', 'objectLabel', 'objectMarking', 'relationship_type', 'fromTypes', 'toTypes']);
+    });
+
+    it('offers the fields of a single relationship type, without the relationship type', () => {
+      expect(relationshipKeys(['targets'])).toEqual(['createdBy', 'objectMarking', 'fromTypes', 'toTypes']);
+      expect(relationshipKeys(['uses'])).toEqual(['createdBy', 'fromTypes', 'toTypes', 'usage_types']);
+    });
+
+    it('offers the fields shared by several relationship types', () => {
+      expect(relationshipKeys(['targets', 'uses'])).toEqual(['createdBy', 'relationship_type', 'fromTypes', 'toTypes']);
+    });
+
+    it('never offers the source and target themselves, nor the fields of an unbounded cardinality', () => {
+      const options = relationshipKeys(['targets']);
+      ['fromId', 'toId', 'objects', 'externalReferences', 'killChainPhases', 'workflow_id', 'entity_type'].forEach((key) => expect(options).not.toContain(key));
+    });
+
+    it('labels the relationships fields', () => {
+      const labels = getBreakdownFieldOptions(relationshipsSchema, [], 'relationships').map(({ label }) => label);
+      expect(labels).toEqual(expect.arrayContaining(['Relationship type', 'Source type', 'Target type']));
+    });
+
+    it('checks the field of a relationships widget against its relationship types', () => {
+      const supported = (breakdownBy: string, relationshipTypes?: string[]) => isBreakdownFieldSupported(
+        relationshipsSchema,
+        { ...makeRelationshipsWidget({}, relationshipTypes), parameters: { breakdownBy } },
+      );
+      expect(supported('toTypes')).toBe(true);
+      expect(supported('objectMarking')).toBe(true);
+      expect(supported('usage_types')).toBe(false);
+      expect(supported('usage_types', ['uses'])).toBe(true);
+      expect(supported('relationship_type')).toBe(false);
+      expect(supported('relationship_type', ['targets', 'uses'])).toBe(true);
+      // An entities field is not one of the relationships
+      expect(supported('entity_type', ['targets', 'uses'])).toBe(false);
+    });
+
+    it('offers no field for a perspective that cannot be broken down', () => {
+      expect(getBreakdownFieldOptions(relationshipsSchema, [], 'audits')).toEqual([]);
+    });
   });
 
   describe('isBreakdownFieldSupported', () => {
@@ -467,10 +603,10 @@ describe('audits breakdown', () => {
     expect(isBreakdownFieldSupported(emptyMap, makeWidget({ parameters: { breakdownBy: 'event_scope' } }))).toBe(false);
   });
 
-  it('names the values of the entity type fields after the entity types', () => {
-    expect(isEntityTypeBreakdownField('entity_type')).toBe(true);
-    expect(isEntityTypeBreakdownField('context_data.entity_type')).toBe(true);
-    expect(isEntityTypeBreakdownField('event_scope')).toBe(false);
-    expect(isEntityTypeBreakdownField(null)).toBe(false);
+  it('names the values of the type fields of the logs after the entity types', () => {
+    expect(isBreakdownTypeField('entity_type')).toBe(true);
+    expect(isBreakdownTypeField('context_data.entity_type')).toBe(true);
+    expect(isBreakdownTypeField('event_scope')).toBe(false);
+    expect(isBreakdownTypeField(null)).toBe(false);
   });
 });

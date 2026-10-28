@@ -116,6 +116,35 @@ const WidgetCreationDataSelection = () => {
       <TooltipContent>{t_i18n('A breakdown uses a single dataset.')}</TooltipContent>
     </Tooltip>
   ) : button);
+  const isAddRelationshipsDisabled = isBreakdownActive || getCurrentDataSelectionLimit(type) === dataSelection.length;
+  const relationshipsAddButtons = (
+    <Stack direction="row">
+      <Button
+        disabled={isAddRelationshipsDisabled}
+        startIcon={<AddOutlined />}
+        onClick={() => handleAddDataSelection('relationships')}
+        style={{
+          width: '100%',
+          flex: 1,
+          marginRight: 20,
+        }}
+      >
+        {t_i18n('Relationships')}
+      </Button>
+      <Button
+        disabled={isAddRelationshipsDisabled}
+        color="secondary"
+        startIcon={<AddOutlined />}
+        onClick={() => handleAddDataSelection('entities')}
+        style={{
+          width: '100%',
+          flex: 1,
+        }}
+      >
+        {t_i18n('Entities')}
+      </Button>
+    </Stack>
+  );
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -214,34 +243,16 @@ const WidgetCreationDataSelection = () => {
         </div>
       )}
 
-      {perspective === 'relationships' && canAddDataSelection && (
-        <Stack direction="row">
-          <Button
-            disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
-            startIcon={<AddOutlined />}
-            onClick={() => handleAddDataSelection('relationships')}
-            style={{
-              width: '100%',
-              flex: 1,
-              marginRight: 20,
-            }}
-          >
-            {t_i18n('Relationships')}
-          </Button>
-          <Button
-            disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
-            color="secondary"
-            startIcon={<AddOutlined />}
-            onClick={() => handleAddDataSelection('entities')}
-            style={{
-              width: '100%',
-              flex: 1,
-            }}
-          >
-            {t_i18n('Entities')}
-          </Button>
-        </Stack>
-      )}
+      {perspective === 'relationships' && canAddDataSelection && (isBreakdownActive ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {/* Disabled buttons get no pointer events: the wrapper carries the tooltip */}
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+            <div tabIndex={0}>{relationshipsAddButtons}</div>
+          </TooltipTrigger>
+          <TooltipContent>{t_i18n('A breakdown uses a single dataset.')}</TooltipContent>
+        </Tooltip>
+      ) : relationshipsAddButtons)}
 
       {perspective === 'audits' && canAddDataSelection && (
         <Stack direction="row">

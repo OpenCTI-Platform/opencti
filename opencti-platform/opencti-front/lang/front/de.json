@@ -2516,6 +2516,7 @@
   "Groups splitter": "Gruppentrennzeichen",
   "Groups the entities that have none of the displayed values, including entities without a value.": "Fasst die Entitäten zusammen, die keinen der angezeigten Werte haben, einschließlich Entitäten ohne Wert.",
   "Groups the events that have none of the displayed values, including events without a value.": "Fasst die Ereignisse zusammen, die keinen der angezeigten Werte haben, einschließlich Ereignissen ohne Wert.",
+  "Groups the relationships that have none of the displayed values, including relationships without a value.": "Fasst die Beziehungen zusammen, die keinen der angezeigten Werte haben, einschließlich Beziehungen ohne Wert.",
   "Groups using this role": "Gruppen, die diese Rolle verwenden",
   "Groups with this role": "Gruppen mit dieser Rolle",
   "gt": "Größer als",

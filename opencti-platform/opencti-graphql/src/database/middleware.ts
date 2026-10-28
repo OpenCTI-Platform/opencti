@@ -61,6 +61,8 @@ import {
   elAggregationNestedTermsWithFilter,
   elAggregationRelationsCount,
   elConnection,
+  type ConnectionSide,
+  elConnectionTypesAggregationCount,
   elDeleteElements,
   elFindByIds,
   type ElFindByIdsOpts,
@@ -316,6 +318,7 @@ import {
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
 } from '../modules/customField/custom-field-validator';
+import { RELATION_FROM_TYPES_FILTER, RELATION_TO_TYPES_FILTER, RELATION_TYPE_FILTER } from '../utils/filtering/filtering-constants';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -913,20 +916,19 @@ const getRelationRefOrNull = (type: string, name: string) => {
     return null; // type without registered relations refs
   }
 };
-type TimeSeriesBreakdownField = {
+type BreakdownField = {
   aggregationField: string;
   // Values are ids of entities, resolved with the access of the user
   resolveEntities: boolean;
   // Label of a value, when its indexed form is not the one to display
   resolveLabel?: (key: string) => string;
+  // Set to break relationships down by the type of their source or target
+  connectionSide?: ConnectionSide;
 };
-// A breakdown field is a filter key that every requested type carries: a relation ref of the allowlist
-// (author, labels, markings, assignees, participants), or an id, vocabulary or enum attribute.
+// A breakdown field read from the schema is a filter key that every requested type carries: a relation ref of
+// the allowlist (author, labels, markings, assignees, participants), or an id, vocabulary or enum attribute.
 // Free text, dates, numbers and the special filter keys cannot be broken down.
-export const resolveBreakdownField = (types: string[], field: string): TimeSeriesBreakdownField => {
-  if (field === 'entity_type') {
-    return { aggregationField: field, resolveEntities: false };
-  }
+const resolveSchemaBreakdownField = (types: string[], field: string): BreakdownField | null => {
   const refs = BREAKDOWN_ALLOWED_REFS.includes(field) ? types.map((type) => getRelationRefOrNull(type, field)) : [null];
   if (refs.every((ref) => ref !== null)) {
     return { aggregationField: `${REL_INDEX_PREFIX}${(refs[0] as RefAttribute).databaseName}.${ID_INTERNAL}`, resolveEntities: true };
@@ -941,7 +943,36 @@ export const resolveBreakdownField = (types: string[], field: string): TimeSerie
     const isIdAttribute = (attributes[0] as AttributeDefinition & { format: string }).format === 'id';
     return { aggregationField: field, resolveEntities: isIdAttribute };
   }
-  throw FunctionalError('Time series breakdown does not support this field for these entity types', { field, types });
+  return null;
+};
+// Entities: the schema fields, and the entity type
+export const resolveBreakdownField = (types: string[], field: string): BreakdownField => {
+  if (field === 'entity_type') {
+    return { aggregationField: field, resolveEntities: false };
+  }
+  const breakdownField = resolveSchemaBreakdownField(types, field);
+  if (!breakdownField) {
+    throw FunctionalError('Time series breakdown does not support this field for these entity types', { field, types });
+  }
+  return breakdownField;
+};
+// Relationships: the schema fields, the relationship type, and the type of the source or of the target.
+// A relationship has a single source and a single target: each falls in one bucket, among a bounded number of types.
+// Their type is already shown for every relationship the user can read, even when the element itself is restricted.
+// The source and the target themselves (fromId, toId) have an unbounded cardinality and are refused, like objects.
+export const resolveRelationshipBreakdownField = (types: string[], field: string): BreakdownField => {
+  if (field === RELATION_TYPE_FILTER) {
+    return { aggregationField: 'relationship_type', resolveEntities: false };
+  }
+  if (field === RELATION_FROM_TYPES_FILTER || field === RELATION_TO_TYPES_FILTER) {
+    const connectionSide = field === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
+    return { aggregationField: 'connections.types', resolveEntities: false, connectionSide };
+  }
+  const breakdownField = resolveSchemaBreakdownField(types, field);
+  if (!breakdownField) {
+    throw FunctionalError('Time series breakdown does not support this field for these relationship types', { field, types });
+  }
+  return breakdownField;
 };
 // Entity types are indexed in lowercase: give them back the name of their registered type
 const resolveEntityTypeLabel = (key: string) => {
@@ -950,7 +981,7 @@ const resolveEntityTypeLabel = (key: string) => {
 // Fields of the history and activity logs a breakdown accepts, all with a bounded cardinality: the kind of
 // event, who did it (user, groups, organizations) and the types involved. Any other field is refused, the
 // context entity id (one value per entity) and the free texts (messages, searches, names) first.
-const HISTORY_BREAKDOWN_FIELDS = new Map<string, TimeSeriesBreakdownField>([
+const HISTORY_BREAKDOWN_FIELDS = new Map<string, BreakdownField>([
   ['event_type', { aggregationField: 'event_type', resolveEntities: false }],
   ['event_scope', { aggregationField: 'event_scope', resolveEntities: false }],
   // Resolved like the distributions of the logs: values without entity, like the SYSTEM user or a deleted
@@ -964,7 +995,7 @@ const HISTORY_BREAKDOWN_FIELDS = new Map<string, TimeSeriesBreakdownField>([
   ['context_data.entity_type', { aggregationField: 'context_data.entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
 ]);
 export const HISTORY_BREAKDOWN_ALLOWED_FIELDS = Array.from(HISTORY_BREAKDOWN_FIELDS.keys());
-export const resolveHistoryBreakdownField = (field: string): TimeSeriesBreakdownField => {
+export const resolveHistoryBreakdownField = (field: string): BreakdownField => {
   const breakdownField = HISTORY_BREAKDOWN_FIELDS.get(field);
   if (!breakdownField) {
     throw FunctionalError('Time series breakdown does not support this field for the history and activity logs', { field });
@@ -994,7 +1025,7 @@ const timeSeriesBreakdown = async (
   context: AuthContext,
   user: AuthUser,
   indices: string[] | string,
-  breakdownField: TimeSeriesBreakdownField,
+  breakdownField: BreakdownField,
   queryArgs: Record<string, any>,
   args: TimeSeriesBreakdownArgs,
 ) => {
@@ -1003,7 +1034,7 @@ const timeSeriesBreakdown = async (
   // Without an end date, the histogram would create every empty bucket up to the most recent document,
   // a date in the future included, past the size checked below: the period always ends
   const endDate = args.endDate ?? new Date();
-  const { aggregationField, resolveEntities, resolveLabel } = breakdownField;
+  const { aggregationField, resolveEntities, resolveLabel, connectionSide } = breakdownField;
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
   const isAscending = args.order === 'asc';
   const withOther = args.includeOther === true;
@@ -1026,16 +1057,14 @@ const timeSeriesBreakdown = async (
     // Same inclusive bounds as the histogram below, so both requests see the same entities
     intervalInclude: true,
   };
+  const bucketsOrder = isAscending ? 'asc' : 'desc';
   // 1. Discover the candidate values over the whole period. Vocabulary and enum values keep their raw form.
   // Ranked on their number of entities (the series values below stay weighted), which spares the weight
-  // sum of every value; no missing bucket either, so a real "unknown" value is a value like any other
-  const candidates = await elAggregationCount(context, user, indices, {
-    ...breakdownArgs,
-    convertEntityTypeLabel: true,
-    normalizeLabel: false,
-    rankByCount: true,
-    bucketsOrder: isAscending ? 'asc' : 'desc',
-  });
+  // sum of every value; no missing bucket either, so a real "unknown" value is a value like any other.
+  // The types of a side of the relationships are ranked the same way, on their number of relationships.
+  const candidates = connectionSide
+    ? await elConnectionTypesAggregationCount(context, user, indices, { ...breakdownArgs, connectionSide, bucketsOrder })
+    : await elAggregationCount(context, user, indices, { ...breakdownArgs, convertEntityTypeLabel: true, normalizeLabel: false, rankByCount: true, bucketsOrder });
   const labelledCandidates = resolveLabel ? candidates.map((candidate) => ({ ...candidate, label: resolveLabel(candidate.key) })) : candidates;
   // desc keeps the values with the most entities over the period, asc the fewest
   const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], labelledCandidates);
@@ -1068,6 +1097,7 @@ const timeSeriesBreakdown = async (
     keys: selected.map((candidate) => candidate.key),
     withOther,
     filterPerKey,
+    connectionSide,
   });
   // Every series shares the same dates: they are sent once, each series only carries its values
   const axis = buildTimeSeriesAxis(startDate, endDate, interval);
@@ -1111,6 +1141,17 @@ export const timeSeriesBreakdownHistory = async (context: AuthContext, user: Aut
     historyFiltering: true,
   };
   return timeSeriesBreakdown(context, user, READ_INDEX_HISTORY, breakdownField, historyArgs, historyArgs);
+};
+export const timeSeriesBreakdownRelations = async (
+  context: AuthContext,
+  user: AuthUser,
+  relationshipTypes: string[],
+  args: RelationFilters<BasicStoreRelation> & TimeSeriesBreakdownArgs,
+) => {
+  const breakdownField = resolveRelationshipBreakdownField(relationshipTypes, args.field);
+  // Same relationships as timeSeriesRelations
+  const indices = args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES;
+  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(relationshipTypes, args), args);
 };
 export const timeSeriesRelations = async (
   context: AuthContext,

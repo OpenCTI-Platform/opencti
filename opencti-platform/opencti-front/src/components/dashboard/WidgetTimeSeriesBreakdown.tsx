@@ -18,13 +18,14 @@ import {
   getRenderedPointsBudget,
   getWidgetBreakdownLimit,
   getWidgetBreakdownOrder,
-  isEntityTypeBreakdownField,
+  isBreakdownTypeField,
   isSameBreakdown,
   nextBreakdownChartWidth,
   scheduleChartDraw,
 } from '../../utils/widget/widgetBreakdown';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
+import { displayEntityTypeForTranslation } from '../../utils/String';
 
 // Structural type satisfied by the private and the public breakdown queries
 export interface WidgetTimeSeriesBreakdownData {
@@ -83,9 +84,11 @@ const WidgetTimeSeriesBreakdown = ({
       let name = serie.label;
       if (serie.isOther) {
         name = t_i18n('Other');
-      } else if (isEntityTypeBreakdownField(parameters.breakdownBy)) {
-        const translated = t_i18n(`entity_${serie.label}`);
-        name = translated !== `entity_${serie.label}` ? translated : serie.label;
+      } else if (isBreakdownTypeField(parameters.breakdownBy)) {
+        // An entity type or a relationship type, kept as is when it has no translation
+        const translationKey = displayEntityTypeForTranslation(serie.label) ?? serie.label;
+        const translated = t_i18n(translationKey);
+        name = translated !== translationKey ? translated : serie.label;
       } else if (serie.entity) {
         name = getMainRepresentative(serie.entity) || serie.label;
       }

@@ -3,18 +3,17 @@ import { getCurrentCategory } from './widgetUtils';
 import { isDraftWorkspaceFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FilterDefinition } from '../hooks/useAuth';
+import { isCustomFieldAttribute } from '../customFields';
 import { daysAgo, monthsAgo } from '../Time';
 
 export const BREAKDOWN_LIMIT_OPTIONS = [5, 10, 20, 50];
 export const DEFAULT_BREAKDOWN_LIMIT = 10;
 
-const ENTITY_TYPE_FIELD = 'entity_type';
-const DEFAULT_ENTITY_TYPE = 'Stix-Core-Object';
 // Relation refs and id attributes with a small, stable cardinality. Vocabularies and enums are
 // always allowed, whatever their key. The backend enforces the same fields, split in three
 // (opencti-graphql/src/database/middleware.ts): BREAKDOWN_ALLOWED_REFS for the relation refs,
-// BREAKDOWN_ALLOWED_ID_ATTRIBUTES for creator_id, and a special case for entity_type. Keep them in sync.
-// entity_type is not listed: getBreakdownFieldOptions adds it only when the dataset has several types.
+// BREAKDOWN_ALLOWED_ID_ATTRIBUTES for creator_id, and the fields of each perspective below
+// (resolveBreakdownField and resolveRelationshipBreakdownField). Keep them in sync.
 export const BREAKDOWN_ALLOWED_REFS = ['createdBy', 'objectLabel', 'objectMarking', 'objectAssignee', 'objectParticipant', 'creator_id'];
 const BREAKDOWN_VALUE_FILTER_TYPES = ['vocabulary', 'enum'];
 const isBreakdownAllowedKey = (key: string, type: string) => {
@@ -36,10 +35,52 @@ export const AUDITS_BREAKDOWN_FIELDS: { key: string; label: string }[] = [
   { key: 'entity_type', label: 'Entity_type' },
   { key: 'context_data.entity_type', label: 'Type of related entity' },
 ];
-// Values of these fields are entity types, displayed with their translated name
-const ENTITY_TYPE_BREAKDOWN_FIELDS = [ENTITY_TYPE_FIELD, 'context_data.entity_type'];
-// Perspectives with a breakdown API, each with its own fields
-const BREAKDOWN_PERSPECTIVES: WidgetPerspective[] = ['entities', 'audits'];
+// Fields of the logs whose values are entity types (History or Activity, the type of the related entity)
+const AUDITS_TYPE_FIELDS = ['entity_type', 'context_data.entity_type'];
+
+type BreakdownField = { key: string; label: string };
+interface BreakdownPerspective {
+  // Filter key restricting the types of the dataset
+  typeFilterKey: string;
+  // Types of the dataset without such a filter
+  defaultTypes: string[];
+  // The type itself, offered when the dataset is not restricted to a single type
+  typeField: BreakdownField;
+  // Fields of the perspective that are not read from the schema
+  fields: BreakdownField[];
+}
+const BREAKDOWN_PERSPECTIVES: Partial<Record<WidgetPerspective, BreakdownPerspective>> = {
+  entities: {
+    typeFilterKey: 'entity_type',
+    defaultTypes: ['Stix-Core-Object'],
+    typeField: { key: 'entity_type', label: 'Entity type' },
+    fields: [],
+  },
+  relationships: {
+    typeFilterKey: 'relationship_type',
+    // Every relationship, as the relationships time series without relationship type
+    defaultTypes: ['stix-relationship'],
+    typeField: { key: 'relationship_type', label: 'Relationship type' },
+    // Each relationship has a single source and a single target, among a bounded number of types
+    fields: [{ key: 'fromTypes', label: 'Source type' }, { key: 'toTypes', label: 'Target type' }],
+  },
+};
+const getBreakdownPerspective = (perspective?: WidgetPerspective | null) => {
+  return perspective ? BREAKDOWN_PERSPECTIVES[perspective] : undefined;
+};
+// Perspectives with a breakdown API: the schema-based ones above, and the audits with their own fields
+const isBreakdownPerspective = (perspective?: WidgetPerspective | null) => {
+  return perspective === 'audits' || !!getBreakdownPerspective(perspective);
+};
+
+/**
+ * Fields the series are labelled with a type: an entity type, or a relationship type.
+ */
+export const isBreakdownTypeField = (field?: string | null) => {
+  return (!!field && AUDITS_TYPE_FIELDS.includes(field)) || Object.values(BREAKDOWN_PERSPECTIVES).some((perspective) => (
+    perspective.typeField.key === field || perspective.fields.some(({ key }) => key === field)
+  ));
+};
 
 /**
  * The breakdown field is a filter key: a value is set when a field is chosen.
@@ -49,20 +90,14 @@ export const isBreakdownField = (value?: string | null): value is string => {
 };
 
 /**
- * Whether the values of the breakdown field are entity types.
+ * Types every element of the dataset belongs to, read from a top level "entity type = ..." filter,
+ * or "relationship type = ..." for relationships. Empty when the filters do not restrict the type for sure.
  */
-export const isEntityTypeBreakdownField = (field?: string | null) => {
-  return !!field && ENTITY_TYPE_BREAKDOWN_FIELDS.includes(field);
-};
-
-/**
- * Entity types every entity of the dataset belongs to, read from a top level "entity type = ..." filter.
- * Empty when the filters do not restrict the type for sure.
- */
-export const getBreakdownEntityTypes = (filters?: FilterGroup | null): string[] => {
-  if (!filters) return [];
+export const getBreakdownEntityTypes = (filters?: FilterGroup | null, perspective: WidgetPerspective = 'entities'): string[] => {
+  const typeFilterKey = getBreakdownPerspective(perspective)?.typeFilterKey;
+  if (!filters || !typeFilterKey) return [];
   const isRestrictingGroup = filters.mode === 'and' || filters.filters.length + filters.filterGroups.length === 1;
-  const typeFilter = filters.filters.find((filter) => filter.key === ENTITY_TYPE_FIELD);
+  const typeFilter = filters.filters.find((filter) => filter.key === typeFilterKey);
   if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== 'eq') || typeFilter.mode === 'and') {
     return [];
   }
@@ -70,42 +105,50 @@ export const getBreakdownEntityTypes = (filters?: FilterGroup | null): string[] 
 };
 
 /**
- * Fields the dataset can be broken down by: with a single entity type, its allowed fields
+ * Fields the dataset can be broken down by: with a single type, its allowed fields
  * (BREAKDOWN_ALLOWED_REFS, vocabularies and enums); with several types, the ones they have in common,
- * plus the entity type itself.
+ * plus the type itself. Relationships can also be broken down by the type of their source or target.
  */
 export const getBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   entityTypes: string[],
-): { key: string; label: string }[] => {
-  const types = entityTypes.length > 0 ? entityTypes : [DEFAULT_ENTITY_TYPE];
+  perspective: WidgetPerspective = 'entities',
+): BreakdownField[] => {
+  const breakdownPerspective = getBreakdownPerspective(perspective);
+  if (!breakdownPerspective) return [];
+  const types = entityTypes.length > 0 ? entityTypes : breakdownPerspective.defaultTypes;
   const schemas = types.map((type) => filterKeysSchema.get(type) ?? new Map<string, FilterDefinition>());
-  const options: { key: string; label: string }[] = [];
+  const options: BreakdownField[] = [];
   schemas[0].forEach((definition, key) => {
     // Abstract types also list the keys of some of their sub types: keep the keys of the type itself
     const isCommon = types.every((type, index) => schemas[index].get(key)?.subEntityTypes.includes(type));
-    if (isCommon && isBreakdownAllowedKey(key, definition.type) && !COMPUTED_FILTER_KEYS.includes(key) && !DRAFT_FILTER_KEYS.includes(key)) {
+    // Custom fields are not stored as attributes: the API cannot break them down
+    const isStored = !COMPUTED_FILTER_KEYS.includes(key) && !DRAFT_FILTER_KEYS.includes(key) && !isCustomFieldAttribute(key);
+    if (isCommon && isBreakdownAllowedKey(key, definition.type) && isStored) {
       options.push({ key, label: definition.label });
     }
   });
+  options.push(...breakdownPerspective.fields);
   if (entityTypes.length !== 1) {
-    options.push({ key: ENTITY_TYPE_FIELD, label: 'Entity type' });
+    options.push(breakdownPerspective.typeField);
   }
   return options.sort((a, b) => a.label.localeCompare(b.label));
 };
 
 /**
- * Fields the first dataset of the widget can be broken down by: the fields of its entity types
- * for the entities, the allowed fields of the logs for the audits.
+ * Fields the first dataset of the widget can be broken down by: the fields of its entity or relationship
+ * types for the entities and the relationships, the allowed fields of the logs for the audits.
  */
 export const getWidgetBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection'>,
-): { key: string; label: string }[] => {
+): BreakdownField[] => {
   if (widget.perspective === 'audits') {
     return AUDITS_BREAKDOWN_FIELDS;
   }
-  return getBreakdownFieldOptions(filterKeysSchema, getBreakdownEntityTypes(widget.dataSelection[0]?.filters));
+  const perspective = widget.perspective ?? 'entities';
+  const types = getBreakdownEntityTypes(widget.dataSelection[0]?.filters, perspective);
+  return getBreakdownFieldOptions(filterKeysSchema, types, perspective);
 };
 
 /**
@@ -149,13 +192,15 @@ const isCountingDistinctValues = (widget: BreakdownWidget) => {
     && widget.dataSelection.some((selection) => selection.unique === true);
 };
 
-// A breakdown expands the single dataset of a time series widget, counting its entities or its events
+// A breakdown expands the single dataset of a time series widget, counting its entities, relationships or events.
+// A relationships widget can also hold entities datasets: they cannot be broken down as relationships.
 const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
-  return !!widget.perspective
-    && BREAKDOWN_PERSPECTIVES.includes(widget.perspective)
+  const [dataset] = widget.dataSelection;
+  return isBreakdownPerspective(widget.perspective)
     && getCurrentCategory(widget.type) === 'timeseries'
     && widget.dataSelection.length === 1
-    && !isDraftWorkspaceFilterGroup(widget.dataSelection[0].filters)
+    && (dataset.perspective ?? widget.perspective) === widget.perspective
+    && !isDraftWorkspaceFilterGroup(dataset.filters)
     && !isCountingDistinctValues(widget);
 };
 

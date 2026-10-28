@@ -2516,6 +2516,7 @@
   "Groups splitter": "Separatore gruppi",
   "Groups the entities that have none of the displayed values, including entities without a value.": "Raggruppa le entità che non hanno nessuno dei valori visualizzati, comprese quelle senza valore.",
   "Groups the events that have none of the displayed values, including events without a value.": "Raggruppa gli eventi che non hanno nessuno dei valori visualizzati, compresi quelli senza valore.",
+  "Groups the relationships that have none of the displayed values, including relationships without a value.": "Raggruppa le relazioni che non hanno nessuno dei valori visualizzati, comprese quelle senza valore.",
   "Groups using this role": "Gruppi che utilizzano questo ruolo",
   "Groups with this role": "Gruppi con questo ruolo",
   "gt": "maggiore di",

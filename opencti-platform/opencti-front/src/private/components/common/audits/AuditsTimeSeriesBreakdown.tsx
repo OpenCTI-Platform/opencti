@@ -17,7 +17,7 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { AuditsTimeSeriesBreakdownQuery } from '@components/common/audits/__generated__/AuditsTimeSeriesBreakdownQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import WidgetTimeSeriesBreakdownViz, { type TimeSeriesBreakdownWidgetProps } from '../../../../components/dashboard/WidgetTimeSeriesBreakdownViz';
+import TimeSeriesBreakdownViz, { type TimeSeriesBreakdownVizProps } from '../../../../components/dashboard/TimeSeriesBreakdownViz';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -119,19 +119,20 @@ const buildQueryVariables = (
   };
 };
 
+const selectBreakdown = (data: AuditsTimeSeriesBreakdownQuery['response']) => data.auditsTimeSeriesBreakdown;
+
 /**
  * Activity time series widget drawing one series per value of `parameters.breakdownBy`, with the
  * guards of the other audits widgets (capabilities and enterprise edition).
  */
-const AuditsTimeSeriesBreakdown = (props: TimeSeriesBreakdownWidgetProps) => {
+const AuditsTimeSeriesBreakdown = (props: TimeSeriesBreakdownVizProps) => {
   const { t_i18n } = useFormatter();
   return (
-    <WidgetTimeSeriesBreakdownViz<AuditsTimeSeriesBreakdownQuery>
+    <TimeSeriesBreakdownViz<AuditsTimeSeriesBreakdownQuery>
       {...props}
-      perspective="audits"
       query={auditsTimeSeriesBreakdownQuery}
       buildQueryVariables={buildQueryVariables}
-      getBreakdown={(response) => response.auditsTimeSeriesBreakdown}
+      selectBreakdown={selectBreakdown}
       defaultTitle={t_i18n('Activity and history')}
       RenderContent={AuditsWidgetRenderContent}
     />
