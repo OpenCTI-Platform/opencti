@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { GraphQLError } from 'graphql';
 
 // The stored document of a file is read through storeLoadById
 vi.mock('../../../src/database/middleware-loader', async (importOriginal) => ({
@@ -58,6 +59,12 @@ describe('loadFile on staged sync files', () => {
     await expect(loadFile(context, SYSTEM_USER, variant, { dontThrow: true })).resolves.toBeUndefined();
     // The path itself passes the first check, the refusal comes from the document actually found
     expect(storeLoadById).toHaveBeenCalledWith(context, SYSTEM_USER, variant, expect.anything(), expect.anything());
+  });
+
+  it.each([stagedFileId, `Sync/inflight/${stagedFileId.slice(SYNC_INFLIGHT_STORAGE_PATH.length + 1)}`])('keeps the staged key %s out of the error payload', async (fileId) => {
+    const error = await loadFile(context, SYSTEM_USER, fileId).catch((reason: unknown) => reason as GraphQLError);
+    expect(error).toBeInstanceOf(GraphQLError);
+    expect(JSON.stringify((error as GraphQLError).extensions).toLowerCase()).not.toContain('inflight');
   });
 
   it('does not match a sibling root that only shares the prefix', async () => {

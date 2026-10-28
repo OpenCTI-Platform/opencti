@@ -133,7 +133,7 @@ export const loadFile = async (
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      throw FunctionalError('File not found or restricted');
     }
     // 01. Check if user as enough capability to get support packages
     if (pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
@@ -202,7 +202,7 @@ export const loadFile = async (
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      throw FunctionalError('File not found or restricted');
     }
     // 03. Check if metadata contains an entity_id, we need to check if the user has real access to this instance
     const { metaData } = document;
