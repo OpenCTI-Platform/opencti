@@ -1,6 +1,6 @@
 import { ForbiddenAccess } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, SETTINGS_SETKILLCHAINPHASES, SETTINGS_SETLABELS } from '../../utils/access';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../utils/access';
 
 const hasCapability = (names: string[] | undefined, capability: string) => (names ?? []).some((name) => name.includes(capability));
 
@@ -29,21 +29,15 @@ export const canSubmitFormTo = (user: AuthUser, isDraft: boolean): boolean => {
 
 export interface FormSubmissionSideEffects {
   pendingLabels: number; // labels created by the submission
-  pendingKillChainPhases: number; // objects created by the submission that carry a kill chain phase
 }
 
-export const checkFormSubmissionAccess = (user: AuthUser, isDraft: boolean, { pendingLabels, pendingKillChainPhases }: FormSubmissionSideEffects): void => {
+export const checkFormSubmissionAccess = (user: AuthUser, isDraft: boolean, { pendingLabels }: FormSubmissionSideEffects): void => {
   if (!canSubmitFormTo(user, isDraft)) {
     throw ForbiddenAccess('You are not allowed to submit forms in this destination.', { isDraft });
   }
   // Only Create / Update knowledge is given by the form capability: creating a label is still a right of its own.
   if (pendingLabels > 0 && !hasCapability(scopeCapabilities(user, isDraft), SETTINGS_SETLABELS)) {
     throw ForbiddenAccess('You are not allowed to create labels.', { capability: SETTINGS_SETLABELS });
-  }
-  // The import upserts the kill chain phases of the objects it creates, which needs the right to manage them: refuse
-  // up front rather than lose the objects when the import is refused.
-  if (pendingKillChainPhases > 0 && !hasCapability(scopeCapabilities(user, isDraft), SETTINGS_SETKILLCHAINPHASES)) {
-    throw ForbiddenAccess('You are not allowed to attach kill chain phases to the objects created in a form.', { capability: SETTINGS_SETKILLCHAINPHASES });
   }
 };
 
