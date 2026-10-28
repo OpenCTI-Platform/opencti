@@ -7,6 +7,7 @@ import useAuth from '../../utils/hooks/useAuth';
 import WidgetContainer from './WidgetContainer';
 import WidgetNoData from './WidgetNoData';
 import WidgetTimeSeriesBreakdown, { WidgetTimeSeriesBreakdownData } from './WidgetTimeSeriesBreakdown';
+import WidgetBreakdownErrorBoundary from './WidgetBreakdownErrorBoundary';
 import useDashboardViz from './useDashboardViz';
 import WidgetRenderContent from './WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../utils/widget/widget';
@@ -149,15 +150,17 @@ const TimeSeriesBreakdownChart = <TQuery extends OperationType>({
         queryRef={queryRef}
         host={host}
       >
-        <TimeSeriesBreakdownContent<TQuery>
-          query={query}
-          queryRef={queryRef!}
-          selectBreakdown={selectBreakdown}
-          type={widget.type}
-          parameters={parameters}
-          onMounted={setChart}
-          onWarningChange={setWarning}
-        />
+        <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+          <TimeSeriesBreakdownContent<TQuery>
+            query={query}
+            queryRef={queryRef!}
+            selectBreakdown={selectBreakdown}
+            type={widget.type}
+            parameters={parameters}
+            onMounted={setChart}
+            onWarningChange={setWarning}
+          />
+        </WidgetBreakdownErrorBoundary>
       </WidgetRenderContent>
     </WidgetContainer>
   );

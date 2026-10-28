@@ -56,6 +56,18 @@ describe('buildHistogramBreakdownAggregations', () => {
     });
   });
 
+  it('should filter every key of a field with many values on its own', () => {
+    const aggs = buildHistogramBreakdownAggregations({ field: 'creator_id', keys: ['user.a', 'user-b'], filterPerKey: true }, countOverTime) as any;
+    // Keyed by position: a value with dots never becomes a field name of the response
+    expect(aggs.breakdown.filters.filters).toEqual({ k0: { term: { 'creator_id.keyword': 'user.a' } }, k1: { term: { 'creator_id.keyword': 'user-b' } } });
+  });
+
+  it('should keep the terms restricted to the keys for a side of the relationships, whatever the filter per key', () => {
+    const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['malware'], filterPerKey: true, connectionSide: 'from' }, countOverTime) as any;
+    expect(aggs.breakdown.nested).toEqual({ path: 'connections' });
+    expect(aggs.breakdown.aggs.side.aggs.types.terms).toEqual({ field: 'connections.types.keyword', include: ['malware'], size: 1 });
+  });
+
   it('should read the side of the target from its role', () => {
     const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['sector'], connectionSide: 'to' }, countOverTime) as any;
     expect(aggs.breakdown.aggs.side.filter).toEqual({ query_string: { query: '*_to', fields: ['connections.role'] } });

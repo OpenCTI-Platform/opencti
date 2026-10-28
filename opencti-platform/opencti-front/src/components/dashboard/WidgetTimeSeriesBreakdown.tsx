@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ApexCharts from 'apexcharts';
+import { useIntl } from 'react-intl';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
@@ -18,7 +19,9 @@ import {
   getWidgetBreakdownLimit,
   getWidgetBreakdownOrder,
   isBreakdownTypeField,
+  isSameBreakdown,
   nextBreakdownChartWidth,
+  scheduleChartDraw,
 } from '../../utils/widget/widgetBreakdown';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
@@ -61,14 +64,23 @@ const WidgetTimeSeriesBreakdown = ({
   onWarningChange,
 }: WidgetTimeSeriesBreakdownProps) => {
   const { t_i18n } = useFormatter();
+  // t_i18n is a new function at every render, its intl is not: memos depend on intl
+  const intl = useIntl();
   const theme = useTheme<Theme>();
   const interval = getWidgetInterval(parameters);
 
+  // A refresh hands a new breakdown even when nothing changed (its end date moved): the previous one is
+  // kept then, so that no memo below is computed again and no chart is redrawn
+  const [stableBreakdown, setStableBreakdown] = useState(breakdown);
+  if (breakdown !== stableBreakdown && !isSameBreakdown(stableBreakdown, breakdown)) {
+    setStableBreakdown(breakdown);
+  }
+
   const series = useMemo(() => {
     // Parsed once for every series
-    const dates = (breakdown?.dates ?? []).map((date) => new Date(date as string));
+    const dates = (stableBreakdown?.dates ?? []).map((date) => new Date(date as string));
     // The API already returns the "Other" serie last
-    return (breakdown?.series ?? []).map((serie) => {
+    return (stableBreakdown?.series ?? []).map((serie) => {
       let name = serie.label;
       if (serie.isOther) {
         name = t_i18n('Other');
@@ -87,7 +99,7 @@ const WidgetTimeSeriesBreakdown = ({
         data: serie.values.map((value, index) => ({ x: dates[index], y: value })),
       };
     });
-  }, [breakdown, parameters.breakdownBy, t_i18n, theme]);
+  }, [stableBreakdown, parameters.breakdownBy, intl, theme]);
 
   // The points budget and the x axis labels follow the width of the chart. The width is only updated by
   // a large enough resize, and stays unknown until the first measure so that the chart is not drawn twice.
@@ -95,9 +107,15 @@ const WidgetTimeSeriesBreakdown = ({
   const { width } = useResizeObserver(containerRef);
   const [chartWidth, setChartWidth] = useState<number>();
   useEffect(() => {
-    if (width > 0) {
-      setChartWidth((previous) => nextBreakdownChartWidth(previous, width));
+    if (!(width > 0)) {
+      return undefined;
     }
+    if (chartWidth === undefined) {
+      // First draw: the charts of widgets measured together are drawn one per task, not all in one
+      return scheduleChartDraw(() => setChartWidth(width));
+    }
+    setChartWidth((previous) => nextBreakdownChartWidth(previous, width));
+    return undefined;
   }, [width]);
   const pointsBudget = chartWidth === undefined ? undefined : getRenderedPointsBudget(type, chartWidth, series.length);
 
@@ -108,7 +126,7 @@ const WidgetTimeSeriesBreakdown = ({
     [series, interval, pointsBudget],
   );
 
-  const truncated = breakdown?.truncated ?? false;
+  const truncated = stableBreakdown?.truncated ?? false;
   const limit = getWidgetBreakdownLimit(parameters);
   const order = getWidgetBreakdownOrder(parameters);
   const coarsenedInterval = rendered && rendered.interval !== interval ? rendered.interval : undefined;
@@ -125,7 +143,9 @@ const WidgetTimeSeriesBreakdown = ({
       }));
     }
     onWarningChange(warnings.length > 0 ? warnings.join(' ') : undefined);
-  }, [truncated, limit, order, coarsenedInterval, onWarningChange, t_i18n]);
+  }, [truncated, limit, order, coarsenedInterval, onWarningChange, intl]);
+  // The warnings leave with the chart, when an error replaces it
+  useEffect(() => () => onWarningChange(undefined), [onWarningChange]);
 
   const renderChart = () => {
     if (series.length === 0) {
@@ -143,6 +163,7 @@ const WidgetTimeSeriesBreakdown = ({
           isStacked={parameters.stacked ?? undefined}
           hasLegend={parameters.legend ?? undefined}
           isAnimated={isAnimated}
+          isUpdateAnimated={false}
           hasHoverFilter={false}
           tickAmount={getBreakdownTickAmount(chartWidth ?? width)}
           onMounted={onMounted}
@@ -157,6 +178,7 @@ const WidgetTimeSeriesBreakdown = ({
           isStacked={parameters.stacked ?? undefined}
           hasLegend={parameters.legend ?? undefined}
           isAnimated={isAnimated}
+          isUpdateAnimated={false}
           onMounted={onMounted}
         />
       );
@@ -177,6 +199,7 @@ const WidgetTimeSeriesBreakdown = ({
           maxValue={Number.isFinite(maxValue) ? maxValue : 0}
           isStacked={parameters.stacked ?? undefined}
           isAnimated={isAnimated}
+          isUpdateAnimated={false}
           onMounted={onMounted}
         />
       );
@@ -187,6 +210,7 @@ const WidgetTimeSeriesBreakdown = ({
         interval={rendered.interval}
         hasLegend={parameters.legend ?? undefined}
         isAnimated={isAnimated}
+        isUpdateAnimated={false}
         onMounted={onMounted}
       />
     );

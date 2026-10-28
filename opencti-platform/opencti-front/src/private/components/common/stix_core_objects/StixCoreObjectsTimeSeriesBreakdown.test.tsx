@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Mock } from 'vitest';
+import { act, waitFor } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
 import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
@@ -7,6 +9,7 @@ import { daysAgo, monthsAgo } from '../../../../utils/Time';
 
 const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
+  error: null as unknown,
   dashboardViz: vi.fn(),
   bars: vi.fn(),
   lines: vi.fn(),
@@ -18,7 +21,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../../../utils/hooks/useResizeObserver', () => ({ default: () => ({ width: mocks.width, height: 400 }) }));
 vi.mock('react-relay', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-relay')>()),
-  usePreloadedQuery: () => mocks.response,
+  usePreloadedQuery: () => {
+    if (mocks.error) throw mocks.error;
+    return mocks.response;
+  },
 }));
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: (args: unknown) => {
@@ -124,10 +130,17 @@ const render = (widget: Widget) => testRender(
   { userContext },
 );
 
+// The first draw of a chart can wait for the charts drawn just before it
+const drawn = async (chart: Mock) => {
+  await waitFor(() => expect(chart).toHaveBeenCalled());
+  return chart.mock.lastCall?.[0];
+};
+
 describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.width = 1200;
+    mocks.error = null;
   });
 
   it('queries one breakdown with the dataset filters, date attribute and series limit', () => {
@@ -178,13 +191,13 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(weekly.startDate).toEqual(monthsAgo(12));
   });
 
-  it('names the series after the entity, or the translated entity type', () => {
+  it('names the series after the entity, or the translated entity type', async () => {
     respond([
       { label: 'user-id', entity: { id: 'user-id', name: 'Alice' }, values: dailyValues(3) },
       { label: 'unresolved-id', entity: null, values: dailyValues(3) },
     ]);
     render(makeWidget('line', { breakdownBy: 'creator_id' }));
-    expect(mocks.lines.mock.calls[0][0].series.map((serie: { name: string }) => serie.name)).toEqual(['Alice', 'unresolved-id']);
+    expect((await drawn(mocks.lines)).series.map((serie: { name: string }) => serie.name)).toEqual(['Alice', 'unresolved-id']);
 
     vi.clearAllMocks();
     respond([
@@ -192,68 +205,69 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       { label: 'Not-A-Translated-Type', entity: null, values: dailyValues(3) },
     ]);
     render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    const names = mocks.areas.mock.calls[0][0].series.map((serie: { name: string }) => serie.name);
+    const names = (await drawn(mocks.areas)).series.map((serie: { name: string }) => serie.name);
     expect(names[0]).not.toEqual('entity_Report');
     expect(names[1]).toEqual('Not-A-Translated-Type');
   });
 
-  it('names the other serie and makes it grey, keeping the order of the API', () => {
+  it('names the other serie and makes it grey, keeping the order of the API', async () => {
     respond([
       { label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values: dailyValues(3) },
       { label: 'Other', isOther: true, entity: null, values: dailyValues(3) },
     ]);
     render(makeWidget('line', { breakdownBy: 'creator_id' }));
-    const names = mocks.lines.mock.calls[0][0].series.map((serie: { name: string }) => serie.name);
-    expect(names).toEqual(['Alice', 'Other']);
-    const [alice, other] = mocks.lines.mock.calls[0][0].series;
+    const { series } = await drawn(mocks.lines);
+    expect(series.map((serie: { name: string }) => serie.name)).toEqual(['Alice', 'Other']);
+    const [alice, other] = series;
     expect(alice.color).toBeUndefined();
     expect(other.color).toBeTruthy();
   });
 
-  it('places the values of every series on the shared dates', () => {
+  it('places the values of every series on the shared dates', async () => {
     respond([{ label: 'Report', entity: null, values: [4, 0, 7] }]);
     render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    expect(mocks.lines.mock.calls[0][0].series[0].data).toEqual([
+    expect((await drawn(mocks.lines)).series[0].data).toEqual([
       { x: new Date('2025-10-01T00:00:00.000Z'), y: 4 },
       { x: new Date('2025-10-02T00:00:00.000Z'), y: 0 },
       { x: new Date('2025-10-03T00:00:00.000Z'), y: 7 },
     ]);
   });
 
-  it('keeps the requested interval for lines the chart width can show, without animating many points', () => {
-    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
+  it('keeps the requested interval for lines the chart width can show, without animating many points', async () => {
+    const series = Array.from({ length: 10 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
     respond(series);
     render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    // 1200 px show 600 points per line
-    expect(mocks.lines.mock.calls[0][0]).toMatchObject({ interval: 'day', isAnimated: false });
-    expect(mocks.lines.mock.calls[0][0].series[0].data).toHaveLength(366);
+    // 1200 px show 600 points per line, and 10 lines stay under the points cap of the chart
+    const lines = await drawn(mocks.lines);
+    expect(lines).toMatchObject({ interval: 'day', isAnimated: false, isUpdateAnimated: false });
+    expect(lines.series[0].data).toHaveLength(366);
   });
 
-  it('coarsens lines, areas and heatmaps the chart width cannot show, and says so', () => {
+  it('coarsens lines, areas and heatmaps the chart width cannot show, and says so', async () => {
     const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
     respond(series);
-    // 1200 px show 200 heatmap cells per series
-    const { getByTestId } = render(makeWidget('heatmap', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    const heatmap = mocks.heatmap.mock.lastCall?.[0];
-    expect(heatmap).toMatchObject({ interval: 'week', isAnimated: false });
-    expect(heatmap.data[0].data.length).toBeLessThanOrEqual(200);
+    // 1200 px show 200 heatmap cells per series, but 20 series share at most 1500 cells: 75 per series
+    const { findByTestId } = render(makeWidget('heatmap', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    const heatmap = await drawn(mocks.heatmap);
+    expect(heatmap).toMatchObject({ interval: 'week', isAnimated: false, isUpdateAnimated: false });
+    expect(heatmap.data[0].data.length).toBeLessThanOrEqual(75);
     expect(heatmap.minValue).toBeLessThan(heatmap.maxValue);
-    expect(getByTestId('widget-warning').textContent).toContain('Interval adjusted to');
+    expect((await findByTestId('widget-warning')).textContent).toContain('Interval adjusted to');
 
     // 300 px show 150 points per line or area
     mocks.width = 300;
     render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    expect(mocks.lines.mock.lastCall?.[0].interval).toEqual('week');
+    expect((await drawn(mocks.lines)).interval).toEqual('week');
     render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    expect(mocks.areas.mock.lastCall?.[0]).toMatchObject({ interval: 'week', isAnimated: false });
+    expect(await drawn(mocks.areas)).toMatchObject({ interval: 'week', isAnimated: false });
   });
 
-  it('coarsens a large bar chart, disables its animations and says so', () => {
+  it('coarsens a large bar chart, disables its animations and says so', async () => {
     const series = Array.from({ length: 40 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
     respond(series);
-    const { getByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    const { findByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
 
-    const props = mocks.bars.mock.lastCall?.[0];
+    const props = await drawn(mocks.bars);
     // 1200 px allow 600 bars: 40 weekly series are still too many
     expect(props.interval).toEqual('month');
     expect(props.series).toHaveLength(40);
@@ -261,19 +275,21 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(props.isAnimated).toBe(false);
     expect(props.hasHoverFilter).toBe(false);
     expect(props.tickAmount).toEqual(20);
-    expect(getByTestId('widget-warning').textContent).toContain('Interval adjusted to');
+    expect((await findByTestId('widget-warning')).textContent).toContain('Interval adjusted to');
   });
 
-  it('coarsens less on a wide chart, and more on a narrow one', () => {
+  it('coarsens less on a wide chart, and more on a narrow one', async () => {
     const series = Array.from({ length: 3 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(366) }));
     respond(series);
     mocks.width = 2000;
-    render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    expect(mocks.bars.mock.lastCall?.[0].interval).toEqual('week');
+    const { unmount } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect((await drawn(mocks.bars)).interval).toEqual('week');
+    unmount();
 
+    vi.clearAllMocks();
     mocks.width = 300;
     render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    expect(mocks.bars.mock.lastCall?.[0].interval).toEqual('month');
+    expect((await drawn(mocks.bars)).interval).toEqual('month');
   });
 
   it('does not draw the chart before it is measured', () => {
@@ -286,13 +302,63 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(mocks.lines).not.toHaveBeenCalled();
   });
 
-  it('keeps a small bar chart as configured', () => {
+  it('keeps a small bar chart as configured', async () => {
     respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
     const { queryByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type', stacked: true }, multiTypesSelection));
 
-    const props = mocks.bars.mock.lastCall?.[0];
+    const props = await drawn(mocks.bars);
     expect(props).toMatchObject({ interval: 'day', isStacked: true, isAnimated: true });
     expect(queryByTestId('widget-warning')).toBeNull();
+  });
+
+  it('draws the charts of widgets mounted together one after the other', async () => {
+    respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
+    render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    // the first chart is drawn at once, the second one in a later task
+    expect(mocks.lines).toHaveBeenCalled();
+    expect(mocks.areas).not.toHaveBeenCalled();
+    await drawn(mocks.areas);
+  });
+
+  it('does not draw the chart again on a refresh that brings the same values', async () => {
+    const widget = makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection);
+    let refresh = () => {};
+    const RefreshedWidget = () => {
+      const [, setRefreshCount] = useState(0);
+      refresh = () => setRefreshCount((count) => count + 1);
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+    };
+    respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
+    testRender(<RefreshedWidget />, { userContext });
+    const { series } = await drawn(mocks.lines);
+
+    // a refresh hands a new breakdown, with the same values
+    respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
+    act(() => refresh());
+    expect(mocks.lines.mock.lastCall?.[0].series).toBe(series);
+
+    respond([{ label: 'Report', entity: null, values: [1, 2, 4] }]);
+    act(() => refresh());
+    expect(mocks.lines.mock.lastCall?.[0].series).not.toBe(series);
+    expect(mocks.lines.mock.lastCall?.[0].series[0].data[2].y).toEqual(4);
+  });
+
+  it('says why the API refused the breakdown, and leaves any other error to the widget', () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const refusal = (message: string) => ({ res: { errors: [{ message, extensions: { code: 'FUNCTIONAL_ERROR' } }] } });
+    const widget = makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection);
+
+    mocks.error = refusal('Time series breakdown is too large, reduce the period, the interval or the number of series');
+    expect(render(widget).getByText('This breakdown has too many points for the selected period. Reduce the period, the interval or the number of series.')).toBeTruthy();
+
+    mocks.error = refusal('Time series breakdown does not support this field for these entity types');
+    expect(render(widget).getByText('This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.')).toBeTruthy();
+
+    mocks.error = new Error('Network error');
+    expect(() => render(widget)).toThrow('Network error');
+    vi.mocked(console.error).mockRestore();
   });
 
   it('warns when only the top values are displayed', () => {

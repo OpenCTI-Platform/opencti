@@ -45,7 +45,9 @@ import {
   isObjectPathTargetMultipleAttribute,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
+  READ_ENTITIES_INDICES,
   READ_INDEX_HISTORY,
+  READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
@@ -896,11 +898,14 @@ export const TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT = 10;
 export const TIME_SERIES_BREAKDOWN_MAX_LIMIT = 50;
 // Stay under the default search.max_buckets (65,535) of Elasticsearch and OpenSearch
 export const TIME_SERIES_BREAKDOWN_MAX_BUCKETS = 50000;
-const BREAKDOWN_UNKNOWN_KEY = 'unknown';
 const BREAKDOWN_ATTRIBUTE_FORMATS = ['id', 'vocabulary', 'enum'];
 // Among id attributes, only the creator can be broken down
 const BREAKDOWN_ALLOWED_ID_ATTRIBUTES = ['creator_id'];
 const BREAKDOWN_OTHER_LABEL = 'Other';
+// Values resolved beyond the limit at once, to replace the ones that cannot be resolved (like the SYSTEM user)
+const BREAKDOWN_RESOLUTION_MARGIN = 10;
+// From this many distinct values per series kept, the histogram uses one filter per value
+const BREAKDOWN_FILTER_PER_KEY_RATIO = 3;
 // Relation refs usable as a breakdown field. Any other ref (objects, externalReferences, killChainPhases...)
 // has an unbounded cardinality or is not a classification of the entity, and is refused.
 export const BREAKDOWN_ALLOWED_REFS = [INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS, INPUT_ASSIGNEE, INPUT_PARTICIPANT];
@@ -1011,19 +1016,26 @@ const timeSeriesBreakdown = async (
   };
   const bucketsOrder = isAscending ? 'asc' : 'desc';
   // 1. Discover the candidate values over the whole period. Vocabulary and enum values keep their raw form.
-  // The terms aggregation is ordered like the selection below, so its capped page holds the right values
+  // Ranked on their number of entities (the series values below stay weighted), which spares the weight
+  // sum of every value; no missing bucket either, so a real "unknown" value is a value like any other.
+  // The types of a side of the relationships are ranked the same way, on their number of relationships.
   const candidates = connectionSide
     ? await elConnectionTypesAggregationCount(context, user, indices, { ...breakdownArgs, connectionSide, bucketsOrder })
-    : await elAggregationCount(context, user, indices, { ...breakdownArgs, convertEntityTypeLabel: true, normalizeLabel: false, bucketsOrder });
-  // desc keeps the values with the highest total over the period, asc the lowest ones
-  const sortedCandidates = R.sortWith(
-    [isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))],
-    candidates.filter((c) => c.key !== BREAKDOWN_UNKNOWN_KEY),
-  );
-  // 2. Drop unresolvable values (like the SYSTEM user) before applying the limit, so the limit is honored
-  const usableCandidates = resolveEntities
-    ? await resolveAggregateDistributions(context, user, sortedCandidates)
-    : sortedCandidates.map((candidate) => ({ ...candidate, entity: null }));
+    : await elAggregationCount(context, user, indices, { ...breakdownArgs, convertEntityTypeLabel: true, normalizeLabel: false, rankByCount: true, bucketsOrder });
+  // desc keeps the values with the most entities over the period, asc the fewest
+  const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], candidates);
+  // 2. Drop unresolvable values (like the SYSTEM user) before applying the limit, so the limit is honored.
+  // Resolved page by page: one more value than the limit is enough to know whether the series are truncated.
+  let usableCandidates: (typeof sortedCandidates[number] & { entity: BasicStoreEntity | null })[] = [];
+  if (resolveEntities) {
+    const pageSize = seriesLimit + BREAKDOWN_RESOLUTION_MARGIN;
+    for (let from = 0; from < sortedCandidates.length && usableCandidates.length <= seriesLimit; from += pageSize) {
+      const resolved = await resolveAggregateDistributions(context, user, sortedCandidates.slice(from, from + pageSize));
+      usableCandidates = usableCandidates.concat(resolved);
+    }
+  } else {
+    usableCandidates = sortedCandidates.map((candidate) => ({ ...candidate, entity: null }));
+  }
   const selected = R.take(seriesLimit, usableCandidates);
   // The terms aggregation is capped: a full candidates page means some values may never have been seen
   // (in asc, the true lowest values may be among them)
@@ -1031,32 +1043,29 @@ const timeSeriesBreakdown = async (
   if (selected.length === 0 && !withOther) {
     return { truncated, dates: [], series: [] };
   }
-  // 3. Count every selected value, and the entities carrying none of them, over time in a single query
+  // 3. Count every selected value, and the entities carrying none of them, over time in a single query.
+  // Many distinct values (a full candidates page, or several times the limit) mean a field with many values
+  // per entity or a high cardinality, where one filter per value is much faster than a restricted terms
+  const filterPerKey = candidates.length >= MAX_AGGREGATION_SIZE || candidates.length >= BREAKDOWN_FILTER_PER_KEY_RATIO * seriesLimit;
   const histograms = await elHistogramBreakdownCount(context, user, indices, {
     ...breakdownArgs,
     interval,
     keys: selected.map((candidate) => candidate.key),
     withOther,
+    filterPerKey,
     connectionSide,
   });
   // Every series shares the same dates: they are sent once, each series only carries its values
   const axis = buildTimeSeriesAxis(startDate, endDate, interval);
-  const series = selected.map(({ label, value, entity, key }) => ({
-    label,
-    value,
-    entity,
-    isOther: false,
-    values: fillTimeSeriesValues(axis, histograms.get(key) ?? []),
-  }));
+  const sumOf = (values: number[]) => values.reduce((total, value) => total + value, 0);
+  const series = selected.map(({ label, entity, key }) => {
+    const values = fillTimeSeriesValues(axis, histograms.get(key) ?? []);
+    // The weighted total of the series, the candidates being only ranked on their number of entities
+    return { label, value: sumOf(values), entity, isOther: false, values };
+  });
   if (withOther) {
-    const otherPoints = histograms.get(HISTOGRAM_BREAKDOWN_OTHER_KEY) ?? [];
-    series.push({
-      label: BREAKDOWN_OTHER_LABEL,
-      value: otherPoints.reduce((total, point) => total + point.value, 0),
-      entity: null,
-      isOther: true,
-      values: fillTimeSeriesValues(axis, otherPoints),
-    });
+    const otherValues = fillTimeSeriesValues(axis, histograms.get(HISTOGRAM_BREAKDOWN_OTHER_KEY) ?? []);
+    series.push({ label: BREAKDOWN_OTHER_LABEL, value: sumOf(otherValues), entity: null, isOther: true, values: otherValues });
   }
   return { truncated, dates: axis.dates, series };
 };
@@ -1074,7 +1083,8 @@ export const timeSeriesBreakdownEntities = async (
 ) => {
   checkTimeSeriesBreakdownLimit(args.limit);
   const breakdownField = resolveBreakdownField(types, args.field);
-  const indices = args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES;
+  // Entities only: the relationships indices hold nothing a Stix-Core-Object filter could match
+  const indices = args.onlyInferred ? [READ_INDEX_INFERRED_ENTITIES] : READ_ENTITIES_INDICES;
   // Without an end date, the histogram would create every empty bucket up to the most recent entity,
   // a date in the future included, past the size checked above: the period always ends
   const boundedArgs = { ...args, endDate: args.endDate ?? new Date() };

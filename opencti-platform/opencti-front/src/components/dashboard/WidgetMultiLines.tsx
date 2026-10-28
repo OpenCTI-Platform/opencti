@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import type { Theme } from '../Theme';
-import { lineChartOptions } from '../../utils/Charts';
+import { lineChartOptions, withChartAnimations } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
 import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
 
@@ -12,6 +12,8 @@ interface WidgetMultiLinesProps {
   interval?: string | null;
   hasLegend?: boolean;
   isAnimated?: boolean;
+  // Off: the chart is drawn with its animations, but its updates are not animated
+  isUpdateAnimated?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -20,6 +22,7 @@ const WidgetMultiLines = ({
   interval,
   hasLegend = false,
   isAnimated = true,
+  isUpdateAnimated = true,
   onMounted,
 }: WidgetMultiLinesProps) => {
   const theme = useTheme<Theme>();
@@ -35,11 +38,8 @@ const WidgetMultiLines = ({
       false,
       hasLegend,
     ) as ApexOptions;
-    if (isAnimated) {
-      return chartOptions;
-    }
-    return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
-  }, [theme, formatter, hasLegend, isAnimated]);
+    return withChartAnimations(chartOptions, isAnimated, isUpdateAnimated) as ApexOptions;
+  }, [theme, formatter, hasLegend, isAnimated, isUpdateAnimated]);
 
   return (
     <Chart

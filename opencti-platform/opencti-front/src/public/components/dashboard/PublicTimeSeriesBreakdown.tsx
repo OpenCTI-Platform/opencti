@@ -8,6 +8,7 @@ import usePublicDashboardViz from './usePublicDashboardViz';
 import usePublicWidgetDefaultDates from './usePublicWidgetDefaultDates';
 import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 import WidgetTimeSeriesBreakdown, { WidgetTimeSeriesBreakdownData } from '../../../components/dashboard/WidgetTimeSeriesBreakdown';
+import WidgetBreakdownErrorBoundary from '../../../components/dashboard/WidgetBreakdownErrorBoundary';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import type { Widget } from '../../../utils/widget/widget';
 import { getWidgetInterval } from '../../../utils/widget/widgetUtils';
@@ -81,15 +82,17 @@ const PublicTimeSeriesBreakdown = <TQuery extends OperationType>({
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicTimeSeriesBreakdownContent<TQuery>
-            query={query}
-            selectBreakdown={selectBreakdown}
-            queryRef={queryRef}
-            type={type}
-            parameters={parameters}
-            onMounted={setChart}
-            onWarningChange={setWarning}
-          />
+          <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+            <PublicTimeSeriesBreakdownContent<TQuery>
+              query={query}
+              selectBreakdown={selectBreakdown}
+              queryRef={queryRef}
+              type={type}
+              parameters={parameters}
+              onMounted={setChart}
+              onWarningChange={setWarning}
+            />
+          </WidgetBreakdownErrorBoundary>
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />

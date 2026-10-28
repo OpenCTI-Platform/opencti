@@ -2,7 +2,7 @@ import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
-import { heatMapOptions } from '../../utils/Charts';
+import { heatMapOptions, withChartAnimations } from '../../utils/Charts';
 import type { Theme } from '../Theme';
 import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
 
@@ -42,6 +42,8 @@ interface WidgetMultiHeatMapProps {
   isStacked?: boolean;
   interval?: string | null;
   isAnimated?: boolean;
+  // Off: the chart is drawn with its animations, but its updates are not animated
+  isUpdateAnimated?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -52,14 +54,16 @@ const WidgetMultiHeatMap = ({
   isStacked = false,
   interval,
   isAnimated = true,
+  isUpdateAnimated = true,
   onMounted,
 }: WidgetMultiHeatMapProps) => {
   const theme = useTheme<Theme>();
   const axisFormatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    // Width of each color range, not to be confused with the time interval of the series
-    const rangeWidth = Math.trunc((maxValue - minValue) / 9);
+    // Width of each color range, not to be confused with the time interval of the series. At least 1:
+    // with values spread over less than 9, a width of 0 left every range empty ("1 - 0") and no intensity
+    const rangeWidth = Math.max(1, Math.trunc((maxValue - minValue) / 9));
     const colorRanges = Array(10)
       .fill(0)
       .map((_, i) => ({
@@ -89,11 +93,8 @@ const WidgetMultiHeatMap = ({
       isStacked,
       colorRanges,
     ) as ApexOptions;
-    if (isAnimated) {
-      return chartOptions;
-    }
-    return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
-  }, [theme, isStacked, maxValue, minValue, axisFormatter, isAnimated]);
+    return withChartAnimations(chartOptions, isAnimated, isUpdateAnimated) as ApexOptions;
+  }, [theme, isStacked, maxValue, minValue, axisFormatter, isAnimated, isUpdateAnimated]);
 
   return (
     <Chart

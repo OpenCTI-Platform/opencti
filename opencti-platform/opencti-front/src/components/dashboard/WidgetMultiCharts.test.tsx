@@ -38,6 +38,25 @@ describe('Time series chart widgets', () => {
     expect(lastOptions().chart?.stacked).toBe(true);
   });
 
+  it('keeps the first draw animated without animating the updates on demand', () => {
+    testRender(<WidgetMultiLines series={series} interval="day" isUpdateAnimated={false} />);
+    expect(lastOptions().chart?.animations?.enabled).not.toBe(false);
+    expect(lastOptions().chart?.animations?.dynamicAnimation?.enabled).toBe(false);
+
+    testRender(<WidgetMultiAreas series={series} interval="day" isUpdateAnimated={false} />);
+    expect(lastOptions().chart?.animations?.dynamicAnimation?.enabled).toBe(false);
+    testRender(<WidgetMultiHeatMap data={series} minValue={0} maxValue={3} isUpdateAnimated={false} />);
+    expect(lastOptions().chart?.animations?.dynamicAnimation?.enabled).toBe(false);
+  });
+
+  it('colors the values of a heatmap spread over less than 9', () => {
+    testRender(<WidgetMultiHeatMap data={series} minValue={0} maxValue={3} />);
+    const ranges = lastOptions().plotOptions?.heatmap?.colorScale?.ranges ?? [];
+    [1, 2, 3].forEach((value) => {
+      expect(ranges.some((range) => (range.from ?? 0) <= value && value <= (range.to ?? 0))).toBe(true);
+    });
+  });
+
   it('labels the heatmap axis with its interval and disables its animations on demand', () => {
     testRender(<WidgetMultiHeatMap data={series} minValue={0} maxValue={3} />);
     expect(lastOptions().chart?.animations?.enabled).not.toBe(false);

@@ -3,7 +3,7 @@ import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import React, { useMemo } from 'react';
 import type { Theme } from '../Theme';
-import { areaChartOptions } from '../../utils/Charts';
+import { areaChartOptions, withChartAnimations } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
 import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
 
@@ -13,6 +13,8 @@ interface WidgetMultiAreasProps {
   isStacked?: boolean;
   hasLegend?: boolean;
   isAnimated?: boolean;
+  // Off: the chart is drawn with its animations, but its updates are not animated
+  isUpdateAnimated?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -22,6 +24,7 @@ const WidgetMultiAreas = ({
   isStacked = false,
   hasLegend = false,
   isAnimated = true,
+  isUpdateAnimated = true,
   onMounted,
 }: WidgetMultiAreasProps) => {
   const theme = useTheme<Theme>();
@@ -37,11 +40,8 @@ const WidgetMultiAreas = ({
       isStacked,
       hasLegend,
     ) as ApexOptions;
-    if (isAnimated) {
-      return chartOptions;
-    }
-    return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
-  }, [theme, formatter, isStacked, hasLegend, isAnimated]);
+    return withChartAnimations(chartOptions, isAnimated, isUpdateAnimated) as ApexOptions;
+  }, [theme, formatter, isStacked, hasLegend, isAnimated, isUpdateAnimated]);
 
   return (
     <Chart
