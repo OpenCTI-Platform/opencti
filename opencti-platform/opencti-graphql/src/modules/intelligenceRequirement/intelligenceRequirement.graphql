@@ -204,6 +204,7 @@ type IrBatchStats {
   updated: Int!
   rescored: Int!
   backfilled: Int!
+  skipped: Int
   errors: Int!
 }
 type IrLastBatch {
@@ -214,6 +215,7 @@ type IrLastBatch {
   updated: Int!
   rescored: Int!
   backfilled: Int!
+  skipped: Int
   errors: Int!
 }
 type IrProcessingError {

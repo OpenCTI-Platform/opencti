@@ -25,7 +25,8 @@ import { parseIntelligenceRequirement, serializeIntelligenceRequirementInput } f
 import { rescoreRequirement } from './intelligenceRequirement-pipeline';
 import { checkRequirementHealth } from './intelligenceRequirement-health';
 import { generateRequirementBrief, markBriefStarted } from './intelligenceRequirement-brief';
-import { markRequirementDeleted } from './intelligenceRequirement-lifecycle';
+import { markRequirementDeleted, markRequirementRescan } from './intelligenceRequirement-lifecycle';
+import { invalidateInRequirementEntityIds } from './intelligenceRequirementMatch-domain';
 
 const rescanStartEventId = (rescanDays: number) => `${now() - (rescanDays * 24 * 3600 * 1000)}-0`;
 
@@ -64,7 +65,9 @@ export const intelligenceRequirementAdd = async (context: AuthContext, user: Aut
 
 /**
  * Replace the whole configuration of a requirement.
- * The stream position is kept, so the engine continues from where it was.
+ * When only the relevance changes, the stream position is kept: the stored entities are rescored.
+ * When the scope changes (subjects, criteria, conditions), the entities that did not meet the former scope were never stored:
+ * the stream is read again from the rescan window, so that a wider scope brings them in.
  */
 export const intelligenceRequirementUpdate = async (context: AuthContext, user: AuthUser, id: string, input: IntelligenceRequirementInput) => {
   enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
@@ -72,6 +75,13 @@ export const intelligenceRequirementUpdate = async (context: AuthContext, user: 
   if (!existing) throw FunctionalError('Intelligence requirement not found', { id });
   const attributes = serializeIntelligenceRequirementInput(input);
   const editInputs: EditInput[] = Object.entries(attributes).map(([key, value]) => ({ key, value: Array.isArray(value) ? value : [value] }));
+  const scopeChanged = existing.ir_scope_criteria !== attributes.ir_scope_criteria || existing.ir_subject_groups !== attributes.ir_subject_groups;
+  if (scopeChanged) {
+    const lastEventId = rescanStartEventId(attributes.ir_rescan_days);
+    const processing = { ...parseRequirementProcessing(existing), catchup_from: lastEventId };
+    editInputs.push({ key: 'lastEventId', value: [lastEventId] }, { key: 'ir_processing', value: [JSON.stringify(processing)] });
+    markRequirementRescan(id);
+  }
   const updated = await editInternalObject<StoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, editInputs);
   // Relevance rules may have changed: rescore the entities of the requirement (threshold crossings create inbox items)
   await rescoreRequirement(context, SYSTEM_USER, parseIntelligenceRequirement(updated as unknown as BasicStoreEntityIntelligenceRequirement), {
@@ -112,6 +122,7 @@ const DELETE_SWEEP_DELAY = 30 * 1000;
 export const intelligenceRequirementDelete = async (context: AuthContext, user: AuthUser, id: string) => {
   enforceEnableFeatureFlag(INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG);
   markRequirementDeleted(id);
+  invalidateInRequirementEntityIds(id);
   const deleted = await deleteInternalObject(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
   await deleteRequirementContent(context, id);
   setTimeout(() => {

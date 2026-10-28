@@ -16204,6 +16204,7 @@ type IrBatchStats {
   updated: Int!
   rescored: Int!
   backfilled: Int!
+  skipped: Int
   errors: Int!
 }
 
@@ -16215,6 +16216,7 @@ type IrLastBatch {
   updated: Int!
   rescored: Int!
   backfilled: Int!
+  skipped: Int
   errors: Int!
 }
 

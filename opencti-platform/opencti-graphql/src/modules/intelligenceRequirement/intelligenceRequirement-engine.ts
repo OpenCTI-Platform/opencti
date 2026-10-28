@@ -10,7 +10,7 @@ import { getParentTypes } from '../../schema/schemaUtils';
 import type { ParsedIntelligenceRequirement, StoreIrCriterion } from './intelligenceRequirement-types';
 import type { StoreIrMatchExplanation } from './intelligenceRequirementMatch-types';
 import { parseIrFilters } from './intelligenceRequirement-config';
-import { listInRequirementEntityIds } from './intelligenceRequirementMatch-domain';
+import { getInRequirementEntityIds } from './intelligenceRequirementMatch-domain';
 import { resolveSubjectGroup } from './intelligenceRequirement-groups';
 
 // Scope engine: evaluates one stream event against the entry criteria of a requirement
@@ -52,7 +52,7 @@ export const buildEngineState = async (context: AuthContext, user: AuthUser, ir:
     }
   }
   const needsContent = ir.ir_scope_criteria.some((c) => c.from_in_requirement);
-  const inRequirement = needsContent ? await listInRequirementEntityIds(context, user, ir.id) : new Set<string>();
+  const inRequirement = needsContent ? await getInRequirementEntityIds(context, user, ir.id) : new Set<string>();
   return { ir, listIds, keywords, excludedKeywords, inRequirement, filterCache: new Map() };
 };
 
@@ -314,3 +314,72 @@ export const evaluateEntity = async (context: AuthContext, user: AuthUser, state
   }
   return candidates;
 };
+
+// region on-demand eligibility
+const CANDIDATE_MAX_RELATIONS_PER_CRITERION = 1000;
+
+// Criteria whose conditions of the scope apply to this type: their candidates may be refused, then come back with a new fact
+export const conditionedCriteriaFor = (ir: ParsedIntelligenceRequirement, type: string) => ir.ir_scope_criteria.filter((c) => c.mode !== 'off'
+  && (c.kind === 'attribute' || c.kind === 'graph')
+  && isTypeMatching(type, c.target_types)
+  && (c.conditions ?? []).some((cond) => isTypeMatching(type, cond.applies_to_types ?? [])));
+
+/**
+ * On demand: an entity that is not stored received a fact that a condition of the scope reads (a relationship, an update).
+ * Its own side is read to find the criteria that would bring it: attribute (it is a member of the subject groups and matches
+ * the target filters), graph (one of its existing relationships comes from a starting point). One proof per criterion is enough.
+ * Keyword criteria are not re-read: the texts arrive through the events of the entity or of its containers.
+ */
+export const evaluateCandidate = async (
+  context: AuthContext,
+  user: AuthUser,
+  state: IrEngineState,
+  entity: { id: string; type: string },
+  criteria: StoreIrCriterion[],
+): Promise<IrCandidate[]> => {
+  const candidates: IrCandidate[] = [];
+  const at = new Date().toISOString();
+  for (let i = 0; i < criteria.length; i += 1) {
+    const criterion = criteria[i];
+    if (!await isTarget(context, user, state, criterion, entity.id, entity.type)) continue;
+    if (criterion.kind === 'attribute') {
+      if (criterion.from_group_ids.length === 0 || await isGroupMember(context, user, state, criterion.from_group_ids, entity.id)) {
+        candidates.push({ entity, criterion, explanation: { criterion_id: criterion.id, kind: 'attribute', at } });
+      }
+    } else {
+      // outgoing: (starting point) —relationship→ (entity); incoming: (entity) —relationship→ (starting point)
+      const sides: { direction: string; args: { fromId?: string; toId?: string } }[] = [];
+      if (criterion.direction === 'outgoing' || criterion.direction === 'both') sides.push({ direction: 'outgoing', args: { toId: entity.id } });
+      if (criterion.direction === 'incoming' || criterion.direction === 'both') sides.push({ direction: 'incoming', args: { fromId: entity.id } });
+      let found = false;
+      for (let j = 0; j < sides.length && !found; j += 1) {
+        const side = sides[j];
+        const relations = (await fullRelationsList<BasicStoreRelation>(context, user, criterion.relationship_types, side.args))
+          .slice(0, CANDIDATE_MAX_RELATIONS_PER_CRITERION);
+        for (let k = 0; k < relations.length && !found; k += 1) {
+          const relation = relations[k];
+          const anchor = side.direction === 'outgoing' ? { id: relation.fromId, type: relation.fromType } : { id: relation.toId, type: relation.toType };
+          if (await isAnchor(context, user, state, criterion, anchor.id, anchor.type)) {
+            found = true;
+            candidates.push({
+              entity,
+              criterion,
+              explanation: {
+                criterion_id: criterion.id,
+                kind: 'graph',
+                at,
+                anchor_id: anchor.id,
+                anchor_type: anchor.type,
+                relationship_id: relation.relationship_type === IR_CONTAINS_RELATIONSHIP ? undefined : relation.internal_id,
+                relationship_type: relation.relationship_type ?? relation.entity_type,
+                direction: side.direction,
+              },
+            });
+          }
+        }
+      }
+    }
+  }
+  return candidates;
+};
+// endregion

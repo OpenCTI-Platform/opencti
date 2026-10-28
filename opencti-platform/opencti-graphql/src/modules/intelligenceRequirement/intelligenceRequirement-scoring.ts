@@ -2,6 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { fullRelationsList, internalFindByIds, pageRelationsConnection } from '../../database/middleware-loader';
 import { READ_RELATIONSHIPS_INDICES } from '../../database/utils';
+import { elBulk, ES_RETRY_ON_CONFLICT } from '../../database/engine';
 import { patchAttribute } from '../../database/middleware';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { ParsedIntelligenceRequirement, StoreIrCondition, StoreIrGroupLink, StoreIrPathCondition, StoreIrRule } from './intelligenceRequirement-types';
@@ -11,8 +12,9 @@ import { IR_CONTAINS_RELATIONSHIP, isEntityMatchingFilters, isTypeMatching } fro
 import { groupMemberIds } from './intelligenceRequirement-groups';
 
 // Eligibility (scope): an entity is part of the requirement when at least one of the criteria that brought it
-// has all its conditions met for it (conditions that apply to its type). Otherwise it is kept as not eligible:
-// hidden, not a starting point of the second hop, re-evaluated when a new fact arrives on it.
+// has all its conditions met for it (conditions that apply to its type). A candidate that does not meet them is not stored;
+// it is evaluated again when a fact that a condition reads arrives on it. A stored entity that no longer meets them leaves,
+// unless an analyst accepted it: it then stays as not eligible (hidden, not a starting point of the second hop).
 // Relevance: score = sum of the points of the matching rules, capped 0-100. Rules only rank, they never exclude.
 
 export interface IrRuleOutcome {
@@ -133,6 +135,25 @@ export const computeMatchEligibility = async (
   return { eligible, outcomes };
 };
 
+/**
+ * A candidate brought by a criterion is stored only if it meets the conditions of that criterion
+ * (or if it is already stored for another criterion). A criterion without condition for its type admits it at once.
+ */
+export const isCandidateEligible = async (
+  context: AuthContext,
+  user: AuthUser,
+  ir: ParsedIntelligenceRequirement,
+  entity: { id: string; type: string },
+  criterionId: string,
+) => {
+  const criterion = ir.ir_scope_criteria.find((c) => c.id === criterionId);
+  const conditions = (criterion?.conditions ?? []).filter((cond) => isTypeMatching(entity.type, cond.applies_to_types ?? []));
+  for (let i = 0; i < conditions.length; i += 1) {
+    if (!await isConditionMet(context, user, ir, entity.id, conditions[i])) return false;
+  }
+  return true;
+};
+
 export const computeMatchScore = async (
   context: AuthContext,
   user: AuthUser,
@@ -174,6 +195,39 @@ export interface IrChangeMeta {
 }
 
 const MAX_HISTORY = 100;
+
+/**
+ * Score and history writes of a batch, sent in one bulk request at its end instead of one update per entity.
+ * A match read again during the batch gets the fields still pending (overlay), so that nothing written earlier is lost.
+ */
+export const createMatchWriter = () => {
+  const pending = new Map<string, { index: string; doc: Record<string, unknown> }>();
+  return {
+    write: (match: BasicStoreEntityIntelligenceRequirementMatch, doc: Record<string, unknown>) => {
+      pending.set(match.id, { index: match._index, doc: { ...(pending.get(match.id)?.doc ?? {}), ...doc } });
+    },
+    overlay: (match: BasicStoreEntityIntelligenceRequirementMatch) => {
+      const entry = pending.get(match.id);
+      if (entry) Object.assign(match, entry.doc);
+    },
+    discard: (matchId: string) => {
+      pending.delete(matchId);
+    },
+    flush: async (context: AuthContext) => {
+      if (pending.size === 0) return 0;
+      const updatedAt = new Date().toISOString();
+      const body = Array.from(pending.entries()).flatMap(([id, { index, doc }]) => [
+        { update: { _index: index, _id: id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { doc: { ...doc, updated_at: updatedAt } },
+      ]);
+      const written = pending.size;
+      pending.clear();
+      await elBulk(context, { refresh: true, body });
+      return written;
+    },
+  };
+};
+export type IrMatchWriter = ReturnType<typeof createMatchWriter>;
 
 const parseOutcomes = (value: string | undefined | null): IrRuleOutcome[] => {
   try {
@@ -225,7 +279,9 @@ export const rescoreMatch = async (
   ir: ParsedIntelligenceRequirement,
   match: BasicStoreEntityIntelligenceRequirementMatch,
   meta: IrChangeMeta = {},
+  writer?: IrMatchWriter, // engine batch: the write is grouped with the others of the batch
 ): Promise<IrRescoreResult> => {
+  writer?.overlay(match);
   const previousScore = match.match_excluded ? 0 : (match.match_score ?? 0);
   const result = await computeMatchScore(context, user, ir, match);
   const breakdown = JSON.stringify(result.breakdown);
@@ -248,12 +304,15 @@ export const rescoreMatch = async (
   }
   const serializedHistory = record ? JSON.stringify(history.slice(-MAX_HISTORY)) : match.match_history;
   if (record || result.score !== match.match_score || result.excluded !== (match.match_excluded ?? false) || breakdown !== match.match_score_breakdown) {
-    await patchAttribute(context, user, match.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, {
+    const doc = {
       match_score: result.score,
       match_excluded: result.excluded,
       match_score_breakdown: breakdown,
       ...(record ? { match_history: serializedHistory } : {}),
-    });
+    };
+    // A match just created may not carry its index yet: written at once
+    if (writer && match._index) writer.write(match, doc);
+    else await patchAttribute(context, user, match.id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH, doc);
   }
   // Keep the in-memory match up to date: the engine reuses it for the next events of the batch
   Object.assign(match, { match_score_breakdown: breakdown, match_history: serializedHistory });

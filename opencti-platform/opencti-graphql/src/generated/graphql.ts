@@ -15085,6 +15085,7 @@ export type IrBatchStats = {
   errors: Scalars['Int']['output'];
   events: Scalars['Int']['output'];
   rescored: Scalars['Int']['output'];
+  skipped?: Maybe<Scalars['Int']['output']>;
   updated: Scalars['Int']['output'];
 };
 
@@ -15241,6 +15242,7 @@ export type IrLastBatch = {
   errors: Scalars['Int']['output'];
   events: Scalars['Int']['output'];
   rescored: Scalars['Int']['output'];
+  skipped?: Maybe<Scalars['Int']['output']>;
   updated: Scalars['Int']['output'];
 };
 
@@ -49067,6 +49069,7 @@ export type IrBatchStatsResolvers<ContextType = any, ParentType extends Resolver
   errors?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   rescored?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  skipped?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
@@ -49134,6 +49137,7 @@ export type IrLastBatchResolvers<ContextType = any, ParentType extends Resolvers
   errors?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   rescored?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  skipped?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   updated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 

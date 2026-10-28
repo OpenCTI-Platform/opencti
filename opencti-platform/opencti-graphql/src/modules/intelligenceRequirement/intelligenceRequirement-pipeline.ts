@@ -6,10 +6,19 @@ import { FunctionalError } from '../../config/errors';
 import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, type ParsedIntelligenceRequirement } from './intelligenceRequirement-types';
 import { type BasicStoreEntityIntelligenceRequirementMatch, IR_MATCH_IN_STATUSES } from './intelligenceRequirementMatch-types';
 import { type BasicStoreEntityIntelligenceRequirementItem, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_ITEM } from './intelligenceRequirementItem-types';
-import { listMatches, loadMatch, loadMatchById, updateMatchStatus, upsertMatch, type UpsertMatchResult } from './intelligenceRequirementMatch-domain';
-import { buildEngineState, evaluateExistingRelationships, type IrEngineState } from './intelligenceRequirement-engine';
+import {
+  deleteMatch,
+  invalidateInRequirementEntityIds,
+  listMatches,
+  loadMatch,
+  loadMatchById,
+  updateMatchStatus,
+  upsertMatch,
+  type UpsertMatchResult,
+} from './intelligenceRequirementMatch-domain';
+import { buildEngineState, evaluateExistingRelationships, type IrCandidate, type IrEngineState } from './intelligenceRequirement-engine';
 import { SYSTEM_USER } from '../../utils/access';
-import { appendMatchHistory, type IrChangeMeta, rescoreMatch, topReasons } from './intelligenceRequirement-scoring';
+import { appendMatchHistory, type IrChangeMeta, type IrMatchWriter, isCandidateEligible, rescoreMatch, topReasons } from './intelligenceRequirement-scoring';
 import { closeItem, closeOpenItemsOfMatch, createItem, entityDisplayName } from './intelligenceRequirementItem-domain';
 import { parseIntelligenceRequirement } from './intelligenceRequirement-config';
 
@@ -23,16 +32,40 @@ interface MatchChange {
   displayName?: string;
   quiet?: boolean; // grouped entry (backfill): no per-entity "entered" / "score" item, one summary item instead
   meta?: IrChangeMeta; // date and trigger recorded in the history of the entity
+  writer?: IrMatchWriter; // engine batch: score and history writes grouped
 }
 
 const isIn = (status: string) => IR_MATCH_IN_STATUSES.includes(status);
+// Statuses of an entity that leaves the requirement when it no longer meets the conditions of the scope.
+// An accepted entity stays (the analyst decided), as not eligible; rejected and removed ones are kept to remember the decision.
+const LEAVES_WHEN_NOT_ELIGIBLE = ['auto', 'proposed'];
+export const NOT_ELIGIBLE_RESULT = 'No longer meets the conditions of the scope';
+
+/**
+ * A candidate of a criterion: stored (or given a new proof) only if it meets the conditions of the scope of that criterion,
+ * or if it is already stored. onSkipped counts the candidates evaluated and not stored.
+ */
+export const upsertCandidate = async (
+  context: AuthContext,
+  user: AuthUser,
+  ir: ParsedIntelligenceRequirement,
+  candidate: IrCandidate,
+  onSkipped?: () => void,
+) => {
+  return upsertMatch(context, user, ir.id, candidate.entity, candidate.criterion, candidate.explanation, async () => {
+    const eligible = await isCandidateEligible(context, user, ir, candidate.entity, candidate.criterion.id);
+    if (!eligible) onSkipped?.();
+    return eligible;
+  });
+};
 
 /**
  * Re-evaluate an entity of the requirement (eligibility, then score), then create the inbox items implied by the change:
  * - proposed: an entity proposed by a criterion in Propose mode, once it meets the conditions of the scope
  * - entered: an entity that becomes part of the requirement automatically (or now meets the conditions of the scope)
  * - score: a threshold crossed upward (from 0 when the entity just became part of the requirement)
- * Entities that do not meet the conditions of the scope produce no item.
+ * Entities that do not meet the conditions of the scope produce no item; automatic and proposed ones leave the requirement
+ * (dropped: their match is deleted and their open items closed).
  * becameVisible tells the caller the entity just became part of the requirement (second hop backfill to run).
  */
 export const processMatchChange = async (
@@ -46,10 +79,16 @@ export const processMatchChange = async (
   const previousStatus = change.previousStatus ?? status;
   const wasExcluded = !change.created && (match.match_excluded ?? false);
   const wasVisible = !change.created && isIn(previousStatus) && !wasExcluded;
-  const rescore = await rescoreMatch(context, user, ir, match, change.meta);
+  const rescore = await rescoreMatch(context, user, ir, match, change.meta, change.writer);
   const { excluded, score } = rescore.result;
   // Keep the in-memory match up to date: the engine reuses it for the next events of the batch
   Object.assign(match, { match_score: score, match_excluded: excluded });
+  if (excluded && LEAVES_WHEN_NOT_ELIGIBLE.includes(status)) {
+    change.writer?.discard(match.id);
+    await closeOpenItemsOfMatch(context, user, ir.id, match.id, NOT_ELIGIBLE_RESULT);
+    await deleteMatch(context, user, match.id);
+    return { ...rescore, becameVisible: false, dropped: true };
+  }
   const visible = isIn(status) && !excluded;
   const itemBase = { entityId: match.match_entity_id, entityType: match.match_entity_type, matchId: match.id };
   let name = change.displayName;
@@ -79,7 +118,7 @@ export const processMatchChange = async (
       });
     }
   }
-  return { ...rescore, becameVisible: visible && !wasVisible };
+  return { ...rescore, becameVisible: visible && !wasVisible, dropped: false };
 };
 
 export const handleUpsertResult = async (
@@ -90,8 +129,9 @@ export const handleUpsertResult = async (
   criterionId: string,
   quiet = false,
   meta: IrChangeMeta = {},
+  writer?: IrMatchWriter,
 ) => {
-  return processMatchChange(context, user, ir, result.match, { created: result.created, previousStatus: result.previousStatus, criterionId, quiet, meta });
+  return processMatchChange(context, user, ir, result.match, { created: result.created, previousStatus: result.previousStatus, criterionId, quiet, meta, writer });
 };
 
 const BACKFILL_MAX_ENTITIES = 2000;
@@ -139,6 +179,8 @@ export const backfillEnteredEntities = async (
   state: IrEngineState,
   entities: { id: string; type: string }[],
   at?: string, // date of the event that made the entities enter
+  onSkipped?: () => void,
+  writer?: IrMatchWriter,
 ) => {
   const queue = [...entities];
   const visited = new Set(queue.map((e) => e.id));
@@ -149,11 +191,14 @@ export const backfillEnteredEntities = async (
     const candidates = await evaluateExistingRelationships(context, user, state, anchor);
     for (let i = 0; i < candidates.length; i += 1) {
       const candidate = candidates[i];
-      const result = await upsertMatch(context, user, ir.id, candidate.entity, candidate.criterion, candidate.explanation);
+      const result = await upsertCandidate(context, user, ir, candidate, onSkipped);
       if (result) {
         const trigger = `${result.created ? 'Entered' : 'New proof'} through "${candidate.criterion.name}" (second hop)`;
-        const { becameVisible, result: score } = await handleUpsertResult(context, user, ir, result, candidate.criterion.id, true, { at, trigger });
-        if (result.created && isIn(result.match.match_status)) added.push({ id: candidate.entity.id, type: candidate.entity.type, score: score.score, excluded: score.excluded });
+        const { becameVisible, dropped, result: score } = await handleUpsertResult(context, user, ir, result, candidate.criterion.id, true, { at, trigger }, writer);
+        if (dropped) state.inRequirement.delete(candidate.entity.id);
+        if (result.created && !dropped && isIn(result.match.match_status)) {
+          added.push({ id: candidate.entity.id, type: candidate.entity.type, score: score.score, excluded: score.excluded });
+        }
         if (becameVisible) {
           entered += 1;
           state.inRequirement.add(candidate.entity.id);
@@ -180,11 +225,26 @@ export const rescoreRequirement = async (context: AuthContext, user: AuthUser, i
     const { becameVisible } = await processMatchChange(context, user, ir, matches[i], { meta });
     if (becameVisible) entered.push({ id: matches[i].match_entity_id, type: matches[i].match_entity_type });
   }
+  // Many entities may have entered or left: the starting points of the second hop are read again
+  invalidateInRequirementEntityIds(ir.id);
   if (entered.length > 0) {
     const state = await buildEngineState(context, SYSTEM_USER, ir);
     for (let i = 0; i < entered.length; i += 1) {
       await backfillEnteredEntities(context, SYSTEM_USER, ir, state, [entered[i]], meta.at);
     }
+  }
+  return matches.length;
+};
+
+/**
+ * Entities stored before candidates were checked against the conditions of the scope, that do not meet them:
+ * automatic and proposed ones leave the requirement (accepted ones stay, the analyst decided).
+ */
+export const purgeNotEligibleMatches = async (context: AuthContext, user: AuthUser, irId: string) => {
+  const matches = (await listMatches(context, user, irId, LEAVES_WHEN_NOT_ELIGIBLE)).filter((m) => m.match_excluded);
+  for (let i = 0; i < matches.length; i += 1) {
+    await closeOpenItemsOfMatch(context, user, irId, matches[i].id, NOT_ELIGIBLE_RESULT);
+    await deleteMatch(context, user, matches[i].id);
   }
   return matches.length;
 };
@@ -202,6 +262,7 @@ export const setMatchStatus = async (context: AuthContext, user: AuthUser, match
   const match = await loadMatchById(context, user, matchId);
   if (!match) throw FunctionalError('Entity of the requirement not found', { matchId });
   const updated = await updateMatchStatus(context, user, matchId, status);
+  invalidateInRequirementEntityIds(match.ir_id);
   await closeOpenItemsOfMatch(context, user, match.ir_id, matchId, MATCH_STATUS_RESULTS[status]);
   if (status === 'accepted') {
     const ir = await storeLoadById<BasicStoreEntityIntelligenceRequirement>(context, user, match.ir_id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);

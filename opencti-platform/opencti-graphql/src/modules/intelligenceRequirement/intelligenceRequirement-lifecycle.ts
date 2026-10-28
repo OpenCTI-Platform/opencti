@@ -12,3 +12,12 @@ export const markRequirementDeleted = (irId: string) => {
 };
 
 export const isRequirementDeleted = (irId: string) => deleted.has(irId);
+
+// Requirements whose stream position was moved back (scope changed): a batch in progress must not write its own position over it
+const rescans = new Map<string, number>();
+
+export const markRequirementRescan = (irId: string) => {
+  rescans.set(irId, Date.now());
+};
+
+export const isRescanSince = (irId: string, since: number) => (rescans.get(irId) ?? 0) >= since;

@@ -114,6 +114,7 @@ export interface StoreIrBatchStats {
   updated: number;
   rescored: number;
   backfilled: number;
+  skipped?: number; // candidates that did not meet the conditions of the scope: evaluated, not stored
   errors: number;
 }
 export interface StoreIrProcessing {

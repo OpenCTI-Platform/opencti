@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { createEntity, patchAttribute } from '../../database/middleware';
+import { createEntity, internalDeleteElementById, patchAttribute } from '../../database/middleware';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { enforceEnableFeatureFlag } from '../../utils/access';
 import { INTELLIGENCE_REQUIREMENTS_FEATURE_FLAG } from '../../config/conf';
@@ -67,6 +67,40 @@ export const listInRequirementEntityIds = async (context: AuthContext, user: Aut
   return new Set(matches.filter(isInRequirement).map((m) => m.match_entity_id));
 };
 
+const ENTITY_LOOKUP_CHUNK = 500;
+
+// The stored matches of these entities only (whatever their status): what a batch of events touches
+export const listMatchesForEntities = async (context: AuthContext, user: AuthUser, irId: string, entityIds: string[]) => {
+  const matches: BasicStoreEntityIntelligenceRequirementMatch[] = [];
+  for (let i = 0; i < entityIds.length; i += ENTITY_LOOKUP_CHUNK) {
+    const chunk = entityIds.slice(i, i + ENTITY_LOOKUP_CHUNK);
+    matches.push(...await fullEntitiesList<BasicStoreEntityIntelligenceRequirementMatch>(context, user, [ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH], {
+      filters: addFilter(addFilter(undefined, 'ir_id', irId), 'match_entity_id', chunk),
+    }));
+  }
+  return matches;
+};
+
+/**
+ * Starting points of the second hop, kept in memory between batches (this node): loaded once, then kept up to date
+ * by the engine as entities enter or leave. Reloaded after an analyst decision or a change of configuration,
+ * and after a while in any case (another node may have changed the requirement).
+ */
+const IN_REQUIREMENT_TTL = 5 * 60 * 1000;
+const inRequirementCache = new Map<string, { at: number; ids: Set<string> }>();
+
+export const getInRequirementEntityIds = async (context: AuthContext, user: AuthUser, irId: string) => {
+  const cached = inRequirementCache.get(irId);
+  if (cached && Date.now() - cached.at < IN_REQUIREMENT_TTL) return cached.ids;
+  const ids = await listInRequirementEntityIds(context, user, irId);
+  inRequirementCache.set(irId, { at: Date.now(), ids });
+  return ids;
+};
+
+export const invalidateInRequirementEntityIds = (irId: string) => {
+  inRequirementCache.delete(irId);
+};
+
 const sameExplanation = (a: StoreIrMatchExplanation, b: StoreIrMatchExplanation) => a.criterion_id === b.criterion_id
   && a.relationship_id === b.relationship_id
   && a.anchor_id === b.anchor_id
@@ -83,6 +117,7 @@ export interface UpsertMatchResult {
  * An entity matched an entry criterion: create its match (auto or proposed, depending on the criterion mode)
  * or add the criterion and its proof to the existing match.
  * Rejected and removed matches are not resurrected.
+ * admit: checked before creating a match (the conditions of the scope); a candidate it refuses is not stored.
  */
 export const upsertMatch = async (
   context: AuthContext,
@@ -91,11 +126,13 @@ export const upsertMatch = async (
   entity: { id: string; type: string },
   criterion: StoreIrCriterion,
   explanation: StoreIrMatchExplanation,
+  admit?: () => Promise<boolean>,
 ): Promise<UpsertMatchResult | null> => {
   if (isRequirementDeleted(irId)) return null;
   const existing = await loadMatch(context, user, irId, entity.id);
   const now = new Date();
   if (!existing) {
+    if (admit && !await admit()) return null;
     const input = {
       ir_id: irId,
       match_entity_id: entity.id,
@@ -135,6 +172,11 @@ export const upsertMatch = async (
 
 export const loadMatchById = async (context: AuthContext, user: AuthUser, matchId: string) => {
   return storeLoadById<BasicStoreEntityIntelligenceRequirementMatch>(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH);
+};
+
+// An entity that leaves the requirement (it no longer meets the conditions of the scope): nothing is kept for it
+export const deleteMatch = async (context: AuthContext, user: AuthUser, matchId: string) => {
+  await internalDeleteElementById(context, user, matchId, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT_MATCH);
 };
 
 export const updateMatchStatus = async (context: AuthContext, user: AuthUser, matchId: string, status: string) => {
