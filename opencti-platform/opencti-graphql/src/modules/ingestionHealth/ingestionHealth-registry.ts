@@ -242,16 +242,20 @@ export const HEALTH_CHECK_REGISTRY = {
     kind: IngestionHealthCheckKind.Runtime,
     label: 'Feed or sync execution failed',
     severity: IngestionHealthCheckSeverity.Blocking,
+    // The details stay out of the text: the front translates the message before filling {failure_description}
     message: (metadata, entityType) => {
-      const failure = describeFeedAndSyncExecutionFailure(metadata);
       const executionFailed = entityType === ENTITY_TYPE_SYNC ? 'Sync execution failed' : 'Feed execution failed';
-      return failure ? `${executionFailed}: ${failure}` : executionFailed;
+      return metadata.failure_description ? `${executionFailed}: {failure_description}` : executionFailed;
     },
     // Only the failing ones: nothing is read for the others
     isEnabled: (ingestor) => FEED_AND_SYNC_ENTITY_TYPES.includes(ingestor.entity_type) && ingestor.last_execution_status === 'error',
     getRuntimeData: getFeedsAndSyncsLastFailureDetails,
-    // The details are not always known: the failure is reported without them. They are not dated: the metadata must stay the same while the failure lasts
-    getFailure: (details) => ({ ...details }),
+    // The details are not always known: the failure is reported without them. They are not dated: the metadata must stay the same while the failure lasts.
+    // Their description fills the message: stored with them, it is the same for the same details
+    getFailure: (details) => {
+      const failureDescription = details ? describeFeedAndSyncExecutionFailure(details) : undefined;
+      return { ...details, ...(failureDescription ? { failure_description: failureDescription } : {}) };
+    },
   }),
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
 

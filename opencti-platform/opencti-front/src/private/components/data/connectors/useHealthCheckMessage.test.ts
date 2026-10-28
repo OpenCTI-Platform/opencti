@@ -39,6 +39,12 @@ describe('useHealthCheckMessage', () => {
     expect(getHealthCheckMessage(check)).toBe('Failed with {status} on {url}|{"status":"404","url":"https://feed"}');
   });
 
+  it('should translate the template of a failed execution, the failure filled as is', () => {
+    const metadata = { http_status: 404, http_status_text: 'Not Found', failure_description: 'HTTP 404 Not Found' };
+    const check = { health_check_code: 'FEED_AND_SYNC_EXECUTION_FAILED', health_check_message: 'Feed execution failed: {failure_description}', health_check_metadata: metadata };
+    expect(getHealthCheckMessage(check)).toBe('Feed execution failed: {failure_description}|{"failure_description":"HTTP 404 Not Found"}');
+  });
+
   it('should translate a message without placeholder', () => {
     expect(getHealthCheckMessage({ health_check_code: 'USER_MISSING', health_check_message: 'User is missing' })).toBe('Utilisateur manquant');
   });
