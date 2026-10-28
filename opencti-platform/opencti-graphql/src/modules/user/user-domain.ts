@@ -28,6 +28,7 @@ import {
   UnsupportedError,
   ValidationError,
 } from '../../config/errors';
+import { checkDateDisplayInput } from '../../utils/dateDisplay';
 import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
@@ -203,6 +204,8 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'default_dashboard',
   'default_time_field',
   'unit_system',
+  'date_format',
+  'time_format',
   'submenu_show_icons',
   'submenu_auto_collapse',
   'monochrome_labels',
@@ -1236,6 +1239,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
   let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
+  checkDateDisplayInput(rawInputs, 'date_format', 'time_format');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'api_tokens') {

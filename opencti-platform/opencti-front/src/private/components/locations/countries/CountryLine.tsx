@@ -53,7 +53,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
   dataColumns,
   node,
 }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(countryLineFragment, node);
   const flagUrl = findFlagUrl(data.x_opencti_aliases);
   return (
@@ -86,12 +86,12 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
             <BodyItem
               style={{ width: dataColumns.created.width }}
             >
-              {fd(data.created)}
+              {ftd(data.created)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.modified.width }}
             >
-              {fd(data.modified)}
+              {ftd(data.modified)}
             </BodyItem>
           </>
         )}

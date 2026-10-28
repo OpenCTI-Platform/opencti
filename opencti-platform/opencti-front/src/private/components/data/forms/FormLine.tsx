@@ -43,7 +43,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
   node,
   paginationOptions,
 }) => {
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
   const data = useFragment(formLineFragment, node);
 
   let mainEntityType = 'Unknown';
@@ -93,7 +93,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
                 />
               </BodyItem>
               <BodyItem style={{ width: dataColumns.updated_at.width }}>
-                {fd(data.updated_at)}
+                {ftd(data.updated_at)}
               </BodyItem>
             </div>
           )}

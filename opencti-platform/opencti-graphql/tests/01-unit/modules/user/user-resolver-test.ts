@@ -18,6 +18,8 @@ describe('User resolvers', () => {
     it('should fall back on defaults when preferences are not set', () => {
       expect(resolveField(meUserResolvers.language, {})).toEqual('auto');
       expect(resolveField(meUserResolvers.unit_system, {})).toEqual('auto');
+      expect(resolveField(meUserResolvers.date_format, {})).toEqual('auto');
+      expect(resolveField(meUserResolvers.time_format, {})).toEqual('auto');
       expect(resolveField(meUserResolvers.submenu_show_icons, {})).toEqual(false);
       expect(resolveField(meUserResolvers.submenu_auto_collapse, {})).toEqual(true);
       expect(resolveField(meUserResolvers.monochrome_labels, {})).toEqual(false);
@@ -27,6 +29,8 @@ describe('User resolvers', () => {
     it('should expose the stored preferences when they are set', () => {
       expect(resolveField(meUserResolvers.language, { language: 'fr-fr' })).toEqual('fr-fr');
       expect(resolveField(meUserResolvers.unit_system, { unit_system: 'Metric' })).toEqual('Metric');
+      expect(resolveField(meUserResolvers.date_format, { date_format: 'iso' })).toEqual('iso');
+      expect(resolveField(meUserResolvers.time_format, { time_format: 'seconds' })).toEqual('seconds');
       expect(resolveField(meUserResolvers.submenu_show_icons, { submenu_show_icons: true })).toEqual(true);
       expect(resolveField(meUserResolvers.submenu_auto_collapse, { submenu_auto_collapse: false })).toEqual(false);
       expect(resolveField(meUserResolvers.monochrome_labels, { monochrome_labels: true })).toEqual(true);

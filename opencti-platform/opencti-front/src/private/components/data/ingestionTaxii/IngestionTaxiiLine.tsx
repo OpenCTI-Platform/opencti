@@ -49,7 +49,7 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
   node,
   paginationOptions,
 }) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const data = useFragment(ingestionTaxiiLineFragment, node);
   const [stateValue, setStateValue] = useState(data.current_state_cursor ? data.current_state_cursor : EMPTY_VALUE);
   return (
@@ -94,7 +94,7 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
             <BodyItem
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              {fldt(data.last_execution_date) || EMPTY_VALUE}
+              {ftdt(data.last_execution_date, 'long') || EMPTY_VALUE}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.added_after_start.width }}

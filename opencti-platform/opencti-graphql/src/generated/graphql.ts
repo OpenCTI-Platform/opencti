@@ -7388,6 +7388,11 @@ export enum DataSourcesOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum DateFormat {
+  Auto = 'auto',
+  Iso = 'iso'
+}
+
 export type DecayChartData = {
   __typename?: 'DecayChartData';
   live_score_serie?: Maybe<Array<DecayHistory>>;
@@ -17045,6 +17050,7 @@ export type MeUser = BasicObject & InternalObject & {
   can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
   capabilities: Array<Capability>;
   capabilitiesInDraft: Array<Capability>;
+  date_format?: Maybe<DateFormat>;
   default_dashboard?: Maybe<Workspace>;
   default_dashboards: Array<Workspace>;
   default_hidden_types: Array<Maybe<Scalars['String']['output']>>;
@@ -17079,6 +17085,7 @@ export type MeUser = BasicObject & InternalObject & {
   submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
   submenu_show_icons?: Maybe<Scalars['Boolean']['output']>;
   theme?: Maybe<Scalars['String']['output']>;
+  time_format?: Maybe<TimeFormat>;
   unit_system?: Maybe<UnitSystem>;
   unsubscribed_news_feed_types?: Maybe<Array<Scalars['String']['output']>>;
   user_confidence_level?: Maybe<ConfidenceLevel>;
@@ -31513,6 +31520,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
   platform_consent_message?: Maybe<Scalars['String']['output']>;
   platform_critical_alerts: Array<PlatformCriticalAlert>;
+  platform_date_format?: Maybe<DateFormat>;
   platform_demo?: Maybe<Scalars['Boolean']['output']>;
   platform_email?: Maybe<Scalars['String']['output']>;
   platform_email_configurable: Scalars['Boolean']['output'];
@@ -31545,6 +31553,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_session_max_concurrent?: Maybe<Scalars['Int']['output']>;
   platform_session_timeout?: Maybe<Scalars['Int']['output']>;
   platform_theme?: Maybe<Theme>;
+  platform_time_format?: Maybe<TimeFormat>;
   platform_title?: Maybe<Scalars['String']['output']>;
   platform_translations?: Maybe<Scalars['String']['output']>;
   platform_trash_enabled: Scalars['Boolean']['output'];
@@ -36637,6 +36646,13 @@ export enum ThreatActorsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum TimeFormat {
+  Auto = 'auto',
+  Minutes = 'minutes',
+  None = 'none',
+  Seconds = 'seconds'
+}
+
 export type TimeSeries = {
   __typename?: 'TimeSeries';
   date: Scalars['DateTime']['output'];
@@ -37557,6 +37573,7 @@ export type User = BasicObject & InternalObject & {
   capabilitiesInDraft: Array<Maybe<Capability>>;
   created_at: Scalars['DateTime']['output'];
   creator?: Maybe<Creator>;
+  date_format?: Maybe<DateFormat>;
   default_hidden_types: Array<Scalars['String']['output']>;
   default_time_field?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -37591,6 +37608,7 @@ export type User = BasicObject & InternalObject & {
   submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
   submenu_show_icons?: Maybe<Scalars['Boolean']['output']>;
   theme?: Maybe<Scalars['String']['output']>;
+  time_format?: Maybe<TimeFormat>;
   unit_system?: Maybe<UnitSystem>;
   unsubscribed_news_feed_types?: Maybe<Array<Scalars['String']['output']>>;
   updated_at: Scalars['DateTime']['output'];
@@ -41167,6 +41185,7 @@ export type ResolversTypes = ResolversObject<{
   DataSourceConnection: ResolverTypeWrapper<Omit<DataSourceConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataSourceEdge']>>> }>;
   DataSourceEdge: ResolverTypeWrapper<Omit<DataSourceEdge, 'node'> & { node: ResolversTypes['DataSource'] }>;
   DataSourcesOrdering: DataSourcesOrdering;
+  DateFormat: DateFormat;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   DecayChartData: ResolverTypeWrapper<DecayChartData>;
   DecayData: ResolverTypeWrapper<DecayData>;
@@ -41990,6 +42009,7 @@ export type ResolversTypes = ResolversObject<{
   ThreatActorIndividualEdge: ResolverTypeWrapper<Omit<ThreatActorIndividualEdge, 'node'> & { node: ResolversTypes['ThreatActorIndividual'] }>;
   ThreatActorsIndividualOrdering: ThreatActorsIndividualOrdering;
   ThreatActorsOrdering: ThreatActorsOrdering;
+  TimeFormat: TimeFormat;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
   TokenDuration: TokenDuration;
   TokenGenerated: ResolverTypeWrapper<TokenGenerated>;
@@ -49026,6 +49046,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   capabilitiesInDraft?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
+  date_format?: Resolver<Maybe<ResolversTypes['DateFormat']>, ParentType, ContextType>;
   default_dashboard?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   default_dashboards?: Resolver<Array<ResolversTypes['Workspace']>, ParentType, ContextType>;
   default_hidden_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -49060,6 +49081,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submenu_show_icons?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  time_format?: Resolver<Maybe<ResolversTypes['TimeFormat']>, ParentType, ContextType>;
   unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   unsubscribed_news_feed_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   user_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
@@ -52532,6 +52554,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_critical_alerts?: Resolver<Array<ResolversTypes['PlatformCriticalAlert']>, ParentType, ContextType>;
+  platform_date_format?: Resolver<Maybe<ResolversTypes['DateFormat']>, ParentType, ContextType>;
   platform_demo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_email_configurable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -52562,6 +52585,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_session_max_concurrent?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_session_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_theme?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType>;
+  platform_time_format?: Resolver<Maybe<ResolversTypes['TimeFormat']>, ParentType, ContextType>;
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_translations?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_trash_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -54482,6 +54506,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   capabilitiesInDraft?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  date_format?: Resolver<Maybe<ResolversTypes['DateFormat']>, ParentType, ContextType>;
   default_hidden_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   default_time_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -54516,6 +54541,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submenu_show_icons?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  time_format?: Resolver<Maybe<ResolversTypes['TimeFormat']>, ParentType, ContextType>;
   unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   unsubscribed_news_feed_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

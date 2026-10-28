@@ -3,6 +3,7 @@ import { RootPrivateQuery$data } from '../../private/__generated__/RootPrivateQu
 import { ModuleHelper } from '../platformModulesHelper';
 import { RootSettings$data } from '../../private/__generated__/RootSettings.graphql';
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
+import { DateDisplay, DEFAULT_DATE_DISPLAY } from '../dateDisplay';
 
 export interface BannerSettings {
   bannerLevel?: string | null;
@@ -57,6 +58,7 @@ export interface UserContextType {
   about: RootPrivateQuery$data['about'] | undefined;
   themes: RootPrivateQuery$data['themes'] | undefined;
   unitSystem: string;
+  dateDisplay: DateDisplay;
   locale: PlatformLang;
   tz: string;
   queryData: RootPrivateQuery$data | undefined;
@@ -74,6 +76,7 @@ const defaultContext = {
   themes: undefined,
   locale: defaultLang,
   unitSystem: 'Metric',
+  dateDisplay: DEFAULT_DATE_DISPLAY,
   tz: 'UTC',
   queryData: undefined,
 };
@@ -91,6 +94,7 @@ const useAuth = () => {
     about,
     themes,
     unitSystem,
+    dateDisplay,
     locale,
     tz,
     queryData,
@@ -111,6 +115,7 @@ const useAuth = () => {
     locale,
     tz,
     unitSystem,
+    dateDisplay,
     queryData,
   };
 };

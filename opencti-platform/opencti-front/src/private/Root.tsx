@@ -24,6 +24,7 @@ import useActiveTheme from '../utils/hooks/useActiveTheme';
 import { AppDataProvider } from '../utils/hooks/useAppData';
 import { ExportThemeProvider } from '../utils/ExportThemeContext';
 import defaultBrowserLang, { LANGUAGES } from '../utils/BrowserLanguage';
+import { resolveDateDisplay } from '../utils/dateDisplay';
 import { CustomViewsPreloadedDataContextProvider } from './components/custom_views/CustomViewsPreloadedDataContext';
 
 const rootSettingsFragment = graphql`
@@ -51,6 +52,8 @@ const rootSettingsFragment = graphql`
       }
     }
     platform_language
+    platform_date_format
+    platform_time_format
     platform_openaev_url
     platform_opengrc_url
     platform_xtmhub_url
@@ -209,6 +212,8 @@ const meUserFragment = graphql`
       name
     }
     unit_system
+    date_format
+    time_format
     submenu_show_icons
     submenu_auto_collapse
     monochrome_labels
@@ -489,6 +494,10 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
     unitSystem = selectedLocale === LANGUAGES.ENGLISH ? 'Imperial' : 'Metric';
   }
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const dateDisplay = useMemo(
+    () => resolveDateDisplay(me, settings),
+    [me.date_format, me.time_format, settings.platform_date_format, settings.platform_time_format],
+  );
 
   const contextValue = useMemo(() => ({
     queryData,
@@ -502,10 +511,11 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
     about,
     themes,
     unitSystem,
+    dateDisplay,
     locale: selectedLocale,
     tz,
   }), [me, settings, bannerSettings, entitySettings, platformModuleHelpers,
-    schema, isReachable, about, themes, unitSystem, selectedLocale, tz]);
+    schema, isReachable, about, themes, unitSystem, dateDisplay, selectedLocale, tz]);
 
   const passwordExpired = isPasswordExpiredFront(me);
   const onForcePasswordChangeRoute = location.pathname.startsWith(FORCE_PASSWORD_CHANGE_PATH);
