@@ -61,7 +61,7 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    const isNetworkError = this.state.error?.res;
+    const isNetworkError = this.state.error?.data?.res ?? this.state.error?.res;
     if (!isNetworkError) {
       logger.error('React component tree crashed', {
         eventName: 'opencti.frontend.component_crashed',

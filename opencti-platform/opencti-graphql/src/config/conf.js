@@ -354,9 +354,13 @@ export const logAudit = {
 
 export const logFrontend = {
   _log: (level, message, meta = {}) => {
-    const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
-    appLogger.log(level, message, data);
-    supportLogger.log(level, message, data);
+    if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
+      const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
+      appLogger.log(level, message, data);
+      if (supportLogger.isLevelEnabled(level)) {
+        supportLogger.log(level, message, data);
+      }
+    }
   },
   debug: (message, meta = {}) => logFrontend._log('debug', message, meta),
   info: (message, meta = {}) => logFrontend._log('info', message, meta),

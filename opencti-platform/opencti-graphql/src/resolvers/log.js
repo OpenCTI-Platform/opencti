@@ -1,12 +1,15 @@
 import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, findById, findAuditById } from '../domain/log';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { logApp, logFrontend } from '../config/conf';
+import { appLogLevelMaxStringSize, logApp, logFrontend } from '../config/conf';
 import { loadCreator } from '../database/members';
 
 // Same as maxExportBatchSize in opencti-front/src/utils/logs/loggerProvider.ts:
 // a larger batch was not sent by the frontend logger.
 const MAX_FRONTEND_LOGS_PER_CALL = 50;
+
+// Same truncation as prepareLogMetadata applies to meta strings
+const truncateLogText = (text) => (text.length > appLogLevelMaxStringSize ? `${text.substring(0, appLogLevelMaxStringSize - 3)}...` : text);
 
 const FRONTEND_LOG_LEVELS = {
   DEBUG: 'debug',
@@ -57,8 +60,7 @@ const logResolvers = {
       }
       logs.slice(0, MAX_FRONTEND_LOGS_PER_CALL).forEach((log) => {
         const { timestamp, level, message, eventName, data, exception } = log;
-        const logLevel = FRONTEND_LOG_LEVELS[level] ?? 'error';
-        logFrontend[logLevel](message, {
+        logFrontend[FRONTEND_LOG_LEVELS[level]](truncateLogText(message), {
           client_timestamp: timestamp,
           event_name: eventName,
           data,

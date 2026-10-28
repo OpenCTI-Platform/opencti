@@ -69,6 +69,28 @@ describe('logger pipeline', () => {
     expect(exception?.message).toBe(`Non-Error value thrown: ${type}`);
   });
 
+  it('normalizes non-plain data values instead of dropping the attribute', () => {
+    logger.warn('Filter value is not a string', {
+      eventName: 'opencti.filter.value_not_string',
+      data: { at: new Date('2026-10-28T00:00:00.000Z'), cause: new RangeError('out of range') },
+    });
+
+    const [record] = exporter.getFinishedLogRecords();
+    expect(toFrontendLogInput(record).data).toEqual({
+      at: '2026-10-28T00:00:00.000Z',
+      cause: { name: 'RangeError', message: 'out of range' },
+    });
+  });
+
+  it('marks data that cannot be serialized', () => {
+    const cyclic: Record<string, unknown> = {};
+    cyclic.self = cyclic;
+    logger.warn('Filter value is not a string', { eventName: 'opencti.filter.value_not_string', data: cyclic });
+
+    const [record] = exporter.getFinishedLogRecords();
+    expect(toFrontendLogInput(record).data).toEqual({ unserializable: true });
+  });
+
   it('leaves the exception empty when no error is given', () => {
     logger.warn('Filter value is not a string', { eventName: 'opencti.filter.value_not_string' });
 
