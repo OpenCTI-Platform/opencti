@@ -46,6 +46,9 @@ export default {
         }
         const contextVariables = context.request.variables || {};
         const size = Buffer.byteLength(JSON.stringify(contextVariables));
+        if (isNotEmptyField(contextVariables.fileRef?.storage_key)) {
+          contextVariables.fileRef.storage_key = '** Redacted **';
+        }
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.contextValue.user;
         // Compute inner relations

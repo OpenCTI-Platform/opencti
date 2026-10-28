@@ -1,8 +1,10 @@
 import crypto from 'node:crypto';
+import { Readable } from 'node:stream';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
+import Upload from 'graphql-upload/Upload.mjs';
 import { ADMIN_USER, testContext, USER_CONNECTOR } from '../utils/testQuery';
-import { createUploadFromTestDataFile, queryAsAdmin, queryAsUser } from '../utils/testQueryHelper';
+import { queryAsAdmin, queryAsUser } from '../utils/testQueryHelper';
 import { createEntity, deleteElementById } from '../../src/database/middleware';
 import { storeLoadById } from '../../src/database/middleware-loader';
 import { deleteFile } from '../../src/database/file-storage';
@@ -76,6 +78,7 @@ const IMPORT_PUSH_REF_QUERY = gql`
 
 const FILE_NAME = 'import-push-ref.txt';
 const SYNC_CONTENT = 'content staged by the sync';
+const UPLOADED_CONTENT = 'content uploaded by importPush';
 
 const createTestSync = async (name: string): Promise<string> => {
   const creationResult = await createEntity(testContext, ADMIN_USER, {
@@ -92,6 +95,15 @@ const createTestSync = async (name: string): Promise<string> => {
   }, ENTITY_TYPE_SYNC, { complete: true });
   const sync = 'element' in creationResult ? creationResult.element : creationResult;
   return sync.internal_id;
+};
+
+// upload() reads the file twice (hash then store), so each read gets a fresh stream
+const buildUpload = (content: string): Upload => {
+  const upload = new Upload();
+  const fileUpload = { fieldName: 'file', filename: FILE_NAME, mimetype: 'text/plain', encoding: '7bit', createReadStream: () => Readable.from([content]) };
+  upload.promise = Promise.resolve(fileUpload);
+  upload.file = fileUpload;
+  return upload;
 };
 
 const readObject = async (key: string): Promise<string | null> => {
@@ -147,9 +159,9 @@ describe('importPushRef resolver', () => {
   });
 
   it('attaches a staged file under the same entry and document importPush writes for the same name', async () => {
-    const upload = await createUploadFromTestDataFile('test-file-to-index.txt', FILE_NAME, 'text/plain');
-    const pushResult = await queryAsAdmin<ImportPushQueryData>({ query: IMPORT_PUSH_QUERY, variables: { id: reportId, file: upload, version: '2024-01-01T00:00:00.000Z' } });
+    const pushResult = await queryAsAdmin<ImportPushQueryData>({ query: IMPORT_PUSH_QUERY, variables: { id: reportId, file: buildUpload(UPLOADED_CONTENT), version: '2024-01-01T00:00:00.000Z' } });
     expect(pushResult.errors).toBeUndefined();
+    expect(await readObject(fileId)).toEqual(UPLOADED_CONTENT);
     const pushedEntry = attachedFile(await loadReport());
     const pushedDocument = await findDocumentById(testContext, ADMIN_USER, fileId);
 
