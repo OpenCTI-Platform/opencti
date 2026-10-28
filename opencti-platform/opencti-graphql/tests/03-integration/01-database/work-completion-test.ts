@@ -15,6 +15,8 @@ import { ConnectorType } from '../../../src/generated/graphql';
 
 const ENRICHMENT_CONNECTOR_ID = 'bb6d8f3a-1b2c-4d5e-8f90-111111111111';
 const IMPORT_CONNECTOR_ID = 'bb6d8f3a-1b2c-4d5e-8f90-333333333333';
+// Only the enrichments triggered from an investigation are tracked: the id is only stored, no workspace is needed
+const INVESTIGATION_ID = 'investigation-completion-test';
 
 // Shared by every describe of this file: run the file as a whole
 let enrichment: any;
@@ -43,10 +45,10 @@ afterAll(async () => {
 });
 
 /**
- * Creates a work and fails the test when the work cannot be created.
+ * Creates a work of the investigation, unless the options say otherwise, and fails the test when the work cannot be created.
  */
 const startWork = async (connectorEntity: any, name: string, sourceId: string, options: Record<string, unknown> = {}) => {
-  const work = await createWork(testContext, ADMIN_USER, connectorEntity, name, sourceId, options);
+  const work = await createWork(testContext, ADMIN_USER, connectorEntity, name, sourceId, { investigationId: INVESTIGATION_ID, ...options });
   if (!work) {
     throw new Error('Work creation failed');
   }
@@ -128,17 +130,18 @@ describe('Work completion with touched elements', () => {
     expect(completed.touched_ids).toBeUndefined();
   });
 
-  it('should record ids of an enrichment run inside a draft', async () => {
+  // Draft events are not pushed to the stream, which is where the touched elements are tracked
+  it('should not record ids of an enrichment run inside a draft', async () => {
     const draft = await addDraftWorkspace(testContext, ADMIN_USER, { name: `Enrichment draft ${Date.now()}` });
     const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Draft target ${Date.now()}` });
     intrusionSetIds.push(target.id);
     const work = await startWork(enrichment, 'Manual enrichment in draft', target.standard_id, { draftContext: draft.id });
     const draftWorkerContext = { ...testContext, workId: work.id, draft_context: draft.id };
-    const created = await addIntrusionSet(draftWorkerContext, ADMIN_USER, { name: `Draft created ${Date.now()}` });
+    await addIntrusionSet(draftWorkerContext, ADMIN_USER, { name: `Draft created ${Date.now()}` });
     await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
     await reportExpectation(testContext, ADMIN_USER, work.id);
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
-    expect(completed.touched_ids).toEqual([created.id]);
+    expect(completed.touched_ids).toEqual([]);
     expect(completed.draft_context).toEqual(draft.id);
     await deleteDraftWorkspace(testContext, ADMIN_USER, draft.id);
   });

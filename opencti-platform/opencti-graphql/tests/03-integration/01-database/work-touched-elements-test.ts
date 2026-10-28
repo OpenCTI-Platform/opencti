@@ -16,6 +16,8 @@ import { ConnectorType } from '../../../src/generated/graphql';
 const ENRICHMENT_CONNECTOR_ID = 'aa6d8f3a-1b2c-4d5e-8f90-111111111111';
 const OTHER_ENRICHMENT_CONNECTOR_ID = 'aa6d8f3a-1b2c-4d5e-8f90-222222222222';
 const IMPORT_CONNECTOR_ID = 'aa6d8f3a-1b2c-4d5e-8f90-333333333333';
+// Only the enrichments triggered from an investigation are tracked: the id is only stored, no workspace is needed
+const INVESTIGATION_ID = 'investigation-touched-test';
 
 describe('Work touched elements tracking', () => {
   let enrichment: any;
@@ -48,9 +50,9 @@ describe('Work touched elements tracking', () => {
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
   });
 
-  /** Create a work, register it for cleanup, and fail the test when it cannot be loaded. */
-  const startWork = async (connector: any, sourceId: string) => {
-    const work = await createWork(testContext, ADMIN_USER, connector, 'Manual enrichment', sourceId);
+  /** Create a work of the investigation unless told otherwise, register it for cleanup, and fail the test when it cannot be loaded. */
+  const startWork = async (connector: any, sourceId: string, investigationId: string | null = INVESTIGATION_ID) => {
+    const work = await createWork(testContext, ADMIN_USER, connector, 'Manual enrichment', sourceId, { investigationId });
     expect(work).toBeDefined();
     createdWorkIds.push((work as { id: string }).id);
     return work as { id: string };
@@ -89,6 +91,12 @@ describe('Work touched elements tracking', () => {
   it('should not record anything for a non enrichment work', async () => {
     const work = await startWork(importConnector, 'source');
     await newIntrusionSet({ ...testContext, workId: work.id }, 'Touched by import');
+    expect(await redisGetWorkTouchedElements(work.id)).toEqual({ touched_ids: [] });
+  });
+
+  it('should not record anything for an enrichment work outside an investigation', async () => {
+    const work = await startWork(enrichment, 'source', null);
+    await newIntrusionSet({ ...testContext, workId: work.id }, 'Touched outside investigation');
     expect(await redisGetWorkTouchedElements(work.id)).toEqual({ touched_ids: [] });
   });
 
