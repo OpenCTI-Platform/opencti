@@ -2,7 +2,8 @@ import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../.
 import { getPlatformDefaultTheme, getSettings, getWhitemarkConfigPresetConfiguration, settingsEditField } from '../../../domain/settings';
 import { FunctionalError } from '../../../config/errors';
 import { ConfigImportMode } from '../../configImport/configImport-types';
-import { findAllThemes, findThemePaginated, getThemeConfigPresetConfiguration } from '../../theme/theme-domain';
+import { findAllThemes, findThemePaginated } from '../../theme/theme-domain';
+import { getThemeConfigPresetConfiguration } from '../../theme/theme-export';
 import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS } from '../../theme/theme-import-schema';
 import { importTheme } from '../../theme/theme-import';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';

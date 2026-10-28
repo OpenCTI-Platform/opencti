@@ -10,7 +10,6 @@ import { type BasicStoreEntityTheme, type StoreEntityTheme } from './theme-types
 import { FunctionalError } from '../../config/errors';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { SYSTEM_USER } from '../../utils/access';
-import { themeImportSchema } from './theme-import-schema';
 import { BUILT_IN_THEME_STANDARD_IDS, DARK_DEFAULTS, FILIGRAN_DARK_THEME_NAME, FILIGRAN_LIGHT_THEME_NAME, LIGHT_DEFAULTS } from './theme-constants';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
@@ -168,13 +167,4 @@ export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, them
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_THEME].EDIT_TOPIC, element, user);
-};
-
-// A theme in the import format, so a configuration preset theme can be imported back, and its standard id to match it
-export const getThemeConfigPresetConfiguration = (theme: BasicStoreEntityTheme) => {
-  // The standard id is added below: the other fields are the ones the import accepts
-  const fields = Object.keys(themeImportSchema.shape).filter((field) => field !== 'standard_id') as (keyof BasicStoreEntityTheme)[];
-  // A missing value is left out: the import format gives it its default
-  const presentFields = fields.filter((field) => (theme[field] ?? null) !== null);
-  return { standard_id: theme.standard_id, ...Object.fromEntries(presentFields.map((field) => [field, theme[field]])) };
 };

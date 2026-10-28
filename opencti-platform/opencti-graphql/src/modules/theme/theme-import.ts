@@ -36,7 +36,6 @@ const freeThemeName = async (context: AuthContext, user: AuthUser, name: string)
     const suffix = ` (${copy})`;
     const candidate = `${name.slice(0, THEME_NAME_MAX_LENGTH - suffix.length)}${suffix}`;
     // The next candidate depends on this answer
-    // eslint-disable-next-line no-await-in-loop
     if (!(await checkExistingTheme(context, user, candidate))) {
       return candidate;
     }

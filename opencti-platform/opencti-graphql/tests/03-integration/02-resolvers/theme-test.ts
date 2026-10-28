@@ -141,6 +141,15 @@ const IMPORT_THEME_MUTATION = gql`
   }
 `;
 
+const EXPORT_THEME_QUERY = gql`
+  query ThemeExport($id: ID!) {
+    theme(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
+`;
+
 describe('Themes resolver testing', () => {
   let customThemeId = '';
   let darkThemeId = '';
@@ -504,5 +513,33 @@ describe('Themes resolver testing', () => {
     expect(theme.errors).toBeDefined();
     expect(theme.errors?.[0].message).toContain('Invalid theme file');
     expect(JSON.stringify(theme.errors)).toContain(invalidKey);
+  });
+
+  it('should export a theme as a file the import accepts, without its standard id', async () => {
+    const input = {
+      name: 'Theme to export',
+      theme_background: '#1a1a1a',
+      theme_paper: '#2a2a2a',
+      theme_nav: '#1a1a1a',
+      theme_primary: '#ff6b6b',
+      theme_secondary: '#4ecdc4',
+      theme_accent: '#45b7d1',
+      theme_text_color: '#ffffff',
+      theme_logo: 'https://example.com/logo.png',
+    };
+    const created = await queryAsAdminWithSuccess({ query: CREATE_THEME_MUTATION, variables: { input } });
+    const themeId = created.data?.themeAdd.id;
+    const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: themeId } });
+    // The fields that are not set are left out, and the standard id is not part of a theme file
+    expect(JSON.parse(exported.data?.theme.toConfigurationExport)).toEqual(input);
+    await queryAsAdminWithSuccess({ query: DELETE_THEME_MUTATION, variables: { id: themeId } });
+  });
+
+  it('should export a built-in theme without its standard id', async () => {
+    const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: darkThemeId } });
+    const file = JSON.parse(exported.data?.theme.toConfigurationExport);
+    expect(file.name).toBe('Filigran Dark');
+    expect(file).not.toHaveProperty('standard_id');
+    expect(file).not.toHaveProperty('built_in');
   });
 });
