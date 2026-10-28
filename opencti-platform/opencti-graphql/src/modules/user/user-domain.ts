@@ -799,7 +799,7 @@ export const computePasswordValidUntilFromPolicy = async (context: AuthContext) 
   if (!Number.isFinite(validityDays) || validityDays <= 0) {
     return null;
   }
-  return DateTime.now().plus({ days: validityDays }).toUTC().toString();
+  return DateTime.utc().plus({ days: validityDays }).toString();
 };
 
 /**
@@ -846,7 +846,7 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
 
   if (oldDays <= 0) {
     // Coming from disabled state: set fresh now + newDays for all internal users
-    const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+    const newExpiry = DateTime.utc().plus({ days: newDays }).toString();
     await elRawUpdateByQuery({
       index: [READ_INDEX_INTERNAL_OBJECTS],
       refresh: true,
@@ -871,7 +871,7 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
   } else {
     // Active policy shift: move existing expiry by the diff (in milliseconds)
     const diffMs = diffDays * 24 * 60 * 60 * 1000;
-    const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+    const newExpiry = DateTime.utc().plus({ days: newDays }).toString();
     // Shift existing dates
     await elRawUpdateByQuery({
       index: [READ_INDEX_INTERNAL_OBJECTS],

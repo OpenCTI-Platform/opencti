@@ -1805,9 +1805,9 @@ describe('Password expiration - computePasswordValidUntilFromPolicy', () => {
       password_policy_min_words: 0,
       password_policy_validity_days: 20,
     });
-    const before = DateTime.now().plus({ days: 20 }).toUTC();
+    const before = DateTime.utc().plus({ days: 20 });
     const result = await computePasswordValidUntilFromPolicy(testContext);
-    const after = DateTime.now().plus({ days: 20 }).toUTC();
+    const after = DateTime.utc().plus({ days: 20 });
 
     expect(result).not.toBeNull();
     const resultDate = DateTime.fromISO(result!);
