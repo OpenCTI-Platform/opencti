@@ -21,6 +21,7 @@ import {
   isBreakdownTypeField,
   isSameBreakdown,
   nextBreakdownChartWidth,
+  numberSharedSeriesNames,
   scheduleChartDraw,
 } from '../../utils/widget/widgetBreakdown';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
@@ -80,7 +81,7 @@ const WidgetTimeSeriesBreakdown = ({
     // Parsed once for every series
     const dates = (stableBreakdown?.dates ?? []).map((date) => new Date(date as string));
     // The API already returns the "Other" serie last
-    return (stableBreakdown?.series ?? []).map((serie) => {
+    const namedSeries = (stableBreakdown?.series ?? []).map((serie) => {
       let name = serie.label;
       if (serie.isOther) {
         name = t_i18n('Other');
@@ -99,6 +100,9 @@ const WidgetTimeSeriesBreakdown = ({
         data: serie.values.map((value, index) => ({ x: dates[index], y: value })),
       };
     });
+    // Several restricted entities, or entities of the same name, would be one name repeated in the legend
+    const names = numberSharedSeriesNames(namedSeries.map(({ name }) => name));
+    return namedSeries.map((serie, index) => ({ ...serie, name: names[index] }));
   }, [stableBreakdown, parameters.breakdownBy, intl, theme]);
 
   // The points budget and the x axis labels follow the width of the chart. The width is only updated by

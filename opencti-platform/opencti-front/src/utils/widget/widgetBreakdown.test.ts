@@ -30,6 +30,7 @@ import {
   MAX_RENDERED_LINE_POINTS,
   MIN_RENDERED_BARS,
   nextBreakdownChartWidth,
+  numberSharedSeriesNames,
   scheduleChartDraw,
 } from './widgetBreakdown';
 
@@ -561,6 +562,15 @@ describe('coarsenSeriesForRendering', () => {
     const result = coarsenSeriesForRendering(series, 'year', 1);
     expect(result.interval).toEqual('year');
     expect(result.series).toBe(series);
+  });
+});
+
+describe('numberSharedSeriesNames', () => {
+  it('numbers by order the series sharing a name, and only them', () => {
+    expect(numberSharedSeriesNames(['Restricted', 'Alice', 'Restricted', 'Bob', 'Restricted']))
+      .toEqual(['Restricted (1)', 'Alice', 'Restricted (2)', 'Bob', 'Restricted (3)']);
+    expect(numberSharedSeriesNames(['Alice', 'Bob'])).toEqual(['Alice', 'Bob']);
+    expect(numberSharedSeriesNames([])).toEqual([]);
   });
 });
 

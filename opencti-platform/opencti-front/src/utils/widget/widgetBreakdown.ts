@@ -440,3 +440,19 @@ export const coarsenSeriesForRendering = <T extends { data: TimeSeriesPoint[] }>
     weeksCountedByMonday: interval === 'week' && renderedInterval !== interval,
   };
 };
+
+/**
+ * Names of the series, numbered by order when several share one: the entities the user cannot access are
+ * all named "Restricted" and nothing else of them can be shown, while the legend must tell them apart.
+ */
+export const numberSharedSeriesNames = (names: string[]) => {
+  const counts = new Map<string, number>();
+  names.forEach((name) => counts.set(name, (counts.get(name) ?? 0) + 1));
+  const ranks = new Map<string, number>();
+  return names.map((name) => {
+    if ((counts.get(name) ?? 0) < 2) return name;
+    const rank = (ranks.get(name) ?? 0) + 1;
+    ranks.set(name, rank);
+    return `${name} (${rank})`;
+  });
+};

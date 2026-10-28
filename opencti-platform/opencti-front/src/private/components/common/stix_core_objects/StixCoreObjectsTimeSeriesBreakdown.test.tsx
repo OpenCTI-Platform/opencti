@@ -210,6 +210,20 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(names[1]).toEqual('Not-A-Translated-Type');
   });
 
+  it('numbers the restricted entities, all named the same, to tell them apart in the legend', async () => {
+    // The API sends an entity the user cannot access with its id, its type and the name "Restricted"
+    const restricted = (id: string) => ({ id, entity_type: 'User', name: 'Restricted' });
+    respond([
+      { label: 'user-a', entity: restricted('user-a'), values: dailyValues(3) },
+      { label: 'user-b', entity: { id: 'user-b', entity_type: 'User', name: 'Alice' }, values: dailyValues(3) },
+      { label: 'user-c', entity: restricted('user-c'), values: dailyValues(3) },
+      { label: 'Other', isOther: true, entity: null, values: dailyValues(3) },
+    ]);
+    render(makeWidget('line', { breakdownBy: 'creator_id' }));
+    expect((await drawn(mocks.lines)).series.map((serie: { name: string }) => serie.name))
+      .toEqual(['Restricted (1)', 'Alice', 'Restricted (2)', 'Other']);
+  });
+
   it('names the other serie and makes it grey, keeping the order of the API', async () => {
     respond([
       { label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values: dailyValues(3) },
