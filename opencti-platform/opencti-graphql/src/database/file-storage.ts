@@ -198,6 +198,12 @@ export const loadFile = async (
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
+    if (isSyncInflightFile(document.internal_id)) {
+      if (opts.dontThrow) {
+        return undefined;
+      }
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
     // 03. Check if metadata contains an entity_id, we need to check if the user has real access to this instance
     const { metaData } = document;
     if (metaData.entity_id) {

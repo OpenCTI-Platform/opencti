@@ -20,11 +20,14 @@ const draftStagedFileId = `draft/draft-id/${stagedFileId}`;
 const lookalikeFileId = `${SYNC_INFLIGHT_STORAGE_PATH}X/sync-id/0f1e2d3c4b5a69788796a5b4c3d2e1f0/content`;
 const storedFileIds = [stagedFileId, draftStagedFileId, lookalikeFileId];
 
+// Like the internal_id lookup of the engine (string_normalizer: lowercase + asciifolding)
+const normalize = (value: string) => value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
 describe('loadFile on staged sync files', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => {
-      const storedId = storedFileIds.find((fileId) => fileId === id);
+      const storedId = storedFileIds.find((fileId) => normalize(fileId) === normalize(id as string));
       return (storedId ? { id: storedId, internal_id: storedId, metaData: {} } : undefined) as never;
     });
   });
@@ -43,6 +46,18 @@ describe('loadFile on staged sync files', () => {
     await expect(loadFile(context, SYSTEM_USER, stagedFileId, { dontThrow: true })).resolves.toBeUndefined();
     await expect(loadFile(context, SYSTEM_USER, draftStagedFileId, { dontThrow: true })).resolves.toBeUndefined();
     expect(storeLoadById).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    `Sync/inflight/${stagedFileId.slice(SYNC_INFLIGHT_STORAGE_PATH.length + 1)}`,
+    `sync/ínflight/${stagedFileId.slice(SYNC_INFLIGHT_STORAGE_PATH.length + 1)}`,
+    `DRAFT/draft-id/${stagedFileId}`,
+    `draft/draft-id/sÿnc/inflight/${stagedFileId.slice(SYNC_INFLIGHT_STORAGE_PATH.length + 1)}`,
+  ])('refuses the case or accent variant %s once the document is found', async (variant) => {
+    await expect(loadFile(context, SYSTEM_USER, variant)).rejects.toThrow(RESTRICTED);
+    await expect(loadFile(context, SYSTEM_USER, variant, { dontThrow: true })).resolves.toBeUndefined();
+    // The path itself passes the first check, the refusal comes from the document actually found
+    expect(storeLoadById).toHaveBeenCalledWith(context, SYSTEM_USER, variant, expect.anything(), expect.anything());
   });
 
   it('does not match a sibling root that only shares the prefix', async () => {
