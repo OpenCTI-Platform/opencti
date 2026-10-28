@@ -14,7 +14,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 testCreatedCounter['attack-pattern'] = 26;
-testCreatedCounter.campaign = 6;
+testCreatedCounter.campaign = 7;
 testCreatedCounter['case-incident'] = 18;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
@@ -37,9 +37,7 @@ testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
 testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
-// Counts for:
-// - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 8;
+testCreatedCounter['intrusion-set'] = 9;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -58,20 +56,18 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 147;
-testCreatedCounter.report = 59;
-testCreatedCounter.sighting = 5;
+testCreatedCounter.relationship = 168;
+testCreatedCounter.report = 60;
+testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
-testCreatedCounter.vulnerability = 11;
-// Counts for:
-// - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 27;
-testCreatedCounter['security-coverage-result'] = 22;
+testCreatedCounter.vulnerability = 17;
+testCreatedCounter['security-coverage'] = 31;
+testCreatedCounter['security-coverage-result'] = 26;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
@@ -86,7 +82,7 @@ testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
 testUpdatedCounter['case-incident'] = 18;
 testUpdatedCounter.feedback = 1;
-testUpdatedCounter.report = 28;
+testUpdatedCounter.report = 29;
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
@@ -114,7 +110,7 @@ testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
 testUpdatedCounter.imsi = 1;
-testUpdatedCounter['security-coverage'] = 1;
+testUpdatedCounter['security-coverage'] = 2;
 testUpdatedCounter['security-coverage-result'] = 4;
 
 export const testMergedCounter: Record<string, number> = {};
@@ -128,10 +124,10 @@ testMergedCounter['case-incident'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 20;
-testDeletedCounter.campaign = 2;
+testDeletedCounter['attack-pattern'] = 26;
+testDeletedCounter.campaign = 3;
 testDeletedCounter['case-incident'] = 16;
-testDeletedCounter['case-rfi'] = 9;
+testDeletedCounter['case-rfi'] = 10;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
 testDeletedCounter['course-of-action'] = 2;
@@ -178,10 +174,8 @@ testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
-// Counts for:
-// - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 25;
-testDeletedCounter['security-coverage-result'] = 20;
+testDeletedCounter['security-coverage'] = 29;
+testDeletedCounter['security-coverage-result'] = 21;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
