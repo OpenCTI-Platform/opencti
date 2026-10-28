@@ -1,4 +1,4 @@
-import React, { ComponentType, ReactNode, useState } from 'react';
+import React, { ComponentType, ReactNode, useCallback, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import ApexCharts from 'apexcharts';
@@ -72,9 +72,15 @@ type BreakdownRenderContentProps = WidgetRenderGuards & {
   children: ReactNode;
 };
 
+type BuildQueryVariables<TQuery extends OperationType> = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+  parameters?: WidgetParameters,
+) => TQuery['variables'];
+
 interface TimeSeriesBreakdownQueryProps<TQuery extends OperationType> {
   query: GraphQLTaggedNode;
-  buildQueryVariables: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
+  buildQueryVariables: BuildQueryVariables<TQuery>;
   selectBreakdown: (data: TQuery['response']) => WidgetTimeSeriesBreakdownData | null | undefined;
   // Title of the widget when it sets none
   defaultTitle?: string;
@@ -121,7 +127,13 @@ const TimeSeriesBreakdownContent = <TQuery extends OperationType>({
   );
 };
 
-const TimeSeriesBreakdownChart = <TQuery extends OperationType>({
+/**
+ * Time series widget drawing one series per value of `parameters.breakdownBy`, for the entities, the
+ * relationships or the audits perspective: each perspective gives its query, its variables and its guards.
+ * A field the dataset does not support is not queried: the API would refuse it. The dataset is the one
+ * the query reads, its saved filters and dashboard variables resolved.
+ */
+const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
   widget,
   popover,
   host,
@@ -134,67 +146,68 @@ const TimeSeriesBreakdownChart = <TQuery extends OperationType>({
   RenderContent = WidgetRenderContent,
 }: TimeSeriesBreakdownVizProps & TimeSeriesBreakdownQueryProps<TQuery>) => {
   const { t_i18n } = useFormatter();
+  const { schema: { filterKeysSchema } } = useAuth();
   const [chart, setChart] = useState<ApexCharts>();
   const [warning, setWarning] = useState<string>();
   const parameters = widget.parameters ?? {};
-  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<TQuery>({
-    perspective: widget.perspective ?? 'entities',
+  const perspective = widget.perspective ?? 'entities';
+  const { breakdownBy } = parameters;
+  const isSupportedOn = useCallback((dataSelection: WidgetDataSelection[]) => {
+    return isBreakdownFieldSupported(filterKeysSchema, { perspective, dataSelection, parameters: { breakdownBy } });
+  }, [filterKeysSchema, perspective, breakdownBy]);
+  // No variables, so no query, for a field the resolved dataset does not support
+  const buildSupportedQueryVariables = useCallback<(...args: Parameters<BuildQueryVariables<TQuery>>) => TQuery['variables'] | null>(
+    (resolvedDataSelection, dashboardConfig, widgetParameters) => (isSupportedOn(resolvedDataSelection)
+      ? buildQueryVariables(resolvedDataSelection, dashboardConfig, widgetParameters)
+      : null),
+    [isSupportedOn, buildQueryVariables],
+  );
+  const { renderGuards, isPreviewMode, queryRef, resolvedDataSelection } = useDashboardViz<TQuery>({
+    perspective,
     dataSelection: widget.dataSelection,
     host,
     refreshRate,
     query,
     config,
     parameters,
-    buildQueryVariables,
+    buildQueryVariables: buildSupportedQueryVariables,
   });
+  // A widget that cannot be resolved says why first
+  const isBlocked = renderGuards.isMissingHostEntity || renderGuards.isMissingSavedFilters || renderGuards.hasUnresolvedVariables;
+  const isUnsupported = !isBlocked && resolvedDataSelection.length > 0 && !isSupportedOn(resolvedDataSelection);
 
   return (
     <WidgetContainer
       padding="small"
       title={parameters.title ?? defaultTitle ?? t_i18n('Entities history')}
-      chart={chart}
+      chart={isUnsupported ? undefined : chart}
       action={popover}
       showPreviewTag={isPreviewMode}
-      warning={warning}
+      warning={isUnsupported ? undefined : warning}
     >
-      <RenderContent
-        {...renderGuards}
-        queryRef={queryRef}
-        host={host}
-      >
-        <WidgetBreakdownErrorBoundary resetKey={queryRef}>
-          <TimeSeriesBreakdownContent<TQuery>
-            query={query}
-            queryRef={queryRef!}
-            selectBreakdown={selectBreakdown}
-            type={widget.type}
-            parameters={parameters}
-            onMounted={setChart}
-            onWarningChange={setWarning}
-          />
-        </WidgetBreakdownErrorBoundary>
-      </RenderContent>
+      {isUnsupported ? (
+        <WidgetNoData message={t_i18n('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')} />
+      ) : (
+        <RenderContent
+          {...renderGuards}
+          queryRef={queryRef}
+          host={host}
+        >
+          <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+            <TimeSeriesBreakdownContent<TQuery>
+              query={query}
+              queryRef={queryRef!}
+              selectBreakdown={selectBreakdown}
+              type={widget.type}
+              parameters={parameters}
+              onMounted={setChart}
+              onWarningChange={setWarning}
+            />
+          </WidgetBreakdownErrorBoundary>
+        </RenderContent>
+      )}
     </WidgetContainer>
   );
-};
-
-/**
- * Time series widget drawing one series per value of `parameters.breakdownBy`, for the entities, the
- * relationships or the audits perspective: each perspective gives its query, its variables and its guards.
- * A field the dataset does not support is not queried: the API would refuse it.
- */
-const TimeSeriesBreakdownViz = <TQuery extends OperationType>(props: TimeSeriesBreakdownVizProps & TimeSeriesBreakdownQueryProps<TQuery>) => {
-  const { t_i18n } = useFormatter();
-  const { schema: { filterKeysSchema } } = useAuth();
-  const { widget, popover, defaultTitle } = props;
-  if (!isBreakdownFieldSupported(filterKeysSchema, widget)) {
-    return (
-      <WidgetContainer padding="small" title={widget.parameters?.title ?? defaultTitle ?? t_i18n('Entities history')} action={popover}>
-        <WidgetNoData message={t_i18n('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')} />
-      </WidgetContainer>
-    );
-  }
-  return <TimeSeriesBreakdownChart<TQuery> {...props} />;
 };
 
 export default TimeSeriesBreakdownViz;

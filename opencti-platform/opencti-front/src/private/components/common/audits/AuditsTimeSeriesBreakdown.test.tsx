@@ -9,6 +9,7 @@ import { daysAgo, monthsAgo } from '../../../../utils/Time';
 const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
   dashboardViz: vi.fn(),
+  resolvedDataSelection: null as unknown[] | null,
   lines: vi.fn(),
   bars: vi.fn(),
   isGranted: true,
@@ -23,7 +24,9 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: (args: unknown) => {
     mocks.dashboardViz(args);
-    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {} };
+    // Resolved as is, unless the test sets what its saved filters and variables resolve to
+    const resolvedDataSelection = mocks.resolvedDataSelection ?? (args as { dataSelection: unknown[] }).dataSelection;
+    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {}, resolvedDataSelection };
   },
 }));
 vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
@@ -193,7 +196,8 @@ describe('AuditsTimeSeriesBreakdown', () => {
 
   it('does not query a field the logs cannot be broken down by, and says so', () => {
     const { getByText } = render(makeWidget('line', { breakdownBy: 'context_data.id' }));
-    expect(mocks.dashboardViz).not.toHaveBeenCalled();
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
+    expect(buildQueryVariables(dataSelection, config, parameters)).toBeNull();
     expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
   });
 });

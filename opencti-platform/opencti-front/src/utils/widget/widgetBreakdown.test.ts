@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Widget } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
+import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { daysAgo, monthsAgo } from '../Time';
 import {
   AUDITS_BREAKDOWN_FIELDS,
@@ -25,6 +26,7 @@ import {
   isWidgetBreakdownConfigurable,
   isSameBreakdown,
   isWidgetBreakdownEligible,
+  resolveBreakdownTypeVariables,
   MAX_RENDERED_BARS,
   MAX_RENDERED_HEATMAP_CELLS,
   MAX_RENDERED_LINE_POINTS,
@@ -99,7 +101,7 @@ describe('widget breakdown eligibility', () => {
     // A relationships widget can hold an entities dataset: it is not a dataset of relationships
     expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...widget.dataSelection[0], perspective: 'entities' }] }, workspace)).toBe(false);
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(isWidgetBreakdownActive(widget, customView)).toBe(false);
+    expect(isWidgetBreakdownActive(widget, customView)).toBe(true);
     expect(hasWidgetBreakdown(widget)).toBe(true);
   });
 
@@ -111,9 +113,14 @@ describe('widget breakdown eligibility', () => {
     expect(isWidgetBreakdownEligible(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
   });
 
-  it('only renders breakdowns in workspace dashboards', () => {
+  it('renders and configures breakdowns in workspace dashboards and custom views only', () => {
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(isWidgetBreakdownActive(makeWidget(), customView)).toBe(false);
+    expect(isWidgetBreakdownActive(makeWidget(), customView)).toBe(true);
+    expect(isWidgetBreakdownEligible(makeWidget(), customView)).toBe(true);
+    // A fintel template writes its widgets in a document
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    expect(isWidgetBreakdownActive(makeWidget(), fintelTemplate)).toBe(false);
+    expect(isWidgetBreakdownEligible(makeWidget(), fintelTemplate)).toBe(false);
     expect(isWidgetBreakdownActive(makeWidget(), undefined)).toBe(false);
     // ...but still knows the widget is broken down, to refuse it elsewhere
     expect(hasWidgetBreakdown(makeWidget())).toBe(true);
@@ -313,7 +320,8 @@ describe('getBreakdownFieldOptions', () => {
       expect(supported('objectMarking')).toBe(true);
       expect(supported('usage_types')).toBe(false);
       expect(supported('usage_types', ['uses'])).toBe(true);
-      expect(supported('relationship_type')).toBe(false);
+      // Not offered for a single relationship type, but accepted: a type variable may hold a single one
+      expect(supported('relationship_type')).toBe(true);
       expect(supported('relationship_type', ['targets', 'uses'])).toBe(true);
       // An entities field is not one of the relationships
       expect(supported('entity_type', ['targets', 'uses'])).toBe(false);
@@ -338,8 +346,11 @@ describe('getBreakdownFieldOptions', () => {
     it('refuses a field the entity type does not have, or that cannot be broken down', () => {
       expect(supported('report_types', ['Malware'])).toBe(false);
       expect(supported('name', ['Report'])).toBe(false);
-      // a single type already is the entity type
-      expect(supported('entity_type', ['Report'])).toBe(false);
+    });
+
+    it('accepts the entity type of a single type, not offered but accepted by the API', () => {
+      // A type variable offering several types can be set to a single one
+      expect(supported('entity_type', ['Report'])).toBe(true);
     });
 
     it('refuses a field the abstract type has not, without type filter', () => {
@@ -356,6 +367,38 @@ describe('getBreakdownFieldOptions', () => {
 
     it('refuses a widget without breakdown field', () => {
       expect(isBreakdownFieldSupported(schema, makeWidget({ parameters: { breakdownBy: null } }))).toBe(false);
+    });
+  });
+
+  describe('with dashboard variables', () => {
+    const VARIABLE_ID = '6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f';
+    const token = `$var:${VARIABLE_ID}`;
+    const typeVariable = (restriction: DashboardVariable['restriction']): DashboardVariable => ({
+      id: VARIABLE_ID, name: 'type', type: 'entityType', defaultValue: null, restriction,
+    });
+
+    it('reads a type variable as the types it allows', () => {
+      expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'selection', values: ['Report', 'Malware'] })])).toEqual(['Report', 'Malware']);
+      expect(resolveBreakdownTypeVariables(['Report', token], [typeVariable({ mode: 'selection', values: ['Report', 'Grouping'] })])).toEqual(['Report', 'Grouping']);
+      expect(resolveBreakdownTypeVariables(['Report'], undefined)).toEqual(['Report']);
+    });
+
+    it('reads no type, like without type filter, when a variable may hold any type or is unknown', () => {
+      expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'none' })])).toEqual([]);
+      expect(resolveBreakdownTypeVariables([token], [typeVariable({ mode: 'selection', values: [] })])).toEqual([]);
+      expect(resolveBreakdownTypeVariables(['Report', token], [])).toEqual([]);
+      expect(resolveBreakdownTypeVariables([token], undefined)).toEqual([]);
+      const labelVariable: DashboardVariable = { id: VARIABLE_ID, name: 'label', type: 'label', defaultValue: null, restriction: { mode: 'selection', values: ['Report'] } };
+      expect(resolveBreakdownTypeVariables([token], [labelVariable])).toEqual([]);
+    });
+
+    it('offers the fields of the types a type variable allows', () => {
+      const widget = makeWidget({}, [token]);
+      const keys = (variables?: DashboardVariable[]) => getWidgetBreakdownFieldOptions(schema, widget, variables).map(({ key }) => key);
+      expect(keys([typeVariable({ mode: 'selection', values: ['Report'] })])).toContain('report_types');
+      // Any type: the fields of the abstract type, and the type itself
+      expect(keys([typeVariable({ mode: 'none' })])).not.toContain('report_types');
+      expect(keys([typeVariable({ mode: 'none' })])).toContain('entity_type');
     });
   });
 });
@@ -590,7 +633,8 @@ describe('audits breakdown', () => {
       expect(isWidgetBreakdownActive(makeAuditsWidget({ type }), workspace)).toBe(true);
     });
     expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownActive(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(false);
+    // The history of the entity of a custom view
+    expect(isWidgetBreakdownActive(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
     // ...but still knows the widget is broken down, to refuse it elsewhere
     expect(hasWidgetBreakdown(makeAuditsWidget())).toBe(true);
   });
@@ -617,7 +661,7 @@ describe('audits breakdown', () => {
     expect(isWidgetBreakdownConfigurable(distinct, workspace)).toBe(true);
     expect(getWidgetBreakdownLockReason(distinct)).toEqual('distinct-values');
     expect(isWidgetBreakdownConfigurable(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownConfigurable(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(false);
+    expect(isWidgetBreakdownConfigurable(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
   });
 
   it('offers exactly the fields the API accepts for the logs, whatever the filters', () => {

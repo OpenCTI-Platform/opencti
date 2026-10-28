@@ -5,6 +5,8 @@ import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FilterDefinition } from '../hooks/useAuth';
 import { isCustomFieldAttribute } from '../customFields';
 import { daysAgo, monthsAgo } from '../Time';
+import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
+import { parseVariableToken } from '../../components/dashboard/dashboardVariablesResolution';
 
 export const BREAKDOWN_LIMIT_OPTIONS = [5, 10, 20, 50];
 export const DEFAULT_BREAKDOWN_LIMIT = 10;
@@ -105,6 +107,26 @@ export const getBreakdownEntityTypes = (filters?: FilterGroup | null, perspectiv
 };
 
 /**
+ * Types the dataset can hold whatever the values of its dashboard variables: a type variable stands for
+ * the types it allows. Empty, like without a type filter, when a variable may hold any type.
+ */
+export const resolveBreakdownTypeVariables = (types: string[], variables?: DashboardVariable[]): string[] => {
+  const resolvedTypes = new Set<string>();
+  for (const type of types) {
+    const variableId = parseVariableToken(type);
+    const variable = variableId ? variables?.find(({ id }) => id === variableId) : undefined;
+    if (!variableId) {
+      resolvedTypes.add(type);
+    } else if (variable?.type === 'entityType' && variable.restriction.mode === 'selection' && variable.restriction.values.length > 0) {
+      variable.restriction.values.forEach((value) => resolvedTypes.add(value));
+    } else {
+      return [];
+    }
+  }
+  return Array.from(resolvedTypes);
+};
+
+/**
  * Fields the dataset can be broken down by: with a single type, its allowed fields
  * (BREAKDOWN_ALLOWED_REFS, vocabularies and enums); with several types, the ones they have in common,
  * plus the type itself. Relationships can also be broken down by the type of their source or target.
@@ -138,28 +160,38 @@ export const getBreakdownFieldOptions = (
 /**
  * Fields the first dataset of the widget can be broken down by: the fields of its entity or relationship
  * types for the entities and the relationships, the allowed fields of the logs for the audits.
+ * The dataset filters are the ones of the widget, its saved filters read: its type variables are
+ * resolved with the dashboard `variables`.
  */
 export const getWidgetBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection'>,
+  variables?: DashboardVariable[],
 ): BreakdownField[] => {
   if (widget.perspective === 'audits') {
     return AUDITS_BREAKDOWN_FIELDS;
   }
   const perspective = widget.perspective ?? 'entities';
-  const types = getBreakdownEntityTypes(widget.dataSelection[0]?.filters, perspective);
+  const types = resolveBreakdownTypeVariables(getBreakdownEntityTypes(widget.dataSelection[0]?.filters, perspective), variables);
   return getBreakdownFieldOptions(filterKeysSchema, types, perspective);
 };
 
 /**
- * Whether the widget breakdown field can be used on its dataset: saved or imported widgets can carry
- * a field the API refuses for the entity types of their filters, or for their perspective.
+ * Whether the widget breakdown field can be used on its dataset, once its saved filters and variables
+ * are resolved: saved or imported widgets can carry a field the API refuses for the entity types of
+ * their filters, or for their perspective.
  */
 export const isBreakdownFieldSupported = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection' | 'parameters'>,
 ) => {
-  return getWidgetBreakdownFieldOptions(filterKeysSchema, widget).some(({ key }) => key === widget.parameters?.breakdownBy);
+  const breakdownBy = widget.parameters?.breakdownBy;
+  // The API accepts the type itself for any dataset: it is only not offered for a single type, a single series.
+  // A type variable may well hold a single type once resolved.
+  if (breakdownBy && getBreakdownPerspective(widget.perspective ?? 'entities')?.typeField.key === breakdownBy) {
+    return true;
+  }
+  return getWidgetBreakdownFieldOptions(filterKeysSchema, widget).some(({ key }) => key === breakdownBy);
 };
 
 export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) => {
@@ -204,11 +236,16 @@ const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
     && !isCountingDistinctValues(widget);
 };
 
+// Hosts whose widgets can be broken down: the dashboards, and the custom views, whose widgets read the
+// platform data the same way, around their entity. A fintel template writes its widgets in a document.
+const BREAKDOWN_HOST_KINDS: WidgetHost['kind'][] = ['workspace', 'custom-view'];
+const isBreakdownHost = (host?: WidgetHost) => !!host && BREAKDOWN_HOST_KINDS.includes(host.kind);
+
 /**
- * Whether the breakdown can be configured: only workspace dashboards support it for now.
+ * Whether the breakdown can be configured: in workspace dashboards and custom views.
  */
 export const isWidgetBreakdownEligible = (widget: BreakdownWidget, host?: WidgetHost) => {
-  return host?.kind === 'workspace' && canWidgetBeBrokenDown(widget);
+  return isBreakdownHost(host) && canWidgetBeBrokenDown(widget);
 };
 
 /**
@@ -245,7 +282,7 @@ export const hasWidgetBreakdown = (widget: Widget) => {
  * Whether the widget must be rendered as a breakdown.
  */
 export const isWidgetBreakdownActive = (widget: Widget, host?: WidgetHost) => {
-  return host?.kind === 'workspace' && hasWidgetBreakdown(widget);
+  return isBreakdownHost(host) && hasWidgetBreakdown(widget);
 };
 
 // ApexCharts bar rendering cost grows with the square of the number of bars (every bar is

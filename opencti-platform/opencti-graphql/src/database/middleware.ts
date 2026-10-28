@@ -209,6 +209,7 @@ import {
   buildThingsFilters,
   type EntityFilters,
   type EntityOptions,
+  fullEntitiesList,
   fullEntitiesThroughRelationsToList,
   fullRelationsList,
   internalFindByIds,
@@ -237,11 +238,13 @@ import {
   authorizedMembersActivationDate,
   confidence,
   customFieldValues,
+  type EnumAttribute,
   iAliasedIds,
   iAttributes,
   modified,
   type RefAttribute,
   updatedAt,
+  type VocabAttribute,
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { type EditInput, EditOperation, type FilterGroup, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
@@ -912,9 +915,13 @@ type BreakdownField = {
   resolveEntities: boolean;
   // Label of a value, when its indexed form is not the one to display
   resolveLabel?: (key: string) => string;
+  // Vocabulary values are indexed in their normalized form: shown with the name of their vocabulary
+  vocabularyCategories?: string[];
   // Set to break relationships down by the type of their source or target
   connectionSide?: ConnectionSide;
 };
+// Indexed form of a keyword value (string_normalizer: lowercase and asciifolding), for the accented latin letters
+const normalizeKeywordValue = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 // A breakdown field read from the schema is a filter key that every requested type carries: a relation ref of
 // the allowlist (author, labels, markings, assignees, participants), or an id, vocabulary or enum attribute.
 // Free text, dates, numbers and the special filter keys cannot be broken down.
@@ -930,8 +937,20 @@ const resolveSchemaBreakdownField = (types: string[], field: string): BreakdownF
     && BREAKDOWN_ATTRIBUTE_FORMATS.includes(attribute.format)
     && (attribute.format !== 'id' || BREAKDOWN_ALLOWED_ID_ATTRIBUTES.includes(attribute.name));
   if (attributes.every(isBreakdownAttribute)) {
-    const isIdAttribute = (attributes[0] as AttributeDefinition & { format: string }).format === 'id';
-    return { aggregationField: field, resolveEntities: isIdAttribute };
+    const breakdownAttributes = attributes as (AttributeDefinition & { format: string })[];
+    if (breakdownAttributes[0].format === 'id') {
+      return { aggregationField: field, resolveEntities: true };
+    }
+    // Vocabulary and enum values are indexed in lowercase and without accents: they are shown as they are written
+    const enumValues = breakdownAttributes.flatMap((attribute) => (attribute.format === 'enum' ? (attribute as EnumAttribute).values : []));
+    const enumLabels = new Map(enumValues.map((value) => [normalizeKeywordValue(value), value]));
+    const vocabularyCategories = R.uniq(breakdownAttributes.flatMap((attribute) => (attribute.format === 'vocabulary' ? [(attribute as VocabAttribute).vocabularyCategory] : [])));
+    return {
+      aggregationField: field,
+      resolveEntities: false,
+      ...(enumLabels.size > 0 ? { resolveLabel: (key: string) => enumLabels.get(key) ?? key } : {}),
+      ...(vocabularyCategories.length > 0 ? { vocabularyCategories } : {}),
+    };
   }
   return null;
 };
@@ -1009,6 +1028,17 @@ const checkTimeSeriesBreakdownLimit = (limit: number | null | undefined) => {
     throw FunctionalError('Time series breakdown limit must be an integer between 1 and the maximum', { limit, max: TIME_SERIES_BREAKDOWN_MAX_LIMIT });
   }
 };
+// Names of the vocabularies of the categories, by their indexed form, for the keys only. Read with the SYSTEM
+// user, as the entities of a breakdown are: only the names of values already counted for the user come back
+export const resolveVocabularyLabels = async (context: AuthContext, categories: string[], keys: string[]) => {
+  const filters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['category'], values: categories }, { key: ['name'], values: keys }],
+    filterGroups: [],
+  };
+  const vocabularies = await fullEntitiesList<BasicStoreEntityVocabulary>(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], { filters, noFiltersChecking: true });
+  return new Map(vocabularies.map((vocabulary) => [normalizeKeywordValue(vocabulary.name), vocabulary.name]));
+};
 // One series per value of a field, shared by every perspective: discover the values among the documents of
 // the indices that queryArgs select (with their access restrictions), keep the top ones, count them over time
 const timeSeriesBreakdown = async (
@@ -1024,7 +1054,7 @@ const timeSeriesBreakdown = async (
   // Without an end date, the histogram would create every empty bucket up to the most recent document,
   // a date in the future included, past the size checked below: the period always ends
   const endDate = args.endDate ?? new Date();
-  const { aggregationField, resolveEntities, resolveLabel, connectionSide } = breakdownField;
+  const { aggregationField, resolveEntities, resolveLabel, vocabularyCategories, connectionSide } = breakdownField;
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
   const isAscending = args.order === 'asc';
   const withOther = args.includeOther === true;
@@ -1081,21 +1111,26 @@ const timeSeriesBreakdown = async (
   // Many distinct values (a full candidates page, or several times the limit) mean a field with many values
   // per entity or a high cardinality, where one filter per value is much faster than a restricted terms
   const filterPerKey = candidates.length >= MAX_AGGREGATION_SIZE || candidates.length >= BREAKDOWN_FILTER_PER_KEY_RATIO * seriesLimit;
-  const histograms = await elHistogramBreakdownCount(context, user, indices, {
-    ...breakdownArgs,
-    interval,
-    keys: selected.map((candidate) => candidate.key),
-    withOther,
-    filterPerKey,
-    connectionSide,
-  });
+  const keys = selected.map((candidate) => candidate.key);
+  // The names of the vocabularies are read during the histogram, only for the values kept
+  const [histograms, vocabularyLabels] = await Promise.all([
+    elHistogramBreakdownCount(context, user, indices, {
+      ...breakdownArgs,
+      interval,
+      keys,
+      withOther,
+      filterPerKey,
+      connectionSide,
+    }),
+    vocabularyCategories && keys.length > 0 ? resolveVocabularyLabels(context, vocabularyCategories, keys) : Promise.resolve(new Map<string, string>()),
+  ]);
   // Every series shares the same dates: they are sent once, each series only carries its values
   const axis = buildTimeSeriesAxis(startDate, endDate, interval);
   const sumOf = (values: number[]) => values.reduce((total, value) => total + value, 0);
   const series = selected.map(({ label, entity, key }) => {
     const values = fillTimeSeriesValues(axis, histograms.get(key) ?? []);
     // The weighted total of the series, the candidates being only ranked on their number of entities
-    return { label, value: sumOf(values), entity, isOther: false, values };
+    return { label: vocabularyLabels.get(key) ?? label, value: sumOf(values), entity, isOther: false, values };
   });
   if (withOther) {
     const otherValues = fillTimeSeriesValues(axis, histograms.get(HISTOGRAM_BREAKDOWN_OTHER_KEY) ?? []);

@@ -85,15 +85,21 @@ describe('DashboardRelationshipsViz', () => {
       });
     });
 
-    it('keeps the regular widget without breakdown, outside of a workspace or with an entities dataset', () => {
+    it('renders the relationships time series of a custom view as a breakdown too', () => {
+      const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
+      const { getByTestId } = testRender(<DashboardRelationshipsViz widget={makeWidget('line', withBreakdown)} config={config} host={customView} />);
+      expect(getByTestId('relationships-time-series-breakdown')).toBeTruthy();
+    });
+
+    it('keeps the regular widget without breakdown, in a fintel template or with an entities dataset', () => {
       Object.entries(charts).forEach(([type, testId]) => {
         const regular = testRender(<DashboardRelationshipsViz widget={makeWidget(type)} config={config} host={workspace} />);
         expect(regular.getByTestId(`relationships-${testId}`)).toBeTruthy();
         regular.unmount();
-        const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-        const inCustomView = testRender(<DashboardRelationshipsViz widget={makeWidget(type, withBreakdown)} config={config} host={customView} />);
-        expect(inCustomView.getByTestId(`relationships-${testId}`)).toBeTruthy();
-        inCustomView.unmount();
+        const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+        const inFintelTemplate = testRender(<DashboardRelationshipsViz widget={makeWidget(type, withBreakdown)} config={config} host={fintelTemplate} />);
+        expect(inFintelTemplate.getByTestId(`relationships-${testId}`)).toBeTruthy();
+        inFintelTemplate.unmount();
         const entities = testRender(<DashboardRelationshipsViz widget={makeWidget(type, withBreakdown, 'entities')} config={config} host={workspace} />);
         expect(entities.getByTestId(`relationships-${testId}`)).toBeTruthy();
         entities.unmount();
