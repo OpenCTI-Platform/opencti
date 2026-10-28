@@ -1,11 +1,10 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
+import type { ImportStatus } from '../../../types/import';
 import type { ConfigPresetConfiguration } from '../configPreset-types';
 
 // Reasons of a refusal, read by the front in extensions.data.reason (the message is only for display)
 export const CONFIG_PRESET_REASON_FILE_MISSING = 'file_missing';
 export const CONFIG_PRESET_REASON_BUNDLE_REFUSED = 'bundle_refused';
-
-export type ConfigPresetImportStatus = 'created' | 'overwritten' | 'skipped' | 'failed';
 
 // A value the import would write; null means untouched
 export interface ConfigPresetImportField {
@@ -26,7 +25,7 @@ export interface ConfigPresetBundleItem {
 
 // What an importer decides for an item, without writing anything
 export interface ConfigPresetComputedItem {
-  status: ConfigPresetImportStatus;
+  status: ImportStatus;
   reason?: string;
   label: string;
   // True when the label is a static string the UI translates
@@ -48,7 +47,7 @@ export interface ConfigPresetImporter {
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan) => Promise<ConfigPresetComputedItem>;
   // Writes the item with one domain call, so that a failure never leaves it half written; an error makes the item failed.
   // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten).
-  apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem) => Promise<ConfigPresetImportStatus | void>;
+  apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem) => Promise<ImportStatus | void>;
 }
 
 // Content of metadata.json

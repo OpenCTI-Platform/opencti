@@ -33,7 +33,7 @@ export const themeConfiguration = (overrides: Record<string, unknown> = {}) => (
   theme_paper: '#202020',
   theme_nav: '#303030',
   theme_primary: '#ff0000',
-  theme_secondary: 'rgb(0, 255, 0)',
+  theme_secondary: '#00ff00',
   theme_accent: '#0000ff',
   theme_text_color: '#ffffff',
   theme_logo: 'https://example.com/logo.png',

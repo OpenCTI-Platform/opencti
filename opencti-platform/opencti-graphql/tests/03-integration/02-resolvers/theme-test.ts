@@ -481,4 +481,28 @@ describe('Themes resolver testing', () => {
 
     expect(queryResult.data?.theme).toBeNull();
   });
+
+  it('should import a theme file exported from the UI, with http(s) URLs and null login background fields', async () => {
+    const FILE_NAME = 'test-theme-export.json';
+    const upload = await createUploadFromTestDataFile(`theme/${FILE_NAME}`, FILE_NAME, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeUndefined();
+    const importedThemeId = theme.data?.themeImport.id;
+    expect(theme.data?.themeImport.theme_logo).toBe('https://www.test.com/image.svg');
+    expect(theme.data?.themeImport.theme_login_aside_image).toBe('http://www.test.com/aside.png');
+    expect(theme.data?.themeImport.built_in).toBe(false);
+    await queryAsAdmin({ query: DELETE_THEME_MUTATION, variables: { id: importedThemeId } });
+  });
+
+  it.each([
+    ['a relative logo', 'test-theme-relative-logo.json', 'theme_logo'],
+    ['a colour that is not hex', 'test-theme-rgb-color.json', 'theme_background'],
+    ['an unknown key', 'test-theme-unknown-key.json', 'built_in'],
+  ])('should refuse to import a theme file with %s', async (_, fileName, invalidKey) => {
+    const upload = await createUploadFromTestDataFile(`theme/${fileName}`, fileName, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeDefined();
+    expect(theme.errors?.[0].message).toContain('Invalid theme file');
+    expect(JSON.stringify(theme.errors)).toContain(invalidKey);
+  });
 });

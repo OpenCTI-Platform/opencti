@@ -1,21 +1,15 @@
 import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../../generated/graphql';
 import { getPlatformDefaultTheme, getSettings, getWhitemarkConfigPresetConfiguration, settingsEditField } from '../../../domain/settings';
-import {
-  addTheme,
-  checkExistingTheme,
-  fieldPatchTheme,
-  findAllThemes,
-  findById as findThemeById,
-  findThemePaginated,
-  getThemeConfigPresetConfiguration,
-} from '../../theme/theme-domain';
-import { BUILT_IN_THEME_STANDARD_IDS } from '../../theme/theme-constants';
+import { FunctionalError } from '../../../config/errors';
+import { findAllThemes, findThemePaginated, getThemeConfigPresetConfiguration } from '../../theme/theme-domain';
+import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS } from '../../theme/theme-import-schema';
+import { importTheme } from '../../theme/theme-import';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
 import { buildImportFields, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
-import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS, themeConfigurationSchema, whitemarkConfigurationSchema } from '../import/configPreset-import-schemas';
+import { whitemarkConfigurationSchema } from '../import/configPreset-import-schemas';
 import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup } from './common-configPreset-registry';
 
 export const BRANDING_FAMILY_ID = 'branding';
@@ -61,8 +55,6 @@ const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | unde
 // The ids of the request that can be themes: an explicit list without the static ids
 const themeIds = (ids?: string[] | null) => ids?.filter((id) => !BRANDING_STATIC_ITEMS.some((item) => item.id === id));
 
-const BUILT_IN_THEME_IDS = Object.values(BUILT_IN_THEME_STANDARD_IDS);
-
 const computeWhitemark = (item: Parameters<ConfigPresetImporter['compute']>[2]): ConfigPresetComputedItem => {
   const base = { label: WHITEMARK_LABEL, translatable: true, exists: true, fields: [] };
   const parsed = whitemarkConfigurationSchema.safeParse(item.configuration);
@@ -82,56 +74,31 @@ const brandingImporter: ConfigPresetImporter = {
     }
     const name = typeof item.configuration.name === 'string' ? item.configuration.name : item.id;
     const base = { label: name, translatable: false };
-    // A built-in theme has the same standard id on every platform: never patched, never created
-    if (BUILT_IN_THEME_IDS.includes(item.id)) {
-      return { ...base, exists: true, status: 'skipped', reason: 'Built-in theme', fields: [] };
-    }
+    // The bundle id of a theme is its standard id
     if (!THEME_STANDARD_ID_PATTERN.test(item.id) || item.configuration.standard_id !== item.id) {
       return { ...base, exists: false, status: 'failed', reason: 'The standard id of the theme does not match its id', fields: [] };
     }
-    const parsed = themeConfigurationSchema.safeParse(item.configuration);
-    if (!parsed.success) {
-      return { ...base, exists: false, status: 'failed', reason: importFailureReason(parsed.error), fields: [] };
+    // The rules of a theme are the ones of the theme module: a dry run decides what the import would do
+    const result = await importTheme(context, user, item.configuration, { mode: 'overwrite', dryRun: true });
+    if (result.status === 'created') {
+      plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
     }
-    const fields = buildImportFields(parsed.data, THEME_URL_KEYS);
-    const existing = await findThemeById(context, user, item.id);
-    if (existing) {
-      return { ...base, exists: true, status: 'overwritten', fields };
-    }
-    if (await checkExistingTheme(context, user, parsed.data.name)) {
-      return { ...base, exists: false, status: 'failed', reason: 'Theme name already exists', fields };
-    }
-    plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
-    return { ...base, exists: false, status: 'created', fields };
+    // The preview shows the URLs and the images of a theme that is valid
+    const fields = result.configuration ? buildImportFields(result.configuration, THEME_URL_KEYS) : [];
+    return { ...base, exists: result.exists, status: result.status, reason: result.reason, fields };
   },
-  apply: async (context, user, item) => {
+  apply: async (context, user, item, computed) => {
     if (item.id === WHITEMARK_ID) {
       const { platform_whitemark: whitemark } = whitemarkConfigurationSchema.parse(item.configuration);
       await settingsEditField(context, user, (await getSettings(context)).id, [{ key: 'platform_whitemark', value: [whitemark] }]);
       return undefined;
     }
-    const { standard_id: standardId, ...configuration } = themeConfigurationSchema.parse(item.configuration);
-    // Looked up again right before the creation: a theme with this standard id created since compute is overwritten, never duplicated
-    const existing = await findThemeById(context, user, standardId);
-    if (existing) {
-      const input = Object.entries(configuration).filter(([, value]) => value !== null && value !== undefined).map(([key, value]) => ({ key, value: [value as string] }));
-      await fieldPatchTheme(context, user, existing.id, input);
-      return 'overwritten';
+    // Decided again by the theme module as it writes: a theme with this standard id created since compute is overwritten, never duplicated
+    const result = await importTheme(context, user, item.configuration, { mode: 'overwrite' });
+    if (result.status !== 'created' && result.status !== 'overwritten') {
+      throw FunctionalError(result.reason ?? 'Theme cannot be imported');
     }
-    // addTheme trusts its input: the bundle standard id is passed, and the theme is never built-in
-    await addTheme(context, user, {
-      ...configuration,
-      theme_logo: configuration.theme_logo ?? '',
-      theme_logo_collapsed: configuration.theme_logo_collapsed ?? '',
-      theme_logo_login: configuration.theme_logo_login ?? '',
-      theme_login_aside_color: configuration.theme_login_aside_color ?? null,
-      theme_login_aside_gradient_start: configuration.theme_login_aside_gradient_start ?? null,
-      theme_login_aside_gradient_end: configuration.theme_login_aside_gradient_end ?? null,
-      theme_login_aside_image: configuration.theme_login_aside_image ?? null,
-      standard_id: standardId,
-      built_in: false,
-    });
-    return undefined;
+    return result.status === computed.status ? undefined : result.status;
   },
 };
 

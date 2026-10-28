@@ -86,7 +86,7 @@ describe('Platform import (compute)', () => {
 describe('Branding import (compute)', () => {
   it('skips a built-in theme without looking it up', async () => {
     const [standardId] = Object.values(BUILT_IN_THEME_STANDARD_IDS);
-    expect(await compute('branding', standardId, { standard_id: standardId, name: 'Filigran Dark' })).toMatchObject({ status: 'skipped', exists: true });
+    expect(await compute('branding', standardId, themeConfiguration({ standard_id: standardId, name: 'Filigran Dark' }))).toMatchObject({ status: 'skipped', exists: true, reason: 'Built-in theme' });
     expect(findById).not.toHaveBeenCalled();
   });
 
@@ -109,6 +109,13 @@ describe('Branding import (compute)', () => {
     expect(plan.created.size).toBe(0);
   });
 
+  it('fails when an existing theme is renamed to a name used by another theme, as the import would', async () => {
+    vi.mocked(findById).mockResolvedValue({ id: 'internal', built_in: false } as never);
+    vi.mocked(checkExistingTheme).mockResolvedValue(true);
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'failed', exists: true, reason: 'Theme name already exists' });
+    expect(checkExistingTheme).toHaveBeenCalledWith(context, user, 'Import test theme', 'internal');
+  });
+
   it('fails on a standard id that differs from the id or is badly formed', async () => {
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ standard_id: 'theme--other' }))).toMatchObject({ status: 'failed' });
     expect(await compute('branding', 'theme--NOT-LOWER', themeConfiguration({ standard_id: 'theme--NOT-LOWER' }))).toMatchObject({ status: 'failed' });
@@ -118,7 +125,31 @@ describe('Branding import (compute)', () => {
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_primary: 'red; background: url(x)' }))).toMatchObject({ status: 'failed' });
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_logo: 'https://example.com/a.png);color:red' }))).toMatchObject({ status: 'failed' });
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ built_in: true }))).toMatchObject({ status: 'failed' });
-    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_logo: 'http://example.com/a.png' }))).toMatchObject({ status: 'failed' });
+  });
+
+  it('accepts an http or https URL for the logos and the login background image', async () => {
+    const urls = { theme_logo: 'http://example.com/a.png', theme_logo_collapsed: 'https://example.com/b.png', theme_logo_login: 'http://example.com/c.svg', theme_login_aside_image: 'http://example.com/d.jpg' };
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration(urls))).toMatchObject({ status: 'created' });
+  });
+
+  it.each([
+    ['a relative path', '/static/logo.png'],
+    ['a scheme that is not http(s)', 'javascript:alert(1)'],
+    ['a protocol-relative URL', '//example.com/a.png'],
+    ['a space', 'http://example.com/a b.png'],
+  ])('fails on an image URL that is %s', async (_, url) => {
+    const keys = ['theme_logo', 'theme_logo_collapsed', 'theme_logo_login', 'theme_login_aside_image'];
+    const results = await Promise.all(keys.map((key) => compute('branding', CUSTOM_THEME_ID, themeConfiguration({ [key]: url }))));
+    expect(results.map(({ status }) => status)).toEqual(keys.map(() => 'failed'));
+  });
+
+  it.each(['rgb(0, 0, 0)', 'rgba(0,0,0,0.5)', 'red', '#12345', '#1234567', 'hsl(0, 0%, 0%)'])('fails on the colour %s, only hex is accepted', async (color) => {
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_background: color }))).toMatchObject({ status: 'failed' });
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_login_aside_color: color }))).toMatchObject({ status: 'failed' });
+  });
+
+  it.each(['#abc', '#abcd', '#aabbcc', '#AABBCC80'])('accepts the hex colour %s', async (color) => {
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_background: color }))).toMatchObject({ status: 'created' });
   });
 
   it('previews the URL and image fields only and shows a data image as type and size', async () => {
