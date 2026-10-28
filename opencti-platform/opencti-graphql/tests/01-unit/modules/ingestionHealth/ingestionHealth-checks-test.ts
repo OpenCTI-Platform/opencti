@@ -277,13 +277,20 @@ describe('execution failed check', () => {
   const FAILED_SYNC = { ...SYNC, last_execution_status: 'error' };
   // The details of the failure, read from the ingestion logs: absent when they hold none
   const failedWith = (meta?: Record<string, unknown>) => ({ ...CONTEXT, ...NOT_PINGING, runtimeData: meta ? { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: meta } : {} });
+  const graphqlCheckOf = (meta?: Record<string, unknown>, ingestor = FAILED_FEED) => {
+    return toGraphqlHealthChecks(computeIngestionHealthChecks(ingestor, failedWith(meta)), ingestor.entity_type)[0];
+  };
+  // The message as shown once its placeholders are filled, as the front does after translating it
   const messageOf = (meta?: Record<string, unknown>, ingestor = FAILED_FEED) => {
-    return toGraphqlHealthChecks(computeIngestionHealthChecks(ingestor, failedWith(meta)), ingestor.entity_type)[0]?.health_check_message;
+    const check = graphqlCheckOf(meta, ingestor);
+    return formatHealthCheckMessage(check.health_check_message ?? '', check.health_check_metadata ?? {});
   };
 
-  it('should flag a feed or sync whose last execution failed, with the details of the failure', () => {
-    expect(computeIngestionHealthChecks(FAILED_FEED, failedWith(NOT_FOUND)))
-      .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: NOT_FOUND }]);
+  it('should flag a feed or sync whose last execution failed, with the details of the failure and their description', () => {
+    expect(computeIngestionHealthChecks(FAILED_FEED, failedWith(NOT_FOUND))).toEqual([{
+      health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+      health_check_metadata: { ...NOT_FOUND, failure_description: 'HTTP 404 Not Found' },
+    }]);
   });
 
   it('should flag it without details when the logs hold none', () => {
@@ -324,6 +331,22 @@ describe('execution failed check', () => {
   it('should name a sync in the message', () => {
     expect(messageOf(NOT_FOUND, FAILED_SYNC)).toBe('Sync execution failed: HTTP 404 Not Found');
     expect(messageOf(undefined, FAILED_SYNC)).toBe('Sync execution failed');
+  });
+
+  // The front translates the message before filling it: the details must stay out of the text to translate
+  it.each([
+    ['a feed', FAILED_FEED, 'Feed execution failed: {failure_description}'],
+    ['a sync', FAILED_SYNC, 'Sync execution failed: {failure_description}'],
+  ])('should give the message of %s as a template, the description of the failure in the metadata', (_, ingestor, template) => {
+    const check = graphqlCheckOf(NOT_FOUND, ingestor);
+    expect(check.health_check_message).toBe(template);
+    expect(check.health_check_metadata).toEqual({ ...NOT_FOUND, failure_description: 'HTTP 404 Not Found' });
+  });
+
+  it('should give the message without placeholder nor description in the metadata when no details are known', () => {
+    const check = graphqlCheckOf(undefined);
+    expect(check.health_check_message).toBe('Feed execution failed');
+    expect(check.health_check_metadata).toEqual({});
   });
 });
 
@@ -822,6 +845,13 @@ describe('buildHealthTransitionMessage', () => {
     };
     expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [missingCapability]))
       .toBe('reports `My connector` (Connector) as critical: User lacks required capability: "Connectors API usage: register, ping, export push ..."');
+  });
+
+  it('should fill the description of a failed execution from its metadata', () => {
+    const metadata = { http_status: 404, http_status_text: 'Not Found', failure_description: 'HTTP 404 Not Found' };
+    const executionFailed = { health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: metadata };
+    expect(buildHealthTransitionMessage({ name: 'My feed', entity_type: 'IngestionRss' }, HealthTransition.Critical, [executionFailed]))
+      .toBe('reports `My feed` (IngestionRss) as critical: Feed execution failed: HTTP 404 Not Found');
   });
 });
 
