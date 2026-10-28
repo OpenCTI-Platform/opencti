@@ -55,6 +55,16 @@ describe('commitSubmission', () => {
     );
   });
 
+  it('binds a submission without a draft to the current draft and never deletes it on a failure', async () => {
+    const plan: any = { bundle: { id: 'bundle--3', objects: [] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
+    vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValueOnce(new Error('broker down'));
+
+    await expect(commitSubmission({ draft_context: 'draft-current' } as any, mockUser, 'form-1', plan)).rejects.toThrow('Failed to process form submission');
+
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: 'draft-current' });
+    expect(vi.mocked(draftWorkspaceDomain.deleteDraftWorkspace)).not.toHaveBeenCalled();
+  });
+
   it('creates a draft workspace and patches its creator_id when finalIsDraft is true', async () => {
     const plan: any = {
       bundle: { id: 'bundle--2', objects: [] },
