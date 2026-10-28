@@ -144,7 +144,6 @@ const useDeployedIntegrations = ({
       const { integrationStatus } = computeConnectorStatus({
         manager_current_status: state?.manager_current_status,
         manager_requested_status: state?.manager_requested_status,
-        active: state?.active,
       });
       const logoSlug = connector.manager_contract_excerpt?.slug;
       items.push({
