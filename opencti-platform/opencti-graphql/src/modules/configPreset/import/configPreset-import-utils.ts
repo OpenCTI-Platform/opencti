@@ -40,10 +40,6 @@ export const configPresetImportMode = (modes: Map<string, ConfigImportMode>, typ
 // What the import of a setting says when it is left as it is, because a type has no copy of it
 export const CONFIG_PRESET_ALREADY_EXISTS_REASON = 'Already exists';
 
-export const importFailureReason = (error: { issues: { path: PropertyKey[]; message: string }[] }) => {
-  return error.issues.map((issue) => `${issue.path.map(String).join('.') || 'configuration'}: ${issue.message}`).join(', ');
-};
-
 // The upload, the preview and the import are BYPASS only and refused in a draft context
 export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUser) => {
   if (!isUserHasCapability(user, BYPASS)) {

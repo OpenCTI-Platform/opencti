@@ -2,6 +2,7 @@ import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../.
 import { getPlatformDefaultTheme, getSettings, getWhitemarkConfigPresetConfiguration, settingsEditField } from '../../../domain/settings';
 import { FunctionalError } from '../../../config/errors';
 import { ConfigImportMode } from '../../configImport/configImport-types';
+import { configImportValidationReason } from '../../configImport/configImport-utils';
 import { findAllThemes, findThemePaginated } from '../../theme/theme-domain';
 import { getThemeConfigPresetConfiguration } from '../../theme/theme-export';
 import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS } from '../../theme/theme-import-schema';
@@ -10,7 +11,7 @@ import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
-import { buildImportFields, CONFIG_PRESET_ALREADY_EXISTS_REASON, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
+import { buildImportFields, CONFIG_PRESET_ALREADY_EXISTS_REASON, isNothingToImport } from '../import/configPreset-import-utils';
 import { whitemarkConfigurationSchema } from '../import/configPreset-import-schemas';
 import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup } from './common-configPreset-registry';
 
@@ -61,7 +62,7 @@ const computeWhitemark = (item: Parameters<ConfigPresetImporter['compute']>[2], 
   const base = { label: WHITEMARK_LABEL, translatable: true, exists: true, fields: [] };
   const parsed = whitemarkConfigurationSchema.safeParse(item.configuration);
   if (!parsed.success) {
-    return { ...base, status: 'failed', reason: importFailureReason(parsed.error) };
+    return { ...base, status: 'failed', reason: configImportValidationReason(parsed.error) };
   }
   // A setting has no copy: it is left as it is
   if (mode === ConfigImportMode.Copy) {

@@ -1,8 +1,9 @@
 import type { AuthContext } from '../../../types/user';
 import { CONFIG_PRESET_MESSAGES_FIELDS, getMessagesConfigPresetConfigurations, getSettings, settingsEditField } from '../../../domain/settings';
+import { configImportValidationReason } from '../../configImport/configImport-utils';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { buildImportFields, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
+import { buildImportFields, isNothingToImport } from '../import/configPreset-import-utils';
 import { messageConfigurationSchemas } from '../import/configPreset-import-schemas';
 import { platformSettingsGroup, staticFamily } from './common-configPreset-registry';
 
@@ -36,7 +37,7 @@ const messagesImporter: ConfigPresetImporter = {
     }
     const parsed = messageConfigurationSchemas[messageId].safeParse(item.configuration);
     if (!parsed.success) {
-      return { ...base, status: 'failed', reason: importFailureReason(parsed.error), fields: [] };
+      return { ...base, status: 'failed', reason: configImportValidationReason(parsed.error), fields: [] };
     }
     const keys = CONFIG_PRESET_MESSAGES_FIELDS[messageId];
     const fields = buildImportFields(parsed.data, keys);

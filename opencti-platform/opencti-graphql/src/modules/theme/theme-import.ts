@@ -3,6 +3,7 @@ import { FunctionalError } from '../../config/errors';
 import type { EditInput } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
+import { configImportValidationReason } from '../configImport/configImport-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { BUILT_IN_THEME_STANDARD_IDS } from './theme-constants';
 import { addTheme, checkExistingTheme, fieldPatchTheme, findById } from './theme-domain';
@@ -19,10 +20,6 @@ export type ThemeImportResult = ConfigImportResult<ThemeImportConfiguration, The
 
 const refused = (status: 'failed' | 'skipped', code: ThemeImportCode, reason: string, exists: boolean, configuration?: ThemeImportConfiguration): ThemeImportResult => {
   return { status, code, reason, exists, configuration };
-};
-
-const validationReason = (issues: { path: PropertyKey[]; message: string }[]) => {
-  return issues.map((issue) => `${issue.path.map(String).join('.') || 'configuration'}: ${issue.message}`).join(', ');
 };
 
 const MAX_COPIES = 100;
@@ -65,7 +62,7 @@ export const importTheme = async (
 ): Promise<ThemeImportResult> => {
   const parsed = themeImportSchema.safeParse(configuration);
   if (!parsed.success) {
-    return refused('failed', 'invalid', validationReason(parsed.error.issues), false);
+    return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { standard_id: standardId, ...theme } = parsed.data;
   // A built-in theme has the same standard id on every platform: never patched, never created

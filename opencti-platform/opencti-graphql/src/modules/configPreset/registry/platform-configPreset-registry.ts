@@ -1,11 +1,12 @@
 import { FunctionalError } from '../../../config/errors';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { getPlatformConfigPresetConfiguration, getPlatformDefaultTheme } from '../../../domain/settings';
+import { configImportValidationReason } from '../../configImport/configImport-utils';
 import { findById as findThemeById } from '../../theme/theme-domain';
 import { getSettings, settingsEditField } from '../../../domain/settings';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { type ConfigPresetComputedItem, type ConfigPresetImporter, configPresetPlanKey } from '../import/configPreset-import-types';
-import { buildImportFields, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
+import { buildImportFields, isNothingToImport } from '../import/configPreset-import-utils';
 import { platformConfigurationSchema } from '../import/configPreset-import-schemas';
 import { platformSettingsGroup, staticFamily } from './common-configPreset-registry';
 import { BRANDING_FAMILY_ID } from './branding-configPreset-registry';
@@ -38,7 +39,7 @@ const platformImporter: ConfigPresetImporter = {
       return { ...base, status: 'failed', reason: 'Unexpected item id', fields: [] };
     }
     if (!parsed.success) {
-      return { ...base, status: 'failed', reason: importFailureReason(parsed.error), fields: [] };
+      return { ...base, status: 'failed', reason: configImportValidationReason(parsed.error), fields: [] };
     }
     const configuration = parsed.data;
     const fields = buildImportFields(configuration, PLATFORM_IMPORT_KEYS);
