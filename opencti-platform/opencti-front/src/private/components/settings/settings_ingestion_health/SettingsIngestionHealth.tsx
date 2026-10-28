@@ -4,10 +4,12 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import { Chip, Switch } from '@filigran/design-system';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import Card from '../../../../components/common/card/Card';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { SettingsIngestionHealth_settings$key } from './__generated__/SettingsIngestionHealth_settings.graphql';
 
 const settingsIngestionHealthFragment = graphql`
@@ -50,6 +52,7 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
   const { t_i18n } = useFormatter();
   const { id, ingestion_health_settings } = useFragment(settingsIngestionHealthFragment, settings);
   const [commitField, isSaving] = useApiMutation(settingsIngestionHealthFieldPatch);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const notificationDelay = ingestion_health_settings?.notification_delay ?? 0;
   const disabledHealthChecks = ingestion_health_settings?.disabled_health_checks ?? [];
 
@@ -105,7 +108,9 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
               label={t_i18n('Notification delay (in minutes)')}
               helperText={t_i18n('Time a health status must stay unchanged before it is notified')}
               fullWidth
-              disabled={isSaving}
+              // Changing the delay is an EE feature since activity notifications are EE
+              disabled={isSaving || !isEnterpriseEdition}
+              infoTooltip={isEnterpriseEdition ? undefined : <EEChip feature="Notification delay" size="sm" />}
               onSubmit={handleSubmitDelay}
             />
           </Form>
