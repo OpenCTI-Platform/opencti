@@ -11,9 +11,20 @@ describe('ConfigPresetResultLine', () => {
     expect(screen.getByText(text)).toBeInTheDocument();
   });
 
-  it('shows the reason as the backend returns it', () => {
-    testRender(<ConfigPresetResultLine label="Theme" status="FAILED" reason="Theme name already exists" />);
-    expect(screen.getByText('Theme name already exists')).toBeInTheDocument();
+  it('shows a reason that is not known as the backend returns it', () => {
+    testRender(<ConfigPresetResultLine label="Theme" status="FAILED" reason="name: Too small" />);
+    expect(screen.getByText('name: Too small')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['Already exists', 'Already exists'],
+    ['Nothing to import', 'Nothing to import'],
+    ['Built-in theme', 'Built-in theme'],
+    ['Added as "Dark (1)"', 'Added as "Dark (1)"'],
+    ['Default theme Dark could not be imported', 'Default theme Dark could not be imported'],
+  ])('translates the reason %s', (reason, text) => {
+    testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
+    expect(screen.getByText(text)).toBeInTheDocument();
   });
 
   it('shows an unknown status as is, and no reason when there is none', () => {

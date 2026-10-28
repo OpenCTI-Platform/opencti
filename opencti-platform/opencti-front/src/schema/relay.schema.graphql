@@ -17823,6 +17823,7 @@ type ConfigPresetImportType {
   description: String!
   group: ConfigPresetExportableGroup!
   items: [ConfigPresetImportItem!]!
+  modes: [ConfigImportMode!]!
 }
 
 type ConfigPresetImportPreview {
@@ -17864,6 +17865,12 @@ enum ConfigPresetImportResultStatus {
   FAILED
 }
 
+enum ConfigImportMode {
+  ADD
+  OVERWRITE
+  COPY
+}
+
 type ConfigPresetImportResult {
   type: String!
   key: String!
@@ -17882,6 +17889,7 @@ type ConfigPresetImportSessionSelection {
   type: ID!
   items: [ID!]
   excluded_items: [ID!]
+  mode: ConfigImportMode
 }
 
 type ConfigPresetImportSession {
@@ -17921,4 +17929,5 @@ input ConfigPresetSelectionInput {
   type: ID!
   items: [ID!]
   excluded_items: [ID!]
+  mode: ConfigImportMode
 }

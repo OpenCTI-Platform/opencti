@@ -24,6 +24,8 @@ interface ConfigPresetExpandableRowProps {
   description?: string;
   checked: boolean | 'indeterminate';
   disabled?: boolean;
+  // Next to the chevron: a choice that applies to the rows below
+  actions?: ReactNode;
   onCheckedChange: (checked: boolean) => void;
   expanded: boolean;
   onToggleExpanded: () => void;
@@ -36,6 +38,7 @@ const ConfigPresetExpandableRow: FunctionComponent<ConfigPresetExpandableRowProp
   description,
   checked,
   disabled,
+  actions,
   onCheckedChange,
   expanded,
   onToggleExpanded,
@@ -47,13 +50,16 @@ const ConfigPresetExpandableRow: FunctionComponent<ConfigPresetExpandableRowProp
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: theme.spacing(1, 0) }}>
         <Checkbox label={label} description={description} checked={checked} disabled={disabled} onCheckedChange={(value) => onCheckedChange(value === true)} />
-        <IconButton
-          aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
-          aria-expanded={expanded}
-          onClick={onToggleExpanded}
-        >
-          {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
-        </IconButton>
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+          {actions}
+          <IconButton
+            aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
+            aria-expanded={expanded}
+            onClick={onToggleExpanded}
+          >
+            {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
+          </IconButton>
+        </div>
       </div>
       {expanded && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), padding: theme.spacing(0, 0, 2, 3.5) }}>
@@ -93,6 +99,8 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   onManageType?: (typeKey: string) => void;
   // The row of an item, the checkbox row of the export by default
   renderItem?: (type: T, item: T['items'][number]) => ReactNode;
+  // What is shown on the row of a type, next to its chevron (the import mode)
+  renderTypeActions?: (type: T) => ReactNode;
   // A type whose only item has the key of the type is one checkbox; false shows its item below it (default true)
   collapseSingletons?: boolean;
   // Types with several items start expanded (default false)
@@ -109,6 +117,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   disabled = false,
   onManageType,
   renderItem,
+  renderTypeActions,
   collapseSingletons = true,
   expandTypes = false,
 }: ConfigPresetSelectionAccordionProps<T>) => {
@@ -170,6 +179,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
                   description={t_i18n(type.description)}
                   checked={typeState(type)}
                   disabled={disabled || isEmpty(type)}
+                  actions={renderTypeActions?.(type)}
                   onCheckedChange={(checked) => toggleType(type, checked)}
                   expanded={isExpanded(type)}
                   onToggleExpanded={() => setToggledTypeKeys((current) => toggleKey(current, type.key))}

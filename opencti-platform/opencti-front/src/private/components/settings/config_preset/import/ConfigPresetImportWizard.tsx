@@ -29,6 +29,7 @@ const configPresetImportWizardQuery = graphql`
         type
         items
         excluded_items
+        mode
       }
       total
       results {

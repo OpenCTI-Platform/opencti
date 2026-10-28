@@ -1,6 +1,7 @@
 import { FilterMode, FilterOperator, OrderingMode, ThemeOrdering } from '../../../generated/graphql';
 import { getPlatformDefaultTheme, getSettings, getWhitemarkConfigPresetConfiguration, settingsEditField } from '../../../domain/settings';
 import { FunctionalError } from '../../../config/errors';
+import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllThemes, findThemePaginated, getThemeConfigPresetConfiguration } from '../../theme/theme-domain';
 import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS } from '../../theme/theme-import-schema';
 import { importTheme } from '../../theme/theme-import';
@@ -8,7 +9,7 @@ import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
-import { buildImportFields, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
+import { buildImportFields, CONFIG_PRESET_ALREADY_EXISTS_REASON, importFailureReason, isNothingToImport } from '../import/configPreset-import-utils';
 import { whitemarkConfigurationSchema } from '../import/configPreset-import-schemas';
 import { buildConfigPresetConnection, matchesListArgs, platformSettingsGroup } from './common-configPreset-registry';
 
@@ -55,11 +56,15 @@ const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | unde
 // The ids of the request that can be themes: an explicit list without the static ids
 const themeIds = (ids?: string[] | null) => ids?.filter((id) => !BRANDING_STATIC_ITEMS.some((item) => item.id === id));
 
-const computeWhitemark = (item: Parameters<ConfigPresetImporter['compute']>[2]): ConfigPresetComputedItem => {
+const computeWhitemark = (item: Parameters<ConfigPresetImporter['compute']>[2], mode: ConfigImportMode): ConfigPresetComputedItem => {
   const base = { label: WHITEMARK_LABEL, translatable: true, exists: true, fields: [] };
   const parsed = whitemarkConfigurationSchema.safeParse(item.configuration);
   if (!parsed.success) {
     return { ...base, status: 'failed', reason: importFailureReason(parsed.error) };
+  }
+  // A setting has no copy: it is left as it is
+  if (mode === ConfigImportMode.Copy) {
+    return { ...base, status: 'skipped', reason: CONFIG_PRESET_ALREADY_EXISTS_REASON };
   }
   if (isNothingToImport(parsed.data, ['platform_whitemark'])) {
     return { ...base, status: 'skipped', reason: 'Nothing to import' };
@@ -68,9 +73,9 @@ const computeWhitemark = (item: Parameters<ConfigPresetImporter['compute']>[2]):
 };
 
 const brandingImporter: ConfigPresetImporter = {
-  compute: async (context, user, item, plan): Promise<ConfigPresetComputedItem> => {
+  compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
     if (item.id === WHITEMARK_ID) {
-      return computeWhitemark(item);
+      return computeWhitemark(item, mode);
     }
     const name = typeof item.configuration.name === 'string' ? item.configuration.name : item.id;
     const base = { label: name, translatable: false };
@@ -79,22 +84,23 @@ const brandingImporter: ConfigPresetImporter = {
       return { ...base, exists: false, status: 'failed', reason: 'The standard id of the theme does not match its id', fields: [] };
     }
     // The rules of a theme are the ones of the theme module: a dry run decides what the import would do
-    const result = await importTheme(context, user, item.configuration, { mode: 'overwrite', dryRun: true });
-    if (result.status === 'created') {
+    const result = await importTheme(context, user, item.configuration, { mode, dryRun: true });
+    // The theme the items depend on is the one with this standard id: a copy of a theme that exists is another theme
+    if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
     }
     // The preview shows the URLs and the images of a theme that is valid
     const fields = result.configuration ? buildImportFields(result.configuration, THEME_URL_KEYS) : [];
     return { ...base, exists: result.exists, status: result.status, reason: result.reason, fields };
   },
-  apply: async (context, user, item, computed) => {
+  apply: async (context, user, item, computed, mode) => {
     if (item.id === WHITEMARK_ID) {
       const { platform_whitemark: whitemark } = whitemarkConfigurationSchema.parse(item.configuration);
       await settingsEditField(context, user, (await getSettings(context)).id, [{ key: 'platform_whitemark', value: [whitemark] }]);
       return undefined;
     }
     // Decided again by the theme module as it writes: a theme with this standard id created since compute is overwritten, never duplicated
-    const result = await importTheme(context, user, item.configuration, { mode: 'overwrite' });
+    const result = await importTheme(context, user, item.configuration, { mode });
     if (result.status !== 'created' && result.status !== 'overwritten') {
       throw FunctionalError(result.reason ?? 'Theme cannot be imported');
     }
@@ -105,6 +111,8 @@ const brandingImporter: ConfigPresetImporter = {
 // Branding: whitemark pinned first, then the themes, paged and searched through the theme domain
 export const brandingFamily: ConfigPresetFamilyDefinition = {
   importer: brandingImporter,
+  // The themes that exist can be overwritten or copied
+  importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
   staticItems: BRANDING_STATIC_ITEMS,
   id: BRANDING_FAMILY_ID,
   label: 'Branding',

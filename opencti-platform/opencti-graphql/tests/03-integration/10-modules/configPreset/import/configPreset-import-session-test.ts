@@ -8,7 +8,7 @@ import { CONFIG_PRESET_IMPORT_LOCK_KEY } from '../../../../../src/modules/config
 import { applyConfigPresetImportEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 import { getConfigPresetPlatformId } from '../../../../../src/modules/configPreset/import/configPreset-import-utils';
 
-const SESSION_FIELDS = 'status file_id revision selections { type items excluded_items } started_at total available_events results { key } outcome';
+const SESSION_FIELDS = 'status file_id revision selections { type items excluded_items mode } started_at total available_events results { key } outcome';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetSessionUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const SESSION_QUERY = gql(`query ConfigPresetSession { configPresetImportSession { ${SESSION_FIELDS} } }`);
@@ -55,11 +55,19 @@ describe('Config preset import session', () => {
     const saved = await queryAsAdminWithSuccess({ query: SAVE_MUTATION, variables: { file_id: fileId, selections, revision: 2 } });
     expect(saved.data?.configPresetImportSessionSave).toMatchObject({
       revision: 2,
-      selections: [{ type: 'messages', items: ['banner'], excluded_items: null }, { type: 'branding', items: null, excluded_items: ['whitemark'] }],
+      selections: [{ type: 'messages', items: ['banner'], excluded_items: null, mode: null }, { type: 'branding', items: null, excluded_items: ['whitemark'], mode: null }],
     });
     const stale = await queryAsAdminWithSuccess({ query: SAVE_MUTATION, variables: { file_id: fileId, selections: [], revision: 1 } });
     expect(stale.data?.configPresetImportSessionSave).toMatchObject({ revision: 2, selections: expect.any(Array) });
     expect(stale.data?.configPresetImportSessionSave.selections).toHaveLength(2);
+  });
+
+  it('saves the mode of a type, null for a type that has none', async () => {
+    const fileId = await upload();
+    const withMode = [{ type: 'messages', items: ['banner'] }, { type: 'branding', excluded_items: ['whitemark'], mode: 'COPY' }];
+    const saved = await queryAsAdminWithSuccess({ query: SAVE_MUTATION, variables: { file_id: fileId, selections: withMode, revision: 1 } });
+    expect(saved.data?.configPresetImportSessionSave.selections).toMatchObject([{ type: 'messages', mode: null }, { type: 'branding', mode: 'COPY' }]);
+    expect((await readSession()).selections).toMatchObject([{ type: 'messages', mode: null }, { type: 'branding', mode: 'COPY' }]);
   });
 
   it('refuses a save without a session and for another file', async () => {

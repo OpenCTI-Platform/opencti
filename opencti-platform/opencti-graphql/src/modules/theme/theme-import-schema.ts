@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // The rules of a theme to import, whatever the source (a theme file, a configuration preset): strict, unknown keys are rejected,
 // because the values reach CSS and url() on the login page, and the platform does not check them elsewhere.
-const MAX_SHORT_LENGTH = 255;
+export const THEME_NAME_MAX_LENGTH = 255;
 const MAX_URL_LENGTH = 2048;
 const MAX_DATA_IMAGE_LENGTH = 1_000_000;
 
@@ -21,7 +21,7 @@ const optionalColor = z.union([z.literal(''), colorValue]).nullable().optional()
 export const themeImportSchema = z.strictObject({
   // Absent in a theme file: the platform gives the theme its own
   standard_id: z.string().regex(THEME_STANDARD_ID_PATTERN, 'Must be a theme standard id').optional(),
-  name: z.string().min(1, 'Theme name is required').max(MAX_SHORT_LENGTH),
+  name: z.string().min(1, 'Theme name is required').max(THEME_NAME_MAX_LENGTH),
   theme_background: colorValue,
   theme_paper: colorValue,
   theme_nav: colorValue,

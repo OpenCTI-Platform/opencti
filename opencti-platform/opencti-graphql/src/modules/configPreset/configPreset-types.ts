@@ -1,6 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicConnection } from '../../types/store';
 import type { ConfigPresetImporter } from './import/configPreset-import-types';
+import type { ConfigImportMode } from '../configImport/configImport-types';
 
 export type ConfigPresetConfiguration = Record<string, unknown>;
 
@@ -78,4 +79,6 @@ export interface ConfigPresetFamilyDefinition {
   staticItems?: ConfigPresetItemDefinition[];
   // How the items of this family are imported; a family without importer is reported as not importable
   importer?: ConfigPresetImporter;
+  // What an import can do with the items that already exist: OVERWRITE when absent. The dialog offers a choice from two modes.
+  importModes?: ConfigImportMode[];
 }

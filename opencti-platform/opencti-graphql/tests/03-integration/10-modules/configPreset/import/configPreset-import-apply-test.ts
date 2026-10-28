@@ -140,6 +140,47 @@ describe('Config preset import: apply', () => {
     expect(await customThemes()).toHaveLength(1);
   });
 
+  describe('modes', () => {
+    const BRANDING = (mode: string) => [{ type: 'platform' }, { type: 'branding', mode }, { type: 'messages' }];
+
+    it('adds the themes that exist as copies under a free name with COPY, and leaves the existing theme and the default theme alone', async () => {
+      await importData(await upload(validBundleFiles()), ALL);
+      const output = await importData(await upload(validBundleFiles()), BRANDING('COPY'));
+      expect(resultOf(output, CUSTOM_THEME_ID)).toMatchObject({ status: 'CREATED', reason: 'Added as "Import test theme (1)"' });
+      // A setting has no copy
+      expect(resultOf(output, 'whitemark')).toMatchObject({ status: 'SKIPPED', reason: 'Already exists' });
+      const themes = await customThemes();
+      expect(themes.map((theme) => theme.name).sort()).toEqual(['Import test theme', 'Import test theme (1)']);
+      // The original keeps the standard id of the bundle: the default theme is still the one of the bundle
+      expect((await findThemeById(testContext, ADMIN_USER, CUSTOM_THEME_ID))?.name).toEqual('Import test theme');
+      expect((await readSettings()).platform_theme.standard_id).toEqual(CUSTOM_THEME_ID);
+    });
+
+    it('keeps the standard id of the bundle for a theme whose name only is taken with COPY, so that the default theme resolves', async () => {
+      await addTheme(testContext, ADMIN_USER, { ...themeConfiguration({ name: 'Import test theme' }), standard_id: 'theme--99999999-9999-4999-8999-999999999999' } as never);
+      const output = await importData(await upload(validBundleFiles()), BRANDING('COPY'));
+      expect(resultOf(output, CUSTOM_THEME_ID)).toMatchObject({ status: 'CREATED', reason: 'Added as "Import test theme (1)"' });
+      expect(resultOf(output, 'platform')?.status).toEqual('OVERWRITTEN');
+      expect((await findThemeById(testContext, ADMIN_USER, CUSTOM_THEME_ID))?.name).toEqual('Import test theme (1)');
+      expect((await readSettings()).platform_theme.standard_id).toEqual(CUSTOM_THEME_ID);
+    });
+
+    it('expects on a dry run what the real import does', async () => {
+      await importData(await upload(validBundleFiles()), ALL);
+      const fileId = await upload(validBundleFiles());
+      const dry = await importData(fileId, BRANDING('COPY'), true);
+      expect(await customThemes()).toHaveLength(1);
+      const real = await importData(fileId, BRANDING('COPY'));
+      expect(real.results).toEqual(dry.results);
+    });
+
+    it('refuses a mode the type does not support', async () => {
+      const fileId = await upload(validBundleFiles());
+      const { errors } = await runImport(fileId, [{ type: 'messages', mode: 'COPY' }], true);
+      expect(errors?.[0].message).toContain('Unsupported import mode');
+    });
+  });
+
   it('imports a required dependency left out of the selection, and leaves the unselected items untouched', async () => {
     const fileId = await upload(validBundleFiles());
     const output = await importData(fileId, [{ type: 'platform', items: ['platform'] }]);

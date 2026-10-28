@@ -1,10 +1,13 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { ConfigImportStatus } from '../../configImport/configImport-types';
+import { ConfigImportMode, type ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetConfiguration } from '../configPreset-types';
 
 // Reasons of a refusal, read by the front in extensions.data.reason (the message is only for display)
 export const CONFIG_PRESET_REASON_FILE_MISSING = 'file_missing';
 export const CONFIG_PRESET_REASON_BUNDLE_REFUSED = 'bundle_refused';
+
+// What an import does with the items of a family that already exist, chosen by family: a family without a choice overwrites
+export const CONFIG_PRESET_DEFAULT_IMPORT_MODE = ConfigImportMode.Overwrite;
 
 // A value the import would write; null means untouched
 export interface ConfigPresetImportField {
@@ -44,10 +47,10 @@ export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`
 
 export interface ConfigPresetImporter {
   // Reads only: finds the existing item, validates, decides the result and records in the plan what it would create
-  compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan) => Promise<ConfigPresetComputedItem>;
+  compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan, mode: ConfigImportMode) => Promise<ConfigPresetComputedItem>;
   // Writes the item with one domain call, so that a failure never leaves it half written; an error makes the item failed.
   // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten).
-  apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem) => Promise<ConfigImportStatus | void>;
+  apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem, mode: ConfigImportMode) => Promise<ConfigImportStatus | void>;
 }
 
 // Content of metadata.json

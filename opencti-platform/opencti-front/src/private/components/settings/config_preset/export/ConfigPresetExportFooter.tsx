@@ -29,7 +29,7 @@ const ConfigPresetExportFooter: FunctionComponent<ConfigPresetExportFooterProps>
           <Divider />
         </>
       )}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: theme.spacing(1) }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: theme.spacing(1) }}>
         <Button variant="secondary" startIcon={<FileUploadOutlined />} onClick={() => setWizardOpen(true)}>
           {t_i18n('Import Bootstrap Platform Bundle')}
         </Button>

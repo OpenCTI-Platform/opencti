@@ -1,4 +1,5 @@
 import { FunctionalError } from '../../../config/errors';
+import type { ConfigImportMode } from '../../configImport/configImport-types';
 
 // The state machine of the import session, one declarative list of transitions and a lookup, in the shape of
 // WorkflowDefinition (modules/workflow/engine/workflow-definition.ts), copied and not imported: the workflow engine is
@@ -17,6 +18,8 @@ export interface ConfigPresetImportSelection {
   type: string;
   items: string[] | null;
   excluded_items: string[] | null;
+  // What to do with the items of the type that already exist; absent in a session stored before the modes: OVERWRITE
+  mode?: ConfigImportMode | null;
 }
 
 // One result per processed item: type is the bare family id, key the bundle id

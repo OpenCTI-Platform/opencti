@@ -9,6 +9,7 @@ interface ImportSelectionInput {
   type: string;
   items: string[] | null;
   excluded_items?: string[];
+  mode?: string;
 }
 
 // The keys of the items that need the Enterprise Edition, by type key

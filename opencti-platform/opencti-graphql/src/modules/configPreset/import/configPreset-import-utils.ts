@@ -3,7 +3,8 @@ import { ForbiddenAccess, UnsupportedError } from '../../../config/errors';
 import { BYPASS, isUserHasCapability } from '../../../utils/access';
 import { getDraftContext } from '../../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { ConfigPresetImportField } from './configPreset-import-types';
+import type { ConfigImportMode } from '../../configImport/configImport-types';
+import { CONFIG_PRESET_DEFAULT_IMPORT_MODE, type ConfigPresetImportField } from './configPreset-import-types';
 
 const DATA_URL = /^data:([^;,]+);base64,(.*)$/;
 
@@ -28,6 +29,16 @@ export const buildImportFields = (configuration: Record<string, unknown>, keys: 
 export const isNothingToImport = (configuration: Record<string, unknown>, keys: string[]) => {
   return keys.every((key) => configuration[key] === null || configuration[key] === undefined);
 };
+
+// The mode of each family of a selection: a family without a mode of its own overwrites
+export const configPresetImportModes = (selections: { type: string; mode?: ConfigImportMode | null }[]) => {
+  return new Map(selections.flatMap(({ type, mode }) => (mode ? [[type, mode] as const] : [])));
+};
+
+export const configPresetImportMode = (modes: Map<string, ConfigImportMode>, type: string) => modes.get(type) ?? CONFIG_PRESET_DEFAULT_IMPORT_MODE;
+
+// What the import of a setting says when it is left as it is, because a type has no copy of it
+export const CONFIG_PRESET_ALREADY_EXISTS_REASON = 'Already exists';
 
 export const importFailureReason = (error: { issues: { path: PropertyKey[]; message: string }[] }) => {
   return error.issues.map((issue) => `${issue.path.map(String).join('.') || 'configuration'}: ${issue.message}`).join(', ');

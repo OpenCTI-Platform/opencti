@@ -22,7 +22,14 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   dependsOn: [],
   ...overrides,
 });
-const previewType = (key: string, label: string, items: unknown[]) => ({ key, label, description: `${label} description`, group: platformSettings, items });
+const previewType = (key: string, label: string, items: unknown[], modes = ['OVERWRITE']) => ({
+  key,
+  label,
+  description: `${label} description`,
+  group: platformSettings,
+  modes,
+  items,
+});
 const preview = {
   bundle_name: 'Test bundle',
   openCTI_version: '7.0.0',
@@ -37,7 +44,7 @@ const preview = {
     previewType('branding', 'Branding', [
       previewItem('theme--1', 'Import theme', { translatable: false, exists: false, isDefault: true }),
       previewItem('whitemark', 'Remove Filigran logos', { requiresEnterpriseEdition: true }),
-    ]),
+    ], ['OVERWRITE', 'COPY']),
     previewType('messages', 'Messages', [previewItem('banner', 'Banner')]),
   ],
 };
@@ -595,6 +602,73 @@ describe('ConfigPresetImportWizard', () => {
     it('shows no expected result when the wizard is opened again on a draft session', async () => {
       await renderPreview(session({ revision: 2, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] }));
       expect(screen.queryByText(/Created|Overwritten|Skipped|Failed/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('import mode', () => {
+    const modeSelect = () => screen.getByRole('combobox', { name: 'Branding: When it already exists' });
+    const choose = async (rendered: Rendered, name: string) => {
+      await rendered.user.click(modeSelect());
+      await rendered.user.click(await screen.findByRole('option', { name }));
+    };
+    const saves = (rendered: Rendered) => rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation');
+
+    it('is offered on the types that support more than one, overwrite by default, and on no other', async () => {
+      await renderPreview();
+      expect(screen.getAllByRole('combobox')).toHaveLength(1);
+      expect(modeSelect()).toHaveTextContent('Overwrite');
+    });
+
+    it('lists the modes the type supports', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(modeSelect());
+      expect((await screen.findAllByRole('option')).map((option) => option.textContent)).toEqual(['Overwrite', 'Add as a copy']);
+    });
+
+    it('restores the mode of the saved selection', async () => {
+      await renderPreview(session({ revision: 2, selections: [{ type: 'branding', items: null, excluded_items: null, mode: 'COPY' }] }));
+      expect(modeSelect()).toHaveTextContent('Add as a copy');
+    });
+
+    it('saves the mode with the selection, and leaves out the default one', async () => {
+      const rendered = await renderPreview(session({ revision: 1, selections: [{ type: 'branding', items: null, excluded_items: null }] }));
+      await choose(rendered, 'Add as a copy');
+      expect(modeSelect()).toHaveTextContent('Add as a copy');
+      await waitFor(() => expect(saves(rendered)).toHaveLength(1), { timeout: 2000 });
+      expect(saves(rendered)[0].request.variables).toMatchObject({ revision: 2, selections: [{ type: 'branding', items: null, mode: 'COPY' }] });
+      await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
+      await choose(rendered, 'Overwrite');
+      await waitFor(() => expect(saves(rendered)).toHaveLength(1), { timeout: 2000 });
+      expect(saves(rendered)[0].request.variables).toEqual({ file_id: 'config_preset/import/id/bundle.zip', selections: [{ type: 'branding', items: null }], revision: 3 });
+    });
+
+    it('sends the mode to Simulate and to Apply', async () => {
+      const rendered = await renderPreview(session({ revision: 1, selections: [{ type: 'branding', items: null, excluded_items: null, mode: 'COPY' }] }));
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables).toEqual({
+        file_id: 'config_preset/import/id/bundle.zip',
+        selections: [{ type: 'branding', items: null, mode: 'COPY' }],
+        dry_run: true,
+      });
+    });
+
+    it('makes the expected results obsolete when it changes', async () => {
+      const rendered = await renderPreview(session({ revision: 1, selections: [{ type: 'branding', items: null, excluded_items: null }] }));
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', {
+        Query: () => ({}),
+        ConfigPresetImportOutput: () => ({ results: [{ type: 'branding', key: 'theme--1', status: 'OVERWRITTEN', reason: null }], report_id: null, settings: null }),
+      });
+      expect(within(screen.getByTestId('config-preset-import-item-branding-theme--1')).getByText('Overwritten')).toBeInTheDocument();
+      await choose(rendered, 'Add as a copy');
+      expect(screen.getByText('Simulate again to update')).toBeInTheDocument();
+      expect(screen.queryByText('Overwritten')).not.toBeInTheDocument();
+    });
+
+    it('is locked while the simulation runs', async () => {
+      const rendered = await renderPreview(session({ revision: 1, selections: [{ type: 'branding', items: null, excluded_items: null }] }));
+      await rendered.user.click(screen.getByRole('button', { name: 'Simulate' }));
+      expect(modeSelect()).toBeDisabled();
     });
   });
 });

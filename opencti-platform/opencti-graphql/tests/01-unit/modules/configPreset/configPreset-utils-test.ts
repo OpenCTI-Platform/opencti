@@ -6,6 +6,8 @@ import {
   buildConfigPresetImportMessage,
   sanitizeBundleName,
 } from '../../../../src/modules/configPreset/configPreset-utils';
+import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
+import { configPresetImportMode, configPresetImportModes } from '../../../../src/modules/configPreset/import/configPreset-import-utils';
 
 describe('Config preset naming', () => {
   it('sanitizes the bundle name', () => {
@@ -78,5 +80,15 @@ describe('Config preset import activity message', () => {
       input: { counts: { created: 1, overwritten: 2, skipped: 3, failed: 4 } },
     });
     expect(message).toEqual('imports a configuration preset (created: 1, overwritten: 2, skipped: 3, failed: 4), report `import-report.json`');
+  });
+});
+
+describe('Config preset import modes', () => {
+  it('takes the mode of each family of the selections, OVERWRITE for a family without one', () => {
+    const modes = configPresetImportModes([{ type: 'branding', mode: ConfigImportMode.Copy }, { type: 'messages', mode: null }, { type: 'platform' }]);
+    expect(configPresetImportMode(modes, 'branding')).toBe(ConfigImportMode.Copy);
+    expect(configPresetImportMode(modes, 'messages')).toBe(ConfigImportMode.Overwrite);
+    expect(configPresetImportMode(modes, 'platform')).toBe(ConfigImportMode.Overwrite);
+    expect(configPresetImportMode(modes, 'unknown')).toBe(ConfigImportMode.Overwrite);
   });
 });

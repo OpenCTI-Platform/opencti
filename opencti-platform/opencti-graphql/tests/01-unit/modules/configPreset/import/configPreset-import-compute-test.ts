@@ -10,16 +10,23 @@ import { findById, checkExistingTheme } from '../../../../../src/modules/theme/t
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetBundleItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import { BUILT_IN_THEME_STANDARD_IDS } from '../../../../../src/modules/theme/theme-constants';
 import { CUSTOM_THEME_ID, themeConfiguration } from '../../../../utils/configPresetBundle';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;
 
-const compute = (type: string, id: string, configuration: Record<string, unknown>, plan: ConfigPresetImportPlan = { created: new Set() }) => {
+const compute = (
+  type: string,
+  id: string,
+  configuration: Record<string, unknown>,
+  plan: ConfigPresetImportPlan = { created: new Set() },
+  mode: ConfigImportMode = ConfigImportMode.Overwrite,
+) => {
   const family = CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === type)!;
   const item: ConfigPresetBundleItem = { type, id, path: `${id}.json`, configuration };
-  return family.importer!.compute(context, user, item, plan);
+  return family.importer!.compute(context, user, item, plan, mode);
 };
 
 beforeEach(() => {
@@ -159,6 +166,34 @@ describe('Branding import (compute)', () => {
     expect(result.fields[0]).toEqual({ key: 'theme_logo', value: 'https://example.com/logo.png' });
     expect(result.fields[1]).toEqual({ key: 'theme_logo_collapsed', value: 'image/png (2 KB)' });
     expect(result.fields[2].value).toBeNull();
+  });
+
+  it('offers to overwrite or copy the themes, and only to overwrite the other families', () => {
+    const modes = (id: string) => CONFIG_PRESET_FAMILIES.find((family) => family.id === id)!.importModes;
+    expect(modes('branding')).toEqual(['OVERWRITE', 'COPY']);
+    expect(modes('platform')).toBeUndefined();
+    expect(modes('messages')).toBeUndefined();
+  });
+
+  it('copies a theme that exists under a free name, which is not the theme the items depend on', async () => {
+    vi.mocked(findById).mockResolvedValue({ id: 'internal', built_in: false } as never);
+    vi.mocked(checkExistingTheme).mockImplementation(async (_context, _user, name) => name === 'Import test theme');
+    const plan = { created: new Set<string>() };
+    const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
+    expect(result).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Import test theme (1)"' });
+    expect(plan.created.size).toBe(0);
+  });
+
+  it('copies a theme that is new as it is, and it is the theme the items depend on', async () => {
+    const plan = { created: new Set<string>() };
+    const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
+    expect(result).toMatchObject({ status: 'created', exists: false });
+    expect(result.reason).toBeUndefined();
+    expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
+  });
+
+  it('skips the whitemark when the themes are copied, there is no copy of a setting', async () => {
+    expect(await compute('branding', 'whitemark', { platform_whitemark: true }, undefined, ConfigImportMode.Copy)).toMatchObject({ status: 'skipped', reason: 'Already exists' });
   });
 
   it('overwrites the whitemark, skips a null value and fails on an invalid one', async () => {

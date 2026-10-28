@@ -3,11 +3,11 @@ import { FunctionalError } from '../../../config/errors';
 import { getSettings, setPlatformBootstrapStatus } from '../../../domain/settings';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { ConfigImportStatus } from '../../configImport/configImport-types';
+import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetSelectionInput } from '../../../generated/graphql';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
-import { checkConfigPresetImportAccess } from './configPreset-import-utils';
+import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes } from './configPreset-import-utils';
 import { computeConfigPresetItems, loadConfigPresetImportZip, skipEnterpriseEditionItem } from './configPreset-import-domain';
 import { configPresetRequiresEnterpriseEdition } from '../configPreset-registry';
 import { isEnterpriseEdition } from '../../../enterprise-edition/ee';
@@ -18,6 +18,7 @@ import { endConfigPresetImportRunning, findConfigPresetImportRunning, startConfi
 import { applyConfigPresetImportEvent, applyConfigPresetImportRunEvent, readConfigPresetImportSession, toSessionSelections } from './configPreset-import-session-domain';
 import type { ConfigPresetImportCounts, ConfigPresetImportItemResult, ConfigPresetImportResultStatus } from './configPreset-import-session';
 import {
+  CONFIG_PRESET_DEFAULT_IMPORT_MODE,
   CONFIG_PRESET_REASON_FILE_MISSING,
   type ConfigPresetBundle,
   type ConfigPresetBundleItem,
@@ -51,9 +52,13 @@ const countResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImpo
 // by the frontend is not trusted, and dependencies come first
 const resolveImportItems = (bundle: ConfigPresetBundle, selections: ConfigPresetSelectionInput[]): ConfigPresetBundleItem[] => {
   const selected: ConfigPresetBundleItem[] = [];
-  selections.forEach(({ type, items, excluded_items: excluded }) => {
-    if (!CONFIG_PRESET_FAMILIES.some((family) => family.id === type)) {
+  selections.forEach(({ type, items, excluded_items: excluded, mode }) => {
+    const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === type);
+    if (!family) {
       throw FunctionalError('Unknown configuration preset type', { type });
+    }
+    if (mode && !(family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE]).includes(mode)) {
+      throw FunctionalError('Unsupported import mode for this configuration preset type', { type, mode });
     }
     const available = bundle.items.filter((item) => item.type === type);
     const picked = items
@@ -78,8 +83,13 @@ const toOutput = (results: { item: ConfigPresetBundleItem; computed: ConfigPrese
 };
 
 // Reads only: what the import would do, nothing is written, no session change, no audit event
-const dryRun = async (context: AuthContext, user: AuthUser, items: ConfigPresetBundleItem[]): Promise<ConfigPresetImportOutput> => {
-  return { results: toOutput(await computeConfigPresetItems(context, user, items, { skipEnterpriseEdition: true })), report_id: null, settings: null };
+const dryRun = async (
+  context: AuthContext,
+  user: AuthUser,
+  items: ConfigPresetBundleItem[],
+  modes: Map<string, ConfigImportMode>,
+): Promise<ConfigPresetImportOutput> => {
+  return { results: toOutput(await computeConfigPresetItems(context, user, items, { skipEnterpriseEdition: true, modes })), report_id: null, settings: null };
 };
 
 const realImport = async (
@@ -121,6 +131,7 @@ const realImport = async (
   logApp.info('[CONFIG PRESET] Import started', { user_id: user.id, file_id: fileId, total: items.length });
   const importContext = context;
   const plan: ConfigPresetImportPlan = { created: new Set() };
+  const modes = configPresetImportModes(selections);
   const results: ConfigPresetImportItemResult[] = [];
   const labels = new Map<string, string>();
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
@@ -142,14 +153,15 @@ const realImport = async (
         const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
         const importer = CONFIG_PRESET_FAMILIES.find((family) => family.id === item.type)!.importer!;
         // Checked before compute and apply, and before every other rule of the item
+        const mode = configPresetImportMode(modes, item.type);
         const computed = !isEE && configPresetRequiresEnterpriseEdition(item.type, item.id)
           ? skipEnterpriseEditionItem(item)
-          : await importer.compute(importContext, runUser, item, plan);
+          : await importer.compute(importContext, runUser, item, plan, mode);
         labels.set(configPresetPlanKey(item.type, item.id), computed.label);
         let result = toResult(item, computed.status, computed.reason);
         if (computed.status !== 'failed' && computed.status !== 'skipped') {
           try {
-            const applied = await importer.apply(importContext, runUser, item, computed);
+            const applied = await importer.apply(importContext, runUser, item, computed, mode);
             if (applied) {
               result = toResult(item, applied, computed.reason);
             }
@@ -247,7 +259,7 @@ export const configPresetImport = async (
   };
   if (isDryRun) {
     // No lock: a dry run writes nothing and runs even while an import is in progress
-    return dryRun(engineContext, user, (await prepare()).items);
+    return dryRun(engineContext, user, (await prepare()).items, configPresetImportModes(selections));
   }
   // The lock is taken first, before the zip is read and before any session read: a second import is refused at once
   return withConfigPresetImportLock(engineContext, async (lock) => {

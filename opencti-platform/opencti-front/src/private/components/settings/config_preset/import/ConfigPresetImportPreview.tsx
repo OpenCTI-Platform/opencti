@@ -11,7 +11,9 @@ import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } f
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import { toConfigPresetSelection } from './configPresetImportSelection';
+import { toConfigImportModes, toConfigPresetSelection } from './configPresetImportSelection';
+import { ConfigImportMode, ConfigImportModes, DEFAULT_CONFIG_IMPORT_MODE, withConfigImportMode } from '../configImportMode';
+import ConfigPresetImportModeSelect from './ConfigPresetImportModeSelect';
 import {
   addEnterpriseEditionExclusions,
   dropEnterpriseEditionItems,
@@ -41,6 +43,7 @@ const configPresetImportPreviewQuery = graphql`
         key
         label
         description
+        modes
         group {
           key
           label
@@ -123,6 +126,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selection, setSelection] = useState<ConfigPresetSelection>({});
+  // What the import does with the items that exist, by type; saved with the selection
+  const [importModes, setImportModes] = useState<ConfigImportModes>({});
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   // The expected results, by `<type>/<key>`: held here only, never saved; cleared when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
@@ -153,6 +158,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const restored = isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections);
           // A license that expired since the selection was saved: the items that need it are dropped
           setSelection(isEnterpriseEdition ? restored : dropEnterpriseEditionItems(restored, getEnterpriseEditionKeys(loaded.types)));
+          setImportModes(toConfigImportModes(session.selections));
         }
       })
       .catch((err) => {
@@ -204,17 +210,28 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const enterpriseEditionKeys = preview ? getEnterpriseEditionKeys(preview.types) : {};
   const forced = getConfigPresetForcedItems(types, selection);
   // The backend never receives the items that need the Enterprise Edition on a Community platform
-  const selections = addEnterpriseEditionExclusions(buildConfigPresetSelections(types, selection), isEnterpriseEdition ? {} : enterpriseEditionKeys);
+  const selections = addEnterpriseEditionExclusions(buildConfigPresetSelections(types, selection, importModes), isEnterpriseEdition ? {} : enterpriseEditionKeys);
 
-  const handleSelectionChange = (next: ConfigPresetSelection) => {
-    setSelection(next);
+  // The selection and the modes are saved together, after a short delay
+  const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes) => {
     clearResults();
     revisionRef.current += 1;
-    pendingRef.current = buildConfigPresetSelections(types, next);
+    pendingRef.current = buildConfigPresetSelections(types, nextSelection, nextImportModes);
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
     }
     timerRef.current = window.setTimeout(flushSave, SAVE_DELAY_MS);
+  };
+
+  const handleSelectionChange = (next: ConfigPresetSelection) => {
+    setSelection(next);
+    scheduleSave(next, importModes);
+  };
+
+  const handleImportModeChange = (typeKey: string, mode: ConfigImportMode) => {
+    const next = withConfigImportMode(importModes, typeKey, mode);
+    setImportModes(next);
+    scheduleSave(selection, next);
   };
 
   const handleApply = () => {
@@ -284,7 +301,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     // The dialog scrolls: a minimum height gives the list room, and the footer sticks to the bottom of the visible part
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
       <Text variant="title-sm">{preview.bundle_name ?? t_i18n('Configuration bundle')}</Text>
-      <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched. Existing items are overwritten: use Simulate to see the outcome of each one before you apply.')}</Text>
+      <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched. Existing items are overwritten unless a type offers another choice: use Simulate to see the outcome of each one before you apply.')}</Text>
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
@@ -298,6 +315,15 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         collapseSingletons={false}
         expandTypes
         onSelectionChange={handleSelectionChange}
+        renderTypeActions={(type) => (
+          <ConfigPresetImportModeSelect
+            typeLabel={t_i18n(type.label)}
+            modes={type.modes}
+            value={importModes[type.key] ?? DEFAULT_CONFIG_IMPORT_MODE}
+            disabled={isSimulating}
+            onChange={(mode) => handleImportModeChange(type.key, mode)}
+          />
+        )}
         renderItem={(type, item) => (
           <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
             <ConfigPresetItemRow
