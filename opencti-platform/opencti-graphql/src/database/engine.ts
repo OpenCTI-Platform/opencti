@@ -1644,9 +1644,12 @@ export const specialElasticCharsEscape = (query: string) => {
 const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
   return query.replace(/([/+|\-()^~={}[\]:?!"\\])/g, '\\$1');
 };
-// Keep * and ? as wildcards, escape whitespace so the value stays a single term
+// Keep * and ? as wildcards and whitespace as terms separator (each term is matched against the analyzed tokens),
+// but escape everything else, including AND / OR / NOT keywords
 const specialElasticCharsEscapeKeepWildcards = (query: string) => {
-  return query.replace(/([/+|\-()^~={}[\]:!"\\&])/g, '\\$1').replace(/\s/g, '\\ ');
+  return query.trim().split(/\s+/)
+    .map((term) => term.replace(/([/+|\-()^~={}[\]:!"\\&])/g, '\\$1').replace(/^(AND|OR|NOT)$/, '\\$1'))
+    .join(' ');
 };
 // Lucene fuzzy operator: a term ending with ~ and an optional edit distance of 0, 1 or 2 (lazarous~, lazarous~1)
 const LUCENE_FUZZY_TERM_REGEX = /^(.+?)(~[0-2]?)$/;

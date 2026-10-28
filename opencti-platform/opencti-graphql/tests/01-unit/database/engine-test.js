@@ -188,8 +188,9 @@ describe('buildLocalMustFilter testing', () => {
     };
     expect(buildNestedWildcardQuery('*_from')).toBe('*_from');
     expect(buildNestedWildcardQuery('rep?rt*')).toBe('rep?rt*');
-    expect(buildNestedWildcardQuery('* OR _exists_:internal_id')).toBe('*\\ OR\\ _exists_\\:internal_id');
-    expect(buildNestedWildcardQuery('a" || (b) && !c')).toBe('a\\"\\ \\|\\|\\ \\(b\\)\\ \\&\\&\\ \\!c');
+    expect(buildNestedWildcardQuery('*acme corp*')).toBe('*acme corp*');
+    expect(buildNestedWildcardQuery('* OR _exists_:internal_id')).toBe('* \\OR _exists_\\:internal_id');
+    expect(buildNestedWildcardQuery('a" || (b) && !c')).toBe('a\\" \\|\\| \\(b\\) \\&\\& \\!c');
   });
 
   it('should buildLocalMustFilter with contact_information emit a single terms clause for multiple values', () => {
