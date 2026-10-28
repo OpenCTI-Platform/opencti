@@ -27,6 +27,7 @@ import { findItemsPaginated, parseItemData } from './intelligenceRequirementItem
 import { decideItem, decideItems, setMatchesStatus, setMatchStatus } from './intelligenceRequirement-pipeline';
 import { buildRequirementAiPrompt, buildRequirementAiReference, generateRequirementAiInsight } from './intelligenceRequirement-ai';
 import { previewIntelligenceRequirement } from './intelligenceRequirement-preview';
+import { testIntelligenceRequirementEntity } from './intelligenceRequirement-dryrun';
 import { parseMatchHistory } from './intelligenceRequirement-scoring';
 
 const parseJson = <T>(value: string | null | undefined, fallback: T): T => {
@@ -43,6 +44,7 @@ const parsed = (ir: BasicStoreEntityIntelligenceRequirement) => parseIntelligenc
 const intelligenceRequirementResolvers: Resolvers = {
   Query: {
     intelligenceRequirementPreview: (_, { input }, context) => previewIntelligenceRequirement(context, context.user, input),
+    intelligenceRequirementTestEntity: (_, { input, entity_id, ir_id }, context) => testIntelligenceRequirementEntity(context, context.user, input, entity_id, ir_id),
     intelligenceRequirement: (_, { id }, context) => findById(context, context.user, id),
     intelligenceRequirements: (_, args, context) => findIntelligenceRequirementPaginated(context, context.user, args),
     intelligenceRequirementMatches: (_, { id, ...args }, context) => findMatchesPaginated(context, context.user, id, args),

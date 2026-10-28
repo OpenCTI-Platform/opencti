@@ -15166,6 +15166,43 @@ export enum IrDirection {
   Outgoing = 'outgoing'
 }
 
+export type IrEntityTest = {
+  __typename?: 'IrEntityTest';
+  criteria: Array<IrEntityTestCriterion>;
+  entity_id: Scalars['String']['output'];
+  entity_name: Scalars['String']['output'];
+  entity_type: Scalars['String']['output'];
+  in_requirement: Scalars['Boolean']['output'];
+  notes: Array<Scalars['String']['output']>;
+  rules: Array<IrEntityTestRule>;
+  score: Scalars['Int']['output'];
+  verdict: Scalars['String']['output'];
+};
+
+export type IrEntityTestCondition = {
+  __typename?: 'IrEntityTestCondition';
+  met: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type IrEntityTestCriterion = {
+  __typename?: 'IrEntityTestCriterion';
+  conditions: Array<IrEntityTestCondition>;
+  criterion_id: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
+  matched: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  proof?: Maybe<Scalars['String']['output']>;
+};
+
+export type IrEntityTestRule = {
+  __typename?: 'IrEntityTestRule';
+  hit: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  points: Scalars['Int']['output'];
+  reason?: Maybe<Scalars['String']['output']>;
+};
+
 /** The entity has one of the relationship types with a member of one of the subject groups (object: it contains one) */
 export type IrGroupLink = {
   __typename?: 'IrGroupLink';
@@ -25827,6 +25864,7 @@ export type Query = {
   intelligenceRequirementMatches?: Maybe<IntelligenceRequirementMatchConnection>;
   /** Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings */
   intelligenceRequirementPreview: IrPreview;
+  intelligenceRequirementTestEntity: IrEntityTest;
   intelligenceRequirements?: Maybe<IntelligenceRequirementConnection>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
@@ -27369,6 +27407,13 @@ export type QueryIntelligenceRequirementMatchesArgs = {
 
 export type QueryIntelligenceRequirementPreviewArgs = {
   input: IntelligenceRequirementInput;
+};
+
+
+export type QueryIntelligenceRequirementTestEntityArgs = {
+  entity_id: Scalars['ID']['input'];
+  input: IntelligenceRequirementInput;
+  ir_id?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -42148,6 +42193,10 @@ export type ResolversTypes = ResolversObject<{
   IrCriterionKind: IrCriterionKind;
   IrCriterionMode: IrCriterionMode;
   IrDirection: IrDirection;
+  IrEntityTest: ResolverTypeWrapper<IrEntityTest>;
+  IrEntityTestCondition: ResolverTypeWrapper<IrEntityTestCondition>;
+  IrEntityTestCriterion: ResolverTypeWrapper<IrEntityTestCriterion>;
+  IrEntityTestRule: ResolverTypeWrapper<IrEntityTestRule>;
   IrGroupLink: ResolverTypeWrapper<IrGroupLink>;
   IrGroupLinkInput: IrGroupLinkInput;
   IrInboxCounts: ResolverTypeWrapper<IrInboxCounts>;
@@ -43320,6 +43369,10 @@ export type ResolversParentTypes = ResolversObject<{
   IrConditionInput: IrConditionInput;
   IrCriterion: StoreIrCriterion;
   IrCriterionInput: IrCriterionInput;
+  IrEntityTest: IrEntityTest;
+  IrEntityTestCondition: IrEntityTestCondition;
+  IrEntityTestCriterion: IrEntityTestCriterion;
+  IrEntityTestRule: IrEntityTestRule;
   IrGroupLink: IrGroupLink;
   IrGroupLinkInput: IrGroupLinkInput;
   IrInboxCounts: IrInboxCounts;
@@ -49098,6 +49151,39 @@ export type IrCriterionResolvers<ContextType = any, ParentType extends Resolvers
   target_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
+export type IrEntityTestResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrEntityTest'] = ResolversParentTypes['IrEntityTest']> = ResolversObject<{
+  criteria?: Resolver<Array<ResolversTypes['IrEntityTestCriterion']>, ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  in_requirement?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  notes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  rules?: Resolver<Array<ResolversTypes['IrEntityTestRule']>, ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  verdict?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrEntityTestConditionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrEntityTestCondition'] = ResolversParentTypes['IrEntityTestCondition']> = ResolversObject<{
+  met?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IrEntityTestCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrEntityTestCriterion'] = ResolversParentTypes['IrEntityTestCriterion']> = ResolversObject<{
+  conditions?: Resolver<Array<ResolversTypes['IrEntityTestCondition']>, ParentType, ContextType>;
+  criterion_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  matched?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  proof?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type IrEntityTestRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrEntityTestRule'] = ResolversParentTypes['IrEntityTestRule']> = ResolversObject<{
+  hit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  points?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type IrGroupLinkResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrGroupLink'] = ResolversParentTypes['IrGroupLink']> = ResolversObject<{
   group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -52418,6 +52504,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   intelligenceRequirementMatch?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatch']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementMatchArgs, 'id'>>;
   intelligenceRequirementMatches?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementMatchConnection']>, ParentType, ContextType, RequireFields<QueryIntelligenceRequirementMatchesArgs, 'id'>>;
   intelligenceRequirementPreview?: Resolver<ResolversTypes['IrPreview'], ParentType, ContextType, RequireFields<QueryIntelligenceRequirementPreviewArgs, 'input'>>;
+  intelligenceRequirementTestEntity?: Resolver<ResolversTypes['IrEntityTest'], ParentType, ContextType, RequireFields<QueryIntelligenceRequirementTestEntityArgs, 'entity_id' | 'input'>>;
   intelligenceRequirements?: Resolver<Maybe<ResolversTypes['IntelligenceRequirementConnection']>, ParentType, ContextType, Partial<QueryIntelligenceRequirementsArgs>>;
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
@@ -56863,6 +56950,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IrBatchStats?: IrBatchStatsResolvers<ContextType>;
   IrCondition?: IrConditionResolvers<ContextType>;
   IrCriterion?: IrCriterionResolvers<ContextType>;
+  IrEntityTest?: IrEntityTestResolvers<ContextType>;
+  IrEntityTestCondition?: IrEntityTestConditionResolvers<ContextType>;
+  IrEntityTestCriterion?: IrEntityTestCriterionResolvers<ContextType>;
+  IrEntityTestRule?: IrEntityTestRuleResolvers<ContextType>;
   IrGroupLink?: IrGroupLinkResolvers<ContextType>;
   IrInboxCounts?: IrInboxCountsResolvers<ContextType>;
   IrItemData?: IrItemDataResolvers<ContextType>;

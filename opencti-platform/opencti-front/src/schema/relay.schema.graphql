@@ -9157,6 +9157,7 @@ type Query {
   Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings
   """
   intelligenceRequirementPreview(input: IntelligenceRequirementInput!): IrPreview!
+  intelligenceRequirementTestEntity(input: IntelligenceRequirementInput!, entity_id: ID!, ir_id: ID): IrEntityTest!
   intelligenceRequirements(first: Int, after: ID, orderBy: IntelligenceRequirementOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): IntelligenceRequirementConnection
   intelligenceRequirementMatches(id: ID!, statuses: [IrMatchStatus!], first: Int, after: ID, orderBy: IntelligenceRequirementMatchOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): IntelligenceRequirementMatchConnection
   intelligenceRequirementMatch(id: ID!): IntelligenceRequirementMatch
@@ -16196,6 +16197,39 @@ type IrPreview {
   warnings: [String!]!
   groups: [IrPreviewGroup!]!
   criteria: [IrPreviewCriterion!]!
+}
+
+type IrEntityTestCondition {
+  name: String!
+  met: Boolean!
+}
+
+type IrEntityTestCriterion {
+  criterion_id: String!
+  name: String!
+  kind: String!
+  matched: Boolean!
+  proof: String
+  conditions: [IrEntityTestCondition!]!
+}
+
+type IrEntityTestRule {
+  name: String!
+  points: Int!
+  hit: Boolean!
+  reason: String
+}
+
+type IrEntityTest {
+  entity_id: String!
+  entity_name: String!
+  entity_type: String!
+  in_requirement: Boolean!
+  score: Int!
+  verdict: String!
+  criteria: [IrEntityTestCriterion!]!
+  rules: [IrEntityTestRule!]!
+  notes: [String!]!
 }
 
 type IrBatchStats {

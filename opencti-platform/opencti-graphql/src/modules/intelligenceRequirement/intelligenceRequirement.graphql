@@ -198,6 +198,36 @@ type IrPreview {
   groups: [IrPreviewGroup!]!
   criteria: [IrPreviewCriterion!]!
 }
+# Dry run of a configuration on one entity (configuration screen): nothing is written
+type IrEntityTestCondition {
+  name: String!
+  met: Boolean!
+}
+type IrEntityTestCriterion {
+  criterion_id: String!
+  name: String!
+  kind: String!
+  matched: Boolean!
+  proof: String
+  conditions: [IrEntityTestCondition!]!
+}
+type IrEntityTestRule {
+  name: String!
+  points: Int!
+  hit: Boolean!
+  reason: String
+}
+type IrEntityTest {
+  entity_id: String!
+  entity_name: String!
+  entity_type: String!
+  in_requirement: Boolean!
+  score: Int!
+  verdict: String!
+  criteria: [IrEntityTestCriterion!]!
+  rules: [IrEntityTestRule!]!
+  notes: [String!]!
+}
 type IrBatchStats {
   events: Int!
   entered: Int!
@@ -346,6 +376,7 @@ type Query {
   intelligenceRequirement(id: ID!): IntelligenceRequirement @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
   "Check a configuration before saving it: errors, resolved subjects, what each criterion brings today, warnings"
   intelligenceRequirementPreview(input: IntelligenceRequirementInput!): IrPreview! @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
+  intelligenceRequirementTestEntity(input: IntelligenceRequirementInput!, entity_id: ID!, ir_id: ID): IrEntityTest! @auth(for: [PIRAPI]) @ff(flags: ["INTELLIGENCE_REQUIREMENTS"])
   intelligenceRequirements(
     first: Int
     after: ID
