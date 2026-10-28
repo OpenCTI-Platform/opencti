@@ -1794,6 +1794,7 @@
   "e.g. wrong environment — use staging instead": "예: 잘못된 환경 — 대신 스테이징 환경을 사용하세요",
   "Each line must contain a valid email address": "각 줄에는 유효한 이메일 주소가 포함되어야 합니다",
   "Each tick value must be between min and max value": "각 틱 값은 최소값과 최대값 사이여야 합니다",
+  "Each week is counted in full in the interval that contains its Monday.": "각 주는 해당 주의 월요일이 포함된 간격에 모두 집계됩니다.",
   "Edge actions": "연결 작업",
   "Edit": "편집",
   "Edit confidence level": "신뢰 수준 편집",

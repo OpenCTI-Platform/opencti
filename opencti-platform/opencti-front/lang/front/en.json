@@ -1794,6 +1794,7 @@
   "e.g. wrong environment — use staging instead": "e.g. wrong environment — use staging instead",
   "Each line must contain a valid email address": "Each line must contain a valid email address",
   "Each tick value must be between min and max value": "Each tick value must be between min and max value",
+  "Each week is counted in full in the interval that contains its Monday.": "Each week is counted in full in the interval that contains its Monday.",
   "Edge actions": "Edge actions",
   "Edit": "Edit",
   "Edit confidence level": "Edit confidence level",

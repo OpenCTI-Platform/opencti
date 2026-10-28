@@ -416,7 +416,8 @@ const sumByInterval = (data: TimeSeriesPoint[], interval: string): TimeSeriesPoi
 /**
  * Sums the series into coarser intervals until the chart draws at most `maxPoints` points.
  * Buckets are always rebuilt from the original points, so counts stay exact when starting
- * from days; starting from weeks, a week overlapping two months counts in the month of its Monday.
+ * from days; starting from weeks, a week overlapping two months counts in the month of its Monday
+ * (`weeksCountedByMonday`, for the warning to say so).
  */
 export const coarsenSeriesForRendering = <T extends { data: TimeSeriesPoint[] }>(
   series: T[],
@@ -435,5 +436,7 @@ export const coarsenSeriesForRendering = <T extends { data: TimeSeriesPoint[] }>
     series: renderedSeries,
     interval: renderedInterval,
     pointsCount: countPoints(renderedSeries),
+    // Months, quarters and years do not start on a Monday: each week is counted in the one of its Monday
+    weeksCountedByMonday: interval === 'week' && renderedInterval !== interval,
   };
 };

@@ -1794,6 +1794,7 @@
   "e.g. wrong environment — use staging instead": "例：環境が間違っている — 代わりにステージング環境を使用してください",
   "Each line must contain a valid email address": "各行には有効なEメールアドレスを記載すること",
   "Each tick value must be between min and max value": "各マーカー値は最小値と最大値の間にある必要があります",
+  "Each week is counted in full in the interval that contains its Monday.": "各週は、その週の月曜日を含む間隔にまとめて集計されます。",
   "Edge actions": "接続のアクション",
   "Edit": "編集する",
   "Edit confidence level": "信頼レベルの編集",

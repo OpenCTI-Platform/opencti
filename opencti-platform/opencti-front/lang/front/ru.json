@@ -1794,6 +1794,7 @@
   "e.g. wrong environment — use staging instead": "Например, неверная среда — вместо этого используйте промежуточную среду",
   "Each line must contain a valid email address": "Каждая строка должна содержать действительный адрес электронной почты",
   "Each tick value must be between min and max value": "Каждое значение тика должно находиться между минимальным и максимальным значением",
+  "Each week is counted in full in the interval that contains its Monday.": "Каждая неделя целиком учитывается в интервале, который содержит её понедельник.",
   "Edge actions": "Действия со связью",
   "Edit": "Редактировать",
   "Edit confidence level": "Редактировать уровень доверия",

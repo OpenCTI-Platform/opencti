@@ -275,7 +275,24 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(props.isAnimated).toBe(false);
     expect(props.hasHoverFilter).toBe(false);
     expect(props.tickAmount).toEqual(20);
-    expect((await findByTestId('widget-warning')).textContent).toContain('Interval adjusted to');
+    const warning = (await findByTestId('widget-warning')).textContent;
+    expect(warning).toContain('Interval adjusted to');
+    // Days summed into months stay exact
+    expect(warning).not.toContain('Each week');
+  });
+
+  it('says that weeks summed into months are counted in the month of their Monday', async () => {
+    // 53 Mondays from 2025-09-29
+    const dates = Array.from({ length: 53 }, (_, i) => new Date(Date.UTC(2025, 8, 29 + 7 * i)).toISOString());
+    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, isOther: false, entity: null, values: dailyValues(53) }));
+    mocks.response = { stixCoreObjectsTimeSeriesBreakdown: { truncated: false, dates, series } };
+    const { findByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type', interval: 'week' }, multiTypesSelection));
+
+    // 1200 px allow 600 bars: 20 series of 53 weeks are too many
+    expect((await drawn(mocks.bars)).interval).toEqual('month');
+    const warning = (await findByTestId('widget-warning')).textContent;
+    expect(warning).toContain('Interval adjusted to');
+    expect(warning).toContain('Each week is counted in full in the interval that contains its Monday.');
   });
 
   it('coarsens less on a wide chart, and more on a narrow one', async () => {

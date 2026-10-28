@@ -1794,6 +1794,7 @@
   "e.g. wrong environment — use staging instead": "例如：环境错误——请改用 staging 环境",
   "Each line must contain a valid email address": "每行必须包含一个有效的电子邮件地址",
   "Each tick value must be between min and max value": "每个刻度值必须介于最小值和最大值之间",
+  "Each week is counted in full in the interval that contains its Monday.": "每一周都会完整计入包含其星期一的时间间隔。",
   "Edge actions": "连接操作",
   "Edit": "编辑",
   "Edit confidence level": "编辑置信度",

@@ -130,6 +130,7 @@ const WidgetTimeSeriesBreakdown = ({
   const limit = getWidgetBreakdownLimit(parameters);
   const order = getWidgetBreakdownOrder(parameters);
   const coarsenedInterval = rendered && rendered.interval !== interval ? rendered.interval : undefined;
+  const weeksCountedByMonday = rendered?.weeksCountedByMonday ?? false;
   useEffect(() => {
     const warnings = [];
     if (truncated) {
@@ -142,8 +143,11 @@ const WidgetTimeSeriesBreakdown = ({
         values: { interval: t_i18n(coarsenedInterval.charAt(0).toUpperCase() + coarsenedInterval.slice(1)) },
       }));
     }
+    if (weeksCountedByMonday) {
+      warnings.push(t_i18n('Each week is counted in full in the interval that contains its Monday.'));
+    }
     onWarningChange(warnings.length > 0 ? warnings.join(' ') : undefined);
-  }, [truncated, limit, order, coarsenedInterval, onWarningChange, intl]);
+  }, [truncated, limit, order, coarsenedInterval, weeksCountedByMonday, onWarningChange, intl]);
   // The warnings leave with the chart, when an error replaces it
   useEffect(() => () => onWarningChange(undefined), [onWarningChange]);
 
