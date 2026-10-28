@@ -593,7 +593,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
                     helpertext={focusHelper('platform_date_format')}
                   >
-                    {dateFormatOptions(t_i18n).map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                    {dateFormatOptions(t_i18n, 'platform').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
                   </Field>
                   <Field
                     component={SelectFieldFds}
@@ -605,7 +605,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
                     helpertext={focusHelper('platform_time_format')}
                   >
-                    {timeFormatOptions(t_i18n).map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                    {timeFormatOptions(t_i18n, 'platform').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
                   </Field>
                   <HiddenTypesField />
                   <div style={fieldSpacingContainerStyle}>

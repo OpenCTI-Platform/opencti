@@ -1,5 +1,6 @@
 import moment from 'moment';
 import type { IntlShape } from 'react-intl';
+import { EMPTY_VALUE } from './String';
 
 // How the dates of tables are displayed, set on the platform and overridden by each user.
 // "auto" keeps the display of each column: the date written in the language, with or without its time.
@@ -16,20 +17,23 @@ export const DEFAULT_DATE_DISPLAY: DateDisplay = { dateFormat: 'auto', timeForma
 const DATE_FORMATS: DateFormat[] = ['auto', 'iso'];
 const TIME_FORMATS: TimeFormat[] = ['auto', 'none', 'minutes', 'seconds'];
 
+// The offset tells which time zone the time is in, as it is the one of the browser.
 const ISO_PATTERNS: Record<Exclude<TimeFormat, 'auto'>, string> = {
   none: 'YYYY-MM-DD',
-  minutes: 'YYYY-MM-DD HH:mm',
-  seconds: 'YYYY-MM-DD HH:mm:ss',
+  minutes: 'YYYY-MM-DD HH:mmZ',
+  seconds: 'YYYY-MM-DD HH:mm:ssZ',
 };
 
-// Choices of the platform settings and of the user profile. "auto" follows the platform for a user, the language for the platform.
-export const dateFormatOptions = (t: (key: string) => string): { value: DateFormat; label: string }[] => [
-  { value: 'auto', label: t('Automatic') },
+// Choices of the platform settings and of the user profile. "auto" keeps the default of each column for the platform, and follows the platform for a user.
+const automaticLabel = (t: (key: string) => string, scope: 'platform' | 'user') => t(scope === 'user' ? 'Platform default' : 'Default');
+
+export const dateFormatOptions = (t: (key: string) => string, scope: 'platform' | 'user'): { value: DateFormat; label: string }[] => [
+  { value: 'auto', label: automaticLabel(t, scope) },
   { value: 'iso', label: t('ISO 8601 (YYYY-MM-DD)') },
 ];
 
-export const timeFormatOptions = (t: (key: string) => string): { value: TimeFormat; label: string }[] => [
-  { value: 'auto', label: t('Automatic') },
+export const timeFormatOptions = (t: (key: string) => string, scope: 'platform' | 'user'): { value: TimeFormat; label: string }[] => [
+  { value: 'auto', label: automaticLabel(t, scope) },
   { value: 'none', label: t('Date only') },
   { value: 'minutes', label: t('Hours and minutes (HH:mm)') },
   { value: 'seconds', label: t('Hours, minutes and seconds (HH:mm:ss)') },
@@ -61,6 +65,7 @@ export const formatTableDate = (
   { dateFormat, timeFormat }: DateDisplay,
   columnTime: 'none' | 'seconds',
 ) => {
+  if (!moment(date).isValid()) return EMPTY_VALUE;
   const time = timeFormat === 'auto' ? columnTime : timeFormat;
   if (dateFormat === 'iso') {
     return moment(date).format(ISO_PATTERNS[time]);
@@ -71,5 +76,7 @@ export const formatTableDate = (
     year: 'numeric',
     ...(time !== 'none' && { hour: 'numeric', minute: 'numeric' }),
     ...(time === 'seconds' && { second: 'numeric' }),
+    // A time chosen as HH:mm or HH:mm:ss is shown on 24 hours, whatever the language.
+    ...(timeFormat !== 'auto' && time !== 'none' && { hourCycle: 'h23' }),
   });
 };

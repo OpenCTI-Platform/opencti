@@ -26,4 +26,11 @@ describe('Date display utilities: checkDateDisplayInput', () => {
     expect(() => checkDateDisplayInput([input('time_format', [])], 'date_format', 'time_format'))
       .toThrow('Unsupported time format');
   });
+
+  it('should check every input of a key, not only the first one', () => {
+    expect(() => checkDateDisplayInput([input('time_format', ['auto']), input('time_format', ['hours'])], 'date_format', 'time_format'))
+      .toThrow('Unsupported time format');
+    expect(() => checkDateDisplayInput([input('platform_date_format', ['iso']), input('platform_date_format', ['DD/MM/YYYY'])], 'platform_date_format', 'platform_time_format'))
+      .toThrow('Unsupported date format');
+  });
 });

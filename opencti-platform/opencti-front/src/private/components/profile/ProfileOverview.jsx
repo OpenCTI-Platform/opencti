@@ -418,7 +418,7 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                {dateFormatOptions(t).map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                {dateFormatOptions(t, 'user').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
               </Field>
               <Field
                 component={SelectFieldFds}
@@ -430,7 +430,7 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                {timeFormatOptions(t).map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                {timeFormatOptions(t, 'user').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
               </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText
