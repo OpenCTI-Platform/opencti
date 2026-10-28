@@ -158,7 +158,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
     // Marks the status as notified once published only: a failed publication is retried at the next period.
     // A failed write publishes the transition again at the next period: a duplicate event rather than a lost one
     if (nextHealth) {
-      await writeIngestionHealth(context, source, element, { ingestion_health: markHealthNotified(nextHealth, transition, sourceContext.evaluatedAt) });
+      await writeIngestionHealth(context, source, element, { ingestion_health: markHealthNotified(nextHealth, sourceContext.evaluatedAt) });
     }
   }
 };

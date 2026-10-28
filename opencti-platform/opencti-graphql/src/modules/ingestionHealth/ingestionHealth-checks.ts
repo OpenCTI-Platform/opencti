@@ -123,8 +123,9 @@ export const computeIngestionHealthPatch = (
       status,
       status_since: currentHealth && !isStatusChanged ? currentHealth.status_since : evaluatedAt,
       health_checks: nextChecks,
-      // Kept across status changes: it tells whether the current status was already notified, and whether a recovery is due
+      // Kept across status changes: the last event tells whether the current status was already notified, and whether a recovery is due
       ...(currentHealth?.last_event_date ? { last_event_date: currentHealth.last_event_date } : {}),
+      ...(currentHealth?.last_event_status ? { last_event_status: currentHealth.last_event_status } : {}),
     },
   };
 };
@@ -134,20 +135,19 @@ export const computeIngestionHealthPatch = (
 // ponytail: hardcoded guard, moves to a settings object editable from the UI later
 export const HEALTH_NOTIFICATION_DELAY_MS = 5 * 60 * 1000;
 
-// The current status was already notified: the last failure event was published after its start
-const isStatusNotified = (health: StoredIngestionHealth) => !!health.last_event_date
-  && new Date(health.last_event_date).getTime() > new Date(health.status_since).getTime();
+const isFailureStatus = (status: IngestionHealthStatus | undefined) => status === IngestionHealthStatus.Critical
+  || status === IngestionHealthStatus.Degraded;
 
 /**
  * Computes the health activity event to publish for an ingestion, evaluated at every period of the ingestion health manager.
  *
  * The event is deferred to avoid notifying a flapping status: it is due once the status has not changed
- * for {@link HEALTH_NOTIFICATION_DELAY_MS}, and was not notified since it started.
- * The delay runs on the status, not on the event: going back to the notified status inside the delay is notified again.
+ * for {@link HEALTH_NOTIFICATION_DELAY_MS}, and differs from the status reported by the last event published (last_event_status).
+ * Going back to the reported status inside the delay reports nothing: the last event already tells it.
  *
- * Healthy and unknown end a failure: their recovery is reported only while a failure reported is not recovered yet
- * (last_event_date, removed by the recovery), so nothing is reported between unknown and healthy, nor twice for the same failure.
- * A failure never reported (shorter than the delay) has no recovery reported.
+ * Healthy and unknown end a failure: their recovery is reported only when the last event published reports a failure,
+ * even when the failure just before (shorter than the delay) was never reported itself.
+ * So nothing is reported between unknown and healthy, nor twice for the same recovery.
  *
  * A stopped ingestion is not evaluated: its health is removed and nothing is reported.
  *
@@ -159,34 +159,30 @@ export const computeHealthTransition = (
   health: StoredIngestionHealth | null | undefined,
   evaluatedAt: string,
 ): HealthTransition | null => {
-  if (!health) {
-    return null;
-  }
-  // The current status was already notified (last event after its start): one event per status change
-  if (isStatusNotified(health)) {
+  // The last event published already reports the current status: one event per status change
+  if (!health || health.last_event_status === health.status) {
     return null;
   }
   // The status changed less than the delay ago: it may still flap, wait for the next periods
   if (new Date(evaluatedAt).getTime() - new Date(health.status_since).getTime() < HEALTH_NOTIFICATION_DELAY_MS) {
     return null;
   }
-  // Stable and not notified failing status: report it
+  // Stable failing status not reported by the last event: report it
   if (health.status === IngestionHealthStatus.Critical) {
     return HealthTransition.Critical;
   }
   if (health.status === IngestionHealthStatus.Degraded) {
     return HealthTransition.Degraded;
   }
-  // Stable healthy or unknown status: a recovery only while a failure reported is not recovered yet.
-  // Never notified (new, restarted) or already recovered, there is nothing to recover from
-  return health.last_event_date ? HealthTransition.Recovered : null;
+  // Stable healthy or unknown status: a recovery only when the last event reports a failure.
+  // No event yet (new, restarted) or the last one already a recovery, there is nothing to recover from
+  return isFailureStatus(health.last_event_status) ? HealthTransition.Recovered : null;
 };
 
-// The health to write once the transition is published: a failure reported is kept until its recovery removes it
-export const markHealthNotified = (health: StoredIngestionHealth, transition: HealthTransition, evaluatedAt: string): StoredIngestionHealth => {
-  const { last_event_date: _, ...healthWithoutEvent } = health;
-  return transition === HealthTransition.Recovered ? healthWithoutEvent : { ...healthWithoutEvent, last_event_date: evaluatedAt };
-};
+// The health to write once the event is published: it becomes the last event, whatever its transition
+export const markHealthNotified = (health: StoredIngestionHealth, evaluatedAt: string): StoredIngestionHealth => (
+  { ...health, last_event_date: evaluatedAt, last_event_status: health.status }
+);
 
 // The activity log prefixes the message with the manager user name
 export const buildHealthTransitionMessage = (element: { name: string; entity_type: string }, transition: HealthTransition, checks: StoredHealthCheck[]) => {
