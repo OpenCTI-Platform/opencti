@@ -17,6 +17,7 @@ import {
   getRenderedPointsBudget,
   getWidgetBreakdownLimit,
   getWidgetBreakdownOrder,
+  isEntityTypeBreakdownField,
   nextBreakdownChartWidth,
 } from '../../utils/widget/widgetBreakdown';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
@@ -70,7 +71,7 @@ const WidgetTimeSeriesBreakdown = ({
       let name = serie.label;
       if (serie.isOther) {
         name = t_i18n('Other');
-      } else if (parameters.breakdownBy === 'entity_type') {
+      } else if (isEntityTypeBreakdownField(parameters.breakdownBy)) {
         const translated = t_i18n(`entity_${serie.label}`);
         name = translated !== `entity_${serie.label}` ? translated : serie.label;
       } else if (serie.entity) {

@@ -1,4 +1,4 @@
-import type { Widget, WidgetHost, WidgetParameters } from './widget';
+import type { Widget, WidgetHost, WidgetParameters, WidgetPerspective } from './widget';
 import { getCurrentCategory } from './widgetUtils';
 import { isDraftWorkspaceFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
@@ -24,12 +24,35 @@ const isBreakdownAllowedKey = (key: string, type: string) => {
 const COMPUTED_FILTER_KEYS = ['computed_reliability', 'workflow_id', 'workflowInstanceCurrentState', 'connectedToId', 'ids', 'id'];
 // Only set inside drafts, where breakdowns are not available: every value would be empty
 const DRAFT_FILTER_KEYS = ['draft_change.draft_operation'];
+// Fields of the history and activity logs, as indexed, in the order they are offered. The backend accepts
+// exactly these (HISTORY_BREAKDOWN_FIELDS in opencti-graphql/src/database/middleware.ts): keep them in sync.
+// The context entity id and the free texts (messages, searches) are refused for their unbounded cardinality.
+export const AUDITS_BREAKDOWN_FIELDS: { key: string; label: string }[] = [
+  { key: 'event_type', label: 'Event type' },
+  { key: 'event_scope', label: 'Event_scope' },
+  { key: 'user_id', label: 'User' },
+  { key: 'group_ids', label: 'Group' },
+  { key: 'organization_ids', label: 'Organization' },
+  { key: 'entity_type', label: 'Entity_type' },
+  { key: 'context_data.entity_type', label: 'Type of related entity' },
+];
+// Values of these fields are entity types, displayed with their translated name
+const ENTITY_TYPE_BREAKDOWN_FIELDS = [ENTITY_TYPE_FIELD, 'context_data.entity_type'];
+// Perspectives with a breakdown API, each with its own fields
+const BREAKDOWN_PERSPECTIVES: WidgetPerspective[] = ['entities', 'audits'];
 
 /**
  * The breakdown field is a filter key: a value is set when a field is chosen.
  */
 export const isBreakdownField = (value?: string | null): value is string => {
   return !!value;
+};
+
+/**
+ * Whether the values of the breakdown field are entity types.
+ */
+export const isEntityTypeBreakdownField = (field?: string | null) => {
+  return !!field && ENTITY_TYPE_BREAKDOWN_FIELDS.includes(field);
 };
 
 /**
@@ -72,15 +95,28 @@ export const getBreakdownFieldOptions = (
 };
 
 /**
+ * Fields the first dataset of the widget can be broken down by: the fields of its entity types
+ * for the entities, the allowed fields of the logs for the audits.
+ */
+export const getWidgetBreakdownFieldOptions = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  widget: Pick<Widget, 'perspective' | 'dataSelection'>,
+): { key: string; label: string }[] => {
+  if (widget.perspective === 'audits') {
+    return AUDITS_BREAKDOWN_FIELDS;
+  }
+  return getBreakdownFieldOptions(filterKeysSchema, getBreakdownEntityTypes(widget.dataSelection[0]?.filters));
+};
+
+/**
  * Whether the widget breakdown field can be used on its dataset: saved or imported widgets can carry
- * a field the API refuses for the entity types of their filters.
+ * a field the API refuses for the entity types of their filters, or for their perspective.
  */
 export const isBreakdownFieldSupported = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
-  widget: Pick<Widget, 'dataSelection' | 'parameters'>,
+  widget: Pick<Widget, 'perspective' | 'dataSelection' | 'parameters'>,
 ) => {
-  const entityTypes = getBreakdownEntityTypes(widget.dataSelection[0]?.filters);
-  return getBreakdownFieldOptions(filterKeysSchema, entityTypes).some(({ key }) => key === widget.parameters?.breakdownBy);
+  return getWidgetBreakdownFieldOptions(filterKeysSchema, widget).some(({ key }) => key === widget.parameters?.breakdownBy);
 };
 
 export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) => {
@@ -105,12 +141,22 @@ export const getBreakdownDefaultStartDate = (interval: string) => {
 
 type BreakdownWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'>;
 
-// A breakdown expands the single entities dataset of a time series widget
+// Audits lines and areas can count the distinct values of an attribute instead of the events
+const AUDITS_DISTINCT_COUNT_TYPES = ['line', 'area'];
+const isCountingDistinctValues = (widget: BreakdownWidget) => {
+  return widget.perspective === 'audits'
+    && AUDITS_DISTINCT_COUNT_TYPES.includes(widget.type)
+    && widget.dataSelection.some((selection) => selection.unique === true);
+};
+
+// A breakdown expands the single dataset of a time series widget, counting its entities or its events
 const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
-  return widget.perspective === 'entities'
+  return !!widget.perspective
+    && BREAKDOWN_PERSPECTIVES.includes(widget.perspective)
     && getCurrentCategory(widget.type) === 'timeseries'
     && widget.dataSelection.length === 1
-    && !isDraftWorkspaceFilterGroup(widget.dataSelection[0].filters);
+    && !isDraftWorkspaceFilterGroup(widget.dataSelection[0].filters)
+    && !isCountingDistinctValues(widget);
 };
 
 /**
@@ -118,6 +164,29 @@ const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
  */
 export const isWidgetBreakdownEligible = (widget: BreakdownWidget, host?: WidgetHost) => {
   return host?.kind === 'workspace' && canWidgetBeBrokenDown(widget);
+};
+
+/**
+ * Whether the breakdown controls are shown: the widget could be broken down once reduced to its
+ * first dataset, counting every event. getWidgetBreakdownLockReason says why they are disabled.
+ */
+export const isWidgetBreakdownConfigurable = (widget: BreakdownWidget, host?: WidgetHost) => {
+  const [firstSelection] = widget.dataSelection;
+  return !!firstSelection && isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...firstSelection, unique: false }] }, host);
+};
+
+/**
+ * Why the breakdown of a configurable widget cannot be changed: a breakdown uses a single dataset,
+ * and counts every event of the logs.
+ */
+export const getWidgetBreakdownLockReason = (widget: BreakdownWidget): 'several-datasets' | 'distinct-values' | undefined => {
+  if (widget.dataSelection.length > 1) {
+    return 'several-datasets';
+  }
+  if (isCountingDistinctValues(widget)) {
+    return 'distinct-values';
+  }
+  return undefined;
 };
 
 /**
