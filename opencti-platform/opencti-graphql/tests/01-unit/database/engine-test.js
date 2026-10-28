@@ -180,6 +180,18 @@ describe('buildLocalMustFilter testing', () => {
     expect(query).not.toBe(`"${value}"`);
   });
 
+  it('should buildLocalMustFilter with nested wildcard escape the query_string syntax but keep wildcards', () => {
+    const buildNestedWildcardQuery = (value) => {
+      const nested = [{ key: 'name', values: [value], operator: 'wildcard' }];
+      const result = buildLocalMustFilter({ key: ['connections'], values: [], nested });
+      return result.nested.query.bool.must[0].bool.should[0].query_string.query;
+    };
+    expect(buildNestedWildcardQuery('*_from')).toBe('*_from');
+    expect(buildNestedWildcardQuery('rep?rt*')).toBe('rep?rt*');
+    expect(buildNestedWildcardQuery('* OR _exists_:internal_id')).toBe('*\\ OR\\ _exists_\\:internal_id');
+    expect(buildNestedWildcardQuery('a" || (b) && !c')).toBe('a\\"\\ \\|\\|\\ \\(b\\)\\ \\&\\&\\ \\!c');
+  });
+
   it('should buildLocalMustFilter with contact_information emit a single terms clause for multiple values', () => {
     const emails = ['user@example.com', 'user2@example.com', 'user3@example.com'];
     const filter = {
