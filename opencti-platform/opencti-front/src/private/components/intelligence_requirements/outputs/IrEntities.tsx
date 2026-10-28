@@ -187,7 +187,7 @@ type Line = IrEntitiesLine_node$data;
 const PRESETS: { value: Preset; label: string; statuses: string[]; excluded?: boolean }[] = [
   { value: 'in', label: 'In the requirement', statuses: IN_STATUSES, excluded: false },
   { value: 'proposed', label: 'Proposed', statuses: ['proposed'] },
-  { value: 'excluded', label: 'Not meeting the scope conditions', statuses: IN_STATUSES, excluded: true },
+  { value: 'excluded', label: 'Accepted, no longer meeting the scope conditions', statuses: IN_STATUSES, excluded: true },
   { value: 'closed', label: 'Rejected or removed', statuses: ['rejected', 'removed'] },
 ];
 // A decision applies to the entities in these statuses (same rule as the server)

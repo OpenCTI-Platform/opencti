@@ -24,8 +24,8 @@ const processingQuery = graphql`
         lag_events
         stream_size
         active_requirements
-        last_batch { at duration_ms events entered updated rescored backfilled errors }
-        totals { events entered updated rescored backfilled errors }
+        last_batch { at duration_ms events entered updated rescored backfilled skipped errors }
+        totals { events entered updated rescored backfilled skipped errors }
         last_error { at message event_id }
       }
     }
@@ -122,13 +122,14 @@ const IrProcessing = ({ irId }: { irId: string }) => {
             <Kpi label={t_i18n('Updated')} value={n(batch.updated)} />
             <Kpi label={t_i18n('Rescored')} value={n(batch.rescored)} />
             <Kpi label={t_i18n('Brought by the second hop')} value={n(batch.backfilled)} />
+            <Kpi label={t_i18n('Not meeting the scope conditions')} value={n(batch.skipped ?? 0)} detail={t_i18n('evaluated, not stored')} />
           </Box>
         ) : (
           <Text as="div" variant="content-caption" style={{ opacity: 0.7 }}>{t_i18n('No batch recorded yet: the engine has not processed this requirement since its statistics exist.')}</Text>
         )}
         {totals && (
           <Text as="div" variant="content-caption" style={{ opacity: 0.7, marginTop: 12 }}>
-            {`${t_i18n('Since the statistics exist')}: ${n(totals.events)} ${t_i18n('events')}, ${n(totals.entered)} ${t_i18n('entered')}, ${n(totals.updated)} ${t_i18n('updated')}, ${n(totals.rescored)} ${t_i18n('rescored')}, ${n(totals.errors)} ${t_i18n('errors')}`}
+            {`${t_i18n('Since the statistics exist')}: ${n(totals.events)} ${t_i18n('events')}, ${n(totals.entered)} ${t_i18n('entered')}, ${n(totals.updated)} ${t_i18n('updated')}, ${n(totals.rescored)} ${t_i18n('rescored')}, ${n(totals.skipped ?? 0)} ${t_i18n('not meeting the scope conditions')}, ${n(totals.errors)} ${t_i18n('errors')}`}
           </Text>
         )}
       </Paper>
