@@ -15,14 +15,15 @@ import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/gr
 import { TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 
 /**
- * Entity types every entity of the dataset belongs to, read from a top level "entity type = ..." filter.
- * Empty when the filters do not restrict the type for sure. Same rule as the front (widgetBreakdown.ts).
+ * Types every element of the dataset belongs to, read from a top level "entity type = ..." filter, or
+ * "relationship type = ..." for relationships. Empty when the filters do not restrict the type for sure.
+ * Same rule as the front (widgetBreakdown.ts).
  */
-export const getBreakdownEntityTypes = (filters?: FilterGroup | null): string[] => {
+export const getBreakdownEntityTypes = (filters?: FilterGroup | null, typeFilterKey = TYPE_FILTER): string[] => {
   if (!filters) return [];
   const isRestrictingGroup = filters.mode === FilterMode.And || filters.filters.length + filters.filterGroups.length === 1;
   // Manifest filters can hold the key as a string or as a list
-  const typeFilter = filters.filters.find((filter) => [filter.key].flat().includes(TYPE_FILTER));
+  const typeFilter = filters.filters.find((filter) => [filter.key].flat().includes(typeFilterKey));
   if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== FilterOperator.Eq) || typeFilter.mode === FilterMode.And) {
     return [];
   }

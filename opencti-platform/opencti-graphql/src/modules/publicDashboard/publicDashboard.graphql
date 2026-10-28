@@ -90,6 +90,12 @@ type Query {
     startDate: DateTime
     endDate: DateTime
   ): [MultiTimeSeries] @public
+  publicStixRelationshipsTimeSeriesBreakdown(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): TimeSeriesBreakdown @public
   publicStixCoreObjectsDistribution(
     uriKey: String!
     widgetId : String!

@@ -525,6 +525,59 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         static: false,
       },
     },
+    'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38': {
+      id: 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38',
+      type: 'line',
+      perspective: 'relationships',
+      dataSelection: [
+        {
+          label: 'attacks by target type',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'relationships',
+          isTo: true,
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: ['relationship_type'],
+                values: ['targets'],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or',
+            }],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of attacks by target type',
+        interval: 'day',
+        breakdownBy: 'toTypes',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: true,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 4,
+        y: 8,
+        i: 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38',
+        moved: false,
+        static: false,
+      },
+    },
   },
   config: {
 
