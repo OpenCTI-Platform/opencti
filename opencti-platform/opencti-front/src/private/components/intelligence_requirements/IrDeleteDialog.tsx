@@ -78,7 +78,7 @@ const IrDeleteDialog = ({ ir, onClose, onDeleted, updater }: IrDeleteDialogProps
             </DialogDescription>
             <Text variant="content-base">
               {counts
-                ? t_i18n('Everything stored for it is deleted too: {entities} entities (in the requirement, proposed, rejected or not eligible) and {items} inbox items, AI briefs included.', { values: counts })
+                ? t_i18n('Everything stored for it is deleted too: {entities} entities (in the requirement, proposed, rejected or removed) and {items} inbox items, AI briefs included.', { values: counts })
                 : t_i18n('Everything stored for it is deleted too: its entities and inbox items, AI briefs included.')}
             </Text>
             <Text variant="content-base">{t_i18n('The knowledge itself (threats, malware, reports...) is not affected. This cannot be undone.')}</Text>
