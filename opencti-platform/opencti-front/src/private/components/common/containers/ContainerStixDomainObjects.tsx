@@ -64,6 +64,8 @@ const ContainerStixDomainObjectsFragment = graphql`
     }
 `;
 
+const DEFAULT_SORT_BY = 'name';
+
 const ContainerStixDomainObjects = ({ container, enableReferences }: {
   container: ContainerStixDomainObjects_container$key;
   enableReferences?: boolean;
@@ -87,7 +89,7 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
     {
       filters: emptyFilterGroup,
       searchTerm: '',
-      sortBy: 'name',
+      sortBy: DEFAULT_SORT_BY,
       orderAsc: false,
       openExports: false,
     },
@@ -96,10 +98,13 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
     numberOfElements,
     filters,
     searchTerm,
-    sortBy,
+    sortBy: storedSortBy,
     orderAsc,
     openExports,
   } = viewStorage;
+  // The stored sort can be absent (cleared search): page 1 must still send the same orderBy
+  // as the refetch, otherwise the cursor of page 1 has fewer values than the refetch sort.
+  const sortBy = storedSortBy ?? DEFAULT_SORT_BY;
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Stix-Domain-Object']);
   const contextFilters: FilterGroup = {
