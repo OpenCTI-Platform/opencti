@@ -834,20 +834,10 @@ const resolveAggregateDistributions = async <T extends { label: string; value: n
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
   // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
   const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
-  // entities not granted shall be sent as "restricted" with limited information
-  const grantedIds: string[] = [];
-  for (let i = 0; i < filteredData.length; i += 1) {
-    // The 'unknown' bucket has no real entity — skip resolution and access check
-    if (filteredData[i].label === 'unknown') {
-      grantedIds.push('unknown');
-      continue;
-    }
-    const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
-    const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
-    if (canAccess) {
-      grantedIds.push(filteredData[i].label.toLowerCase());
-    }
-  }
+  // entities not granted shall be sent as "restricted" with limited information, all checked at once.
+  // The 'unknown' bucket has no real entity — skip its access check
+  const resolvedElements = filteredData.filter((n) => n.label !== 'unknown').map((n) => allResolveLabels[n.label.toLowerCase()]);
+  const grantedElements = new Set(await userFilterStoreElements(context, user, resolvedElements));
   return filteredData
     .map((n) => {
       // The 'unknown' bucket has no backing entity
@@ -855,7 +845,7 @@ const resolveAggregateDistributions = async <T extends { label: string; value: n
         return { ...n, entity: null };
       }
       const element = allResolveLabels[n.label.toLowerCase()];
-      if (grantedIds.includes(n.label.toLowerCase())) {
+      if (grantedElements.has(element)) {
         return {
           ...n,
           entity: element,
