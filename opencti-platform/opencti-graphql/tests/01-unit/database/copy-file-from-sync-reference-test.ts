@@ -36,7 +36,7 @@ vi.mock('../../../src/utils/confidence-level', () => ({
   controlUserConfidenceAgainstElement: () => true,
 }));
 
-import { deleteFileFromStorage, downloadFileWithoutLogging, getFileSize, rawCopyFile } from '../../../src/database/raw-file-storage';
+import { deleteFileFromStorage, downloadFileWithoutLogging, getFileSize, rawCopyFile, rawUpload } from '../../../src/database/raw-file-storage';
 import { findById as documentFindById, indexFileToDocument } from '../../../src/modules/internal/document/document-domain';
 import { getEntitiesMapFromCache } from '../../../src/database/cache';
 import { internalLoadById } from '../../../src/database/middleware-loader';
@@ -181,6 +181,15 @@ describe('copyFileFromSyncReference', () => {
 
     await expect(copy).rejects.toThrow('User trying to create the data has missing markings');
     expect(rawCopyFile).not.toHaveBeenCalled();
+    expect(indexFileToDocument).not.toHaveBeenCalled();
+  });
+
+  it('rejects a marking the user does not hold before anything is uploaded on a direct upload', async () => {
+    const fileUpload = { filename: 'Report.pdf', createReadStream: () => Readable.from([Buffer.from(STAGED_CONTENT)]) };
+    const uploaded = upload(context, buildUser('user-1', []), 'import/Report/entity-1', fileUpload, { file_markings: [TLP_AMBER.standard_id] });
+
+    await expect(uploaded).rejects.toThrow('User trying to create the data has missing markings');
+    expect(rawUpload).not.toHaveBeenCalled();
     expect(indexFileToDocument).not.toHaveBeenCalled();
   });
 
