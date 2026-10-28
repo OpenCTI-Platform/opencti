@@ -4641,6 +4641,7 @@ export type ConfigPresetImportField = {
 
 export type ConfigPresetImportItem = {
   __typename?: 'ConfigPresetImportItem';
+  conflict: Scalars['Boolean']['output'];
   dependsOn: Array<ConfigPresetItemReference>;
   exists: Scalars['Boolean']['output'];
   fields: Array<ConfigPresetImportField>;
@@ -4731,8 +4732,8 @@ export enum ConfigPresetImportSessionEvent {
 export type ConfigPresetImportSessionSelection = {
   __typename?: 'ConfigPresetImportSessionSelection';
   excluded_items?: Maybe<Array<Scalars['ID']['output']>>;
+  item_modes?: Maybe<Array<ConfigPresetItemMode>>;
   items?: Maybe<Array<Scalars['ID']['output']>>;
-  mode?: Maybe<ConfigImportMode>;
   type: Scalars['ID']['output'];
 };
 
@@ -4753,6 +4754,17 @@ export type ConfigPresetImportType = {
   modes: Array<ConfigImportMode>;
 };
 
+export type ConfigPresetItemMode = {
+  __typename?: 'ConfigPresetItemMode';
+  key: Scalars['ID']['output'];
+  mode: ConfigImportMode;
+};
+
+export type ConfigPresetItemModeInput = {
+  key: Scalars['ID']['input'];
+  mode: ConfigImportMode;
+};
+
 export type ConfigPresetItemReference = {
   __typename?: 'ConfigPresetItemReference';
   key: Scalars['String']['output'];
@@ -4761,8 +4773,8 @@ export type ConfigPresetItemReference = {
 
 export type ConfigPresetSelectionInput = {
   excluded_items?: InputMaybe<Array<Scalars['ID']['input']>>;
+  item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
   items?: InputMaybe<Array<Scalars['ID']['input']>>;
-  mode?: InputMaybe<ConfigImportMode>;
   type: Scalars['ID']['input'];
 };
 
@@ -41275,6 +41287,8 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetImportSessionSelection: ResolverTypeWrapper<ConfigPresetImportSessionSelection>;
   ConfigPresetImportSessionStatus: ConfigPresetImportSessionStatus;
   ConfigPresetImportType: ResolverTypeWrapper<ConfigPresetImportType>;
+  ConfigPresetItemMode: ResolverTypeWrapper<ConfigPresetItemMode>;
+  ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ResolverTypeWrapper<ConfigPresetItemReference>;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
@@ -42483,6 +42497,8 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetImportSession: ConfigPresetImportSession;
   ConfigPresetImportSessionSelection: ConfigPresetImportSessionSelection;
   ConfigPresetImportType: ConfigPresetImportType;
+  ConfigPresetItemMode: ConfigPresetItemMode;
+  ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ConfigPresetItemReference;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
@@ -44903,6 +44919,7 @@ export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType exten
 }>;
 
 export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportItem'] = ResolversParentTypes['ConfigPresetImportItem']> = ResolversObject<{
+  conflict?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
   exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
@@ -44962,8 +44979,8 @@ export type ConfigPresetImportSessionResolvers<ContextType = any, ParentType ext
 
 export type ConfigPresetImportSessionSelectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportSessionSelection'] = ResolversParentTypes['ConfigPresetImportSessionSelection']> = ResolversObject<{
   excluded_items?: Resolver<Maybe<Array<ResolversTypes['ID']>>, ParentType, ContextType>;
+  item_modes?: Resolver<Maybe<Array<ResolversTypes['ConfigPresetItemMode']>>, ParentType, ContextType>;
   items?: Resolver<Maybe<Array<ResolversTypes['ID']>>, ParentType, ContextType>;
-  mode?: Resolver<Maybe<ResolversTypes['ConfigImportMode']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
@@ -44974,6 +44991,11 @@ export type ConfigPresetImportTypeResolvers<ContextType = any, ParentType extend
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   modes?: Resolver<Array<ResolversTypes['ConfigImportMode']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetItemModeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemMode'] = ResolversParentTypes['ConfigPresetItemMode']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  mode?: Resolver<ResolversTypes['ConfigImportMode'], ParentType, ContextType>;
 }>;
 
 export type ConfigPresetItemReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemReference'] = ResolversParentTypes['ConfigPresetItemReference']> = ResolversObject<{
@@ -55875,6 +55897,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetImportSession?: ConfigPresetImportSessionResolvers<ContextType>;
   ConfigPresetImportSessionSelection?: ConfigPresetImportSessionSelectionResolvers<ContextType>;
   ConfigPresetImportType?: ConfigPresetImportTypeResolvers<ContextType>;
+  ConfigPresetItemMode?: ConfigPresetItemModeResolvers<ContextType>;
   ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;

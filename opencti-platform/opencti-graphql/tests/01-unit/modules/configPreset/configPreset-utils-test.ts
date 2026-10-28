@@ -84,11 +84,21 @@ describe('Config preset import activity message', () => {
 });
 
 describe('Config preset import modes', () => {
-  it('takes the mode of each family of the selections, OVERWRITE for a family without one', () => {
-    const modes = configPresetImportModes([{ type: 'branding', mode: ConfigImportMode.Copy }, { type: 'messages', mode: null }, { type: 'platform' }]);
-    expect(configPresetImportMode(modes, 'branding')).toBe(ConfigImportMode.Copy);
-    expect(configPresetImportMode(modes, 'messages')).toBe(ConfigImportMode.Overwrite);
-    expect(configPresetImportMode(modes, 'platform')).toBe(ConfigImportMode.Overwrite);
-    expect(configPresetImportMode(modes, 'unknown')).toBe(ConfigImportMode.Overwrite);
+  it('takes the mode of each item of the selections, OVERWRITE for an item without one', () => {
+    const modes = configPresetImportModes([
+      { type: 'branding', item_modes: [{ key: 'theme-1', mode: ConfigImportMode.Copy }, { key: 'theme-2', mode: ConfigImportMode.Overwrite }] },
+      { type: 'messages', item_modes: null },
+      { type: 'platform' },
+    ]);
+    expect(configPresetImportMode(modes, 'branding', 'theme-1')).toBe(ConfigImportMode.Copy);
+    expect(configPresetImportMode(modes, 'branding', 'theme-2')).toBe(ConfigImportMode.Overwrite);
+    expect(configPresetImportMode(modes, 'branding', 'theme-3')).toBe(ConfigImportMode.Overwrite);
+    expect(configPresetImportMode(modes, 'messages', 'banner')).toBe(ConfigImportMode.Overwrite);
+    expect(configPresetImportMode(modes, 'platform', 'platform')).toBe(ConfigImportMode.Overwrite);
+  });
+
+  it('does not take the mode of an item for the item of another type with the same key', () => {
+    const modes = configPresetImportModes([{ type: 'branding', item_modes: [{ key: 'same', mode: ConfigImportMode.Copy }] }]);
+    expect(configPresetImportMode(modes, 'messages', 'same')).toBe(ConfigImportMode.Overwrite);
   });
 });

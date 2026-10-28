@@ -109,7 +109,12 @@ export const applyConfigPresetImportRunEvent = async <E extends ConfigPresetImpo
 };
 
 export const toSessionSelections = (selections: ConfigPresetSelectionInput[]): ConfigPresetImportSelection[] => {
-  return selections.map(({ type, items, excluded_items, mode }) => ({ type, items: items ?? null, excluded_items: excluded_items ?? null, mode: mode ?? null }));
+  return selections.map(({ type, items, excluded_items, item_modes }) => ({
+    type,
+    items: items ?? null,
+    excluded_items: excluded_items ?? null,
+    item_modes: item_modes && item_modes.length > 0 ? item_modes.map(({ key, mode }) => ({ key, mode })) : null,
+  }));
 };
 
 const toGraphqlSession = (session: ConfigPresetImportSession | null) => {

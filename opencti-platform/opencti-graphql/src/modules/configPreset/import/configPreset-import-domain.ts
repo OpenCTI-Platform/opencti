@@ -96,7 +96,7 @@ export const readConfigPresetImportBundle = async (context: AuthContext, user: A
 };
 
 // compute of every item, required dependencies first: reads only, the plan records what would be created
-// modes: the mode of each family, OVERWRITE for the families that have none (the preview, the dependencies)
+// modes: the mode of each item, OVERWRITE for the items that have none (the preview, the dependencies)
 export const computeConfigPresetItems = async (
   context: AuthContext,
   user: AuthUser,
@@ -107,7 +107,7 @@ export const computeConfigPresetItems = async (
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;
-    const mode = configPresetImportMode(modes, items[i].type);
+    const mode = configPresetImportMode(modes, items[i].type, items[i].id);
     results.push({ item: items[i], computed: await family.importer!.compute(context, user, items[i], plan, mode) });
   }
   return results;
@@ -134,6 +134,7 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
         translatable: computed.translatable,
         isDefault: family.id === 'branding' && defaultThemeId?.standard_id === item.id,
         exists: computed.exists,
+        conflict: computed.conflict,
         fields: computed.fields,
         dependsOn: bundle.items
           .filter((dependency) => dependencyPaths.includes(dependency.path))

@@ -50,14 +50,16 @@ const countResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImpo
 // by the frontend is not trusted, and dependencies come first
 const resolveImportItems = (bundle: ConfigPresetBundle, selections: ConfigPresetSelectionInput[]): ConfigPresetBundleItem[] => {
   const selected: ConfigPresetBundleItem[] = [];
-  selections.forEach(({ type, items, excluded_items: excluded, mode }) => {
+  selections.forEach(({ type, items, excluded_items: excluded, item_modes: itemModes }) => {
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === type);
     if (!family) {
       throw FunctionalError('Unknown configuration preset type', { type });
     }
-    if (mode && !(family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE]).includes(mode)) {
-      throw FunctionalError('Unsupported import mode for this configuration preset type', { type, mode });
-    }
+    (itemModes ?? []).forEach(({ key, mode }) => {
+      if (!(family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE]).includes(mode)) {
+        throw FunctionalError('Unsupported import mode for this configuration preset type', { type, item: key, mode });
+      }
+    });
     const available = bundle.items.filter((item) => item.type === type);
     const picked = items
       ? items.map((id) => available.find((item) => item.id === id) ?? (() => {
@@ -148,7 +150,7 @@ const realImport = async (
         }
         const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
         const importer = CONFIG_PRESET_FAMILIES.find((family) => family.id === item.type)!.importer!;
-        const mode = configPresetImportMode(modes, item.type);
+        const mode = configPresetImportMode(modes, item.type, item.id);
         const computed = await importer.compute(importContext, runUser, item, plan, mode);
         labels.set(configPresetPlanKey(item.type, item.id), computed.label);
         let result = toResult(item, computed.status, computed.reason);

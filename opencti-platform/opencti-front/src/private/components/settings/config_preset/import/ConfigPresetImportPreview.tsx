@@ -10,10 +10,18 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
 import { toConfigImportModes, toConfigPresetSelection } from './configPresetImportSelection';
-import { ConfigImportMode, ConfigImportModes, DEFAULT_CONFIG_IMPORT_MODE, withConfigImportMode } from '../configImportMode';
+import {
+  ConfigImportMode,
+  ConfigImportModes,
+  configImportModeKey,
+  DEFAULT_CONFIG_IMPORT_MODE,
+  sharedConfigImportMode,
+  withConfigImportMode,
+  withConfigImportModeForItems,
+} from '../configImportMode';
 import ConfigPresetImportModeSelect from './ConfigPresetImportModeSelect';
 import { getConfigPresetErrorReason } from './configPresetImportStep';
-import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from '../configPresetSelection';
+import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, isConfigPresetItemSelected, selectAllConfigPresetItems } from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
@@ -22,6 +30,8 @@ import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
 const SAVE_DELAY_MS = 500;
+// The expected results wait for the changes to stop, but the first ones are asked at once
+const SIMULATE_DELAY_MS = 300;
 
 const configPresetImportPreviewQuery = graphql`
   query ConfigPresetImportPreviewQuery($file_id: ID!) {
@@ -45,6 +55,7 @@ const configPresetImportPreviewQuery = graphql`
           translatable
           isDefault
           exists
+          conflict
           dependsOn {
             type
             key
@@ -79,17 +90,26 @@ interface SimulatedResult {
   readonly reason?: string | null;
 }
 
+// A row shows what the import would do unless there is nothing to say: an item that is created as it is, or one that is overwritten
+// and has its choice (the choice says it)
+const isResultShown = (result: SimulatedResult, hasChoice: boolean) => {
+  if (result.status === 'CREATED' && !result.reason) {
+    return false;
+  }
+  return !(result.status === 'OVERWRITTEN' && hasChoice);
+};
+
 export interface ConfigPresetImportPreviewProps {
   session: ConfigPresetImportSession;
-  // An import of another administrator runs: Apply waits for it, the preview and the simulation stay available
+  // An import of another administrator runs: Apply waits for it, the preview and the expected results stay available
   isOtherImportRunning: boolean;
-  // When the last import ended: a change after a simulation makes its results obsolete
+  // When the last import ended: the expected results are computed again, the platform is no longer the one they were computed on
   lastFinishedAt?: string | null;
   // The administrator whose import refused the last Apply
   startedBy?: string | null;
   // Sends the real import: the selection is saved first
   onApply: (selections: ImportSelections) => void;
-  // Simulates the import of the selection: reads only, the results come back through onCompleted
+  // The expected result of each item of the selection: reads only, the results come back through onCompleted
   onSimulate: (
     fileId: string,
     selections: ImportSelections,
@@ -115,17 +135,19 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selection, setSelection] = useState<ConfigPresetSelection>({});
-  // What the import does with the items that exist, by type; saved with the selection
+  // What the import does with the items that exist, by item; saved with the selection
   const [importModes, setImportModes] = useState<ConfigImportModes>({});
   const [confirmStartOver, setConfirmStartOver] = useState(false);
-  // The expected results, by `<type>/<key>`: held here only, never saved; cleared when the selection changes
+  // The expected results, by `<type>/<key>`: held here only, never saved; computed again when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
-  const [isOutdated, setIsOutdated] = useState(false);
+  // True from a change of the selection until the results of the latest request are in: Apply waits
   const [isSimulating, setIsSimulating] = useState(false);
-  const [hasPlatformChanged, setHasPlatformChanged] = useState(false);
-  // last_finished_at as it was when the simulation was sent
-  const simulatedAtRef = useRef<string | null | undefined>(undefined);
+  // Only the response of the latest request is kept
+  const simulationRef = useRef(0);
+  const hasSimulatedRef = useRef(false);
   const isMountedRef = useRef(true);
+  const onSimulateRef = useRef(onSimulate);
+  onSimulateRef.current = onSimulate;
   const [commitSave] = useApiMutation<ConfigPresetImportPreviewSaveMutation>(configPresetImportPreviewSaveMutation);
   // The revision only goes up: the backend ignores a lower one
   const revisionRef = useRef(session.revision);
@@ -183,22 +205,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     isMountedRef.current = false;
   }, []);
 
-  // A change of the selection clears the expected results: they no longer describe what would be imported
-  const clearResults = () => {
-    setHasPlatformChanged(false);
-    if (results !== null) {
-      setResults(null);
-      setIsOutdated(true);
-    }
-  };
-
   const types = preview ? toCountedTypes(preview.types) : [];
   const forced = getConfigPresetForcedItems(types, selection);
   const selections = buildConfigPresetSelections(types, selection, importModes);
 
   // The selection and the modes are saved together, after a short delay
   const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes) => {
-    clearResults();
     revisionRef.current += 1;
     pendingRef.current = buildConfigPresetSelections(types, nextSelection, nextImportModes);
     if (timerRef.current !== null) {
@@ -212,8 +224,15 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     scheduleSave(next, importModes);
   };
 
-  const handleImportModeChange = (typeKey: string, mode: ConfigImportMode) => {
-    const next = withConfigImportMode(importModes, typeKey, mode);
+  const handleImportModeChange = (typeKey: string, itemKey: string, mode: ConfigImportMode) => {
+    const next = withConfigImportMode(importModes, typeKey, itemKey, mode);
+    setImportModes(next);
+    scheduleSave(selection, next);
+  };
+
+  // The same mode for all the items of a type that conflict
+  const handleTypeImportModeChange = (typeKey: string, itemKeys: ReadonlyArray<string>, mode: ConfigImportMode) => {
+    const next = withConfigImportModeForItems(importModes, typeKey, itemKeys, mode);
     setImportModes(next);
     scheduleSave(selection, next);
   };
@@ -223,38 +242,57 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     onApply(selections);
   };
 
-  // Another import ended since the simulation was sent: its results no longer describe the platform
+  // Another import ended since the expected results were computed: the platform is no longer the one they describe. The first date
+  // that is read is not a change (the polling has no answer yet when the preview opens).
+  const [platformVersion, setPlatformVersion] = useState(0);
+  const lastFinishedAtRef = useRef(lastFinishedAt);
   useEffect(() => {
-    if (results !== null && lastFinishedAt !== simulatedAtRef.current) {
-      setResults(null);
-      setHasPlatformChanged(true);
+    if (lastFinishedAtRef.current !== undefined && lastFinishedAt !== lastFinishedAtRef.current) {
+      setPlatformVersion((version) => version + 1);
     }
-  // Only a change of the end date of the last import clears the results
+    lastFinishedAtRef.current = lastFinishedAt;
   }, [lastFinishedAt]);
 
-  const handleSimulate = () => {
-    simulatedAtRef.current = lastFinishedAt;
-    setHasPlatformChanged(false);
+  // The expected results are computed as soon as the preview is shown, and again after each change of the selection or of a mode
+  // (and when another import ended), once the changes have stopped. Nothing is selected: nothing to compute.
+  const selectionsKey = JSON.stringify(selections);
+  useEffect(() => {
+    if (!preview) {
+      return undefined;
+    }
+    if (selections.length === 0) {
+      simulationRef.current += 1;
+      setResults(null);
+      setIsSimulating(false);
+      return undefined;
+    }
+    simulationRef.current += 1;
+    const request = simulationRef.current;
     setIsSimulating(true);
-    onSimulate(session.file_id, selections, {
-      // A response that arrives after the wizard was closed is dropped
-      onCompleted: (simulated) => {
-        if (isMountedRef.current) {
-          setIsSimulating(false);
-          setIsOutdated(false);
-          setResults(Object.fromEntries(simulated.map((result) => [`${result.type}/${result.key}`, result])));
-        }
-      },
-      onError: (err) => {
-        if (isMountedRef.current) {
-          setIsSimulating(false);
-          if (getConfigPresetErrorReason(err) === 'file_missing') {
-            onFileMissing();
+    const delay = hasSimulatedRef.current ? SIMULATE_DELAY_MS : 0;
+    const timer = window.setTimeout(() => {
+      hasSimulatedRef.current = true;
+      onSimulateRef.current(session.file_id, selections, {
+        // A response that arrives after a newer request, or after the wizard was closed, is dropped
+        onCompleted: (simulated) => {
+          if (isMountedRef.current && request === simulationRef.current) {
+            setIsSimulating(false);
+            setResults(Object.fromEntries(simulated.map((result) => [`${result.type}/${result.key}`, result])));
           }
-        }
-      },
-    });
-  };
+        },
+        onError: (err) => {
+          if (isMountedRef.current && request === simulationRef.current) {
+            setIsSimulating(false);
+            if (getConfigPresetErrorReason(err) === 'file_missing') {
+              onFileMissing();
+            }
+          }
+        },
+      });
+    }, delay);
+    return () => window.clearTimeout(timer);
+  // The selection as sent: a new array with the same content does not compute again
+  }, [preview, selectionsKey, platformVersion]);
 
   if (error) {
     return (
@@ -274,7 +312,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     // The dialog scrolls: a minimum height gives the list room, and the footer sticks to the bottom of the visible part
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
       <Text variant="title-sm">{preview.bundle_name ?? t_i18n('Configuration bundle')}</Text>
-      <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched. Existing items are overwritten unless a type offers another choice: use Simulate to see the outcome of each one before you apply.')}</Text>
+      <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched. An item that already exists is overwritten unless you choose to add it as a copy.')}</Text>
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
@@ -282,34 +320,56 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         types={types}
         selection={selection}
         forced={forced}
-        disabled={isSimulating}
         collapseSingletons={false}
         expandTypes
         onSelectionChange={handleSelectionChange}
-        renderTypeActions={(type) => (
-          <ConfigPresetImportModeSelect
-            typeLabel={t_i18n(type.label)}
-            modes={type.modes}
-            value={importModes[type.key] ?? DEFAULT_CONFIG_IMPORT_MODE}
-            disabled={isSimulating}
-            onChange={(mode) => handleImportModeChange(type.key, mode)}
-          />
-        )}
-        renderItem={(type, item) => (
-          <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
-            <ConfigPresetItemRow
-              typeKey={type.key}
-              item={item}
-              selection={selection}
-              forced={forced}
-              disabled={isSimulating}
-              onSelectionChange={handleSelectionChange}
-              statusSlot={results?.[`${type.key}/${item.key}`]
-                ? <ConfigPresetResultLine status={results[`${type.key}/${item.key}`].status} reason={results[`${type.key}/${item.key}`].reason} />
-                : undefined}
+        renderTypeActions={(type) => {
+          // From two items in conflict: with one, its own choice is enough
+          const conflictKeys = type.items.filter((item) => item.conflict).map((item) => item.key);
+          if (type.modes.length < 2 || conflictKeys.length < 2) {
+            return null;
+          }
+          return (
+            <ConfigPresetImportModeSelect
+              subject={t_i18n(type.label)}
+              purpose="Apply to all"
+              modes={type.modes}
+              value={sharedConfigImportMode(importModes, type.key, conflictKeys)}
+              onChange={(mode) => handleTypeImportModeChange(type.key, conflictKeys, mode)}
             />
-          </div>
-        )}
+          );
+        }}
+        renderItem={(type, item) => {
+          // The choice is for an item that conflicts with the platform and is imported; the items that do not show nothing
+          const isImported = (forced[type.key] ?? []).includes(item.key) || isConfigPresetItemSelected(selection, type.key, item.key);
+          const hasChoice = item.conflict && isImported && type.modes.length > 1;
+          const result = results?.[`${type.key}/${item.key}`];
+          return (
+            <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
+              <ConfigPresetItemRow
+                typeKey={type.key}
+                item={item}
+                selection={selection}
+                forced={forced}
+                onSelectionChange={handleSelectionChange}
+                statusSlot={(hasChoice || (result && isResultShown(result, hasChoice))) ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                    {hasChoice && (
+                      <ConfigPresetImportModeSelect
+                        subject={item.translatable ? t_i18n(item.label) : item.label}
+                        purpose="When it already exists"
+                        modes={type.modes}
+                        value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                        onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
+                      />
+                    )}
+                    {result && isResultShown(result, hasChoice) && <ConfigPresetResultLine status={result.status} reason={result.reason} />}
+                  </div>
+                ) : undefined}
+              />
+            </div>
+          );
+        }}
       />
       <div
         style={{
@@ -329,8 +389,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       >
         <ConfigPresetImportMessages
           itemsCount={itemsCount}
-          isOutdated={isOutdated}
-          hasPlatformChanged={hasPlatformChanged}
+          isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
           startedBy={startedBy}
         />
@@ -339,7 +398,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
           onStartOver={() => setConfirmStartOver(true)}
-          onSimulate={handleSimulate}
           onApply={handleApply}
         />
       </div>

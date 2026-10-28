@@ -97,7 +97,7 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   onManageType?: (typeKey: string) => void;
   // The row of an item, the checkbox row of the export by default
   renderItem?: (type: T, item: T['items'][number]) => ReactNode;
-  // What is shown on the row of a type, next to its chevron (the import mode)
+  // What is shown on the row of a type, next to its chevron (the choice for all its items)
   renderTypeActions?: (type: T) => ReactNode;
   // A type whose only item has the key of the type is one checkbox; false shows its item below it (default true)
   collapseSingletons?: boolean;

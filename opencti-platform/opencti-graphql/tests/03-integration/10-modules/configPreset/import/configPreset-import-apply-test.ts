@@ -135,13 +135,19 @@ describe('Config preset import: apply', () => {
   });
 
   describe('modes', () => {
-    const BRANDING = (mode: string) => [{ type: 'platform' }, { type: 'branding', mode }, { type: 'messages' }];
+    const OTHER_THEME_ID = 'theme--aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    // The bundle theme is imported with this mode, the other items with the default one
+    const BRANDING = (mode: string) => [{ type: 'platform' }, { type: 'branding', item_modes: [{ key: CUSTOM_THEME_ID, mode }] }, { type: 'messages' }];
+    const twoThemes = () => ({
+      ...validBundleFiles(),
+      [`platform_settings/branding/${OTHER_THEME_ID}.json`]: itemFile('platformSettings.branding', OTHER_THEME_ID, themeConfiguration({ standard_id: OTHER_THEME_ID, name: 'Other import theme' })),
+    });
 
     it('adds the themes that exist as copies under a free name with COPY, and leaves the existing theme and the default theme alone', async () => {
       await importData(await upload(validBundleFiles()), ALL);
       const output = await importData(await upload(validBundleFiles()), BRANDING('COPY'));
       expect(resultOf(output, CUSTOM_THEME_ID)).toMatchObject({ status: 'CREATED', reason: 'Added as "Import test theme (1)"' });
-      // The mode of the branding does not change what the other types do
+      // The mode of a theme does not change what the other items do
       expect(resultOf(output, 'banner')).toMatchObject({ status: 'OVERWRITTEN' });
       const themes = await customThemes();
       expect(themes.map((theme) => theme.name).sort()).toEqual(['Import test theme', 'Import test theme (1)']);
@@ -168,9 +174,20 @@ describe('Config preset import: apply', () => {
       expect(real.results).toEqual(dry.results);
     });
 
+    it('applies the mode of each item: a copy of one theme that exists, an overwrite of the other', async () => {
+      await importData(await upload(twoThemes()), ALL);
+      const fileId = await upload(twoThemes());
+      const dry = await importData(fileId, BRANDING('COPY'), true);
+      const real = await importData(fileId, BRANDING('COPY'));
+      expect(real.results).toEqual(dry.results);
+      expect(resultOf(real, CUSTOM_THEME_ID)).toMatchObject({ status: 'CREATED', reason: 'Added as "Import test theme (1)"' });
+      expect(resultOf(real, OTHER_THEME_ID)).toMatchObject({ status: 'OVERWRITTEN', reason: null });
+      expect((await customThemes()).map((theme) => theme.name).sort()).toEqual(['Import test theme', 'Import test theme (1)', 'Other import theme']);
+    });
+
     it('refuses a mode the type does not support', async () => {
       const fileId = await upload(validBundleFiles());
-      const { errors } = await runImport(fileId, [{ type: 'messages', mode: 'COPY' }], true);
+      const { errors } = await runImport(fileId, [{ type: 'messages', item_modes: [{ key: 'banner', mode: 'COPY' }] }], true);
       expect(errors?.[0].message).toContain('Unsupported import mode');
     });
   });

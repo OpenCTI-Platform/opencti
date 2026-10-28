@@ -32,6 +32,7 @@ const PREVIEW_QUERY = gql`
           translatable
           isDefault
           exists
+          conflict
           fields { key value }
           dependsOn { type key }
         }
@@ -83,7 +84,7 @@ describe('Config preset import: upload and preview', () => {
       { key: 'platform_favicon', value: 'https://example.com/favicon.ico' },
     ]);
     expect(result.types[1].items).toHaveLength(1);
-    expect(result.types[1].items[0]).toMatchObject({ key: CUSTOM_THEME_ID, label: 'Import test theme', exists: false, isDefault: true, translatable: false });
+    expect(result.types[1].items[0]).toMatchObject({ key: CUSTOM_THEME_ID, label: 'Import test theme', exists: false, conflict: false, isDefault: true, translatable: false });
   });
 
   it('refuses a bundle at preview with the reason, and keeps the zip', async () => {

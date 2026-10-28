@@ -18,8 +18,8 @@ export interface ConfigPresetImportSelection {
   type: string;
   items: string[] | null;
   excluded_items: string[] | null;
-  // What to do with the items of the type that already exist; absent in a session stored before the modes: OVERWRITE
-  mode?: ConfigImportMode | null;
+  // The items that are not imported with OVERWRITE, the mode of each; absent for none
+  item_modes?: { key: string; mode: ConfigImportMode }[] | null;
 }
 
 // One result per processed item: type is the bare family id, key the bundle id

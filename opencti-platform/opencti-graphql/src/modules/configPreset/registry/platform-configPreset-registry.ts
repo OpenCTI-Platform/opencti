@@ -31,7 +31,7 @@ const platformImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
     const label = { label: PLATFORM_LABEL, translatable: true };
     if (item.id !== PLATFORM_ITEM_ID) {
-      return { ...label, exists: true, status: 'failed', reason: 'Unexpected item id', fields: [] };
+      return { ...label, exists: true, conflict: false, status: 'failed', reason: 'Unexpected item id', fields: [] };
     }
     // A default theme this import creates is a theme the platform will have
     const isThemeCreated = (standardId: string) => plan.created.has(configPresetPlanKey(BRANDING_FAMILY_ID, standardId));

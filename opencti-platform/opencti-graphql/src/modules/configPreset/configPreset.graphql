@@ -60,6 +60,8 @@ type ConfigPresetImportItem {
     isDefault: Boolean!
     # The item already exists on the platform.
     exists: Boolean!
+    # The item conflicts with one of the platform: it exists, or another one has its name. The dialog offers a choice of what to do with it.
+    conflict: Boolean!
     fields: [ConfigPresetImportField!]!
     # Items imported with this one, whatever the selection.
     dependsOn: [ConfigPresetItemReference!]!
@@ -71,7 +73,7 @@ type ConfigPresetImportType {
     description: String!
     group: ConfigPresetExportableGroup!
     items: [ConfigPresetImportItem!]!
-    # The modes the type supports for an item that already exists; the dialog shows a choice when there is more than one.
+    # The modes the type supports for an item in conflict; the dialog shows a choice on such an item when there is more than one.
     modes: [ConfigImportMode!]!
 }
 
@@ -120,7 +122,8 @@ enum ConfigPresetImportResultStatus {
 
 # What an import does with an item that already exists on the platform: ADD refuses it, OVERWRITE patches it, COPY adds it under a free name
 # (and a new identity when its own is taken). A type offers the modes it supports, OVERWRITE always; ADD is for the import of a single item
-# (a theme file) and no type offers it.
+# (a theme file) and no type offers it. An item has the mode OVERWRITE unless its own is given.
+
 enum ConfigImportMode {
     ADD
     OVERWRITE
@@ -146,8 +149,13 @@ type ConfigPresetImportSessionSelection {
     type: ID!
     items: [ID!]
     excluded_items: [ID!]
-    # Null for a selection saved before the modes existed: OVERWRITE.
-    mode: ConfigImportMode
+    # The items that are not imported with OVERWRITE; null for none.
+    item_modes: [ConfigPresetItemMode!]
+}
+
+type ConfigPresetItemMode {
+    key: ID!
+    mode: ConfigImportMode!
 }
 
 # The wizard state of the calling administrator: the pending zip, the selection, and the progress and result of the last import.
@@ -215,8 +223,15 @@ input ConfigPresetSelectionInput {
     # With items null or omitted only: every item of the type except these. An unknown id is ignored (a stale exclusion is harmless),
     # unlike an unknown id in items, which fails the export.
     excluded_items: [ID!]
-    # Import only: what to do with the items of the type that already exist, OVERWRITE when omitted. The export ignores it.
-    mode: ConfigImportMode
+    # Import only: what to do with the items that already exist, by item; an item that is not listed is imported with OVERWRITE.
+    # The export ignores it.
+    item_modes: [ConfigPresetItemModeInput!]
+}
+
+input ConfigPresetItemModeInput {
+    # Key of an item of the type
+    key: ID!
+    mode: ConfigImportMode!
 }
 
 extend type Mutation {

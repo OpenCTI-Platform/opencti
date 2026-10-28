@@ -127,18 +127,19 @@ describe('configPresetSelection', () => {
     expect(buildConfigPresetSelections(types, {})).toEqual([]);
   });
 
-  it('adds the import mode of a type to its selection, and only the types that have one', () => {
+  it('adds the import mode of the items of a type to its selection, and only the types that have one', () => {
     const selection: ConfigPresetSelection = {
       platform: { mode: 'all', ids: [] },
       hiddenEntityTypes: { mode: 'some', ids: ['hiddenEntityTypes'] },
       branding: { mode: 'all', ids: ['theme-1'] },
     };
-    expect(buildConfigPresetSelections(types, selection, { branding: 'COPY', hiddenEntityTypes: 'COPY' })).toEqual([
+    const modes = { 'branding/theme-0': 'COPY', 'branding/theme-default': 'COPY', 'hiddenEntityTypes/hiddenEntityTypes': 'COPY' } as const;
+    expect(buildConfigPresetSelections(types, selection, modes)).toEqual([
       { type: 'platform', items: null },
-      { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'], mode: 'COPY' },
-      { type: 'branding', items: null, excluded_items: ['theme-1'], mode: 'COPY' },
+      { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'], item_modes: [{ key: 'hiddenEntityTypes', mode: 'COPY' }] },
+      { type: 'branding', items: null, excluded_items: ['theme-1'], item_modes: [{ key: 'theme-0', mode: 'COPY' }, { key: 'theme-default', mode: 'COPY' }] },
     ]);
-    // A type that has no selected item is not sent, the mode with it
-    expect(buildConfigPresetSelections(types, { platform: { mode: 'some', ids: [] } }, { platform: 'COPY' })).toEqual([]);
+    // A type that has no selected item is not sent, the modes with it
+    expect(buildConfigPresetSelections(types, { platform: { mode: 'some', ids: [] } }, { 'platform/platform': 'COPY' })).toEqual([]);
   });
 });

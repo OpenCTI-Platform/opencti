@@ -4,7 +4,7 @@ import { BYPASS, isUserHasCapability } from '../../../utils/access';
 import { getDraftContext } from '../../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode } from '../../configImport/configImport-types';
-import { CONFIG_PRESET_DEFAULT_IMPORT_MODE, type ConfigPresetImportField } from './configPreset-import-types';
+import { CONFIG_PRESET_DEFAULT_IMPORT_MODE, type ConfigPresetImportField, configPresetPlanKey } from './configPreset-import-types';
 
 const DATA_URL = /^data:([^;,]+);base64,(.*)$/;
 
@@ -26,12 +26,14 @@ export const buildImportFields = (configuration: Record<string, unknown>, keys: 
   });
 };
 
-// The mode of each family of a selection: a family without a mode of its own overwrites
-export const configPresetImportModes = (selections: { type: string; mode?: ConfigImportMode | null }[]) => {
-  return new Map(selections.flatMap(({ type, mode }) => (mode ? [[type, mode] as const] : [])));
+// The mode of each item of a selection, by `<type>/<bundle id>`: an item that has none overwrites
+export const configPresetImportModes = (selections: { type: string; item_modes?: { key: string; mode: ConfigImportMode }[] | null }[]) => {
+  return new Map(selections.flatMap(({ type, item_modes: itemModes }) => (itemModes ?? []).map(({ key, mode }) => [configPresetPlanKey(type, key), mode] as const)));
 };
 
-export const configPresetImportMode = (modes: Map<string, ConfigImportMode>, type: string) => modes.get(type) ?? CONFIG_PRESET_DEFAULT_IMPORT_MODE;
+export const configPresetImportMode = (modes: Map<string, ConfigImportMode>, type: string, id: string) => {
+  return modes.get(configPresetPlanKey(type, id)) ?? CONFIG_PRESET_DEFAULT_IMPORT_MODE;
+};
 
 // The upload, the preview and the import are BYPASS only and refused in a draft context
 export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUser) => {

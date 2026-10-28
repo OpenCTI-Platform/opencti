@@ -17812,6 +17812,7 @@ type ConfigPresetImportItem {
   translatable: Boolean!
   isDefault: Boolean!
   exists: Boolean!
+  conflict: Boolean!
   fields: [ConfigPresetImportField!]!
   dependsOn: [ConfigPresetItemReference!]!
 }
@@ -17888,7 +17889,12 @@ type ConfigPresetImportSessionSelection {
   type: ID!
   items: [ID!]
   excluded_items: [ID!]
-  mode: ConfigImportMode
+  item_modes: [ConfigPresetItemMode!]
+}
+
+type ConfigPresetItemMode {
+  key: ID!
+  mode: ConfigImportMode!
 }
 
 type ConfigPresetImportSession {
@@ -17928,5 +17934,10 @@ input ConfigPresetSelectionInput {
   type: ID!
   items: [ID!]
   excluded_items: [ID!]
-  mode: ConfigImportMode
+  item_modes: [ConfigPresetItemModeInput!]
+}
+
+input ConfigPresetItemModeInput {
+  key: ID!
+  mode: ConfigImportMode!
 }

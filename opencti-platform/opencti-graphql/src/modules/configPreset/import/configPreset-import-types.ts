@@ -35,6 +35,8 @@ export interface ConfigPresetComputedItem {
   translatable: boolean;
   // Whether the item already exists on the platform
   exists: boolean;
+  // Whether the item conflicts with one of the platform (it exists, or another one has its name): the user chooses what to do with it
+  conflict: boolean;
   fields: ConfigPresetImportField[];
 }
 

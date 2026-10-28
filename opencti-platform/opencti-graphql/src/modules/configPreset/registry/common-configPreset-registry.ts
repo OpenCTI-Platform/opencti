@@ -48,7 +48,7 @@ export const toComputedItem = (
   label: Pick<ConfigPresetComputedItem, 'label' | 'translatable'>,
   result: ConfigImportResult,
   fields: ConfigPresetImportField[],
-): ConfigPresetComputedItem => ({ ...label, exists: result.exists, status: result.status, reason: result.reason, fields });
+): ConfigPresetComputedItem => ({ ...label, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, fields });
 
 // What an importer returns once a module has written an item: a failure is an error that makes the item failed,
 // and a status other than the computed one is reported

@@ -100,31 +100,32 @@ describe('Branding import (compute)', () => {
   it('creates a custom theme that is absent with a free name, and records it in the plan', async () => {
     const plan = { created: new Set<string>() };
     const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan);
-    expect(result).toMatchObject({ status: 'created', exists: false, label: 'Import test theme' });
+    expect(result).toMatchObject({ status: 'created', exists: false, conflict: false, label: 'Import test theme' });
     expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
   });
 
   it('overwrites a custom theme whose standard id exists, never reports it created', async () => {
     vi.mocked(findById).mockResolvedValue({ id: 'internal', built_in: false } as never);
-    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'overwritten', exists: true });
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'overwritten', exists: true, conflict: true });
   });
 
   it('fails when the name is already used by another theme', async () => {
     vi.mocked(checkExistingTheme).mockResolvedValue(true);
     const plan = { created: new Set<string>() };
-    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan)).toMatchObject({ status: 'failed', reason: 'Theme name already exists' });
+    // The theme is not on the platform, but its name is: a conflict that a copy gets out of
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan)).toMatchObject({ status: 'failed', exists: false, conflict: true, reason: 'Theme name already exists' });
     expect(plan.created.size).toBe(0);
   });
 
   it('fails when an existing theme is renamed to a name used by another theme, as the import would', async () => {
     vi.mocked(findById).mockResolvedValue({ id: 'internal', built_in: false } as never);
     vi.mocked(checkExistingTheme).mockResolvedValue(true);
-    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'failed', exists: true, reason: 'Theme name already exists' });
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'failed', exists: true, conflict: true, reason: 'Theme name already exists' });
     expect(checkExistingTheme).toHaveBeenCalledWith(context, user, 'Import test theme', 'internal');
   });
 
   it('fails on a standard id that differs from the id or is badly formed', async () => {
-    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ standard_id: 'theme--other' }))).toMatchObject({ status: 'failed' });
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ standard_id: 'theme--other' }))).toMatchObject({ status: 'failed', conflict: false });
     expect(await compute('branding', 'theme--NOT-LOWER', themeConfiguration({ standard_id: 'theme--NOT-LOWER' }))).toMatchObject({ status: 'failed' });
   });
 
@@ -180,14 +181,14 @@ describe('Branding import (compute)', () => {
     vi.mocked(checkExistingTheme).mockImplementation(async (_context, _user, name) => name === 'Import test theme');
     const plan = { created: new Set<string>() };
     const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
-    expect(result).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Import test theme (1)"' });
+    expect(result).toMatchObject({ status: 'created', exists: true, conflict: true, reason: 'Added as "Import test theme (1)"' });
     expect(plan.created.size).toBe(0);
   });
 
   it('copies a theme that is new as it is, and it is the theme the items depend on', async () => {
     const plan = { created: new Set<string>() };
     const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
-    expect(result).toMatchObject({ status: 'created', exists: false });
+    expect(result).toMatchObject({ status: 'created', exists: false, conflict: false });
     expect(result.reason).toBeUndefined();
     expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
   });
