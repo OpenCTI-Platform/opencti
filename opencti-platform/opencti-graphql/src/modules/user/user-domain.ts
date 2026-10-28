@@ -1605,6 +1605,28 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(() => userId);
 };
 
+// Organization admins can only manage groups grantable by, and organizations of, their administrated organizations
+const checkOrgaAdminCanManageUserRelation = (user: AuthUser, relationshipType: string, toId: string | null | undefined) => {
+  if (!isOnlyOrgaAdmin(user)) {
+    return;
+  }
+  if (!toId) {
+    throw ForbiddenAccess();
+  }
+  if (relationshipType === RELATION_MEMBER_OF) {
+    const myGrantableGroups = user.administrated_organizations.flatMap((orga) => orga.grantable_groups ?? []);
+    if (!myGrantableGroups.includes(toId)) {
+      throw ForbiddenAccess();
+    }
+  } else if (relationshipType === RELATION_PARTICIPATE_TO) {
+    if (!isUserAdministratingOrga(user, toId)) {
+      throw ForbiddenAccess();
+    }
+  } else {
+    throw ForbiddenAccess();
+  }
+};
+
 export const userAddRelation = async (context: AuthContext, user: AuthUser, userId: string, input: InternalRelationshipAddInput) => {
   // check the user is accessible
   const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
@@ -1613,17 +1635,7 @@ export const userAddRelation = async (context: AuthContext, user: AuthUser, user
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
-  // Check in case organization admins adds non-grantable group a user
-  const myGrantableGroups: Array<InternalRelationshipAddInput['toId']> = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
-  const myAdministratedOrganizationsIds: Array<InternalRelationshipAddInput['toId']> = user.administrated_organizations.map((orga) => orga.id);
-  if (isOnlyOrgaAdmin(user)) {
-    if (input.relationship_type === RELATION_MEMBER_OF && !myGrantableGroups.includes(input.toId)) {
-      throw ForbiddenAccess();
-    }
-    if (input.relationship_type === RELATION_PARTICIPATE_TO && !myAdministratedOrganizationsIds.includes(input.toId)) {
-      throw ForbiddenAccess();
-    }
-  }
+  checkOrgaAdminCanManageUserRelation(user, input.relationship_type, input.toId);
   const finalInput = R.assoc('fromId', userId, input);
   const relationData = await createRelation(context, user, finalInput);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
@@ -1663,6 +1675,7 @@ export const userIdDeleteRelation = async (context: AuthContext, user: AuthUser,
   if (relationshipType === RELATION_PARTICIPATE_TO) {
     return userDeleteOrganizationRelation(context, user, userId, toId);
   }
+  checkOrgaAdminCanManageUserRelation(user, relationshipType, toId);
   // check the user is accessible
   const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
   return userDeleteRelation(context, user, userData, toId, relationshipType);
