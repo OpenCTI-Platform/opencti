@@ -42,7 +42,7 @@ afterAll(async () => {
 
 const get = async (path: string, headers: Record<string, string> = {}) => {
   const response = await fetch(`${origin}${path}`, { headers });
-  return response.json();
+  return await response.json() as Record<string, unknown>;
 };
 
 describe('request log context', () => {
