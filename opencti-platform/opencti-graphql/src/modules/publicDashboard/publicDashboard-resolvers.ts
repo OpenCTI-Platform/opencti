@@ -21,6 +21,7 @@ import {
 } from './publicDashboard-domain';
 import { findById as findWorkspaceById } from '../workspace/workspace-domain';
 import { loadCreator } from '../../database/members';
+import { getServedPublicManifest } from './publicDashboard-utils';
 
 const publicDashboardResolvers: Resolvers = {
   Query: {
@@ -40,6 +41,7 @@ const publicDashboardResolvers: Resolvers = {
     publicStixRelationships: (_, args, context) => publicStixRelationships(context, args),
   },
   PublicDashboard: {
+    public_manifest: (publicDashboard) => getServedPublicManifest(publicDashboard.public_manifest),
     allowed_markings: (publicDashboard, _, context) => getAllowedMarkings(context, context.user, publicDashboard),
     owner: (publicDashboard, _, context) => loadCreator(context, context.user, publicDashboard.user_id),
     dashboard: (publicDashboard, _, context) => findWorkspaceById(context, context.user, publicDashboard.dashboard_id),
