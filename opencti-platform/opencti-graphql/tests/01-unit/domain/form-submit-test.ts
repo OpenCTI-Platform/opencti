@@ -815,6 +815,15 @@ describe('formSubmit - access to the destination', () => {
     expect(vi.mocked(workDomain.createWork).mock.calls[0][5]).toMatchObject({ formSubmission: { applicant_id: 'user-1', form_id: 'form-1', draft_id: null } });
   });
 
+  it('should import a main submission made inside a draft into that draft, with the access of the draft scope', async () => {
+    const draftOnly = { ...mockUser, capabilities: [], capabilitiesInDraft: caps('KNOWLEDGE_KNFORMINTAKE') };
+    const inDraft: any = { ...mockContext, draft_context: 'draft-current' };
+    await expect(formSubmit(inDraft, draftOnly, { formId: 'form-1', values }, false)).resolves.toMatchObject({ success: true });
+    expect(draftWorkspaceDomain.addDraftWorkspace).not.toHaveBeenCalled();
+    expect(vi.mocked(workDomain.createWork).mock.calls[0][5]).toMatchObject({ formSubmission: { applicant_id: 'user-1', form_id: 'form-1', draft_id: 'draft-current' } });
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: 'draft-current' });
+  });
+
   it('should keep letting a user with only Import knowledge in the draft scope submit into a draft', async () => {
     const importInDraft = { ...mockUser, capabilities: [], capabilitiesInDraft: caps('KNOWLEDGE_KNASKIMPORT') };
     await expect(submit(importInDraft, true)).resolves.toMatchObject({ success: true });

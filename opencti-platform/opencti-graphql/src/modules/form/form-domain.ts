@@ -16,7 +16,7 @@ import { createWork, updateProcessedTime } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, type DraftWorkspaceAddInput, FilterMode, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
-import { bypassDraftContext } from '../../utils/draftContext';
+import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addDraftWorkspace, deleteDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import pjson from '../../../package.json';
@@ -533,7 +533,9 @@ export const planSubmission = async (
   validateFormSubmission(schema, values, isBypass);
   validatePendingPayload(values, input.files?.length ?? 0);
   if (!isBypass) {
-    checkFormSubmissionAccess(user, finalIsDraft, { pendingLabels: countPendingLabels(values), pendingKillChainPhases: countPendingKillChainPhases(values) });
+    // A submission that creates no draft is imported in the current draft of the applicant, if any (see commitSubmission)
+    const toDraft = finalIsDraft || getDraftContext(context, user) !== undefined;
+    checkFormSubmissionAccess(user, toDraft, { pendingLabels: countPendingLabels(values), pendingKillChainPhases: countPendingKillChainPhases(values) });
   }
   validatePendingRoots(schema, values);
   const uploads = await readUploads(input.files, getPendingUploadCopies(values));
@@ -621,15 +623,17 @@ export const commitSubmission = async (
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
 
     // The draft and the work are created before the bundle is sent: if one step fails, the ones already done must not stay behind
-    let draftId: string | null = null;
+    let createdDraftId: string | null = null;
     let workId: string | undefined;
     try {
       if (finalIsDraft && draftPlan) {
         const draft = await addDraftWorkspace(context, SYSTEM_USER, draftPlan.draftInput);
-        draftId = draft.id;
+        createdDraftId = draft.id;
         // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
         await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
       }
+      // A submission that creates no draft is imported where it was made: in the current draft of the applicant, or in main
+      const draftId = createdDraftId ?? getDraftContext(context, user) ?? null;
       // The work is bound to the applicant, the form and the draft: the import is only allowed to write for this submission
       const formSubmission = { applicant_id: user.id, form_id: formId, draft_id: draftId };
       const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now(), formSubmission });
@@ -639,14 +643,14 @@ export const commitSubmission = async (
         applicant_id: user.id,
         content,
         work_id: work.id,
-        // An empty id (not null) makes the worker send an empty draft header: a missing header would make the API
-        // fall back to the current draft of the applicant and the import would no longer match its work
+        // An empty id (not null) makes the worker send an empty draft header: a missing header would make the API fall back
+        // to the draft the applicant is in at import time, which may no longer be the one of the submission
         draft_id: draftId ?? '',
         update: true,
         no_split: true,
       });
     } catch (error) {
-      await rollbackFailedSubmission(context, draftId, workId);
+      await rollbackFailedSubmission(context, createdDraftId, workId);
       throw error;
     }
 
@@ -657,7 +661,7 @@ export const commitSubmission = async (
       success: true,
       bundleId: bundle.id,
       message: 'Form submitted successfully and sent for processing',
-      entityId: finalIsDraft ? draftId ?? undefined : mainEntityStixId,
+      entityId: finalIsDraft ? createdDraftId ?? undefined : mainEntityStixId,
     };
   } catch (error) {
     logApp.error('[FORM] Error sending bundle to connector queue', { error });
