@@ -30,6 +30,11 @@ const SESSION_QUERY = gql`
     configPresetImportSession { status file_id outcome report_id counts { created overwritten skipped failed } results { key status } total }
   }
 `;
+const RESULTS_QUERY = gql`
+  query ConfigPresetApplyResults {
+    configPresetImportSession { results { type key label translatable type_label type_index group { key label } } }
+  }
+`;
 const SETTINGS_QUERY = gql`
   query ConfigPresetApplySettings {
     settings {
@@ -126,6 +131,17 @@ describe('Config preset import: apply', () => {
 
     const real = await importData(fileId, ALL);
     expect(real.results).toEqual(dry.results);
+  });
+
+  it('keeps the name of each item in the results of the session, with the type and the group that group them', async () => {
+    await importData(await upload(validBundleFiles()), ALL);
+    const results = (await queryAsAdminWithSuccess({ query: RESULTS_QUERY })).data?.configPresetImportSession.results;
+    const group = { key: 'platformSettings', label: 'Platform settings' };
+    expect(results).toEqual([
+      { type: 'branding', key: CUSTOM_THEME_ID, label: 'Import test theme', translatable: false, type_label: 'Branding', type_index: 1, group },
+      { type: 'platform', key: 'platform', label: 'Platform configuration', translatable: true, type_label: 'Platform configuration', type_index: 0, group },
+      { type: 'messages', key: 'banner', label: 'Banner', translatable: true, type_label: 'Messages', type_index: 2, group },
+    ]);
   });
 
   it('imports a blank platform: the theme is created with the bundle standard id and becomes the default', async () => {

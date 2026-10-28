@@ -17876,6 +17876,11 @@ type ConfigPresetImportResult {
   key: String!
   status: ConfigPresetImportResultStatus!
   reason: String
+  label: String!
+  translatable: Boolean!
+  type_label: String!
+  type_index: Int!
+  group: ConfigPresetExportableGroup!
 }
 
 type ConfigPresetImportCounts {

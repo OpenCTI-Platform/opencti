@@ -136,6 +136,13 @@ type ConfigPresetImportResult {
     key: String!
     status: ConfigPresetImportResultStatus!
     reason: String
+    # The name of the item, and whether the UI translates it; the key for a result stored before the names were kept.
+    label: String!
+    translatable: Boolean!
+    # The type of the item, to group the results like the selection: its label, its place among the types, and its group.
+    type_label: String!
+    type_index: Int!
+    group: ConfigPresetExportableGroup!
 }
 
 type ConfigPresetImportCounts {

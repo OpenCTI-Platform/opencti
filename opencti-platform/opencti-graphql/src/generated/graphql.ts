@@ -4675,10 +4675,15 @@ export type ConfigPresetImportPreview = {
 
 export type ConfigPresetImportResult = {
   __typename?: 'ConfigPresetImportResult';
+  group: ConfigPresetExportableGroup;
   key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
   reason?: Maybe<Scalars['String']['output']>;
   status: ConfigPresetImportResultStatus;
+  translatable: Scalars['Boolean']['output'];
   type: Scalars['String']['output'];
+  type_index: Scalars['Int']['output'];
+  type_label: Scalars['String']['output'];
 };
 
 export enum ConfigPresetImportResultStatus {
@@ -44946,10 +44951,15 @@ export type ConfigPresetImportPreviewResolvers<ContextType = any, ParentType ext
 }>;
 
 export type ConfigPresetImportResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportResult'] = ResolversParentTypes['ConfigPresetImportResult']> = ResolversObject<{
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['ConfigPresetImportResultStatus'], ParentType, ContextType>;
+  translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type_index?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  type_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type ConfigPresetImportRunningResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportRunning'] = ResolversParentTypes['ConfigPresetImportRunning']> = ResolversObject<{

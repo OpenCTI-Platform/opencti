@@ -277,3 +277,29 @@ describe('Config preset export mutation', () => {
     expect(configPresetExport).not.toHaveBeenCalled();
   });
 });
+
+describe('Config preset import result fields', () => {
+  const fields = configPresetResolvers.ConfigPresetImportResult as Record<string, (parent: unknown) => unknown>;
+  const result = (overrides: Record<string, unknown> = {}) => ({ type: 'branding', key: 'theme--1', status: 'CREATED', reason: null, ...overrides });
+
+  it('names a result by its label, and by its key when it was stored before the names were kept', () => {
+    expect(fields.label(result({ label: 'SOC night' }))).toBe('SOC night');
+    expect(fields.label(result())).toBe('theme--1');
+    expect(fields.translatable(result({ translatable: true }))).toBe(true);
+    expect(fields.translatable(result())).toBe(false);
+  });
+
+  it('gives the type and the group of a result from the registry, and the place of the type among the types', () => {
+    expect(fields.type_label(result())).toBe('Branding');
+    expect(fields.group(result())).toEqual({ key: 'platformSettings', label: 'Platform settings' });
+    expect(fields.group(result({ type: 'hiddenEntityTypes' }))).toEqual({ key: 'dataModel', label: 'Data model' });
+    const places = ['platform', 'branding', 'messages', 'hiddenEntityTypes'].map((type) => fields.type_index(result({ type })));
+    expect(places).toEqual([0, 1, 2, 3]);
+  });
+
+  it('does not fail on a type the registry does not know', () => {
+    expect(fields.type_label(result({ type: 'gone' }))).toBe('gone');
+    expect(fields.group(result({ type: 'gone' }))).toEqual({ key: 'gone', label: 'gone' });
+    expect(fields.type_index(result({ type: 'gone' }))).toBe(0);
+  });
+});

@@ -45,6 +45,20 @@ const preview = {
     previewType('messages', 'Messages', [previewItem('banner', 'Banner')]),
   ],
 };
+// What the session returns for a processed item: its name, the type and the group of the type
+const PROCESSED = {
+  platform: { label: 'Platform configuration', translatable: true, type_label: 'Platform configuration', type_index: 0 },
+  branding: { label: 'Import theme', translatable: false, type_label: 'Branding', type_index: 1 },
+  messages: { label: 'Banner', translatable: true, type_label: 'Messages', type_index: 2 },
+};
+const processed = (type: keyof typeof PROCESSED, key: string, status: string, reason: string | null = null) => ({
+  type,
+  key,
+  status,
+  reason,
+  ...PROCESSED[type],
+  group: platformSettings,
+});
 // Two themes that are on the platform already, so that the choice can be made for the type
 const previewWithTwoConflicts = {
   ...preview,
@@ -259,7 +273,7 @@ describe('ConfigPresetImportWizard', () => {
         total: 2,
         report_id: 'config_preset/history/id/import-report.json',
         counts: { created: 0, overwritten: 1, skipped: 0, failed: 1 },
-        results: [{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }, { type: 'branding', key: 'theme--1', status: 'FAILED', reason: 'Theme name already exists' }],
+        results: [processed('messages', 'banner', 'OVERWRITTEN'), processed('branding', 'theme--1', 'FAILED', 'Theme name already exists')],
       });
       await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: finished }) });
       expect(await screen.findByText('Import finished')).toBeInTheDocument();
@@ -286,11 +300,109 @@ describe('ConfigPresetImportWizard', () => {
       expect(rendered.relayEnv.getStore().getSource().get('entity-setting-1')).toMatchObject({ platform_hidden_type: true });
     });
 
+    describe('result groups', () => {
+      const finished = (results: unknown[]) => session({
+        status: 'FINISHED',
+        outcome: 'COMPLETED',
+        total: results.length,
+        counts: { created: 0, overwritten: results.length, skipped: 0, failed: 0 },
+        results,
+      });
+      // The items come in the order they were processed: the theme the platform depends on first
+      const allImported = [processed('branding', 'theme--1', 'CREATED'), processed('platform', 'platform', 'OVERWRITTEN'), processed('messages', 'banner', 'OVERWRITTEN')];
+      const oneFailed = [processed('branding', 'theme--1', 'FAILED', 'Theme name already exists'), processed('platform', 'platform', 'OVERWRITTEN'), processed('messages', 'banner', 'OVERWRITTEN')];
+
+      it('keeps the groups closed when every item was imported, with what was imported out of all in the headers', async () => {
+        await renderWizard(finished(allImported));
+        expect(screen.getByText('Platform settings (3/3)')).toBeInTheDocument();
+        expect(screen.queryByText('Branding (1/1)')).not.toBeInTheDocument();
+        expect(screen.queryByText('Created')).not.toBeInTheDocument();
+      });
+
+      it('shows the types in the order of the selection, closed, and the names of the items once a type is opened', async () => {
+        const { user } = await renderWizard(finished(allImported));
+        await user.click(screen.getByRole('button', { name: 'Expand' }));
+        const headers = ['Platform configuration (1/1)', 'Branding (1/1)', 'Messages (1/1)'].map((name) => screen.getByText(name));
+        headers.slice(1).forEach((header, index) => expect(headers[index].compareDocumentPosition(header) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
+        expect(screen.queryByText('Import theme')).not.toBeInTheDocument();
+        await user.click(screen.getAllByRole('button', { name: 'Expand' })[1]);
+        expect(screen.getByText('Import theme')).toBeInTheDocument();
+        expect(screen.getByText('Created')).toBeInTheDocument();
+        expect(screen.queryByText('theme--1')).not.toBeInTheDocument();
+      });
+
+      it('opens the group and the type that have a failed item, and only them', async () => {
+        await renderWizard(finished(oneFailed));
+        expect(screen.getByText('Platform settings (2/3)')).toBeInTheDocument();
+        expect(screen.getByText('Branding (0/1)')).toBeInTheDocument();
+        expect(screen.getByText('Import theme')).toBeInTheDocument();
+        expect(screen.getByText('Failed')).toBeInTheDocument();
+        expect(screen.getByText('Theme name already exists')).toBeInTheDocument();
+        // What went well in the same group stays closed
+        expect(screen.getByText('Platform configuration (1/1)')).toBeInTheDocument();
+        expect(screen.getByText('Messages (1/1)')).toBeInTheDocument();
+        expect(screen.queryByText('Banner')).not.toBeInTheDocument();
+      });
+
+      describe('ticks', () => {
+        const ticks = () => screen.queryAllByTestId('config-preset-result-tick');
+
+        it('lead the header of a group and of a type that went well, and each item that was imported', async () => {
+          const { user } = await renderWizard(finished(allImported));
+          // The group only: its types and its items are closed
+          expect(ticks()).toHaveLength(1);
+          await user.click(screen.getByRole('button', { name: 'Expand' }));
+          expect(ticks()).toHaveLength(4);
+          await user.click(screen.getAllByRole('button', { name: 'Expand' })[1]);
+          expect(ticks()).toHaveLength(5);
+          expect(within(screen.getByText('Import theme').parentElement!).getByTestId('config-preset-result-tick')).toBeInTheDocument();
+        });
+
+        it('are not shown for what failed, nor on the header that holds it, but are for the types that went well', async () => {
+          await renderWizard(finished(oneFailed));
+          // The group has a failure, the failed item has none: the types of the platform and of the messages went well
+          expect(ticks()).toHaveLength(2);
+          expect(within(screen.getByText('Import theme').parentElement!).queryByTestId('config-preset-result-tick')).not.toBeInTheDocument();
+        });
+
+        it('are not shown for what was skipped, and a header that only holds skipped items has none', async () => {
+          const { user } = await renderWizard(finished([processed('platform', 'platform', 'SKIPPED', 'Nothing to import')]));
+          expect(ticks()).toHaveLength(0);
+          await user.click(screen.getByRole('button', { name: 'Expand' }));
+          await user.click(screen.getByRole('button', { name: 'Expand' }));
+          expect(screen.getByText('Skipped')).toBeInTheDocument();
+          expect(ticks()).toHaveLength(0);
+        });
+      });
+
+      it('lets a type that failed be closed, and a type that went well be opened', async () => {
+        const { user } = await renderWizard(finished(oneFailed));
+        await user.click(screen.getAllByRole('button', { name: 'Collapse' })[1]);
+        expect(screen.queryByText('Theme name already exists')).not.toBeInTheDocument();
+        await user.click(screen.getAllByRole('button', { name: 'Expand' }).at(-1)!);
+        expect(screen.getByText('Banner')).toBeInTheDocument();
+      });
+
+      it('does not open a group for an item that was skipped', async () => {
+        await renderWizard(finished([processed('platform', 'platform', 'SKIPPED', 'Nothing to import'), ...allImported.slice(2)]));
+        expect(screen.getByText('Platform settings (2/2)')).toBeInTheDocument();
+        expect(screen.queryByText('Nothing to import')).not.toBeInTheDocument();
+      });
+
+      it('groups the results of an interrupted import the same way', async () => {
+        await renderWizard(session({ status: 'INTERRUPTED', total: 3, results: oneFailed.slice(0, 2) }));
+        expect(screen.getByText('Platform settings (1/2)')).toBeInTheDocument();
+        expect(screen.getByText('Theme name already exists')).toBeInTheDocument();
+      });
+    });
+
     it('resumes on the progress screen when the session is applying, and polls every five seconds until it changes', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
-      const applying = session({ status: 'APPLYING', total: 4, results: [{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }] });
+      const applying = session({ status: 'APPLYING', total: 4, results: [processed('messages', 'banner', 'OVERWRITTEN')] });
       const rendered = await renderWizard(applying);
       expect(screen.getByText('1 of 4 items processed')).toBeInTheDocument();
+      // The progress names the items, it does not show their keys
+      expect(screen.getByText('Banner')).toBeInTheDocument();
       await act(async () => {
         vi.advanceTimersByTime(5000);
       });
@@ -304,8 +416,8 @@ describe('ConfigPresetImportWizard', () => {
     });
 
     it('shows the result of a finished import without report link when there is no report', async () => {
-      await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED', counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 }, results: [{ type: 'messages', key: 'banner', status: 'CREATED', reason: null }] }));
-      expect(screen.getByText('Created')).toBeInTheDocument();
+      await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED', counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 }, results: [processed('messages', 'banner', 'CREATED')] }));
+      expect(screen.getByText('Platform settings (1/1)')).toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Download report' })).not.toBeInTheDocument();
     });
 
@@ -411,10 +523,12 @@ describe('ConfigPresetImportWizard', () => {
       const rendered = await renderWizard(session({
         status: 'INTERRUPTED',
         total: 3,
-        results: [{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }],
+        results: [processed('messages', 'banner', 'OVERWRITTEN')],
       }));
       expect(screen.getByText('The import was interrupted')).toBeInTheDocument();
-      expect(screen.getByText('Overwritten')).toBeInTheDocument();
+      // Grouped like the result, closed as nothing failed
+      expect(screen.getByText('Platform settings (1/1)')).toBeInTheDocument();
+      expect(screen.queryByText('Overwritten')).not.toBeInTheDocument();
       await rendered.user.click(screen.getByRole('button', { name: 'Back to selection' }));
       expect(operationNames(rendered)).toContain('ConfigPresetImportWizardBackMutation');
       await resolve(rendered, 'ConfigPresetImportWizardBackMutation', {});
@@ -463,7 +577,7 @@ describe('ConfigPresetImportWizard', () => {
         status: 'FINISHED',
         outcome: 'STOPPED',
         counts: { created: 0, overwritten: 1, skipped: 0, failed: 1 },
-        results: [{ type: 'platform', key: 'platform', status: 'OVERWRITTEN', reason: null }, { type: 'messages', key: 'banner', status: 'FAILED', reason: 'Import stopped: lock lost' }],
+        results: [processed('platform', 'platform', 'OVERWRITTEN'), processed('messages', 'banner', 'FAILED', 'Import stopped: lock lost')],
       }));
       expect(screen.getByText('Import stopped: lock lost')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();

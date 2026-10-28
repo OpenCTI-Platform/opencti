@@ -40,6 +40,14 @@ const configPresetImportWizardQuery = graphql`
         key
         status
         reason
+        label
+        translatable
+        type_label
+        type_index
+        group {
+          key
+          label
+        }
       }
       outcome
       counts {

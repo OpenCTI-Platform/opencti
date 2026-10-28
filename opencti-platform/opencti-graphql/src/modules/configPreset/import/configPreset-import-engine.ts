@@ -33,11 +33,19 @@ export interface ConfigPresetImportOutput {
   entity_settings: unknown[] | null;
 }
 
-const toResult = (item: ConfigPresetBundleItem, status: ConfigImportStatus, reason?: string): ConfigPresetImportItemResult => ({
+// naming: the label of the item as its importer computed it; an item that was not computed (a stopped import) is named by its key
+const toResult = (
+  item: ConfigPresetBundleItem,
+  status: ConfigImportStatus,
+  reason?: string,
+  naming?: { label: string; translatable: boolean },
+): ConfigPresetImportItemResult => ({
   type: item.type,
   key: item.id,
   status: status.toUpperCase() as ConfigPresetImportResultStatus,
   reason: reason ?? null,
+  label: naming?.label ?? item.id,
+  translatable: naming?.translatable ?? false,
 });
 
 const countResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportCounts => {
@@ -81,7 +89,7 @@ const resolveImportItems = (bundle: ConfigPresetBundle, selections: ConfigPreset
 };
 
 const toOutput = (results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[]) => {
-  return results.map(({ item, computed }) => toResult(item, computed.status, computed.reason));
+  return results.map(({ item, computed }) => toResult(item, computed.status, computed.reason, computed));
 };
 
 // Reads only: what the import would do, nothing is written, no session change, no audit event
@@ -135,7 +143,6 @@ const realImport = async (
   const plan: ConfigPresetImportPlan = { created: new Set() };
   const modes = configPresetImportModes(selections);
   const results: ConfigPresetImportItemResult[] = [];
-  const labels = new Map<string, string>();
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
   let stopReason: string | null = null;
   try {
@@ -154,18 +161,17 @@ const realImport = async (
         const importer = CONFIG_PRESET_FAMILIES.find((family) => family.id === item.type)!.importer!;
         const mode = configPresetImportMode(modes, item.type, item.id);
         const computed = await importer.compute(importContext, runUser, item, plan, mode);
-        labels.set(configPresetPlanKey(item.type, item.id), computed.label);
-        let result = toResult(item, computed.status, computed.reason);
+        let result = toResult(item, computed.status, computed.reason, computed);
         if (computed.status !== 'failed' && computed.status !== 'skipped') {
           try {
             const applied = await importer.apply(importContext, runUser, item, computed, mode);
             if (applied) {
-              result = toResult(item, applied, computed.reason);
+              result = toResult(item, applied, computed.reason, computed);
             }
           } catch (err) {
             // The theme was not created: the items that depend on it fail with it
             plan.created.delete(configPresetPlanKey(item.type, item.id));
-            result = toResult(item, 'failed', err instanceof Error ? err.message : String(err));
+            result = toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
           }
         }
         results.push(result);
@@ -211,7 +217,7 @@ const realImport = async (
     started_at: startedAt,
     ended_at: new Date().toISOString(),
     bundle: bundle.metadata,
-    items: results.map((result) => ({ ...result, label: labels.get(configPresetPlanKey(result.type, result.key)) ?? result.key })),
+    items: results.map(({ translatable: _translatable, ...result }) => ({ ...result, label: result.label ?? result.key })),
     outcome: stopReason ? 'stopped' : 'completed',
   });
   // The session leaves applying before the lock is released, otherwise its owner would read it as interrupted while the engine ends.

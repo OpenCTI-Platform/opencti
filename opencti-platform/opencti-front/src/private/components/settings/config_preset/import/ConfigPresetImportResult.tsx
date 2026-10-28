@@ -6,6 +6,7 @@ import Button from '@common/button/Button';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { APP_BASE_PATH } from '../../../../../relay/environment';
+import ConfigPresetResultGroups, { useResultLabel } from './ConfigPresetResultGroups';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
@@ -17,6 +18,7 @@ interface ConfigPresetImportProgressProps {
 export const ConfigPresetImportProgress: FunctionComponent<ConfigPresetImportProgressProps> = ({ session }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const resultLabel = useResultLabel();
   const results = session?.results ?? [];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
@@ -25,7 +27,7 @@ export const ConfigPresetImportProgress: FunctionComponent<ConfigPresetImportPro
         <Text variant="content-base">{t_i18n('{processed} of {total} items processed', { values: { processed: results.length, total: session.total } })}</Text>
       )}
       {results.map((result) => (
-        <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={result.key} status={result.status} reason={result.reason} />
+        <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={resultLabel(result)} status={result.status} reason={result.reason} />
       ))}
     </div>
   );
@@ -37,7 +39,7 @@ interface ConfigPresetImportResultProps {
   onClose: () => void;
 }
 
-// The result of the last import: one line per item, and the report to download
+// The result of the last import: the items grouped like the selection, and the report to download
 export const ConfigPresetImportResult: FunctionComponent<ConfigPresetImportResultProps> = ({ session, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -49,9 +51,7 @@ export const ConfigPresetImportResult: FunctionComponent<ConfigPresetImportResul
           {t_i18n('{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed', { values: session.counts })}
         </Text>
       )}
-      {session.results.map((result) => (
-        <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={result.key} status={result.status} reason={result.reason} />
-      ))}
+      <ConfigPresetResultGroups results={session.results} />
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: theme.spacing(1) }}>
         {session.report_id && (
           <Button

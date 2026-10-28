@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { CheckCircleOutlined } from '@mui/icons-material';
 import { Chip, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
@@ -12,6 +13,8 @@ interface ConfigPresetResultLineProps {
   status: ConfigPresetResultStatus | string;
   // The English sentence of the backend: translated when it is a known one, shown as is otherwise
   reason?: string | null;
+  // The item went well: a tick leads the line
+  isDone?: boolean;
 }
 
 const STATUS_LABELS: Record<ConfigPresetResultStatus, string> = {
@@ -60,12 +63,13 @@ const translateReason = (t_i18n: Translate, reason: string) => {
 };
 
 // The result of an item of an import: its status and the reason
-const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason }) => {
+const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason, isDone = false }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const known = status in STATUS_LABELS;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
+      {isDone && <CheckCircleOutlined aria-hidden data-testid="config-preset-result-tick" fontSize="small" style={{ color: theme.palette.success.main }} />}
       {label && <Text variant="content-base">{label}</Text>}
       <Chip
         label={known ? t_i18n(STATUS_LABELS[status as ConfigPresetResultStatus]) : status}
