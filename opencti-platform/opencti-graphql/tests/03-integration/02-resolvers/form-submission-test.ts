@@ -139,7 +139,24 @@ const FORM_SCHEMA = {
 };
 
 // Every id created by the tests, cleaned in afterAll whatever happens
+const KILL_CHAIN_PHASE_ADD_QUERY = gql`
+  mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) {
+    killChainPhaseAdd(input: $input) {
+      id
+      x_opencti_order
+    }
+  }
+`;
+const KILL_CHAIN_PHASE_DELETE_QUERY = gql`
+  mutation KillChainPhaseDelete($id: ID!) {
+    killChainPhaseEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
 const createdMalwareIds: string[] = [];
+const createdKillChainPhaseIds: string[] = [];
 const createdWorkIds: string[] = [];
 const createdDraftIds: string[] = [];
 const createdUserIds: string[] = [];
@@ -243,6 +260,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   for (const id of createdMalwareIds) await queryAsAdminWithSuccess({ query: MALWARE_DELETE_QUERY, variables: { id } }).catch(() => {});
+  for (const id of createdKillChainPhaseIds) await queryAsAdminWithSuccess({ query: KILL_CHAIN_PHASE_DELETE_QUERY, variables: { id } }).catch(() => {});
   for (const id of createdWorkIds) await deleteWork(testContext, ADMIN_USER, id).catch(() => {});
   for (const id of createdDraftIds) await queryAsAdminWithSuccess({ query: DRAFT_DELETE_QUERY, variables: { id } }).catch(() => {});
   if (formId) await queryAsAdminWithSuccess({ query: FORM_DELETE_QUERY, variables: { id: formId } }).catch(() => {});
@@ -304,6 +322,19 @@ describe('Form submission by a form-only user, imported by the worker on its beh
     expect(result.errors, JSON.stringify(result)).toBeUndefined();
     expect(result.data.malwareAdd.creators.map((creator: { id: string }) => creator.id)).toEqual([formOnlyUserId]);
     // the draft is deleted in afterAll, with what it holds
+  });
+
+  // The worker upserts the kill chain phases of the objects it imports: attaching an existing one needs no right to manage them
+  it('should let the worker attach an existing kill chain phase as the applicant, but not create one', async () => {
+    const phase = { kill_chain_name: 'form-intake-it', phase_name: 'existing', x_opencti_order: 1 };
+    const { data } = await queryAsAdminWithSuccess({ query: KILL_CHAIN_PHASE_ADD_QUERY, variables: { input: phase } });
+    createdKillChainPhaseIds.push(data.killChainPhaseAdd.id);
+    const worker = { workId: mainWork.workId, applicantId: formOnlyUserId };
+    const upsert = await queryInitPlatformAsTokenBearer(ADMIN_API_TOKEN, KILL_CHAIN_PHASE_ADD_QUERY, { input: { ...phase, x_opencti_order: 7, update: true } }, worker);
+    expect(upsert.errors, JSON.stringify(upsert)).toBeUndefined();
+    expect(upsert.data.killChainPhaseAdd).toEqual({ id: data.killChainPhaseAdd.id, x_opencti_order: 1 });
+    const create = await queryInitPlatformAsTokenBearer(ADMIN_API_TOKEN, KILL_CHAIN_PHASE_ADD_QUERY, { input: { ...phase, phase_name: 'new' } }, worker);
+    expect(create.errors?.[0].extensions?.code, JSON.stringify(create)).toBe(FORBIDDEN_ACCESS);
   });
 
   describe('forged attempts', () => {

@@ -755,22 +755,18 @@ describe('formSubmit - access to the destination', () => {
     expect(workDomain.createWork).not.toHaveBeenCalled();
   });
 
-  it('should require the kill chain phase right when an object created in the form carries a phase', async () => {
-    // the import upserts the phases of the objects it creates: refused up front instead of losing the objects
+  it('should let a user with only the form capability attach an existing kill chain phase to an object created in the form', async () => {
+    // attaching an existing phase needs no right to manage kill chain phases (see addKillChainPhase)
     mockStoreLoadById.mockResolvedValue({
       ...mockForm,
       form_schema: JSON.stringify({ fields: [], mainEntityType: 'Malware', mainEntityLookup: true }),
     });
-    const withPhase = JSON.stringify({ mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'M' }, refs: { killChainPhases: [{ existing: 'phase-1' }] } }] });
-    const submitWithPhase = (user: any) => formSubmit(mockContext, user, { formId: 'form-1', values: withPhase }, false);
-    await expect(submitWithPhase({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }))
-      .rejects.toThrow('You are not allowed to attach kill chain phases to the objects created in a form.');
-    expect(workDomain.createWork).not.toHaveBeenCalled();
     vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockReturnValue({ type: 'string' } as any);
     vi.spyOn(schemaRelationsRefDefinition, 'getRelationRef').mockReturnValue(null);
     vi.mocked(internalLoadById).mockResolvedValue({ internal_id: 'phase-1', standard_id: 'kill-chain-phase--1', entity_type: 'Kill-Chain-Phase', kill_chain_name: 'mitre', phase_name: 'execution' } as any);
-    const allowed = await submitWithPhase({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE', 'SETTINGS_SETKILLCHAINPHASES') });
-    expect(allowed.success).toBe(true);
+    const withPhase = JSON.stringify({ mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'M' }, refs: { killChainPhases: [{ existing: 'phase-1' }] } }] });
+    const result = await formSubmit(mockContext, { ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }, { formId: 'form-1', values: withPhase }, false);
+    expect(result.success).toBe(true);
   });
 
   it('should reject a malformed payload with its validation error before checking the access', async () => {

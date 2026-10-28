@@ -24,7 +24,6 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { validateFormSubmission } from './form-validation';
 import {
-  countPendingKillChainPhases,
   countPendingLabels,
   getPendingMainEntityAuthor,
   getPendingUploadCopies,
@@ -535,7 +534,7 @@ export const planSubmission = async (
   if (!isBypass) {
     // A submission that creates no draft is imported in the current draft of the applicant, if any (see commitSubmission)
     const toDraft = finalIsDraft || getDraftContext(context, user) !== undefined;
-    checkFormSubmissionAccess(user, toDraft, { pendingLabels: countPendingLabels(values), pendingKillChainPhases: countPendingKillChainPhases(values) });
+    checkFormSubmissionAccess(user, toDraft, { pendingLabels: countPendingLabels(values) });
   }
   validatePendingRoots(schema, values);
   const uploads = await readUploads(input.files, getPendingUploadCopies(values));
