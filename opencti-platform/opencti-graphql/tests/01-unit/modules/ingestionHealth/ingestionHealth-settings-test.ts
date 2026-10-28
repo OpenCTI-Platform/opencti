@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { testContext } from '../../../utils/testQuery';
 import { DEFAULT_HEALTH_NOTIFICATION_DELAY_MS } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
 import {
   MAX_HEALTH_NOTIFICATION_DELAY_MS,
@@ -23,6 +24,10 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => {
   isFeatureEnabledMock.mockImplementation(actual.isFeatureEnabled);
   return { ...actual, isFeatureEnabled: isFeatureEnabledMock };
 });
+
+// The license is read from the cached settings: enterprise edition unless a case overrides it
+const { getEntityFromCacheMock } = vi.hoisted(() => ({ getEntityFromCacheMock: vi.fn() }));
+vi.mock('../../../../src/database/cache', () => ({ getEntityFromCache: getEntityFromCacheMock }));
 
 const input = (value: unknown, object_path?: string) => ({ key: 'ingestion_health_settings', value: [value], ...(object_path ? { object_path } : {}) });
 
@@ -87,12 +92,22 @@ describe('toGraphqlIngestionHealthSettings', () => {
 });
 
 describe('validateIngestionHealthSettingsInput', () => {
-  afterEach(() => {
-    isFeatureEnabledMock.mockClear();
+  // Settings never configured: the current delay is the default one
+  const validate = (value: { object_path?: string; value: unknown[] }, currentSettings = {}) => {
+    return validateIngestionHealthSettingsInput(testContext, value, currentSettings);
+  };
+
+  beforeEach(() => {
+    getEntityFromCacheMock.mockResolvedValue({ valid_enterprise_edition: true });
   });
 
-  it.each([0, DEFAULT_HEALTH_NOTIFICATION_DELAY_MS, MAX_HEALTH_NOTIFICATION_DELAY_MS])('should accept a delay of %s ms', (delay) => {
-    expect(() => validateIngestionHealthSettingsInput(input({ notification_delay: delay }))).not.toThrow();
+  afterEach(() => {
+    isFeatureEnabledMock.mockClear();
+    getEntityFromCacheMock.mockReset();
+  });
+
+  it.each([0, DEFAULT_HEALTH_NOTIFICATION_DELAY_MS, MAX_HEALTH_NOTIFICATION_DELAY_MS])('should accept a delay of %s ms', async (delay) => {
+    await expect(validate(input({ notification_delay: delay }))).resolves.toBeUndefined();
   });
 
   it.each([
@@ -101,29 +116,29 @@ describe('validateIngestionHealthSettingsInput', () => {
     ['not an integer', 1.5],
     ['a string', '300000'],
     ['null', null],
-  ])('should reject a delay %s', (_, delay) => {
-    expect(() => validateIngestionHealthSettingsInput(input({ notification_delay: delay }))).toThrow('Invalid ingestion health notification delay');
+  ])('should reject a delay %s', async (_, delay) => {
+    await expect(validate(input({ notification_delay: delay }))).rejects.toThrow('Invalid ingestion health notification delay');
   });
 
-  it('should reject settings without delay', () => {
-    expect(() => validateIngestionHealthSettingsInput(input({}))).toThrow('Invalid ingestion health notification delay');
+  it('should reject settings without delay', async () => {
+    await expect(validate(input({}))).rejects.toThrow('Invalid ingestion health notification delay');
   });
 
   it.each([
     ['a number', 300000],
     ['an array', [{ notification_delay: 300000 }]],
     ['null', null],
-  ])('should reject a value that is %s instead of an object', (_, value) => {
-    expect(() => validateIngestionHealthSettingsInput(input(value))).toThrow('Ingestion health settings must be edited as a whole object');
+  ])('should reject a value that is %s instead of an object', async (_, value) => {
+    await expect(validate(input(value))).rejects.toThrow('Ingestion health settings must be edited as a whole object');
   });
 
-  it('should reject an empty value', () => {
-    expect(() => validateIngestionHealthSettingsInput({ value: [] })).toThrow('Ingestion health settings must be edited as a whole object');
+  it('should reject an empty value', async () => {
+    await expect(validate({ value: [] })).rejects.toThrow('Ingestion health settings must be edited as a whole object');
   });
 
-  it('should reject the edition of a single field: the object would not be validated as a whole', () => {
-    expect(() => validateIngestionHealthSettingsInput(input(300000, '/ingestion_health_settings/notification_delay')))
-      .toThrow('Ingestion health settings must be edited as a whole object');
+  it('should reject the edition of a single field: the object would not be validated as a whole', async () => {
+    await expect(validate(input(300000, '/ingestion_health_settings/notification_delay')))
+      .rejects.toThrow('Ingestion health settings must be edited as a whole object');
   });
 
   it.each([
@@ -131,8 +146,8 @@ describe('validateIngestionHealthSettingsInput', () => {
     ['empty', []],
     ['one check', [HEALTH_CHECK_HEARTBEAT_MISSING]],
     ['every check', [HEALTH_CHECK_USER_MISSING, HEALTH_CHECK_USER_MISSING_CAPABILITY, HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]],
-  ])('should accept disabled checks %s', (_, disabled) => {
-    expect(() => validateIngestionHealthSettingsInput(input({ notification_delay: 0, disabled_health_checks: disabled }))).not.toThrow();
+  ])('should accept disabled checks %s', async (_, disabled) => {
+    await expect(validate(input({ notification_delay: 0, disabled_health_checks: disabled }))).resolves.toBeUndefined();
   });
 
   it.each([
@@ -141,12 +156,37 @@ describe('validateIngestionHealthSettingsInput', () => {
     ['a code that is not a string', [42]],
     ['not a list', HEALTH_CHECK_USER_MISSING],
     ['null', null],
-  ])('should reject disabled checks with %s', (_, disabled) => {
-    expect(() => validateIngestionHealthSettingsInput(input({ notification_delay: 0, disabled_health_checks: disabled }))).toThrow('Invalid disabled health checks');
+  ])('should reject disabled checks with %s', async (_, disabled) => {
+    await expect(validate(input({ notification_delay: 0, disabled_health_checks: disabled }))).rejects.toThrow('Invalid disabled health checks');
   });
 
-  it('should reject a valid delay when the feature is disabled', () => {
+  it('should reject a valid delay when the feature is disabled', async () => {
     isFeatureEnabledMock.mockReturnValueOnce(false);
-    expect(() => validateIngestionHealthSettingsInput(input({ notification_delay: DEFAULT_HEALTH_NOTIFICATION_DELAY_MS }))).toThrow('Feature is disabled');
+    await expect(validate(input({ notification_delay: DEFAULT_HEALTH_NOTIFICATION_DELAY_MS }))).rejects.toThrow('Feature is disabled');
+  });
+
+  describe('in community edition', () => {
+    const configured = { ingestion_health_settings: { notification_delay: 60000 } };
+
+    beforeEach(() => {
+      getEntityFromCacheMock.mockResolvedValue({ valid_enterprise_edition: false });
+    });
+
+    it('should reject a change of the delay', async () => {
+      await expect(validate(input({ notification_delay: 60000 }))).rejects.toThrow('Enterprise edition is not enabled');
+      await expect(validate(input({ notification_delay: DEFAULT_HEALTH_NOTIFICATION_DELAY_MS }), configured)).rejects.toThrow('Enterprise edition is not enabled');
+    });
+
+    it('should accept the default delay on a platform never configured', async () => {
+      await expect(validate(input({ notification_delay: DEFAULT_HEALTH_NOTIFICATION_DELAY_MS }))).resolves.toBeUndefined();
+    });
+
+    it('should accept the current delay sent back with the checks: the checks stay editable', async () => {
+      await expect(validate(input({ notification_delay: 60000, disabled_health_checks: [HEALTH_CHECK_HEARTBEAT_MISSING] }), configured)).resolves.toBeUndefined();
+    });
+
+    it('should report an invalid delay as invalid, not as an EE restriction', async () => {
+      await expect(validate(input({ notification_delay: -1 }))).rejects.toThrow('Invalid ingestion health notification delay');
+    });
   });
 });
