@@ -347,12 +347,12 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 
 // region Widgets Public API
 const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
-  const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
+  const { user, perspective, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-  return { user, dataSelection, parameters };
+  return { user, perspective, dataSelection, parameters };
 };
 
 // heatmap & vertical-bar & line & area
@@ -374,10 +374,11 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
 
 // vertical-bar & line & area & heatmap with a breakdown: one series per value of a field
 export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs) => {
-  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
-  if (!parameters?.breakdownBy) {
+  // Only the breakdowns of entities are public: an audits widget can carry a breakdown too, but the logs have no public API
+  if (perspective !== 'entities' || !parameters?.breakdownBy) {
     throw UnsupportedError('This widget has no breakdown', { widgetId: args.widgetId });
   }
   // The histogram is anchored on the start date: without it the series would silently collapse on today

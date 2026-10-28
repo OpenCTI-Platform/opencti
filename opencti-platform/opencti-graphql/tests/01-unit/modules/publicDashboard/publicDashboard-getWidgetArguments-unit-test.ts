@@ -32,7 +32,7 @@ const publicDashboard = {
   allowed_markings: [],
   private_manifest: {
     widgets: {
-      'widget-1': { dataSelection: ['selection'], parameters: {} },
+      'widget-1': { perspective: 'audits', dataSelection: ['selection'], parameters: {} },
     },
   },
 };
@@ -77,5 +77,11 @@ describe('getWidgetArguments', () => {
 
     expect(dataSelection).toEqual(['selection']);
     expect(parameters).toEqual({});
+  });
+
+  it('returns the widget perspective, for the APIs that only serve one', async () => {
+    const { perspective } = await getWidgetArguments({} as any, 'my-dashboard', 'widget-1');
+
+    expect(perspective).toEqual('audits');
   });
 });

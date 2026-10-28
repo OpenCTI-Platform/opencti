@@ -90,6 +90,7 @@ export const findWidgetsMaxMarkings = async (
 
 interface WidgetArguments {
   user: AuthUser;
+  perspective: PublicDashboardCachedWidget['perspective'];
   dataSelection: PublicDashboardCachedWidget['dataSelection'];
   parameters: PublicDashboardCachedWidget['parameters'];
 }
@@ -140,10 +141,11 @@ export const getWidgetArguments = async (
 
   // Get widget query configuration
   const { widgets } = private_manifest;
-  const { dataSelection, parameters } = widgets[widgetId];
+  const { perspective, dataSelection, parameters } = widgets[widgetId];
 
   return {
     user,
+    perspective,
     parameters,
     dataSelection,
   };
