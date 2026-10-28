@@ -501,6 +501,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
   };
   return {
     call: (config: HttpRequestConfig) => request(config, false),
+    request: async (config: HttpRequestConfig) => request(config, true),
     get: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'GET' }, true),
     post: async (url: string, data: unknown, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'POST', data }, true),
     delete: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'DELETE' }, true),

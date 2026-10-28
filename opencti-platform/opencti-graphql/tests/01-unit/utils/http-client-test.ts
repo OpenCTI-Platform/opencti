@@ -3,6 +3,7 @@ import { once } from 'node:events';
 import http from 'node:http';
 import https from 'node:https';
 import type { AddressInfo } from 'node:net';
+import type { TLSSocket } from 'node:tls';
 import { Readable } from 'node:stream';
 import { gzipSync } from 'node:zlib';
 import forge from 'node-forge';
@@ -22,6 +23,8 @@ let baseURL: string;
 let otherHostBaseURL: string;
 let closedPortURL: string;
 let selfSignedBaseURL: string;
+let selfSignedCertificate: { key: string; cert: string };
+let mutualTlsBaseURL: string;
 
 const routes: Record<string, (req: http.IncomingMessage, res: http.ServerResponse) => void> = {
   '/json': (_req, res) => res.writeHead(200, { 'Content-Type': 'application/json', 'X-Custom': 'value' }).end('{"hello":"world"}'),
@@ -75,6 +78,10 @@ const routes: Record<string, (req: http.IncomingMessage, res: http.ServerRespons
       }
     }, 20);
   },
+  '/client-certificate': (req, res) => {
+    const peerCertificate = (req.socket as TLSSocket).getPeerCertificate();
+    res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ subject: peerCertificate?.subject?.CN ?? null }));
+  },
   '/echo': (req, res) => res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(received[received.length - 1])),
 };
 
@@ -113,7 +120,7 @@ const buildSelfSignedCertificate = () => {
   return { key: privateKey, cert: forge.pki.certificateToPem(certificate) };
 };
 
-const startServer = async (tls?: { key: string; cert: string }) => {
+const startServer = async (tls?: https.ServerOptions) => {
   const server = tls ? https.createServer(tls, handleRequest) : http.createServer(handleRequest);
   await new Promise<void>((resolve) => {
     server.listen(0, '127.0.0.1', resolve);
@@ -132,7 +139,9 @@ beforeAll(async () => {
   otherHostBaseURL = await startServer();
   closedPortURL = await startServer();
   await closeServer(servers.pop() as http.Server);
-  selfSignedBaseURL = await startServer(buildSelfSignedCertificate());
+  selfSignedCertificate = buildSelfSignedCertificate();
+  selfSignedBaseURL = await startServer(selfSignedCertificate);
+  mutualTlsBaseURL = await startServer({ ...selfSignedCertificate, requestCert: true, rejectUnauthorized: false });
 });
 
 afterAll(async () => {
@@ -391,6 +400,30 @@ describe('getHttpClient', () => {
 
     expect(error).toBeInstanceOf(HttpClientError);
     expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+  });
+
+  it('should honor the certificate verification option on request', async () => {
+    const config = { url: '/not-json', method: 'POST', data: {} };
+
+    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false }).request(config);
+    const verified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: true }).request(config).catch((e) => e);
+
+    expect(unverified.data).toBe('plain text');
+    expect(verified).toBeInstanceOf(HttpClientError);
+    expect(verified.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+  });
+
+  it('should use the client certificates on request', async () => {
+    const toBase64 = (value: string) => Buffer.from(value).toString('base64');
+    const certificates = { cert: toBase64(selfSignedCertificate.cert), key: toBase64(selfSignedCertificate.key), ca: toBase64(selfSignedCertificate.cert) };
+    const client = getHttpClient({ baseURL: mutualTlsBaseURL, responseType: 'json', rejectUnauthorized: true, certificates });
+
+    const response = await client.request({ url: '/client-certificate', method: 'GET' });
+    const callError = await client.call({ url: '/client-certificate', method: 'GET' }).catch((e) => e);
+
+    expect(response.data).toEqual({ subject: '127.0.0.1' });
+    expect(callError).toBeInstanceOf(HttpClientError);
+    expect(callError.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
   });
 
   it('should not time out a body that keeps arriving after the timeout duration', async () => {

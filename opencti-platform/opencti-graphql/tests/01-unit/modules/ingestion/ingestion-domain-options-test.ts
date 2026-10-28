@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const {
   getHttpClientMock,
   httpGetMock,
-  httpCallMock,
+  httpRequestMock,
   decryptIngestionCredentialMock,
   findJsonMapperByIdMock,
   getEntitiesMapFromCacheMock,
@@ -11,7 +11,7 @@ const {
 } = vi.hoisted(() => ({
   getHttpClientMock: vi.fn(),
   httpGetMock: vi.fn(),
-  httpCallMock: vi.fn(),
+  httpRequestMock: vi.fn(),
   decryptIngestionCredentialMock: vi.fn(),
   findJsonMapperByIdMock: vi.fn(),
   getEntitiesMapFromCacheMock: vi.fn(),
@@ -67,7 +67,7 @@ describe('Ingestion domain timeout options', () => {
     decryptIngestionCredentialMock.mockResolvedValue('');
     getHttpClientMock.mockReturnValue({
       get: httpGetMock,
-      call: httpCallMock,
+      request: httpRequestMock,
     });
   });
 
@@ -112,7 +112,7 @@ describe('Ingestion domain timeout options', () => {
   });
 
   it('should pass timeout to json http client options', async () => {
-    httpCallMock.mockResolvedValueOnce({
+    httpRequestMock.mockResolvedValueOnce({
       data: { items: [] },
       headers: {},
     });
@@ -146,7 +146,7 @@ describe('Ingestion domain timeout options', () => {
   });
 
   it('should fallback to configured timeout for json when timeout option is omitted', async () => {
-    httpCallMock.mockResolvedValueOnce({
+    httpRequestMock.mockResolvedValueOnce({
       data: { items: [] },
       headers: {},
     });
