@@ -244,7 +244,7 @@ import {
   updatedAt,
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
+import { type EditInput, EditOperation, type FilterGroup, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION, type StoreEntityOrganization } from '../modules/organization/organization-types';
 import {
@@ -918,7 +918,10 @@ const getRelationRefOrNull = (type: string, name: string) => {
 };
 type BreakdownField = {
   aggregationField: string;
+  // Values are ids of entities, resolved with the access of the user
   resolveEntities: boolean;
+  // Label of a value, when its indexed form is not the one to display
+  resolveLabel?: (key: string) => string;
   // Set to break relationships down by the type of their source or target
   connectionSide?: ConnectionSide;
 };
@@ -971,6 +974,34 @@ export const resolveRelationshipBreakdownField = (types: string[], field: string
   }
   return breakdownField;
 };
+// Entity types are indexed in lowercase: give them back the name of their registered type
+const resolveEntityTypeLabel = (key: string) => {
+  return schemaAttributesDefinition.getRegisteredTypes().find((type) => type.toLowerCase() === key) ?? key;
+};
+// Fields of the history and activity logs a breakdown accepts, all with a bounded cardinality: the kind of
+// event, who did it (user, groups, organizations) and the types involved. Any other field is refused, the
+// context entity id (one value per entity) and the free texts (messages, searches, names) first.
+const HISTORY_BREAKDOWN_FIELDS = new Map<string, BreakdownField>([
+  ['event_type', { aggregationField: 'event_type', resolveEntities: false }],
+  ['event_scope', { aggregationField: 'event_scope', resolveEntities: false }],
+  // Resolved like the distributions of the logs: values without entity, like the SYSTEM user or a deleted
+  // user, are dropped, and the entities the user cannot access are restricted
+  ['user_id', { aggregationField: 'user_id', resolveEntities: true }],
+  ['group_ids', { aggregationField: 'group_ids', resolveEntities: true }],
+  ['organization_ids', { aggregationField: 'organization_ids', resolveEntities: true }],
+  // History or Activity
+  ['entity_type', { aggregationField: 'entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
+  // Type of the entity the event is about
+  ['context_data.entity_type', { aggregationField: 'context_data.entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
+]);
+export const HISTORY_BREAKDOWN_ALLOWED_FIELDS = Array.from(HISTORY_BREAKDOWN_FIELDS.keys());
+export const resolveHistoryBreakdownField = (field: string): BreakdownField => {
+  const breakdownField = HISTORY_BREAKDOWN_FIELDS.get(field);
+  if (!breakdownField) {
+    throw FunctionalError('Time series breakdown does not support this field for the history and activity logs', { field });
+  }
+  return breakdownField;
+};
 type TimeSeriesBreakdownArgs = {
   field: string;
   dateAttribute?: string | null;
@@ -979,10 +1010,17 @@ type TimeSeriesBreakdownArgs = {
   includeOther?: boolean | null;
   onlyInferred?: boolean | null;
   startDate: Date;
-  endDate: Date;
+  endDate?: Date | null;
   interval: string;
 };
-// One series per value of a field: discover the values, keep the top ones, count them over time
+const checkTimeSeriesBreakdownLimit = (limit: number | null | undefined) => {
+  const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
+  if (!Number.isInteger(seriesLimit) || seriesLimit < 1 || seriesLimit > TIME_SERIES_BREAKDOWN_MAX_LIMIT) {
+    throw FunctionalError('Time series breakdown limit must be an integer between 1 and the maximum', { limit, max: TIME_SERIES_BREAKDOWN_MAX_LIMIT });
+  }
+};
+// One series per value of a field, shared by every perspective: discover the values among the documents of
+// the indices that queryArgs select (with their access restrictions), keep the top ones, count them over time
 const timeSeriesBreakdown = async (
   context: AuthContext,
   user: AuthUser,
@@ -991,8 +1029,12 @@ const timeSeriesBreakdown = async (
   queryArgs: Record<string, any>,
   args: TimeSeriesBreakdownArgs,
 ) => {
-  const { startDate, endDate, interval, limit = TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT } = args;
-  const { aggregationField, resolveEntities, connectionSide } = breakdownField;
+  checkTimeSeriesBreakdownLimit(args.limit);
+  const { startDate, interval, limit = TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT } = args;
+  // Without an end date, the histogram would create every empty bucket up to the most recent document,
+  // a date in the future included, past the size checked below: the period always ends
+  const endDate = args.endDate ?? new Date();
+  const { aggregationField, resolveEntities, resolveLabel, connectionSide } = breakdownField;
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
   const isAscending = args.order === 'asc';
   const withOther = args.includeOther === true;
@@ -1010,6 +1052,7 @@ const timeSeriesBreakdown = async (
   }
   const breakdownArgs = {
     ...R.omit(['order', 'includeOther'], queryArgs),
+    endDate,
     field: aggregationField,
     // Same inclusive bounds as the histogram below, so both requests see the same entities
     intervalInclude: true,
@@ -1022,8 +1065,9 @@ const timeSeriesBreakdown = async (
   const candidates = connectionSide
     ? await elConnectionTypesAggregationCount(context, user, indices, { ...breakdownArgs, connectionSide, bucketsOrder })
     : await elAggregationCount(context, user, indices, { ...breakdownArgs, convertEntityTypeLabel: true, normalizeLabel: false, rankByCount: true, bucketsOrder });
+  const labelledCandidates = resolveLabel ? candidates.map((candidate) => ({ ...candidate, label: resolveLabel(candidate.key) })) : candidates;
   // desc keeps the values with the most entities over the period, asc the fewest
-  const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], candidates);
+  const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], labelledCandidates);
   // 2. Drop unresolvable values (like the SYSTEM user) before applying the limit, so the limit is honored.
   // Resolved page by page: one more value than the limit is enough to know whether the series are truncated.
   let usableCandidates: (typeof sortedCandidates[number] & { entity: BasicStoreEntity | null })[] = [];
@@ -1069,26 +1113,34 @@ const timeSeriesBreakdown = async (
   }
   return { truncated, dates: axis.dates, series };
 };
-const checkTimeSeriesBreakdownLimit = (limit: number | null | undefined) => {
-  const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
-  if (!Number.isInteger(seriesLimit) || seriesLimit < 1 || seriesLimit > TIME_SERIES_BREAKDOWN_MAX_LIMIT) {
-    throw FunctionalError('Time series breakdown limit must be an integer between 1 and the maximum', { limit, max: TIME_SERIES_BREAKDOWN_MAX_LIMIT });
-  }
-};
 export const timeSeriesBreakdownEntities = async (
   context: AuthContext,
   user: AuthUser,
   types: string[],
   args: EntityFilters<BasicStoreEntity> & TimeSeriesBreakdownArgs,
 ) => {
-  checkTimeSeriesBreakdownLimit(args.limit);
   const breakdownField = resolveBreakdownField(types, args.field);
   // Entities only: the relationships indices hold nothing a Stix-Core-Object filter could match
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_ENTITIES] : READ_ENTITIES_INDICES;
-  // Without an end date, the histogram would create every empty bucket up to the most recent entity,
-  // a date in the future included, past the size checked above: the period always ends
-  const boundedArgs = { ...args, endDate: args.endDate ?? new Date() };
-  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(types, boundedArgs), boundedArgs);
+  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(types, args), args);
+};
+type TimeSeriesBreakdownHistoryArgs = TimeSeriesBreakdownArgs & {
+  types?: string[] | null;
+  filters?: FilterGroup | null;
+  search?: string | null;
+  historyFiltering?: boolean;
+};
+// Same breakdown over the history and activity logs, always with the restrictions of the logs (history filtering).
+// The types are the caller's to narrow to what the user can see, like the other logs aggregations (see computeAuditTypes)
+export const timeSeriesBreakdownHistory = async (context: AuthContext, user: AuthUser, args: TimeSeriesBreakdownHistoryArgs) => {
+  const breakdownField = resolveHistoryBreakdownField(args.field);
+  const historyArgs = {
+    ...args,
+    types: args.types ?? [ENTITY_TYPE_HISTORY],
+    dateAttribute: args.dateAttribute || 'timestamp',
+    historyFiltering: true,
+  };
+  return timeSeriesBreakdown(context, user, READ_INDEX_HISTORY, breakdownField, historyArgs, historyArgs);
 };
 export const timeSeriesBreakdownRelations = async (
   context: AuthContext,
@@ -1096,13 +1148,10 @@ export const timeSeriesBreakdownRelations = async (
   relationshipTypes: string[],
   args: RelationFilters<BasicStoreRelation> & TimeSeriesBreakdownArgs,
 ) => {
-  checkTimeSeriesBreakdownLimit(args.limit);
   const breakdownField = resolveRelationshipBreakdownField(relationshipTypes, args.field);
   // Same relationships as timeSeriesRelations
   const indices = args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES;
-  // Bounded for the same reason as the entities
-  const boundedArgs = { ...args, endDate: args.endDate ?? new Date() };
-  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(relationshipTypes, boundedArgs), boundedArgs);
+  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(relationshipTypes, args), args);
 };
 export const timeSeriesRelations = async (
   context: AuthContext,

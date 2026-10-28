@@ -361,12 +361,12 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 
 // region Widgets Public API
 const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
-  const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
+  const { user, perspective, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-  return { user, dataSelection, parameters };
+  return { user, perspective, dataSelection, parameters };
 };
 
 // heatmap & vertical-bar & line & area
@@ -386,13 +386,15 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
 };
 
-// Every setting of a breakdown is read from the stored widget, never from the request of the visitor
+// Every setting of a breakdown is read from the stored widget, never from the request of the visitor.
+// A widget of another perspective can carry a breakdown too (an audits widget, whose logs have no public API).
 const buildPublicBreakdownArgs = (
   args: Pick<QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs, 'widgetId' | 'startDate' | 'endDate'>,
-  selection: PublicDashboardCachedWidget['dataSelection'][number],
-  parameters: PublicDashboardCachedWidget['parameters'],
+  widget: Pick<PublicDashboardCachedWidget, 'perspective' | 'parameters'> & { selection: PublicDashboardCachedWidget['dataSelection'][number] },
+  breakdownPerspective: PublicDashboardCachedWidget['perspective'],
 ) => {
-  if (!parameters?.breakdownBy) {
+  const { perspective, selection, parameters } = widget;
+  if (perspective !== breakdownPerspective || !parameters?.breakdownBy) {
     throw UnsupportedError('This widget has no breakdown', { widgetId: args.widgetId });
   }
   // The histogram is anchored on the start date: without it the series would silently collapse on today
@@ -414,10 +416,10 @@ const buildPublicBreakdownArgs = (
 
 // vertical-bar & line & area & heatmap with a breakdown: one series per value of a field
 export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs) => {
-  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
-  const breakdownArgs = buildPublicBreakdownArgs(args, selection, parameters);
+  const breakdownArgs = buildPublicBreakdownArgs(args, { perspective, selection, parameters }, 'entities');
   const types = getBreakdownEntityTypes(selection.filters);
   const standardArgs = {
     ...breakdownArgs,
@@ -429,10 +431,10 @@ export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthCont
 
 // vertical-bar & line & area & heatmap of relationships with a breakdown
 export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixRelationshipsTimeSeriesBreakdownArgs) => {
-  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
-  const breakdownArgs = buildPublicBreakdownArgs(args, selection, parameters);
+  const breakdownArgs = buildPublicBreakdownArgs(args, { perspective, selection, parameters }, 'relationships');
   const relationshipTypes = getBreakdownEntityTypes(selection.filters, RELATION_TYPE_FILTER);
   const standardArgs = {
     ...breakdownArgs,

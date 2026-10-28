@@ -23,6 +23,20 @@ const isBreakdownAllowedKey = (key: string, type: string) => {
 const COMPUTED_FILTER_KEYS = ['computed_reliability', 'workflow_id', 'workflowInstanceCurrentState', 'connectedToId', 'ids', 'id'];
 // Only set inside drafts, where breakdowns are not available: every value would be empty
 const DRAFT_FILTER_KEYS = ['draft_change.draft_operation'];
+// Fields of the history and activity logs, as indexed, in the order they are offered. The backend accepts
+// exactly these (HISTORY_BREAKDOWN_FIELDS in opencti-graphql/src/database/middleware.ts): keep them in sync.
+// The context entity id and the free texts (messages, searches) are refused for their unbounded cardinality.
+export const AUDITS_BREAKDOWN_FIELDS: { key: string; label: string }[] = [
+  { key: 'event_type', label: 'Event type' },
+  { key: 'event_scope', label: 'Event_scope' },
+  { key: 'user_id', label: 'User' },
+  { key: 'group_ids', label: 'Group' },
+  { key: 'organization_ids', label: 'Organization' },
+  { key: 'entity_type', label: 'Entity_type' },
+  { key: 'context_data.entity_type', label: 'Type of related entity' },
+];
+// Fields of the logs whose values are entity types (History or Activity, the type of the related entity)
+const AUDITS_TYPE_FIELDS = ['entity_type', 'context_data.entity_type'];
 
 type BreakdownField = { key: string; label: string };
 interface BreakdownPerspective {
@@ -54,12 +68,16 @@ const BREAKDOWN_PERSPECTIVES: Partial<Record<WidgetPerspective, BreakdownPerspec
 const getBreakdownPerspective = (perspective?: WidgetPerspective | null) => {
   return perspective ? BREAKDOWN_PERSPECTIVES[perspective] : undefined;
 };
+// Perspectives with a breakdown API: the schema-based ones above, and the audits with their own fields
+const isBreakdownPerspective = (perspective?: WidgetPerspective | null) => {
+  return perspective === 'audits' || !!getBreakdownPerspective(perspective);
+};
 
 /**
  * Fields the series are labelled with a type: an entity type, or a relationship type.
  */
 export const isBreakdownTypeField = (field?: string | null) => {
-  return Object.values(BREAKDOWN_PERSPECTIVES).some((perspective) => (
+  return (!!field && AUDITS_TYPE_FIELDS.includes(field)) || Object.values(BREAKDOWN_PERSPECTIVES).some((perspective) => (
     perspective.typeField.key === field || perspective.fields.some(({ key }) => key === field)
   ));
 };
@@ -118,16 +136,30 @@ export const getBreakdownFieldOptions = (
 };
 
 /**
+ * Fields the first dataset of the widget can be broken down by: the fields of its entity or relationship
+ * types for the entities and the relationships, the allowed fields of the logs for the audits.
+ */
+export const getWidgetBreakdownFieldOptions = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  widget: Pick<Widget, 'perspective' | 'dataSelection'>,
+): BreakdownField[] => {
+  if (widget.perspective === 'audits') {
+    return AUDITS_BREAKDOWN_FIELDS;
+  }
+  const perspective = widget.perspective ?? 'entities';
+  const types = getBreakdownEntityTypes(widget.dataSelection[0]?.filters, perspective);
+  return getBreakdownFieldOptions(filterKeysSchema, types, perspective);
+};
+
+/**
  * Whether the widget breakdown field can be used on its dataset: saved or imported widgets can carry
- * a field the API refuses for the entity types of their filters.
+ * a field the API refuses for the entity types of their filters, or for their perspective.
  */
 export const isBreakdownFieldSupported = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
-  widget: Pick<Widget, 'dataSelection' | 'parameters' | 'perspective'>,
+  widget: Pick<Widget, 'perspective' | 'dataSelection' | 'parameters'>,
 ) => {
-  const perspective = widget.perspective ?? 'entities';
-  const entityTypes = getBreakdownEntityTypes(widget.dataSelection[0]?.filters, perspective);
-  return getBreakdownFieldOptions(filterKeysSchema, entityTypes, perspective).some(({ key }) => key === widget.parameters?.breakdownBy);
+  return getWidgetBreakdownFieldOptions(filterKeysSchema, widget).some(({ key }) => key === widget.parameters?.breakdownBy);
 };
 
 export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) => {
@@ -152,15 +184,24 @@ export const getBreakdownDefaultStartDate = (interval: string) => {
 
 type BreakdownWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'>;
 
-// A breakdown expands the single dataset of a time series widget, of entities or of relationships.
+// Audits lines and areas can count the distinct values of an attribute instead of the events
+const AUDITS_DISTINCT_COUNT_TYPES = ['line', 'area'];
+const isCountingDistinctValues = (widget: BreakdownWidget) => {
+  return widget.perspective === 'audits'
+    && AUDITS_DISTINCT_COUNT_TYPES.includes(widget.type)
+    && widget.dataSelection.some((selection) => selection.unique === true);
+};
+
+// A breakdown expands the single dataset of a time series widget, counting its entities, relationships or events.
 // A relationships widget can also hold entities datasets: they cannot be broken down as relationships.
 const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
   const [dataset] = widget.dataSelection;
-  return !!getBreakdownPerspective(widget.perspective)
+  return isBreakdownPerspective(widget.perspective)
     && getCurrentCategory(widget.type) === 'timeseries'
     && widget.dataSelection.length === 1
     && (dataset.perspective ?? widget.perspective) === widget.perspective
-    && !isDraftWorkspaceFilterGroup(dataset.filters);
+    && !isDraftWorkspaceFilterGroup(dataset.filters)
+    && !isCountingDistinctValues(widget);
 };
 
 /**
@@ -168,6 +209,29 @@ const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
  */
 export const isWidgetBreakdownEligible = (widget: BreakdownWidget, host?: WidgetHost) => {
   return host?.kind === 'workspace' && canWidgetBeBrokenDown(widget);
+};
+
+/**
+ * Whether the breakdown controls are shown: the widget could be broken down once reduced to its
+ * first dataset, counting every event. getWidgetBreakdownLockReason says why they are disabled.
+ */
+export const isWidgetBreakdownConfigurable = (widget: BreakdownWidget, host?: WidgetHost) => {
+  const [firstSelection] = widget.dataSelection;
+  return !!firstSelection && isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...firstSelection, unique: false }] }, host);
+};
+
+/**
+ * Why the breakdown of a configurable widget cannot be changed: a breakdown uses a single dataset,
+ * and counts every event of the logs.
+ */
+export const getWidgetBreakdownLockReason = (widget: BreakdownWidget): 'several-datasets' | 'distinct-values' | undefined => {
+  if (widget.dataSelection.length > 1) {
+    return 'several-datasets';
+  }
+  if (isCountingDistinctValues(widget)) {
+    return 'distinct-values';
+  }
+  return undefined;
 };
 
 /**

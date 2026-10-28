@@ -172,13 +172,26 @@ describe('applyBreakdownCompatibility', () => {
     expect(applyBreakdownCompatibility({ ...relationships, dataSelection: [entitiesDataset] }, workspace).parameters.breakdownBy).toBeNull();
   });
 
-  it('drops the breakdown for the audits perspective, several datasets or another host', () => {
-    expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'audits' as const }, workspace).parameters.breakdownBy).toBeNull();
+  it('drops the breakdown without perspective, with several datasets or another host', () => {
+    expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: null }, workspace).parameters.breakdownBy).toBeNull();
     expect(applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace).parameters.breakdownBy).toBeNull();
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
     expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters.breakdownBy).toBeNull();
     const severalDatasets = applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace);
     expect(severalDatasets.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+  });
+
+  it('keeps the breakdown of every audits time series visualization', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'audits' as const, type }, workspace);
+      expect(parameters).toEqual(brokenDownLine.parameters);
+    });
+  });
+
+  it('drops the breakdown of audits lines and areas counting distinct values', () => {
+    const distinct = { ...brokenDownLine, perspective: 'audits' as const, dataSelection: [{ ...selection, unique: true }] };
+    expect(applyBreakdownCompatibility(distinct, workspace).parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+    expect(applyBreakdownCompatibility({ ...distinct, type: 'vertical-bar' }, workspace).parameters).toEqual(brokenDownLine.parameters);
   });
 
   it('returns the widget untouched without breakdown', () => {

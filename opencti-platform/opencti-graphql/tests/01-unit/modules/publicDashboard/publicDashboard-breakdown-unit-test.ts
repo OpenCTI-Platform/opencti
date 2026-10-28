@@ -1,6 +1,7 @@
 /**
  * Unit tests of the public time series breakdowns: every breakdown setting is read from the stored widget,
- * and the query runs as the user built for the public dashboard.
+ * and the query runs as the user built for the public dashboard. Only the breakdowns of entities and
+ * relationships widgets are public: audits widgets can carry a breakdown as well, but the logs have no public API.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -87,8 +88,8 @@ const malwares = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Malw
 const sectors = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Sector'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 const breakdownParameters = { interval: 'week', breakdownBy: 'toTypes', breakdownLimit: 20, breakdownOrder: 'asc', breakdownOther: true };
 
-const storeWidget = (dataSelection: unknown[], parameters: unknown) => {
-  vi.mocked(PublicDashboardUtils.getWidgetArguments).mockResolvedValue({ user: publicUser, dataSelection, parameters } as any);
+const storeWidget = (perspective: string | null, dataSelection: unknown[], parameters: unknown) => {
+  vi.mocked(PublicDashboardUtils.getWidgetArguments).mockResolvedValue({ user: publicUser, perspective, dataSelection, parameters } as any);
 };
 const request = (overrides: Record<string, unknown> = {}) => ({ uriKey: 'public-key', widgetId: 'widget-1', startDate, endDate, ...overrides } as any);
 
@@ -98,7 +99,7 @@ describe('publicStixRelationshipsTimeSeriesBreakdown', () => {
   });
 
   it('should break the stored dataset down with the stored settings, as the public user', async () => {
-    storeWidget([{ date_attribute: 'start_time', filters: targets, dynamicFrom: malwares, dynamicTo: sectors, isTo: false }], breakdownParameters);
+    storeWidget('relationships', [{ date_attribute: 'start_time', filters: targets, dynamicFrom: malwares, dynamicTo: sectors, isTo: false }], breakdownParameters);
 
     await publicStixRelationshipsTimeSeriesBreakdown({} as any, request());
 
@@ -125,7 +126,7 @@ describe('publicStixRelationshipsTimeSeriesBreakdown', () => {
   });
 
   it('should default the settings of the widget, and break all the relationships down without type filter', async () => {
-    storeWidget([{ date_attribute: 'created_at' }], { breakdownBy: 'relationship_type' });
+    storeWidget('relationships', [{ date_attribute: 'created_at' }], { breakdownBy: 'relationship_type' });
 
     await publicStixRelationshipsTimeSeriesBreakdown({} as any, request({ endDate: null }));
 
@@ -141,11 +142,19 @@ describe('publicStixRelationshipsTimeSeriesBreakdown', () => {
   });
 
   it('should refuse a widget without breakdown, or a request without start date', async () => {
-    storeWidget([{ date_attribute: 'created_at', filters: targets }], { interval: 'day' });
+    storeWidget('relationships', [{ date_attribute: 'created_at', filters: targets }], { interval: 'day' });
     await expect(publicStixRelationshipsTimeSeriesBreakdown({} as any, request())).rejects.toThrow('This widget has no breakdown');
 
-    storeWidget([{ date_attribute: 'created_at', filters: targets }], breakdownParameters);
+    storeWidget('relationships', [{ date_attribute: 'created_at', filters: targets }], breakdownParameters);
     await expect(publicStixRelationshipsTimeSeriesBreakdown({} as any, request({ startDate: null }))).rejects.toThrow('A start date is required');
+    expect(StixRelationshipDomain.stixRelationshipsTimeSeriesBreakdown).not.toHaveBeenCalled();
+  });
+
+  it('should refuse the widgets of the other perspectives, or without perspective, carrying a breakdown', async () => {
+    for (const perspective of ['entities', 'audits', null]) {
+      storeWidget(perspective, [{ date_attribute: 'created_at', filters: targets }], breakdownParameters);
+      await expect(publicStixRelationshipsTimeSeriesBreakdown({} as any, request())).rejects.toThrow('This widget has no breakdown');
+    }
     expect(StixRelationshipDomain.stixRelationshipsTimeSeriesBreakdown).not.toHaveBeenCalled();
   });
 });
@@ -157,7 +166,7 @@ describe('publicStixCoreObjectsTimeSeriesBreakdown', () => {
 
   it('should keep breaking the stored entities dataset down with the stored settings', async () => {
     const reports = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' }], filterGroups: [] };
-    storeWidget([{ date_attribute: 'published', filters: reports }], { interval: 'month', breakdownBy: 'objectLabel', breakdownLimit: 5 });
+    storeWidget('entities', [{ date_attribute: 'published', filters: reports }], { interval: 'month', breakdownBy: 'objectLabel', breakdownLimit: 5 });
 
     await publicStixCoreObjectsTimeSeriesBreakdown({} as any, request());
 
@@ -175,5 +184,19 @@ describe('publicStixCoreObjectsTimeSeriesBreakdown', () => {
       filters: reports,
       types: ['Report'],
     });
+  });
+
+  it('should refuse an audits widget carrying a breakdown, without querying anything', async () => {
+    storeWidget('audits', [{ date_attribute: 'timestamp', filters: null }], { interval: 'day', breakdownBy: 'event_scope', breakdownLimit: 5 });
+    await expect(publicStixCoreObjectsTimeSeriesBreakdown({} as any, request())).rejects.toThrow('This widget has no breakdown');
+    expect(StixCoreObjectDomain.stixCoreObjectsTimeSeriesBreakdown).not.toHaveBeenCalled();
+  });
+
+  it('should refuse the widgets of the other perspectives, or without perspective', async () => {
+    for (const perspective of ['relationships', null]) {
+      storeWidget(perspective, [{ date_attribute: 'published', filters: null }], { interval: 'day', breakdownBy: 'objectLabel' });
+      await expect(publicStixCoreObjectsTimeSeriesBreakdown({} as any, request())).rejects.toThrow('This widget has no breakdown');
+    }
+    expect(StixCoreObjectDomain.stixCoreObjectsTimeSeriesBreakdown).not.toHaveBeenCalled();
   });
 });

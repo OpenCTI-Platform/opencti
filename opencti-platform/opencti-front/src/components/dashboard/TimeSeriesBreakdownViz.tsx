@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ComponentType, ReactNode, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import ApexCharts from 'apexcharts';
@@ -9,7 +9,7 @@ import WidgetNoData from './WidgetNoData';
 import WidgetTimeSeriesBreakdown, { WidgetTimeSeriesBreakdownData } from './WidgetTimeSeriesBreakdown';
 import WidgetBreakdownErrorBoundary from './WidgetBreakdownErrorBoundary';
 import useDashboardViz from './useDashboardViz';
-import WidgetRenderContent from './WidgetRenderContent';
+import WidgetRenderContent, { type WidgetRenderGuards } from './WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import { computeStartEndDates, computeWidgetFiltersForSelection } from './dashboardVizUtils';
@@ -66,10 +66,20 @@ export const buildTimeSeriesBreakdownVariables = (
   };
 };
 
+type BreakdownRenderContentProps = WidgetRenderGuards & {
+  queryRef: unknown;
+  host?: WidgetHost;
+  children: ReactNode;
+};
+
 interface TimeSeriesBreakdownQueryProps<TQuery extends OperationType> {
   query: GraphQLTaggedNode;
   buildQueryVariables: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
   selectBreakdown: (data: TQuery['response']) => WidgetTimeSeriesBreakdownData | null | undefined;
+  // Title of the widget when it sets none
+  defaultTitle?: string;
+  // Guards of the perspective on top of the common ones, like the capabilities the audits require
+  RenderContent?: ComponentType<BreakdownRenderContentProps>;
 }
 
 export interface TimeSeriesBreakdownVizProps {
@@ -120,6 +130,8 @@ const TimeSeriesBreakdownChart = <TQuery extends OperationType>({
   query,
   buildQueryVariables,
   selectBreakdown,
+  defaultTitle,
+  RenderContent = WidgetRenderContent,
 }: TimeSeriesBreakdownVizProps & TimeSeriesBreakdownQueryProps<TQuery>) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
@@ -139,13 +151,13 @@ const TimeSeriesBreakdownChart = <TQuery extends OperationType>({
   return (
     <WidgetContainer
       padding="small"
-      title={parameters.title ?? t_i18n('Entities history')}
+      title={parameters.title ?? defaultTitle ?? t_i18n('Entities history')}
       chart={chart}
       action={popover}
       showPreviewTag={isPreviewMode}
       warning={warning}
     >
-      <WidgetRenderContent
+      <RenderContent
         {...renderGuards}
         queryRef={queryRef}
         host={host}
@@ -161,22 +173,23 @@ const TimeSeriesBreakdownChart = <TQuery extends OperationType>({
             onWarningChange={setWarning}
           />
         </WidgetBreakdownErrorBoundary>
-      </WidgetRenderContent>
+      </RenderContent>
     </WidgetContainer>
   );
 };
 
 /**
- * Time series widget drawing one series per value of `parameters.breakdownBy`, for the entities or the
- * relationships perspective. A field the dataset does not support is not queried: the API would refuse it.
+ * Time series widget drawing one series per value of `parameters.breakdownBy`, for the entities, the
+ * relationships or the audits perspective: each perspective gives its query, its variables and its guards.
+ * A field the dataset does not support is not queried: the API would refuse it.
  */
 const TimeSeriesBreakdownViz = <TQuery extends OperationType>(props: TimeSeriesBreakdownVizProps & TimeSeriesBreakdownQueryProps<TQuery>) => {
   const { t_i18n } = useFormatter();
   const { schema: { filterKeysSchema } } = useAuth();
-  const { widget, popover } = props;
+  const { widget, popover, defaultTitle } = props;
   if (!isBreakdownFieldSupported(filterKeysSchema, widget)) {
     return (
-      <WidgetContainer padding="small" title={widget.parameters?.title ?? t_i18n('Entities history')} action={popover}>
+      <WidgetContainer padding="small" title={widget.parameters?.title ?? defaultTitle ?? t_i18n('Entities history')} action={popover}>
         <WidgetNoData message={t_i18n('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')} />
       </WidgetContainer>
     );

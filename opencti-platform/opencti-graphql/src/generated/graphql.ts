@@ -24988,6 +24988,7 @@ export type Query = {
   auditsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   auditsNumber?: Maybe<Number>;
   auditsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
+  auditsTimeSeriesBreakdown?: Maybe<TimeSeriesBreakdown>;
   /** Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert). */
   authLogHistoryById: Array<AuthLogEntry>;
   authenticationProvider?: Maybe<AuthenticationProvider>;
@@ -25523,6 +25524,21 @@ export type QueryAuditsTimeSeriesArgs = {
   filters?: InputMaybe<FilterGroup>;
   interval: Scalars['String']['input'];
   operation: StatsOperation;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate: Scalars['DateTime']['input'];
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryAuditsTimeSeriesBreakdownArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  includeOther?: InputMaybe<Scalars['Boolean']['input']>;
+  interval: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  order?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -51153,6 +51169,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   auditsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
   auditsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryAuditsNumberArgs>>;
   auditsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
+  auditsTimeSeriesBreakdown?: Resolver<Maybe<ResolversTypes['TimeSeriesBreakdown']>, ParentType, ContextType, RequireFields<QueryAuditsTimeSeriesBreakdownArgs, 'field' | 'interval' | 'startDate'>>;
   authLogHistoryById?: Resolver<Array<ResolversTypes['AuthLogEntry']>, ParentType, ContextType, RequireFields<QueryAuthLogHistoryByIdArgs, 'id'>>;
   authenticationProvider?: Resolver<Maybe<ResolversTypes['AuthenticationProvider']>, ParentType, ContextType, RequireFields<QueryAuthenticationProviderArgs, 'id'>>;
   authenticationProviders?: Resolver<Maybe<ResolversTypes['AuthenticationProviderConnection']>, ParentType, ContextType, Partial<QueryAuthenticationProvidersArgs>>;
