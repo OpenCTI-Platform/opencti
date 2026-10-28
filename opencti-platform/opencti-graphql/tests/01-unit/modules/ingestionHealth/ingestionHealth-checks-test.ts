@@ -596,19 +596,14 @@ describe('computeHealthTransition', () => {
     });
 
     it.each(Object.values(IngestionHealthStatus))('should report %s exactly when the delay is elapsed', (status) => {
-      expect(computeHealthTransition(health(status, OLD_EVENT), AFTER_DELAY)).not.toBeNull();
+      expect(computeHealthTransition(dueHealth(status), AFTER_DELAY)).not.toBeNull();
     });
   });
 
   describe('already notified', () => {
-    it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event is after its start', (status) => {
-      expect(computeHealthTransition(health(status, AFTER_DELAY), at(10 * DEFAULT_HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
-    });
-
-    it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event is at its start: notified with a delay of 0', (status) => {
-      expect(computeHealthTransition(health(status, SINCE), AFTER_DELAY)).toBeNull();
-      expect(computeHealthTransition(health(status, SINCE), at(1), 0)).toBeNull();
-      expect(computeHealthTransition(dueHealth(status), AFTER_DELAY)).not.toBeNull();
+    it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event published already reports it, even notified at its start with a delay of 0', (status) => {
+      expect(computeHealthTransition(health(status, status, SINCE), AFTER_DELAY)).toBeNull();
+      expect(computeHealthTransition(health(status, status, SINCE), at(1), 0)).toBeNull();
     });
   });
 
@@ -649,7 +644,7 @@ describe('computeHealthTransition', () => {
 
     it.each([Critical, Degraded])('should not report %s again when the last event published already reports it, whatever its date', (status) => {
       expect(computeHealthTransition(health(status, status, OLD_EVENT), AFTER_DELAY)).toBeNull();
-      expect(computeHealthTransition(health(status, status, AFTER_DELAY), at(10 * HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
+      expect(computeHealthTransition(health(status, status, AFTER_DELAY), at(10 * DEFAULT_HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
     });
   });
 
