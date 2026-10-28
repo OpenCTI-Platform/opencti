@@ -3,35 +3,38 @@ import type { AuthContext } from '../types/user';
 import type { BaseEvent, StreamDataEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
-import { redisAddWorkTouchedElement, redisDeleteWorkTouchedElements, redisGetWorkEventType, redisGetWorkTouchedElements, WORK_TOUCHED_CAP } from './redis';
+import { redisAddWorkTouchedElement, redisDeleteWorkTouchedElements, redisGetWorkTouchedElements, redisGetWorkTrackingInfo, WORK_TOUCHED_CAP } from './redis';
 import { logApp } from '../config/conf';
 import { WORK_INVESTIGATION_STATUS_TO_REVIEW } from '../modules/workspace/workspace-types';
 
 // Cache used to avoid making a read inside Redis for each element of a work to know
-// if the work is from an enrichment connector or not.
-const workEventTypeCache = new LRUCache<string, string>({ max: 5000, ttl: 60 * 60 * 1000 });
+// if the work is an enrichment triggered from an investigation or not.
+const workTrackedCache = new LRUCache<string, boolean>({ max: 5000, ttl: 60 * 60 * 1000 });
 
 /**
- * Empty the work event type cache. Tests only.
+ * Empty the work tracked cache. Tests only.
  */
-export const resetWorkEventTypeCache = () => workEventTypeCache.clear();
+export const resetWorkTrackedCache = () => workTrackedCache.clear();
 
 /**
- * Resolve the connector event type of a work, reading redis once per work.
+ * Tell whether the touched elements of a work are tracked, reading redis once per work.
+ * Only enrichment works triggered from an investigation are tracked.
  */
-const resolveWorkEventType = async (workId: string) => {
-  const cached = workEventTypeCache.get(workId);
-  if (cached) {
+const resolveIsWorkTracked = async (workId: string) => {
+  const cached = workTrackedCache.get(workId);
+  if (cached !== undefined) {
     return cached;
   }
-  // A work type never changes, so the cache needs no invalidation
-  const eventType = (await redisGetWorkEventType(workId)) ?? 'none';
-  workEventTypeCache.set(workId, eventType);
-  return eventType;
+  // A work type and investigation never change, so the cache needs no invalidation
+  const { eventType, investigationId } = await redisGetWorkTrackingInfo(workId);
+  const isTracked = eventType === CONNECTOR_INTERNAL_ENRICHMENT && !!investigationId;
+  workTrackedCache.set(workId, isTracked);
+  return isTracked;
 };
 
 /**
- * Record the element of a create / update stream event into the touched elements of the current enrichment work.
+ * Record the element of a create / update stream event into the touched elements of the current work,
+ * when it is an enrichment triggered from an investigation.
  * Never throws: tracking must not make a knowledge write fail.
  */
 export const trackWorkTouchedElement = async (context: AuthContext, event: BaseEvent) => {
@@ -40,8 +43,8 @@ export const trackWorkTouchedElement = async (context: AuthContext, event: BaseE
     return;
   }
   try {
-    const eventType = await resolveWorkEventType(workId);
-    if (eventType !== CONNECTOR_INTERNAL_ENRICHMENT) {
+    const isTracked = await resolveIsWorkTracked(workId);
+    if (!isTracked) {
       return;
     }
     const elementId = (event as StreamDataEvent).data?.extensions?.[STIX_EXT_OCTI]?.id;
@@ -64,7 +67,7 @@ const TOUCHED_IDS_COMPLETION_SCRIPT = `
     ctx._source.touched_ids = [];
   }
   for (def touchedId : params.touched_ids) {
-    if (ctx._source.touched_ids.size() >= params.touched_ids_cap) {
+    if (ctx._source.touched_ids.size() >= ${WORK_TOUCHED_CAP}) {
       break;
     }
     if (!ctx._source.touched_ids.contains(touchedId)) {
@@ -78,7 +81,7 @@ const TOUCHED_IDS_COMPLETION_SCRIPT = `
 const INVESTIGATION_STATUS_COMPLETION_SCRIPT = `
   if (ctx._source.investigation_id != null
     && (ctx._source.investigation_status == null || params.touched_ids.size() > 0)) {
-    ctx._source.investigation_status = params.investigation_status_to_review;
+    ctx._source.investigation_status = ${WORK_INVESTIGATION_STATUS_TO_REVIEW};
   }`;
 
 /**
@@ -101,11 +104,7 @@ export const buildEnrichmentCompletion = async (work: { id?: string; internal_id
   const touched = await redisGetWorkTouchedElements(workId);
   return {
     source: TOUCHED_IDS_COMPLETION_SCRIPT + INVESTIGATION_STATUS_COMPLETION_SCRIPT,
-    params: {
-      ...touched,
-      touched_ids_cap: WORK_TOUCHED_CAP,
-      investigation_status_to_review: WORK_INVESTIGATION_STATUS_TO_REVIEW,
-    },
+    params: { ...touched },
   };
 };
 

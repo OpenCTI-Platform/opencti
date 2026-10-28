@@ -18,7 +18,7 @@ import { isNothingToExpand, toExpandElements } from './investigation-enrichment.
 
 const dismissReviewMutation = graphql`
   mutation InvestigationEnrichmentDrawerDismissReview($workId: ID!, $status: WorkInvestigationStatus!) {
-    workInvestigationStatusEdit(id: $workId, status: $status) {
+    workInvestigationStatusEdit(workId: $workId, status: $status) {
       id
       investigation_status
     }

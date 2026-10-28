@@ -477,7 +477,7 @@ describe('Enrichments linked to an investigation', () => {
   describe('investigation status', () => {
     const EDIT_STATUS = gql`
       mutation WorkInvestigationStatusEdit($id: ID!, $status: WorkInvestigationStatus!) {
-        workInvestigationStatusEdit(id: $id, status: $status) { id investigation_status }
+        workInvestigationStatusEdit(workId: $id, status: $status) { id investigation_status }
       }
     `;
     const statusIntrusionSetIds: string[] = [];

@@ -4,8 +4,8 @@ import {
   redisAddWorkTouchedElement,
   redisDeleteWorks,
   redisGetWork,
-  redisGetWorkEventType,
   redisGetWorkTouchedElements,
+  redisGetWorkTrackingInfo,
   redisInitializeWork,
   WORK_TOUCHED_TTL,
 } from '../../../src/database/redis';
@@ -16,18 +16,18 @@ import {
 const newWorkId = () => `work_redis-touched-test_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
 describe('Redis work touched elements', () => {
-  it('should store the event type with the work', async () => {
+  it('should store the event type and the investigation id with the work', async () => {
     const workId = newWorkId();
-    await redisInitializeWork(workId, false, 'INTERNAL_ENRICHMENT');
-    expect(await redisGetWorkEventType(workId)).toEqual('INTERNAL_ENRICHMENT');
+    await redisInitializeWork(workId, false, 'INTERNAL_ENRICHMENT', 'investigation-1');
+    expect(await redisGetWorkTrackingInfo(workId)).toEqual({ eventType: 'INTERNAL_ENRICHMENT', investigationId: 'investigation-1' });
     expect((await redisGetWork(workId)).is_initialized).toEqual('true');
     await redisDeleteWorks([workId]);
   });
 
-  it('should return null event type for a work initialized without one', async () => {
+  it('should return null tracking info for a work initialized without them', async () => {
     const workId = newWorkId();
     await redisInitializeWork(workId, false);
-    expect(await redisGetWorkEventType(workId)).toBeNull();
+    expect(await redisGetWorkTrackingInfo(workId)).toEqual({ eventType: null, investigationId: null });
     await redisDeleteWorks([workId]);
   });
 

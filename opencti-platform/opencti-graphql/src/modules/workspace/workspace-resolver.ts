@@ -87,8 +87,8 @@ const workspaceResolvers: Resolvers = {
     workspaceVariableDelete: (_, { id, variableId }, context) => {
       return workspaceVariableDelete(context, context.user, id, variableId);
     },
-    workInvestigationStatusEdit: (_, { id, status }, context) => {
-      return editWorkInvestigationStatus(context, context.user, id, status) as unknown as ResolversTypes['Work'];
+    workInvestigationStatusEdit: (_, { workId, status }, context) => {
+      return editWorkInvestigationStatus(context, context.user, workId, status) as unknown as ResolversTypes['Work'];
     },
   },
   Subscription: {

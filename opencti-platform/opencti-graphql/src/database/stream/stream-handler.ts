@@ -51,9 +51,6 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
   const isPublishable = isStreamPublishable(opts);
-  if (isPublishable) {
-    await trackWorkTouchedElement(context, event);
-  }
 
   if (!draftContext && isPublishable) {
     if (STREAM_FULL_DEBUG_ACTIVATED) {
@@ -67,6 +64,7 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
       // Deprecated attribute to be removed when transition done
       [SEMATTRS_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
+    await trackWorkTouchedElement(context, event);
   }
 };
 

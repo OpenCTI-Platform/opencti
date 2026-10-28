@@ -574,11 +574,12 @@ export const redisDeleteWorkTouchedElements = async (workIds: Array<string>) => 
 };
 
 /**
- * Read the event type stored when the work was initialized.
- * @returns null when the work has no event type
+ * Read the event type and the investigation id stored when the work was initialized.
+ * Each field is null when the work has none.
  */
-export const redisGetWorkEventType = async (workId: string): Promise<string | null> => {
-  return getClientBase().hget(workId, 'event_type');
+export const redisGetWorkTrackingInfo = async (workId: string) => {
+  const [eventType, investigationId] = await getClientBase().hmget(workId, 'event_type', 'investigation_id');
+  return { eventType, investigationId };
 };
 
 /**
@@ -633,12 +634,13 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   return workId;
 };
 
-export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean, eventType?: string) => {
+export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean, eventType?: string, investigationId?: string) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectRaw(tx, workId, {
       is_initialized: true,
       is_multipart: isMultiPartWork,
       ...(eventType ? { event_type: eventType } : {}),
+      ...(investigationId ? { investigation_id: investigationId } : {}),
     });
   });
 };
