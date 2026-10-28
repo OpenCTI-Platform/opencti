@@ -3512,6 +3512,9 @@ type AggregationCountOpts = QueryBodyBuilderOpts & {
   // Without it, the buckets are ordered by number of documents. Not named `order`: the distribution APIs
   // spread their GraphQL arguments here, and their own `order` only sorts the result after the aggregation.
   bucketsOrder?: 'asc' | 'desc' | null;
+  // Ranks the buckets on their number of documents only, without the weight sum nor the missing bucket:
+  // a much cheaper request when only the ranking of the values is needed. `value` is then the number of documents.
+  rankByCount?: boolean | null;
 };
 export const elAggregationCount = async (
   context: AuthContext,
@@ -3519,35 +3522,46 @@ export const elAggregationCount = async (
   indexName: string[] | string | undefined,
   options: AggregationCountOpts = { field: '' },
 ): Promise<{ key: string; label: string; value: any; count: number }[]> => {
-  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false, bucketsOrder = null } = options;
+  const {
+    field,
+    types = null,
+    weightField = 'i_inference_weight',
+    normalizeLabel = true,
+    convertEntityTypeLabel = false,
+    bucketsOrder = null,
+    rankByCount = false,
+  } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
   const queryField = buildFieldForQuery(field);
   // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
   const isKeywordField = queryField.endsWith('.keyword');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
-  body.aggs = {
-    genres: {
-      terms: {
-        field: queryField,
-        size: MAX_AGGREGATION_SIZE,
-      },
-      aggs: {
-        weight: {
-          sum: {
-            field: weightField,
-            missing: 1,
-          },
-        },
-      },
+  const genres: any = {
+    terms: {
+      field: queryField,
+      size: MAX_AGGREGATION_SIZE,
     },
   };
-  if (isKeywordField) {
-    body.aggs.genres.terms.missing = 'unknown';
+  if (rankByCount) {
+    genres.terms.order = { _count: bucketsOrder === 'asc' ? 'asc' : 'desc' };
+  } else {
+    genres.aggs = {
+      weight: {
+        sum: {
+          field: weightField,
+          missing: 1,
+        },
+      },
+    };
+    if (isKeywordField) {
+      genres.terms.missing = 'unknown';
+    }
+    if (bucketsOrder === 'asc' || bucketsOrder === 'desc') {
+      genres.terms.order = { weight: bucketsOrder };
+    }
   }
-  if (bucketsOrder === 'asc' || bucketsOrder === 'desc') {
-    body.aggs.genres.terms.order = { weight: bucketsOrder };
-  }
+  body.aggs = { genres };
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
@@ -3567,7 +3581,7 @@ export const elAggregationCount = async (
           label = pascalize(b.key);
         }
         // key is the raw term as indexed, usable to target the same bucket in a later aggregation
-        return { key: String(b.key), label, value: b.weight.value, count: b.doc_count };
+        return { key: String(b.key), label, value: rankByCount ? b.doc_count : b.weight.value, count: b.doc_count };
       });
     })
     .catch((err) => {
@@ -3579,6 +3593,9 @@ export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   interval: string;
   keys: string[];
   withOther?: boolean;
+  // One term filter per key instead of a terms aggregation restricted to the keys: much faster on fields
+  // with many values (labels, users), a little slower on fields with a handful of values
+  filterPerKey?: boolean;
 };
 // Reserved key of the histogram of the entities carrying none of the requested keys
 export const HISTOGRAM_BREAKDOWN_OTHER_KEY = '__other__';
@@ -3590,7 +3607,7 @@ export const elHistogramBreakdownCount = async (
   indexName: string[] | string | undefined,
   options: HistogramBreakdownCountOpts,
 ): Promise<Map<string, { date: string; value: number }[]>> => {
-  const { field, interval, keys, withOther = false, types = null } = options;
+  const { field, interval, keys, withOther = false, filterPerKey = false, types = null } = options;
   const dateAttribute = options.dateAttribute || 'created_at';
   const dateFormat = getHistogramDateFormat(interval);
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute, noSize: true, noSort: true, intervalInclude: true });
@@ -3601,6 +3618,8 @@ export const elHistogramBreakdownCount = async (
       calendar_interval: interval,
       format: dateFormat,
       keyed: true,
+      // Empty buckets are not sent: the caller places the values on the full time axis
+      min_doc_count: 1,
     },
     aggs: {
       weight: {
@@ -3612,8 +3631,17 @@ export const elHistogramBreakdownCount = async (
     },
   };
   const fieldForQuery = buildFieldForQuery(field);
+  // Filters are keyed by position: a value, which may contain dots, never becomes a field name of the response
+  const filterKeyOf = (index: number) => `k${index}`;
   body.aggs = {};
-  if (keys.length > 0) {
+  if (keys.length > 0 && filterPerKey) {
+    body.aggs.breakdown = {
+      filters: {
+        filters: Object.fromEntries(keys.map((key, index) => [filterKeyOf(index), { term: { [fieldForQuery]: key } }])),
+      },
+      aggs: { count_over_time: countOverTime },
+    };
+  } else if (keys.length > 0) {
     body.aggs.breakdown = {
       terms: {
         field: fieldForQuery,
@@ -3634,21 +3662,35 @@ export const elHistogramBreakdownCount = async (
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     _source_excludes: '*',
+    // Only what is read below: the response of 50 series over a long period weighs megabytes otherwise
+    filter_path: [
+      '_shards',
+      'aggregations.breakdown.buckets.key',
+      'aggregations.breakdown.buckets.count_over_time.buckets.*.weight.value',
+      'aggregations.breakdown.buckets.*.count_over_time.buckets.*.weight.value',
+      'aggregations.other.count_over_time.buckets.*.weight.value',
+    ],
     body,
   };
   logApp.debug('[SEARCH] histogramBreakdownCount', { query });
+  // A histogram without any document is removed from the filtered response
   const toPoints = (countOverTimeAggregation: any) => {
-    const dateBuckets = R.toPairs(countOverTimeAggregation.buckets) as [string, any][];
+    const dateBuckets = R.toPairs(countOverTimeAggregation?.buckets ?? {}) as [string, any][];
     return dateBuckets.map(([date, dateBucket]) => ({ date, value: dateBucket.weight.value }));
   };
   return elRawSearch(context, user, types, query)
     .then((data) => {
+      const aggregations = data.aggregations ?? {};
       const histograms = new Map<string, { date: string; value: number }[]>();
-      (data.aggregations.breakdown?.buckets ?? []).forEach((bucket: any) => {
-        histograms.set(String(bucket.key), toPoints(bucket.count_over_time));
-      });
+      if (filterPerKey) {
+        keys.forEach((key, index) => histograms.set(key, toPoints(aggregations.breakdown?.buckets?.[filterKeyOf(index)]?.count_over_time)));
+      } else {
+        (aggregations.breakdown?.buckets ?? []).forEach((bucket: any) => {
+          histograms.set(String(bucket.key), toPoints(bucket.count_over_time));
+        });
+      }
       if (withOther) {
-        histograms.set(HISTOGRAM_BREAKDOWN_OTHER_KEY, toPoints(data.aggregations.other.count_over_time));
+        histograms.set(HISTOGRAM_BREAKDOWN_OTHER_KEY, toPoints(aggregations.other?.count_over_time));
       }
       return histograms;
     })
