@@ -26,12 +26,12 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
   const { dataColumns, node } = props;
   const external = node.external === true;
   const userServiceAccount = node.user_service_account;
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
   const passwordValidUntil = (node as { password_valid_until?: string | null }).password_valid_until;
   const passwordValidUntilDisplay = dataColumns.password_valid_until
     ? (dataColumns.password_valid_until.render
         ? dataColumns.password_valid_until.render(passwordValidUntil)
-        : (passwordValidUntil ? fd(passwordValidUntil) : '-'))
+        : (passwordValidUntil ? ftd(passwordValidUntil) : '-'))
     : null;
 
   return (
@@ -98,7 +98,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
             <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
-              {fd(node.created_at)}
+              {ftd(node.created_at)}
             </BodyItem>
           </div>
         )}

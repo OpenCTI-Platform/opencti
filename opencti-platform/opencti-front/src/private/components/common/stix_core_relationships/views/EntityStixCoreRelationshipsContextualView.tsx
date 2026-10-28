@@ -66,7 +66,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   stixCoreObjectTypes = [],
   currentView,
 }) => {
-  const { t_i18n, n, nsdt } = useFormatter();
+  const { t_i18n, n, ftdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
     EntityStixCoreRelationshipsContextualViewQuery,
@@ -151,7 +151,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       label: 'Platform creation date',
       width: '15%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => nsdt(stixCoreObject.created_at),
+      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => ftdt(stixCoreObject.created_at),
     },
     objectMarking: {
       label: 'Marking',

@@ -104,6 +104,8 @@ type User implements BasicObject & InternalObject {
   account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   administrated_organizations: [Organization!]!
   unit_system: UnitSystem
+  date_format: DateFormat
+  time_format: TimeFormat
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
@@ -157,6 +159,8 @@ type MeUser implements BasicObject & InternalObject {
   account_lock_after_date: DateTime
   administrated_organizations: [Organization!]!
   unit_system: UnitSystem
+  date_format: DateFormat
+  time_format: TimeFormat
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean

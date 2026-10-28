@@ -908,6 +908,24 @@ describe('User has no settings capability and is organization admin query behavi
       }
     }
   `;
+  const USER_RELATION_ADD_MEMBER_OF_QUERY = gql`
+    mutation UserRelationAddMemberOf($id: ID!, $toId: ID!) {
+      userEdit(id: $id) {
+        relationAdd(input: { toId: $toId, relationship_type: "member-of" }) {
+          id
+        }
+      }
+    }
+  `;
+  const USER_RELATION_DELETE_MEMBER_OF_QUERY = gql`
+    mutation UserRelationDeleteMemberOf($id: ID!, $toId: StixRef!) {
+      userEdit(id: $id) {
+        relationDelete(toId: $toId, relationship_type: "member-of") {
+          id
+        }
+      }
+    }
+  `;
 
   afterAll(async () => {
     // remove the capability to administrate the Organization
@@ -1221,6 +1239,36 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userEditorId);
   });
+  it('should not remove user from a group not grantable by the administrated organization', async () => {
+    const notGrantableGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    await queryAsAdminWithSuccess({
+      query: USER_RELATION_ADD_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+
+    // the membership must still be there
+    const userQueryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    const groupsIds = userQueryResult.data?.user.groups.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(groupsIds).toContain(notGrantableGroupId);
+
+    // clean up
+    await queryAsAdminWithSuccess({
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+  });
+  it('should remove user from a group grantable by the administrated organization', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: amberGroupId },
+    });
+    expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
+  });
   it('should user deleted', async () => {
     // Delete user
     await queryAsUser(USER_EDITOR, {
@@ -1278,6 +1326,38 @@ describe('meUser specific resolvers', async () => {
       variables,
     });
     expect(queryResult.data?.meEdit.language).toEqual('en-us');
+  });
+
+  it('User should update the date and time display of tables', async () => {
+    const ME_EDIT_DATE_DISPLAY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) {
+          id
+          date_format
+          time_format
+        }
+      }
+    `;
+    let queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_DATE_DISPLAY,
+      variables: { input: [{ key: 'date_format', value: 'iso' }, { key: 'time_format', value: 'seconds' }] },
+    });
+    expect(queryResult.data?.meEdit.date_format).toEqual('iso');
+    expect(queryResult.data?.meEdit.time_format).toEqual('seconds');
+    // Back to the platform display
+    queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_DATE_DISPLAY,
+      variables: { input: [{ key: 'date_format', value: 'auto' }, { key: 'time_format', value: 'auto' }] },
+    });
+    expect(queryResult.data?.meEdit.date_format).toEqual('auto');
+    expect(queryResult.data?.meEdit.time_format).toEqual('auto');
+  });
+
+  it('User should NOT update the time display of tables with an unsupported value', async () => {
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: ME_EDIT,
+      variables: { input: [{ key: 'time_format', value: 'hours' }] },
+    }, 'Unsupported time format');
   });
 
   it('User should NOT update password without providing proper current password', async () => {
@@ -1725,9 +1805,9 @@ describe('Password expiration - computePasswordValidUntilFromPolicy', () => {
       password_policy_min_words: 0,
       password_policy_validity_days: 20,
     });
-    const before = DateTime.now().plus({ days: 20 }).toUTC();
+    const before = DateTime.utc().plus({ days: 20 });
     const result = await computePasswordValidUntilFromPolicy(testContext);
-    const after = DateTime.now().plus({ days: 20 }).toUTC();
+    const after = DateTime.utc().plus({ days: 20 });
 
     expect(result).not.toBeNull();
     const resultDate = DateTime.fromISO(result!);

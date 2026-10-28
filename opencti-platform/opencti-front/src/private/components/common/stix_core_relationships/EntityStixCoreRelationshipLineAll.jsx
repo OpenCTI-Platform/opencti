@@ -47,7 +47,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
   render() {
     const {
       entityId,
-      fsd,
+      ftd,
       t,
       theme,
       dataColumns,
@@ -176,18 +176,18 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                 <BodyItem
                   style={{ width: dataColumns.start_time.width }}
                 >
-                  {fsd(node.start_time)}
+                  {ftd(node.start_time)}
                 </BodyItem>
                 <BodyItem
                   style={{ width: dataColumns.stop_time.width }}
                 >
-                  {fsd(node.stop_time)}
+                  {ftd(node.stop_time)}
                 </BodyItem>
                 {!isCoverage && dataColumns.created_at && (
                   <BodyItem
                     style={{ width: dataColumns.created_at.width }}
                   >
-                    {fsd(node.created_at)}
+                    {ftd(node.created_at)}
                   </BodyItem>
                 )}
                 <BodyItem
@@ -220,7 +220,7 @@ EntityStixCoreRelationshipLineAllComponent.propTypes = {
   paginationOptions: PropTypes.object,
   node: PropTypes.object,
   t: PropTypes.func,
-  fsd: PropTypes.func,
+  ftd: PropTypes.func,
 };
 
 const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(

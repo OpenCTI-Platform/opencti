@@ -98,7 +98,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
     TIMEOUT: 'critical',
     '%future added value': 'neutral',
   };
-  const { t_i18n, fndt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const data = useFragment(supportPackageLineFragment, node);
   const [commitDelete] = useApiMutation(SupportPackageLineDeleteMutation);
   const [commitForceZip] = useApiMutation(SupportPackageLineForceZipMutation);
@@ -227,7 +227,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <div
                 style={{ width: dataColumns.created_at.width, ...styles.bodyItem, paddingLeft: 20 }}
               >
-                {fndt(data.created_at)}
+                {ftdt(data.created_at, 'numeric')}
               </div>
             </>
           )}

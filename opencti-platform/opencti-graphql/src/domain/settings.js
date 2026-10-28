@@ -37,6 +37,7 @@ import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
+import { checkDateDisplayInput } from '../utils/dateDisplay';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
@@ -234,6 +235,8 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_favicon',
   'platform_email',
   'platform_language',
+  'platform_date_format',
+  'platform_time_format',
   'platform_whitemark',
   'platform_login_message',
   'platform_banner_text',
@@ -329,6 +332,8 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
     }
   }
+
+  checkDateDisplayInput(data, 'platform_date_format', 'platform_time_format');
 
   const ipWhitelist = data.find((inputData) => inputData.key === 'platform_ip_whitelist');
   if (ipWhitelist && Array.isArray(ipWhitelist.value) && ipWhitelist.value.length > 0) {

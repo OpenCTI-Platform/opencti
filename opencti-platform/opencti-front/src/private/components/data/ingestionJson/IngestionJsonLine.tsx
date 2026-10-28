@@ -45,7 +45,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
   node,
   paginationOptions,
 }) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const data = useFragment(ingestionJsonLineFragment, node);
   return (
     <ListItem
@@ -88,7 +88,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
             <BodyItem
               style={{ width: dataColumns.connector.width }}
             >
-              {fldt(data.last_execution_date) || EMPTY_VALUE}
+              {ftdt(data.last_execution_date, 'long') || EMPTY_VALUE}
             </BodyItem>
             <BodyItem>
               <Link to={`/dashboard/integrations/connectors/${data.connector_id}`}>VIEW</Link>

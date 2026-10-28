@@ -18,7 +18,7 @@ import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles'
 
 const BodyItem = styled('div')(bodyItemStyle);
 
-const RoleLineComponent = ({ fd, dataColumns, node }) => {
+const RoleLineComponent = ({ ftd, dataColumns, node }) => {
   const { isSensitive } = useSensitiveModifications('roles', node.standard_id);
 
   return (
@@ -76,12 +76,12 @@ const RoleLineComponent = ({ fd, dataColumns, node }) => {
             <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
-              {fd(node.created_at)}
+              {ftd(node.created_at)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.updated_at.width }}
             >
-              {fd(node.updated_at)}
+              {ftd(node.updated_at)}
             </BodyItem>
           </>
         )}
@@ -98,7 +98,7 @@ RoleLineComponent.propTypes = {
   node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
-  fd: PropTypes.func,
+  ftd: PropTypes.func,
 };
 
 const RoleLineFragment = createFragmentContainer(RoleLineComponent, {

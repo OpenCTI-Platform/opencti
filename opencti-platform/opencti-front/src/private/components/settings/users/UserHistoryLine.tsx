@@ -86,7 +86,7 @@ interface UserHistoryLineProps {
 
 const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const [open, setOpen] = useState(false);
   const log = useFragment<UserHistoryLine_node$key>(userHistoryLineFragment, node);
   const handleOpen = () => {
@@ -343,7 +343,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             background: 0,
           }}
         >
-          <LogDate>{nsdt(log.timestamp)}</LogDate>
+          <LogDate>{ftdt(log.timestamp)}</LogDate>
           <Tooltip
             slotProps={{
               tooltip: {

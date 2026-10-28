@@ -350,7 +350,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
       label: 'Original creation date',
       percentWidth: 25,
       isSortable: isRuntimeSort,
-      render: ({ created }, item) => defaultRender(item.fldt(created)),
+      render: ({ created }, item) => defaultRender(item.ftdt(created, 'long')),
     },
     name: {
       id: 'name',
