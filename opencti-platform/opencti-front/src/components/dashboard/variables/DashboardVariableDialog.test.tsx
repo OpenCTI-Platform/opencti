@@ -304,6 +304,17 @@ describe('DashboardVariableDialog', () => {
       expect(screen.getByText('Select at least one value')).toBeInTheDocument();
     });
 
+    it('starts the selection over untouched when the type changes', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Label');
+      await user.click(radio('Manual selection'));
+      await user.type(screen.getByTestId('selection-input'), 'label-1');
+      await user.click(screen.getByRole('combobox', { name: /Type/ }));
+      await user.click(screen.getByRole('option', { name: 'Marking' }));
+      expect(screen.getByTestId('selection-input')).toHaveValue('');
+      expect(screen.queryByText('Select at least one value')).not.toBeInTheDocument();
+    });
+
     it('disables the default value until the rule is valid', async () => {
       const { user } = renderDialog();
       await chooseType(user, 'Entity');

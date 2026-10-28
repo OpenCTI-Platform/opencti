@@ -226,9 +226,11 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
           const isRestrictable = !type || RESTRICTABLE_TYPES.includes(type);
           // A type, or one of its parameters, changing makes the default value meaningless, and the selection and
           // the rule with it. They only change in creation: they are locked in edition.
+          // The selection starts over untouched: it shows no error until touched again.
           const forgetDefaultValue = () => {
             setFieldValue('defaultValue', '');
             setFieldValue('selectionValues', []);
+            setFieldTouched('selectionValues', false, false);
             setFieldValue('filters', undefined);
           };
           // A type that cannot be restricted, or restricted by filter, leaves its restriction.

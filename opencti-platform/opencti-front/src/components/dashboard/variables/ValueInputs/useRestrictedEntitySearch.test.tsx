@@ -83,13 +83,16 @@ describe('useRestrictedEntitySearch', () => {
     expect(hook.result.current.error).toBe(false);
   });
 
-  it('forgets a failure when the rule changes', () => {
+  it('forgets a failure when the rule changes, even back to the rule that failed', () => {
     let filters = rule;
     const { relayEnv, hook } = testRenderHook(() => useRestrictedEntitySearch(['Organization'], filters));
     act(() => hook.result.current.search(''));
     act(() => relayEnv.mock.rejectMostRecentOperation(new Error('FORBIDDEN_ACCESS')));
     expect(hook.result.current.error).toBe(true);
     filters = { ...rule, filters: [{ key: 'objectLabel', values: ['label-2'], operator: 'eq', mode: 'or' }] };
+    hook.rerender();
+    expect(hook.result.current.error).toBe(false);
+    filters = rule;
     hook.rerender();
     expect(hook.result.current.error).toBe(false);
   });

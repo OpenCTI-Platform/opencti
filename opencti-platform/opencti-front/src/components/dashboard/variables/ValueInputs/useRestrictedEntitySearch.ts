@@ -41,13 +41,15 @@ const useRestrictedEntitySearch = (entityTypes: string[], filters: FilterGroup |
   const typesSignature = JSON.stringify(entityTypes);
   // The rule as sent: a change that does not alter it (a filter without value yet) neither resets nor searches again.
   const filtersSignature = filters ? serializeFilterGroupForBackend(filters) : 'null';
-  // A failure belongs to the types and the rule it happened for: other ones start with no failure.
+  // A failure belongs to the types and the rule it happened for: other ones start with no failure, and so does
+  // a rule that failed before once it comes back (the signature also hides it at the render of the change).
   const searchSignature = `${typesSignature}${filtersSignature}`;
   const [failedSignature, setFailedSignature] = useState<string | null>(null);
   // Options found for other types or another rule are not offered: they may not match the new one.
   useEffect(() => {
     subscription.current?.unsubscribe();
     setOptions([]);
+    setFailedSignature(null);
   }, [typesSignature, filtersSignature]);
 
   const search = useCallback((text: string) => {
