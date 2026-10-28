@@ -44,14 +44,14 @@ vi.mock('../../../src/utils/access', async () => {
 import { userAddRelation, userIdDeleteRelation } from '../../../src/domain/user';
 import { createRelation, deleteRelationsByFromAndTo } from '../../../src/database/middleware';
 import { internalLoadById } from '../../../src/database/middleware-loader';
-import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
+import { RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
 
 describe('user relation permissions', () => {
   const context = {} as any;
   const orgAdmin = {
     id: 'org-admin-id',
     user_email: 'org-admin@opencti.io',
-    administrated_organizations: [{ id: 'org-1', grantable_groups: [] }],
+    administrated_organizations: [{ id: 'org-1', grantable_groups: ['group-1'] }],
   } as any;
 
   beforeEach(() => {
@@ -90,5 +90,45 @@ describe('user relation permissions', () => {
       RELATION_PARTICIPATE_TO,
       expect.any(String),
     );
+  });
+
+  it('forbids adding member-of relation to a group not grantable by administrated organizations', async () => {
+    await expect(userAddRelation(context, orgAdmin, 'target-user-id', {
+      relationship_type: RELATION_MEMBER_OF,
+      toId: 'group-2',
+    })).rejects.toBeDefined();
+
+    expect(createRelation).not.toHaveBeenCalled();
+  });
+
+  it('forbids deleting member-of relation to a group not grantable by administrated organizations', async () => {
+    await expect(userIdDeleteRelation(context, orgAdmin, 'target-user-id', 'group-2', RELATION_MEMBER_OF)).rejects.toBeDefined();
+
+    expect(deleteRelationsByFromAndTo).not.toHaveBeenCalled();
+  });
+
+  it('allows deleting member-of relation to a group grantable by administrated organizations', async () => {
+    await userIdDeleteRelation(context, orgAdmin, 'target-user-id', 'group-1', RELATION_MEMBER_OF);
+
+    expect(deleteRelationsByFromAndTo).toHaveBeenCalledWith(
+      context,
+      orgAdmin,
+      'target-user-id',
+      'group-1',
+      RELATION_MEMBER_OF,
+      expect.any(String),
+    );
+  });
+
+  it('forbids deleting a relation without target', async () => {
+    await expect(userIdDeleteRelation(context, orgAdmin, 'target-user-id', '', RELATION_MEMBER_OF)).rejects.toBeDefined();
+
+    expect(deleteRelationsByFromAndTo).not.toHaveBeenCalled();
+  });
+
+  it('forbids deleting a relation other than member-of or participate-to', async () => {
+    await expect(userIdDeleteRelation(context, orgAdmin, 'target-user-id', 'role-1', RELATION_HAS_ROLE)).rejects.toBeDefined();
+
+    expect(deleteRelationsByFromAndTo).not.toHaveBeenCalled();
   });
 });
