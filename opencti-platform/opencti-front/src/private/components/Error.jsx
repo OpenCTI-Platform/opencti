@@ -7,7 +7,7 @@ import { Link } from 'react-router';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
 import withRouter from '../../utils/compat_router/withRouter';
-import { logger } from '../../utils/logs/logger';
+import { logger } from '../../utils/logging/logger';
 
 // --- Region UI errors components
 // -------------------------------

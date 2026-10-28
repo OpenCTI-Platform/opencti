@@ -18,7 +18,7 @@ import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { getVariableTokenLabel } from '../../components/dashboard/dashboardVariableTokenLabel';
-import { logger } from '../logs/logger';
+import { logger } from '../logging/logger';
 
 // ----------------------------------------------------------------------------------------------------------------------
 

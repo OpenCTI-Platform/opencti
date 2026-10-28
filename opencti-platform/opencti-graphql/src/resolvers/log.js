@@ -4,7 +4,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { appLogLevelMaxStringSize, logApp, logFrontend } from '../config/conf';
 import { loadCreator } from '../database/members';
 
-// Same as maxExportBatchSize in opencti-front/src/utils/logs/loggerProvider.ts:
+// Same as maxExportBatchSize in opencti-front/src/utils/logging/loggerProvider.ts:
 // a larger batch was not sent by the frontend logger.
 const MAX_FRONTEND_LOGS_PER_CALL = 50;
 
