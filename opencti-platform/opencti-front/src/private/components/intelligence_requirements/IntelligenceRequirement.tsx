@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router';
 import { Badge, Chip, Paper, Tabs, TabsList, TabsTrigger, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { PRIORITY_SEVERITY } from './IntelligenceRequirementsCards';
@@ -98,12 +99,15 @@ const IntelligenceRequirement = () => {
         onClose={() => setDeleting(false)}
         onDeleted={() => navigate('/dashboard/intelligence_requirements')}
       />
-      <Routes>
-        <Route path="/" element={<IrOverview irId={ir.id} />} />
-        <Route path="/entities" element={<IrEntities irId={ir.id} />} />
-        <Route path="/inbox" element={<IrInbox irId={ir.id} />} />
-        <Route path="/processing" element={<IrProcessing irId={ir.id} />} />
-      </Routes>
+      {/* Each tab loads its own data: only the tab waits, the header and the tabs stay in place */}
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <Routes>
+          <Route path="/" element={<IrOverview irId={ir.id} />} />
+          <Route path="/entities" element={<IrEntities irId={ir.id} />} />
+          <Route path="/inbox" element={<IrInbox irId={ir.id} />} />
+          <Route path="/processing" element={<IrProcessing irId={ir.id} />} />
+        </Routes>
+      </Suspense>
     </>
   );
 };
