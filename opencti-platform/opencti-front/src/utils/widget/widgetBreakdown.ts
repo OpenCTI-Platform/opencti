@@ -236,11 +236,16 @@ const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
     && !isCountingDistinctValues(widget);
 };
 
+// Hosts whose widgets can be broken down: the dashboards, and the custom views, whose widgets read the
+// platform data the same way, around their entity. A fintel template writes its widgets in a document.
+const BREAKDOWN_HOST_KINDS: WidgetHost['kind'][] = ['workspace', 'custom-view'];
+const isBreakdownHost = (host?: WidgetHost) => !!host && BREAKDOWN_HOST_KINDS.includes(host.kind);
+
 /**
- * Whether the breakdown can be configured: only workspace dashboards support it for now.
+ * Whether the breakdown can be configured: in workspace dashboards and custom views.
  */
 export const isWidgetBreakdownEligible = (widget: BreakdownWidget, host?: WidgetHost) => {
-  return host?.kind === 'workspace' && canWidgetBeBrokenDown(widget);
+  return isBreakdownHost(host) && canWidgetBeBrokenDown(widget);
 };
 
 /**
@@ -277,7 +282,7 @@ export const hasWidgetBreakdown = (widget: Widget) => {
  * Whether the widget must be rendered as a breakdown.
  */
 export const isWidgetBreakdownActive = (widget: Widget, host?: WidgetHost) => {
-  return host?.kind === 'workspace' && hasWidgetBreakdown(widget);
+  return isBreakdownHost(host) && hasWidgetBreakdown(widget);
 };
 
 // ApexCharts bar rendering cost grows with the square of the number of bars (every bar is

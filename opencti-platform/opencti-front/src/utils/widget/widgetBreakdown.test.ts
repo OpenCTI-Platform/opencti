@@ -100,7 +100,7 @@ describe('widget breakdown eligibility', () => {
     // A relationships widget can hold an entities dataset: it is not a dataset of relationships
     expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...widget.dataSelection[0], perspective: 'entities' }] }, workspace)).toBe(false);
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(isWidgetBreakdownActive(widget, customView)).toBe(false);
+    expect(isWidgetBreakdownActive(widget, customView)).toBe(true);
     expect(hasWidgetBreakdown(widget)).toBe(true);
   });
 
@@ -112,9 +112,14 @@ describe('widget breakdown eligibility', () => {
     expect(isWidgetBreakdownEligible(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
   });
 
-  it('only renders breakdowns in workspace dashboards', () => {
+  it('renders and configures breakdowns in workspace dashboards and custom views only', () => {
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(isWidgetBreakdownActive(makeWidget(), customView)).toBe(false);
+    expect(isWidgetBreakdownActive(makeWidget(), customView)).toBe(true);
+    expect(isWidgetBreakdownEligible(makeWidget(), customView)).toBe(true);
+    // A fintel template writes its widgets in a document
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    expect(isWidgetBreakdownActive(makeWidget(), fintelTemplate)).toBe(false);
+    expect(isWidgetBreakdownEligible(makeWidget(), fintelTemplate)).toBe(false);
     expect(isWidgetBreakdownActive(makeWidget(), undefined)).toBe(false);
     // ...but still knows the widget is broken down, to refuse it elsewhere
     expect(hasWidgetBreakdown(makeWidget())).toBe(true);
@@ -592,7 +597,8 @@ describe('audits breakdown', () => {
       expect(isWidgetBreakdownActive(makeAuditsWidget({ type }), workspace)).toBe(true);
     });
     expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownActive(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(false);
+    // The history of the entity of a custom view
+    expect(isWidgetBreakdownActive(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
     // ...but still knows the widget is broken down, to refuse it elsewhere
     expect(hasWidgetBreakdown(makeAuditsWidget())).toBe(true);
   });
@@ -619,7 +625,7 @@ describe('audits breakdown', () => {
     expect(isWidgetBreakdownConfigurable(distinct, workspace)).toBe(true);
     expect(getWidgetBreakdownLockReason(distinct)).toEqual('distinct-values');
     expect(isWidgetBreakdownConfigurable(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownConfigurable(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(false);
+    expect(isWidgetBreakdownConfigurable(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
   });
 
   it('offers exactly the fields the API accepts for the logs, whatever the filters', () => {

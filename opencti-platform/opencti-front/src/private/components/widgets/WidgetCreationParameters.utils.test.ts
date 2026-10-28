@@ -175,8 +175,11 @@ describe('applyBreakdownCompatibility', () => {
   it('drops the breakdown without perspective, with several datasets or another host', () => {
     expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: null }, workspace).parameters.breakdownBy).toBeNull();
     expect(applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace).parameters.breakdownBy).toBeNull();
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    expect(applyBreakdownCompatibility(brokenDownLine, fintelTemplate).parameters.breakdownBy).toBeNull();
+    // A custom view keeps it: editing an imported broken down widget does not lose its breakdown
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters.breakdownBy).toBeNull();
+    expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters).toEqual(brokenDownLine.parameters);
     const severalDatasets = applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace);
     expect(severalDatasets.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
   });

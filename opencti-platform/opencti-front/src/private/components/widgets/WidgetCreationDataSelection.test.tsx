@@ -49,6 +49,12 @@ describe('WidgetCreationDataSelection of a relationships widget', () => {
     expect(isDisabled(getByRole('button', { name: 'Entities' }))).toBe(false);
   });
 
+  it('offers the breakdown in a custom view too', () => {
+    mocks.host = { kind: 'custom-view', customViewTargetEntityType: 'Report' };
+    setWidget({});
+    expect(testRender(<WidgetCreationDataSelection />).getByText(INFO)).toBeTruthy();
+  });
+
   it('cannot add another dataset to a broken down widget', () => {
     setWidget({ parameters: { breakdownBy: 'toTypes' } });
     const { getByRole } = testRender(<WidgetCreationDataSelection />);
@@ -61,7 +67,7 @@ describe('WidgetCreationDataSelection of a relationships widget', () => {
     expect(testRender(<WidgetCreationDataSelection />).queryByText(INFO)).toBeNull();
     setWidget({ dataSelection: [relationships, relationships] });
     expect(testRender(<WidgetCreationDataSelection />).queryByText(INFO)).toBeNull();
-    mocks.host = { kind: 'custom-view', customViewTargetEntityType: 'Report' };
+    mocks.host = { kind: 'fintelTemplate', fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
     setWidget({});
     expect(testRender(<WidgetCreationDataSelection />).queryByText(INFO)).toBeNull();
   });
