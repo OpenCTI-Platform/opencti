@@ -36676,7 +36676,7 @@ export type TimeSeriesBreakdownSerie = {
   entity?: Maybe<StixObjectOrStixRelationshipOrCreator>;
   isOther: Scalars['Boolean']['output'];
   label: Scalars['String']['output'];
-  value?: Maybe<Scalars['Int']['output']>;
+  value: Scalars['Int']['output'];
   values: Array<Scalars['Int']['output']>;
 };
 
@@ -54240,7 +54240,7 @@ export type TimeSeriesBreakdownSerieResolvers<ContextType = any, ParentType exte
   entity?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   isOther?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   values?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
 }>;
 

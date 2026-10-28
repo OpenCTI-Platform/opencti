@@ -444,7 +444,7 @@ type MultiTimeSeries {
 type TimeSeriesBreakdownSerie {
   label: String!
   entity: StixObjectOrStixRelationshipOrCreator
-  value: Int
+  value: Int!
   isOther: Boolean!
   values: [Int!]!
 }
