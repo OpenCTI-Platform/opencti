@@ -104,7 +104,9 @@ const PublicDashboardComponent = ({
             className="layout"
             width={width}
             layout={widgetsWithLayout.map((w) => w.layout!)}
-            gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
+            // The rows of the private dashboards (DashboardContent), where the layouts are made. The container
+            // padding, the margin by default, keeps the widgets aligned with the header.
+            gridConfig={{ margin: [20, 20], rowHeight: 62, cols: 12 }}
             dragConfig={{ enabled: false }}
             resizeConfig={{ enabled: false }}
           >
