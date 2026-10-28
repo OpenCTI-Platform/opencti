@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { countTimeSeriesIntervals, extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs, fillTimeSeries } from '../../../src/database/utils';
+import {
+  buildTimeSeriesAxis,
+  countTimeSeriesIntervals,
+  extractObjectsPirsFromInputs,
+  extractObjectsRestrictionsFromInputs,
+  fillTimeSeries,
+  fillTimeSeriesValues,
+} from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { EditOperation } from '../../../src/generated/graphql';
 
@@ -326,5 +333,17 @@ describe('Function fillTimeSeries() range helpers', () => {
       { date: '2026-01-03', value: 4 },
     ]);
     expect(series[2].value).toEqual(4);
+  });
+
+  it('should place the values of several series on one shared axis', () => {
+    const axis = buildTimeSeriesAxis(startDate, endDate, 'day');
+    expect(axis.keys).toEqual(['2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', '2026-01-05']);
+    expect(axis.dates[0]).toEqual('2026-01-01T00:00:00.000Z');
+    expect(fillTimeSeriesValues(axis, [{ date: '2026-01-02', value: 3 }])).toEqual([0, 3, 0, 0, 0]);
+    expect(fillTimeSeriesValues(axis, [{ date: '2026-01-05', value: 7 }])).toEqual([0, 0, 0, 0, 7]);
+    // Same dates and values as the series filled one by one
+    const points = [{ date: '2026-01-04', value: 2 }];
+    const values = fillTimeSeriesValues(axis, points);
+    expect(axis.dates.map((date, i) => ({ date, value: values[i] }))).toEqual(fillTimeSeries(startDate, endDate, 'day', points));
   });
 });

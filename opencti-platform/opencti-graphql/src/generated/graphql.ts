@@ -24988,6 +24988,7 @@ export type Query = {
   auditsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   auditsNumber?: Maybe<Number>;
   auditsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
+  auditsTimeSeriesBreakdown?: Maybe<TimeSeriesBreakdown>;
   /** Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert). */
   authLogHistoryById: Array<AuthLogEntry>;
   authenticationProvider?: Maybe<AuthenticationProvider>;
@@ -25251,6 +25252,7 @@ export type Query = {
   publicStixRelationshipsDistribution?: Maybe<Array<Maybe<PublicDistribution>>>;
   publicStixRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   publicStixRelationshipsNumber?: Maybe<Number>;
+  publicStixRelationshipsTimeSeriesBreakdown?: Maybe<TimeSeriesBreakdown>;
   rabbitMQMetrics?: Maybe<RabbitMqMetrics>;
   redisStreamInfo?: Maybe<RedisStreamInfo>;
   region?: Maybe<Region>;
@@ -25345,6 +25347,7 @@ export type Query = {
   stixRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   stixRelationshipsNumber?: Maybe<Number>;
   stixRelationshipsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
+  stixRelationshipsTimeSeriesBreakdown?: Maybe<TimeSeriesBreakdown>;
   stixSchemaRefRelationships?: Maybe<DefinitionRefRelationship>;
   stixSchemaRefRelationshipsPossibleTypes: Array<Scalars['String']['output']>;
   stixSightingRelationship?: Maybe<StixSightingRelationship>;
@@ -25521,6 +25524,21 @@ export type QueryAuditsTimeSeriesArgs = {
   filters?: InputMaybe<FilterGroup>;
   interval: Scalars['String']['input'];
   operation: StatsOperation;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate: Scalars['DateTime']['input'];
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryAuditsTimeSeriesBreakdownArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  includeOther?: InputMaybe<Scalars['Boolean']['input']>;
+  interval: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  order?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -27331,6 +27349,14 @@ export type QueryPublicStixRelationshipsNumberArgs = {
 };
 
 
+export type QueryPublicStixRelationshipsTimeSeriesBreakdownArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  uriKey: Scalars['String']['input'];
+  widgetId: Scalars['String']['input'];
+};
+
+
 export type QueryRabbitMqMetricsArgs = {
   prefix?: InputMaybe<Scalars['String']['input']>;
 };
@@ -28214,6 +28240,24 @@ export type QueryStixRelationshipsTimeSeriesArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryStixRelationshipsTimeSeriesBreakdownArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  dynamicFrom?: InputMaybe<FilterGroup>;
+  dynamicTo?: InputMaybe<FilterGroup>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  includeOther?: InputMaybe<Scalars['Boolean']['input']>;
+  interval: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  order?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<Scalars['String']['input']>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate: Scalars['DateTime']['input'];
 };
 
 
@@ -36622,17 +36666,18 @@ export type TimeSeries = {
 
 export type TimeSeriesBreakdown = {
   __typename?: 'TimeSeriesBreakdown';
+  dates: Array<Scalars['DateTime']['output']>;
   series: Array<TimeSeriesBreakdownSerie>;
   truncated: Scalars['Boolean']['output'];
 };
 
 export type TimeSeriesBreakdownSerie = {
   __typename?: 'TimeSeriesBreakdownSerie';
-  data?: Maybe<Array<Maybe<TimeSeries>>>;
   entity?: Maybe<StixObjectOrStixRelationshipOrCreator>;
   isOther: Scalars['Boolean']['output'];
   label: Scalars['String']['output'];
   value?: Maybe<Scalars['Int']['output']>;
+  values: Array<Scalars['Int']['output']>;
 };
 
 export enum TokenDuration {
@@ -51124,6 +51169,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   auditsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
   auditsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryAuditsNumberArgs>>;
   auditsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
+  auditsTimeSeriesBreakdown?: Resolver<Maybe<ResolversTypes['TimeSeriesBreakdown']>, ParentType, ContextType, RequireFields<QueryAuditsTimeSeriesBreakdownArgs, 'field' | 'interval' | 'startDate'>>;
   authLogHistoryById?: Resolver<Array<ResolversTypes['AuthLogEntry']>, ParentType, ContextType, RequireFields<QueryAuthLogHistoryByIdArgs, 'id'>>;
   authenticationProvider?: Resolver<Maybe<ResolversTypes['AuthenticationProvider']>, ParentType, ContextType, RequireFields<QueryAuthenticationProviderArgs, 'id'>>;
   authenticationProviders?: Resolver<Maybe<ResolversTypes['AuthenticationProviderConnection']>, ParentType, ContextType, Partial<QueryAuthenticationProvidersArgs>>;
@@ -51385,6 +51431,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   publicStixRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['PublicDistribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsDistributionArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsNumberArgs, 'uriKey' | 'widgetId'>>;
+  publicStixRelationshipsTimeSeriesBreakdown?: Resolver<Maybe<ResolversTypes['TimeSeriesBreakdown']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsTimeSeriesBreakdownArgs, 'uriKey' | 'widgetId'>>;
   rabbitMQMetrics?: Resolver<Maybe<ResolversTypes['RabbitMQMetrics']>, ParentType, ContextType, Partial<QueryRabbitMqMetricsArgs>>;
   redisStreamInfo?: Resolver<Maybe<ResolversTypes['RedisStreamInfo']>, ParentType, ContextType>;
   region?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<QueryRegionArgs, 'id'>>;
@@ -51479,6 +51526,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixRelationshipsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
   stixRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixRelationshipsNumberArgs>>;
   stixRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixRelationshipsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
+  stixRelationshipsTimeSeriesBreakdown?: Resolver<Maybe<ResolversTypes['TimeSeriesBreakdown']>, ParentType, ContextType, RequireFields<QueryStixRelationshipsTimeSeriesBreakdownArgs, 'field' | 'interval' | 'startDate'>>;
   stixSchemaRefRelationships?: Resolver<Maybe<ResolversTypes['DefinitionRefRelationship']>, ParentType, ContextType, Partial<QueryStixSchemaRefRelationshipsArgs>>;
   stixSchemaRefRelationshipsPossibleTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixSchemaRefRelationshipsPossibleTypesArgs, 'type'>>;
   stixSightingRelationship?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, Partial<QueryStixSightingRelationshipArgs>>;
@@ -54183,16 +54231,17 @@ export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type TimeSeriesBreakdownResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeriesBreakdown'] = ResolversParentTypes['TimeSeriesBreakdown']> = ResolversObject<{
+  dates?: Resolver<Array<ResolversTypes['DateTime']>, ParentType, ContextType>;
   series?: Resolver<Array<ResolversTypes['TimeSeriesBreakdownSerie']>, ParentType, ContextType>;
   truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type TimeSeriesBreakdownSerieResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeriesBreakdownSerie'] = ResolversParentTypes['TimeSeriesBreakdownSerie']> = ResolversObject<{
-  data?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType>;
   entity?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   isOther?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['Int']>, ParentType, ContextType>;
 }>;
 
 export type TokenGeneratedResolvers<ContextType = any, ParentType extends ResolversParentTypes['TokenGenerated'] = ResolversParentTypes['TokenGenerated']> = ResolversObject<{

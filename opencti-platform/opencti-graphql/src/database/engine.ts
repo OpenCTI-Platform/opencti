@@ -76,6 +76,7 @@ import {
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_TYPES,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -3436,7 +3437,7 @@ export type HistogramCountOpts = QueryBodyBuilderOpts & {
   interval?: string;
   field?: string;
 };
-const getHistogramDateFormat = (interval: string | undefined) => {
+export const getHistogramDateFormat = (interval: string | undefined) => {
   switch (interval) {
     case 'year':
       return 'yyyy';
@@ -3503,13 +3504,20 @@ export const elHistogramCount = async (
     return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
   });
 };
+// Types are indexed in lowercase: give back the label of the right entity type
+const convertEntityTypeKeyToLabel = (key: string) => (isStixCoreRelationship(key) ? key : generateInternalType({ type: key }));
 type AggregationCountOpts = QueryBodyBuilderOpts & {
   field: string;
   weightField?: string | null;
   normalizeLabel?: boolean | null;
   convertEntityTypeLabel?: boolean | null;
-  // 'asc' orders the buckets by ascending value, so the lowest values are the ones kept by the size cap
-  order?: 'asc' | 'desc' | null;
+  // Orders the buckets by value, so the ones kept by the size cap are the lowest or the highest values.
+  // Without it, the buckets are ordered by number of documents. Not named `order`: the distribution APIs
+  // spread their GraphQL arguments here, and their own `order` only sorts the result after the aggregation.
+  bucketsOrder?: 'asc' | 'desc' | null;
+  // Ranks the buckets on their number of documents only, without the weight sum nor the missing bucket:
+  // a much cheaper request when only the ranking of the values is needed. `value` is then the number of documents.
+  rankByCount?: boolean | null;
 };
 export const elAggregationCount = async (
   context: AuthContext,
@@ -3517,35 +3525,46 @@ export const elAggregationCount = async (
   indexName: string[] | string | undefined,
   options: AggregationCountOpts = { field: '' },
 ): Promise<{ key: string; label: string; value: any; count: number }[]> => {
-  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false, order = null } = options;
+  const {
+    field,
+    types = null,
+    weightField = 'i_inference_weight',
+    normalizeLabel = true,
+    convertEntityTypeLabel = false,
+    bucketsOrder = null,
+    rankByCount = false,
+  } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
   const queryField = buildFieldForQuery(field);
   // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
   const isKeywordField = queryField.endsWith('.keyword');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
-  body.aggs = {
-    genres: {
-      terms: {
-        field: queryField,
-        size: MAX_AGGREGATION_SIZE,
-      },
-      aggs: {
-        weight: {
-          sum: {
-            field: weightField,
-            missing: 1,
-          },
-        },
-      },
+  const genres: any = {
+    terms: {
+      field: queryField,
+      size: MAX_AGGREGATION_SIZE,
     },
   };
-  if (isKeywordField) {
-    body.aggs.genres.terms.missing = 'unknown';
+  if (rankByCount) {
+    genres.terms.order = { _count: bucketsOrder === 'asc' ? 'asc' : 'desc' };
+  } else {
+    genres.aggs = {
+      weight: {
+        sum: {
+          field: weightField,
+          missing: 1,
+        },
+      },
+    };
+    if (isKeywordField) {
+      genres.terms.missing = 'unknown';
+    }
+    if (bucketsOrder === 'asc' || bucketsOrder === 'desc') {
+      genres.terms.order = { weight: bucketsOrder };
+    }
   }
-  if (order === 'asc') {
-    body.aggs.genres.terms.order = { weight: 'asc' };
-  }
+  body.aggs = { genres };
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
@@ -3559,17 +3578,72 @@ export const elAggregationCount = async (
         if (typeof label === 'number') {
           label = String(b.key);
         } else if (field === 'entity_type' && convertEntityTypeLabel) {
-          // entity_type is returned in lowercase, we want to return the label with the right entity type.
-          label = isStixCoreRelationship(b.key) ? b.key : generateInternalType({ type: b.key });
+          label = convertEntityTypeKeyToLabel(b.key);
         } else if (!isIdFields && normalizeLabel) {
           label = pascalize(b.key);
         }
         // key is the raw term as indexed, usable to target the same bucket in a later aggregation
-        return { key: String(b.key), label, value: b.weight.value, count: b.doc_count };
+        return { key: String(b.key), label, value: rankByCount ? b.doc_count : b.weight.value, count: b.doc_count };
       });
     })
     .catch((err) => {
       throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+    });
+};
+// Source or target of a relationship, stored in its nested connections
+export type ConnectionSide = 'from' | 'to';
+// Each connection lists the type of its element and every abstract parent of this type (indexed in lowercase):
+// without the abstract ones, each side of a relationship falls in a single bucket, the type of its element
+const CONNECTION_ABSTRACT_TYPES = ABSTRACT_TYPES.map((type) => type.toLowerCase());
+const CONNECTION_TYPES_FIELD = 'connections.types.keyword';
+// Same role condition as the fromTypes and toTypes filters
+const buildConnectionSideQuery = (side: ConnectionSide) => ({ query_string: { query: `*_${side}`, fields: ['connections.role'] } });
+// Terms on the type of one side of the relationships. A relationship has a single connection per side:
+// the number of connections of a type is its number of relationships, and `relationshipsAggs` goes back to them.
+const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<string, unknown>, relationshipsAggs?: Record<string, unknown>) => ({
+  nested: { path: 'connections' },
+  aggs: {
+    side: {
+      filter: buildConnectionSideQuery(side),
+      aggs: {
+        types: {
+          terms: { field: CONNECTION_TYPES_FIELD, ...terms },
+          ...(relationshipsAggs ? { aggs: { relationships: { reverse_nested: {}, aggs: relationshipsAggs } } } : {}),
+        },
+      },
+    },
+  },
+});
+const INFERENCE_WEIGHT_AGGREGATION = { weight: { sum: { field: 'i_inference_weight', missing: 1 } } };
+export type ConnectionTypesAggregationCountOpts = QueryBodyBuilderOpts & {
+  connectionSide: ConnectionSide;
+  bucketsOrder?: 'asc' | 'desc' | null;
+};
+// Ranks the types of the source or target of the relationships on their number of relationships, as
+// elAggregationCount with rankByCount does for a field of the relationships themselves
+export const elConnectionTypesAggregationCount = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: ConnectionTypesAggregationCountOpts,
+): Promise<{ key: string; label: string; value: number; count: number }[]> => {
+  const { connectionSide, types = null, bucketsOrder = null } = options;
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  body.size = 0;
+  const terms = { size: MAX_AGGREGATION_SIZE, exclude: CONNECTION_ABSTRACT_TYPES, order: { _count: bucketsOrder === 'asc' ? 'asc' : 'desc' } };
+  body.aggs = { connections: buildConnectionTypesAggregation(connectionSide, terms) };
+  const query = {
+    index: getIndicesToQuery(context, user, indexName),
+    body,
+  };
+  logApp.debug('[SEARCH] connectionTypesAggregationCount', { query });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const { buckets } = data.aggregations.connections.side.types;
+      return buckets.map((b: any) => ({ key: String(b.key), label: convertEntityTypeKeyToLabel(b.key), value: b.doc_count, count: b.doc_count }));
+    })
+    .catch((err) => {
+      throw DatabaseError('Connection types aggregation count fail', { cause: err, query });
     });
 };
 export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
@@ -3577,9 +3651,66 @@ export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   interval: string;
   keys: string[];
   withOther?: boolean;
+  // One term filter per key instead of a terms aggregation restricted to the keys: much faster on fields
+  // with many values (labels, users), a little slower on fields with a handful of values
+  filterPerKey?: boolean;
+  // Breaks the relationships down by the type of this side instead of `field`. A side has a handful of
+  // types: the terms aggregation restricted to the keys is used, whatever `filterPerKey`.
+  connectionSide?: ConnectionSide | null;
 };
 // Reserved key of the histogram of the entities carrying none of the requested keys
 export const HISTOGRAM_BREAKDOWN_OTHER_KEY = '__other__';
+// Filters are keyed by position: a value, which may contain dots, never becomes a field name of the response
+const breakdownFilterKeyOf = (index: number) => `k${index}`;
+// Aggregations of elHistogramBreakdownCount: `breakdown` holds one bucket per key, `other` the documents carrying none of them
+export const buildHistogramBreakdownAggregations = (
+  options: Pick<HistogramBreakdownCountOpts, 'field' | 'keys' | 'withOther' | 'filterPerKey' | 'connectionSide'>,
+  countOverTime: Record<string, unknown>,
+) => {
+  const { field, keys, withOther = false, filterPerKey = false, connectionSide = null } = options;
+  const aggs: Record<string, unknown> = {};
+  if (connectionSide) {
+    if (keys.length > 0) {
+      aggs.breakdown = buildConnectionTypesAggregation(connectionSide, { include: keys, size: keys.length }, { count_over_time: countOverTime });
+    }
+    if (withOther) {
+      // A relationship has a single source and a single target: none of the keys on this side
+      const sideWithKeys = { nested: { path: 'connections', query: { bool: { must: [buildConnectionSideQuery(connectionSide), { terms: { [CONNECTION_TYPES_FIELD]: keys } }] } } } };
+      aggs.other = {
+        filter: keys.length > 0 ? { bool: { must_not: [sideWithKeys] } } : { match_all: {} },
+        aggs: { count_over_time: countOverTime },
+      };
+    }
+    return aggs;
+  }
+  const fieldForQuery = buildFieldForQuery(field);
+  if (keys.length > 0 && filterPerKey) {
+    aggs.breakdown = {
+      filters: {
+        filters: Object.fromEntries(keys.map((key, index) => [breakdownFilterKeyOf(index), { term: { [fieldForQuery]: key } }])),
+      },
+      aggs: { count_over_time: countOverTime },
+    };
+  } else if (keys.length > 0) {
+    aggs.breakdown = {
+      terms: {
+        field: fieldForQuery,
+        include: keys,
+        size: keys.length,
+      },
+      aggs: { count_over_time: countOverTime },
+    };
+  }
+  if (withOther) {
+    aggs.other = {
+      filter: keys.length > 0
+        ? { bool: { must_not: [{ terms: { [fieldForQuery]: keys } }] } }
+        : { match_all: {} },
+      aggs: { count_over_time: countOverTime },
+    };
+  }
+  return aggs;
+};
 // One date histogram per term of `field`, restricted to the given raw `keys`, in a single query.
 // With `withOther`, a sibling aggregation counts the entities carrying none of the keys (entities without value included).
 export const elHistogramBreakdownCount = async (
@@ -3588,7 +3719,7 @@ export const elHistogramBreakdownCount = async (
   indexName: string[] | string | undefined,
   options: HistogramBreakdownCountOpts,
 ): Promise<Map<string, { date: string; value: number }[]>> => {
-  const { field, interval, keys, withOther = false, types = null } = options;
+  const { interval, keys, withOther = false, filterPerKey = false, connectionSide = null, types = null } = options;
   const dateAttribute = options.dateAttribute || 'created_at';
   const dateFormat = getHistogramDateFormat(interval);
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute, noSize: true, noSort: true, intervalInclude: true });
@@ -3599,54 +3730,51 @@ export const elHistogramBreakdownCount = async (
       calendar_interval: interval,
       format: dateFormat,
       keyed: true,
+      // Empty buckets are not sent: the caller places the values on the full time axis
+      min_doc_count: 1,
     },
-    aggs: {
-      weight: {
-        sum: {
-          field: 'i_inference_weight',
-          missing: 1,
-        },
-      },
-    },
+    aggs: INFERENCE_WEIGHT_AGGREGATION,
   };
-  const fieldForQuery = buildFieldForQuery(field);
-  body.aggs = {};
-  if (keys.length > 0) {
-    body.aggs.breakdown = {
-      terms: {
-        field: fieldForQuery,
-        include: keys,
-        size: keys.length,
-      },
-      aggs: { count_over_time: countOverTime },
-    };
-  }
-  if (withOther) {
-    body.aggs.other = {
-      filter: keys.length > 0
-        ? { bool: { must_not: [{ terms: { [fieldForQuery]: keys } }] } }
-        : { match_all: {} },
-      aggs: { count_over_time: countOverTime },
-    };
-  }
+  body.aggs = buildHistogramBreakdownAggregations(options, countOverTime);
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     _source_excludes: '*',
+    // Only what is read below: the response of 50 series over a long period weighs megabytes otherwise
+    filter_path: [
+      '_shards',
+      'aggregations.breakdown.buckets.key',
+      'aggregations.breakdown.buckets.count_over_time.buckets.*.weight.value',
+      'aggregations.breakdown.buckets.*.count_over_time.buckets.*.weight.value',
+      // The types of a side of the relationships, counted on the relationships
+      'aggregations.breakdown.side.types.buckets.key',
+      'aggregations.breakdown.side.types.buckets.relationships.count_over_time.buckets.*.weight.value',
+      'aggregations.other.count_over_time.buckets.*.weight.value',
+    ],
     body,
   };
   logApp.debug('[SEARCH] histogramBreakdownCount', { query });
+  // A histogram without any document is removed from the filtered response
   const toPoints = (countOverTimeAggregation: any) => {
-    const dateBuckets = R.toPairs(countOverTimeAggregation.buckets) as [string, any][];
+    const dateBuckets = R.toPairs(countOverTimeAggregation?.buckets ?? {}) as [string, any][];
     return dateBuckets.map(([date, dateBucket]) => ({ date, value: dateBucket.weight.value }));
   };
   return elRawSearch(context, user, types, query)
     .then((data) => {
+      const aggregations = data.aggregations ?? {};
       const histograms = new Map<string, { date: string; value: number }[]>();
-      (data.aggregations.breakdown?.buckets ?? []).forEach((bucket: any) => {
-        histograms.set(String(bucket.key), toPoints(bucket.count_over_time));
-      });
+      if (connectionSide) {
+        (aggregations.breakdown?.side?.types?.buckets ?? []).forEach((bucket: any) => {
+          histograms.set(String(bucket.key), toPoints(bucket.relationships?.count_over_time));
+        });
+      } else if (filterPerKey) {
+        keys.forEach((key, index) => histograms.set(key, toPoints(aggregations.breakdown?.buckets?.[breakdownFilterKeyOf(index)]?.count_over_time)));
+      } else {
+        (aggregations.breakdown?.buckets ?? []).forEach((bucket: any) => {
+          histograms.set(String(bucket.key), toPoints(bucket.count_over_time));
+        });
+      }
       if (withOther) {
-        histograms.set(HISTOGRAM_BREAKDOWN_OTHER_KEY, toPoints(data.aggregations.other.count_over_time));
+        histograms.set(HISTOGRAM_BREAKDOWN_OTHER_KEY, toPoints(aggregations.other?.count_over_time));
       }
       return histograms;
     })

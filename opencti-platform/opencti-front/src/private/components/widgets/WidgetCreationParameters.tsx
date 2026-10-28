@@ -2,7 +2,19 @@ import TextField from '@mui/material/TextField';
 import ReactMde from 'react-mde';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { Checkbox, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import {
+  Checkbox,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  Tooltip as FdsTooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import { stixCyberObservablesLinesAttributesQuery } from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
 import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -45,6 +57,7 @@ import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidge
 import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 'src/utils/customFields';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import WidgetBreakdownSelection from './WidgetBreakdownSelection';
+import { isBreakdownField, isWidgetBreakdownEligible } from 'src/utils/widget/widgetBreakdown';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -309,6 +322,8 @@ const WidgetCreationParameters = () => {
   const auditAttributeSelectionSection = (uniqueParameterEnabled: boolean, dataSelectionIndex: number) => {
     const isAttributeSelectionDisabled = uniqueParameterEnabled && !dataSelection[dataSelectionIndex].unique;
     const attributeSize = uniqueParameterEnabled ? 10 : 12;
+    // A breakdown counts every event: distinct values can only be counted without it
+    const isDistinctLockedByBreakdown = isBreakdownField(parameters.breakdownBy) && isWidgetBreakdownEligible(config.widget, host);
 
     const uniqueDataCheckbox = () => {
       const inline = dataSelection.length === 1;
@@ -319,6 +334,7 @@ const WidgetCreationParameters = () => {
           style={{ marginLeft: inline ? 0 : -24 }}
           label={inline ? distinctLabel : undefined}
           aria-label={inline ? undefined : t_i18n('Distinct')}
+          disabled={isDistinctLockedByBreakdown}
           onCheckedChange={(checked) => handleChangeDataValidationParameter(
             dataSelectionIndex,
             'unique',
@@ -329,7 +345,16 @@ const WidgetCreationParameters = () => {
       );
       return (
         <Grid size={inline ? 2 : 1.5} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {checkbox}
+          {isDistinctLockedByBreakdown ? (
+            <FdsTooltip>
+              <TooltipTrigger asChild>
+                {/* A disabled checkbox gets no pointer events: the wrapper carries the tooltip */}
+                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+                <span tabIndex={0}>{checkbox}</span>
+              </TooltipTrigger>
+              <TooltipContent>{t_i18n('A breakdown counts every event: it cannot count distinct values.')}</TooltipContent>
+            </FdsTooltip>
+          ) : checkbox}
         </Grid>
       );
     };

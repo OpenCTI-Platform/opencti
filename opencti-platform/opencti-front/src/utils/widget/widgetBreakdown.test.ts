@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Widget } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import { daysAgo, monthsAgo } from '../Time';
 import {
+  AUDITS_BREAKDOWN_FIELDS,
   BREAKDOWN_ALLOWED_REFS,
   coarsenSeriesForRendering,
   getBreakdownEntityTypes,
@@ -11,16 +12,25 @@ import {
   getBreakdownFieldOptions,
   getBreakdownTickAmount,
   getRenderedBarsBudget,
+  getRenderedPointsBudget,
+  getWidgetBreakdownFieldOptions,
   getWidgetBreakdownLimit,
+  getWidgetBreakdownLockReason,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   hasWidgetBreakdown,
   isBreakdownFieldSupported,
+  isBreakdownTypeField,
   isWidgetBreakdownActive,
+  isWidgetBreakdownConfigurable,
+  isSameBreakdown,
   isWidgetBreakdownEligible,
   MAX_RENDERED_BARS,
+  MAX_RENDERED_HEATMAP_CELLS,
+  MAX_RENDERED_LINE_POINTS,
   MIN_RENDERED_BARS,
   nextBreakdownChartWidth,
+  scheduleChartDraw,
 } from './widgetBreakdown';
 
 const workspace = { kind: 'workspace' } as const;
@@ -40,6 +50,23 @@ const makeWidget = (overrides: Partial<Widget> = {}, entityTypes: string[] = ['R
   ...overrides,
 } as unknown as Widget);
 
+const makeRelationshipsWidget = (overrides: Partial<Widget> = {}, relationshipTypes: string[] = ['targets']): Widget => ({
+  id: 'widget',
+  type: 'line',
+  perspective: 'relationships',
+  dataSelection: [{
+    perspective: 'relationships',
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'relationship_type', values: relationshipTypes, operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    },
+    dynamicFrom: { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] },
+  }],
+  parameters: { breakdownBy: 'toTypes' },
+  ...overrides,
+} as unknown as Widget);
+
 // One point per UTC day, starting on a given date
 const daily = (start: string, values: number[]) => values.map((y, i) => {
   const x = new Date(start);
@@ -54,9 +81,30 @@ describe('widget breakdown eligibility', () => {
     });
   });
 
+  it('accepts every relationships time series visualization of a workspace dashboard', () => {
+    ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
+      expect(isWidgetBreakdownActive(makeRelationshipsWidget({ type }), workspace)).toBe(true);
+    });
+    // Older datasets carry no perspective of their own
+    const withoutDatasetPerspective = makeRelationshipsWidget();
+    withoutDatasetPerspective.dataSelection = [{ ...withoutDatasetPerspective.dataSelection[0], perspective: undefined }];
+    expect(isWidgetBreakdownEligible(withoutDatasetPerspective, workspace)).toBe(true);
+  });
+
+  it('rejects the relationships widgets that cannot be broken down', () => {
+    expect(isWidgetBreakdownEligible(makeRelationshipsWidget({ type: 'donut' }), workspace)).toBe(false);
+    const widget = makeRelationshipsWidget();
+    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
+    // A relationships widget can hold an entities dataset: it is not a dataset of relationships
+    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...widget.dataSelection[0], perspective: 'entities' }] }, workspace)).toBe(false);
+    const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
+    expect(isWidgetBreakdownActive(widget, customView)).toBe(false);
+    expect(hasWidgetBreakdown(widget)).toBe(true);
+  });
+
   it('rejects other visualizations, perspectives, several datasets and drafts', () => {
     expect(isWidgetBreakdownEligible(makeWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownEligible(makeWidget({ perspective: 'relationships' }), workspace)).toBe(false);
+    expect(isWidgetBreakdownEligible(makeWidget({ perspective: null }), workspace)).toBe(false);
     const widget = makeWidget();
     expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
     expect(isWidgetBreakdownEligible(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
@@ -86,6 +134,13 @@ describe('widget breakdown eligibility', () => {
     expect(getWidgetBreakdownOther(undefined)).toBe(false);
     expect(getWidgetBreakdownOther({ breakdownOther: null })).toBe(false);
     expect(getWidgetBreakdownOther({ breakdownOther: true })).toBe(true);
+  });
+});
+
+describe('isBreakdownTypeField', () => {
+  it('knows the fields whose values are entity or relationship types', () => {
+    ['entity_type', 'relationship_type', 'fromTypes', 'toTypes'].forEach((field) => expect(isBreakdownTypeField(field)).toBe(true));
+    ['objectLabel', 'creator_id', null, undefined].forEach((field) => expect(isBreakdownTypeField(field)).toBe(false));
   });
 });
 
@@ -120,6 +175,17 @@ describe('getBreakdownEntityTypes', () => {
       { key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' },
       { key: 'objectLabel', values: ['label-id'], operator: 'eq', mode: 'or' },
     ], 'or'))).toEqual([]);
+  });
+
+  it('reads the relationship types of a relationships dataset', () => {
+    const filters = group([
+      { key: 'relationship_type', values: ['targets', 'uses'], operator: 'eq', mode: 'or' },
+      { key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' },
+    ]);
+    expect(getBreakdownEntityTypes(filters, 'relationships')).toEqual(['targets', 'uses']);
+    expect(getBreakdownEntityTypes(filters)).toEqual(['Report']);
+    expect(getBreakdownEntityTypes(group([{ key: 'relationship_type', values: ['uses'], operator: 'not_eq', mode: 'or' }]), 'relationships')).toEqual([]);
+    expect(getBreakdownEntityTypes(filters, 'audits')).toEqual([]);
   });
 });
 
@@ -177,6 +243,86 @@ describe('getBreakdownFieldOptions', () => {
     expect(keys([])).toEqual(['createdBy', 'entity_type']);
   });
 
+  it('does not offer the custom fields, which the API cannot break down', () => {
+    const withCustomField = new Map(schema);
+    withCustomField.set('Report', new Map([
+      ...(schema.get('Report') ?? new Map()),
+      ['x_opencti_cf_priority', definition('x_opencti_cf_priority', 'enum', 'Priority', ['Report'])],
+    ]));
+    expect(getBreakdownFieldOptions(withCustomField, ['Report']).map(({ key }) => key)).toEqual(['createdBy', 'objectLabel', 'report_types']);
+  });
+
+  describe('relationships', () => {
+    const relationshipsSchema = new Map<string, Map<string, FilterDefinition>>([
+      ['stix-relationship', new Map([
+        ['relationship_type', definition('relationship_type', 'string', 'Relationship type', ['stix-relationship', 'targets', 'uses'])],
+        ['createdBy', definition('createdBy', 'id', 'Author', ['stix-relationship', 'targets', 'uses'])],
+        ['objectLabel', definition('objectLabel', 'id', 'Label', ['stix-relationship', 'targets', 'uses'])],
+        ['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets', 'uses'])],
+        ['creator_id', definition('creator_id', 'id', 'Creators', ['stix-relationship', 'targets', 'uses'])],
+        ['externalReferences', definition('externalReferences', 'id', 'External reference', ['stix-relationship', 'targets', 'uses'])],
+        ['confidence', definition('confidence', 'integer', 'Confidence', ['stix-relationship', 'targets', 'uses'])],
+        ['objects', definition('objects', 'id', 'Contains', ['stix-relationship', 'targets', 'uses'])],
+      ])],
+      ['targets', new Map([
+        ['createdBy', definition('createdBy', 'id', 'Author', ['targets'])],
+        ['objectMarking', definition('objectMarking', 'id', 'Marking', ['targets'])],
+        ['fromId', definition('fromId', 'id', 'Source entity', ['targets'])],
+        ['toId', definition('toId', 'id', 'Target entity', ['targets'])],
+        ['fromTypes', definition('fromTypes', 'string', 'Source type', ['targets'])],
+        ['killChainPhases', definition('killChainPhases', 'id', 'Kill chain phase', ['targets'])],
+        ['workflow_id', definition('workflow_id', 'id', 'Status', ['targets'])],
+      ])],
+      ['uses', new Map([
+        ['createdBy', definition('createdBy', 'id', 'Author', ['uses'])],
+        ['usage_types', definition('usage_types', 'vocabulary', 'Usage types', ['uses'])],
+      ])],
+    ]);
+    const relationshipKeys = (relationshipTypes: string[]) => getBreakdownFieldOptions(relationshipsSchema, relationshipTypes, 'relationships').map(({ key }) => key);
+
+    it('offers the fields of every relationship, their type and the types of their source and target', () => {
+      expect(relationshipKeys([])).toEqual(['createdBy', 'creator_id', 'objectLabel', 'objectMarking', 'relationship_type', 'fromTypes', 'toTypes']);
+    });
+
+    it('offers the fields of a single relationship type, without the relationship type', () => {
+      expect(relationshipKeys(['targets'])).toEqual(['createdBy', 'objectMarking', 'fromTypes', 'toTypes']);
+      expect(relationshipKeys(['uses'])).toEqual(['createdBy', 'fromTypes', 'toTypes', 'usage_types']);
+    });
+
+    it('offers the fields shared by several relationship types', () => {
+      expect(relationshipKeys(['targets', 'uses'])).toEqual(['createdBy', 'relationship_type', 'fromTypes', 'toTypes']);
+    });
+
+    it('never offers the source and target themselves, nor the fields of an unbounded cardinality', () => {
+      const options = relationshipKeys(['targets']);
+      ['fromId', 'toId', 'objects', 'externalReferences', 'killChainPhases', 'workflow_id', 'entity_type'].forEach((key) => expect(options).not.toContain(key));
+    });
+
+    it('labels the relationships fields', () => {
+      const labels = getBreakdownFieldOptions(relationshipsSchema, [], 'relationships').map(({ label }) => label);
+      expect(labels).toEqual(expect.arrayContaining(['Relationship type', 'Source type', 'Target type']));
+    });
+
+    it('checks the field of a relationships widget against its relationship types', () => {
+      const supported = (breakdownBy: string, relationshipTypes?: string[]) => isBreakdownFieldSupported(
+        relationshipsSchema,
+        { ...makeRelationshipsWidget({}, relationshipTypes), parameters: { breakdownBy } },
+      );
+      expect(supported('toTypes')).toBe(true);
+      expect(supported('objectMarking')).toBe(true);
+      expect(supported('usage_types')).toBe(false);
+      expect(supported('usage_types', ['uses'])).toBe(true);
+      expect(supported('relationship_type')).toBe(false);
+      expect(supported('relationship_type', ['targets', 'uses'])).toBe(true);
+      // An entities field is not one of the relationships
+      expect(supported('entity_type', ['targets', 'uses'])).toBe(false);
+    });
+
+    it('offers no field for a perspective that cannot be broken down', () => {
+      expect(getBreakdownFieldOptions(relationshipsSchema, [], 'audits')).toEqual([]);
+    });
+  });
+
   describe('isBreakdownFieldSupported', () => {
     const supported = (breakdownBy: string, entityTypes?: string[]) => isBreakdownFieldSupported(schema, {
       ...makeWidget({}, entityTypes),
@@ -228,6 +374,94 @@ describe('rendered bars budget', () => {
   });
 });
 
+describe('rendered points budget', () => {
+  it('shares the bars budget between every series', () => {
+    expect(getRenderedPointsBudget('vertical-bar', 800, 20)).toEqual(getRenderedBarsBudget(800));
+  });
+
+  it('gives each line or area series a point every 2 pixels', () => {
+    expect(getRenderedPointsBudget('line', 700, 1)).toEqual(350);
+    expect(getRenderedPointsBudget('area', 700, 10)).toEqual(350 * 10);
+  });
+
+  it('gives each heatmap series a cell every 6 pixels', () => {
+    expect(getRenderedPointsBudget('heatmap', 600, 10)).toEqual(100 * 10);
+  });
+
+  it('keeps a few points per series on a tiny or unknown width', () => {
+    expect(getRenderedPointsBudget('heatmap', 12, 2)).toEqual(10 * 2);
+    expect(getRenderedPointsBudget('line', 0, 1)).toEqual((MAX_RENDERED_BARS * 2) / 2);
+  });
+
+  it('caps the points of a wide chart with many series, keeping a few points per series', () => {
+    expect(getRenderedPointsBudget('line', 2000, 50)).toEqual(MAX_RENDERED_LINE_POINTS);
+    expect(getRenderedPointsBudget('heatmap', 1200, 20)).toEqual(MAX_RENDERED_HEATMAP_CELLS);
+    expect(getRenderedPointsBudget('heatmap', 600, 200)).toEqual(10 * 200);
+  });
+});
+
+describe('isSameBreakdown', () => {
+  const breakdown = (values: number[], overrides = {}) => ({
+    truncated: false,
+    dates: ['2025-10-01T00:00:00.000Z', '2025-10-02T00:00:00.000Z'],
+    series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values }],
+    ...overrides,
+  });
+
+  it('finds a refreshed breakdown with the same values the same', () => {
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2]))).toBe(true);
+    expect(isSameBreakdown(null, null)).toBe(true);
+  });
+
+  it('finds a breakdown with other values, dates, series or names different', () => {
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 3]))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { truncated: true }))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { dates: ['2025-10-02T00:00:00.000Z', '2025-10-03T00:00:00.000Z'] }))).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { series: [] }))).toBe(false);
+    const renamed = breakdown([1, 2], { series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Bob' }, values: [1, 2] }] });
+    expect(isSameBreakdown(breakdown([1, 2]), renamed)).toBe(false);
+    expect(isSameBreakdown(breakdown([1, 2]), null)).toBe(false);
+  });
+});
+
+describe('scheduleChartDraw', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.runAllTimers();
+    vi.useRealTimers();
+  });
+
+  it('draws the first chart at once, and the charts drawn with it one per task', () => {
+    const draws: string[] = [];
+    scheduleChartDraw(() => draws.push('first'));
+    scheduleChartDraw(() => draws.push('second'));
+    scheduleChartDraw(() => draws.push('third'));
+    expect(draws).toEqual(['first']);
+    vi.advanceTimersToNextTimer();
+    expect(draws).toEqual(['first', 'second']);
+    vi.advanceTimersToNextTimer();
+    expect(draws).toEqual(['first', 'second', 'third']);
+
+    // Once every chart is drawn, the next one is drawn at once
+    vi.runAllTimers();
+    scheduleChartDraw(() => draws.push('later'));
+    expect(draws).toEqual(['first', 'second', 'third', 'later']);
+  });
+
+  it('does not draw a cancelled chart', () => {
+    const draws: string[] = [];
+    scheduleChartDraw(() => draws.push('first'));
+    const cancel = scheduleChartDraw(() => draws.push('second'));
+    scheduleChartDraw(() => draws.push('third'));
+    cancel();
+    vi.advanceTimersToNextTimer();
+    expect(draws).toEqual(['first', 'third']);
+  });
+});
+
 describe('nextBreakdownChartWidth', () => {
   it('takes the first measured width', () => {
     expect(nextBreakdownChartWidth(undefined, 800)).toEqual(800);
@@ -255,7 +489,7 @@ describe('coarsenSeriesForRendering', () => {
     const result = coarsenSeriesForRendering(series, 'day', 10);
     expect(result.interval).toEqual('day');
     expect(result.series).toBe(series);
-    expect(result.barsCount).toEqual(3);
+    expect(result.pointsCount).toEqual(3);
   });
 
   it('sums days into weeks starting on Monday', () => {
@@ -277,7 +511,7 @@ describe('coarsenSeriesForRendering', () => {
 
     const toWeeks = coarsenSeriesForRendering(series, 'day', 1200);
     expect(toWeeks.interval).toEqual('week');
-    expect(toWeeks.barsCount).toBeLessThanOrEqual(1200);
+    expect(toWeeks.pointsCount).toBeLessThanOrEqual(1200);
 
     const toMonths = coarsenSeriesForRendering(series, 'day', 600);
     expect(toMonths.interval).toEqual('month');
@@ -293,7 +527,7 @@ describe('coarsenSeriesForRendering', () => {
     expect(coarsenSeriesForRendering(series, 'day', MIN_RENDERED_BARS).interval).toEqual('week');
     const result = coarsenSeriesForRendering(series, 'week', 20);
     expect(result.interval).toEqual('month');
-    expect(result.barsCount).toEqual(13);
+    expect(result.pointsCount).toEqual(13);
   });
 
   it('never goes beyond years', () => {
@@ -301,5 +535,78 @@ describe('coarsenSeriesForRendering', () => {
     const result = coarsenSeriesForRendering(series, 'year', 1);
     expect(result.interval).toEqual('year');
     expect(result.series).toBe(series);
+  });
+});
+
+describe('audits breakdown', () => {
+  const emptyMap = new Map<string, Map<string, FilterDefinition>>();
+  const makeAuditsWidget = (overrides: Partial<Widget> = {}, selectionOverrides: Record<string, unknown> = {}): Widget => ({
+    id: 'audits-widget',
+    type: 'line',
+    perspective: 'audits',
+    dataSelection: [{ attribute: 'user_id', filters: { mode: 'and', filters: [], filterGroups: [] }, ...selectionOverrides }],
+    parameters: { breakdownBy: 'event_scope' },
+    ...overrides,
+  } as unknown as Widget);
+
+  it('accepts every audits time series visualization of a workspace dashboard', () => {
+    ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
+      expect(isWidgetBreakdownActive(makeAuditsWidget({ type }), workspace)).toBe(true);
+    });
+    expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(isWidgetBreakdownActive(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(false);
+    // ...but still knows the widget is broken down, to refuse it elsewhere
+    expect(hasWidgetBreakdown(makeAuditsWidget())).toBe(true);
+  });
+
+  it('refuses a dataset counting distinct values, the breakdown counting every event', () => {
+    ['line', 'area'].forEach((type) => {
+      expect(isWidgetBreakdownEligible(makeAuditsWidget({ type }, { unique: true }), workspace)).toBe(false);
+    });
+    // Bars and heatmaps never count distinct values: a leftover setting does not matter
+    expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'vertical-bar' }, { unique: true }), workspace)).toBe(true);
+    // The entities never count distinct values either
+    expect(isWidgetBreakdownEligible(makeWidget({ type: 'line', dataSelection: [{ ...makeWidget().dataSelection[0], unique: true }] }), workspace)).toBe(true);
+  });
+
+  it('shows the controls of a widget with several datasets or distinct values, locked with the reason', () => {
+    const widget = makeAuditsWidget();
+    const severalDatasets = { ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] };
+    const distinct = makeAuditsWidget({}, { unique: true });
+
+    expect(isWidgetBreakdownConfigurable(widget, workspace)).toBe(true);
+    expect(getWidgetBreakdownLockReason(widget)).toBeUndefined();
+    expect(isWidgetBreakdownConfigurable(severalDatasets, workspace)).toBe(true);
+    expect(getWidgetBreakdownLockReason(severalDatasets)).toEqual('several-datasets');
+    expect(isWidgetBreakdownConfigurable(distinct, workspace)).toBe(true);
+    expect(getWidgetBreakdownLockReason(distinct)).toEqual('distinct-values');
+    expect(isWidgetBreakdownConfigurable(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(isWidgetBreakdownConfigurable(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(false);
+  });
+
+  it('offers exactly the fields the API accepts for the logs, whatever the filters', () => {
+    // Mirror of HISTORY_BREAKDOWN_FIELDS in opencti-graphql/src/database/middleware.ts
+    const apiFields = ['event_type', 'event_scope', 'user_id', 'group_ids', 'organization_ids', 'entity_type', 'context_data.entity_type'];
+    expect(AUDITS_BREAKDOWN_FIELDS.map(({ key }) => key)).toEqual(apiFields);
+    expect(getWidgetBreakdownFieldOptions(emptyMap, makeAuditsWidget()).map(({ key }) => key)).toEqual(apiFields);
+    ['context_data.id', 'context_data.search', 'context_data.message', 'creator_id', 'createdBy'].forEach((key) => {
+      expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: key } }))).toBe(false);
+    });
+    apiFields.forEach((key) => {
+      expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: key } }))).toBe(true);
+    });
+  });
+
+  it('keeps the entities fields to the entities', () => {
+    // An entities field carried over to an audits widget is not supported, and the reverse
+    expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: 'objectLabel' } }))).toBe(false);
+    expect(isBreakdownFieldSupported(emptyMap, makeWidget({ parameters: { breakdownBy: 'event_scope' } }))).toBe(false);
+  });
+
+  it('names the values of the type fields of the logs after the entity types', () => {
+    expect(isBreakdownTypeField('entity_type')).toBe(true);
+    expect(isBreakdownTypeField('context_data.entity_type')).toBe(true);
+    expect(isBreakdownTypeField('event_scope')).toBe(false);
+    expect(isBreakdownTypeField(null)).toBe(false);
   });
 });

@@ -216,24 +216,36 @@ export const countTimeSeriesIntervals = (startDate: Date, endDate: Date, interva
   return computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1;
 };
 
-export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+export type TimeSeriesAxis = {
+  keys: string[]; // bucket keys as formatted by the date histogram
+  dates: string[]; // start of each bucket, ISO formatted
+};
+
+// The dates of a time series only depend on the period and the interval: compute them once, then
+// place the values of any number of series on them (moment is too slow to be run again per series)
+export const buildTimeSeriesAxis = (startDate: Date, endDate: Date, interval: string): TimeSeriesAxis => {
   const { startDateParsed, startOfInterval, dateFormat, duration, elementsOfInterval } = computeTimeSeriesRange(startDate, endDate, interval);
-  // Last value wins on duplicated dates, as the former linear lookup did
-  const valuesByDate = new Map(data.map((d) => [d.date, d.value]));
-  const newData = [];
+  const keys = [];
+  const dates = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
     const workDate = startDateParsed.clone().add(i, duration);
-    // Looking for the value
-    const formattedDate = workDate.format(dateFormat);
-    const dataValue = valuesByDate.has(formattedDate) ? valuesByDate.get(formattedDate) : 0;
+    keys[i] = workDate.format(dateFormat);
     // Cloned: startOf() mutates, and workDate is still needed unmodified above.
-    const intervalDate = workDate.clone().startOf(startOfInterval).toISOString();
-    newData[i] = {
-      date: intervalDate,
-      value: dataValue,
-    };
+    dates[i] = workDate.clone().startOf(startOfInterval).toISOString();
   }
-  return newData;
+  return { keys, dates };
+};
+
+export const fillTimeSeriesValues = (axis: TimeSeriesAxis, data: { date: string; value: number }[]) => {
+  // Last value wins on duplicated dates, as the former linear lookup did
+  const valuesByDate = new Map(data.map((d) => [d.date, d.value]));
+  return axis.keys.map((key) => (valuesByDate.has(key) ? valuesByDate.get(key) as number : 0));
+};
+
+export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+  const axis = buildTimeSeriesAxis(startDate, endDate, interval);
+  const values = fillTimeSeriesValues(axis, data);
+  return axis.dates.map((date, i) => ({ date, value: values[i] }));
 };
 
 export const offsetToCursor = (sort: estypes.SortResults): string => {

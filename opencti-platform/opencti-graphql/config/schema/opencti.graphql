@@ -428,10 +428,13 @@ type TimeSeriesBreakdownSerie {
   entity: StixObjectOrStixRelationshipOrCreator
   value: Int
   isOther: Boolean!
-  data: [TimeSeries]
+  # One value per date of TimeSeriesBreakdown.dates
+  values: [Int!]!
 }
 type TimeSeriesBreakdown {
   truncated: Boolean!
+  # Dates shared by every series, sent once
+  dates: [DateTime!]!
   series: [TimeSeriesBreakdownSerie!]!
 }
 input AuditsTimeSeriesParameters {
@@ -14083,6 +14086,19 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [AuditsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  auditsTimeSeriesBreakdown(
+    field: String!
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int
+    order: OrderingMode
+    includeOther: Boolean
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth
   subTypes(
     first: Int
@@ -14919,6 +14935,22 @@ type Query {
     timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
     relationship_type: [String!]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixRelationshipsTimeSeriesBreakdown(
+    field: String!
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int
+    order: OrderingMode
+    includeOther: Boolean
+    onlyInferred: Boolean
+    relationship_type: [String!]
+    filters: FilterGroup
+    dynamicFrom: FilterGroup
+    dynamicTo: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsDistribution(
     field: String!
     operation: StatsOperation!
