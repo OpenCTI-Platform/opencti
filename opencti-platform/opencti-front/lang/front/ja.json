@@ -2514,6 +2514,7 @@
   "Groups restriction": "グループ制限",
   "Groups splitter": "グループ分離文字",
   "Groups the entities that have none of the displayed values, including entities without a value.": "表示されている値のいずれも持たないエンティティ（値のないエンティティを含む）をまとめて表示します。",
+  "Groups the relationships that have none of the displayed values, including relationships without a value.": "表示されている値のいずれも持たないリレーションシップ（値のないリレーションシップを含む）をまとめて表示します。",
   "Groups using this role": "このロールを使用しているグループ",
   "Groups with this role": "この役割を持つグループ",
   "gt": "より大きい",

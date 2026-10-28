@@ -7,6 +7,7 @@ import PublicStixCoreObjectsList from './stix_core_objects/PublicStixCoreObjects
 import PublicStixCoreObjectsDistributionList from './stix_core_objects/PublicStixCoreObjectsDistributionList';
 import PublicStixCoreObjectsMultiVerticalBars from './stix_core_objects/PublicStixCoreObjectsMultiVerticalBars';
 import PublicStixCoreObjectsTimeSeriesBreakdown from './stix_core_objects/PublicStixCoreObjectsTimeSeriesBreakdown';
+import PublicStixRelationshipsTimeSeriesBreakdown from './stix_relationships/PublicStixRelationshipsTimeSeriesBreakdown';
 import PublicStixCoreObjectsMultiLineChart from './stix_core_objects/PublicStixCoreObjectsMultiLineChart';
 import PublicStixCoreObjectsMultiAreaChart from './stix_core_objects/PublicStixCoreObjectsMultiAreaChart';
 import PublicStixCoreObjectsTimeline from './stix_core_objects/PublicStixCoreObjectsTimeline';
@@ -212,6 +213,18 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
   };
 
   const relationshipWidget = (widget: Widget) => {
+    // Rendering the widget without its breakdown would silently show a single total series
+    if (hasWidgetBreakdown(widget)) {
+      return (
+        <PublicStixRelationshipsTimeSeriesBreakdown
+          startDate={startDate}
+          endDate={endDate}
+          uriKey={uriKey}
+          widget={widget}
+        />
+      );
+    }
+
     switch (widget.type) {
       case 'number':
         return (

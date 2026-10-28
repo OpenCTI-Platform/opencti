@@ -26,13 +26,14 @@ const WidgetBreakdownSelection = () => {
   const { schema: { filterKeysSchema } } = useAuth();
   const { config, setConfigWidget, host } = useWidgetConfigContext();
   const { dataSelection, parameters } = config.widget;
+  const perspective = config.widget.perspective ?? 'entities';
 
   // The widget could be broken down, once reduced to its first dataset
   const isSupported = isWidgetBreakdownEligible({ ...config.widget, dataSelection: dataSelection.slice(0, 1) }, host);
   const isSingleDataset = dataSelection.length === 1;
   const fieldOptions = useMemo(
-    () => (isSupported ? getBreakdownFieldOptions(filterKeysSchema, getBreakdownEntityTypes(dataSelection[0].filters)) : []),
-    [isSupported, filterKeysSchema, dataSelection],
+    () => (isSupported ? getBreakdownFieldOptions(filterKeysSchema, getBreakdownEntityTypes(dataSelection[0].filters, perspective), perspective) : []),
+    [isSupported, filterKeysSchema, dataSelection, perspective],
   );
   const breakdownBy = isBreakdownField(parameters.breakdownBy) ? parameters.breakdownBy : null;
   const isFieldAvailable = fieldOptions.some(({ key }) => key === breakdownBy);
@@ -138,7 +139,9 @@ const WidgetBreakdownSelection = () => {
               <Tooltip>
                 <TooltipTrigger asChild>{otherSwitch}</TooltipTrigger>
                 <TooltipContent>
-                  {t_i18n('Groups the entities that have none of the displayed values, including entities without a value.')}
+                  {perspective === 'relationships'
+                    ? t_i18n('Groups the relationships that have none of the displayed values, including relationships without a value.')
+                    : t_i18n('Groups the entities that have none of the displayed values, including entities without a value.')}
                 </TooltipContent>
               </Tooltip>
             ) : otherSwitch}
