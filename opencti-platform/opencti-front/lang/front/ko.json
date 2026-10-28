@@ -2828,6 +2828,7 @@
   "Ingestion": "수집",
   "Ingestion and connectors": "수집 및 커넥터",
   "Ingestion health": "데이터 수집 상태",
+  "Ingestion health monitoring": "데이터 수집 상태 모니터링",
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "수집 관리자가 비활성화되었거나 구성되지 않은 경우 플랫폼 설정으로 이동하여 활성화하세요.",
   "Ingestion monitoring": "수집 모니터링",
   "Ingestion monitoring | Ingestion | Data": "수집 모니터링 | 수집 | 데이터",

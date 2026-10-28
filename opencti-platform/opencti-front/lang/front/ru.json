@@ -2828,6 +2828,7 @@
   "Ingestion": "Приём данных",
   "Ingestion and connectors": "Загрузка и коннекторы",
   "Ingestion health": "Состояние приема данных",
+  "Ingestion health monitoring": "Мониторинг состояния приема данных",
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "Менеджер приёма данных отключен или не настроен, пожалуйста, перейдите в настройки платформы, чтобы включить его.",
   "Ingestion monitoring": "Мониторинг приёма данных",
   "Ingestion monitoring | Ingestion | Data": "Мониторинг приёма данных | Приём данных | Данные",

@@ -2828,6 +2828,7 @@
   "Ingestion": "Ingestion",
   "Ingestion and connectors": "Ingestion et connecteurs",
   "Ingestion health": "État de santé de l'ingestion",
+  "Ingestion health monitoring": "Surveillance de l'état de santé de l'ingestion",
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "Le gestionnaire d'ingestion est désactivé ou n'est pas configuré, veuillez aller dans les paramètres de la plateforme pour l'activer.",
   "Ingestion monitoring": "Surveillance de l'ingestion",
   "Ingestion monitoring | Ingestion | Data": "Surveillance de l'ingestion | Ingestion | Données",

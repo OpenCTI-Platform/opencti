@@ -2828,6 +2828,7 @@
   "Ingestion": "取込",
   "Ingestion and connectors": "取り込みとコネクタ",
   "Ingestion health": "データ取り込みの状態",
+  "Ingestion health monitoring": "データ取り込みの状態のモニタリング",
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "インジェストマネージャーが無効になっているか、設定されていません。",
   "Ingestion monitoring": "インジェストモニタリング",
   "Ingestion monitoring | Ingestion | Data": "インジェスト・モニタリング｜インジェスト｜データ",
