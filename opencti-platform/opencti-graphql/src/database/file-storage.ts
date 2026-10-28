@@ -131,6 +131,7 @@ interface InvalidSyncInflightStorageKey {
 export type SyncInflightStorageKeyValidationResult = ValidSyncInflightStorageKey | InvalidSyncInflightStorageKey;
 
 const MAX_STORAGE_KEY_LENGTH = 512;
+const STAGED_FILE_SUFFIX_PATTERN = /^[0-9a-f]{32}\/content$/;
 export const validateSyncInflightStorageKey = (storageKey: unknown, expectedSyncId: string): SyncInflightStorageKeyValidationResult => {
   if (typeof storageKey !== 'string' || storageKey.trim().length === 0 || storageKey.length > MAX_STORAGE_KEY_LENGTH) {
     return { valid: false, reason: `storage_key must be a non-empty string of at most ${MAX_STORAGE_KEY_LENGTH} characters` };
@@ -153,9 +154,8 @@ export const validateSyncInflightStorageKey = (storageKey: unknown, expectedSync
   if (!decoded.startsWith(expectedPrefix)) {
     return { valid: false, reason: `storage_key must be located under ${expectedPrefix}` };
   }
-  const segmentsAfterPrefix = decoded.slice(expectedPrefix.length).split('/');
-  if (segmentsAfterPrefix.length < 2) {
-    return { valid: false, reason: 'storage_key must include a remoteFileId and a filename' };
+  if (!STAGED_FILE_SUFFIX_PATTERN.test(decoded.slice(expectedPrefix.length))) {
+    return { valid: false, reason: 'storage_key must end with a staged file id followed by /content' };
   }
   return { valid: true, normalizedKey: decoded };
 };
@@ -523,6 +523,13 @@ const asUntouchedSyncFile = (currentFile: BasicStoreEntityDocument | undefined, 
   return null;
 };
 
+const asSameContentSyncFile = (currentFile: BasicStoreEntityDocument | undefined, sha256: string): LoadedFile | null => {
+  if (currentFile && (currentFile.metaData as FileMetadata).sha256 === sha256) {
+    return asCompleteFile(currentFile);
+  }
+  return null;
+};
+
 // A repeated call without version finds the staged object consumed by the first one, so the existing target is the result
 const resolveConsumedStagedFile = (currentFile: BasicStoreEntityDocument | undefined, version?: string): SyncFileReferenceCopyResult => {
   if (currentFile && !version) {
@@ -611,6 +618,11 @@ const copyClaimedSyncFile = async (context: AuthContext, user: AuthUser, copyPro
   const sha256 = await computeStagedFileSha256(copyProps.storageKey);
   if (!sha256) {
     return resolveConsumedStagedFile(currentFile, copyProps.version);
+  }
+  const sameContentFile = asSameContentSyncFile(currentFile, sha256);
+  if (sameContentFile) {
+    await deleteStagedSyncFile(copyProps, copyPath.targetId);
+    return { upload: sameContentFile, untouched: true };
   }
   const copy: SyncFileCopy = { props: copyProps, target: buildSyncFileCopyTarget(user, currentFile, copyPath), sha256 };
   const file = await copyAndIndexSyncFile(context, user, copy);

@@ -2,16 +2,29 @@ import { describe, expect, it } from 'vitest';
 import { validateSyncInflightStorageKey } from '../../../src/database/file-storage';
 
 const SYNC_ID = 'sync-id-1';
+const STAGED_ID = '0123456789abcdef0123456789abcdef';
+const STAGED_KEY = `sync/inflight/sync-id-1/${STAGED_ID}/content`;
 
 describe('validateSyncInflightStorageKey', () => {
-  it('accepts a well-formed inflight key scoped to the expected sync', () => {
-    const result = validateSyncInflightStorageKey('sync/inflight/sync-id-1/remote-file-1/report.pdf', SYNC_ID);
-    expect(result).toEqual({ valid: true, normalizedKey: 'sync/inflight/sync-id-1/remote-file-1/report.pdf' });
+  it('accepts a key in the stager format scoped to the expected sync', () => {
+    const result = validateSyncInflightStorageKey(STAGED_KEY, SYNC_ID);
+    expect(result).toEqual({ valid: true, normalizedKey: STAGED_KEY });
   });
 
-  it('accepts and normalizes a percent-encoded but otherwise valid key', () => {
-    const result = validateSyncInflightStorageKey('sync/inflight/sync-id-1/remote-file-1/report%20final.pdf', SYNC_ID);
-    expect(result).toEqual({ valid: true, normalizedKey: 'sync/inflight/sync-id-1/remote-file-1/report final.pdf' });
+  it('rejects a key that still holds a percent escape once decoded', () => {
+    const result = validateSyncInflightStorageKey(`sync/inflight/sync-id-1/${STAGED_ID}/report%2520final.pdf`, SYNC_ID);
+    expect(result.valid).toBe(false);
+  });
+
+  it.each([
+    `sync/inflight/sync-id-1/${STAGED_ID}/report.pdf`,
+    `sync/inflight/sync-id-1/${STAGED_ID}/content/extra`,
+    `sync/inflight/sync-id-1/${STAGED_ID.slice(1)}/content`,
+    `sync/inflight/sync-id-1/${STAGED_ID.toUpperCase()}/content`,
+    'sync/inflight/sync-id-1/remote-file-1/content',
+  ])('rejects a key that does not end with a staged file id and /content: %s', (value) => {
+    const result = validateSyncInflightStorageKey(value, SYNC_ID);
+    expect(result.valid).toBe(false);
   });
 
   it.each([undefined, null, 42, {}, [], ''])('rejects non-string or empty input: %s', (value) => {
@@ -25,7 +38,7 @@ describe('validateSyncInflightStorageKey', () => {
   });
 
   it('rejects a key that belongs to a different sync (ownership scoping)', () => {
-    const result = validateSyncInflightStorageKey('sync/inflight/some-other-sync/remote-file-1/report.pdf', SYNC_ID);
+    const result = validateSyncInflightStorageKey(`sync/inflight/some-other-sync/${STAGED_ID}/content`, SYNC_ID);
     expect(result.valid).toBe(false);
   });
 
@@ -50,37 +63,37 @@ describe('validateSyncInflightStorageKey', () => {
   });
 
   it('rejects absolute paths', () => {
-    const result = validateSyncInflightStorageKey('/sync/inflight/sync-id-1/remote-file-1/report.pdf', SYNC_ID);
+    const result = validateSyncInflightStorageKey(`/${STAGED_KEY}`, SYNC_ID);
     expect(result.valid).toBe(false);
   });
 
   it('rejects protocol-like strings', () => {
-    const result = validateSyncInflightStorageKey('s3://bucket/sync/inflight/sync-id-1/remote-file-1/report.pdf', SYNC_ID);
+    const result = validateSyncInflightStorageKey(`s3://bucket/${STAGED_KEY}`, SYNC_ID);
     expect(result.valid).toBe(false);
   });
 
   it('rejects backslashes', () => {
-    const result = validateSyncInflightStorageKey('sync/inflight\\sync-id-1\\remote-file-1\\report.pdf', SYNC_ID);
+    const result = validateSyncInflightStorageKey(`sync/inflight\\sync-id-1\\${STAGED_ID}\\content`, SYNC_ID);
     expect(result.valid).toBe(false);
   });
 
   it('rejects null bytes', () => {
-    const result = validateSyncInflightStorageKey('sync/inflight/sync-id-1/remote-file-1/report.pdf\0.jpg', SYNC_ID);
+    const result = validateSyncInflightStorageKey(`${STAGED_KEY}\0.jpg`, SYNC_ID);
     expect(result.valid).toBe(false);
   });
 
   it('rejects empty path segments (double slashes)', () => {
-    const result = validateSyncInflightStorageKey('sync/inflight/sync-id-1//report.pdf', SYNC_ID);
+    const result = validateSyncInflightStorageKey(`sync/inflight/sync-id-1//${STAGED_ID}/content`, SYNC_ID);
     expect(result.valid).toBe(false);
   });
 
   it('rejects an invalid percent-encoding sequence', () => {
-    const result = validateSyncInflightStorageKey('sync/inflight/sync-id-1/remote-file-1/report%.pdf', SYNC_ID);
+    const result = validateSyncInflightStorageKey(`sync/inflight/sync-id-1/${STAGED_ID}/content%`, SYNC_ID);
     expect(result.valid).toBe(false);
   });
 
   it('rejects an oversized storage_key', () => {
-    const result = validateSyncInflightStorageKey(`sync/inflight/sync-id-1/remote-file-1/${'a'.repeat(600)}.pdf`, SYNC_ID);
+    const result = validateSyncInflightStorageKey(`sync/inflight/sync-id-1/${STAGED_ID}/${'a'.repeat(600)}/content`, SYNC_ID);
     expect(result.valid).toBe(false);
   });
 });

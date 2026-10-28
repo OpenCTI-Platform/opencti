@@ -53,7 +53,7 @@ import type { BasicStoreEntity, BasicStoreObject, StoreMarkingDefinition } from 
 import type { BasicStoreEntityDocument } from '../../../src/modules/internal/document/document-types';
 
 const SYNC_ID = 'sync-id-1';
-const STAGED_KEY = 'sync/inflight/sync-id-1/remote-file-1/content';
+const STAGED_KEY = 'sync/inflight/sync-id-1/0123456789abcdef0123456789abcdef/content';
 const STAGED_CONTENT = 'staged sync file content';
 const STAGED_SHA256 = crypto.createHash('sha256').update(STAGED_CONTENT).digest('hex');
 const TLP_AMBER = { internal_id: 'marking-internal-amber', standard_id: 'marking-definition--amber' } as unknown as StoreMarkingDefinition;
@@ -126,7 +126,7 @@ describe('copyFileFromSyncReference', () => {
   });
 
   it('rejects a storage_key that does not belong to the calling sync, without touching S3', async () => {
-    const result = await copyFileFromSyncReference(context, user, buildCopyProps({ storageKey: 'sync/inflight/some-other-sync/remote-file-1/content' }));
+    const result = await copyFileFromSyncReference(context, user, buildCopyProps({ storageKey: 'sync/inflight/some-other-sync/0123456789abcdef0123456789abcdef/content' }));
 
     expect(result).toBeNull();
     expect(lockResources).not.toHaveBeenCalled();
@@ -213,6 +213,18 @@ describe('copyFileFromSyncReference', () => {
     expect(result?.untouched).toEqual(false);
     expect(rawCopyFile).toHaveBeenCalled();
     expect(indexFileToDocument).toHaveBeenCalled();
+  });
+
+  it('skips the copy and marks the result untouched when the target already holds the same content at an older version, same as a direct upload', async () => {
+    vi.mocked(documentFindById).mockResolvedValue(buildStoredFile('import/Report/entity-1/report.pdf', { version: '2023-01-01T00:00:00.000Z', sha256: STAGED_SHA256 }));
+
+    const result = await copyFileFromSyncReference(context, user, buildCopyProps({ version: '2024-01-01T00:00:00.000Z' }));
+
+    expect(result?.untouched).toEqual(true);
+    expect(result?.upload.metaData.version).toEqual('2023-01-01T00:00:00.000Z');
+    expect(rawCopyFile).not.toHaveBeenCalled();
+    expect(indexFileToDocument).not.toHaveBeenCalled();
+    expect(deleteFileFromStorage).toHaveBeenCalledWith(STAGED_KEY);
   });
 
   it('overwrites an older existing file under its own id and keeps its creator, same as a direct upload', async () => {
@@ -368,7 +380,7 @@ describe('copyFileFromSyncReference', () => {
     await copyFileFromSyncReference(context, user, buildCopyProps({}));
 
     const logged = JSON.stringify(logCalls.flatMap((logCall) => logCall.mock.calls));
-    expect(logged).not.toContain('remote-file-1');
+    expect(logged).not.toContain('0123456789abcdef0123456789abcdef');
     expect(logCalls.flatMap((logCall) => logCall.mock.calls).length).toBeGreaterThan(0);
   });
 
