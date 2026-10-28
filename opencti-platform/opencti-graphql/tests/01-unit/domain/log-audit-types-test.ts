@@ -7,7 +7,7 @@
  *
  * Secondary goal: light coverage of every other exported function (findHistory,
  * findById, findAudits, findAuditById, auditsNumber, auditsTimeSeries,
- * auditsMultiTimeSeries, auditsDistribution) — asserting they wire arguments through
+ * auditsMultiTimeSeries, auditsTimeSeriesBreakdown, auditsDistribution) — asserting they wire arguments through
  * to the underlying database primitives and apply computeAuditTypes where relevant.
  *
  * All database primitives are mocked; these are pure unit tests.
@@ -27,10 +27,12 @@ vi.mock('../../../src/database/engine', () => ({
 
 const distributionHistory = vi.fn().mockResolvedValue([]);
 const timeSeriesHistory = vi.fn().mockResolvedValue([]);
+const timeSeriesBreakdownHistory = vi.fn().mockResolvedValue({ truncated: false, dates: [], series: [] });
 
 vi.mock('../../../src/database/middleware', () => ({
   distributionHistory: (...args: any[]) => distributionHistory(...args),
   timeSeriesHistory: (...args: any[]) => timeSeriesHistory(...args),
+  timeSeriesBreakdownHistory: (...args: any[]) => timeSeriesBreakdownHistory(...args),
 }));
 
 const pageEntitiesConnection = vi.fn().mockResolvedValue({ edges: [] });
@@ -51,6 +53,7 @@ import {
   auditsDistribution,
   auditsTimeSeries,
   auditsMultiTimeSeries,
+  auditsTimeSeriesBreakdown,
 } from '../../../src/domain/log';
 
 import type { AuthContext, AuthUser } from '../../../src/types/user';
@@ -271,5 +274,63 @@ describe('auditsMultiTimeSeries — applies computeAuditTypes per series', () =>
     expect(timeSeriesHistory).toHaveBeenCalledTimes(2);
     expect(timeSeriesHistory.mock.calls[0][2].types).toEqual([ENTITY_TYPE_HISTORY]);
     expect(timeSeriesHistory.mock.calls[1][2].types).toEqual([ENTITY_TYPE_ACTIVITY]);
+  });
+});
+
+describe('auditsTimeSeriesBreakdown — applies computeAuditTypes like auditsMultiTimeSeries', () => {
+  const breakdownArgs = { field: 'event_scope', startDate: new Date('2026-01-01'), interval: 'day' };
+
+  it('an org admin breakdown over Activity is denied and does not query', () => {
+    expect(() => auditsTimeSeriesBreakdown(context, orgAdmin, { ...breakdownArgs, types: [ENTITY_TYPE_ACTIVITY] })).toThrowError();
+    expect(timeSeriesBreakdownHistory).not.toHaveBeenCalled();
+  });
+
+  it('a user with no audit capability is denied, whatever the requested types', () => {
+    expect(() => auditsTimeSeriesBreakdown(context, noAuditUser, breakdownArgs)).toThrowError();
+    expect(() => auditsTimeSeriesBreakdown(context, noAuditUser, { ...breakdownArgs, types: [ENTITY_TYPE_HISTORY] })).toThrowError();
+    expect(timeSeriesBreakdownHistory).not.toHaveBeenCalled();
+  });
+
+  it('narrows the requested types to the ones the user can see, with the history filtering', async () => {
+    await auditsTimeSeriesBreakdown(context, orgAdmin, { ...breakdownArgs, types: [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY] });
+    expect(timeSeriesBreakdownHistory).toHaveBeenCalledTimes(1);
+    const [, , finalArgs] = timeSeriesBreakdownHistory.mock.calls[0];
+    expect(finalArgs.types).toEqual([ENTITY_TYPE_HISTORY]);
+    expect(finalArgs.historyFiltering).toBe(true);
+    expect(finalArgs.field).toEqual('event_scope');
+  });
+
+  it('defaults to the types of the user, ignoring empty requested types', async () => {
+    await auditsTimeSeriesBreakdown(context, securityUser, { ...breakdownArgs, types: [null] });
+    expect(timeSeriesBreakdownHistory.mock.calls[0][2].types).toEqual([ENTITY_TYPE_ACTIVITY]);
+    await auditsTimeSeriesBreakdown(context, knowledgeAndSecurityUser, breakdownArgs);
+    expect(timeSeriesBreakdownHistory.mock.calls[1][2].types).toEqual([ENTITY_TYPE_ACTIVITY]);
+  });
+
+  it('forwards the breakdown arguments to the logs breakdown', async () => {
+    const filters = { mode: 'and', filters: [], filterGroups: [] } as any;
+    await auditsTimeSeriesBreakdown(context, knowledgeAndSecurityUser, {
+      ...breakdownArgs,
+      types: [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY],
+      dateAttribute: 'timestamp',
+      endDate: new Date('2026-02-01'),
+      limit: 5,
+      order: 'asc' as any,
+      includeOther: true,
+      filters,
+      search: 'report',
+    });
+    expect(timeSeriesBreakdownHistory.mock.calls[0][2]).toMatchObject({
+      field: 'event_scope',
+      dateAttribute: 'timestamp',
+      interval: 'day',
+      limit: 5,
+      order: 'asc',
+      includeOther: true,
+      filters,
+      search: 'report',
+      types: [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY],
+      historyFiltering: true,
+    });
   });
 });

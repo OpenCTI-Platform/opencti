@@ -14086,6 +14086,19 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [AuditsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  auditsTimeSeriesBreakdown(
+    field: String!
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int
+    order: OrderingMode
+    includeOther: Boolean
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth
   subTypes(
     first: Int

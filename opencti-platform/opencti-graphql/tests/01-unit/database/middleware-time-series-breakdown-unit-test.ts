@@ -35,7 +35,17 @@ vi.mock('../../../src/config/conf', async () => {
 
 import * as engine from '../../../src/database/engine';
 import * as accessModule from '../../../src/utils/access';
-import { BREAKDOWN_ALLOWED_REFS, distributionEntities, distributionHistory, resolveBreakdownField, timeSeriesBreakdownEntities } from '../../../src/database/middleware';
+import {
+  BREAKDOWN_ALLOWED_REFS,
+  distributionEntities,
+  distributionHistory,
+  HISTORY_BREAKDOWN_ALLOWED_FIELDS,
+  resolveBreakdownField,
+  resolveHistoryBreakdownField,
+  timeSeriesBreakdownEntities,
+  timeSeriesBreakdownHistory,
+} from '../../../src/database/middleware';
+import { READ_INDEX_HISTORY } from '../../../src/database/utils';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
@@ -418,5 +428,215 @@ describe('resolveBreakdownField', () => {
   it('should only accept a field carried by every requested type', () => {
     expect(resolveBreakdownField(['Report', 'Malware'], 'objectLabel').resolveEntities).toBe(true);
     expect(() => resolveBreakdownField(['Report', 'Malware'], 'report_types')).toThrow('does not support this field');
+  });
+});
+
+describe('resolveHistoryBreakdownField', () => {
+  it('should accept the event, author and type fields of the logs as they are indexed', () => {
+    expect(HISTORY_BREAKDOWN_ALLOWED_FIELDS).toEqual([
+      'event_type',
+      'event_scope',
+      'user_id',
+      'group_ids',
+      'organization_ids',
+      'entity_type',
+      'context_data.entity_type',
+    ]);
+    HISTORY_BREAKDOWN_ALLOWED_FIELDS.forEach((field) => {
+      expect(resolveHistoryBreakdownField(field).aggregationField).toEqual(field);
+    });
+  });
+
+  it('should resolve the users, groups and organizations, and only them', () => {
+    const resolved = HISTORY_BREAKDOWN_ALLOWED_FIELDS.filter((field) => resolveHistoryBreakdownField(field).resolveEntities);
+    expect(resolved).toEqual(['user_id', 'group_ids', 'organization_ids']);
+  });
+
+  it('should refuse the fields with an unbounded cardinality, free texts and unknown fields', () => {
+    [
+      'context_data.id',
+      'context_data.entity_id',
+      'context_data.entity_name',
+      'context_data.message',
+      'context_data.search',
+      'context_data.filters',
+      'applicant_id',
+      'timestamp',
+      'internal_id',
+      'creator_id',
+      'createdBy',
+      'constructor',
+      '__proto__',
+      '',
+    ].forEach((field) => {
+      expect(() => resolveHistoryBreakdownField(field)).toThrow('does not support this field for the history and activity logs');
+    });
+  });
+});
+
+describe('timeSeriesBreakdownHistory', () => {
+  const historyBreakdown = (args: Record<string, unknown>) => timeSeriesBreakdownHistory(mockContext, accessModule.SYSTEM_USER, {
+    startDate,
+    endDate,
+    interval: 'day',
+    types: ['History', 'Activity'],
+    historyFiltering: true,
+    ...args,
+  } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(accessModule, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+    vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(['History', 'Activity', 'Report', 'Intrusion-Set', 'PublicDashboard', 'uses']);
+  });
+
+  it('should refuse a field outside the allowlist before querying', async () => {
+    await expect(historyBreakdown({ field: 'context_data.id' })).rejects.toThrow('does not support this field');
+    await expect(historyBreakdown({ field: 'context_data.message' })).rejects.toThrow('does not support this field');
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
+  });
+
+  it('should check the limit and the size of the breakdown like the entities', async () => {
+    await expect(historyBreakdown({ field: 'event_scope', limit: 51 })).rejects.toThrow('Time series breakdown limit');
+    const threeYearsLater = new Date('2029-01-01T12:00:00.000Z');
+    await expect(historyBreakdown({ field: 'event_scope', limit: 50, endDate: threeYearsLater })).rejects.toThrow('too large');
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
+  });
+
+  it('should query the logs index with the types, filters and history filtering of the caller, on the timestamp', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('create', 4)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+    const filters = { mode: 'and', filters: [{ key: ['event_type'], values: ['mutation'], operator: 'eq' }], filterGroups: [] };
+
+    await historyBreakdown({ field: 'event_scope', filters, search: 'report' });
+
+    const [, , discoveryIndices, discoveryOptions] = vi.mocked(engine.elAggregationCount).mock.calls[0] as any[];
+    const [, , histogramIndices, histogramOptions] = vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0] as any[];
+    expect(discoveryIndices).toEqual(READ_INDEX_HISTORY);
+    expect(histogramIndices).toEqual(READ_INDEX_HISTORY);
+    for (const options of [discoveryOptions, histogramOptions]) {
+      expect(options.field).toEqual('event_scope');
+      expect(options.types).toEqual(['History', 'Activity']);
+      expect(options.historyFiltering).toBe(true);
+      expect(options.filters).toEqual(filters);
+      expect(options.search).toEqual('report');
+      expect(options.dateAttribute).toEqual('timestamp');
+      expect(options.intervalInclude).toBe(true);
+      expect(options.startDate).toEqual(startDate);
+      expect(options.endDate).toEqual(endDate);
+    }
+  });
+
+  it('should always filter the history, whatever the caller', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('create', 4)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    await historyBreakdown({ field: 'event_scope', historyFiltering: undefined, types: undefined });
+
+    for (const call of [vi.mocked(engine.elAggregationCount).mock.calls[0], vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0]]) {
+      const options = call[3] as any;
+      expect(options.historyFiltering).toBe(true);
+      // Without types, only the history, like the other logs aggregations
+      expect(options.types).toEqual(['History']);
+    }
+  });
+
+  it('should keep a date attribute given by the widget, and end the period now without end date', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('create', 4)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+    const recentStartDate = new Date(Date.now() - 2 * 86400000);
+
+    const before = Date.now();
+    const result = await historyBreakdown({ field: 'event_scope', dateAttribute: 'created_at', startDate: recentStartDate, endDate: undefined });
+
+    const histogramOptions = vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3] as any;
+    expect(histogramOptions.dateAttribute).toEqual('created_at');
+    expect(histogramOptions.endDate.getTime()).toBeGreaterThanOrEqual(before);
+    expect(result.dates).toHaveLength(3);
+  });
+
+  it('should keep the raw values of the event fields, without entity', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('create', 6), bucket('unknown', 5), bucket('update', 2)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map([['create', [{ date: '2026-01-02', value: 6 }]]]));
+
+    const result = await historyBreakdown({ field: 'event_scope' });
+
+    expect(engine.elFindByIds).not.toHaveBeenCalled();
+    expect(result.series.map((serie) => serie.label)).toEqual(['create', 'update']);
+    expect(result.series.every((serie) => serie.entity === null)).toBe(true);
+    expect(result.series[0].values).toEqual([0, 6, 0]);
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['create', 'update']);
+  });
+
+  it('should drop the SYSTEM user and the deleted users before applying the limit', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([
+      bucket(accessModule.SYSTEM_USER.id, 50),
+      bucket('user-a', 10),
+      bucket('deleted-user', 8),
+      bucket('user-b', 5),
+      bucket('user-c', 3),
+    ]);
+    // Neither the SYSTEM user nor a deleted user is stored
+    vi.mocked(engine.elFindByIds).mockResolvedValue({
+      'user-a': makeEntity('user-a', 'Alice'),
+      'user-b': makeEntity('user-b', 'Bob'),
+      'user-c': makeEntity('user-c', 'Carol'),
+    } as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await historyBreakdown({ field: 'user_id', limit: 2 });
+
+    expect(result.truncated).toBe(true);
+    expect(result.series.map((serie) => (serie.entity as any)?.name)).toEqual(['Alice', 'Bob']);
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['user-a', 'user-b']);
+  });
+
+  it('should restrict the users, groups and organizations the user cannot access', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('org-a', 10), bucket('org-b', 5)]);
+    vi.mocked(engine.elFindByIds).mockResolvedValue({
+      'org-a': { ...makeEntity('org-a', 'Filigran'), entity_type: 'Organization' },
+      'org-b': { ...makeEntity('org-b', 'Hidden'), entity_type: 'Organization' },
+    } as any);
+    vi.mocked(accessModule.isUserCanAccessStoreElement).mockImplementation(async (_context, _user, element: any) => element.id === 'org-a');
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await historyBreakdown({ field: 'organization_ids' });
+
+    expect(result.series.map((serie) => (serie.entity as any)?.name)).toEqual(['Filigran', 'Restricted']);
+    expect(result.series[1].label).toEqual('org-b');
+  });
+
+  it('should name the indexed entity types after their registered type', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([
+      bucket('report', 6),
+      bucket('intrusion-set', 4),
+      bucket('publicdashboard', 3),
+      bucket('uses', 2),
+      bucket('not-registered', 1),
+    ]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
+
+    const result = await historyBreakdown({ field: 'context_data.entity_type' });
+
+    expect(result.series.map((serie) => serie.label)).toEqual(['Report', 'Intrusion-Set', 'PublicDashboard', 'uses', 'not-registered']);
+    // The histogram still targets the values as indexed
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['report', 'intrusion-set', 'publicdashboard', 'uses', 'not-registered']);
+
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('history', 6), bucket('activity', 4)]);
+    const byLogType = await historyBreakdown({ field: 'entity_type' });
+    expect(byLogType.series.map((serie) => serie.label)).toEqual(['History', 'Activity']);
+  });
+
+  it('should add the Other series of the events with none of the displayed values', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('create', 6), bucket('update', 2)]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map([
+      [engine.HISTOGRAM_BREAKDOWN_OTHER_KEY, [{ date: '2026-01-01', value: 3 }]],
+    ]));
+
+    const result = await historyBreakdown({ field: 'event_scope', limit: 1, includeOther: true });
+
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3]).toMatchObject({ keys: ['create'], withOther: true });
+    expect(result.series.map((serie) => serie.label)).toEqual(['create', 'Other']);
+    expect(result.series[1]).toMatchObject({ isOther: true, value: 3, values: [3, 0, 0] });
   });
 });
