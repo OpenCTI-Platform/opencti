@@ -4637,72 +4637,72 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nx/nx-darwin-arm64@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-darwin-arm64@npm:24.0.0"
+"@nx/nx-darwin-arm64@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-darwin-arm64@npm:24.0.1"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@nx/nx-darwin-x64@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-darwin-x64@npm:24.0.0"
+"@nx/nx-darwin-x64@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-darwin-x64@npm:24.0.1"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@nx/nx-freebsd-x64@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-freebsd-x64@npm:24.0.0"
+"@nx/nx-freebsd-x64@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-freebsd-x64@npm:24.0.1"
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-arm-gnueabihf@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-linux-arm-gnueabihf@npm:24.0.0"
+"@nx/nx-linux-arm-gnueabihf@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-linux-arm-gnueabihf@npm:24.0.1"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-arm64-gnu@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-linux-arm64-gnu@npm:24.0.0"
+"@nx/nx-linux-arm64-gnu@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-linux-arm64-gnu@npm:24.0.1"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-arm64-musl@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-linux-arm64-musl@npm:24.0.0"
+"@nx/nx-linux-arm64-musl@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-linux-arm64-musl@npm:24.0.1"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-x64-gnu@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-linux-x64-gnu@npm:24.0.0"
+"@nx/nx-linux-x64-gnu@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-linux-x64-gnu@npm:24.0.1"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@nx/nx-linux-x64-musl@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-linux-x64-musl@npm:24.0.0"
+"@nx/nx-linux-x64-musl@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-linux-x64-musl@npm:24.0.1"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@nx/nx-win32-arm64-msvc@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-win32-arm64-msvc@npm:24.0.0"
+"@nx/nx-win32-arm64-msvc@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-win32-arm64-msvc@npm:24.0.1"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@nx/nx-win32-x64-msvc@npm:24.0.0":
-  version: 24.0.0
-  resolution: "@nx/nx-win32-x64-msvc@npm:24.0.0"
+"@nx/nx-win32-x64-msvc@npm:24.0.1":
+  version: 24.0.1
+  resolution: "@nx/nx-win32-x64-msvc@npm:24.0.1"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
@@ -4953,150 +4953,143 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-android-arm-eabi@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-android-arm-eabi@npm:0.154.0"
+"@oxc-parser/binding-android-arm-eabi@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-android-arm-eabi@npm:0.155.0"
   conditions: os=android & cpu=arm
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-android-arm64@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-android-arm64@npm:0.154.0"
+"@oxc-parser/binding-android-arm64@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-android-arm64@npm:0.155.0"
   conditions: os=android & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-darwin-arm64@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-darwin-arm64@npm:0.154.0"
+"@oxc-parser/binding-darwin-arm64@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-darwin-arm64@npm:0.155.0"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-darwin-x64@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-darwin-x64@npm:0.154.0"
+"@oxc-parser/binding-darwin-x64@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-darwin-x64@npm:0.155.0"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-freebsd-x64@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-freebsd-x64@npm:0.154.0"
+"@oxc-parser/binding-freebsd-x64@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-freebsd-x64@npm:0.155.0"
   conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-arm-gnueabihf@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-arm-gnueabihf@npm:0.154.0"
+"@oxc-parser/binding-linux-arm-gnueabihf@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-arm-gnueabihf@npm:0.155.0"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-arm-musleabihf@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-arm-musleabihf@npm:0.154.0"
+"@oxc-parser/binding-linux-arm-musleabihf@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-arm-musleabihf@npm:0.155.0"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-arm64-gnu@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-arm64-gnu@npm:0.154.0"
+"@oxc-parser/binding-linux-arm64-gnu@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-arm64-gnu@npm:0.155.0"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-arm64-musl@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-arm64-musl@npm:0.154.0"
+"@oxc-parser/binding-linux-arm64-musl@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-arm64-musl@npm:0.155.0"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-ppc64-gnu@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-ppc64-gnu@npm:0.154.0"
+"@oxc-parser/binding-linux-ppc64-gnu@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-ppc64-gnu@npm:0.155.0"
   conditions: os=linux & cpu=ppc64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-riscv64-gnu@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-riscv64-gnu@npm:0.154.0"
+"@oxc-parser/binding-linux-riscv64-gnu@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-riscv64-gnu@npm:0.155.0"
   conditions: os=linux & cpu=riscv64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-riscv64-musl@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-riscv64-musl@npm:0.154.0"
+"@oxc-parser/binding-linux-riscv64-musl@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-riscv64-musl@npm:0.155.0"
   conditions: os=linux & cpu=riscv64 & libc=musl
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-s390x-gnu@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-s390x-gnu@npm:0.154.0"
+"@oxc-parser/binding-linux-s390x-gnu@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-s390x-gnu@npm:0.155.0"
   conditions: os=linux & cpu=s390x & libc=glibc
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-x64-gnu@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-x64-gnu@npm:0.154.0"
+"@oxc-parser/binding-linux-x64-gnu@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-x64-gnu@npm:0.155.0"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-linux-x64-musl@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-linux-x64-musl@npm:0.154.0"
+"@oxc-parser/binding-linux-x64-musl@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-linux-x64-musl@npm:0.155.0"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-openharmony-arm64@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-openharmony-arm64@npm:0.154.0"
+"@oxc-parser/binding-openharmony-arm64@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-openharmony-arm64@npm:0.155.0"
   conditions: os=openharmony & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-win32-arm64-msvc@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-win32-arm64-msvc@npm:0.154.0"
+"@oxc-parser/binding-win32-arm64-msvc@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-win32-arm64-msvc@npm:0.155.0"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-win32-ia32-msvc@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-win32-ia32-msvc@npm:0.154.0"
+"@oxc-parser/binding-win32-ia32-msvc@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-win32-ia32-msvc@npm:0.155.0"
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
-"@oxc-parser/binding-win32-x64-msvc@npm:0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-parser/binding-win32-x64-msvc@npm:0.154.0"
+"@oxc-parser/binding-win32-x64-msvc@npm:0.155.0":
+  version: 0.155.0
+  resolution: "@oxc-parser/binding-win32-x64-msvc@npm:0.155.0"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@oxc-project/types@npm:=0.155.0":
+"@oxc-project/types@npm:=0.155.0, @oxc-project/types@npm:^0.155.0":
   version: 0.155.0
   resolution: "@oxc-project/types@npm:0.155.0"
   checksum: 10c0/07227fb2c2e03b07453129f2407b49b165eadaa679a34dad68e0b0526420506cea223431807983413f6968053de873c13b05d3978a9a43cabb3999ca97ba2ec5
-  languageName: node
-  linkType: hard
-
-"@oxc-project/types@npm:^0.154.0":
-  version: 0.154.0
-  resolution: "@oxc-project/types@npm:0.154.0"
-  checksum: 10c0/fa91599d087ea4d37c5a3b40dd8e2cb431a7d37730116069f2577dee0b104dc5abb06c96b931c517c8b86f618df1e0c7a37d24086f3cfe39d81eb6db59e70add
   languageName: node
   linkType: hard
 
@@ -12026,7 +12019,7 @@ __metadata:
     eslint-plugin-import: "npm:2.32.0"
     globals: "npm:17.13.0"
     jiti: "npm:2.7.0"
-    knip: "npm:6.42.1"
+    knip: "npm:6.43.0"
     typescript: "npm:6.0.3"
     typescript-eslint: "npm:8.72.0"
     vite: "npm:8.3.5"
@@ -15414,26 +15407,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:6.42.1":
-  version: 6.42.1
-  resolution: "knip@npm:6.42.1"
+"knip@npm:6.43.0":
+  version: 6.43.0
+  resolution: "knip@npm:6.43.0"
   dependencies:
     formatly: "npm:^0.11.4"
     get-tsconfig: "npm:4.14.3"
     jiti: "npm:^2.7.0"
-    oxc-parser: "npm:^0.154.0"
+    oxc-parser: "npm:^0.155.0"
     oxc-resolver: "npm:11.24.2"
     picomatch: "npm:^4.0.7"
     smol-toml: "npm:^1.9.0"
     strip-json-comments: "npm:5.0.3"
     tinyglobby: "npm:^0.2.17"
-    unbash: "npm:^6.0.0"
+    unbash: "npm:^6.0.1"
     yaml: "npm:^2.9.1"
     zod: "npm:^4.6.5"
   bin:
     knip: bin/knip.js
     knip-bun: bin/knip-bun.js
-  checksum: 10c0/ae5d3480f71353fb7ee580ffaff3f06a0e15b29565eca5d2ae9d6d23fe9b0d4c0b6f524a93a5ab5392ac3e26ddc5930665629d4c33b74ca02cab7ec508b71584
+  checksum: 10c0/f9a9935af721f4f2af13a0a7b7c24f9f10ba8f6365a302aa6074458fa7c592442cd85cda3dd626abed40b67adc3a27150add26754122074ff1f95f3e95cbed2f
   languageName: node
   linkType: hard
 
@@ -17587,9 +17580,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nx@npm:24.0.0":
-  version: 24.0.0
-  resolution: "nx@npm:24.0.0"
+"nx@npm:24.0.1":
+  version: 24.0.1
+  resolution: "nx@npm:24.0.1"
   dependencies:
     "@clack/core": "npm:1.4.3"
     "@clack/prompts": "npm:1.7.0"
@@ -17598,16 +17591,16 @@ __metadata:
     "@emnapi/wasi-threads": "npm:1.0.4"
     "@jest/diff-sequences": "npm:30.0.1"
     "@napi-rs/wasm-runtime": "npm:0.2.4"
-    "@nx/nx-darwin-arm64": "npm:24.0.0"
-    "@nx/nx-darwin-x64": "npm:24.0.0"
-    "@nx/nx-freebsd-x64": "npm:24.0.0"
-    "@nx/nx-linux-arm-gnueabihf": "npm:24.0.0"
-    "@nx/nx-linux-arm64-gnu": "npm:24.0.0"
-    "@nx/nx-linux-arm64-musl": "npm:24.0.0"
-    "@nx/nx-linux-x64-gnu": "npm:24.0.0"
-    "@nx/nx-linux-x64-musl": "npm:24.0.0"
-    "@nx/nx-win32-arm64-msvc": "npm:24.0.0"
-    "@nx/nx-win32-x64-msvc": "npm:24.0.0"
+    "@nx/nx-darwin-arm64": "npm:24.0.1"
+    "@nx/nx-darwin-x64": "npm:24.0.1"
+    "@nx/nx-freebsd-x64": "npm:24.0.1"
+    "@nx/nx-linux-arm-gnueabihf": "npm:24.0.1"
+    "@nx/nx-linux-arm64-gnu": "npm:24.0.1"
+    "@nx/nx-linux-arm64-musl": "npm:24.0.1"
+    "@nx/nx-linux-x64-gnu": "npm:24.0.1"
+    "@nx/nx-linux-x64-musl": "npm:24.0.1"
+    "@nx/nx-win32-arm64-msvc": "npm:24.0.1"
+    "@nx/nx-win32-x64-msvc": "npm:24.0.1"
     "@tybys/wasm-util": "npm:0.9.0"
     "@yarnpkg/lockfile": "npm:1.1.0"
     "@zkochan/js-yaml": "npm:0.0.7"
@@ -17721,7 +17714,7 @@ __metadata:
   bin:
     nx: ./dist/bin/nx.js
     nx-cloud: ./dist/bin/nx-cloud.js
-  checksum: 10c0/f7738fad71a45882e98b8e605186638c3e151221f2faa9b7a1ea72fc0fc1f2892189b4df52f06922bbbeb605440b814347475555a013e503394dcb9d39778ea7
+  checksum: 10c0/34711fd64d3461f63013a921d8cf01086fa250e691f34c7f80ec19959795707b07a861cc8a880311f3ad400b1152dd243d5f54be4d4c0c31caa01e29bbcbaf3b
   languageName: node
   linkType: hard
 
@@ -18044,7 +18037,7 @@ __metadata:
     js-file-download: "npm:0.4.12"
     jsdom: "npm:30.1.3"
     json5: "npm:2.2.3"
-    knip: "npm:6.42.1"
+    knip: "npm:6.43.0"
     license-checker-rseidelsohn: "npm:5.0.1"
     maplibre-gl: "npm:6.15.0"
     markdown-to-jsx: "npm:9.10.3"
@@ -18236,7 +18229,7 @@ __metadata:
     js-deep-equals: "npm:2.1.1"
     jsonpath-plus: "npm:11.2.1"
     jwt-decode: "npm:4.0.0"
-    knip: "npm:6.42.1"
+    knip: "npm:6.43.0"
     license-checker-rseidelsohn: "npm:5.0.1"
     lru-cache: "npm:11.5.3"
     luxon: "npm:3.7.2"
@@ -18279,7 +18272,7 @@ __metadata:
     uuid: "npm:14.0.3"
     uuid-time: "npm:1.0.0"
     validator: "npm:13.15.35"
-    vite: "npm:8.3.4"
+    vite: "npm:8.3.5"
     vitest: "npm:5.0.5"
     winston: "npm:3.19.0"
     winston-daily-rotate-file: "npm:5.0.0"
@@ -18293,7 +18286,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti@workspace:."
   dependencies:
-    nx: "npm:24.0.0"
+    nx: "npm:24.0.1"
   dependenciesMeta:
     "@apollo/protobufjs":
       built: false
@@ -18421,30 +18414,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oxc-parser@npm:^0.154.0":
-  version: 0.154.0
-  resolution: "oxc-parser@npm:0.154.0"
+"oxc-parser@npm:^0.155.0":
+  version: 0.155.0
+  resolution: "oxc-parser@npm:0.155.0"
   dependencies:
-    "@oxc-parser/binding-android-arm-eabi": "npm:0.154.0"
-    "@oxc-parser/binding-android-arm64": "npm:0.154.0"
-    "@oxc-parser/binding-darwin-arm64": "npm:0.154.0"
-    "@oxc-parser/binding-darwin-x64": "npm:0.154.0"
-    "@oxc-parser/binding-freebsd-x64": "npm:0.154.0"
-    "@oxc-parser/binding-linux-arm-gnueabihf": "npm:0.154.0"
-    "@oxc-parser/binding-linux-arm-musleabihf": "npm:0.154.0"
-    "@oxc-parser/binding-linux-arm64-gnu": "npm:0.154.0"
-    "@oxc-parser/binding-linux-arm64-musl": "npm:0.154.0"
-    "@oxc-parser/binding-linux-ppc64-gnu": "npm:0.154.0"
-    "@oxc-parser/binding-linux-riscv64-gnu": "npm:0.154.0"
-    "@oxc-parser/binding-linux-riscv64-musl": "npm:0.154.0"
-    "@oxc-parser/binding-linux-s390x-gnu": "npm:0.154.0"
-    "@oxc-parser/binding-linux-x64-gnu": "npm:0.154.0"
-    "@oxc-parser/binding-linux-x64-musl": "npm:0.154.0"
-    "@oxc-parser/binding-openharmony-arm64": "npm:0.154.0"
-    "@oxc-parser/binding-win32-arm64-msvc": "npm:0.154.0"
-    "@oxc-parser/binding-win32-ia32-msvc": "npm:0.154.0"
-    "@oxc-parser/binding-win32-x64-msvc": "npm:0.154.0"
-    "@oxc-project/types": "npm:^0.154.0"
+    "@oxc-parser/binding-android-arm-eabi": "npm:0.155.0"
+    "@oxc-parser/binding-android-arm64": "npm:0.155.0"
+    "@oxc-parser/binding-darwin-arm64": "npm:0.155.0"
+    "@oxc-parser/binding-darwin-x64": "npm:0.155.0"
+    "@oxc-parser/binding-freebsd-x64": "npm:0.155.0"
+    "@oxc-parser/binding-linux-arm-gnueabihf": "npm:0.155.0"
+    "@oxc-parser/binding-linux-arm-musleabihf": "npm:0.155.0"
+    "@oxc-parser/binding-linux-arm64-gnu": "npm:0.155.0"
+    "@oxc-parser/binding-linux-arm64-musl": "npm:0.155.0"
+    "@oxc-parser/binding-linux-ppc64-gnu": "npm:0.155.0"
+    "@oxc-parser/binding-linux-riscv64-gnu": "npm:0.155.0"
+    "@oxc-parser/binding-linux-riscv64-musl": "npm:0.155.0"
+    "@oxc-parser/binding-linux-s390x-gnu": "npm:0.155.0"
+    "@oxc-parser/binding-linux-x64-gnu": "npm:0.155.0"
+    "@oxc-parser/binding-linux-x64-musl": "npm:0.155.0"
+    "@oxc-parser/binding-openharmony-arm64": "npm:0.155.0"
+    "@oxc-parser/binding-win32-arm64-msvc": "npm:0.155.0"
+    "@oxc-parser/binding-win32-ia32-msvc": "npm:0.155.0"
+    "@oxc-parser/binding-win32-x64-msvc": "npm:0.155.0"
+    "@oxc-project/types": "npm:^0.155.0"
   dependenciesMeta:
     "@oxc-parser/binding-android-arm-eabi":
       optional: true
@@ -18484,7 +18477,7 @@ __metadata:
       optional: true
     "@oxc-parser/binding-win32-x64-msvc":
       optional: true
-  checksum: 10c0/6512e0901618735f5baea0619a021e23ee8e51fedb9c54c1d6807bf2655f9642c3355672b5c0492e3fd7f0dd0de43e98e6e28f4a9d3f2ffbb5e7aaef7ca25564
+  checksum: 10c0/8c5896a2072cd5f3b2df4e8f3c558f34f81e978557399a599ec49d76f1822e534d2301933e73f6071447bad1ba87e62e34958cd6f56d5fba53aebff27f2c032a
   languageName: node
   linkType: hard
 
@@ -19136,7 +19129,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.5.27, postcss@npm:^8.5.29, postcss@npm:^8.5.30":
+"postcss@npm:^8.5.27, postcss@npm:^8.5.30":
   version: 8.5.31
   resolution: "postcss@npm:8.5.31"
   dependencies:
@@ -20760,7 +20753,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rolldown@npm:~1.2.12, rolldown@npm:~1.2.14":
+"rolldown@npm:~1.2.14":
   version: 1.2.15
   resolution: "rolldown@npm:1.2.15"
   dependencies:
@@ -22505,7 +22498,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unbash@npm:^6.0.0":
+"unbash@npm:^6.0.1":
   version: 6.0.1
   resolution: "unbash@npm:6.0.1"
   checksum: 10c0/d87ba3d042474ae8bb474845144ae21695758f2d8d99ec64e99aa11498c93b37ddc9b2958f17732f3f4d245fe295f3798fb3b45c6f04f52e394035c7d3d3c2a8
@@ -23076,63 +23069,6 @@ __metadata:
     babel-plugin-relay: ">=14.1.0"
     vite: ">=2.0.0"
   checksum: 10c0/62efccc889541fbcec2836ae27293d7b59123994ea1fe326a01689288cfffadb3463adf3241be431870663eef828bbc34b39ce117bc8b5fa25c505473f3291a8
-  languageName: node
-  linkType: hard
-
-"vite@npm:8.3.4":
-  version: 8.3.4
-  resolution: "vite@npm:8.3.4"
-  dependencies:
-    fsevents: "npm:~2.3.3"
-    lightningcss: "npm:^1.33.0"
-    picomatch: "npm:^4.0.7"
-    postcss: "npm:^8.5.29"
-    rolldown: "npm:~1.2.12"
-    tinyglobby: "npm:^0.2.17"
-  peerDependencies:
-    "@types/node": ^20.19.0 || >=22.12.0
-    "@vitejs/devtools": ^0.7.1
-    esbuild: ^0.27.0 || ^0.28.0
-    jiti: ">=1.21.0"
-    less: ^4.0.0
-    sass: ^1.70.0
-    sass-embedded: ^1.70.0
-    stylus: ">=0.54.8"
-    sugarss: ^5.0.0
-    terser: ^5.16.0
-    tsx: ^4.8.1
-    yaml: ^2.4.2
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  peerDependenciesMeta:
-    "@types/node":
-      optional: true
-    "@vitejs/devtools":
-      optional: true
-    esbuild:
-      optional: true
-    jiti:
-      optional: true
-    less:
-      optional: true
-    sass:
-      optional: true
-    sass-embedded:
-      optional: true
-    stylus:
-      optional: true
-    sugarss:
-      optional: true
-    terser:
-      optional: true
-    tsx:
-      optional: true
-    yaml:
-      optional: true
-  bin:
-    vite: bin/vite.js
-  checksum: 10c0/63d7351fa21580fb646f0b594c64e97a56cdf15c55a57372a7adefe6287995fa7384cb5ddca14695ff7dca738ba00e0a3352fc24df711d9c501c5576f40f0867
   languageName: node
   linkType: hard
 

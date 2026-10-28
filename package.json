@@ -32,7 +32,7 @@
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
   },
   "devDependencies": {
-    "nx": "24.0.0"
+    "nx": "24.0.1"
   },
   "resolutions": {
     "@filigran/chatbot/lodash": "4.18.1",
