@@ -10,7 +10,7 @@ import App from './app';
 import { environment } from './relay/environment';
 import Loader from './components/Loader';
 import { THEME_DARK_DEFAULT_BACKGROUND } from './components/ThemeDark';
-import { initLogger } from './utils/logs/loggerProvider';
+import { initLogger } from './utils/logging/loggerProvider';
 
 const LoadingContainer = styled('div')({
   width: '100%',
