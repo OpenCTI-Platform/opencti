@@ -20710,8 +20710,8 @@ export type MutationWorkEditArgs = {
 
 
 export type MutationWorkInvestigationStatusEditArgs = {
-  id: Scalars['ID']['input'];
   status: WorkInvestigationStatus;
+  workId: Scalars['ID']['input'];
 };
 
 
@@ -49669,7 +49669,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId' | 'isMultiPartWork'>>;
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
-  workInvestigationStatusEdit?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<MutationWorkInvestigationStatusEditArgs, 'id' | 'status'>>;
+  workInvestigationStatusEdit?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<MutationWorkInvestigationStatusEditArgs, 'status' | 'workId'>>;
   workflowDefinitionDelete?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionDeleteArgs, 'entityType'>>;
   workflowDefinitionPublish?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionPublishArgs, 'entityType'>>;
   workflowDefinitionRestorePublished?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionRestorePublishedArgs, 'entityType'>>;
