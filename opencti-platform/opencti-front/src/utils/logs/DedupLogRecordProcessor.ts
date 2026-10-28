@@ -26,16 +26,19 @@ interface DedupWindow {
   level: string;
 }
 
-// No stacktrace, so the same error thrown from different places still groups.
+// No exception stacktrace, so the same error thrown from different places still groups.
+// `data` is part of the key: records about different subjects must not be merged.
+// Serialized as a JSON array so that field boundaries stay unambiguous.
 const recordKey = (record: ReadWriteLogRecord) => {
   const attributes = record.attributes ?? {};
-  return [
+  return JSON.stringify([
     record.severityText ?? '',
     record.eventName ?? '',
     String(record.body ?? ''),
-    String(attributes['exception.type'] ?? ''),
-    String(attributes['exception.message'] ?? ''),
-  ].join('|');
+    attributes['exception.type'] ?? '',
+    attributes['exception.message'] ?? '',
+    attributes.data ?? null,
+  ]);
 };
 
 // The SDK calls every registered processor for every record, so a processor cannot

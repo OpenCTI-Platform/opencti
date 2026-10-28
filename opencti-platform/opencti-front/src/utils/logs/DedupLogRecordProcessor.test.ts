@@ -61,6 +61,27 @@ describe('DedupLogRecordProcessor', () => {
     expect(delegate.onEmit).toHaveBeenCalledTimes(3);
   });
 
+  it('keeps records with distinct data independent', () => {
+    const delegate = buildDelegate();
+    const processor = new DedupLogRecordProcessor(delegate);
+
+    processor.onEmit(buildRecord({ attributes: { data: { filter: { key: 'objectLabel' } } } }));
+    processor.onEmit(buildRecord({ attributes: { data: { filter: { key: 'createdBy' } } } }));
+    processor.onEmit(buildRecord({ attributes: { data: { filter: { key: 'createdBy' } } } }));
+
+    expect(delegate.onEmit).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not merge records whose fields contain the old separator', () => {
+    const delegate = buildDelegate();
+    const processor = new DedupLogRecordProcessor(delegate);
+
+    processor.onEmit(buildRecord({ eventName: 'a|b', body: 'c' }));
+    processor.onEmit(buildRecord({ eventName: 'a', body: 'b|c' }));
+
+    expect(delegate.onEmit).toHaveBeenCalledTimes(2);
+  });
+
   it('reports the suppressed count when the window closes', () => {
     const delegate = buildDelegate();
     const onSuppressed = vi.fn();

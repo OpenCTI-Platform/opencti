@@ -2,6 +2,7 @@ import { createNoopMeter } from '@opentelemetry/api';
 import type { Attributes, MeterProvider } from '@opentelemetry/api';
 import { logs } from '@opentelemetry/api-logs';
 import { BatchLogRecordProcessor, ConsoleLogRecordExporter, LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
+import type { LogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { DedupLogRecordProcessor, RECORDS_SUPPRESSED_EVENT_NAME } from './DedupLogRecordProcessor';
 import type { SuppressedRecords } from './DedupLogRecordProcessor';
 import { GraphQLLogRecordExporter } from './GraphQLLogRecordExporter';
@@ -33,18 +34,31 @@ const dropAwareMeterProvider: MeterProvider = {
   }),
 };
 
+// ERROR records are flushed right away, as the old frontendErrorLog did,
+// so a crash is not lost if the user reloads within the batch delay.
+export const flushOnError = (delegate: LogRecordProcessor): LogRecordProcessor => ({
+  onEmit: (record, context) => {
+    delegate.onEmit(record, context);
+    if ((record.severityNumber ?? 0) >= SEVERITY_NUMBERS.ERROR) {
+      delegate.forceFlush().catch(() => {});
+    }
+  },
+  forceFlush: (options) => delegate.forceFlush(options),
+  shutdown: () => delegate.shutdown(),
+});
+
 const buildShippingProcessor = (isDev: boolean) => {
   if (isDev) {
     return new SimpleLogRecordProcessor({ exporter: new ConsoleLogRecordExporter() });
   }
   // The browser build of this processor also flushes when the document is hidden
-  return new BatchLogRecordProcessor({
+  return flushOnError(new BatchLogRecordProcessor({
     exporter: new GraphQLLogRecordExporter(),
     scheduledDelayMillis: 5_000,
     maxExportBatchSize: 50,
     maxQueueSize: 500,
     selfObsMeterProvider: dropAwareMeterProvider,
-  });
+  }));
 };
 
 const onUncaughtError = (event: ErrorEvent) => {
@@ -59,6 +73,14 @@ const onUnhandledRejection = (event: PromiseRejectionEvent) => {
     eventName: 'opencti.frontend.unhandled_rejection',
     error: event.reason,
   });
+};
+
+// The batch processor flushes itself when the page is hidden, but not the dedup layer
+// above it, so pending suppressed counts would otherwise never be reported.
+const onPageHidden = () => {
+  if (document.visibilityState === 'hidden') {
+    provider?.forceFlush().catch(() => {});
+  }
 };
 
 // Until this runs, logger calls are no-ops, so importing logger anywhere is safe.
@@ -77,5 +99,6 @@ export const initLogger = (isDev: boolean = import.meta.env.DEV): LoggerProvider
   logs.setGlobalLoggerProvider(provider);
   window.addEventListener('error', onUncaughtError);
   window.addEventListener('unhandledrejection', onUnhandledRejection);
+  document.addEventListener('visibilitychange', onPageHidden);
   return provider;
 };

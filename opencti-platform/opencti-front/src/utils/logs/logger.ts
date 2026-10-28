@@ -28,6 +28,16 @@ const toException = (thrown: unknown) => {
   return new Error(`Non-Error value thrown: ${Object.prototype.toString.call(thrown)}`);
 };
 
+// The SDK drops the whole `data` attribute on any non-plain value (Date, Error, Map, cycle...),
+// so it is normalized to plain JSON first. Errors keep their name and message.
+const toAttributeData = (data: Record<string, unknown>) => {
+  try {
+    return JSON.parse(JSON.stringify(data, (_key, value) => (value instanceof Error ? { name: value.name, message: value.message } : value)));
+  } catch {
+    return { unserializable: true };
+  }
+};
+
 const emit = (level: LogLevel, message: string, options: LogOptions) => {
   try {
     logs.getLogger(LOGGER_NAME).emit({
@@ -35,7 +45,7 @@ const emit = (level: LogLevel, message: string, options: LogOptions) => {
       severityText: level,
       severityNumber: SEVERITY_NUMBERS[level],
       body: message,
-      attributes: options.data ? { data: options.data as AnyValueMap } : {},
+      attributes: options.data ? { data: toAttributeData(options.data) as AnyValueMap } : {},
       exception: 'error' in options ? toException(options.error) : undefined,
     });
   } catch {
