@@ -6023,6 +6023,7 @@
   "You will find here the result in JSON format.": "Vous trouverez ici le résultat au format JSON.",
   "you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "vous ne ferez plus partie de l'organisation de la plate-forme principale, à moins que l'accès à l'organisation ne vous ait été spécifiquement accordé.",
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "Vous ciblez plus de 1000 entités avec cette tâche de fond, soyez sûrs de ce que vous faites!",
+  "Your account has been locked for security reasons. Please try again in {minutes} minutes.": "Votre compte a été verrouillé pour des raisons de sécurité. Veuillez réessayer dans {minutes} minutes.",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "Votre compte a expiré. Si vous souhaitez réactiver votre compte, veuillez contacter votre administrateur.",
   "Your answer is ready": "Votre réponse est prête",
   "Your confidence level is insufficient to edit this object.": "Votre niveau de confiance est insuffisant pour éditer cet objet.",

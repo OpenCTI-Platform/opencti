@@ -6023,6 +6023,7 @@
   "You will find here the result in JSON format.": "여기에서 JSON 형식의 결과를 찾을 수 있습니다.",
   "you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "조직에 대한 액세스 권한이 특별히 부여되지 않는 한 더 이상 기본 플랫폼 조직과 관련이 없습니다.",
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "이 백그라운드 작업으로 1000개 이상의 엔터티를 대상으로 하고 있습니다. 작업을 확실히 하십시오!",
+  "Your account has been locked for security reasons. Please try again in {minutes} minutes.": "보안상의 이유로 계정이 잠겼습니다. {minutes}분 후에 다시 시도하세요.",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "계정이 만료되었습니다. 계정을 다시 활성화하려면 관리자에게 문의하십시오.",
   "Your answer is ready": "답변이 준비되었습니다",
   "Your confidence level is insufficient to edit this object.": "이 객체를 편집하기에 신뢰 수준이 충분하지 않습니다.",
