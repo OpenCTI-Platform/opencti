@@ -5,6 +5,7 @@
 //   2. AWS SigV4 (opensearch:region): the OpenSearch client, without reading the server;
 //   3. otherwise a GET / on the engine URL, with the platform's own connection settings, read
 //      by decideEngineClient. Any failure stops the platform: no silent fallback.
+// In the first two cases, checkEngineReachable still stops the platform when the engine does not answer.
 import { Agent, type Dispatcher, fetch, ProxyAgent } from 'undici';
 import semver from 'semver';
 import { ConfigurationError } from '../config/errors';
@@ -123,5 +124,21 @@ export const resolveEngineClient = async (
   }
   const info = await probe();
   return { client: decideEngineClient(info), version: info.version?.number, source: 'detection' };
+};
+
+// A client chosen without reading the server (forced or AWS) must still find an engine that answers:
+// the platform does not start without it. Any HTTP answer below 500 proves it, a 401 or a 403 included,
+// since a forced client is also the way to run where GET / is blocked (proxy, account without the privilege).
+export const checkEngineReachable = async (ping: () => Promise<unknown>): Promise<void> => {
+  try {
+    await ping();
+  } catch (cause) {
+    const error = cause as { meta?: { statusCode?: number | null }; statusCode?: number | null };
+    const status = error?.meta?.statusCode ?? error?.statusCode;
+    if (typeof status === 'number' && status > 0 && status < 500) {
+      return;
+    }
+    throw ConfigurationError('Search engine seems down', { cause });
+  }
 };
 // endregion
