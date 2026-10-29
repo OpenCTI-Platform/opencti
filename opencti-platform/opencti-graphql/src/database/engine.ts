@@ -1900,6 +1900,13 @@ export const specialElasticCharsEscape = (query: string) => {
 const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
   return query.replace(/([/+|\-()^={}[\]:?!"\\])/g, '\\$1');
 };
+// Keep * and ? as wildcards and whitespace as terms separator (each term is matched against the analyzed tokens),
+// but escape everything else, including AND / OR / NOT keywords
+const specialElasticCharsEscapeKeepWildcards = (query: string) => {
+  return query.trim().split(/\s+/)
+    .map((term) => term.replace(/([/+|\-()^~={}[\]:!"\\&])/g, '\\$1').replace(/^(AND|OR|NOT)$/, '\\$1'))
+    .join(' ');
+};
 export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
@@ -2491,7 +2498,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
           for (let i = 0; i < nestedValues.length; i += 1) {
             const nestedSearchValue = nestedValues[i].toString();
             if (nestedOperator === 'wildcard') {
-              nestedShould.push({ query_string: { query: `${nestedSearchValue}`, fields: [nestedFieldKey] } });
+              nestedShould.push({ query_string: { query: specialElasticCharsEscapeKeepWildcards(nestedSearchValue), fields: [nestedFieldKey] } });
             } else if (nestedOperator === 'not_eq') {
               nestedMustNot.push({
                 multi_match: {
