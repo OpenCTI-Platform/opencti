@@ -4,15 +4,28 @@ import { useEffect, useMemo, useState } from 'react';
 import fileDownload from 'js-file-download';
 import type { Widget, WidgetLayout } from '../../utils/widget/widget';
 import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
-import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
+import type { DashboardConfig, DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 import { applyDateChange, type DashboardDateField } from './dashboardTimeRange';
 
 const LAYOUT_SAVE_DEBOUNCE_MS = 300;
 
+interface SaveManifestOptions {
+  layouts: Record<string, WidgetLayout>;
+  noRefresh: boolean;
+  onCompleted?: () => void;
+  onError?: (error: Error) => void;
+}
+
 interface useDashboardProps {
   entity: DashboardLike | undefined | null;
-  onSave?: (entityId: string, newSerializedManifest: string, noRefresh: boolean, onCompleted: () => void) => void;
+  onSave?: (
+    entityId: string,
+    newSerializedManifest: string,
+    noRefresh: boolean,
+    onCompleted: () => void,
+    onError?: (error: Error) => void,
+  ) => void;
   onImportWidget?: (entityId: string, widgetConfigFile: File, serializedManifest: string) => void;
   onExportWidget?: (entityId: string, widget: { id: string; type: string }) => Promise<string | null>;
 }
@@ -63,17 +76,26 @@ function useDashboard({
     );
   }, [widgetsArray]);
 
-  const saveManifest = (newManifest: DashboardManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
-    const { layouts, noRefresh } = opts;
+  const saveManifest = (
+    newManifest: DashboardManifest,
+    opts: SaveManifestOptions = { layouts: widgetsLayouts, noRefresh: false },
+  ) => {
+    const { layouts, noRefresh, onCompleted, onError } = opts;
     const preparedManifest = prepareManifest(newManifest, layouts);
     const newManifestEncoded = serializeDashboardManifestForBackend(preparedManifest);
     // Sometimes (in case of layout adjustment) we do not want to re-fetch
     // all the manifest because widgets data is still the same, and it's costly
     // in performance.
     if (serializedManifest !== newManifestEncoded) {
-      onSave?.(entity?.id ?? '', newManifestEncoded, noRefresh, () => {
+      const handleCompleted = () => {
         setDeleting(false);
-      });
+        onCompleted?.();
+      };
+      // The error callback is only handed when someone waits for the result.
+      if (onError) onSave?.(entity?.id ?? '', newManifestEncoded, noRefresh, handleCompleted, onError);
+      else onSave?.(entity?.id ?? '', newManifestEncoded, noRefresh, handleCompleted);
+    } else {
+      onCompleted?.();
     }
   };
 
@@ -92,6 +114,15 @@ function useDashboard({
     cancelPendingLayoutSave();
     saveManifest({ ...manifest, config: applyDateChange(manifest.config, type, value) });
   };
+
+  // Saved with the current widget layouts: the manifest of the store misses the moves saved without refresh.
+  const handleConfigChange = (patch: Partial<DashboardConfig>) => new Promise<void>((resolve, reject) => {
+    cancelPendingLayoutSave();
+    saveManifest(
+      { ...manifest, config: { ...manifest.config, ...patch } },
+      { layouts: widgetsLayouts, noRefresh: false, onCompleted: resolve, onError: reject },
+    );
+  });
 
   const getNextRow = () => {
     return widgetsArray.reduce((max, { layout }) => {
@@ -195,6 +226,7 @@ function useDashboard({
   return {
     handleAddWidget,
     handleDateChange,
+    handleConfigChange,
     handleUpdateWidget,
     handleDeleteWidget,
     handleDuplicateWidget,
