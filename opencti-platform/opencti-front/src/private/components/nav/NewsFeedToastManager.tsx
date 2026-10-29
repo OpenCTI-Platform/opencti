@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import useAuth from '../../../utils/hooks/useAuth';
 import NewsFeedToastItem, { NewsFeedToastData, NEWS_FEED_TOAST_WIDTH } from './NewsFeedToastItem';
 import { useFormatter } from '../../../components/i18n';
+import { buildNewsFeedBlogSeeAllUrl, NEWS_FEED_BLOG_POST_TYPE } from '../../../utils/NewsFeed';
 import type { Theme } from '../../../components/Theme';
 import type { NewsFeedToastManagerSubscription, NewsFeedToastManagerSubscription$data } from './__generated__/NewsFeedToastManagerSubscription.graphql';
 import type { NewsFeedToastManagerDeleteSubscription, NewsFeedToastManagerDeleteSubscription$data } from './__generated__/NewsFeedToastManagerDeleteSubscription.graphql';
@@ -85,7 +86,21 @@ const NewsFeedToastManager: FunctionComponent = () => {
   const xtmHubUrl = settings?.platform_xtmhub_url ?? '';
   const visibleToasts = toasts.slice(0, MAX_VISIBLE_TOASTS);
   const hiddenCount = toasts.length - visibleToasts.length;
-  const libraryLink = xtmHubUrl ? `${xtmHubUrl}/app` : undefined;
+  const hiddenToasts = toasts.slice(MAX_VISIBLE_TOASTS);
+  const isOnlyBlogPostHidden = hiddenToasts.length > 0 && hiddenToasts.every((t) => t.news_feed_type === NEWS_FEED_BLOG_POST_TYPE);
+  const isOnlyResourceHidden = hiddenToasts.every((t) => t.news_feed_type !== NEWS_FEED_BLOG_POST_TYPE);
+  // The blog posts live on the Filigran blog, the resources on the XTM Hub.
+  const hubLibraryLink = xtmHubUrl ? `${xtmHubUrl}/app` : undefined;
+  const overflowLink = isOnlyBlogPostHidden ? buildNewsFeedBlogSeeAllUrl(settings?.id, xtmHubUrl) : hubLibraryLink;
+  let overflowMessage = t_i18n('(+{count}) Click to view all the new items', { values: { count: hiddenCount } });
+  let overflowTooltip = t_i18n('View all');
+  if (isOnlyBlogPostHidden) {
+    overflowMessage = t_i18n('(+{count}) Click to view all the new blog posts', { values: { count: hiddenCount } });
+    overflowTooltip = t_i18n('See all');
+  } else if (isOnlyResourceHidden) {
+    overflowMessage = t_i18n('(+{count}) Click to view all the new resources on the Hub', { values: { count: hiddenCount } });
+    overflowTooltip = t_i18n('View all on XTM Hub');
+  }
 
   const glassStyle = {
     backgroundColor: `${theme.palette.primary.main}22`,
@@ -130,7 +145,7 @@ const NewsFeedToastManager: FunctionComponent = () => {
       ))}
 
       {/* Overflow banner */}
-      {hiddenCount > 0 && libraryLink && (
+      {hiddenCount > 0 && overflowLink && (
         <Box
           sx={{
             ...glassStyle,
@@ -142,17 +157,17 @@ const NewsFeedToastManager: FunctionComponent = () => {
           }}
         >
           <Typography variant="caption" sx={{ fontWeight: 700, flex: 1, color: 'primary.main', ml: 1 }}>
-            {t_i18n('(+{count}) Click to view all the new resources on the Hub', { values: { count: hiddenCount } })}
+            {overflowMessage}
           </Typography>
-          <Tooltip title={t_i18n('View all on XTM Hub')}>
+          <Tooltip title={overflowTooltip}>
             <IconButton
               component="a"
-              href={libraryLink}
+              href={overflowLink}
               target="_blank"
               rel="noopener noreferrer"
               size="small"
               color="primary"
-              aria-label={t_i18n('View all on XTM Hub')}
+              aria-label={overflowTooltip}
             >
               <OpenInNewOutlined fontSize="small" />
             </IconButton>

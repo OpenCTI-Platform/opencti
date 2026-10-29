@@ -47,6 +47,10 @@ vi.mock('./NewsFeed', () => ({
   default: () => <div data-testid="news-feed-list" />,
 }));
 
+vi.mock('./NewsFeedBlogPosts', () => ({
+  default: () => <div data-testid="news-feed-blog-posts" />,
+}));
+
 vi.mock('./NewsFeedSettings', () => ({
   default: (props: NonNullable<typeof settingsProps>) => {
     settingsProps = props;
@@ -100,6 +104,23 @@ describe('NewsFeedPage', () => {
     renderPage();
     expect(screen.getByRole('tab', { name: /News feed/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Settings/ })).toBeInTheDocument();
+  });
+
+  it('does not render the blog posts tab when the platform does not support the blog posts', () => {
+    renderPage();
+    expect(screen.queryByRole('tab', { name: /Blogpost/ })).not.toBeInTheDocument();
+  });
+
+  it('renders the blog posts tab when the platform supports the blog posts', () => {
+    renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] } });
+    expect(screen.getByRole('tab', { name: /Blogpost/ })).toBeInTheDocument();
+  });
+
+  it('displays the blog posts when the blog posts tab is selected', async () => {
+    const { user } = renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] } });
+    await user.click(screen.getByRole('tab', { name: /Blogpost/ }));
+    expect(screen.getByTestId('news-feed-blog-posts')).toBeInTheDocument();
+    expect(screen.queryByTestId('news-feed-list')).not.toBeInTheDocument();
   });
 
   it('displays the news feed list by default', () => {

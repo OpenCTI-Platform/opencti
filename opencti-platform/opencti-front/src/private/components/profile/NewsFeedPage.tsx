@@ -16,7 +16,9 @@ import type { NewsFeedPageQuery } from './__generated__/NewsFeedPageQuery.graphq
 import NewsFeed from './NewsFeed';
 import NewsFeedSettings from './NewsFeedSettings';
 import XtmHubDisconnectedBanner from '../xtm_hub/XtmHubDisconnectedBanner';
-import { CampaignOutlined } from '@mui/icons-material';
+import { ArticleOutlined, CampaignOutlined } from '@mui/icons-material';
+import NewsFeedBlogPosts from './NewsFeedBlogPosts';
+import { NEWS_FEED_BLOG_POST_TYPE } from '../../../utils/NewsFeed';
 
 const newsFeedPageFieldPatch = graphql`
   mutation NewsFeedPageFieldPatchMutation(
@@ -53,6 +55,8 @@ const newsFeedNumberSubscription = graphql`
   }
 `;
 
+type NewsFeedTab = 'news-feed' | 'blog-posts' | 'settings';
+
 const NewsFeedPage: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -63,7 +67,7 @@ const NewsFeedPage: FunctionComponent = () => {
   setTitle(t_i18n('News Feed'));
 
   const data = useLazyLoadQuery<NewsFeedPageQuery>(newsFeedPageQuery, {});
-  const [activeTab, setActiveTab] = useState<'news-feed' | 'settings'>('news-feed');
+  const [activeTab, setActiveTab] = useState<NewsFeedTab>('news-feed');
   const [liveNewsFeedsCount, setLiveNewsFeedsCount] = useState<number | null>(null);
 
   const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
@@ -110,6 +114,10 @@ const NewsFeedPage: FunctionComponent = () => {
     data.settings,
   );
 
+  // The blog posts tab only exists when the XTM Hub provisions blog posts for this platform version.
+  const isBlogPostAvailable = settingsFragmentData.xtm_hub_available_news_feed_types?.includes(NEWS_FEED_BLOG_POST_TYPE) ?? false;
+  const displayedTab = activeTab === 'blog-posts' && !isBlogPostAvailable ? 'news-feed' : activeTab;
+
   return (
     <div>
       <Breadcrumbs elements={[{ label: t_i18n('XTM Hub News Feed'), current: true }]} />
@@ -125,7 +133,7 @@ const NewsFeedPage: FunctionComponent = () => {
           <XtmHubDisconnectedBanner />
         </div>
       )}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'news-feed' | 'settings')} panels="external">
+      <Tabs value={displayedTab} onValueChange={(value) => setActiveTab(value as NewsFeedTab)} panels="external">
         <TabsList>
           <TabsTrigger
             value="news-feed"
@@ -137,6 +145,14 @@ const NewsFeedPage: FunctionComponent = () => {
           >
             {t_i18n('News feed')}
           </TabsTrigger>
+          {isBlogPostAvailable && (
+            <TabsTrigger
+              value="blog-posts"
+              icon={<ArticleOutlined fontSize="small" />}
+            >
+              {t_i18n('Blogpost')}
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="settings"
             icon={<SettingsOutlinedIcon fontSize="small" />}
@@ -146,9 +162,9 @@ const NewsFeedPage: FunctionComponent = () => {
         </TabsList>
       </Tabs>
       <div style={{ marginTop: 20 }}>
-        {activeTab === 'news-feed' ? (
-          <NewsFeed />
-        ) : (
+        {displayedTab === 'news-feed' && <NewsFeed />}
+        {displayedTab === 'blog-posts' && <NewsFeedBlogPosts />}
+        {displayedTab === 'settings' && (
           <Stack spacing={3} sx={{ width: '50%' }}>
             <Card title={t_i18n('XTM Hub News Feed settings')}>
               <NewsFeedSettings
