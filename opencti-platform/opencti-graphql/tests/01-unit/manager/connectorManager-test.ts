@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ManagerDefinition } from '../../../src/manager/managerModule';
 
 const {
-  mockRegisterManager,
   mockConnectors,
   mockRedisGetConnectorStatus,
   mockRedisGetWork,
@@ -12,7 +10,6 @@ const {
   mockLogInfo,
   mockLogWarn,
 } = vi.hoisted(() => ({
-  mockRegisterManager: vi.fn(),
   mockConnectors: vi.fn(),
   mockRedisGetConnectorStatus: vi.fn(),
   mockRedisGetWork: vi.fn(),
@@ -21,10 +18,6 @@ const {
   mockDeleteWorksRaw: vi.fn(),
   mockLogInfo: vi.fn(),
   mockLogWarn: vi.fn(),
-}));
-
-vi.mock('../../../src/manager/managerModule', () => ({
-  registerManager: mockRegisterManager,
 }));
 
 vi.mock('../../../src/modules/connector/connector-domain', () => ({
@@ -58,11 +51,10 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
   };
 });
 
-import '../../../src/manager/connectorManager';
+import { CONNECTOR_MANAGER_DEFINITION } from '../../../src/manager/connectorManager';
 
-const definition: ManagerDefinition = mockRegisterManager.mock.calls[0][0];
 const runConnectorManager = (signal = new AbortController().signal) => {
-  return definition.cronSchedulerHandler!.handler({ signal });
+  return CONNECTOR_MANAGER_DEFINITION.cronSchedulerHandler!.handler({ signal });
 };
 
 const CONNECTOR = { internal_id: 'connector-1', name: 'Connector 1' };
@@ -87,8 +79,8 @@ describe('connector manager', () => {
     });
   });
 
-  it('should register a scheduled manager holding its lock during the run', () => {
-    expect(definition).toMatchObject({
+  it('should define a scheduled manager holding its lock during the run', () => {
+    expect(CONNECTOR_MANAGER_DEFINITION).toMatchObject({
       id: 'CONNECTOR_MANAGER',
       label: 'Connector manager',
       executionContext: 'connector_manager',
@@ -98,10 +90,10 @@ describe('connector manager', () => {
         lockInHandlerParams: true,
       },
     });
-    expect(definition.cronSchedulerHandler?.runOnStart).toBeFalsy();
+    expect(CONNECTOR_MANAGER_DEFINITION.cronSchedulerHandler?.runOnStart).toBeFalsy();
     // connector_manager:enabled defaults to true
-    expect(definition.enabled()).toBe(true);
-    expect(definition.enabledToStart()).toBe(true);
+    expect(CONNECTOR_MANAGER_DEFINITION.enabled()).toBe(true);
+    expect(CONNECTOR_MANAGER_DEFINITION.enabledToStart()).toBe(true);
   });
 
   it('should force the completion of the works older than the connector status', async () => {

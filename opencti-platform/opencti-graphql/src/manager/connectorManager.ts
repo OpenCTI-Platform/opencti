@@ -11,7 +11,7 @@ import type { AuthContext } from '../types/user';
 import type { Work } from '../types/work';
 import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import { connectors } from '../modules/connector/connector-domain';
-import { registerManager, type ManagerDefinition } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 
 const CONNECTOR_MANAGER_ID = 'CONNECTOR_MANAGER';
 const CONNECTOR_MANAGER_CONTEXT = 'connector_manager';
@@ -116,7 +116,7 @@ const connectorHandler = async (lock: { signal: AbortSignal }) => {
   }
 };
 
-const CONNECTOR_MANAGER_DEFINITION: ManagerDefinition = {
+export const CONNECTOR_MANAGER_DEFINITION: ManagerDefinition = {
   id: CONNECTOR_MANAGER_ID,
   label: 'Connector manager',
   executionContext: CONNECTOR_MANAGER_CONTEXT,
@@ -134,5 +134,3 @@ const CONNECTOR_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(CONNECTOR_MANAGER_DEFINITION);
