@@ -120,7 +120,6 @@ const settingsQuery = graphql`
       }
       otp_mandatory
       ...SettingsMessages_settingsMessages
-      ...SettingsIngestionHealth_settings
       analytics_google_analytics_v4
       filigran_chatbot_ai_cgu_status
       platform_map_custom_file {
@@ -138,6 +137,9 @@ const settingsQuery = graphql`
         name
         version
       }
+    }
+    ingestionHealthSettings {
+      ...SettingsIngestionHealth_settings
     }
     ...ThemeManager_themes
   }
@@ -665,7 +667,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           isEnterpriseEditionValid={isEnterpriseEditionValid}
         />
 
-        {isFeatureEnable('INGESTION_HEALTH') && <SettingsIngestionHealth settings={settings} />}
+        {isFeatureEnable('INGESTION_HEALTH') && <SettingsIngestionHealth settings={data.ingestionHealthSettings} />}
       </Box>
     </div>
   );

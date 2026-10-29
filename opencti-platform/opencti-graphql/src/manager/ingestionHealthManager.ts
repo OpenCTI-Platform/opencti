@@ -1,13 +1,12 @@
 import conf, { BUS_TOPICS, INGESTION_HEALTH_FEATURE_FLAG, booleanConf, isFeatureEnabled, logApp } from '../config/conf';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
-import type { BasicStoreSettings } from '../types/settings';
-import { resolveIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-settings';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { getResolvedIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-domain';
 import type { BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS, isUserHasCapability } from '../utils/access';
@@ -194,8 +193,7 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
       ? { internal, user_service_account: authUser.user_service_account === true, hasCapability: (capability) => isUserHasCapability(authUser, capability) }
       : undefined;
   };
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_SETTINGS);
-  const { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks } = resolveIngestionHealthSettings(settings);
+  const { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks } = await getResolvedIngestionHealthSettings(context, INGESTION_HEALTH_MANAGER_USER);
   const pingingConnectors = await findRegularlyPingingConnectors(context, INGESTION_HEALTH_MANAGER_USER);
   const pingingConnectorsIds = new Set(pingingConnectors.map((connector) => connector.internal_id));
 

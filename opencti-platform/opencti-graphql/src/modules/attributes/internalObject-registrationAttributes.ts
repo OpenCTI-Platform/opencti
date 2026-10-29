@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { CONFIG_PRESET_FEATURE_FLAG, INGESTION_HEALTH_FEATURE_FLAG } from '../../config/conf';
+import { CONFIG_PRESET_FEATURE_FLAG } from '../../config/conf';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 import { type AttributeDefinition, changes, createdAt, creators, draftContext, errors, id, lastEventId, refreshedAt, updatedAt } from '../../schema/attribute-definition';
 import {
@@ -234,22 +234,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'cert_auth', label: 'Client certificate authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'headers_auth', label: 'Header authentication configuration', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'smtp_configuration', label: 'SMTP configuration', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    {
-      name: 'ingestion_health_settings',
-      label: 'Ingestion health settings',
-      type: 'object',
-      format: 'standard',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: false,
-      upsert: false,
-      isFilterable: false,
-      featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
-      mappings: [
-        { name: 'notification_delay', label: 'Notification delay (in minute)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-        { name: 'disabled_health_checks', label: 'Disabled health checks', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-      ],
-    },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', label: 'Last run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
