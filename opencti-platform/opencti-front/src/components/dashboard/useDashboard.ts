@@ -6,6 +6,7 @@ import type { Widget, WidgetLayout } from '../../utils/widget/widget';
 import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
 import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
+import { applyDateChange, type DashboardDateField } from './dashboardTimeRange';
 
 const LAYOUT_SAVE_DEBOUNCE_MS = 300;
 
@@ -87,26 +88,9 @@ function useDashboard({
     debouncedSaveLayout.cancel();
   };
 
-  const handleDateChange = (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => {
+  const handleDateChange = (type: DashboardDateField, value: string | null) => {
     cancelPendingLayoutSave();
-    let newManifest = {
-      ...manifest,
-      config: {
-        ...manifest.config,
-        [type]: value === 'none' ? null : value,
-      },
-    } satisfies DashboardManifest;
-    if (type === 'relativeDate' && value !== 'none') {
-      newManifest = {
-        ...newManifest,
-        config: {
-          ...newManifest.config,
-          startDate: null,
-          endDate: null,
-        },
-      } satisfies DashboardManifest;
-    }
-    saveManifest(newManifest);
+    saveManifest({ ...manifest, config: applyDateChange(manifest.config, type, value) });
   };
 
   const getNextRow = () => {
