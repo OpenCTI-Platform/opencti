@@ -703,7 +703,7 @@ export const handleDigestNotifications = async (context: AuthContext) => {
   // Iter on each digest and generate the output
   for (let index = 0; index < digestNotifications.length; index += 1) {
     const { trigger, users } = digestNotifications[index];
-    const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
+    const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type, trigger_scope } = trigger;
     const fromDate = baseDate.clone().subtract(1, period).toDate();
     // Read the range in batches and only keep the events related to this digest (bounded by MAX_DIGEST_CONTENT_SIZE)
     const { content: digestContent, truncated, byteSize } = await collectDigestContent(fromDate, baseDate.toDate(), triggerIds);
@@ -722,11 +722,15 @@ export const handleDigestNotifications = async (context: AuthContext) => {
           const target = convertToNotificationUser(user, notifiers);
           const dataPromises = userNotifications.map(async (n) => {
             const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
+            // Activity events data is not a stix object, their message is already computed in the target
+            const message = trigger_scope === 'activity'
+              ? userTarget?.message ?? ''
+              : await generateNotificationMessageForInstance(context, user, n.data);
             return ({
               notification_id: n.notification_id,
               type: userTarget?.type ?? type,
               instance: n.data,
-              message: await generateNotificationMessageForInstance(context, user, n.data),
+              message,
               origin: n.origin,
               streamMessage: n.streamMessage,
             });
