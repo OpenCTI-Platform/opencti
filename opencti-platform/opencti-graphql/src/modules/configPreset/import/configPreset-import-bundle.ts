@@ -1,3 +1,4 @@
+import { pipeline, type Readable, Transform } from 'node:stream';
 import semver from 'semver';
 // @ts-expect-error unzipper ships no type declarations
 import unzipper from 'unzipper';
@@ -22,6 +23,19 @@ export const CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE = 50 * 1024 * 1024;
 
 export const bundleRefused = (message: string, data: Record<string, unknown> = {}) => {
   return FunctionalError(message, { ...data, reason: CONFIG_PRESET_REASON_BUNDLE_REFUSED });
+};
+
+// The stream through a counter that fails as soon as more than the limit goes through, so an oversized upload is not stored.
+// A pipeline, not a pipe: a refusal destroys the source too, otherwise the temporary file of the upload stays on disk
+export const limitStream = (source: Readable, limit: number): Readable => {
+  let size = 0;
+  const counter = new Transform({
+    transform(chunk, _encoding, callback) {
+      size += chunk.length;
+      callback(size > limit ? bundleRefused('The configuration bundle is too large', { limit }) : null, chunk);
+    },
+  });
+  return pipeline(source, counter, () => undefined);
 };
 
 // Reads a stream through a counter: a stream above the limit is refused as soon as it goes over

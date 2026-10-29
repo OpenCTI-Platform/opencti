@@ -1,5 +1,4 @@
 import crypto from 'node:crypto';
-import { Transform } from 'node:stream';
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { downloadFile } from '../../../database/raw-file-storage';
@@ -12,7 +11,14 @@ import { CONFIG_PRESET_IMPORT_PATH } from '../../internal/document/document-type
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-registry';
 import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetPlatformId } from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
-import { CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, type ConfigPresetItemKey, readConfigPresetBundle, readStreamWithLimit, resolveBundleDependencies } from './configPreset-import-bundle';
+import {
+  CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE,
+  type ConfigPresetItemKey,
+  limitStream,
+  readConfigPresetBundle,
+  readStreamWithLimit,
+  resolveBundleDependencies,
+} from './configPreset-import-bundle';
 import {
   CONFIG_PRESET_DEFAULT_IMPORT_MODE,
   CONFIG_PRESET_REASON_FILE_MISSING,
@@ -23,17 +29,6 @@ import {
 } from './configPreset-import-types';
 
 const fileMissing = () => FunctionalError('The uploaded file no longer exists', { reason: CONFIG_PRESET_REASON_FILE_MISSING });
-
-// A transform that fails as soon as more than the limit goes through, so an oversized upload is not stored
-const limitStream = (limit: number) => {
-  let size = 0;
-  return new Transform({
-    transform(chunk, _encoding, callback) {
-      size += chunk.length;
-      callback(size > limit ? FunctionalError('The configuration bundle is too large', { reason: 'bundle_refused', limit }) : null, chunk);
-    },
-  });
-};
 
 // One pending upload per user: the previous ones are deleted, a failed deletion never fails the upload
 const deleteOtherUploads = async (context: AuthContext, user: AuthUser, keepId: string) => {
@@ -62,7 +57,7 @@ export const configPresetImportUpload = async (context: AuthContext, user: AuthU
     context,
     user,
     `${CONFIG_PRESET_IMPORT_PATH}/${crypto.randomUUID()}`,
-    { createReadStream: () => createReadStream().pipe(limitStream(CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE)), filename },
+    { createReadStream: () => limitStream(createReadStream(), CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE), filename },
     { noTriggerImport: true, meta: { description: 'Configuration preset import' } },
   );
   try {

@@ -1,8 +1,10 @@
+import { Readable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import {
   CONFIG_PRESET_IMPORT_MAX_ENTRIES,
   CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE,
+  limitStream,
   readConfigPresetBundle,
   resolveBundleDependencies,
 } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
@@ -91,6 +93,30 @@ describe('Config preset bundle reader', () => {
       ...validBundleFiles(),
       'copy/banner.json': itemFile('platformSettings.messages', 'banner', { platform_banner_text: 'Other' }),
     }));
+  });
+});
+
+describe('Config preset upload limit', () => {
+  const chunks = (count: number) => Readable.from(Array.from({ length: count }, () => Buffer.alloc(1024)));
+
+  it('lets a stream under the limit through unchanged', async () => {
+    const read: Buffer[] = [];
+    for await (const chunk of limitStream(chunks(3), 4096)) {
+      read.push(chunk);
+    }
+    expect(Buffer.concat(read)).toHaveLength(3 * 1024);
+  });
+
+  it('refuses a stream over the limit as a refused bundle and destroys the source, so its temporary file is released', async () => {
+    const source = chunks(10);
+    const error = await (async () => {
+      for await (const _chunk of limitStream(source, 4096)) {
+        // read until the refusal
+      }
+    })().catch((err) => err);
+    expect(error.message).toEqual('The configuration bundle is too large');
+    expect(error.extensions?.data).toMatchObject({ reason: 'bundle_refused', limit: 4096 });
+    expect(source.destroyed).toBe(true);
   });
 });
 
