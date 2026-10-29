@@ -396,6 +396,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             <DashboardVariableValuesProvider values={variableControls.values} dateVariableIds={dateVariableIds}>
               <DashboardContent
                 helpers={contentHelpers}
+                usageMarkerVariables={variableDefinitions}
                 isEditable={userCanEdit}
                 entity={workspace}
                 host={WIDGET_WORKSPACE_HOST}
