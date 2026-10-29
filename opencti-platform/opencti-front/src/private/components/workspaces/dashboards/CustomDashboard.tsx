@@ -31,6 +31,7 @@ import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_w
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery } from './__generated__/CustomDashboardExportQuery.graphql';
+import { WorkspaceEditionOverviewFieldPatchMutation } from '../__generated__/WorkspaceEditionOverviewFieldPatchMutation.graphql';
 import { Box } from '@mui/material';
 import { useFormatter } from 'src/components/i18n';
 
@@ -102,6 +103,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(dashboardFragment, data);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
+  const [commitManifestPatch] = useApiMutation<WorkspaceEditionOverviewFieldPatchMutation>(workspaceMutationFieldPatch);
 
   const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
     || workspace.currentUserAccessRight === 'edit';
@@ -145,6 +147,15 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   };
 
   const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void, onError?: (error: Error) => void) => {
+    if (onError) {
+      // Someone waits for the result: unlike commitMutation, this hook reports every failure, network ones included.
+      commitManifestPatch({
+        variables: { id, input: [{ key: 'manifest', value: [newManifestEncoded] }] },
+        onCompleted,
+        onError,
+      });
+      return;
+    }
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
     commitMutation({
       mutation,
