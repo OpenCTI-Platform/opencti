@@ -906,6 +906,33 @@ describe('User has no settings capability and is organization admin query behavi
       }
     }
   `;
+  const USER_RELATION_ADD_MEMBER_OF_QUERY = gql`
+    mutation UserRelationAddMemberOf($id: ID!, $toId: ID!) {
+      userEdit(id: $id) {
+        relationAdd(input: { toId: $toId, relationship_type: "member-of" }) {
+          id
+        }
+      }
+    }
+  `;
+  const USER_RELATION_DELETE_MEMBER_OF_QUERY = gql`
+    mutation UserRelationDeleteMemberOf($id: ID!, $toId: StixRef!) {
+      userEdit(id: $id) {
+        relationDelete(toId: $toId, relationship_type: "member-of") {
+          id
+        }
+      }
+    }
+  `;
+  const USER_RELATION_DELETE_HAS_ROLE_QUERY = gql`
+    mutation UserRelationDeleteHasRole($id: ID!, $toId: StixRef!) {
+      userEdit(id: $id) {
+        relationDelete(toId: $toId, relationship_type: "has-role") {
+          id
+        }
+      }
+    }
+  `;
 
   afterAll(async () => {
     // remove the capability to administrate the Organization
@@ -1213,6 +1240,48 @@ describe('User has no settings capability and is organization admin query behavi
       },
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userEditorId);
+  });
+  it('should not remove user from a group not grantable by the administrated organization', async () => {
+    const notGrantableGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    await queryAsAdminWithSuccess({
+      query: USER_RELATION_ADD_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+
+    // the membership must still be there
+    const userQueryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    const groupsIds = userQueryResult.data?.user.groups.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(groupsIds).toContain(notGrantableGroupId);
+
+    // clean up
+    await queryAsAdminWithSuccess({
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+  });
+  it('should remove user from a group grantable by the administrated organization', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: amberGroupId },
+    });
+    expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
+  });
+  it('should not add a relation without target', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: USER_RELATION_ADD_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: '' },
+    });
+  });
+  it('should not remove a relation other than member-of or participate-to', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: USER_RELATION_DELETE_HAS_ROLE_QUERY,
+      variables: { id: userInternalId, toId: amberGroupId },
+    });
   });
   it('should user deleted', async () => {
     // Delete user
