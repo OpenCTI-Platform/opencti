@@ -39,7 +39,7 @@ const InvestigationEnrichmentExpandEmpty = ({
           onClick={onDismiss}
           disabled={!canEdit}
         >
-          {t_i18n('Dismiss')}
+          {t_i18n('Mark as reviewed')}
         </Button>
       </DialogFooter>
     </>
