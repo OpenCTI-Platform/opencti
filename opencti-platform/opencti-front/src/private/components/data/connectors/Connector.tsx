@@ -759,7 +759,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     );
   }, [connector.manager_connector_logs, theme, t_i18n]);
 
-  const connectorStatus = computeConnectorStatus(connector);
+  const connectorStatus = computeConnectorStatus(connector, isFeatureEnable('INGESTION_HEALTH'));
   const managedConnectorDisplayName = (() => {
     if (!connector.is_managed) {
       return connector.name;

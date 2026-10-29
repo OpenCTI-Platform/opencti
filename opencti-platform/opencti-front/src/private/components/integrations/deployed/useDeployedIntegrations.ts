@@ -62,6 +62,8 @@ interface UseDeployedIntegrationsProps {
   logosBySlug: Map<string, string>;
   // Connector update detection is part of the decoupled versions (DECOUPLING_VERSIONS feature flag)
   isConnectorUpdateEnabled: boolean;
+  // A connector is stopped under other conditions with the ingestion health (INGESTION_HEALTH feature flag): see computeConnectorStatus
+  isIngestionHealthEnabled: boolean;
 }
 
 const toSafeNumber = (value: unknown): number => {
@@ -92,6 +94,7 @@ const useDeployedIntegrations = ({
   formsData,
   logosBySlug,
   isConnectorUpdateEnabled,
+  isIngestionHealthEnabled,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
   return useMemo(() => {
     const items: DeployedIntegrationItem[] = [];
@@ -144,7 +147,8 @@ const useDeployedIntegrations = ({
       const { integrationStatus } = computeConnectorStatus({
         manager_current_status: state?.manager_current_status,
         manager_requested_status: state?.manager_requested_status,
-      });
+        active: state?.active,
+      }, isIngestionHealthEnabled);
       const logoSlug = connector.manager_contract_excerpt?.slug;
       items.push({
         id: connector.id,
@@ -284,7 +288,7 @@ const useDeployedIntegrations = ({
       healthIssue: readHealthIssue(item.ingestionHealth),
       healthStatus: readHealthStatus(item.ingestionHealth),
     }));
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled]);
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled, isIngestionHealthEnabled]);
 };
 
 export default useDeployedIntegrations;

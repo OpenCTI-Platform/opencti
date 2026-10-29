@@ -71,6 +71,7 @@ const IntegrationsDeployedContent = ({
     formsData,
     logosBySlug,
     isConnectorUpdateEnabled,
+    isIngestionHealthEnabled,
   });
 
   const {
