@@ -1110,6 +1110,10 @@ export const addBookmark = async (context, user, id, type) => {
   return storeLoadById(context, user, id, type);
 };
 
+const getOwnPasswordHash = (user) => {
+  return Object.hasOwn(user, 'password') && typeof user.password === 'string' && user.password.length > 0 ? user.password : undefined;
+};
+
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   inputs.forEach((input) => {
     const { key } = input;
@@ -1127,8 +1131,8 @@ export const meEditField = async (context, user, userId, inputs, password = null
     }
     // Check password confirmation in case of password change
     if (key === 'password') {
-      const dbPassword = user.password;
-      const match = bcrypt.compareSync(password, dbPassword);
+      const dbPassword = getOwnPasswordHash(user);
+      const match = dbPassword !== undefined && bcrypt.compareSync(password, dbPassword);
       if (!match) {
         throw FunctionalError('The current password you have provided is not valid');
       }
@@ -1484,7 +1488,8 @@ export const getUserByEmail = async (email) => {
 export const login = async (email, password) => {
   const user = await getUserByEmail(email);
   if (!user) throw AuthenticationFailure();
-  const dbPassword = user.password;
+  const dbPassword = getOwnPasswordHash(user);
+  if (!dbPassword) throw AuthenticationFailure();
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
   return user;

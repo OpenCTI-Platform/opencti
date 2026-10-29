@@ -31,7 +31,16 @@ if (conf.get('smtp:username') && conf.get('smtp:username').length > 0) {
   };
 }
 
-export const transporter = nodemailer.createTransport(smtpOptions);
+const SMTP_TRANSPORT_SELECTORS = {
+  url: undefined,
+  pool: false,
+  sendmail: false,
+  streamTransport: false,
+  jsonTransport: false,
+  SES: undefined,
+};
+
+export const transporter = nodemailer.createTransport({ ...smtpOptions, ...SMTP_TRANSPORT_SELECTORS });
 
 export const smtpConfiguredEmail = (settings) => {
   return ALLOW_EMAIL_REWRITE ? settings.platform_email : SMTP_FORCED_EMAIL;
