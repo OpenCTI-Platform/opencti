@@ -2,7 +2,7 @@ import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as Elk9Client } from '@elastic/elasticsearch-v9';
-import { ENGINE_CLIENT_AUTO, probeEngine, resolveEngineClient } from './engine-detection';
+import { checkEngineReachable, ENGINE_CLIENT_AUTO, probeEngine, resolveEngineClient } from './engine-detection';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
@@ -496,6 +496,10 @@ export const searchEngineInit = async (): Promise<boolean> => {
     configuration: 'forced by elasticsearch:engine_client',
   }[decision.source];
   logApp.info(`[SEARCH] Search engine client ${decision.client} selected, ${origin}`);
+  // The server was not read to choose the client: it must still answer, or the platform does not start
+  if (decision.source !== 'detection') {
+    await checkEngineReachable(() => (engine as OpenClient).info());
+  }
   // Announced only when the server was read: a forced client says nothing about the server version
   if (decision.source === 'detection' && decision.client === 'elasticsearch8') {
     logApp.warn('[SEARCH] Elasticsearch versions before 9 are deprecated and their support will be removed in a future release. Plan the upgrade to Elasticsearch 9.x (or OpenSearch).');

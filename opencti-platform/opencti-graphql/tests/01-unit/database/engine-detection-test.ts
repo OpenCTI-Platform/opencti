@@ -1,7 +1,10 @@
 import { createServer, type IncomingHttpHeaders, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { decideEngineClient, probeEngine, resolveEngineClient } from '../../../src/database/engine-detection';
+import { Client as Elk8Client } from '@elastic/elasticsearch';
+import { Client as Elk9Client } from '@elastic/elasticsearch-v9';
+import { Client as OpenClient } from '@opensearch-project/opensearch';
+import { checkEngineReachable, decideEngineClient, probeEngine, resolveEngineClient } from '../../../src/database/engine-detection';
 
 describe('engine detection: decideEngineClient', () => {
   it.each([
@@ -111,5 +114,56 @@ describe('engine detection: probeEngine', () => {
 
   it('should stop when the server cannot be reached', async () => {
     await expect(probeEngine(connection({ url: 'http://127.0.0.1:1' }))).rejects.toThrow('Search engine seems down');
+  });
+});
+
+describe('engine detection: checkEngineReachable', () => {
+  let server: Server;
+  let baseUrl: string;
+  let status = 200;
+
+  beforeAll(async () => {
+    server = createServer((_req, res) => {
+      // The Elasticsearch clients reject a successful answer without this header
+      res.writeHead(status, { 'content-type': 'application/json', 'x-elastic-product': 'Elasticsearch' });
+      res.end('{}');
+    });
+    await new Promise<void>((resolve) => {
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise((resolve) => {
+      server.close(resolve);
+    });
+  });
+
+  // GET / through the real clients, so that the check reads the errors they actually throw
+  type Ping = (node: string) => () => Promise<unknown>;
+  const clients: [string, Ping][] = [
+    ['Elasticsearch 8', (node) => () => new Elk8Client({ node, maxRetries: 0 }).info()],
+    ['Elasticsearch 9', (node) => () => new Elk9Client({ node, maxRetries: 0 }).info()],
+    ['OpenSearch', (node) => () => new OpenClient({ node, maxRetries: 0 }).info()],
+  ];
+
+  it.each(clients)('should pass when %s answers', async (_name, ping) => {
+    status = 200;
+    await expect(checkEngineReachable(ping(baseUrl))).resolves.toBeUndefined();
+  });
+
+  it.each(clients)('should pass when %s refuses GET /, which proves it answers', async (_name, ping) => {
+    status = 403;
+    await expect(checkEngineReachable(ping(baseUrl))).resolves.toBeUndefined();
+  });
+
+  it.each(clients)('should stop when %s answers with a server error', async (_name, ping) => {
+    status = 503;
+    await expect(checkEngineReachable(ping(baseUrl))).rejects.toThrow('Search engine seems down');
+  });
+
+  it.each(clients)('should stop when %s cannot be reached', async (_name, ping) => {
+    await expect(checkEngineReachable(ping('http://127.0.0.1:1'))).rejects.toThrow('Search engine seems down');
   });
 });

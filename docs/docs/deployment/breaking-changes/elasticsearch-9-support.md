@@ -25,16 +25,18 @@ The `elasticsearch:engine_selector` (`ELASTICSEARCH__ENGINE_SELECTOR`) and `elas
 warning at startup. When the detection cannot work, for example behind a proxy that blocks `GET /` or with an
 account that cannot read it, set `elasticsearch:engine_client` (`ELASTICSEARCH__ENGINE_CLIENT`) to
 `elasticsearch8`, `elasticsearch9` or `opensearch`: the platform then uses that client without reading the
-server. Its default, `auto`, keeps the detection.
+server version. Its default, `auto`, keeps the detection.
 
 The detection works with every authentication method, including API keys (`elasticsearch:api_key`), which
 previously required setting `engine_selector` to `elk`.
 
 With AWS SigV4 authentication (`opensearch:region` set), the platform uses the OpenSearch client without
-reading the server, as before. `elasticsearch:engine_client` can then only be `auto` or `opensearch`.
+reading the server version, as before. `elasticsearch:engine_client` can then only be `auto` or `opensearch`.
 
 The platform refuses to start, with an explicit message, when the server cannot be reached, rejects the
-credentials, or answers `GET /` with an error or an unreadable response.
+credentials, or answers `GET /` with an error or an unreadable response. With a forced client or AWS SigV4, it
+still calls `GET /` at startup, only to check that the engine is up: it refuses to start when the engine does not
+answer or answers with a server error (5xx), and accepts any other answer, a refusal of `GET /` included.
 
 ## Migration
 

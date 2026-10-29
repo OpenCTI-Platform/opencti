@@ -1,17 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Fake clients, and the answer of GET / that each test sets before calling searchEngineInit.
-const { probe, FakeElk8Client, FakeElk9Client, FakeOpenClient } = vi.hoisted(() => {
+// `info` is the GET / of the reachability check, run when the client is not detected (forced or AWS).
+const { probe, info, FakeElk8Client, FakeElk9Client, FakeOpenClient } = vi.hoisted(() => {
+  const infoStub = vi.fn(async () => ({}));
   class Elk8ClientStub {
+    info = infoStub;
     ingest = { putPipeline: vi.fn(async () => ({})) };
   }
   class Elk9ClientStub {
+    info = infoStub;
     ingest = { putPipeline: vi.fn(async () => ({})) };
   }
   class OpenClientStub {
+    info = infoStub;
     ingest = { putPipeline: vi.fn(async () => ({ body: {} })) };
   }
-  return { probe: vi.fn(), FakeElk8Client: Elk8ClientStub, FakeElk9Client: Elk9ClientStub, FakeOpenClient: OpenClientStub };
+  return { probe: vi.fn(), info: infoStub, FakeElk8Client: Elk8ClientStub, FakeElk9Client: Elk9ClientStub, FakeOpenClient: OpenClientStub };
 });
 
 vi.mock('@elastic/elasticsearch', () => ({ Client: FakeElk8Client }));
@@ -83,9 +88,22 @@ describe('engine: search engine client selection', () => {
     await initEngine({ 'elasticsearch:engine_client': client });
 
     expect(probe).not.toHaveBeenCalled();
+    expect(info).toHaveBeenCalledOnce();
     expect(engine).toBeInstanceOf(expectedClass);
     expect(isElkEngine()).toBe(isElk);
     expect(warn).not.toHaveBeenCalledWith(DEPRECATION_WARNING);
+  });
+
+  it('should stop when a forced client finds no engine', async () => {
+    info.mockRejectedValueOnce(new Error('connect ECONNREFUSED'));
+    await expect(initEngine({ 'elasticsearch:engine_client': 'elasticsearch9' })).rejects.toThrow('Search engine seems down');
+  });
+
+  it('should start a forced client when the engine refuses GET /', async () => {
+    info.mockRejectedValueOnce(Object.assign(new Error('security_exception'), { meta: { statusCode: 403 } }));
+    await initEngine({ 'elasticsearch:engine_client': 'elasticsearch9' });
+
+    expect(engine).toBeInstanceOf(FakeElk9Client);
   });
 
   it('should refuse an unknown forced client', async () => {
@@ -96,7 +114,13 @@ describe('engine: search engine client selection', () => {
     await initEngine({ 'elasticsearch:engine_client': 'auto', 'opensearch:region': 'eu-west-1' });
 
     expect(probe).not.toHaveBeenCalled();
+    expect(info).toHaveBeenCalledOnce();
     expect(engine).toBeInstanceOf(FakeOpenClient);
+  });
+
+  it('should stop when the AWS OpenSearch engine does not answer', async () => {
+    info.mockRejectedValueOnce(new Error('connect ETIMEDOUT'));
+    await expect(initEngine({ 'elasticsearch:engine_client': 'auto', 'opensearch:region': 'eu-west-1' })).rejects.toThrow('Search engine seems down');
   });
 
   it('should refuse a forced Elasticsearch client with AWS SigV4', async () => {
