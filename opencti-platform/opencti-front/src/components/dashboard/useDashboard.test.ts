@@ -751,4 +751,47 @@ describe('useDashboard', () => {
       expect(result.current.idToResize).toBe(existingWidget.id);
     });
   });
+
+  describe('using handleConfigChange to change the dashboard config', () => {
+    const widget = {
+      id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+      type: 'text',
+      perspective: 'entities',
+      dataSelection: [],
+      layout: { i: '474752bc-4a56-4b05-8230-633b0ca97cb2', x: 0, y: 0, w: 4, h: 4, moved: false, static: false },
+    } as DashboardWidget;
+    const entity = {
+      id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
+      manifest: fakeSerialize({ config: { relativeDate: 'days-7' }, widgets: { [widget.id]: widget } }),
+    };
+
+    it('saves a config patch with the current widget layouts, without touching the other keys', async () => {
+      vi.useFakeTimers();
+      const saveSpy = vi.fn((_id, _manifest, _noRefresh, onCompleted: () => void) => onCompleted());
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      // Before the layout save delay: the pending layout save is replaced by this one.
+      await act(() => result.current.handleConfigChange({ allowViewersToEditTimeFilters: true }));
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      const saved = saveSpy.mock.calls[0][1] as unknown as DashboardManifest;
+      expect(saved.config).toStrictEqual({ relativeDate: 'days-7', allowViewersToEditTimeFilters: true });
+      expect(saved.widgets[widget.id].layout.x).toBe(4);
+    });
+
+    it('resolves at once when the patch changes nothing', async () => {
+      const saveSpy = vi.fn();
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      await expect(result.current.handleConfigChange({ relativeDate: 'days-7' })).resolves.toBeUndefined();
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+
+    it('rejects when the save fails', async () => {
+      const saveSpy = vi.fn((_id, _manifest, _noRefresh, _onCompleted, onError?: (error: Error) => void) => onError?.(new Error('boom')));
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      await expect(result.current.handleConfigChange({ allowViewersToChangeVariables: true })).rejects.toThrow('boom');
+    });
+  });
 });
