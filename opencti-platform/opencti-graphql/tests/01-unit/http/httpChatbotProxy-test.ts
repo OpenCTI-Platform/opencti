@@ -1,3 +1,5 @@
+import { Readable } from 'node:stream';
+import FormData from 'form-data';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
@@ -147,7 +149,14 @@ vi.mock('../../../src/utils/http-client', () => ({
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
-import { deleteChatbotSession, getChatbotFileDownload, getChatbotSessions, postAgentMessageStream, postChatbotMessageSteer } from '../../../src/http/httpChatbotProxy';
+import {
+  deleteChatbotSession,
+  getChatbotFileDownload,
+  getChatbotSessions,
+  postAgentMessageStream,
+  postChatbotMessageSteer,
+  postChatbotUpload,
+} from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -950,6 +959,49 @@ describe('httpChatbotProxy: deleteChatbotSession', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: postChatbotUpload', () => {
+  const VALID_CONVERSATION_ID = '44444444-4444-4444-4444-444444444444';
+  let res: ReturnType<typeof buildRes>;
+
+  // A real multipart body piped through the handler, so busboy parses the
+  // conversation_id field exactly as it would for a browser upload.
+  const buildUploadReq = (conversationId: string) => {
+    const form = new FormData();
+    form.append('conversation_id', conversationId);
+    form.append('file', Buffer.from('report content'), { filename: 'report.txt', contentType: 'text/plain' });
+    return Object.assign(Readable.from([form.getBuffer()]), { headers: form.getHeaders() }) as any;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 400 for a non-UUID conversation id without calling XTM One', async () => {
+    await postChatbotUpload(buildUploadReq('../../../admin/anything'), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid conversation id' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should upload the file to the conversation and return its file id', async () => {
+    mockPost.mockResolvedValue({ status: 200, data: { file_id: 'file-1' } });
+
+    await postChatbotUpload(buildUploadReq(VALID_CONVERSATION_ID), res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url] = mockPost.mock.calls[0];
+    expect(url).toBe(`/api/v1/chat/conversations/${VALID_CONVERSATION_ID}/upload?create_message=false`);
+    expect(res.json).toHaveBeenCalledWith({ file_ids: ['file-1'] });
   });
 });
 
