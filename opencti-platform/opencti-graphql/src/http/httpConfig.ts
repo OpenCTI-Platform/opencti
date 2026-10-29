@@ -12,6 +12,11 @@ export const isUnsecureHttpResourceAllowed = () => {
   return IS_HTTP_ALLOWED;
 };
 
+const IS_INLINE_SCRIPT_ALLOWED: boolean = booleanConf('app:allow_inline_scripts', true);
+export const isInlineScriptAllowed = () => {
+  return IS_INLINE_SCRIPT_ALLOWED;
+};
+
 export const isDevMode = () => {
   return DEV_MODE;
 };

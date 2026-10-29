@@ -65,10 +65,16 @@ import { PROVIDERS } from '../modules/authenticationProvider/providers-configura
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
-import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
+import { buildDefaultHelmetParameters, buildPublicHelmetParameters, computeInlineScriptHashes } from './httpUtils';
+import { isInlineScriptAllowed } from './httpConfig';
 import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules/catalog/catalog-http';
 
 const publicDir = DEV_MODE ? '../opencti-front/dist' : 'public';
+
+// Only the configuration feeds the inline scripts of index.html, so their content is the same for every request.
+const fillIndexScripts = (html) => html
+  .replace(/%BASE_PATH%/g, basePath)
+  .replace(/%APP_SCRIPT_SNIPPET%/g, nconf.get('app:script_snippet')?.trim() ?? '');
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -144,8 +150,13 @@ const createApp = async (app, schema) => {
   }
 
   // Configure server security
-  const publicSecurityMiddleware = helmet(buildPublicHelmetParameters());
-  const defaultSecurityMiddleware = helmet(buildDefaultHelmetParameters());
+  // Without 'unsafe-inline', the CSP allows the inline scripts of index.html by hash. They are read
+  // from the built file, which has scripts that the frontend build adds.
+  const inlineScriptHashes = ENABLED_UI && !isInlineScriptAllowed()
+    ? computeInlineScriptHashes(fillIndexScripts(await readFile(`${publicDir}/index.html`, 'utf8')))
+    : [];
+  const publicSecurityMiddleware = helmet(buildPublicHelmetParameters(inlineScriptHashes));
+  const defaultSecurityMiddleware = helmet(buildDefaultHelmetParameters(inlineScriptHashes));
 
   app.use((req, res, next) => {
     const urlString = req.url;
@@ -619,9 +630,7 @@ const createApp = async (app, schema) => {
       const description = 'OpenCTI is an open source platform allowing organizations'
         + ' to manage their cyber threat intelligence knowledge and observables.';
       const settingFavicon = settings?.platform_favicon;
-      const withOptionValued = data
-        .replace(/%BASE_PATH%/g, basePath)
-        .replace(/%APP_SCRIPT_SNIPPET%/g, nconf.get('app:script_snippet')?.trim() ?? '')
+      const withOptionValued = fillIndexScripts(data)
         .replace(/%APP_TITLE%/g, isNotEmptyField(settingsTitle) ? validator.escape(settingsTitle)
           : 'OpenCTI - Cyber Threat Intelligence Platform')
         .replace(/%APP_DESCRIPTION%/g, validator.escape(description))
