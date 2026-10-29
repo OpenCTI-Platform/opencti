@@ -142,4 +142,25 @@ describe('configPresetSelection', () => {
     // A type that has no selected item is not sent, the modes with it
     expect(buildConfigPresetSelections(types, { platform: { mode: 'some', ids: [] } }, { 'platform/platform': 'COPY' })).toEqual([]);
   });
+
+  it('keeps the mode of a forced item when nothing of its type is selected, and only the one of a forced item', () => {
+    const selection: ConfigPresetSelection = { platform: { mode: 'all', ids: [] }, branding: { mode: 'some', ids: [] } };
+    const forced = getConfigPresetForcedItems(types, selection);
+    const modes = { 'branding/theme-default': 'COPY', 'branding/theme-0': 'COPY' } as const;
+    expect(buildConfigPresetSelections(types, selection, modes, forced)).toEqual([
+      { type: 'platform', items: null },
+      { type: 'branding', items: [], item_modes: [{ key: 'theme-default', mode: 'COPY' }] },
+    ]);
+    // Every item of the type excluded, the forced one still imported with its mode
+    const excluded: ConfigPresetSelection = { platform: { mode: 'all', ids: [] }, branding: { mode: 'all', ids: ['theme-0', 'theme-1', 'theme-default'] } };
+    const smallBranding = { ...branding, itemsPageInfo: { globalCount: 3 } };
+    expect(buildConfigPresetSelections([platform, smallBranding], excluded, modes, forced)).toEqual([
+      { type: 'platform', items: null },
+      { type: 'branding', items: [], item_modes: [{ key: 'theme-default', mode: 'COPY' }] },
+    ]);
+    // The platform is no longer selected: its theme is not forced, nothing is sent
+    expect(buildConfigPresetSelections(types, { branding: { mode: 'some', ids: [] } }, modes, {})).toEqual([]);
+    // A forced item that overwrites has no mode: nothing to send
+    expect(buildConfigPresetSelections(types, selection, {}, forced)).toEqual([{ type: 'platform', items: null }]);
+  });
 });

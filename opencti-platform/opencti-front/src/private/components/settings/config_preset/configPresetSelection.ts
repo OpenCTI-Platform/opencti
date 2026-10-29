@@ -149,21 +149,26 @@ export const buildConfigPresetItemsFilter = (
 
 // Mutation input, in the order of the types, without empty types; the backend adds the forced items itself
 // importModes: what the import does with the items that exist, by item (import only)
+// forced: a type with nothing selected is still sent when a forced item of it has a mode, so that the item is imported with it
 export const buildConfigPresetSelections = (
   types: ReadonlyArray<CountedType>,
   selection: ConfigPresetSelection,
   importModes: Readonly<Record<string, ConfigImportMode>> = {},
+  forced: ConfigPresetForcedItems = {},
 ) => {
   return types.flatMap((type): ConfigPresetSelectionInput[] => {
     const { mode, ids } = typeSelection(selection, type.key);
     const itemModes = toItemModes(importModes, type.key);
     const withMode = (input: ConfigPresetSelectionInput): ConfigPresetSelectionInput => (itemModes.length > 0 ? { ...input, item_modes: itemModes } : input);
+    // Nothing of the type is selected: only the modes of its forced items are kept, never the ones of an item that is not imported
+    const forcedModes = itemModes.filter(({ key }) => forced[type.key]?.includes(key));
+    const forcedOnly = (): ConfigPresetSelectionInput[] => (forcedModes.length > 0 ? [{ type: type.key, items: [], item_modes: forcedModes }] : []);
     if (mode === 'all') {
       if (ids.length >= type.itemsPageInfo.globalCount) {
-        return [];
+        return forcedOnly();
       }
       return [withMode(ids.length > 0 ? { type: type.key, items: null, excluded_items: [...ids] } : { type: type.key, items: null })];
     }
-    return ids.length > 0 ? [withMode({ type: type.key, items: [...ids] })] : [];
+    return ids.length > 0 ? [withMode({ type: type.key, items: [...ids] })] : forcedOnly();
   });
 };

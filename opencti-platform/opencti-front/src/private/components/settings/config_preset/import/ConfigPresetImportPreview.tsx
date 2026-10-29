@@ -207,12 +207,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
 
   const types = preview ? toCountedTypes(preview.types) : [];
   const forced = getConfigPresetForcedItems(types, selection);
-  const selections = buildConfigPresetSelections(types, selection, importModes);
+  const selections = buildConfigPresetSelections(types, selection, importModes, forced);
 
   // The selection and the modes are saved together, after a short delay
   const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes) => {
     revisionRef.current += 1;
-    pendingRef.current = buildConfigPresetSelections(types, nextSelection, nextImportModes);
+    pendingRef.current = buildConfigPresetSelections(types, nextSelection, nextImportModes, getConfigPresetForcedItems(types, nextSelection));
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
     }
