@@ -25,6 +25,7 @@ import './relationsRef/stixCyberObservable-registrationRef';
 // region registration modules, need to be imported before graphql code registration
 import './channel/channel';
 import './connector/connector';
+import './ingestionHealth/ingestionHealth';
 import './language/language';
 import './event/event';
 import './grouping/grouping';

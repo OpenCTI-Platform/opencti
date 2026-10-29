@@ -11,11 +11,10 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { SettingsIngestionHealth_settings$key } from './__generated__/SettingsIngestionHealth_settings.graphql';
+import { SettingsIngestionHealthEditMutation, IngestionHealthSettingsInput } from './__generated__/SettingsIngestionHealthEditMutation.graphql';
 
 const settingsIngestionHealthFragment = graphql`
-  fragment SettingsIngestionHealth_settings on Settings {
-    id
-    ingestion_health_settings {
+  fragment SettingsIngestionHealth_settings on IngestionHealthSettings {
       notification_delay
       disabled_health_checks
       health_checks {
@@ -23,17 +22,15 @@ const settingsIngestionHealthFragment = graphql`
         health_check_label
         health_check_kind
         enabled
-      }
+      
     }
   }
 `;
 
-const settingsIngestionHealthFieldPatch = graphql`
-  mutation SettingsIngestionHealthFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-    settingsEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...SettingsIngestionHealth_settings
-      }
+const settingsIngestionHealthEdit = graphql`
+  mutation SettingsIngestionHealthEditMutation($input: IngestionHealthSettingsInput!) {
+    ingestionHealthSettingsEdit(input: $input) {
+      ...SettingsIngestionHealth_settings
     }
   }
 `;
@@ -43,14 +40,15 @@ const MINUTE_MS = 60 * 1000;
 const MAX_NOTIFICATION_DELAY_MINUTES = 24 * 60;
 
 interface SettingsIngestionHealthProps {
-  settings: SettingsIngestionHealth_settings$key;
+  // Query.ingestionHealthSettings: not part of the platform settings API
+  settings: SettingsIngestionHealth_settings$key | null | undefined;
 }
 
 // The delay is stored in ms and edited in minutes
 const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => {
   const { t_i18n } = useFormatter();
-  const { id, ingestion_health_settings } = useFragment(settingsIngestionHealthFragment, settings);
-  const [commitField, isSaving] = useApiMutation(settingsIngestionHealthFieldPatch);
+  const ingestion_health_settings = useFragment(settingsIngestionHealthFragment, settings);
+  const [commitEdit, isSaving] = useApiMutation<SettingsIngestionHealthEditMutation>(settingsIngestionHealthEdit);
   const isEnterpriseEdition = useEnterpriseEdition();
   const notificationDelay = ingestion_health_settings?.notification_delay ?? 0;
   const disabledHealthChecks = ingestion_health_settings?.disabled_health_checks ?? [];
@@ -64,16 +62,15 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
       .required(t_i18n('This field is required')),
   });
 
-  // The whole object is sent: the backend replaces it, built on the last response.
-  // The form is disabled while a save is in flight: an edit cannot be built on settings about to change and overwrite the save
-  const commitSettings = (changes: { notification_delay?: number; disabled_health_checks?: readonly string[] }) => {
-    commitField({
-      variables: {
-        id,
-        input: {
-          key: 'ingestion_health_settings',
-          value: { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks, ...changes },
-        },
+  // Only the changed field is sent, the backend keeps the other one.
+  // The form is disabled while a save is in flight: the disabled checks are built on the last response
+  const commitSettings = (input: IngestionHealthSettingsInput) => {
+    commitEdit({
+      variables: { input },
+      // The edition returns the settings under its own root field: link them to the one read by the query
+      updater: (store) => {
+        const edited = store.getRootField('ingestionHealthSettingsEdit');
+        if (edited) store.getRoot().setLinkedRecord(edited, 'ingestionHealthSettings');
       },
     });
   };
