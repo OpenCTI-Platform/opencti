@@ -40,14 +40,14 @@ beforeEach(() => {
 describe('importHiddenEntityTypes', () => {
   it('hides the listed types and shows again the hidden ones that are not listed', async () => {
     const result = await importHiddenEntityTypes(context, user, configuration('Malware', 'Report'), overwrite);
-    expect(result).toMatchObject({ status: 'overwritten', exists: true, configuration: configuration('Malware', 'Report') });
+    expect(result).toMatchObject({ status: 'overwritten', exists: true, configuration: configuration('Malware', 'Report'), reason: 'Entity types shown again: Channel' });
     expect(entitySettingsEditField).toHaveBeenCalledTimes(2);
     expect(entitySettingsEditField).toHaveBeenCalledWith(context, user, ['malware-id'], [{ key: 'platform_hidden_type', value: [true] }]);
     expect(entitySettingsEditField).toHaveBeenCalledWith(context, user, ['channel-id'], [{ key: 'platform_hidden_type', value: [false] }]);
   });
 
   it('shows every hidden type again with an empty list, as the export of a platform that hides nothing', async () => {
-    expect(await importHiddenEntityTypes(context, user, configuration(), overwrite)).toMatchObject({ status: 'overwritten' });
+    expect(await importHiddenEntityTypes(context, user, configuration(), overwrite)).toMatchObject({ status: 'overwritten', reason: 'Entity types shown again: Channel, Report' });
     expect(entitySettingsEditField).toHaveBeenCalledTimes(1);
     expect(entitySettingsEditField).toHaveBeenCalledWith(context, user, ['report-id', 'channel-id'], [{ key: 'platform_hidden_type', value: [false] }]);
   });
@@ -58,6 +58,12 @@ describe('importHiddenEntityTypes', () => {
     const dry = await importHiddenEntityTypes(context, user, configuration('Malware'), dryRun);
     expect(dry).toEqual(real);
     expect(entitySettingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('has no reason when it only hides types: nothing is shown again', async () => {
+    const result = await importHiddenEntityTypes(context, user, configuration('Malware', 'Report', 'Channel'), dryRun);
+    expect(result).toMatchObject({ status: 'overwritten' });
+    expect(result.reason).toBeUndefined();
   });
 
   it('skips a configuration that is the state of the platform, whatever the order and the repetitions of the list', async () => {

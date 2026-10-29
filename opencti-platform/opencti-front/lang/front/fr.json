@@ -2004,6 +2004,7 @@
   "Entity Type": "Type d'entité",
   "Entity types": "Types d'entité",
   "Entity Types | Customization | Settings": "Types d'entités | Personnalisation | Paramètres",
+  "Entity types shown again: {types}": "Types d'entité de nouveau affichés : {types}",
   "Entity types that cannot be hidden: {types}": "Types d'entité qui ne peuvent pas être masqués : {types}",
   "Entity usage": "Usage de cette entité",
   "entity_Activity": "Activité (audit)",

@@ -95,12 +95,10 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   disabled?: boolean;
   // A type with more items than its first page is managed in a sub-view (the export)
   onManageType?: (typeKey: string) => void;
-  // The row of an item, the checkbox row of the export by default
+  // The row of an item, the checkbox row of the export by default; also the only row of a type with a single item that has the key of the type
   renderItem?: (type: T, item: T['items'][number]) => ReactNode;
   // What is shown on the row of a type, next to its chevron (the choice for all its items)
   renderTypeActions?: (type: T) => ReactNode;
-  // A type whose only item has the key of the type is one checkbox; false shows its item below it (default true)
-  collapseSingletons?: boolean;
   // Types with several items start expanded (default false)
   expandTypes?: boolean;
 }
@@ -115,7 +113,6 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   onManageType,
   renderItem,
   renderTypeActions,
-  collapseSingletons = true,
   expandTypes = false,
 }: ConfigPresetSelectionAccordionProps<T>) => {
   const { t_i18n } = useFormatter();
@@ -141,7 +138,11 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
             onToggleExpanded={() => setCollapsedGroupKeys((current) => toggleKey(current, group.key))}
           >
             {group.types.map((type) => {
-              if (collapseSingletons && isSingletonConfigPresetType(type)) {
+              // A type whose only item has the key of the type is one row, not a type with an item of the same name below it
+              if (isSingletonConfigPresetType(type)) {
+                if (renderItem) {
+                  return <React.Fragment key={type.key}>{renderItem(type, type.items[0])}</React.Fragment>;
+                }
                 return (
                   <Checkbox
                     key={type.key}

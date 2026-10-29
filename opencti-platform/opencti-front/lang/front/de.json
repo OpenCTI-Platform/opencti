@@ -2004,6 +2004,7 @@
   "Entity Type": "Entitätstyp",
   "Entity types": "Entitätstypen",
   "Entity Types | Customization | Settings": "Entitätstypen | Anpassung | Einstellungen",
+  "Entity types shown again: {types}": "Entitätstypen, die wieder angezeigt werden: {types}",
   "Entity types that cannot be hidden: {types}": "Entitätstypen, die nicht ausgeblendet werden können: {types}",
   "Entity usage": "Verwendung von Entitäten",
   "entity_Activity": "Tätigkeit (Prüfung)",

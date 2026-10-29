@@ -4,6 +4,7 @@ import { Chip, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
+import { translateConfigPresetEntityTypes } from '../configPresetEntityTypes';
 
 export type ConfigPresetResultStatus = 'CREATED' | 'OVERWRITTEN' | 'SKIPPED' | 'FAILED';
 
@@ -54,6 +55,10 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   const hiddenTypes = reason.match(/^Entity types that cannot be hidden: (.+)$/)?.[1];
   if (hiddenTypes) {
     return t_i18n('Entity types that cannot be hidden: {types}', { values: { types: hiddenTypes } });
+  }
+  const shownTypes = reason.match(/^Entity types shown again: (.+)$/)?.[1];
+  if (shownTypes) {
+    return t_i18n('Entity types shown again: {types}', { values: { types: translateConfigPresetEntityTypes(t_i18n, shownTypes) } });
   }
   const defaultThemeName = reason.match(/^Default theme (.+) could not be imported$/)?.[1];
   if (defaultThemeName) {

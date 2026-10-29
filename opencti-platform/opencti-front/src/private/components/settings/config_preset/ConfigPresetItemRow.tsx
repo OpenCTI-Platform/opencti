@@ -25,6 +25,8 @@ interface ConfigPresetItemRowProps extends ConfigPresetSelectionProps {
   statusSlot?: ReactNode;
   // Disables the checkbox, as a forced dependency is
   disabled?: boolean;
+  // Under the label: what the item is, when it stands for its type
+  description?: string;
 }
 
 // A forced dependency is checked and disabled
@@ -36,6 +38,7 @@ export const ConfigPresetItemRow: FunctionComponent<ConfigPresetItemRowProps> = 
   onSelectionChange,
   statusSlot,
   disabled = false,
+  description,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -45,6 +48,7 @@ export const ConfigPresetItemRow: FunctionComponent<ConfigPresetItemRowProps> = 
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
       <Checkbox
         label={item.translatable ? t_i18n(item.label) : item.label}
+        description={description}
         checked={isForced || isConfigPresetItemSelected(selection, typeKey, item.key)}
         disabled={isForced || disabled}
         onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetItem(selection, typeKey, item.key, checked === true))}

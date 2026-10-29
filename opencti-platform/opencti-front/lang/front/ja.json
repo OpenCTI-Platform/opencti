@@ -2004,6 +2004,7 @@
   "Entity Type": "エンティティのタイプ",
   "Entity types": "エンティティ種別",
   "Entity Types | Customization | Settings": "エンティティタイプ｜カスタマイズ｜設定",
+  "Entity types shown again: {types}": "再表示されるエンティティタイプ: {types}",
   "Entity types that cannot be hidden: {types}": "非表示にできないエンティティタイプ: {types}",
   "Entity usage": "エンティティの利用",
   "entity_Activity": "活動（監査）",

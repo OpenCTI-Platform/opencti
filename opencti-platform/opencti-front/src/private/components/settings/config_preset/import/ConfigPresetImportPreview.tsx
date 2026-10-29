@@ -21,11 +21,19 @@ import {
 } from '../configImportMode';
 import ConfigPresetImportModeSelect from './ConfigPresetImportModeSelect';
 import { getConfigPresetErrorReason } from './configPresetImportStep';
-import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, isConfigPresetItemSelected, selectAllConfigPresetItems } from '../configPresetSelection';
+import {
+  buildConfigPresetSelections,
+  ConfigPresetSelection,
+  getConfigPresetForcedItems,
+  isConfigPresetItemSelected,
+  isSingletonConfigPresetType,
+  selectAllConfigPresetItems,
+} from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
+import { translateConfigPresetEntityTypes } from '../configPresetEntityTypes';
 import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
@@ -56,6 +64,10 @@ const configPresetImportPreviewQuery = graphql`
           isDefault
           exists
           conflict
+          fields {
+            key
+            value
+          }
           dependsOn {
             type
             key
@@ -320,7 +332,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         types={types}
         selection={selection}
         forced={forced}
-        collapseSingletons={false}
         expandTypes
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
@@ -344,11 +355,14 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const isImported = (forced[type.key] ?? []).includes(item.key) || isConfigPresetItemSelected(selection, type.key, item.key);
           const hasChoice = item.conflict && isImported && type.modes.length > 1;
           const result = results?.[`${type.key}/${item.key}`];
+          // The types the import hides: the row alone only says that the item is there
+          const hiddenTypes = isImported && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
           return (
             <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
               <ConfigPresetItemRow
                 typeKey={type.key}
                 item={item}
+                description={isSingletonConfigPresetType(type) ? t_i18n(type.description) : undefined}
                 selection={selection}
                 forced={forced}
                 onSelectionChange={handleSelectionChange}
@@ -367,6 +381,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                   </div>
                 ) : undefined}
               />
+              {hiddenTypes && (
+                <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
+                  {translateConfigPresetEntityTypes(t_i18n, hiddenTypes)}
+                </Text>
+              )}
             </div>
           );
         }}

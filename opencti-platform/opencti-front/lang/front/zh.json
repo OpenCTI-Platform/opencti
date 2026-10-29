@@ -2004,6 +2004,7 @@
   "Entity Type": "实体类型",
   "Entity types": "实体类型",
   "Entity Types | Customization | Settings": "实体类型 | 个性化 | 设置",
+  "Entity types shown again: {types}": "重新显示的实体类型：{types}",
   "Entity types that cannot be hidden: {types}": "无法隐藏的实体类型：{types}",
   "Entity usage": "实体使用",
   "entity_Activity": "活动",

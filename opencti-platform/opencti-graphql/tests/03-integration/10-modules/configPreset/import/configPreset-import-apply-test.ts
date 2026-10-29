@@ -241,7 +241,10 @@ describe('Config preset import: apply', () => {
         // The mutation returns the entity settings, so that the front store learns the hidden types without a refresh
         expect(real.entity_settings.filter((entitySetting: { platform_hidden_type: boolean }) => entitySetting.platform_hidden_type).map((entitySetting: { target_type: string }) => entitySetting.target_type)).toEqual(['Malware']);
         expect(real.results).toEqual(dry.results);
-        expect(real.results).toEqual([{ type: 'hiddenEntityTypes', key: 'hiddenEntityTypes', status: 'OVERWRITTEN', reason: null }]);
+        // The types hidden before that the bundle does not list are shown again, and the result says so
+        const shownAgain = hiddenBefore.filter((type) => type !== 'Malware').sort();
+        const reason = shownAgain.length > 0 ? `Entity types shown again: ${shownAgain.join(', ')}` : null;
+        expect(real.results).toEqual([{ type: 'hiddenEntityTypes', key: 'hiddenEntityTypes', status: 'OVERWRITTEN', reason }]);
         expect(await getPlatformHiddenEntityTypes(testContext, ADMIN_USER)).toEqual(['Malware']);
         // The platform is now what the bundle says: nothing left to import
         const again = await importData(await upload(hiddenEntityTypesBundle(['Malware'])), HIDDEN);

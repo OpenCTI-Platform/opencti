@@ -15,6 +15,7 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   isDefault: false,
   exists: true,
   conflict: false,
+  fields: [],
   dependsOn: [],
   ...overrides,
 });
@@ -164,7 +165,7 @@ describe('ConfigPresetImportWizard', () => {
     it('reads the preview of the file of the session, with every item selected for a new upload', async () => {
       const rendered = await renderPreview();
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
-      ['Platform configuration (1/1)', 'Messages (1/1)'].forEach((name) => expect(checkbox(name)).toHaveAttribute('data-state', 'checked'));
+      ['Platform configuration', 'Messages (1/1)'].forEach((name) => expect(checkbox(name)).toHaveAttribute('data-state', 'checked'));
       expect(checkbox('Branding (2/2)')).toHaveAttribute('data-state', 'checked');
       expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
     });
@@ -172,21 +173,39 @@ describe('ConfigPresetImportWizard', () => {
     it('restores the saved selection', async () => {
       await renderPreview(session({ revision: 2, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] }));
       expect(checkbox('Messages (1/1)')).toHaveAttribute('data-state', 'checked');
-      expect(checkbox('Platform configuration (0/1)')).toHaveAttribute('data-state', 'unchecked');
+      expect(checkbox('Platform configuration')).toHaveAttribute('data-state', 'unchecked');
       expect(checkbox('Branding (0/2)')).toHaveAttribute('data-state', 'unchecked');
     });
 
     it('shows the required dependencies checked and disabled with their item', async () => {
       const { user } = await renderPreview(session({ revision: 1, selections: [{ type: 'messages', items: ['banner'], excluded_items: null }] }));
-      await user.click(checkbox('Platform configuration (0/1)'));
+      await user.click(checkbox('Platform configuration'));
       const theme = within(screen.getByTestId('config-preset-import-item-branding-theme--1')).getByRole('checkbox');
       expect(theme).toBeDisabled();
       expect(theme).toHaveAttribute('data-state', 'checked');
     });
 
+    it('lists the entity types the import hides under the item, by their names, while the item is selected', async () => {
+      const withHiddenTypes = {
+        ...preview,
+        types: [
+          ...preview.types,
+          previewType('hiddenEntityTypes', 'Hidden entity types', [
+            previewItem('hiddenEntityTypes', 'Hidden entity types', { fields: [{ key: 'hidden_entity_types', value: 'Attack-Pattern, Malware' }] }),
+          ]),
+        ],
+      };
+      const { user } = await renderPreview(session(), [], withHiddenTypes);
+      expect(screen.getByText('Attack Pattern, Malware')).toBeInTheDocument();
+      // A type with a single item of its name is one row, not a type with the same name below it
+      expect(screen.getAllByText('Hidden entity types')).toHaveLength(1);
+      await user.click(checkbox('Hidden entity types'));
+      expect(screen.queryByText('Attack Pattern, Malware')).not.toBeInTheDocument();
+    });
+
     it('disables Apply with nothing selected', async () => {
       const { user } = await renderPreview();
-      await user.click(checkbox('Platform configuration (1/1)'));
+      await user.click(checkbox('Platform configuration'));
       await user.click(checkbox('Branding (2/2)'));
       await user.click(checkbox('Messages (1/1)'));
       expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
@@ -568,7 +587,7 @@ describe('ConfigPresetImportWizard', () => {
       await resolveSimulation(rendered);
       await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
       expect(checkbox('Messages (1/1)')).toHaveAttribute('data-state', 'checked');
-      expect(checkbox('Platform configuration (0/1)')).toHaveAttribute('data-state', 'unchecked');
+      expect(checkbox('Platform configuration')).toHaveAttribute('data-state', 'unchecked');
       expect(screen.queryByText('An import is already running')).not.toBeInTheDocument();
     });
 

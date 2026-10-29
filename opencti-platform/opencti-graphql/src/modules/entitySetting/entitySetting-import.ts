@@ -66,5 +66,12 @@ export const importHiddenEntityTypes = async (
       await entitySettingsEditField(context, user, toShow.map(({ id }) => id), [{ key: PLATFORM_HIDDEN_TYPE, value: [false] }]);
     }
   }
-  return { status: 'overwritten', exists: true, configuration: parsed.data };
+  // The types shown again are the part of the replacement the configuration does not list: the admin is told, on a dry run too
+  const shownAgain = toShow.map(({ target_type: type }) => type).sort();
+  return {
+    status: 'overwritten',
+    exists: true,
+    configuration: parsed.data,
+    ...(shownAgain.length > 0 ? { reason: `Entity types shown again: ${shownAgain.join(', ')}` } : {}),
+  };
 };

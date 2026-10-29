@@ -2004,6 +2004,7 @@
   "Entity Type": "Тип сущности",
   "Entity types": "Типы сущностей",
   "Entity Types | Customization | Settings": "Типы сущностей | Настройка | Настройки",
+  "Entity types shown again: {types}": "Типы сущностей, которые снова отображаются: {types}",
   "Entity types that cannot be hidden: {types}": "Типы сущностей, которые нельзя скрыть: {types}",
   "Entity usage": "Использование сущностей",
   "entity_Activity": "Деятельность (аудит)",
