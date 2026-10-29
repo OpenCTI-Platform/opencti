@@ -66,6 +66,25 @@ describe('importTheme validation', () => {
     expect(await importTheme(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject({ status: 'created' });
   });
 
+  it.each([
+    ['an uppercase scheme', { theme_logo: 'HTTPS://example.com/a.png' }],
+    ['a mixed case scheme', { theme_logo_collapsed: 'Http://example.com/b.png' }],
+    ['a base64 jpg image', { theme_logo: 'data:image/jpg;base64,/9j/4AAQ' }],
+    ['a base64 jpeg image', { theme_logo_login: 'data:image/jpeg;base64,/9j/4AAQ' }],
+    ['a base64 svg image', { theme_login_aside_image: 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=' }],
+  ])('accepts %s', async (_, overrides) => {
+    expect(await importTheme(context, user, themeConfiguration(overrides), { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject({ status: 'created' });
+  });
+
+  it.each([
+    ['an svg image that is not base64, its markup would break the url()', { theme_logo: 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'/>' }],
+    ['a data URL that is not an image', { theme_logo: 'data:text/html;base64,PGgxPg==' }],
+    ['an url with a space', { theme_logo: 'https://example.com/my logo.png' }],
+    ['an url with a parenthesis', { theme_logo: 'https://example.com/logo(1).png' }],
+  ])('still refuses %s', async (_, overrides) => {
+    expect(await importTheme(context, user, themeConfiguration(overrides), { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject({ status: 'failed', code: 'invalid' });
+  });
+
   it('gives the reason of each invalid value', async () => {
     const result = await importTheme(context, user, themeConfiguration({ theme_primary: 'red', theme_logo: '/a.png' }), { mode: ConfigImportMode.Add });
     expect(result.reason).toContain('theme_primary: Must be a hex color');

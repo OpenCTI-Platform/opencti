@@ -8,12 +8,12 @@ const MAX_DATA_IMAGE_LENGTH = 1_000_000;
 
 export const THEME_STANDARD_ID_PATTERN = /^theme--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-// An absolute http(s) URL, as the theme form accepts. It reaches CSS (url()) on the login page: none of ()'";{} or \ or whitespace
-const imageUrl = z.string().max(MAX_URL_LENGTH).regex(/^https?:\/\/[^\s()'";{}\\]+$/, 'Must be an http(s) URL');
+// An absolute http(s) URL, whatever the case of its scheme. It reaches CSS (url()) on the login page, unquoted: none of ()'";{} or \ or whitespace
+const imageUrl = z.string().max(MAX_URL_LENGTH).regex(/^https?:\/\/[^\s()'";{}\\]+$/i, 'Must be an http(s) URL');
 const imageValue = z.union([
   z.literal(''),
   imageUrl,
-  z.string().max(MAX_DATA_IMAGE_LENGTH).regex(/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/, 'Must be an image data URL'),
+  z.string().max(MAX_DATA_IMAGE_LENGTH).regex(/^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/, 'Must be an image data URL'),
 ]);
 const colorValue = z.string().regex(/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, 'Must be a hex color');
 const optionalColor = z.union([z.literal(''), colorValue]).nullable().optional();
