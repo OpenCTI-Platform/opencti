@@ -235,6 +235,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const types = preview ? toCountedTypes(preview.types) : [];
   const forced = getConfigPresetForcedItems(types, selection);
   const selections = buildConfigPresetSelections(types, selection, importModes, forced);
+  // Selected, or required by a selected item
+  const isImportedItem = (typeKey: string, itemKey: string) => (forced[typeKey] ?? []).includes(itemKey) || isConfigPresetItemSelected(selection, typeKey, itemKey);
 
   // The selection and the modes are saved together, after a short delay
   const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes) => {
@@ -352,8 +354,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         expandTypes
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
-          // From two items in conflict: with one, its own choice is enough
-          const conflictKeys = type.items.filter((item) => item.conflict).map((item) => item.key);
+          // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none
+          const conflictKeys = type.items.filter((item) => item.conflict && isImportedItem(type.key, item.key)).map((item) => item.key);
           if (type.modes.length < 2 || conflictKeys.length < 2) {
             return null;
           }
@@ -369,11 +371,10 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         }}
         renderItem={(type, item) => {
           // The choice is for an item that conflicts with the platform and is imported; the items that do not show nothing
-          const isImported = (forced[type.key] ?? []).includes(item.key) || isConfigPresetItemSelected(selection, type.key, item.key);
-          const hasChoice = item.conflict && isImported && type.modes.length > 1;
+          const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
           const result = results?.[`${type.key}/${item.key}`];
           // The types the import hides: the row alone only says that the item is there
-          const hiddenTypes = isImported && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
+          const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
           return (
             <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
               <ConfigPresetItemRow

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useId, useState } from 'react';
 import { CheckCircleOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
@@ -75,6 +75,7 @@ const ResultSection: FunctionComponent<ResultSectionProps> = ({ label, startsOpe
   const theme = useTheme<Theme>();
   const [toggled, setToggled] = useState(false);
   const isOpen = toggled !== startsOpen;
+  const contentId = useId();
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: theme.spacing(1, 0) }}>
@@ -83,15 +84,16 @@ const ResultSection: FunctionComponent<ResultSectionProps> = ({ label, startsOpe
           <Text variant={nested ? 'content-base' : 'title-sm'}>{label}</Text>
         </div>
         <IconButton
-          aria-label={isOpen ? t_i18n('Collapse') : t_i18n('Expand')}
+          aria-label={`${isOpen ? t_i18n('Collapse') : t_i18n('Expand')} ${label}`}
           aria-expanded={isOpen}
+          aria-controls={contentId}
           onClick={() => setToggled((current) => !current)}
         >
           {isOpen ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
         </IconButton>
       </div>
       {isOpen && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), padding: theme.spacing(0, 0, 2, 3.5) }}>
+        <div id={contentId} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), padding: theme.spacing(0, 0, 2, 3.5) }}>
           {children}
         </div>
       )}

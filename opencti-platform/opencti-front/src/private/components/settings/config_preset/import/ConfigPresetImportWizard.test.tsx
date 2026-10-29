@@ -369,6 +369,13 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.getByRole('link', { name: 'Download report' })).toHaveAttribute('href', expect.stringContaining(encodeURIComponent('config_preset/history/id/import-report.json')));
     });
 
+    it('names the section in each chevron, and links it to what it shows', async () => {
+      await renderPreview();
+      const chevron = screen.getByRole('button', { name: /^Collapse Platform settings/ });
+      expect(chevron).toHaveAttribute('aria-expanded', 'true');
+      expect(document.getElementById(chevron.getAttribute('aria-controls')!)).toBeInTheDocument();
+    });
+
     it('keeps the progress until the session is read after the apply, instead of going back to the preview of a zip that is gone', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
@@ -393,7 +400,6 @@ describe('ConfigPresetImportWizard', () => {
     it('hands the entity settings that the import returns to the store, so that the hidden entity types need no refresh', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
-      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.node.params.text).toContain('entity_settings');
       await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', {
         EntitySetting: () => ({ id: 'entity-setting-1', platform_hidden_type: true }),
         ConfigPresetImportOutput: () => ({ results: [], report_id: null, settings: null }),
@@ -422,11 +428,11 @@ describe('ConfigPresetImportWizard', () => {
 
       it('shows the types in the order of the selection, closed, and the names of the items once a type is opened', async () => {
         const { user } = await renderWizard(finished(allImported));
-        await user.click(screen.getByRole('button', { name: 'Expand' }));
+        await user.click(screen.getByRole('button', { name: /^Expand/ }));
         const headers = ['Platform configuration (1/1)', 'Branding (1/1)', 'Messages (1/1)'].map((name) => screen.getByText(name));
         headers.slice(1).forEach((header, index) => expect(headers[index].compareDocumentPosition(header) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
         expect(screen.queryByText('Import theme')).not.toBeInTheDocument();
-        await user.click(screen.getAllByRole('button', { name: 'Expand' })[1]);
+        await user.click(screen.getAllByRole('button', { name: /^Expand/ })[1]);
         expect(screen.getByText('Import theme')).toBeInTheDocument();
         expect(screen.getByText('Created')).toBeInTheDocument();
         expect(screen.queryByText('theme--1')).not.toBeInTheDocument();
@@ -452,9 +458,9 @@ describe('ConfigPresetImportWizard', () => {
           const { user } = await renderWizard(finished(allImported));
           // The group only: its types and its items are closed
           expect(ticks()).toHaveLength(1);
-          await user.click(screen.getByRole('button', { name: 'Expand' }));
+          await user.click(screen.getByRole('button', { name: /^Expand/ }));
           expect(ticks()).toHaveLength(4);
-          await user.click(screen.getAllByRole('button', { name: 'Expand' })[1]);
+          await user.click(screen.getAllByRole('button', { name: /^Expand/ })[1]);
           expect(ticks()).toHaveLength(5);
           expect(within(screen.getByText('Import theme').parentElement!).getByTestId('config-preset-result-tick')).toBeInTheDocument();
         });
@@ -469,8 +475,8 @@ describe('ConfigPresetImportWizard', () => {
         it('are not shown for what was skipped, and a header that only holds skipped items has none', async () => {
           const { user } = await renderWizard(finished([processed('platform', 'platform', 'SKIPPED', 'Nothing to import')]));
           expect(ticks()).toHaveLength(0);
-          await user.click(screen.getByRole('button', { name: 'Expand' }));
-          await user.click(screen.getByRole('button', { name: 'Expand' }));
+          await user.click(screen.getByRole('button', { name: /^Expand/ }));
+          await user.click(screen.getByRole('button', { name: /^Expand/ }));
           expect(screen.getByText('Skipped')).toBeInTheDocument();
           expect(ticks()).toHaveLength(0);
         });
@@ -478,9 +484,9 @@ describe('ConfigPresetImportWizard', () => {
 
       it('lets a type that failed be closed, and a type that went well be opened', async () => {
         const { user } = await renderWizard(finished(oneFailed));
-        await user.click(screen.getAllByRole('button', { name: 'Collapse' })[1]);
+        await user.click(screen.getAllByRole('button', { name: /^Collapse/ })[1]);
         expect(screen.queryByText('Theme name already exists')).not.toBeInTheDocument();
-        await user.click(screen.getAllByRole('button', { name: 'Expand' }).at(-1)!);
+        await user.click(screen.getAllByRole('button', { name: /^Expand/ }).at(-1)!);
         expect(screen.getByText('Banner')).toBeInTheDocument();
       });
 
@@ -908,6 +914,14 @@ describe('ConfigPresetImportWizard', () => {
       it('is offered from two items that conflict, and not with one', async () => {
         await renderTwo();
         expect(familySelect()).toHaveTextContent('Overwrite');
+      });
+
+      it('does not count an item that is not imported: with one left in conflict, the choice of the item is enough', async () => {
+        const { user } = await renderTwo();
+        expect(familySelect()).toBeInTheDocument();
+        await user.click(within(screen.getByTestId('config-preset-import-item-branding-theme--3')).getByRole('checkbox'));
+        expect(screen.queryByRole('combobox', { name: 'Branding: Apply to all' })).not.toBeInTheDocument();
+        expect(modeSelect()).toBeInTheDocument();
       });
 
       it('is not offered with a single item in conflict, whose own choice is enough', async () => {

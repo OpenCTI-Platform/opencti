@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useId, useState } from 'react';
 import { Checkbox } from '@filigran/design-system';
 import { ChevronRightOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
@@ -46,6 +46,7 @@ const ConfigPresetExpandableRow: FunctionComponent<ConfigPresetExpandableRowProp
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const contentId = useId();
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: theme.spacing(1, 0) }}>
@@ -53,8 +54,9 @@ const ConfigPresetExpandableRow: FunctionComponent<ConfigPresetExpandableRowProp
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           {actions}
           <IconButton
-            aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
+            aria-label={`${expanded ? t_i18n('Collapse') : t_i18n('Expand')} ${label}`}
             aria-expanded={expanded}
+            aria-controls={contentId}
             onClick={onToggleExpanded}
           >
             {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
@@ -62,7 +64,7 @@ const ConfigPresetExpandableRow: FunctionComponent<ConfigPresetExpandableRowProp
         </div>
       </div>
       {expanded && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), padding: theme.spacing(0, 0, 2, 3.5) }}>
+        <div id={contentId} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), padding: theme.spacing(0, 0, 2, 3.5) }}>
           {children}
         </div>
       )}

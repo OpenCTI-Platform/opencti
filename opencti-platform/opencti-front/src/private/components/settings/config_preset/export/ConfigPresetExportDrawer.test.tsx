@@ -97,7 +97,7 @@ describe('ConfigPresetExportDrawer', () => {
     await renderOpenDrawer();
     expect(screen.getAllByRole('checkbox')).toHaveLength(5);
     // Only the two groups can be collapsed
-    expect(screen.getAllByRole('button', { name: 'Collapse' })).toHaveLength(2);
+    expect(screen.getAllByRole('button', { name: /^Collapse/ })).toHaveLength(2);
     expect(screen.queryByRole('checkbox', { name: /^Messages \(/ })).not.toBeInTheDocument();
   });
 
@@ -123,13 +123,13 @@ describe('ConfigPresetExportDrawer', () => {
 
   it('collapses and expands the types of a group', async () => {
     const { user } = await renderOpenDrawer();
-    const [platformSettingsChevron] = screen.getAllByRole('button', { name: 'Collapse' });
+    const [platformSettingsChevron] = screen.getAllByRole('button', { name: /^Collapse/ });
     await user.click(platformSettingsChevron);
     expect(screen.queryByRole('checkbox', { name: 'Messages' })).not.toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Hidden entity types' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Expand' })).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getByRole('button', { name: /^Expand/ })).toHaveAttribute('aria-expanded', 'false');
 
-    await user.click(screen.getByRole('button', { name: 'Expand' }));
+    await user.click(screen.getByRole('button', { name: /^Expand/ }));
     expect(screen.getByRole('checkbox', { name: 'Messages' })).toBeInTheDocument();
   });
 
@@ -140,7 +140,7 @@ describe('ConfigPresetExportDrawer', () => {
     expect(screen.getAllByRole('checkbox')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: 'Manage' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Expand' }));
+    await user.click(screen.getByRole('button', { name: /^Expand/ }));
     // Static labels are translated, user data labels are shown as is
     expect(screen.getByRole('checkbox', { name: 'Observed data' })).toBeInTheDocument();
     await user.click(screen.getByRole('checkbox', { name: 'Observed datas' }));
@@ -219,7 +219,7 @@ describe('ConfigPresetExportDrawer', () => {
     const { user } = await renderOpenDrawer(vi.fn(), tableCatalog());
     expect(screen.getByRole('checkbox', { name: 'Platform settings (6/6)' })).toBeInTheDocument();
     // Branding and messages are categories with several items
-    for (const chevron of screen.getAllByRole('button', { name: 'Expand' })) {
+    for (const chevron of screen.getAllByRole('button', { name: /^Expand/ })) {
       await user.click(chevron);
     }
     const brandingRows = ['ACME', 'Night shift', 'SOC night'].map((name) => screen.getByRole('checkbox', { name }));
@@ -246,7 +246,7 @@ describe('ConfigPresetExportDrawer', () => {
 
   it('forces nothing when the default theme is built-in, which is not listed', async () => {
     const { user } = await renderOpenDrawer(vi.fn(), builtInDefaultCatalog());
-    await user.click(screen.getByRole('button', { name: 'Expand' }));
+    await user.click(screen.getByRole('button', { name: /^Expand/ }));
     expect(screen.queryByText('default')).not.toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'ACME' })).toBeEnabled();
     await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
