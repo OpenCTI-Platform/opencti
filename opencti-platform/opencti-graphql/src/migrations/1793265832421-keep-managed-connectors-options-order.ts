@@ -54,7 +54,7 @@ export const up = async (next: (error?: Error) => void) => {
     const catalogId = contract.catalog_id ?? connector.catalog_id as string;
     const order = ordersByContract.get(contractKey(catalogId, contract.contract_id));
     if (!order) {
-      logMigration.info(`${message} > connector ${connector.id} contract ${contract.contract_id} of catalog ${catalogId} not found, order of options left as is`);
+      logMigration.warn(`${message} > connector ${connector.id} contract ${contract.contract_id} of catalog ${catalogId} not found, order of options left as is`);
     } else {
       const patch = { manager_contract: { ...contract, config_schema: withConfigSchemaPropertiesOrder({ ...contract.config_schema, properties_order: order }) } };
       await patchAttribute(context, SYSTEM_USER, connector.id, ENTITY_TYPE_CONNECTOR, patch);
