@@ -8,6 +8,7 @@ import type { WidgetDataSelection } from '../../../utils/widget/widget';
 const mocks = vi.hoisted(() => ({
   setConfigWidget: vi.fn(),
   widget: {} as Record<string, unknown>,
+  flags: ['TIME_SERIES_BREAKDOWN'],
   variables: undefined as unknown[] | undefined,
   fetchSavedFilterContent: vi.fn(),
 }));
@@ -35,6 +36,9 @@ vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
       ]),
     },
   }),
+}));
+vi.mock('../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: (flag: string) => mocks.flags.includes(flag) }),
 }));
 vi.mock('../../../components/dashboard/DashboardVariablesContext', () => ({
   useOptionalDashboardVariableDefinitions: () => mocks.variables,
@@ -73,6 +77,7 @@ const setWidget = (overrides: Record<string, unknown>) => {
 describe('WidgetBreakdownSelection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.flags = ['TIME_SERIES_BREAKDOWN'];
     mocks.variables = undefined;
   });
 
@@ -257,6 +262,16 @@ describe('WidgetBreakdownSelection', () => {
     // A relationships widget left with an entities dataset
     setWidget({ perspective: 'relationships' });
     expect(testRender(<WidgetBreakdownSelection />).queryByTestId('widget-breakdown-selection')).toBeNull();
+  });
+
+  it('is not shown, and keeps the stored breakdown, without the TIME_SERIES_BREAKDOWN feature flag', () => {
+    mocks.flags = [];
+    setWidget({ parameters: { breakdownBy: 'report_types', breakdownLimit: 20 } });
+    expect(testRender(<WidgetBreakdownSelection />).queryByText('Break down by')).toBeNull();
+    // Not even a field the dataset types do not carry is dropped
+    setWidget({ parameters: { breakdownBy: 'malware_types', breakdownLimit: 20 } });
+    expect(testRender(<WidgetBreakdownSelection />).queryByText('Break down by')).toBeNull();
+    expect(mocks.setConfigWidget).not.toHaveBeenCalled();
   });
 
   describe('relationships', () => {

@@ -8,6 +8,8 @@ import { isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_IND
 import { elCount } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 import { UnsupportedError } from '../config/errors';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../config/conf';
+import { enforceEnableFeatureFlag } from '../utils/access';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils';
@@ -82,6 +84,7 @@ export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   }));
 };
 export const stixRelationshipsTimeSeriesBreakdown = async (context, user, args) => {
+  enforceEnableFeatureFlag(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
   const relationshipTypes = buildRelationshipTypes(args.relationship_type);
   // The dynamic source and target restrict the relationships as they do for stixRelationshipsMultiTimeSeries
   const filters = addDynamicFromAndToToFilters(args);

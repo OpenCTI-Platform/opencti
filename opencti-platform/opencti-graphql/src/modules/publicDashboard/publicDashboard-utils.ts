@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, PUBLIC_DASHBOARD_REFERER, SYSTEM_USER } from '../../utils/access';
@@ -13,6 +14,29 @@ import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import { TYPE_FILTER } from '../../utils/filtering/filtering-constants';
+import { isFeatureEnabled, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../config/conf';
+import { fromB64, toB64 } from '../../utils/base64';
+
+const WIDGET_BREAKDOWN_PARAMETERS = ['breakdownBy', 'breakdownLimit', 'breakdownOrder', 'breakdownOther'];
+
+/**
+ * Public manifest as served to the visitors. Without the time series breakdown feature, the widgets are served without
+ * their breakdown and render as regular time series: the stored manifest keeps it.
+ */
+export const getServedPublicManifest = (publicManifest?: string | null) => {
+  if (!publicManifest || isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)) {
+    return publicManifest;
+  }
+  const manifest = fromB64(publicManifest);
+  const widgets = Object.entries<any>(manifest.widgets ?? {});
+  if (!widgets.some(([, widget]) => widget?.parameters?.breakdownBy)) {
+    return publicManifest;
+  }
+  const servedWidgets = widgets.map(([widgetId, widget]) => {
+    return [widgetId, widget?.parameters ? { ...widget, parameters: R.omit(WIDGET_BREAKDOWN_PARAMETERS, widget.parameters) } : widget];
+  });
+  return toB64({ ...manifest, widgets: Object.fromEntries(servedWidgets) });
+};
 
 /**
  * Types every element of the dataset belongs to, read from a top level "entity type = ..." filter, or

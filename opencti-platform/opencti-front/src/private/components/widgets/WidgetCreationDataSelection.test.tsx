@@ -6,6 +6,11 @@ import type { WidgetDataSelection } from '../../../utils/widget/widget';
 const mocks = vi.hoisted(() => ({
   widget: {} as Record<string, unknown>,
   host: { kind: 'workspace' } as Record<string, unknown>,
+  flags: ['TIME_SERIES_BREAKDOWN'],
+}));
+
+vi.mock('../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: (flag: string) => mocks.flags.includes(flag) }),
 }));
 
 vi.mock('./WidgetConfigContext', () => ({
@@ -39,6 +44,7 @@ const isDisabled = (element: HTMLElement) => element.hasAttribute('disabled') ||
 describe('WidgetCreationDataSelection of a relationships widget', () => {
   beforeEach(() => {
     mocks.host = { kind: 'workspace' };
+    mocks.flags = ['TIME_SERIES_BREAKDOWN'];
   });
 
   it('says a single dataset can be broken down, and lets more datasets be added without breakdown', () => {
@@ -70,5 +76,14 @@ describe('WidgetCreationDataSelection of a relationships widget', () => {
     mocks.host = { kind: 'fintelTemplate', fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
     setWidget({});
     expect(testRender(<WidgetCreationDataSelection />).queryByText(INFO)).toBeNull();
+  });
+
+  it('says nothing about the breakdown and lets datasets be added, whatever breakdown is stored, without the TIME_SERIES_BREAKDOWN feature flag', () => {
+    mocks.flags = [];
+    setWidget({ parameters: { breakdownBy: 'toTypes' } });
+    const { queryByText, getByRole } = testRender(<WidgetCreationDataSelection />);
+    expect(queryByText(INFO)).toBeNull();
+    expect(isDisabled(getByRole('button', { name: 'Relationships' }))).toBe(false);
+    expect(isDisabled(getByRole('button', { name: 'Entities' }))).toBe(false);
   });
 });

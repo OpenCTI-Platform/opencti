@@ -83,7 +83,7 @@ type Query {
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): TimeSeriesBreakdown @public
+  ): TimeSeriesBreakdown @public @ff(flags: ["TIME_SERIES_BREAKDOWN"])
   publicStixRelationshipsMultiTimeSeries(
     uriKey: String!
     widgetId : String!
@@ -95,7 +95,7 @@ type Query {
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): TimeSeriesBreakdown @public
+  ): TimeSeriesBreakdown @public @ff(flags: ["TIME_SERIES_BREAKDOWN"])
   publicStixCoreObjectsDistribution(
     uriKey: String!
     widgetId : String!

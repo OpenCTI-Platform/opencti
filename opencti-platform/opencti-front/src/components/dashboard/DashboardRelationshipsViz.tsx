@@ -20,6 +20,8 @@ import type { DashboardConfig } from './dashboard-types';
 import WidgetNotImplemented from './WidgetNotImplemented';
 import StixRelationshipsTimeSeriesBreakdown from '../../private/components/common/stix_relationships/StixRelationshipsTimeSeriesBreakdown';
 import { isWidgetBreakdownActive } from '../../utils/widget/widgetBreakdown';
+import useHelper from '../../utils/hooks/useHelper';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from './timeSeriesBreakdownFeatureFlag';
 
 interface DashboardRelationshipsVizProps {
   widget: Widget;
@@ -36,7 +38,9 @@ const DashboardRelationshipsViz = ({
   host,
   refreshRate,
 }: DashboardRelationshipsVizProps) => {
-  if (isWidgetBreakdownActive(widget, host)) {
+  const { isFeatureEnable } = useHelper();
+
+  if (isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) && isWidgetBreakdownActive(widget, host)) {
     return (
       <StixRelationshipsTimeSeriesBreakdown
         widget={widget}

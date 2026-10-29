@@ -29,6 +29,8 @@ import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
 import StixCoreObjectsTimeSeriesBreakdown from '../../private/components/common/stix_core_objects/StixCoreObjectsTimeSeriesBreakdown';
 import { isWidgetBreakdownActive } from '../../utils/widget/widgetBreakdown';
+import useHelper from '../../utils/hooks/useHelper';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from './timeSeriesBreakdownFeatureFlag';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
@@ -50,9 +52,10 @@ const DashboardEntitiesViz = ({
   host,
   refreshRate,
 }: DashboardEntitiesVizProps) => {
+  const { isFeatureEnable } = useHelper();
   const isDraftWidget = isDraftWorkspaceWidget(widget);
 
-  if (isWidgetBreakdownActive(widget, host)) {
+  if (isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) && isWidgetBreakdownActive(widget, host)) {
     return (
       <StixCoreObjectsTimeSeriesBreakdown
         widget={widget}
