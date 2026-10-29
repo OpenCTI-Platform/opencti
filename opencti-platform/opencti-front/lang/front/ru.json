@@ -1337,6 +1337,7 @@
   "Decay rules": "Правила распада",
   "Decay Rules | Customization | Settings": "Правила распада | Настройка | Настройки",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Правила распада применяются к индикаторам в порядке приоритета (от наибольшего к наименьшему, наименьший - 0). По умолчанию применяются встроенные правила, которые нельзя редактировать. Вы можете добавить пользовательское правило распада и определить порядок его приоритета.",
+  "Decimal": "Десятичное число",
   "Decline": "Отклонить",
   "Decline this call": "Отклонить этот запрос",
   "Declined": "Отклонено",

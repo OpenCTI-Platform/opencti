@@ -30,6 +30,7 @@ class ThreatActorGroup:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value

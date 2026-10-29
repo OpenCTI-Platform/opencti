@@ -85,6 +85,8 @@ export const getCustomFieldTypeLabel = (fieldType: string, t_i18n: (s: string) =
   switch (fieldType) {
     case 'integer':
       return t_i18n('Integer');
+    case 'decimal':
+      return t_i18n('Decimal');
     case 'boolean':
       return t_i18n('Boolean');
     case 'date':
@@ -188,11 +190,13 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
           </MuiTextField>
         );
       case 'integer':
+      case 'decimal':
         return (
           <Input
             // `isTypeNumber` (library #190) forces type="number" and suppresses the browser's
             // own spinners, so the field carries the designed stepper instead of the UA's.
             isTypeNumber
+            step={customField.field_type === 'decimal' ? '0.01' : undefined}
             label={t_i18n('Default value')}
             value={defaultValue}
             onChange={(event) => setDefaultValue(event.target.value)}

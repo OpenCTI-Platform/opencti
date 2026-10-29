@@ -45,6 +45,11 @@ const CASE_READ = gql`
     }
   }
 `;
+const CASE_READ_DECIMAL = gql`
+  query CustomFieldsReviewCaseReadDecimal($id: String!) {
+    caseIncident(id: $id) { id customFieldValues { field_name float_value } }
+  }
+`;
 const CASES_FILTER = gql`
   query CustomFieldsReviewCasesFilter($filters: FilterGroup) {
     caseIncidents(first: 50, filters: $filters) { edges { node { id } } }
@@ -112,6 +117,7 @@ const TAGS = 'x_opencti_cf_review_tags';
 const REQUIRED = 'x_opencti_cf_review_required';
 const LEVEL = 'x_opencti_cf_review_level';
 const DUE = 'x_opencti_cf_review_due';
+const RATE = 'x_opencti_cf_review_rate';
 
 const addDefinition = async (input: Record<string, unknown>, entityTypes: { entityType: string; mandatory: boolean }[]) => {
   const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input: { description: `${input.label} description`, ...input } } });
@@ -162,6 +168,9 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
       { entityType: 'Case-Incident', mandatory: false },
     ]));
     definitionIds.push(await addDefinition({ name: DUE, label: 'Review due date', field_type: 'date' }, [
+      { entityType: 'Case-Incident', mandatory: false },
+    ]));
+    definitionIds.push(await addDefinition({ name: RATE, label: 'Review rate', field_type: 'decimal' }, [
       { entityType: 'Case-Incident', mandatory: false },
     ]));
     const malware = await queryAsAdmin({ query: MALWARE_ADD, variables: { input: { name: 'Custom fields review malware' } } });
@@ -273,13 +282,15 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
     beforeAll(async () => {
       caseWithNoteId = await createCase('Custom fields review with note', [
         { field_name: NOTE, value: ['hello'] }, { field_name: TAGS, value: ['a', 'b'] }, { field_name: LEVEL, value: [10] },
-        { field_name: DUE, value: ['2026-01-10T00:00:00.000Z'] },
+        { field_name: DUE, value: ['2026-01-10T00:00:00.000Z'] }, { field_name: RATE, value: [0.85] },
       ]);
       caseWithoutNoteId = await createCase('Custom fields review without note', [
         { field_name: TAGS, value: ['a'] }, { field_name: LEVEL, value: [15] }, { field_name: DUE, value: ['2026-06-15T00:00:00.000Z'] },
+        { field_name: RATE, value: [0.5] },
       ]);
       caseOtherId = await createCase('Custom fields review other', [
         { field_name: TAGS, value: ['c'] }, { field_name: LEVEL, value: [20] }, { field_name: DUE, value: ['2026-12-20T00:00:00.000Z'] },
+        { field_name: RATE, value: [2.25] },
       ]);
       caseIds.push(caseWithNoteId, caseWithoutNoteId, caseOtherId);
     });
@@ -305,6 +316,14 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
       expect(await filterCases(LEVEL, 'eq', ['10', '20'], 'and')).toEqual([]);
       expect(await filterCases(LEVEL, 'not_eq', ['10', '20'], 'or')).toEqual([caseWithNoteId, caseWithoutNoteId, caseOtherId].sort());
       expect(await filterCases(LEVEL, 'not_eq', ['10', '20'], 'and')).toEqual([caseWithoutNoteId]);
+    });
+
+    it('should store, read back and filter decimal values', async () => {
+      const read = await queryAsAdmin({ query: CASE_READ_DECIMAL, variables: { id: caseWithNoteId } });
+      expect(read.data?.caseIncident.customFieldValues).toEqual(expect.arrayContaining([{ field_name: RATE, float_value: 0.85 }]));
+      expect(await filterCases(RATE, 'eq', ['0.85', '2.25'], 'or')).toEqual([caseWithNoteId, caseOtherId].sort());
+      expect(await filterCases(RATE, 'gt', ['1'])).toEqual([caseOtherId]);
+      expect(await filterCases(RATE, 'lte', ['0.85'])).toEqual([caseWithNoteId, caseWithoutNoteId].sort());
     });
 
     it('should match the range of within whatever the filter mode', async () => {
