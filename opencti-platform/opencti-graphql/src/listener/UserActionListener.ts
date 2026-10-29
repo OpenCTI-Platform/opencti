@@ -65,7 +65,8 @@ export interface ConfigPresetImportSummary {
   counts: Record<'created' | 'overwritten' | 'skipped' | 'failed', number>;
 }
 export interface UserConfigPresetImportActionContextData {
-  file_id: string;
+  // The report of the import, null when it could not be written
+  file_id: string | null;
   path: string;
   file_name: string;
   input: ConfigPresetImportSummary;

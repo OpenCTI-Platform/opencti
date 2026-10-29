@@ -40,7 +40,9 @@ const expectNothingWritten = () => {
 describe('importTheme validation', () => {
   it.each([
     ['an unknown key', { built_in: true }],
-    ['a relative logo', { theme_logo: '/static/logo.png' }],
+    ['a protocol-relative logo, which is another host', { theme_logo: '//example.com/logo.png' }],
+    ['a relative path with a forbidden character', { theme_logo: '/static/logo.png);color:red' }],
+    ['a path that is not absolute', { theme_logo: 'static/logo.png' }],
     ['a logo that is not http(s)', { theme_logo: 'javascript:alert(1)' }],
     ['a background image with a forbidden character', { theme_login_aside_image: 'https://example.com/a.png);color:red' }],
     ['a colour that is not hex', { theme_primary: 'rgb(0, 0, 0)' }],
@@ -67,6 +69,8 @@ describe('importTheme validation', () => {
   });
 
   it.each([
+    ['a path of the platform, as the theme form accepts it', { theme_logo: '/static/logo.svg' }],
+    ['a path of the platform on the login page image', { theme_login_aside_image: '/static/aside.png' }],
     ['an uppercase scheme', { theme_logo: 'HTTPS://example.com/a.png' }],
     ['a mixed case scheme', { theme_logo_collapsed: 'Http://example.com/b.png' }],
     ['a base64 jpg image', { theme_logo: 'data:image/jpg;base64,/9j/4AAQ' }],
@@ -86,7 +90,7 @@ describe('importTheme validation', () => {
   });
 
   it('gives the reason of each invalid value', async () => {
-    const result = await importTheme(context, user, themeConfiguration({ theme_primary: 'red', theme_logo: '/a.png' }), { mode: ConfigImportMode.Add });
+    const result = await importTheme(context, user, themeConfiguration({ theme_primary: 'red', theme_logo: 'javascript:alert(1)' }), { mode: ConfigImportMode.Add });
     expect(result.reason).toContain('theme_primary: Must be a hex color');
     expect(result.reason).toContain('theme_logo');
   });
@@ -263,7 +267,7 @@ describe('themeImport (theme file)', () => {
   });
 
   it('refuses an invalid file with its reasons', async () => {
-    vi.mocked(extractContentFrom).mockResolvedValue(themeFileContent({ theme_logo: '/static/logo.png', extra: 1 }));
+    vi.mocked(extractContentFrom).mockResolvedValue(themeFileContent({ theme_logo: 'javascript:alert(1)', extra: 1 }));
     await expect(themeImport(context, user, file)).rejects.toMatchObject({
       message: 'Invalid theme file',
       extensions: { data: { reason: expect.stringContaining('theme_logo') } },

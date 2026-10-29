@@ -327,6 +327,20 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.getByRole('link', { name: 'Download report' })).toHaveAttribute('href', expect.stringContaining(encodeURIComponent('config_preset/history/id/import-report.json')));
     });
 
+    it('keeps the progress until the session is read after the apply, instead of going back to the preview of a zip that is gone', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', {});
+      // The session in hand is still the draft: the preview would ask for the zip that the import deleted
+      expect(screen.getByText('Import in progress')).toBeInTheDocument();
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
+      await resolve(rendered, 'ConfigPresetImportWizardQuery', {
+        Query: () => ({ configPresetImportSession: session({ status: 'FINISHED', outcome: 'COMPLETED', total: 1, counts: { created: 0, overwritten: 1, skipped: 0, failed: 0 }, results: [processed('messages', 'banner', 'OVERWRITTEN')] }) }),
+      });
+      expect(await screen.findByText('Import finished')).toBeInTheDocument();
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
+    });
+
     it('keeps the preview and goes back to the upload when the apply says the file is missing', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));

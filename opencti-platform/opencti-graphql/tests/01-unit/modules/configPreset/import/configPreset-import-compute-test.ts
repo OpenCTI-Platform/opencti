@@ -70,6 +70,15 @@ describe('Platform import (compute)', () => {
     expect(await compute('platform', 'platform', platform({ platform_favicon: 'https://example.com/favicon.ico' }))).toMatchObject({ status: 'overwritten' });
   });
 
+  it('accepts a favicon that was cleared in the settings, as the export keeps it, and a scheme in any case', async () => {
+    expect(await compute('platform', 'platform', platform({ platform_favicon: '' }))).toMatchObject({ status: 'overwritten' });
+    expect(await compute('platform', 'platform', platform({ platform_favicon: 'HTTPS://example.com/favicon.ico' }))).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('fails on a default theme whose standard id is not one', async () => {
+    expect(await compute('platform', 'platform', platform({ default_theme: { standard_id: 'not-a-standard-id', name: 'Mine' } }))).toMatchObject({ status: 'failed' });
+  });
+
   it('fails on an item that is not the platform', async () => {
     expect(await compute('platform', 'other', platform())).toMatchObject({ label: 'Platform configuration', status: 'failed', reason: 'Unexpected item id' });
   });
@@ -152,13 +161,13 @@ describe('Branding import (compute)', () => {
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ built_in: true }))).toMatchObject({ status: 'failed' });
   });
 
-  it('accepts an http or https URL for the logos and the login background image', async () => {
-    const urls = { theme_logo: 'http://example.com/a.png', theme_logo_collapsed: 'https://example.com/b.png', theme_logo_login: 'http://example.com/c.svg', theme_login_aside_image: 'http://example.com/d.jpg' };
+  it('accepts an http or https URL, or a path of the platform, for the logos and the login background image', async () => {
+    const urls = { theme_logo: 'http://example.com/a.png', theme_logo_collapsed: 'https://example.com/b.png', theme_logo_login: '/static/c.svg', theme_login_aside_image: 'http://example.com/d.jpg' };
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration(urls))).toMatchObject({ status: 'created' });
   });
 
   it.each([
-    ['a relative path', '/static/logo.png'],
+    ['a path that does not start with a slash', 'static/logo.png'],
     ['a scheme that is not http(s)', 'javascript:alert(1)'],
     ['a protocol-relative URL', '//example.com/a.png'],
     ['a space', 'http://example.com/a b.png'],

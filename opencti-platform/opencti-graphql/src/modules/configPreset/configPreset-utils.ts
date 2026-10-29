@@ -37,7 +37,8 @@ export const buildConfigPresetExportMessage = ({ file_name, input: { entity_type
   return `exports the configuration preset \`${file_name}\` (${exported})`;
 };
 
-// Message of the activity log of an import: the file and the number of items per result
-export const buildConfigPresetImportMessage = ({ file_name, input: { counts } }: UserConfigPresetImportActionContextData) => {
-  return `imports a configuration preset (created: ${counts.created}, overwritten: ${counts.overwritten}, skipped: ${counts.skipped}, failed: ${counts.failed}), report \`${file_name}\``;
+// Message of the activity log of an import: the number of items per result, and the report when it was written
+export const buildConfigPresetImportMessage = ({ file_id: fileId, file_name: fileName, input: { counts } }: UserConfigPresetImportActionContextData) => {
+  const report = fileId ? `report \`${fileName}\`` : 'the report could not be written';
+  return `imports a configuration preset (created: ${counts.created}, overwritten: ${counts.overwritten}, skipped: ${counts.skipped}, failed: ${counts.failed}), ${report}`;
 };

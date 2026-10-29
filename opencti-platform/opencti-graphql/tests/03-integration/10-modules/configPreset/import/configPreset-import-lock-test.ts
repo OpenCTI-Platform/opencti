@@ -9,6 +9,7 @@ import * as settingsDomain from '../../../../../src/domain/settings';
 import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../../src/domain/settings';
 import { addTheme, deleteTheme, findAllThemes } from '../../../../../src/modules/theme/theme-domain';
 import * as fileStorage from '../../../../../src/database/file-storage';
+import * as entitySettingDomain from '../../../../../src/modules/entitySetting/entitySetting-domain';
 import * as userDomain from '../../../../../src/modules/user/user-domain';
 import * as userActionListener from '../../../../../src/listener/UserActionListener';
 import * as sessionDomain from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
@@ -20,7 +21,7 @@ import { CONFIG_PRESET_IMPORT_LOCK_KEY, isConfigPresetImportLocked } from '../..
 const UPLOAD_MUTATION = gql`mutation ConfigPresetLockUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`
   mutation ConfigPresetLockImport($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean) {
-    configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) { results { key status reason } report_id }
+    configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) { results { key status reason } report_id settings { id } }
   }
 `;
 const SESSION_QUERY = gql`query ConfigPresetLockSession { configPresetImportSession { status file_id outcome counts { failed } selections { type items } results { key status reason } } }`;
@@ -140,30 +141,55 @@ describe('Config preset import lock', () => {
     expect(await readSession()).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED' });
   });
 
-  it('puts the session back to the draft and returns the error when it fails before the first item', async () => {
+  it('puts the session back to the draft and returns the error when the user has lost BYPASS before the first item', async () => {
     const fileId = await upload();
-    vi.spyOn(messagesImporter(), 'compute').mockRejectedValueOnce(new Error('elastic down'));
+    vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockResolvedValueOnce({ ...ADMIN_USER, capabilities: [] } as never);
     const { errors } = await runImport(fileId, [{ type: 'messages' }]);
-    expect(errors?.[0].message).toContain('elastic down');
+    expect(errors?.[0].message).toContain('no longer has the right to import');
     expect(await readSession()).toMatchObject({ status: 'DRAFT', file_id: fileId });
     expect(await isConfigPresetImportLocked()).toBe(false);
     expect((await readSettings()).platform_bootstrap_status).toEqual('pending');
     expect((await runImport(fileId, [{ type: 'messages' }])).errors).toBeUndefined();
   });
 
-  it('stops on an unexpected error between two items: the rest fails with the message, the status stays pending, the zip is kept', async () => {
+  it('fails an item whose preview throws, and goes on with the next ones: the import completes', async () => {
     const fileId = await upload();
     vi.spyOn(messagesImporter(), 'compute').mockRejectedValueOnce(new Error('elastic down'));
     const { data, errors } = await runImport(fileId, [{ type: 'platform', items: ['platform'] }, { type: 'messages' }]);
     expect(errors).toBeUndefined();
     const results = data?.configPresetImport.results;
-    expect(results.map((result: { key: string; status: string }) => `${result.key}:${result.status}`)).toEqual(['theme--11111111-2222-4333-8444-555555555555:CREATED', 'platform:OVERWRITTEN', 'banner:FAILED']);
+    expect(results.map((result: { key: string; status: string }) => `${result.key}:${result.status}`)).toEqual([`${CUSTOM_THEME_ID}:CREATED`, 'platform:OVERWRITTEN', 'banner:FAILED']);
     expect(results[2].reason).toEqual('elastic down');
+    expect(await readSession()).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED' });
+    expect((await readSettings()).platform_bootstrap_status).toEqual('completed');
+  });
+
+  it('stops on an unexpected error between two items: the rest fails with the message, the status stays pending, the zip is kept', async () => {
+    const fileId = await upload();
+    failRunEvents((event, payload) => event === 'ITEM_PROCESSED' && (payload as { result: { key: string } }).result.key === 'platform');
+    const { data, errors } = await runImport(fileId, [{ type: 'platform', items: ['platform'] }, { type: 'messages' }]);
+    expect(errors).toBeUndefined();
+    const results = data?.configPresetImport.results;
+    expect(results.map((result: { key: string; status: string }) => `${result.key}:${result.status}`)).toEqual([`${CUSTOM_THEME_ID}:CREATED`, 'platform:OVERWRITTEN', 'banner:FAILED']);
+    expect(results[2].reason).toEqual('redis down');
     expect(await readSession()).toMatchObject({ status: 'FINISHED', outcome: 'STOPPED' });
     expect((await readSettings()).platform_bootstrap_status).toEqual('pending');
     expect(await zipExists(fileId)).toBe(true);
     expect(data?.configPresetImport.report_id).toMatch(/^config_preset\/history\//);
     expect(await isConfigPresetImportLocked()).toBe(false);
+  });
+
+  it('stops when the user loses BYPASS during the import: the items not written yet fail', async () => {
+    const fileId = await upload();
+    const realResolve = userDomain.resolveUserByIdFromCache;
+    vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockImplementationOnce(realResolve).mockResolvedValueOnce({ ...ADMIN_USER, capabilities: [] } as never);
+    const { data, errors } = await runImport(fileId, [{ type: 'platform', items: ['platform'] }, { type: 'messages' }]);
+    expect(errors).toBeUndefined();
+    const results = data?.configPresetImport.results as { key: string; status: string; reason: string | null }[];
+    expect(results.map((result) => `${result.key}:${result.status}`)).toEqual([`${CUSTOM_THEME_ID}:CREATED`, 'platform:FAILED', 'banner:FAILED']);
+    expect(results[1].reason).toEqual('The user who started the import no longer has the right to import');
+    expect((await readSettings()).platform_title).toEqual(before.platform_title);
+    expect(await readSession()).toMatchObject({ status: 'FINISHED', outcome: 'STOPPED' });
   });
 
   it('stops when the lock is lost: the item in progress finishes, the remaining items fail', async () => {
@@ -267,8 +293,7 @@ describe('Config preset import lock', () => {
 
   it('still stops the import when the results of the remaining items cannot be written in the session', async () => {
     const fileId = await upload();
-    vi.spyOn(messagesImporter(), 'compute').mockRejectedValueOnce(new Error('elastic down'));
-    failRunEvents((event, payload) => event === 'ITEM_PROCESSED' && (payload as { result: { reason: string } }).result.reason === 'elastic down');
+    failRunEvents((event, payload) => event === 'ITEM_PROCESSED' && ['platform', 'banner'].includes((payload as { result: { key: string } }).result.key));
     const { data, errors } = await runImport(fileId, [{ type: 'platform', items: ['platform'] }, { type: 'messages' }]);
     expect(errors).toBeUndefined();
     expect(data?.configPresetImport.results.map((result: { key: string; status: string }) => `${result.key}:${result.status}`)).toEqual([
@@ -303,6 +328,35 @@ describe('Config preset import lock', () => {
     const history = await allFilesForPaths(testContext, ADMIN_USER, ['config_preset/history']);
     expect(history.map((file) => file.name)).toEqual(['import-report.json']);
     expect(await zipExists(fileId)).toBe(true);
+    expect(await readSession()).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED' });
+  });
+
+  it('audits the import with no file when the report could not be written', async () => {
+    const fileId = await upload();
+    const publish = vi.spyOn(userActionListener, 'publishUserAction');
+    vi.spyOn(fileStorage, 'uploadToStorage').mockRejectedValueOnce(new Error('storage down'));
+    const { data, errors } = await runImport(fileId, [{ type: 'messages' }]);
+    expect(errors).toBeUndefined();
+    expect(data?.configPresetImport.report_id).toBeNull();
+    const events = publish.mock.calls.map(([action]) => action).filter((action) => action.event_scope === 'import');
+    expect(events).toHaveLength(1);
+    expect(events[0].context_data).toMatchObject({ file_id: null, input: { counts: { overwritten: 1, failed: 0 } } });
+  });
+
+  it('audits the import with its report', async () => {
+    const publish = vi.spyOn(userActionListener, 'publishUserAction');
+    const { data } = await runImport(await upload(), [{ type: 'messages' }]);
+    const events = publish.mock.calls.map(([action]) => action).filter((action) => action.event_scope === 'import');
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({ event_type: 'command', event_access: 'administration', context_data: { file_id: data?.configPresetImport.report_id, input: { counts: { overwritten: 1 } } } });
+  });
+
+  it('returns the results of an import that is over when the settings cannot be read back', async () => {
+    vi.spyOn(entitySettingDomain, 'findAllEntitySettings').mockRejectedValueOnce(new Error('elastic down'));
+    const { data, errors } = await runImport(await upload(), [{ type: 'messages' }]);
+    expect(errors).toBeUndefined();
+    expect(data?.configPresetImport.results).toMatchObject([{ key: 'banner', status: 'OVERWRITTEN' }]);
+    expect(data?.configPresetImport.settings).toBeNull();
     expect(await readSession()).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED' });
   });
 

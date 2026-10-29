@@ -8,8 +8,9 @@ const MAX_DATA_IMAGE_LENGTH = 1_000_000;
 
 export const THEME_STANDARD_ID_PATTERN = /^theme--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-// An absolute http(s) URL, whatever the case of its scheme. It reaches CSS (url()) on the login page, unquoted: none of ()'";{} or \ or whitespace
-const imageUrl = z.string().max(MAX_URL_LENGTH).regex(/^https?:\/\/[^\s()'";{}\\]+$/i, 'Must be an http(s) URL');
+// An absolute http(s) URL, whatever the case of its scheme, or a path of this platform (the theme form accepts one, and its export must import back).
+// It reaches CSS (url()) on the login page, unquoted: none of ()'";{} or \ or whitespace. `//host` is another host, not a path.
+const imageUrl = z.string().max(MAX_URL_LENGTH).regex(/^(?:https?:\/\/|\/(?!\/))[^\s()'";{}\\]+$/i, 'Must be an http(s) URL or a path starting with /');
 const imageValue = z.union([
   z.literal(''),
   imageUrl,

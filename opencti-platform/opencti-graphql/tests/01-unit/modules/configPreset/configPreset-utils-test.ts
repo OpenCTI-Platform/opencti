@@ -81,6 +81,16 @@ describe('Config preset import activity message', () => {
     });
     expect(message).toEqual('imports a configuration preset (created: 1, overwritten: 2, skipped: 3, failed: 4), report `import-report.json`');
   });
+
+  it('says so when the report could not be written', () => {
+    const message = buildConfigPresetImportMessage({
+      file_id: null,
+      path: 'config_preset/history/id',
+      file_name: 'import-report.json',
+      input: { counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 } },
+    });
+    expect(message).toEqual('imports a configuration preset (created: 1, overwritten: 0, skipped: 0, failed: 0), the report could not be written');
+  });
 });
 
 describe('Config preset import modes', () => {

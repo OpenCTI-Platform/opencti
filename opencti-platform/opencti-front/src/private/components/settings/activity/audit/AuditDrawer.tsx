@@ -21,6 +21,9 @@ interface AuditDrawerProps {
   logId: string;
 }
 
+// Where the reports of the configuration preset imports are stored
+const CONFIG_PRESET_HISTORY_PATH = 'config_preset/history/';
+
 const auditDrawerQuery = graphql`
   query AuditDrawerQuery($id: ID!, $tz: String, $locale: String, $unit_system: String) {
     audit(id: $id) {
@@ -103,8 +106,9 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
         </div>
       )}
 
-      {/* The file of an import report is BYPASS only, while the activity is readable with a lower capability */}
-      {isBypass && log.context_data?.file_id && (
+      {/* The file of an import report is BYPASS only, while the activity is readable with a lower capability. */}
+      {/* The other imports have a file_id too, the source file: only the reports are in the history folder. */}
+      {isBypass && log.context_data?.file_id?.startsWith(CONFIG_PRESET_HISTORY_PATH) && (
         <div>
           <Label>{t_i18n('Import report')}</Label>
           <a href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(log.context_data.file_id)}`}>{t_i18n('Download report')}</a>

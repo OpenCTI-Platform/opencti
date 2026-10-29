@@ -49,6 +49,13 @@ describe('AuditDrawer import report', () => {
     expect(screen.queryByRole('link', { name: 'Download report' })).not.toBeInTheDocument();
   });
 
+  it('shows no report link on the import of a file in an entity, whose file is the source file', async () => {
+    (useGranted as Mock).mockReturnValue(true);
+    await renderDrawer('import/Report/report-id/report.pdf');
+    expect(await screen.findByText('imports a configuration preset')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Download report' })).not.toBeInTheDocument();
+  });
+
   it('shows no link when the event has no file', async () => {
     (useGranted as Mock).mockReturnValue(true);
     await renderDrawer(null);

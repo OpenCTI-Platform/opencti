@@ -8,6 +8,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
+import { BYPASS, isUserHasCapability } from '../../../utils/access';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes } from './configPreset-import-utils';
 import { computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
@@ -167,27 +168,34 @@ const realImport = async (
       if (lock.signal.aborted) {
         stopReason = 'Import stopped: lock lost';
       } else {
-        // Re-read before each item: the rights of the user may have changed; the origin is kept for the audit
+        // Re-read before each item: the rights of the user may have changed; the origin is kept for the audit.
+        // The domain functions of the importers check no capability, so BYPASS is checked here: losing it stops the import.
         const cachedUser = await resolveUserByIdFromCache(importContext, user.id);
         if (!cachedUser) {
           throw FunctionalError('The user who started the import no longer exists');
         }
+        if (!isUserHasCapability(cachedUser, BYPASS)) {
+          throw FunctionalError('The user who started the import no longer has the right to import');
+        }
         const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
         const importer = CONFIG_PRESET_FAMILIES.find((family) => family.id === item.type)!.importer!;
         const mode = configPresetImportMode(modes, item.type, item.id);
-        const computed = await importer.compute(importContext, runUser, item, plan, mode);
-        let result = toResult(item, computed.status, computed.reason, computed);
-        if (computed.status !== 'failed' && computed.status !== 'skipped') {
-          try {
+        let computed: ConfigPresetComputedItem | undefined;
+        let result: ConfigPresetImportItemResult;
+        // An error of the item, whether it is read or written, fails this item and never the next ones
+        try {
+          computed = await importer.compute(importContext, runUser, item, plan, mode);
+          result = toResult(item, computed.status, computed.reason, computed);
+          if (computed.status !== 'failed' && computed.status !== 'skipped') {
             const applied = await importer.apply(importContext, runUser, item, computed, mode);
             if (applied) {
               result = toResult(item, applied, computed.reason, computed);
             }
-          } catch (err) {
-            // The theme was not created: the items that depend on it fail with it
-            plan.created.delete(configPresetPlanKey(item.type, item.id));
-            result = toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
           }
+        } catch (err) {
+          // The theme was not created: the items that depend on it fail with it
+          plan.created.delete(configPresetPlanKey(item.type, item.id));
+          result = toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
         }
         results.push(result);
         await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result });
@@ -241,24 +249,29 @@ const realImport = async (
     .catch((finishErr) => logApp.error('[CONFIG PRESET] The end of the import could not be written in the session', { cause: finishErr }));
   // Then the record is deleted and last_finished_at written, then the caller releases the lock
   await endConfigPresetImportRunning(user, startedAt, true);
-  if (report.reportId) {
-    // The listeners run in a Promise.all: a failing one never fails the import
-    try {
-      await publishUserAction({
-        user,
-        event_type: 'command',
-        event_access: 'administration',
-        event_scope: 'import',
-        context_data: { file_id: report.reportId, path: report.folder, file_name: report.fileName, input: { counts } },
-      });
-    } catch (err) {
-      logApp.warn('[CONFIG PRESET] The activity event of the import could not be published', { cause: err });
-    }
+  // The settings were written whether the report was or not: the import is audited either way, with a file only when there is one.
+  // The listeners run in a Promise.all: a failing one never fails the import
+  try {
+    await publishUserAction({
+      user,
+      event_type: 'command',
+      event_access: 'administration',
+      event_scope: 'import',
+      context_data: { file_id: report.reportId, path: report.folder, file_name: report.fileName, input: { counts } },
+    });
+  } catch (err) {
+    logApp.warn('[CONFIG PRESET] The activity event of the import could not be published', { cause: err });
   }
   logApp.info('[CONFIG PRESET] Import finished', { user_id: user.id, file_id: fileId, outcome, counts });
-  // getSettings is untyped (JS), some fields of Settings are resolved by its field resolvers
-  const settings = await getSettings(importContext) as unknown as ResolversTypes['Settings'];
-  return { results, report_id: report.reportId, settings, entity_settings: await findAllEntitySettings(importContext, user) };
+  // The import is over and audited: failing to read what it wrote must not fail it. The front store then learns the values with the next read.
+  try {
+    // getSettings is untyped (JS), some fields of Settings are resolved by its field resolvers
+    const settings = await getSettings(importContext) as unknown as ResolversTypes['Settings'];
+    return { results, report_id: report.reportId, settings, entity_settings: await findAllEntitySettings(importContext, user) };
+  } catch (err) {
+    logApp.warn('[CONFIG PRESET] The settings written by the import could not be read back', { cause: err });
+    return { results, report_id: report.reportId, settings: null, entity_settings: null };
+  }
 };
 
 // Applies the selected items of the pending zip one by one, required dependencies first, and returns the result of each:

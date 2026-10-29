@@ -4,6 +4,7 @@ import { buildZip, validBundleFiles } from '../../../../utils/configPresetBundle
 import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
 import * as redisModule from '../../../../../src/database/redis';
+import * as userDomain from '../../../../../src/modules/user/user-domain';
 import {
   getClientBase,
   lockResource,
@@ -248,8 +249,8 @@ describe('Config preset import: running and interrupted', () => {
       const fileId = await upload();
       expect((await runImport(fileId, [{ type: 'messages' }], true)).errors).toBeUndefined();
       expect(await redisGetConfigPresetImportLastFinished()).toBeNull();
-      vi.spyOn(messagesImporter(), 'compute').mockRejectedValueOnce(new Error('elastic down'));
-      expect((await runImport(fileId, [{ type: 'messages' }])).errors?.[0].message).toContain('elastic down');
+      vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockResolvedValueOnce(undefined as never);
+      expect((await runImport(fileId, [{ type: 'messages' }])).errors?.[0].message).toContain('no longer exists');
       expect(await redisGetConfigPresetImportRunning()).toBeNull();
       expect(await redisGetConfigPresetImportLastFinished()).toBeNull();
       expect(await readSession()).toMatchObject({ status: 'DRAFT' });

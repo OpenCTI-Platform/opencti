@@ -503,8 +503,16 @@ describe('Themes resolver testing', () => {
     await queryAsAdmin({ query: DELETE_THEME_MUTATION, variables: { id: importedThemeId } });
   });
 
+  it('should import a theme file with a logo that is a path of the platform, as the theme form accepts and exports it', async () => {
+    const FILE_NAME = 'test-theme-relative-logo.json';
+    const upload = await createUploadFromTestDataFile(`theme/${FILE_NAME}`, FILE_NAME, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeUndefined();
+    expect(theme.data?.themeImport.theme_logo).toBe('/static/image.svg');
+    await queryAsAdmin({ query: DELETE_THEME_MUTATION, variables: { id: theme.data?.themeImport.id } });
+  });
+
   it.each([
-    ['a relative logo', 'test-theme-relative-logo.json', 'theme_logo'],
     ['a colour that is not hex', 'test-theme-rgb-color.json', 'theme_background'],
     ['an unknown key', 'test-theme-unknown-key.json', 'built_in'],
   ])('should refuse to import a theme file with %s', async (_, fileName, invalidKey) => {

@@ -183,9 +183,9 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
     setIsApplying(true);
     commitApply({
       variables: { file_id: fileId, selections, dry_run: false },
+      // The progress stays until the session is read: the session in hand is still the draft, and its preview would ask for the zip the import deleted
       onCompleted: () => {
-        setIsApplying(false);
-        refresh();
+        refresh().finally(() => setIsApplying(false));
       },
       onError: (error) => {
         setIsApplying(false);
