@@ -18,6 +18,8 @@ import AuditsTimeSeriesBreakdown from '@components/common/audits/AuditsTimeSerie
 import WidgetNotImplemented from './WidgetNotImplemented';
 import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 import { isWidgetBreakdownActive } from '../../utils/widget/widgetBreakdown';
+import useHelper from '../../utils/hooks/useHelper';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from './timeSeriesBreakdownFeatureFlag';
 
 interface DashboardAuditsVizProps {
   widget: Widget;
@@ -34,9 +36,10 @@ const DashboardAuditsViz = ({
   host,
   refreshRate,
 }: DashboardAuditsVizProps) => {
+  const { isFeatureEnable } = useHelper();
   const { startDate, endDate } = computeStartEndDates(config);
 
-  if (isWidgetBreakdownActive(widget, host)) {
+  if (isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) && isWidgetBreakdownActive(widget, host)) {
     return (
       <AuditsTimeSeriesBreakdown
         widget={widget}

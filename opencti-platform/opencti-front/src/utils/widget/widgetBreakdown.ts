@@ -129,7 +129,8 @@ export const resolveBreakdownTypeVariables = (types: string[], variables?: Dashb
 /**
  * Fields the dataset can be broken down by: with a single type, its allowed fields
  * (BREAKDOWN_ALLOWED_REFS, vocabularies and enums); with several types, the ones they have in common,
- * plus the type itself. Relationships can also be broken down by the type of their source or target.
+ * plus the type itself, also offered for a single abstract type, which holds several concrete ones.
+ * Relationships can also be broken down by the type of their source or target.
  */
 export const getBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
@@ -151,7 +152,9 @@ export const getBreakdownFieldOptions = (
     }
   });
   options.push(...breakdownPerspective.fields);
-  if (entityTypes.length !== 1) {
+  // A single type is abstract when its keys are also carried by its sub types
+  const isAbstractType = [...schemas[0].values()].some(({ subEntityTypes }) => subEntityTypes.some((subType) => subType !== types[0]));
+  if (entityTypes.length !== 1 || isAbstractType) {
     options.push(breakdownPerspective.typeField);
   }
   return options.sort((a, b) => a.label.localeCompare(b.label));

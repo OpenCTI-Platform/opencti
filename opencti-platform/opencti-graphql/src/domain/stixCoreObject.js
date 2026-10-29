@@ -22,7 +22,7 @@ import {
 import { findStixCoreRelationshipsPaginated } from './stixCoreRelationship';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { storeUpdateEvent } from '../database/stream/stream-handler';
-import conf, { BUS_TOPICS, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, logApp, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
@@ -82,7 +82,16 @@ import { extractEntityRepresentativeName, extractRepresentative } from '../datab
 import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import {
+  AccessOperation,
+  BYPASS,
+  enforceEnableFeatureFlag,
+  isBypassUser,
+  isUserCanAccessStoreElement,
+  isUserHasCapabilities,
+  SYSTEM_USER,
+  validateUserAccessOperation,
+} from '../utils/access';
 import { connectorsForAnalysis } from '../modules/connector/connector-domain';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator, ValidationMode } from '../generated/graphql';
@@ -460,6 +469,7 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
 };
 
 export const stixCoreObjectsTimeSeriesBreakdown = (context, user, args) => {
+  enforceEnableFeatureFlag(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
   const types = extractStixCoreObjectTypesFromArgs(args);
   return timeSeriesBreakdownEntities(context, user, types, args);
 };

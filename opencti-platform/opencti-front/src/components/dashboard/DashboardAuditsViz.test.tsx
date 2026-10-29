@@ -1,6 +1,11 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../utils/tests/test-render';
+
+const flags = vi.hoisted(() => ({ enabled: ['TIME_SERIES_BREAKDOWN'] }));
+vi.mock('../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: (flag: string) => flags.enabled.includes(flag) }),
+}));
 
 vi.mock('@components/common/audits/AuditsNumber', () => ({
   default: () => <div data-testid="audits-number" />,
@@ -93,5 +98,26 @@ describe('DashboardAuditsViz', () => {
     const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
     const { getByTestId } = testRender(<DashboardAuditsViz widget={makeWidget('area', withBreakdown)} config={config} host={fintelTemplate} />);
     expect(getByTestId('audits-area-chart')).toBeTruthy();
+  });
+
+  describe('without the TIME_SERIES_BREAKDOWN feature flag', () => {
+    beforeEach(() => {
+      flags.enabled = [];
+    });
+    afterEach(() => {
+      flags.enabled = ['TIME_SERIES_BREAKDOWN'];
+    });
+
+    it('renders the regular widget, whatever breakdown it carries', () => {
+      const charts: Record<string, string> = { 'vertical-bar': 'audits-vertical-bars', line: 'audits-line-chart', area: 'audits-area-chart', heatmap: 'audits-heatmap' };
+      Object.entries(charts).forEach(([type, testId]) => {
+        const { getByTestId, queryByTestId, unmount } = testRender(
+          <DashboardAuditsViz widget={makeWidget(type, withBreakdown)} config={config} host={workspace} />,
+        );
+        expect(getByTestId(testId)).toBeTruthy();
+        expect(queryByTestId('audits-time-series-breakdown')).toBeNull();
+        unmount();
+      });
+    });
   });
 });

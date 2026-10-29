@@ -15,6 +15,8 @@ test.describe.configure({ mode: 'serial' });
  * Content of the test
  * -------------------
  * Breakdown of a time series widget by the values of a field (workspace dashboards only).
+ * Needs the backend started with the TIME_SERIES_BREAKDOWN dev feature. In CI, dev features are only enabled
+ * for the `@groupff` e2e group (`dev_features: '["*"]'`), hence this spec is tagged `@groupff`, not `@group1`.
  *
  * Data (API): a dashboard, a label shared by two reports and one more label for each of them.
  * The widget only selects the reports carrying the shared label, so its series do not depend on the data
@@ -25,7 +27,7 @@ test.describe.configure({ mode: 'serial' });
  * With two datasets, the breakdown controls are disabled and explained by a tooltip.
  * The fields offered never include the ones the API refuses (Contains, External references, Kill chain phases).
  */
-test.describe('Dashboard widget breakdown', { tag: ['@ce', '@group1'] }, () => {
+test.describe('Dashboard widget breakdown', { tag: ['@ce', '@groupff'] }, () => {
   const suffix = uuid();
   const sharedLabel = { value: `breakdown-shared-${suffix}`, id: '' };
   const labels = [

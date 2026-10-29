@@ -251,6 +251,12 @@ describe('getBreakdownFieldOptions', () => {
     expect(keys([])).toEqual(['createdBy', 'entity_type']);
   });
 
+  it('offers the entity type for a single abstract type, which holds several concrete types', () => {
+    expect(keys(['Stix-Core-Object'])).toEqual(['createdBy', 'entity_type']);
+    // A single concrete type is the entity type of every series
+    expect(keys(['Report'])).not.toContain('entity_type');
+  });
+
   it('does not offer the custom fields, which the API cannot break down', () => {
     const withCustomField = new Map(schema);
     withCustomField.set('Report', new Map([

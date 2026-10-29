@@ -58,6 +58,8 @@ import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import WidgetBreakdownSelection from './WidgetBreakdownSelection';
 import { isBreakdownField, isWidgetBreakdownEligible } from 'src/utils/widget/widgetBreakdown';
+import useHelper from 'src/utils/hooks/useHelper';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from 'src/components/dashboard/timeSeriesBreakdownFeatureFlag';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -67,6 +69,7 @@ const WidgetCreationParameters = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
     schema: { filterKeysSchema },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
 
@@ -323,7 +326,9 @@ const WidgetCreationParameters = () => {
     const isAttributeSelectionDisabled = uniqueParameterEnabled && !dataSelection[dataSelectionIndex].unique;
     const attributeSize = uniqueParameterEnabled ? 10 : 12;
     // A breakdown counts every event: distinct values can only be counted without it
-    const isDistinctLockedByBreakdown = isBreakdownField(parameters.breakdownBy) && isWidgetBreakdownEligible(config.widget, host);
+    const isDistinctLockedByBreakdown = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
+      && isBreakdownField(parameters.breakdownBy)
+      && isWidgetBreakdownEligible(config.widget, host);
 
     const uniqueDataCheckbox = () => {
       const inline = dataSelection.length === 1;

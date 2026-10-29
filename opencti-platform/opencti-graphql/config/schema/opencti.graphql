@@ -14099,7 +14099,7 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
   subType(id: String!): SubType @auth
   subTypes(
     first: Int
@@ -14350,7 +14350,7 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]
@@ -14951,7 +14951,7 @@ type Query {
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
   stixRelationshipsDistribution(
     field: String!
     operation: StatsOperation!

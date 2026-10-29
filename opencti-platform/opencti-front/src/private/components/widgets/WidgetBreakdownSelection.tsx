@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
+import useHelper from '../../../utils/hooks/useHelper';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
 import {
   BREAKDOWN_LIMIT_OPTIONS,
   getWidgetBreakdownLimit,
@@ -22,10 +24,13 @@ const NO_BREAKDOWN = { breakdownBy: null, breakdownLimit: null, breakdownOrder: 
  */
 const WidgetBreakdownSelection = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const { config, setConfigWidget, host } = useWidgetConfigContext();
   const { dataSelection, parameters, perspective } = config.widget;
 
-  const isSupported = isWidgetBreakdownConfigurable(config.widget, host);
+  // Without the feature, the breakdown of a stored widget is neither shown nor dropped
+  const isEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
+  const isSupported = isEnabled && isWidgetBreakdownConfigurable(config.widget, host);
   // Several datasets or distinct values: the controls are shown, disabled, with the reason
   const lockReason = getWidgetBreakdownLockReason(config.widget);
   const isEditable = !lockReason;
@@ -40,10 +45,10 @@ const WidgetBreakdownSelection = () => {
   // Filters changed to types without this field: drop the breakdown rather than keeping a field the API refuses.
   // Not before the saved filter is read: its types are unknown until then.
   useEffect(() => {
-    if (isEditable && isResolved && breakdownBy && !isFieldAvailable) {
+    if (isEnabled && isEditable && isResolved && breakdownBy && !isFieldAvailable) {
       setParameters(NO_BREAKDOWN);
     }
-  }, [isEditable, isResolved, breakdownBy, isFieldAvailable]);
+  }, [isEnabled, isEditable, isResolved, breakdownBy, isFieldAvailable]);
 
   if (!isSupported) {
     return null;
