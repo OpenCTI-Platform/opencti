@@ -8,6 +8,8 @@ import { ObjectToParse } from '../../../../../components/graph/utils/useGraphPar
 import { countExpandOptions, toExpandElements } from './investigation-enrichment.utils';
 import InvestigationEnrichmentExpandEmpty from './InvestigationEnrichmentExpandEmpty';
 import useInvestigationEnrichmentExpand from './useInvestigationEnrichmentExpand';
+import { useGraphContext } from '../../../../../components/graph/GraphContext';
+import useGraphInteractions from '../../../../../components/graph/utils/useGraphInteractions';
 
 interface InvestigationEnrichmentExpandProps {
   investigationId: string;
@@ -16,6 +18,7 @@ interface InvestigationEnrichmentExpandProps {
   onClose: () => void;
   onDismiss: (workIds: string[]) => void;
   onExpand?: (newObjects: ObjectToParse[]) => void;
+  onBackToGraph?: () => void;
 }
 
 const InvestigationEnrichmentExpand = ({
@@ -25,8 +28,15 @@ const InvestigationEnrichmentExpand = ({
   onClose,
   onDismiss,
   onExpand,
+  onBackToGraph,
 }: InvestigationEnrichmentExpandProps) => {
   const { t_i18n } = useFormatter();
+  const { graphData } = useGraphContext();
+  const {
+    setSelectedNodes,
+    setSelectedLinks,
+    setIsExpandOpen,
+  } = useGraphInteractions();
   const {
     graphIds,
     expandWorks,
@@ -60,8 +70,9 @@ const InvestigationEnrichmentExpand = ({
     : t_i18n('{count} enrichments', { values: { count: works.length } });
 
   /**
-   * Adds to the graph the touched entities of a ticked type, and the touched
-   * relationships of a ticked type with their ends, then marks the works as reviewed.
+   * Adds to the graph the touched entities of a ticked type with their relationships to the
+   * enriched entities, and the touched relationships of a ticked type with their ends,
+   * then marks the works as reviewed.
    */
   const onSubmitExpand: InvestigationExpandFormProps['onSubmit'] = async (
     { entity_types, relationship_types },
@@ -77,8 +88,26 @@ const InvestigationEnrichmentExpand = ({
       relationshipTypes: relationship_types.map((o) => o.value),
     });
     resetForm();
-    // Expanding reviews the works: they move to done, which also closes the dialog.
     onDismiss(workIds);
+    onBackToGraph?.();
+  };
+
+  // The enriched entities still on the graph, the selection the expand of the graph starts from.
+  const sourceIds = works.flatMap((work) => (work.eventSource?.id ? [work.eventSource.id] : []));
+  const sourceNodes = (graphData?.nodes ?? []).filter((node) => sourceIds.includes(node.id));
+  const sourceLinks = (graphData?.links ?? []).filter((link) => sourceIds.includes(link.id));
+
+  /**
+   * Opens the expand of the graph on the enriched entities, to look for data
+   * related to them that the enrichments did not create or update, and marks
+   * the works as reviewed.
+   */
+  const openGraphExpand = () => {
+    setSelectedNodes(sourceNodes);
+    setSelectedLinks(sourceLinks);
+    onDismiss(workIds);
+    onBackToGraph?.();
+    setIsExpandOpen(true);
   };
 
   return (
@@ -98,17 +127,24 @@ const InvestigationEnrichmentExpand = ({
           <InvestigationEnrichmentExpandEmpty
             onClose={onClose}
             onDismiss={() => onDismiss(workIds)}
+            // The expand of the graph needs an enriched entity to start from.
+            onOpenGraphExpand={sourceNodes.length > 0 || sourceLinks.length > 0 ? openGraphExpand : undefined}
             canEdit={canEdit}
           />
         ) : (
-          <InvestigationExpandForm
-            onReset={onClose}
-            onSubmit={onSubmitExpand}
-            onDismiss={() => onDismiss(workIds)}
-            targets={targets}
-            relationships={relationships}
-            disabled={!canEdit}
-          />
+          <>
+            <Text variant="content-compact">
+              {t_i18n('Only data created or updated by these enrichments is listed. Choose what to expand into the graph.')}
+            </Text>
+            <InvestigationExpandForm
+              onReset={onClose}
+              onSubmit={onSubmitExpand}
+              onDismiss={() => onDismiss(workIds)}
+              targets={targets}
+              relationships={relationships}
+              disabled={!canEdit}
+            />
+          </>
         )}
       </DialogContent>
     </Dialog>

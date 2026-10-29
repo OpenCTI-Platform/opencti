@@ -32,6 +32,7 @@ interface InvestigationEnrichmentDrawerProps {
   onClose: () => void;
   investigation: Investigation;
   works: InvestigationWorkSorted;
+  nbWorks: number;
   askRefresh: () => void;
   onExpand?: (newObjects: ObjectToParse[]) => void;
 }
@@ -41,6 +42,7 @@ const InvestigationEnrichmentDrawer = ({
   onClose,
   investigation,
   works,
+  nbWorks,
   askRefresh,
   onExpand,
 }: InvestigationEnrichmentDrawerProps) => {
@@ -116,6 +118,7 @@ const InvestigationEnrichmentDrawer = ({
             <InvestigationEnrichmentLaunch
               onCompleted={askRefresh}
               investigationId={investigation.id}
+              worksCount={nbWorks}
             />
           )}
 
@@ -161,6 +164,7 @@ const InvestigationEnrichmentDrawer = ({
         onClose={() => setWorksToReview([])}
         onDismiss={dismissReviews}
         onExpand={onExpand}
+        onBackToGraph={onClose}
         canEdit={canEdit}
       />
 

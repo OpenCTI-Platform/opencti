@@ -48,7 +48,7 @@ export const toExpandElements = (works: InvestigationEnrichmentWork[]): ExpandEl
 /**
  * Whether a touched element is a relationship.
  */
-const isRelationship = (element: ExpandElement) => !!element.fromId && !!element.toId;
+export const isRelationship = (element: ExpandElement) => !!element.fromId && !!element.toId;
 
 /**
  * Counts of the touched entities by type, and of the touched relationships by type,

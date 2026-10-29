@@ -1,8 +1,8 @@
-import { Alert, Card, CardFooter, CardHeader, CardTitle } from '@filigran/design-system';
+import { Alert, Card, CardFooter, CardHeader, CardTitle, Spinner } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
 import EnrichmentConnectorSelection from '../../../data/connectors/EnrichmentConnectorSelection';
 import { CardContent } from '@mui/material';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Button from '../../../../../components/common/button/Button';
 import BackgroundTaskLaunch from '../../../common/background_task/BackgroundTaskLaunch';
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
@@ -10,17 +10,26 @@ import { useGraphContext } from '../../../../../components/graph/GraphContext';
 interface InvestigationEnrichmentLaunchProps {
   investigationId: string;
   onCompleted: () => void;
+  worksCount: number;
 }
 
 const InvestigationEnrichmentLaunch = ({
   investigationId,
   onCompleted,
+  worksCount,
 }: InvestigationEnrichmentLaunchProps) => {
   const { t_i18n } = useFormatter();
 
   const [selectedConnectors, setSelectedConnectors] = useState<string[]>([]);
   const [showValidation, setShowValidation] = useState(false);
   const [processing, setProcessing] = useState(false);
+  // The count of works when the enrichment was launched, until the works it creates show in the list.
+  const [launchedAtWorksCount, setLaunchedAtWorksCount] = useState<number>();
+  const isSending = launchedAtWorksCount !== undefined;
+
+  useEffect(() => {
+    setLaunchedAtWorksCount(undefined);
+  }, [worksCount]);
 
   const { graphState } = useGraphContext();
   const { selectedNodes, selectedLinks } = graphState;
@@ -75,6 +84,8 @@ const InvestigationEnrichmentLaunch = ({
           <Button
             onClick={() => setShowValidation(true)}
             disabled={selectedConnectors.length === 0}
+            startIcon={isSending ? <Spinner size="sm" tone="inherit" /> : undefined}
+            aria-busy={isSending || undefined}
           >
             {t_i18n('Enrich')}
           </Button>
@@ -89,7 +100,10 @@ const InvestigationEnrichmentLaunch = ({
         taskScope="KNOWLEDGE"
         actions={backgroundTaskAction}
         onClose={() => setShowValidation(false)}
-        onLaunch={() => setProcessing(true)}
+        onLaunch={() => {
+          setProcessing(true);
+          setLaunchedAtWorksCount(worksCount);
+        }}
         onCompleted={() => {
           setSelectedConnectors([]);
           setShowValidation(false);

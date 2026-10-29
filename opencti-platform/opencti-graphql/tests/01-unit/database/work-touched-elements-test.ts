@@ -7,37 +7,40 @@ import { logApp } from '../../../src/config/conf';
 
 vi.mock('../../../src/database/redis', async (importOriginal) => {
   const actual: object = await importOriginal();
-  return { ...actual, redisGetWorkTrackingInfo: vi.fn(), redisAddWorkTouchedElement: vi.fn(), redisGetWorkTouchedElements: vi.fn() };
+  return { ...actual, redisGetWorkTrackingInfo: vi.fn(), redisAddWorkTouchedElements: vi.fn(), redisGetWorkTouchedElements: vi.fn() };
 });
 
 /** Build a minimal stream event carrying the given internal id. */
 const event = (type: string, id = 'internal-1') => ({ type, version: '4', data: { extensions: { [STIX_EXT_OCTI]: { id } } } }) as any;
 
-const investigationEnrichment = { eventType: 'INTERNAL_ENRICHMENT', investigationId: 'investigation-1' };
+/** Build a minimal ref relationship created with an event element. */
+const ref = (id: string, fromId: string, toId: string, toType = 'Label') => ({ internal_id: id, fromId, toId, toType });
+
+const investigationEnrichment = { eventType: 'INTERNAL_ENRICHMENT', investigationId: 'investigation-1', enrichedEntityId: 'enriched-1' };
 
 describe('trackWorkTouchedElement', () => {
   beforeEach(() => {
     vi.mocked(redis.redisGetWorkTrackingInfo).mockReset();
-    vi.mocked(redis.redisAddWorkTouchedElement).mockReset();
+    vi.mocked(redis.redisAddWorkTouchedElements).mockReset();
     resetWorkTrackedCache();
   });
 
   it('should ignore events outside of a work', async () => {
     await trackWorkTouchedElement(testContext, event('create'));
     expect(redis.redisGetWorkTrackingInfo).not.toHaveBeenCalled();
-    expect(redis.redisAddWorkTouchedElement).not.toHaveBeenCalled();
+    expect(redis.redisAddWorkTouchedElements).not.toHaveBeenCalled();
   });
 
   it('should ignore non enrichment works', async () => {
-    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue({ eventType: 'EXTERNAL_IMPORT', investigationId: 'investigation-1' });
+    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue({ eventType: 'EXTERNAL_IMPORT', investigationId: 'investigation-1', enrichedEntityId: 'enriched-1' });
     await trackWorkTouchedElement({ ...testContext, workId: 'work_a' }, event('create'));
-    expect(redis.redisAddWorkTouchedElement).not.toHaveBeenCalled();
+    expect(redis.redisAddWorkTouchedElements).not.toHaveBeenCalled();
   });
 
   it('should ignore enrichment works not triggered from an investigation', async () => {
-    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue({ eventType: 'INTERNAL_ENRICHMENT', investigationId: null });
+    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue({ eventType: 'INTERNAL_ENRICHMENT', investigationId: null, enrichedEntityId: 'enriched-1' });
     await trackWorkTouchedElement({ ...testContext, workId: 'work_i' }, event('create'));
-    expect(redis.redisAddWorkTouchedElement).not.toHaveBeenCalled();
+    expect(redis.redisAddWorkTouchedElements).not.toHaveBeenCalled();
   });
 
   it('should record create and update events of investigation enrichment works', async () => {
@@ -45,8 +48,33 @@ describe('trackWorkTouchedElement', () => {
     const context = { ...testContext, workId: 'work_b' };
     await trackWorkTouchedElement(context, event('create', 'id-1'));
     await trackWorkTouchedElement(context, event('update', 'id-2'));
-    expect(redis.redisAddWorkTouchedElement).toHaveBeenCalledWith('work_b', 'id-1');
-    expect(redis.redisAddWorkTouchedElement).toHaveBeenCalledWith('work_b', 'id-2');
+    expect(redis.redisAddWorkTouchedElements).toHaveBeenCalledWith('work_b', ['id-1']);
+    expect(redis.redisAddWorkTouchedElements).toHaveBeenCalledWith('work_b', ['id-2']);
+  });
+
+  it('should record the refs starting or ending on the enriched entity with the event element', async () => {
+    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue(investigationEnrichment);
+    const refs = [ref('ref-contains', 'note-1', 'enriched-1', 'IPv4-Addr'), ref('ref-label', 'enriched-1', 'label-1')];
+    await trackWorkTouchedElement({ ...testContext, workId: 'work_n' }, event('create', 'note-1'), refs);
+    expect(redis.redisAddWorkTouchedElements).toHaveBeenCalledWith('work_n', ['note-1', 'ref-contains', 'ref-label']);
+  });
+
+  it('should ignore the refs of other entities', async () => {
+    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue(investigationEnrichment);
+    await trackWorkTouchedElement({ ...testContext, workId: 'work_o' }, event('create', 'malware-1'), [ref('ref-label', 'malware-1', 'label-1')]);
+    expect(redis.redisAddWorkTouchedElements).toHaveBeenCalledWith('work_o', ['malware-1']);
+  });
+
+  it('should ignore the refs to users, as the investigation expand does', async () => {
+    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue(investigationEnrichment);
+    await trackWorkTouchedElement({ ...testContext, workId: 'work_p' }, event('update', 'enriched-1'), [ref('ref-assignee', 'enriched-1', 'user-1', 'User')]);
+    expect(redis.redisAddWorkTouchedElements).toHaveBeenCalledWith('work_p', ['enriched-1']);
+  });
+
+  it('should ignore the refs of a work without enriched entity', async () => {
+    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue({ ...investigationEnrichment, enrichedEntityId: null });
+    await trackWorkTouchedElement({ ...testContext, workId: 'work_q' }, event('create', 'note-1'), [ref('ref-contains', 'note-1', 'enriched-1')]);
+    expect(redis.redisAddWorkTouchedElements).toHaveBeenCalledWith('work_q', ['note-1']);
   });
 
   it('should ignore delete and merge events', async () => {
@@ -54,7 +82,7 @@ describe('trackWorkTouchedElement', () => {
     const context = { ...testContext, workId: 'work_c' };
     await trackWorkTouchedElement(context, event('delete'));
     await trackWorkTouchedElement(context, event('merge'));
-    expect(redis.redisAddWorkTouchedElement).not.toHaveBeenCalled();
+    expect(redis.redisAddWorkTouchedElements).not.toHaveBeenCalled();
   });
 
   it('should resolve whether a work is tracked once per work', async () => {
@@ -66,7 +94,7 @@ describe('trackWorkTouchedElement', () => {
   });
 
   it('should cache works that are not tracked', async () => {
-    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue({ eventType: 'INTERNAL_ENRICHMENT', investigationId: null });
+    vi.mocked(redis.redisGetWorkTrackingInfo).mockResolvedValue({ eventType: 'INTERNAL_ENRICHMENT', investigationId: null, enrichedEntityId: 'enriched-1' });
     const context = { ...testContext, workId: 'work_j' };
     await trackWorkTouchedElement(context, event('create', 'id-1'));
     await trackWorkTouchedElement(context, event('create', 'id-2'));

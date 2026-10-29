@@ -187,8 +187,8 @@ const ConnectorWorkList = ({
                                   )}
                                   {onReviewDismiss && (
                                     <IconButton
-                                      tooltip={t_i18n('Dismiss review')}
-                                      aria-label={t_i18n('Dismiss review')}
+                                      tooltip={t_i18n('Mark as reviewed')}
+                                      aria-label={t_i18n('Mark as reviewed')}
                                       onClick={() => onReviewDismiss?.(work.id)}
                                     >
                                       <DoNotDisturb fontSize="small" />

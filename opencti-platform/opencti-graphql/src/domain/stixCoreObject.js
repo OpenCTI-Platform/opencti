@@ -416,7 +416,11 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
     if (stixResolutionMode === 'stix_bundle' && stix_objects === undefined) {
       stix_objects = await stixBundleByIdStringify(context, user, element.entity_type, element.internal_id);
     }
-    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext, investigationId: investigationInternalId });
+    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, {
+      draftContext,
+      investigationId: investigationInternalId,
+      enrichedEntityId: element.internal_id,
+    });
     const message = {
       internal: {
         work_id: work.id, // Related action for history

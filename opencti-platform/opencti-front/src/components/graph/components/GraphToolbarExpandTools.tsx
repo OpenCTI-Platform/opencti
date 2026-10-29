@@ -14,7 +14,7 @@ import { fetchQuery } from '../../../relay/environment';
 import { GraphToolbarExpandToolsRelationshipsQuery$data } from './__generated__/GraphToolbarExpandToolsRelationshipsQuery.graphql';
 import { ObjectToParse } from '../utils/useGraphParser';
 
-const expandRelationshipsQuery = graphql`
+export const expandRelationshipsQuery = graphql`
   query GraphToolbarExpandToolsRelationshipsQuery($filters: FilterGroup) {
     stixRelationships(
       filters: $filters

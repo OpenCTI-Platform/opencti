@@ -57,7 +57,7 @@ const InvestigationEnrichmentWorkList = ({
   };
 
   const emptyTitle = {
-    ongoing: t_i18n('No results ongoing'),
+    ongoing: t_i18n('No results in progress'),
     toreview: t_i18n('No results to review'),
     done: t_i18n('No results done'),
   };

@@ -186,6 +186,32 @@ describe('Work touched elements in GraphQL', () => {
     expect(editorJob.touchedElements.map((e: any) => e.id)).toEqual([visible.id]);
   });
 
+  it('should expose the ends of a touched ref relationship', async () => {
+    const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Ref target ${Date.now()}` });
+    intrusionSetIds.push(target.id);
+    const work = await startWork(enrichment, 'Manual enrichment', target.standard_id, { enrichedEntityId: target.id });
+    await patchAttribute({ ...testContext, workId: work.id }, ADMIN_USER, target.id, ENTITY_TYPE_INTRUSION_SET, { objectMarking: [TLP_RED] });
+    await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
+    await reportExpectation(testContext, ADMIN_USER, work.id);
+
+    const result = await queryAsAdminWithSuccess({
+      query: `
+        query WorkTouchedRefs($id: String!) {
+          stixCoreObject(id: $id) {
+            jobs(first: 20) {
+              id
+              touchedElements { ... on StixRefRelationship { id entity_type fromId toId } }
+            }
+          }
+        }
+      `,
+      variables: { id: target.id },
+    });
+    const job = result.data?.stixCoreObject.jobs.find((j: any) => j.id === work.id);
+    const ref = job.touchedElements.find((e: any) => e.entity_type === 'object-marking');
+    expect(ref).toEqual(expect.objectContaining({ fromId: target.id, toId: expect.any(String) }));
+  });
+
   it('should return null touched elements when they were never recorded', async () => {
     const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Import target ${Date.now()}` });
     intrusionSetIds.push(target.id);

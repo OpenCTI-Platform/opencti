@@ -2817,10 +2817,19 @@ both `<p>` keep the user-agent block margins. Neither the component nor its
 Several detail lines are passed as `display: block` spans inside the
 `description` (a `<p>`, so no block children).
 
+Every other `Alert` of the product hits the same margin — first seen on the
+investigation enrichment review (`InvestigationEnrichmentExpandEmpty.tsx`), where
+a title and a description stood a full line apart. FDS-WORKAROUND #75:
+`design-system-host.css` zeroes the margin of `p.title-xs.text-alert` (only the
+Alert's title carries `text-alert` in the installed build) and of the
+`p.content-compact` that follows it, for every `Alert` at once. It makes the
+banner's `Box` wrapper redundant for the margin.
+
 **Ask.** Zero the margins of the Alert's own paragraphs library-side (an
 `m-0` on the two `<p>`), and accept a node list for `description` rendered as
 block lines.
 
 **Removal test.** At a pin where the paragraphs carry no margin: delete the
-`Box` wrapper and the marker, and check that a banner with a title and one
-description line is no taller than the Alert frame (padding plus the two lines).
+`Box` wrapper, the host rule and their markers, and check that a banner with a
+title and one description line is no taller than the Alert frame (padding plus
+the two lines).

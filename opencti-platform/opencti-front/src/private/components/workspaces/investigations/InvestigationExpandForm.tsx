@@ -80,7 +80,7 @@ const InvestigationExpandForm = ({
 
               {disabled && (
                 <Text variant="content-compact">
-                  {t_i18n('You have view access to this investigation: you can see the results but not add or dismiss them')}
+                  {t_i18n('You have view access to this investigation: you can see the results but not add them or mark them as reviewed')}
                 </Text>
               )}
             </Stack>
@@ -94,7 +94,7 @@ const InvestigationExpandForm = ({
                   onClick={onDismiss}
                   disabled={isSubmitting || disabled}
                 >
-                  {t_i18n('Dismiss')}
+                  {t_i18n('Mark as reviewed')}
                 </Button>
                 <div style={{ flex: 1 }} />
               </>

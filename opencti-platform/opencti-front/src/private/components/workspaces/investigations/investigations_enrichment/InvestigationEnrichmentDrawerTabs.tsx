@@ -34,7 +34,7 @@ const InvestigationEnrichmentDrawerTabs = ({
           value="ongoing"
           onClick={() => onChange('ongoing')}
         >
-          {t_i18n('Ongoing')} ({ongoingSize})
+          {t_i18n('In progress')} ({ongoingSize})
         </TabsTrigger>
         <TabsTrigger
           value="done"

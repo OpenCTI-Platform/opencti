@@ -5,8 +5,10 @@ import { useGraphContext } from '../../../../../components/graph/GraphContext';
 import useGraphInteractions from '../../../../../components/graph/utils/useGraphInteractions';
 import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
-import { selectExpandIds } from './investigation-enrichment.utils';
+import { isRelationship, selectExpandIds } from './investigation-enrichment.utils';
 import { useInvestigationEnrichmentExpandTouchedElementsQuery$data } from './__generated__/useInvestigationEnrichmentExpandTouchedElementsQuery.graphql';
+import { expandRelationshipsQuery } from '../../../../../components/graph/components/GraphToolbarExpandTools';
+import { GraphToolbarExpandToolsRelationshipsQuery$data } from '../../../../../components/graph/components/__generated__/GraphToolbarExpandToolsRelationshipsQuery.graphql';
 
 // The touched elements of works, with what the graph needs to draw them (see graphNodeFragment).
 // Fetched only on expand: the list of works is polled and only needs ids and types.
@@ -21,7 +23,7 @@ const touchedElementsQuery = graphql`
       enrichmentWorks(first: $first, entityIds: $entityIds, filters: $filters) {
         edges {
           node {
-            touchedElements {
+            touchedElements(first: 1000) {
               ...graphNodeFragment_node @relay(mask: false)
               ... on StixRelationship {
                 id
@@ -106,6 +108,60 @@ const touchedElementsQuery = graphql`
   }
 `;
 
+/**
+ * Filters the relationships between one of the enriched entities and one of the entities to add,
+ * in either direction, of the given types; like the expand of the graph, no type means any type.
+ */
+const linkingFilterGroup = (
+  sourceIds: string[],
+  entityIds: string[],
+  relationshipTypes: string[],
+) => ({
+  mode: 'or',
+  filterGroups: [
+    {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        { key: 'fromId', values: sourceIds },
+        { key: 'toId', values: entityIds },
+        { key: 'relationship_type', values: relationshipTypes },
+      ],
+    },
+    {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        { key: 'toId', values: sourceIds },
+        { key: 'fromId', values: entityIds },
+        { key: 'relationship_type', values: relationshipTypes },
+      ],
+    },
+  ],
+  filters: [],
+});
+
+/**
+ * The relationships between the enriched entities and the entities to add, with what the graph
+ * needs to draw them, from the same query as the expand of the graph.
+ */
+const fetchLinkingRelationships = async (
+  sourceIds: string[],
+  entityIds: string[],
+  relationshipTypes: string[],
+): Promise<ObjectToParse[]> => {
+  if (sourceIds.length === 0 || entityIds.length === 0) {
+    return [];
+  }
+  const { stixRelationships } = (await fetchQuery(
+    expandRelationshipsQuery,
+    { filters: linkingFilterGroup(sourceIds, entityIds, relationshipTypes) },
+  ).toPromise()) as GraphToolbarExpandToolsRelationshipsQuery$data;
+  return (stixRelationships?.edges ?? []).flatMap((edge) => (
+    edge?.node ? [edge.node as unknown as ObjectToParse] : []
+  ));
+};
+
 export interface ExpandTypes {
   entityTypes?: string[];
   relationshipTypes?: string[];
@@ -120,8 +176,9 @@ const useInvestigationEnrichmentExpand = (
   const graphIds = useMemo(() => new Set(rawObjects.map((o) => o.id)), [rawObjects]);
 
   /**
-   * Adds to the graph the touched entities of the given types, and the touched
-   * relationships of the given types with their ends, for all the works at once.
+   * Adds to the graph the touched entities of the given types with their relationships
+   * to the enriched entities, and the touched relationships of the given types with their
+   * ends, for all the works at once.
    */
   const expandWorks = async (
     works: InvestigationEnrichmentWork[],
@@ -182,7 +239,25 @@ const useInvestigationEnrichmentExpand = (
         relationshipTypes ?? allTypes,
       );
 
-      onExpand?.(ids.flatMap((id) => {
+      // Like the expand of the graph, the entities come with their relationships to the enriched entities.
+      const idsToAdd = new Set(ids);
+      const entityIds = elements
+        .filter((element) => !isRelationship(element) && idsToAdd.has(element.id))
+        .map((element) => element.id);
+      // Adding all keeps every relationship, whatever its type.
+      const linkingRelationships = await fetchLinkingRelationships(
+        sourceIds.filter((id) => graphIds.has(id)),
+        entityIds,
+        relationshipTypes ?? [],
+      );
+      linkingRelationships.forEach((relationship) => {
+        if (!graphIds.has(relationship.id) && !idsToAdd.has(relationship.id)) {
+          idsToAdd.add(relationship.id);
+          objects.set(relationship.id, relationship);
+        }
+      });
+
+      onExpand?.([...idsToAdd].flatMap((id) => {
         const object = objects.get(id);
         return object ? [object] : [];
       }));

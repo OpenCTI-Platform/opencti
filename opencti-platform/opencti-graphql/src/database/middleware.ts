@@ -294,7 +294,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import type * as S from '../types/stix-2-1-common';
 import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
-import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { CreatedRef, CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
   foldCustomFieldValuesInputs,
@@ -2989,6 +2989,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           commit: commit as unknown as any,
           related_restrictions: relatedRestrictions,
           pir_ids,
+          createdRefs: relationsToCreate,
         },
       );
       // region Security coverage hook
@@ -3761,7 +3762,7 @@ export const createRelationRaw = async (
         message: opts.commitMessage ?? '',
         external_references: references.map((ref) => convertExternalReferenceToStix(ref as StoreEntity)),
       } : undefined;
-      const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any };
+      const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any, createdRefs: [dataRel.element] };
       event = await storeUpdateEvent(context, user, previous, instance, changes, storeUpdateEventsOpts);
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
     } else if (!isStixRefRelationship(relationshipType)) {
@@ -4239,7 +4240,7 @@ const internalCreateEntityRaw = async (
       createdElement[databaseName] = Array.isArray(createdElement[name]) ? createdElement[name].map(({ id }) => id) : createdElement[name];
     });
 
-    const event = await storeCreateEntityEvent(context, user, createdElement as StoreObject, dataMessage, opts);
+    const event = await storeCreateEntityEvent(context, user, createdElement as StoreObject, dataMessage, { ...opts, createdRefs: dataEntity.relations as CreatedRef[] });
     // Return created element after waiting for it.
     return { element: createdElement, event, isCreation: true };
   } catch (err: any) {

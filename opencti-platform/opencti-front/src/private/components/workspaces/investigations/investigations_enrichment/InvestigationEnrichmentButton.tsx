@@ -46,7 +46,7 @@ const InvestigationEnrichmentButton = ({
     badgeColor = 'brand';
     badgeContent = ongoingSize;
     title = t_i18n(
-      '{count} enrichments ongoing',
+      '{count} enrichments in progress',
       { values: { count: ongoingSize } },
     );
   }

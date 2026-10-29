@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../utils/tests/test-render';
 import InvestigationEnrichmentLaunch from './InvestigationEnrichmentLaunch';
@@ -36,11 +36,32 @@ vi.mock('../../../../../components/graph/GraphContext', () => ({
 }));
 
 /**
+ * Returns the props given to the background task launcher on its last render.
+ */
+const lastLaunchProps = () => {
+  const { calls } = mocks.backgroundTaskLaunch.mock;
+  return calls[calls.length - 1][0];
+};
+
+/**
  * Returns the ENRICHMENT actions given to the background task launcher on its last render.
  */
-const lastLaunchedActions = () => {
-  const { calls } = mocks.backgroundTaskLaunch.mock;
-  return calls[calls.length - 1][0].actions;
+const lastLaunchedActions = () => lastLaunchProps().actions;
+
+/**
+ * Renders the form with a count of works, a connector selected, and the enrichment launched.
+ */
+const renderLaunched = () => {
+  const view = testRender(
+    <InvestigationEnrichmentLaunch
+      investigationId="investigation-1"
+      onCompleted={() => {}}
+      worksCount={2}
+    />,
+  );
+  fireEvent.click(screen.getByText('select connector'));
+  act(() => lastLaunchProps().onLaunch());
+  return view;
 };
 
 describe('InvestigationEnrichmentLaunch', () => {
@@ -49,6 +70,7 @@ describe('InvestigationEnrichmentLaunch', () => {
       <InvestigationEnrichmentLaunch
         investigationId="investigation-1"
         onCompleted={console.log}
+        worksCount={0}
       />,
     );
 
@@ -61,5 +83,27 @@ describe('InvestigationEnrichmentLaunch', () => {
         options: { investigationId: 'investigation-1' },
       },
     }]);
+  });
+
+  it('shows a spinner next to the label once launched, without disabling the button', () => {
+    renderLaunched();
+
+    const button = screen.getByRole('button', { name: 'Enrich' });
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(button).toBeEnabled();
+  });
+
+  it('stops showing the spinner once the count of works changed', () => {
+    const { rerender } = renderLaunched();
+
+    rerender(
+      <InvestigationEnrichmentLaunch
+        investigationId="investigation-1"
+        onCompleted={() => {}}
+        worksCount={3}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Enrich' })).not.toHaveAttribute('aria-busy');
   });
 });
