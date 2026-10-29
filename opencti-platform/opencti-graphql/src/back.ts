@@ -19,9 +19,11 @@ import { platformStart } from './boot';
 import { ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
 import { sanitizeExporterUrl } from './telemetry/otel-diag-logger';
+import { scheduleXtmOneBootRegistration } from './manager/xtmOneRegistrationManager';
 
 // -- Register modules (definitions, graphql schemas, managers) before anything reads them
 registerModules();
+scheduleXtmOneBootRegistration();
 
 // -- Apply telemetry
 // ------- Tracing
