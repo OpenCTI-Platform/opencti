@@ -126,6 +126,7 @@ const ListFilters = ({
   };
 
   const { icon, tooltip, placeholder, color } = getParameters(type);
+  const isDisabledTooltipActive = disabled && !!disabledTooltip;
 
   const handleClearFilters = () => {
     setCurrentSavedFilter(undefined);
@@ -192,9 +193,15 @@ const ListFilters = ({
         <>
           {/* Null value and no <ComboboxLabel>, both deliberate — see fds-migration/MIGRATION-DECISIONS.md#add-filter-picker */}
           {/* The wrapper is layout-neutral (`contents`) unless the tooltip is active, then it takes the picker's size. */}
-          <FdsTooltip open={disabled && disabledTooltip ? undefined : false}>
+          <FdsTooltip open={isDisabledTooltipActive ? undefined : false}>
             <FdsTooltipTrigger asChild>
-              <div className={disabled && disabledTooltip ? (expandAddFilter ? 'min-w-0 flex-1' : 'w-50 shrink-0') : 'contents'}>
+              <div
+                className={isDisabledTooltipActive ? (expandAddFilter ? 'min-w-0 flex-1' : 'w-50 shrink-0') : 'contents'}
+                role={isDisabledTooltipActive ? 'button' : undefined}
+                tabIndex={isDisabledTooltipActive ? 0 : undefined}
+                aria-label={isDisabledTooltipActive ? placeholder : undefined}
+                aria-disabled={isDisabledTooltipActive ? true : undefined}
+              >
                 <Combobox<OptionType>
                   // The Combobox ROOT carries `flex w-full flex-col`, so in a flex row it claims the whole line and
                   // pushes the search field, the funnel and the chips onto lines of their own — the stacked filter bar
