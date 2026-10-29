@@ -145,6 +145,9 @@
     "trash": {
       "enabled": true
     },
+    "bootstrap_wizard": {
+      "enabled": true
+    },
     "csv_ingestion": {
       "max_bundle_size": 1000
     },

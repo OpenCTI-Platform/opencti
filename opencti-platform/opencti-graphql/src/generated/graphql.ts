@@ -55,6 +55,7 @@ import type { BasicStoreEntityStreamCollection } from '../modules/dataSharing/st
 import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
 import type { BasicStoreEntityVulnerability } from '../modules/vulnerability/vulnerability-types';
 import type { BasicStoreEntityUser, StoreUserSession, BasicStoreMember } from '../modules/user/user-types';
+import type { ConfigPresetImportItemResult, ConfigPresetImportGraphqlSession } from '../modules/configPreset/import/configPreset-import-session';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
@@ -4582,6 +4583,12 @@ export type ConfidenceLevelOverrideInput = {
   max_confidence: Scalars['Int']['input'];
 };
 
+export enum ConfigImportMode {
+  Add = 'ADD',
+  Copy = 'COPY',
+  Overwrite = 'OVERWRITE'
+}
+
 export type ConfigPresetExportableGroup = {
   __typename?: 'ConfigPresetExportableGroup';
   key: Scalars['String']['output'];
@@ -4619,6 +4626,152 @@ export type ConfigPresetExportableType = {
   label: Scalars['String']['output'];
 };
 
+export type ConfigPresetImportCounts = {
+  __typename?: 'ConfigPresetImportCounts';
+  created: Scalars['Int']['output'];
+  failed: Scalars['Int']['output'];
+  overwritten: Scalars['Int']['output'];
+  skipped: Scalars['Int']['output'];
+};
+
+export type ConfigPresetImportField = {
+  __typename?: 'ConfigPresetImportField';
+  key: Scalars['String']['output'];
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+export type ConfigPresetImportItem = {
+  __typename?: 'ConfigPresetImportItem';
+  conflict: Scalars['Boolean']['output'];
+  dependsOn: Array<ConfigPresetItemReference>;
+  exists: Scalars['Boolean']['output'];
+  fields: Array<ConfigPresetImportField>;
+  isDefault: Scalars['Boolean']['output'];
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  translatable: Scalars['Boolean']['output'];
+};
+
+export enum ConfigPresetImportOutcome {
+  Completed = 'COMPLETED',
+  Stopped = 'STOPPED'
+}
+
+export type ConfigPresetImportOutput = {
+  __typename?: 'ConfigPresetImportOutput';
+  entity_settings?: Maybe<Array<EntitySetting>>;
+  report_id?: Maybe<Scalars['String']['output']>;
+  results: Array<ConfigPresetImportResult>;
+  settings?: Maybe<Settings>;
+};
+
+export type ConfigPresetImportPreview = {
+  __typename?: 'ConfigPresetImportPreview';
+  bundle_name?: Maybe<Scalars['String']['output']>;
+  generated_at: Scalars['String']['output'];
+  ignored: Array<Scalars['String']['output']>;
+  openCTI_version: Scalars['String']['output'];
+  types: Array<ConfigPresetImportType>;
+};
+
+export type ConfigPresetImportResult = {
+  __typename?: 'ConfigPresetImportResult';
+  group: ConfigPresetExportableGroup;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  reason?: Maybe<Scalars['String']['output']>;
+  status: ConfigPresetImportResultStatus;
+  translatable: Scalars['Boolean']['output'];
+  type: Scalars['String']['output'];
+  type_index: Scalars['Int']['output'];
+  type_label: Scalars['String']['output'];
+};
+
+export enum ConfigPresetImportResultStatus {
+  Created = 'CREATED',
+  Failed = 'FAILED',
+  Overwritten = 'OVERWRITTEN',
+  Skipped = 'SKIPPED'
+}
+
+export type ConfigPresetImportRunning = {
+  __typename?: 'ConfigPresetImportRunning';
+  last_finished_at?: Maybe<Scalars['DateTime']['output']>;
+  running?: Maybe<ConfigPresetImportRunningDetails>;
+};
+
+export type ConfigPresetImportRunningDetails = {
+  __typename?: 'ConfigPresetImportRunningDetails';
+  is_mine: Scalars['Boolean']['output'];
+  name?: Maybe<Scalars['String']['output']>;
+  processed: Scalars['Int']['output'];
+  started_at: Scalars['DateTime']['output'];
+  total: Scalars['Int']['output'];
+};
+
+export type ConfigPresetImportSession = {
+  __typename?: 'ConfigPresetImportSession';
+  available_events: Array<ConfigPresetImportSessionEvent>;
+  counts?: Maybe<ConfigPresetImportCounts>;
+  file_id: Scalars['ID']['output'];
+  outcome?: Maybe<ConfigPresetImportOutcome>;
+  report_id?: Maybe<Scalars['String']['output']>;
+  results: Array<ConfigPresetImportResult>;
+  revision: Scalars['Int']['output'];
+  selections: Array<ConfigPresetImportSessionSelection>;
+  started_at?: Maybe<Scalars['DateTime']['output']>;
+  status: ConfigPresetImportSessionStatus;
+  total: Scalars['Int']['output'];
+};
+
+export enum ConfigPresetImportSessionEvent {
+  Abort = 'ABORT',
+  BackToSelection = 'BACK_TO_SELECTION',
+  Close = 'CLOSE',
+  Finish = 'FINISH',
+  ItemProcessed = 'ITEM_PROCESSED',
+  Save = 'SAVE',
+  Start = 'START',
+  StartOver = 'START_OVER',
+  Upload = 'UPLOAD'
+}
+
+export type ConfigPresetImportSessionSelection = {
+  __typename?: 'ConfigPresetImportSessionSelection';
+  excluded_items?: Maybe<Array<Scalars['ID']['output']>>;
+  item_modes?: Maybe<Array<ConfigPresetItemMode>>;
+  items?: Maybe<Array<Scalars['ID']['output']>>;
+  type: Scalars['ID']['output'];
+};
+
+export enum ConfigPresetImportSessionStatus {
+  Applying = 'APPLYING',
+  Draft = 'DRAFT',
+  Finished = 'FINISHED',
+  Interrupted = 'INTERRUPTED'
+}
+
+export type ConfigPresetImportType = {
+  __typename?: 'ConfigPresetImportType';
+  description: Scalars['String']['output'];
+  group: ConfigPresetExportableGroup;
+  items: Array<ConfigPresetImportItem>;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  modes: Array<ConfigImportMode>;
+};
+
+export type ConfigPresetItemMode = {
+  __typename?: 'ConfigPresetItemMode';
+  key: Scalars['ID']['output'];
+  mode: ConfigImportMode;
+};
+
+export type ConfigPresetItemModeInput = {
+  key: Scalars['ID']['input'];
+  mode: ConfigImportMode;
+};
+
 export type ConfigPresetItemReference = {
   __typename?: 'ConfigPresetItemReference';
   key: Scalars['String']['output'];
@@ -4627,6 +4780,7 @@ export type ConfigPresetItemReference = {
 
 export type ConfigPresetSelectionInput = {
   excluded_items?: InputMaybe<Array<Scalars['ID']['input']>>;
+  item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
   items?: InputMaybe<Array<Scalars['ID']['input']>>;
   type: Scalars['ID']['input'];
 };
@@ -5103,6 +5257,7 @@ export type ContextData = {
   entity_name?: Maybe<Scalars['String']['output']>;
   entity_type?: Maybe<Scalars['String']['output']>;
   external_references?: Maybe<Array<ExternalReference>>;
+  file_id?: Maybe<Scalars['String']['output']>;
   from_id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
   pir_ids?: Maybe<Array<Scalars['String']['output']>>;
@@ -17047,6 +17202,7 @@ export type MeUser = BasicObject & InternalObject & {
   administrated_organizations: Array<Organization>;
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
   api_tokens: Array<ApiToken>;
+  bootstrap_wizard_skipped?: Maybe<Scalars['Boolean']['output']>;
   can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
   capabilities: Array<Capability>;
   capabilitiesInDraft: Array<Capability>;
@@ -17531,6 +17687,11 @@ export type Mutation = {
   cityEdit?: Maybe<CityEditMutations>;
   clearWorkflowPendingState: WorkflowInstance;
   configPresetExport: File;
+  configPresetImport: ConfigPresetImportOutput;
+  configPresetImportSessionBackToSelection: ConfigPresetImportSession;
+  configPresetImportSessionClear: Scalars['Boolean']['output'];
+  configPresetImportSessionSave: ConfigPresetImportSession;
+  configPresetImportUpload: File;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -18331,6 +18492,30 @@ export type MutationClearWorkflowPendingStateArgs = {
 export type MutationConfigPresetExportArgs = {
   bundle_name?: InputMaybe<Scalars['String']['input']>;
   selections: Array<ConfigPresetSelectionInput>;
+};
+
+
+export type MutationConfigPresetImportArgs = {
+  dry_run?: InputMaybe<Scalars['Boolean']['input']>;
+  file_id: Scalars['ID']['input'];
+  selections: Array<ConfigPresetSelectionInput>;
+};
+
+
+export type MutationConfigPresetImportSessionClearArgs = {
+  delete_file?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type MutationConfigPresetImportSessionSaveArgs = {
+  file_id: Scalars['ID']['input'];
+  revision: Scalars['Int']['input'];
+  selections: Array<ConfigPresetSelectionInput>;
+};
+
+
+export type MutationConfigPresetImportUploadArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -24132,6 +24317,11 @@ export type PirUnflagElementInput = {
   sourceId: Scalars['ID']['input'];
 };
 
+export enum PlatformBootstrapStatus {
+  Completed = 'completed',
+  Pending = 'pending'
+}
+
 export type PlatformCriticalAlert = {
   __typename?: 'PlatformCriticalAlert';
   details?: Maybe<PlatformCriticalAlertDetails>;
@@ -25068,6 +25258,9 @@ export type Query = {
   city?: Maybe<City>;
   configPresetExportableItems: ConfigPresetExportableItemConnection;
   configPresetExportableTypes: Array<ConfigPresetExportableType>;
+  configPresetImportPreview: ConfigPresetImportPreview;
+  configPresetImportRunning: ConfigPresetImportRunning;
+  configPresetImportSession?: Maybe<ConfigPresetImportSession>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
   connectorManagers: Array<ConnectorManager>;
@@ -25793,6 +25986,11 @@ export type QueryConfigPresetExportableItemsArgs = {
   ids?: InputMaybe<Array<Scalars['ID']['input']>>;
   search?: InputMaybe<Scalars['String']['input']>;
   type: Scalars['ID']['input'];
+};
+
+
+export type QueryConfigPresetImportPreviewArgs = {
+  file_id: Scalars['ID']['input'];
 };
 
 
@@ -31516,6 +31714,8 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_ai_type?: Maybe<Scalars['String']['output']>;
   platform_banner_level?: Maybe<Scalars['String']['output']>;
   platform_banner_text?: Maybe<Scalars['String']['output']>;
+  platform_bootstrap_status?: Maybe<PlatformBootstrapStatus>;
+  platform_bootstrap_wizard_enabled: Scalars['Boolean']['output'];
   platform_cluster: Cluster;
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
   platform_consent_message?: Maybe<Scalars['String']['output']>;
@@ -41073,11 +41273,29 @@ export type ResolversTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
+  ConfigImportMode: ConfigImportMode;
   ConfigPresetExportableGroup: ResolverTypeWrapper<ConfigPresetExportableGroup>;
   ConfigPresetExportableItem: ResolverTypeWrapper<ConfigPresetExportableItem>;
   ConfigPresetExportableItemConnection: ResolverTypeWrapper<ConfigPresetExportableItemConnection>;
   ConfigPresetExportableItemEdge: ResolverTypeWrapper<ConfigPresetExportableItemEdge>;
   ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
+  ConfigPresetImportCounts: ResolverTypeWrapper<ConfigPresetImportCounts>;
+  ConfigPresetImportField: ResolverTypeWrapper<ConfigPresetImportField>;
+  ConfigPresetImportItem: ResolverTypeWrapper<ConfigPresetImportItem>;
+  ConfigPresetImportOutcome: ConfigPresetImportOutcome;
+  ConfigPresetImportOutput: ResolverTypeWrapper<Omit<ConfigPresetImportOutput, 'entity_settings' | 'results' | 'settings'> & { entity_settings?: Maybe<Array<ResolversTypes['EntitySetting']>>, results: Array<ResolversTypes['ConfigPresetImportResult']>, settings?: Maybe<ResolversTypes['Settings']> }>;
+  ConfigPresetImportPreview: ResolverTypeWrapper<ConfigPresetImportPreview>;
+  ConfigPresetImportResult: ResolverTypeWrapper<ConfigPresetImportItemResult>;
+  ConfigPresetImportResultStatus: ConfigPresetImportResultStatus;
+  ConfigPresetImportRunning: ResolverTypeWrapper<ConfigPresetImportRunning>;
+  ConfigPresetImportRunningDetails: ResolverTypeWrapper<ConfigPresetImportRunningDetails>;
+  ConfigPresetImportSession: ResolverTypeWrapper<ConfigPresetImportGraphqlSession>;
+  ConfigPresetImportSessionEvent: ConfigPresetImportSessionEvent;
+  ConfigPresetImportSessionSelection: ResolverTypeWrapper<ConfigPresetImportSessionSelection>;
+  ConfigPresetImportSessionStatus: ConfigPresetImportSessionStatus;
+  ConfigPresetImportType: ResolverTypeWrapper<ConfigPresetImportType>;
+  ConfigPresetItemMode: ResolverTypeWrapper<ConfigPresetItemMode>;
+  ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ResolverTypeWrapper<ConfigPresetItemReference>;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
@@ -41696,6 +41914,7 @@ export type ResolversTypes = ResolversObject<{
   PirScore: ResolverTypeWrapper<PirScore>;
   PirType: PirType;
   PirUnflagElementInput: PirUnflagElementInput;
+  PlatformBootstrapStatus: PlatformBootstrapStatus;
   PlatformCriticalAlert: ResolverTypeWrapper<Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversTypes['PlatformCriticalAlertDetails']> }>;
   PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversTypes['Group']> }>;
   PlatformCriticalAlertType: PlatformCriticalAlertType;
@@ -42274,6 +42493,19 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetExportableItemConnection: ConfigPresetExportableItemConnection;
   ConfigPresetExportableItemEdge: ConfigPresetExportableItemEdge;
   ConfigPresetExportableType: ConfigPresetExportableType;
+  ConfigPresetImportCounts: ConfigPresetImportCounts;
+  ConfigPresetImportField: ConfigPresetImportField;
+  ConfigPresetImportItem: ConfigPresetImportItem;
+  ConfigPresetImportOutput: Omit<ConfigPresetImportOutput, 'entity_settings' | 'results' | 'settings'> & { entity_settings?: Maybe<Array<ResolversParentTypes['EntitySetting']>>, results: Array<ResolversParentTypes['ConfigPresetImportResult']>, settings?: Maybe<ResolversParentTypes['Settings']> };
+  ConfigPresetImportPreview: ConfigPresetImportPreview;
+  ConfigPresetImportResult: ConfigPresetImportItemResult;
+  ConfigPresetImportRunning: ConfigPresetImportRunning;
+  ConfigPresetImportRunningDetails: ConfigPresetImportRunningDetails;
+  ConfigPresetImportSession: ConfigPresetImportGraphqlSession;
+  ConfigPresetImportSessionSelection: ConfigPresetImportSessionSelection;
+  ConfigPresetImportType: ConfigPresetImportType;
+  ConfigPresetItemMode: ConfigPresetItemMode;
+  ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ConfigPresetItemReference;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
@@ -44681,6 +44913,104 @@ export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType ex
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type ConfigPresetImportCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportCounts'] = ResolversParentTypes['ConfigPresetImportCounts']> = ResolversObject<{
+  created?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  failed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  overwritten?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  skipped?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportField'] = ResolversParentTypes['ConfigPresetImportField']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportItem'] = ResolversParentTypes['ConfigPresetImportItem']> = ResolversObject<{
+  conflict?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
+  exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
+  isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportOutput'] = ResolversParentTypes['ConfigPresetImportOutput']> = ResolversObject<{
+  entity_settings?: Resolver<Maybe<Array<ResolversTypes['EntitySetting']>>, ParentType, ContextType>;
+  report_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  results?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
+  settings?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportPreview'] = ResolversParentTypes['ConfigPresetImportPreview']> = ResolversObject<{
+  bundle_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  generated_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ignored?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  openCTI_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  types?: Resolver<Array<ResolversTypes['ConfigPresetImportType']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportResult'] = ResolversParentTypes['ConfigPresetImportResult']> = ResolversObject<{
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['ConfigPresetImportResultStatus'], ParentType, ContextType>;
+  translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type_index?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  type_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportRunningResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportRunning'] = ResolversParentTypes['ConfigPresetImportRunning']> = ResolversObject<{
+  last_finished_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  running?: Resolver<Maybe<ResolversTypes['ConfigPresetImportRunningDetails']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportRunningDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportRunningDetails'] = ResolversParentTypes['ConfigPresetImportRunningDetails']> = ResolversObject<{
+  is_mine?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  processed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  started_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportSession'] = ResolversParentTypes['ConfigPresetImportSession']> = ResolversObject<{
+  available_events?: Resolver<Array<ResolversTypes['ConfigPresetImportSessionEvent']>, ParentType, ContextType>;
+  counts?: Resolver<Maybe<ResolversTypes['ConfigPresetImportCounts']>, ParentType, ContextType>;
+  file_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  outcome?: Resolver<Maybe<ResolversTypes['ConfigPresetImportOutcome']>, ParentType, ContextType>;
+  report_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  results?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
+  revision?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  selections?: Resolver<Array<ResolversTypes['ConfigPresetImportSessionSelection']>, ParentType, ContextType>;
+  started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['ConfigPresetImportSessionStatus'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportSessionSelectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportSessionSelection'] = ResolversParentTypes['ConfigPresetImportSessionSelection']> = ResolversObject<{
+  excluded_items?: Resolver<Maybe<Array<ResolversTypes['ID']>>, ParentType, ContextType>;
+  item_modes?: Resolver<Maybe<Array<ResolversTypes['ConfigPresetItemMode']>>, ParentType, ContextType>;
+  items?: Resolver<Maybe<Array<ResolversTypes['ID']>>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportType'] = ResolversParentTypes['ConfigPresetImportType']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
+  items?: Resolver<Array<ResolversTypes['ConfigPresetImportItem']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  modes?: Resolver<Array<ResolversTypes['ConfigImportMode']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetItemModeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemMode'] = ResolversParentTypes['ConfigPresetItemMode']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  mode?: Resolver<ResolversTypes['ConfigImportMode'], ParentType, ContextType>;
+}>;
+
 export type ConfigPresetItemReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemReference'] = ResolversParentTypes['ConfigPresetItemReference']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44908,6 +45238,7 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   entity_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   external_references?: Resolver<Maybe<Array<ResolversTypes['ExternalReference']>>, ParentType, ContextType>;
+  file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pir_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -49043,6 +49374,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   administrated_organizations?: Resolver<Array<ResolversTypes['Organization']>, ParentType, ContextType>;
   allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   api_tokens?: Resolver<Array<ResolversTypes['ApiToken']>, ParentType, ContextType>;
+  bootstrap_wizard_skipped?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   capabilitiesInDraft?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
@@ -49314,6 +49646,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   clearWorkflowPendingState?: Resolver<ResolversTypes['WorkflowInstance'], ParentType, ContextType, RequireFields<MutationClearWorkflowPendingStateArgs, 'entityId'>>;
   configPresetExport?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetExportArgs, 'selections'>>;
+  configPresetImport?: Resolver<ResolversTypes['ConfigPresetImportOutput'], ParentType, ContextType, RequireFields<MutationConfigPresetImportArgs, 'file_id' | 'selections'>>;
+  configPresetImportSessionBackToSelection?: Resolver<ResolversTypes['ConfigPresetImportSession'], ParentType, ContextType>;
+  configPresetImportSessionClear?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationConfigPresetImportSessionClearArgs>>;
+  configPresetImportSessionSave?: Resolver<ResolversTypes['ConfigPresetImportSession'], ParentType, ContextType, RequireFields<MutationConfigPresetImportSessionSaveArgs, 'file_id' | 'revision' | 'selections'>>;
+  configPresetImportUpload?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetImportUploadArgs, 'file'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
@@ -51220,6 +51557,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
   configPresetExportableItems?: Resolver<ResolversTypes['ConfigPresetExportableItemConnection'], ParentType, ContextType, RequireFields<QueryConfigPresetExportableItemsArgs, 'type'>>;
   configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
+  configPresetImportPreview?: Resolver<ResolversTypes['ConfigPresetImportPreview'], ParentType, ContextType, RequireFields<QueryConfigPresetImportPreviewArgs, 'file_id'>>;
+  configPresetImportRunning?: Resolver<ResolversTypes['ConfigPresetImportRunning'], ParentType, ContextType>;
+  configPresetImportSession?: Resolver<Maybe<ResolversTypes['ConfigPresetImportSession']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
   connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
@@ -52550,6 +52890,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_ai_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_bootstrap_status?: Resolver<Maybe<ResolversTypes['PlatformBootstrapStatus']>, ParentType, ContextType>;
+  platform_bootstrap_wizard_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -55557,6 +55899,18 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetExportableItemConnection?: ConfigPresetExportableItemConnectionResolvers<ContextType>;
   ConfigPresetExportableItemEdge?: ConfigPresetExportableItemEdgeResolvers<ContextType>;
   ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
+  ConfigPresetImportCounts?: ConfigPresetImportCountsResolvers<ContextType>;
+  ConfigPresetImportField?: ConfigPresetImportFieldResolvers<ContextType>;
+  ConfigPresetImportItem?: ConfigPresetImportItemResolvers<ContextType>;
+  ConfigPresetImportOutput?: ConfigPresetImportOutputResolvers<ContextType>;
+  ConfigPresetImportPreview?: ConfigPresetImportPreviewResolvers<ContextType>;
+  ConfigPresetImportResult?: ConfigPresetImportResultResolvers<ContextType>;
+  ConfigPresetImportRunning?: ConfigPresetImportRunningResolvers<ContextType>;
+  ConfigPresetImportRunningDetails?: ConfigPresetImportRunningDetailsResolvers<ContextType>;
+  ConfigPresetImportSession?: ConfigPresetImportSessionResolvers<ContextType>;
+  ConfigPresetImportSessionSelection?: ConfigPresetImportSessionSelectionResolvers<ContextType>;
+  ConfigPresetImportType?: ConfigPresetImportTypeResolvers<ContextType>;
+  ConfigPresetItemMode?: ConfigPresetItemModeResolvers<ContextType>;
   ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;

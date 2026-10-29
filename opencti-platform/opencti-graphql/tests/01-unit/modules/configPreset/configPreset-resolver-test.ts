@@ -16,15 +16,15 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
-vi.mock('../../../../src/modules/configPreset/configPreset-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/modules/configPreset/configPreset-domain')>()),
+vi.mock('../../../../src/modules/configPreset/export/configPreset-export-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/configPreset/export/configPreset-export-domain')>()),
   configPresetExport: vi.fn(),
 }));
 
 import { authDirectiveBuilder } from '../../../../src/graphql/authDirective';
 import { makeFeatureFlagDirectiveTransformer } from '../../../../src/graphql/featureFlagDirective';
 import configPresetResolvers from '../../../../src/modules/configPreset/configPreset-resolver';
-import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from '../../../../src/modules/configPreset/configPreset-domain';
+import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from '../../../../src/modules/configPreset/export/configPreset-export-domain';
 import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { buildPaginationFromEdges } from '../../../../src/database/utils';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
@@ -41,6 +41,10 @@ const buildSchema = () => {
         directive @public on FIELD_DEFINITION
         type Query { health: Boolean @public }
         type Mutation { health: Boolean @public }
+        scalar Upload
+        scalar DateTime
+        type Settings { id: ID! }
+        type EntitySetting { id: ID! target_type: String! platform_hidden_type: Boolean }
         type File { id: ID! name: String! }
         type PageInfo { startCursor: String! endCursor: String! hasNextPage: Boolean! hasPreviousPage: Boolean! globalCount: Int! }
       `,
@@ -57,8 +61,8 @@ const bypassUser = { id: 'admin', capabilities: [{ name: 'BYPASS' }] };
 const settingsUser = { id: 'settings-admin', capabilities: [{ name: 'SETTINGS_SETPARAMETERS' }] };
 
 const staticItem = (key: string, label: string, dependsOn: unknown[] = []) => ({ key, label, translatable: true, dependsOn, isDefault: false });
-const themeItem = (theme: { id: string; name: string }, isDefault: boolean) => ({
-  key: theme.id,
+const themeItem = (theme: { standard_id: string; name: string }, isDefault: boolean) => ({
+  key: theme.standard_id,
   label: theme.name,
   translatable: false,
   dependsOn: [],
@@ -85,7 +89,7 @@ describe('Config preset exportable types query', () => {
         description: 'Title, favicon, default theme, language',
         group: platformSettings,
         // The custom default theme is a dependency
-        items: [staticItem('platform', 'Platform configuration', [{ type: 'branding', key: customTheme.id }])],
+        items: [staticItem('platform', 'Platform configuration', [{ type: 'branding', key: customTheme.standard_id }])],
         itemsPageInfo: onePage(1),
       },
       {
@@ -93,9 +97,9 @@ describe('Config preset exportable types query', () => {
         label: 'Branding',
         description: 'Themes, colors, logos',
         group: platformSettings,
-        // Whitemark first, then every theme, built-in ones included
-        items: [staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false), themeItem(builtInTheme, false), themeItem(customTheme, true)],
-        itemsPageInfo: onePage(4),
+        // Every theme but the built-in ones
+        items: [themeItem(otherCustomTheme, false), themeItem(customTheme, true)],
+        itemsPageInfo: onePage(2),
       },
       {
         key: 'hiddenEntityTypes',
@@ -191,15 +195,14 @@ describe('Config preset exportable items query', () => {
     contextValue: { user },
   });
 
-  it('pages and searches the items of a type, whitemark first, built-in themes included', async () => {
-    const first = await queryItems({ type: 'branding', first: 2 });
+  it('pages and searches the items of a type, built-in themes excluded', async () => {
+    const first = await queryItems({ type: 'branding', first: 1 });
     expect(first.errors).toBeUndefined();
     const connection = first.data?.configPresetExportableItems as { pageInfo: { hasNextPage: boolean; globalCount: number }; edges: { node: unknown }[] };
-    expect(connection.edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(otherCustomTheme, false)]);
-    expect(connection.pageInfo).toMatchObject({ hasNextPage: true, globalCount: 4 });
+    expect(connection.edges.map(({ node }) => node)).toEqual([themeItem(otherCustomTheme, false)]);
+    expect(connection.pageInfo).toMatchObject({ hasNextPage: true, globalCount: 2 });
     const searched = await queryItems({ type: 'branding', search: 'soc' });
-    // The search applies to the themes: whitemark, a static item, is always listed
-    expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos'), themeItem(customTheme, false)]);
+    expect((searched.data?.configPresetExportableItems as typeof connection).edges.map(({ node }) => node)).toEqual([themeItem(customTheme, false)]);
   });
 
   it('passes the paging, search and id filters to the family', async () => {
@@ -207,7 +210,7 @@ describe('Config preset exportable items query', () => {
     const user = bypassUser as unknown as AuthUser;
     const branding = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'branding')!;
     const listItems = vi.spyOn(branding, 'listItems');
-    const args = { first: 5, after: 'cursor', search: 'soc', ids: [customTheme.id], excludedIds: [otherCustomTheme.id] };
+    const args = { first: 5, after: 'cursor', search: 'soc', ids: [customTheme.standard_id], excludedIds: [otherCustomTheme.standard_id] };
     await findConfigPresetExportableItems(context, user, { type: 'branding', ...args });
     expect(listItems).toHaveBeenCalledWith(context, user, args);
     listItems.mockRestore();
@@ -272,5 +275,31 @@ describe('Config preset export mutation', () => {
     const result = await graphql({ schema: buildSchema(), source: MUTATION, contextValue: { user: bypassUser } });
     expect(result.errors?.[0].message).toMatch(/Feature is disabled/i);
     expect(configPresetExport).not.toHaveBeenCalled();
+  });
+});
+
+describe('Config preset import result fields', () => {
+  const fields = configPresetResolvers.ConfigPresetImportResult as Record<string, (parent: unknown) => unknown>;
+  const result = (overrides: Record<string, unknown> = {}) => ({ type: 'branding', key: 'theme--1', status: 'CREATED', reason: null, ...overrides });
+
+  it('names a result by its label, and by its key when it was stored before the names were kept', () => {
+    expect(fields.label(result({ label: 'SOC night' }))).toBe('SOC night');
+    expect(fields.label(result())).toBe('theme--1');
+    expect(fields.translatable(result({ translatable: true }))).toBe(true);
+    expect(fields.translatable(result())).toBe(false);
+  });
+
+  it('gives the type and the group of a result from the registry, and the place of the type among the types', () => {
+    expect(fields.type_label(result())).toBe('Branding');
+    expect(fields.group(result())).toEqual({ key: 'platformSettings', label: 'Platform settings' });
+    expect(fields.group(result({ type: 'hiddenEntityTypes' }))).toEqual({ key: 'dataModel', label: 'Data model' });
+    const places = ['platform', 'branding', 'messages', 'hiddenEntityTypes'].map((type) => fields.type_index(result({ type })));
+    expect(places).toEqual([0, 1, 2, 3]);
+  });
+
+  it('does not fail on a type the registry does not know', () => {
+    expect(fields.type_label(result({ type: 'gone' }))).toBe('gone');
+    expect(fields.group(result({ type: 'gone' }))).toEqual({ key: 'gone', label: 'gone' });
+    expect(fields.type_index(result({ type: 'gone' }))).toBe(0);
   });
 });

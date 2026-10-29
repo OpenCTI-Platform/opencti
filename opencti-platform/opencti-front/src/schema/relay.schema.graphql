@@ -599,6 +599,7 @@ type HistoryChange {
 }
 
 type ContextData {
+  file_id: String
   entity_id: String
   entity_name: String
   entity_type: String
@@ -1334,6 +1335,11 @@ type PlatformProtectedSensitiveConfig {
   platform_organization: PlatformProtectedSubConfig!
 }
 
+enum PlatformBootstrapStatus {
+  pending
+  completed
+}
+
 enum CGUStatus {
   pending
   disabled
@@ -1504,6 +1510,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_feature_flags: [Module!]
   platform_critical_alerts: [PlatformCriticalAlert!]!
   platform_trash_enabled: Boolean!
+  platform_bootstrap_wizard_enabled: Boolean!
+  platform_bootstrap_status: PlatformBootstrapStatus
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   is_authentication_by_env: Boolean
@@ -9217,6 +9225,9 @@ type Query {
   customFieldStixFilterKeys(entityType: String): [String!]
   configPresetExportableTypes: [ConfigPresetExportableType!]!
   configPresetExportableItems(type: ID!, first: Int, after: ID, search: String, ids: [ID!], excludedIds: [ID!]): ConfigPresetExportableItemConnection!
+  configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview!
+  configPresetImportSession: ConfigPresetImportSession
+  configPresetImportRunning: ConfigPresetImportRunning!
 }
 
 type Subscription {
@@ -10193,6 +10204,11 @@ type Mutation {
   customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
   configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File!
+  configPresetImportUpload(file: Upload!): File!
+  configPresetImportSessionSave(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession!
+  configPresetImportSessionClear(delete_file: Boolean): Boolean!
+  configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput!
+  configPresetImportSessionBackToSelection: ConfigPresetImportSession!
 }
 
 enum WorkflowExecutionStatus {
@@ -17483,6 +17499,7 @@ type MeUser implements BasicObject & InternalObject {
   date_format: DateFormat
   time_format: TimeFormat
   submenu_show_icons: Boolean
+  bootstrap_wizard_skipped: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   unsubscribed_news_feed_types: [String!]
@@ -17784,8 +17801,149 @@ type ConfigPresetExportableType {
   itemsPageInfo: PageInfo!
 }
 
+type ConfigPresetImportField {
+  key: String!
+  value: String
+}
+
+type ConfigPresetImportItem {
+  key: String!
+  label: String!
+  translatable: Boolean!
+  isDefault: Boolean!
+  exists: Boolean!
+  conflict: Boolean!
+  fields: [ConfigPresetImportField!]!
+  dependsOn: [ConfigPresetItemReference!]!
+}
+
+type ConfigPresetImportType {
+  key: String!
+  label: String!
+  description: String!
+  group: ConfigPresetExportableGroup!
+  items: [ConfigPresetImportItem!]!
+  modes: [ConfigImportMode!]!
+}
+
+type ConfigPresetImportPreview {
+  bundle_name: String
+  openCTI_version: String!
+  generated_at: String!
+  types: [ConfigPresetImportType!]!
+  ignored: [String!]!
+}
+
+enum ConfigPresetImportSessionStatus {
+  DRAFT
+  APPLYING
+  FINISHED
+  INTERRUPTED
+}
+
+enum ConfigPresetImportOutcome {
+  COMPLETED
+  STOPPED
+}
+
+enum ConfigPresetImportSessionEvent {
+  UPLOAD
+  SAVE
+  START_OVER
+  START
+  ITEM_PROCESSED
+  FINISH
+  ABORT
+  BACK_TO_SELECTION
+  CLOSE
+}
+
+enum ConfigPresetImportResultStatus {
+  CREATED
+  OVERWRITTEN
+  SKIPPED
+  FAILED
+}
+
+enum ConfigImportMode {
+  ADD
+  OVERWRITE
+  COPY
+}
+
+type ConfigPresetImportResult {
+  type: String!
+  key: String!
+  status: ConfigPresetImportResultStatus!
+  reason: String
+  label: String!
+  translatable: Boolean!
+  type_label: String!
+  type_index: Int!
+  group: ConfigPresetExportableGroup!
+}
+
+type ConfigPresetImportCounts {
+  created: Int!
+  overwritten: Int!
+  skipped: Int!
+  failed: Int!
+}
+
+type ConfigPresetImportSessionSelection {
+  type: ID!
+  items: [ID!]
+  excluded_items: [ID!]
+  item_modes: [ConfigPresetItemMode!]
+}
+
+type ConfigPresetItemMode {
+  key: ID!
+  mode: ConfigImportMode!
+}
+
+type ConfigPresetImportSession {
+  status: ConfigPresetImportSessionStatus!
+  file_id: ID!
+  selections: [ConfigPresetImportSessionSelection!]!
+  revision: Int!
+  started_at: DateTime
+  total: Int!
+  results: [ConfigPresetImportResult!]!
+  outcome: ConfigPresetImportOutcome
+  counts: ConfigPresetImportCounts
+  report_id: String
+  available_events: [ConfigPresetImportSessionEvent!]!
+}
+
+type ConfigPresetImportOutput {
+  results: [ConfigPresetImportResult!]!
+  report_id: String
+  settings: Settings
+  entity_settings: [EntitySetting!]
+}
+
+type ConfigPresetImportRunningDetails {
+  name: String
+  is_mine: Boolean!
+  started_at: DateTime!
+  processed: Int!
+  total: Int!
+}
+
+type ConfigPresetImportRunning {
+  running: ConfigPresetImportRunningDetails
+  last_finished_at: DateTime
+}
+
 input ConfigPresetSelectionInput {
   type: ID!
   items: [ID!]
   excluded_items: [ID!]
+  item_modes: [ConfigPresetItemModeInput!]
+}
+
+input ConfigPresetItemModeInput {
+  key: ID!
+  mode: ConfigImportMode!
 }

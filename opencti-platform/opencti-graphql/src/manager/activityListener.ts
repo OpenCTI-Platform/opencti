@@ -28,7 +28,7 @@ import { REDACTED_INFORMATION } from '../database/utils';
 import type { ActivityStreamEvent } from '../types/event';
 import { EVENT_ACTIVITY_VERSION } from '../database/stream/stream-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
-import { buildConfigPresetExportMessage } from '../modules/configPreset/configPreset-utils';
+import { buildConfigPresetExportMessage, buildConfigPresetImportMessage } from '../modules/configPreset/configPreset-utils';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
@@ -231,9 +231,13 @@ const initActivityManager = () => {
           await activityLogger(action, message);
         }
         if (action.event_scope === 'import') {
-          const { file_name, file_mime, entity_name } = action.context_data;
-          const message = `asks for \`${file_mime}\` import of \`${file_name}\` in \`${entity_name}\``;
-          await activityLogger(action, message);
+          if ('file_mime' in action.context_data) {
+            const { file_name, file_mime, entity_name } = action.context_data;
+            const message = `asks for \`${file_mime}\` import of \`${file_name}\` in \`${entity_name}\``;
+            await activityLogger(action, message);
+          } else {
+            await activityLogger(action, buildConfigPresetImportMessage(action.context_data));
+          }
         }
         if (action.event_scope === 'enrich') {
           const { entity_name, connector_name } = action.context_data;
