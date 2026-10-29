@@ -3,9 +3,10 @@ import { FunctionalError } from '../../../config/errors';
 import { getSettings, setPlatformBootstrapStatus } from '../../../domain/settings';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { findAllEntitySettings } from '../../entitySetting/entitySetting-domain';
+import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
-import type { ConfigPresetSelectionInput } from '../../../generated/graphql';
+import type { ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes } from './configPreset-import-utils';
@@ -29,11 +30,18 @@ import {
 export interface ConfigPresetImportOutput {
   results: ConfigPresetImportItemResult[];
   report_id: string | null;
-  settings: unknown | null;
-  entity_settings: unknown[] | null;
+  settings: ResolversTypes['Settings'] | null;
+  entity_settings: BasicStoreEntityEntitySetting[] | null;
 }
 
 // naming: the label of the item as its importer computed it; an item that was not computed (a stopped import) is named by its key
+const RESULT_STATUSES: Record<ConfigImportStatus, ConfigPresetImportResultStatus> = {
+  created: 'CREATED',
+  overwritten: 'OVERWRITTEN',
+  skipped: 'SKIPPED',
+  failed: 'FAILED',
+};
+
 const toResult = (
   item: ConfigPresetBundleItem,
   status: ConfigImportStatus,
@@ -42,16 +50,23 @@ const toResult = (
 ): ConfigPresetImportItemResult => ({
   type: item.type,
   key: item.id,
-  status: status.toUpperCase() as ConfigPresetImportResultStatus,
+  status: RESULT_STATUSES[status],
   reason: reason ?? null,
   label: naming?.label ?? item.id,
   translatable: naming?.translatable ?? false,
 });
 
+const COUNT_KEYS: Record<ConfigPresetImportResultStatus, keyof ConfigPresetImportCounts> = {
+  CREATED: 'created',
+  OVERWRITTEN: 'overwritten',
+  SKIPPED: 'skipped',
+  FAILED: 'failed',
+};
+
 const countResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportCounts => {
   const counts: ConfigPresetImportCounts = { created: 0, overwritten: 0, skipped: 0, failed: 0 };
   results.forEach(({ status }) => {
-    counts[status.toLowerCase() as keyof ConfigPresetImportCounts] += 1;
+    counts[COUNT_KEYS[status]] += 1;
   });
   return counts;
 };
@@ -241,7 +256,8 @@ const realImport = async (
     }
   }
   logApp.info('[CONFIG PRESET] Import finished', { user_id: user.id, file_id: fileId, outcome, counts });
-  return { results, report_id: report.reportId, settings: await getSettings(importContext), entity_settings: await findAllEntitySettings(importContext, user) };
+  return { results, report_id: report.reportId, // getSettings is untyped (JS), some fields of Settings are resolved by its field resolvers
+    settings: await getSettings(importContext) as unknown as ResolversTypes['Settings'], entity_settings: await findAllEntitySettings(importContext, user) };
 };
 
 // Applies the selected items of the pending zip one by one, required dependencies first, and returns the result of each:

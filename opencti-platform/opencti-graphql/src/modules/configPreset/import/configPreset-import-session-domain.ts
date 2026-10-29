@@ -1,5 +1,5 @@
 import { logApp } from '../../../config/conf';
-import { FunctionalError } from '../../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../../config/errors';
 import { deleteFile } from '../../../database/file-storage';
 import { redisDeleteConfigPresetImportSession, redisGetConfigPresetImportSession, redisSetConfigPresetImportSession } from '../../../database/redis';
 import { lockResources } from '../../../lock/master-lock';
@@ -10,6 +10,7 @@ import { isConfigPresetImportLocked } from './configPreset-import-lock';
 import { readConfigPresetImportRunningRecord } from './configPreset-import-running';
 import {
   CONFIG_PRESET_IMPORT_SESSION_VERSION,
+  type ConfigPresetImportGraphqlSession,
   type ConfigPresetImportSelection,
   type ConfigPresetImportSession,
   type ConfigPresetImportSessionEvent,
@@ -117,13 +118,22 @@ export const toSessionSelections = (selections: ConfigPresetSelectionInput[]): C
   }));
 };
 
-const toGraphqlSession = (session: ConfigPresetImportSession | null) => {
-  return session ? { ...session, available_events: getConfigPresetImportAvailableEvents(session) } : null;
+const toGraphqlSession = (session: ConfigPresetImportSession): ConfigPresetImportGraphqlSession => {
+  return { ...session, available_events: getConfigPresetImportAvailableEvents(session) };
 };
 
-export const findConfigPresetImportSession = async (context: AuthContext, user: AuthUser) => {
+// The events that keep a session (save, back to the selection) never end it: the schema returns a session, not null
+const toKeptGraphqlSession = (session: ConfigPresetImportSession | null, event: ConfigPresetImportSessionEvent): ConfigPresetImportGraphqlSession => {
+  if (!session) {
+    throw UnsupportedError('The import session was deleted by an event that keeps it', { event });
+  }
+  return toGraphqlSession(session);
+};
+
+export const findConfigPresetImportSession = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetImportGraphqlSession | null> => {
   checkConfigPresetImportAccess(context, user);
-  return toGraphqlSession(await readConfigPresetImportSession(context, user));
+  const session = await readConfigPresetImportSession(context, user);
+  return session ? toGraphqlSession(session) : null;
 };
 
 // An upload while the import runs would delete the zip being imported
@@ -140,7 +150,7 @@ export const checkConfigPresetImportNotApplying = async (context: AuthContext, u
 // Back to the selection of an interrupted import: the file and the selection are kept
 export const backToConfigPresetImportSelection = async (context: AuthContext, user: AuthUser) => {
   checkConfigPresetImportAccess(context, user);
-  return toGraphqlSession(await applyConfigPresetImportEvent(context, user, 'BACK_TO_SELECTION', undefined));
+  return toKeptGraphqlSession(await applyConfigPresetImportEvent(context, user, 'BACK_TO_SELECTION', undefined), 'BACK_TO_SELECTION');
 };
 
 export const saveConfigPresetImportSession = async (
@@ -152,7 +162,7 @@ export const saveConfigPresetImportSession = async (
 ) => {
   checkConfigPresetImportAccess(context, user);
   const session = await applyConfigPresetImportEvent(context, user, 'SAVE', { file_id: fileId, selections: toSessionSelections(selections), revision });
-  return toGraphqlSession(session);
+  return toKeptGraphqlSession(session, 'SAVE');
 };
 
 // Start over (from draft) and Close (from finished): the session is deleted, and the pending zip with deleteFileToo

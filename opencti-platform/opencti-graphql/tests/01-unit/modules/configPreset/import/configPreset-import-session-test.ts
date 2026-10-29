@@ -117,6 +117,13 @@ describe('Config preset import session transitions', () => {
     });
   });
 
+  // The API returns a session (not null) for SAVE and BACK_TO_SELECTION: the guard of the domain relies on it
+  it('keeps a session with the events that return a session, from every state that accepts them', () => {
+    expect(transition(draft(), 'SAVE', { file_id: 'file-1', selections, revision: 1 })).not.toBeNull();
+    expect(transition(draft({ revision: 5 }), 'SAVE', { file_id: 'file-1', selections, revision: 1 })).not.toBeNull();
+    expect(transition({ ...applying(), status: 'INTERRUPTED' }, 'BACK_TO_SELECTION', undefined)).not.toBeNull();
+  });
+
   it('lists the events each state accepts', () => {
     expect(getConfigPresetImportAvailableEvents(null)).toEqual(['UPLOAD']);
     expect(getConfigPresetImportAvailableEvents(draft())).toEqual(['UPLOAD', 'SAVE', 'START_OVER', 'START']);

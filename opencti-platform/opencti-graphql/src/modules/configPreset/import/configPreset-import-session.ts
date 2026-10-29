@@ -54,6 +54,11 @@ export interface ConfigPresetImportSession {
   report_id: string | null;
 }
 
+// The session as the API returns it: the wizard enables its buttons from the events the state accepts
+export interface ConfigPresetImportGraphqlSession extends ConfigPresetImportSession {
+  available_events: ConfigPresetImportSessionEvent[];
+}
+
 export interface ConfigPresetImportSessionPayloads {
   UPLOAD: { platform_id: string; file_id: string };
   SAVE: { file_id: string; selections: ConfigPresetImportSelection[]; revision: number };
