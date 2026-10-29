@@ -440,7 +440,7 @@ describe('source access denied check', () => {
 
   it.each([429, 500])('should keep FEED_AND_SYNC_EXECUTION_FAILED on a %s', (status) => {
     const checks = computeIngestionHealthChecks(FAILED_FEED, { ...CONTEXT, runtimeData: runtime({ http_status: status }) });
-    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: { http_status: status } }]);
+    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: { http_status: status, failure_description: `HTTP ${status}` } }]);
   });
 
   it('should keep FEED_AND_SYNC_EXECUTION_FAILED when the logs hold no details', () => {
