@@ -98,6 +98,13 @@ describe('Branding import (compute)', () => {
     expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
   });
 
+  it('reserves in the plan the name of a theme the dry run would create, for the next ones', async () => {
+    const plan = { created: new Set<string>(), themeNames: new Set<string>() };
+    const otherId = 'theme--8b0d3c1e-5f4a-4a2b-8c3d-1e2f3a4b5c6d';
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan)).toMatchObject({ status: 'created' });
+    expect(await compute('branding', otherId, themeConfiguration({ standard_id: otherId }), plan)).toMatchObject({ status: 'failed', conflict: true, reason: 'Theme name already exists' });
+  });
+
   it('overwrites a custom theme whose standard id exists, never reports it created', async () => {
     vi.mocked(findById).mockResolvedValue({ id: 'internal', built_in: false } as never);
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'overwritten', exists: true, conflict: true });

@@ -214,6 +214,18 @@ describe('importTheme in copy mode', () => {
     expect(addTheme).not.toHaveBeenCalled();
   });
 
+  it('reserves in a dry run the names the earlier items would take, as the import that writes them one by one', async () => {
+    taken('Name');
+    const reservedNames = new Set<string>();
+    const dryRun = (name: string, mode: ConfigImportMode) => importTheme(context, user, themeConfiguration({ name }), { mode, dryRun: true, reservedNames });
+    expect(await dryRun('Name', ConfigImportMode.Copy)).toMatchObject({ status: 'created', reason: 'Added as "Name (1)"' });
+    // The copy would take "Name (1)": a theme of this name that comes next is refused, and a copy of it takes a free name
+    expect(await dryRun('Name (1)', ConfigImportMode.Overwrite)).toMatchObject({ status: 'failed', code: 'name_conflict' });
+    expect(await dryRun('Name (1)', ConfigImportMode.Copy)).toMatchObject({ status: 'created', reason: 'Added as "Name (1) (1)"' });
+    expect([...reservedNames]).toEqual(['Name (1)', 'Name (1) (1)']);
+    expectNothingWritten();
+  });
+
   it('decides the same on a dry run and writes nothing, and still skips a built-in theme', async () => {
     vi.mocked(findById).mockResolvedValue({ id: 'existing-id', built_in: false } as never);
     taken('Import test theme');

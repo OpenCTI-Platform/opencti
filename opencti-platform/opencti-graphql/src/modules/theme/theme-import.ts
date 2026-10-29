@@ -9,6 +9,11 @@ import { BUILT_IN_THEME_STANDARD_IDS } from './theme-constants';
 import { addTheme, checkExistingTheme, fieldPatchTheme, findById } from './theme-domain';
 import { THEME_NAME_MAX_LENGTH, type ThemeImportConfiguration, themeImportSchema } from './theme-import-schema';
 
+// A dry run writes nothing: the names the earlier items of the same dry run would take are reserved for the next ones
+export interface ThemeImportOptions extends ConfigImportOptions {
+  reservedNames?: Set<string>;
+}
+
 export type ThemeImportCode = 'invalid' | 'standard_id_required' | 'exists' | 'name_conflict' | 'built_in';
 
 // add: the theme must not exist yet. overwrite: a theme with the same standard id is patched, else it is created.
@@ -25,15 +30,16 @@ const refused = (status: 'failed' | 'skipped', code: ThemeImportCode, reason: st
 const MAX_COPIES = 100;
 
 // The name itself when it is free, else the first free `name (n)`; undefined when the first copies are all taken
-const freeThemeName = async (context: AuthContext, user: AuthUser, name: string) => {
-  if (!(await checkExistingTheme(context, user, name))) {
+const freeThemeName = async (context: AuthContext, user: AuthUser, name: string, reservedNames?: Set<string>) => {
+  const isTaken = async (candidate: string) => !!reservedNames?.has(candidate) || checkExistingTheme(context, user, candidate);
+  if (!(await isTaken(name))) {
     return name;
   }
   for (let copy = 1; copy <= MAX_COPIES; copy += 1) {
     const suffix = ` (${copy})`;
     const candidate = `${name.slice(0, THEME_NAME_MAX_LENGTH - suffix.length)}${suffix}`;
     // The next candidate depends on this answer
-    if (!(await checkExistingTheme(context, user, candidate))) {
+    if (!(await isTaken(candidate))) {
       return candidate;
     }
   }
@@ -58,7 +64,7 @@ export const importTheme = async (
   context: AuthContext,
   user: AuthUser,
   configuration: unknown,
-  { mode, dryRun = false }: ConfigImportOptions,
+  { mode, dryRun = false, reservedNames }: ThemeImportOptions,
 ): Promise<ThemeImportResult> => {
   const parsed = themeImportSchema.safeParse(configuration);
   // A built-in theme has the same standard id on every platform: never patched, never created, and never refused for its content
@@ -83,19 +89,24 @@ export const importTheme = async (
   }
   // A copy is never refused for its name or its identity: it takes a free name, and a new standard id when its own is taken
   if (mode === ConfigImportMode.Copy) {
-    const name = await freeThemeName(context, user, theme.name);
+    const name = await freeThemeName(context, user, theme.name, reservedNames);
     if (!name) {
       return refused('failed', 'name_conflict', 'Theme name already exists', !!existing, parsed.data);
     }
     const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, reason: name === theme.name ? undefined : `Added as "${name}"` };
-    return dryRun ? copy : { ...copy, theme: await createTheme(context, user, { ...theme, name }, existing ? undefined : standardId) };
+    if (dryRun) {
+      reservedNames?.add(name);
+      return copy;
+    }
+    return { ...copy, theme: await createTheme(context, user, { ...theme, name }, existing ? undefined : standardId) };
   }
   // The theme itself is not another theme: an overwrite that renames it to a name used by a third one is refused too
-  if (await checkExistingTheme(context, user, theme.name, existing?.id)) {
+  if (reservedNames?.has(theme.name) || await checkExistingTheme(context, user, theme.name, existing?.id)) {
     return refused('failed', 'name_conflict', 'Theme name already exists', !!existing, parsed.data);
   }
   const status = existing ? 'overwritten' : 'created';
   if (dryRun) {
+    reservedNames?.add(theme.name);
     return { status, exists: !!existing, configuration: parsed.data };
   }
   if (existing) {

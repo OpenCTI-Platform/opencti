@@ -44,6 +44,8 @@ export interface ConfigPresetComputedItem {
 // What the import would create, shared by the items of one import: `<type>/<bundle id>`
 export interface ConfigPresetImportPlan {
   created: Set<string>;
+  // The theme names the earlier items of a dry run would take, which writes nothing: an import reads the platform before each item
+  themeNames?: Set<string>;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;
