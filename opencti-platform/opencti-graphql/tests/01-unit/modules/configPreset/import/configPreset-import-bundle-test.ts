@@ -4,6 +4,7 @@ import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/
 import {
   CONFIG_PRESET_IMPORT_MAX_ENTRIES,
   CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE,
+  CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE,
   limitStream,
   readConfigPresetBundle,
   resolveBundleDependencies,
@@ -84,6 +85,19 @@ describe('Config preset bundle reader', () => {
   it('refuses an entry above the size limit, whatever the size declared', async () => {
     const big = JSON.stringify({ padding: 'a'.repeat(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE + 1) });
     await refusedWith(buildZip({ ...validBundleFiles(), 'platform_settings/big.json': big }));
+  });
+
+  it('refuses a bundle that is too large once extracted, each entry being under the limit', async () => {
+    const padding = JSON.stringify({ padding: 'a'.repeat(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE - 100) });
+    const count = Math.ceil(CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE / padding.length) + 1;
+    const files = Object.fromEntries(Array.from({ length: count }, (_, i) => [`padding/${i}.json`, padding]));
+    const error = await refusedWith(buildZip({ ...validBundleFiles(), ...files }));
+    expect(error.message).toContain('too large once extracted');
+  });
+
+  it('refuses dependencies that are not a map of maps of maps of paths', async () => {
+    const error = await refusedWith(buildZip({ ...validBundleFiles(), 'dependencies.json': JSON.stringify({ 'platformSettings.platform': { platform: 'platform_settings/branding/theme.json' } }) }));
+    expect(error.message).toContain('dependencies of the configuration bundle are invalid');
   });
 
   it('refuses too many entries and the same item twice', async () => {

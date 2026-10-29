@@ -8,7 +8,7 @@ vi.mock('../../../../../src/modules/theme/theme-domain', async (importOriginal) 
 
 import { findById, checkExistingTheme } from '../../../../../src/modules/theme/theme-domain';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
-import type { ConfigPresetBundleItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
+import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import { BUILT_IN_THEME_STANDARD_IDS } from '../../../../../src/modules/theme/theme-constants';
@@ -27,6 +27,12 @@ const compute = (
   const family = CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === type)!;
   const item: ConfigPresetBundleItem = { type, id, path: `${id}.json`, configuration };
   return family.importer!.compute(context, user, item, plan, mode);
+};
+
+const apply = (type: string, id: string, configuration: Record<string, unknown>, computed: ConfigPresetComputedItem, mode: ConfigImportMode = ConfigImportMode.Overwrite) => {
+  const family = CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === type)!;
+  const item: ConfigPresetBundleItem = { type, id, path: `${id}.json`, configuration };
+  return family.importer!.apply(context, user, item, computed, mode);
 };
 
 beforeEach(() => {
@@ -62,6 +68,10 @@ describe('Platform import (compute)', () => {
 
   it('overwrites the platform', async () => {
     expect(await compute('platform', 'platform', platform({ platform_favicon: 'https://example.com/favicon.ico' }))).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('fails on an item that is not the platform', async () => {
+    expect(await compute('platform', 'other', platform())).toMatchObject({ label: 'Platform configuration', status: 'failed', reason: 'Unexpected item id' });
   });
 
   it('does not fail on a null default theme, and skips an item with only null values', async () => {
@@ -123,6 +133,12 @@ describe('Branding import (compute)', () => {
     vi.mocked(checkExistingTheme).mockResolvedValue(true);
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'failed', exists: true, conflict: true, reason: 'Theme name already exists' });
     expect(checkExistingTheme).toHaveBeenCalledWith(context, user, 'Import test theme', 'internal');
+  });
+
+  it('refuses to apply a theme whose name was taken since the preview, so the item fails', async () => {
+    vi.mocked(checkExistingTheme).mockResolvedValue(true);
+    const computed = await compute('branding', CUSTOM_THEME_ID, themeConfiguration());
+    await expect(apply('branding', CUSTOM_THEME_ID, themeConfiguration(), { ...computed, status: 'created' } as ConfigPresetComputedItem)).rejects.toThrow('Theme name already exists');
   });
 
   it('fails on a standard id that differs from the id or is badly formed', async () => {

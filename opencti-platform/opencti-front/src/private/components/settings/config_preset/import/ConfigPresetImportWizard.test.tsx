@@ -143,6 +143,13 @@ describe('ConfigPresetImportWizard', () => {
   });
 
   describe('without session', () => {
+    it('keeps the loader when the session cannot be read', async () => {
+      const rendered = testRender(<ConfigPresetImportWizard onFinish={onFinish} />, { userContext });
+      await reject(rendered, 'ConfigPresetImportWizardQuery', 'elastic down');
+      expect(screen.getByText('Loading')).toBeInTheDocument();
+      expect(screen.queryByTestId('config-preset-wizard-import')).not.toBeInTheDocument();
+    });
+
     it('shows the welcome choices, then the upload once the import is chosen', async () => {
       const { user } = await renderWizard(null);
       expect(screen.getByTestId('config-preset-wizard-import')).toBeInTheDocument();
@@ -277,6 +284,25 @@ describe('ConfigPresetImportWizard', () => {
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportWizardClearMutation');
       await rendered.user.click(within(screen.getByRole('dialog', { name: 'Start over' })).getByRole('button', { name: 'Start over' }));
       expect(operation(rendered, 'ConfigPresetImportWizardClearMutation').request.variables).toEqual({ delete_file: true });
+    });
+  });
+
+  describe('preview, what is not imported', () => {
+    it('lists the files of the bundle that cannot be imported', async () => {
+      await renderPreview(session(), [], { ...preview, ignored: ['README.txt', 'other/unknown.json'] });
+      expect(screen.getByText('Some files of the bundle cannot be imported')).toBeInTheDocument();
+      expect(screen.getByText('README.txt, other/unknown.json')).toBeInTheDocument();
+    });
+
+    it('keeps the bundle when the confirmation of Start over is cancelled or dismissed', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Start over' }));
+      await rendered.user.click(within(screen.getByRole('dialog', { name: 'Start over' })).getByRole('button', { name: 'Cancel' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Start over' })).not.toBeInTheDocument());
+      await rendered.user.click(screen.getByRole('button', { name: 'Start over' }));
+      await rendered.user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Start over' })).not.toBeInTheDocument());
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportWizardClearMutation');
     });
   });
 
@@ -560,6 +586,25 @@ describe('ConfigPresetImportWizard', () => {
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportWizardClearMutation');
       await rendered.user.click(within(screen.getByRole('dialog', { name: 'Start over' })).getByRole('button', { name: 'Start over' }));
       expect(operation(rendered, 'ConfigPresetImportWizardClearMutation').request.variables).toEqual({ delete_file: true });
+    });
+
+    it('keeps the interrupted import when the confirmation of Start over is cancelled or dismissed', async () => {
+      const rendered = await renderWizard(session({ status: 'INTERRUPTED' }));
+      await rendered.user.click(screen.getByRole('button', { name: 'Start over' }));
+      await rendered.user.click(within(screen.getByRole('dialog', { name: 'Start over' })).getByRole('button', { name: 'Cancel' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Start over' })).not.toBeInTheDocument());
+      await rendered.user.click(screen.getByRole('button', { name: 'Start over' }));
+      await rendered.user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Start over' })).not.toBeInTheDocument());
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportWizardClearMutation');
+      expect(screen.getByText('The import was interrupted')).toBeInTheDocument();
+    });
+
+    it('keeps what it shows when the running import cannot be read', async () => {
+      const rendered = await renderWizard(null);
+      await reject(rendered, 'ConfigPresetImportWizardRunningQuery', 'redis down');
+      expect(screen.getByTestId('config-preset-wizard-import')).toBeInTheDocument();
+      expect(screen.queryByText(/Import by/)).not.toBeInTheDocument();
     });
 
     it('moves an open wizard from applying to interrupted once the session says so', async () => {

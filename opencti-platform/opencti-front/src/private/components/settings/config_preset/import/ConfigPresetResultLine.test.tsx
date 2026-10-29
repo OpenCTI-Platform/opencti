@@ -19,7 +19,13 @@ describe('ConfigPresetResultLine', () => {
   it.each([
     ['Already exists', 'Already exists'],
     ['Nothing to import', 'Nothing to import'],
+    ['Unexpected item id', 'Unexpected item id'],
+    ['Unknown message', 'Unknown message'],
+    ['The standard id of the theme does not match its id', 'The standard id of the theme does not match its id'],
+    ['The standard id of the theme is required to overwrite it', 'The standard id of the theme is required to overwrite it'],
     ['Built-in theme', 'Built-in theme'],
+    ['Theme already exists', 'Theme already exists'],
+    ['Theme name already exists', 'Theme name already exists'],
     ['Added as "Dark (1)"', 'Added as "Dark (1)"'],
     ['Default theme Dark could not be imported', 'Default theme Dark could not be imported'],
     ['Entity types that cannot be hidden: Foo, Bar', 'Entity types that cannot be hidden: Foo, Bar'],

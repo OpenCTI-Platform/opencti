@@ -230,6 +230,20 @@ describe('Config preset import: running and interrupted', () => {
       expect((await readRunning())).toEqual({ running: null, last_finished_at: expect.anything() });
     });
 
+    it('goes on when its record cannot be updated or deleted, as a failing write never fails the import', async () => {
+      const fileId = await upload();
+      vi.spyOn(redisModule, 'redisUpdateConfigPresetImportRunning').mockRejectedValue(new Error('redis down'));
+      vi.spyOn(redisModule, 'redisDeleteConfigPresetImportRunning').mockRejectedValue(new Error('redis down'));
+      expect((await runImport(fileId, [{ type: 'messages' }])).errors).toBeUndefined();
+      expect(await readSession()).toMatchObject({ status: 'FINISHED' });
+      expect(await redisGetConfigPresetImportLastFinished()).toBeNull();
+    });
+
+    it('answers no last_finished_at when it cannot be read', async () => {
+      vi.spyOn(redisModule, 'redisGetConfigPresetImportLastFinished').mockRejectedValue(new Error('redis down'));
+      expect(await readRunning()).toEqual({ running: null, last_finished_at: null });
+    });
+
     it('writes no record and no last_finished_at for a dry run, and deletes the record without last_finished_at on an error before the first item', async () => {
       const fileId = await upload();
       expect((await runImport(fileId, [{ type: 'messages' }], true)).errors).toBeUndefined();

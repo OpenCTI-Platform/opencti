@@ -1,11 +1,15 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { buildZip, CUSTOM_THEME_ID, validBundleFiles } from '../../../../utils/configPresetBundle';
 import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
 import { getClientBase, lockResource, redisSetConfigPresetImportSession } from '../../../../../src/database/redis';
 import { CONFIG_PRESET_IMPORT_LOCK_KEY } from '../../../../../src/modules/configPreset/import/configPreset-import-lock';
+import * as sessionDomain from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 import { applyConfigPresetImportEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
+import * as fileStorage from '../../../../../src/database/file-storage';
+import * as rawFileStorage from '../../../../../src/database/raw-file-storage';
+import * as documentDomain from '../../../../../src/modules/internal/document/document-domain';
 import { getConfigPresetPlatformId } from '../../../../../src/modules/configPreset/import/configPreset-import-utils';
 
 const SESSION_FIELDS = 'status file_id revision selections { type items excluded_items item_modes { key mode } } started_at total available_events results { key } outcome';
@@ -31,9 +35,15 @@ const selections = [{ type: 'messages', items: ['banner'] }, { type: 'branding',
 
 describe('Config preset import session', () => {
   afterEach(async () => {
+    vi.restoreAllMocks();
     await queryAsAdmin({ query: CLEAR_MUTATION, variables: { delete_file: true } });
     // An applying session is cleared through the store, no event leaves it
     await getClientBase().del(`config_preset_import_session_${ADMIN_USER.id}`);
+    // The uploads a test left behind, when it made the cleanup of the previous ones fail
+    const pending = await documentDomain.allFilesForPaths(testContext, ADMIN_USER, ['config_preset/import']);
+    for (let i = 0; i < pending.length; i += 1) {
+      await fileStorage.deleteFile(testContext, ADMIN_USER, pending[i].id, { forceDelete: true });
+    }
   });
 
   it('has no session before any upload', async () => {
@@ -142,6 +152,54 @@ describe('Config preset import session', () => {
     const ttl = await getClientBase().ttl(`config_preset_import_session_${ADMIN_USER.id}`);
     expect(ttl).toBeGreaterThan(29 * 24 * 60 * 60);
     expect(ttl).toBeLessThanOrEqual(30 * 24 * 60 * 60);
+  });
+
+  it('keeps a new upload when a previous one cannot be deleted', async () => {
+    const previous = await upload();
+    vi.spyOn(fileStorage, 'deleteFile').mockRejectedValueOnce(new Error('storage down'));
+    const uploaded = await upload();
+    expect(uploaded).not.toEqual(previous);
+    expect(await readSession()).toMatchObject({ status: 'DRAFT', file_id: uploaded });
+  });
+
+  it('keeps a new upload when the previous ones cannot be listed', async () => {
+    await upload();
+    vi.spyOn(documentDomain, 'allFilesForPaths').mockRejectedValueOnce(new Error('elastic down'));
+    const uploaded = await upload();
+    expect(await readSession()).toMatchObject({ status: 'DRAFT', file_id: uploaded });
+  });
+
+  it('deletes the upload when the session refuses it', async () => {
+    vi.spyOn(sessionDomain, 'applyConfigPresetImportEvent').mockRejectedValueOnce(new Error('redis down'));
+    const content = await buildZip(validBundleFiles());
+    const { errors } = await queryAsAdmin({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(content, 'bundle.zip') } });
+    expect(errors?.[0].message).toContain('redis down');
+    expect(await documentDomain.allFilesForPaths(testContext, ADMIN_USER, ['config_preset/import'])).toHaveLength(0);
+    expect(await readSession()).toBeNull();
+  });
+
+  it('returns the refusal of the session even when the refused upload cannot be deleted', async () => {
+    vi.spyOn(sessionDomain, 'applyConfigPresetImportEvent').mockRejectedValueOnce(new Error('redis down'));
+    vi.spyOn(fileStorage, 'deleteFile').mockRejectedValueOnce(new Error('storage down'));
+    const content = await buildZip(validBundleFiles());
+    const { errors } = await queryAsAdmin({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(content, 'bundle.zip') } });
+    expect(errors?.[0].message).toContain('redis down');
+    expect(await readSession()).toBeNull();
+  });
+
+  it('answers a missing file when the stored zip cannot be downloaded', async () => {
+    const fileId = await upload();
+    vi.spyOn(rawFileStorage, 'downloadFile').mockResolvedValueOnce(null as never);
+    const { errors } = await queryAsAdmin({ query: PREVIEW_QUERY, variables: { file_id: fileId } });
+    expect(errors?.[0].extensions?.data).toMatchObject({ reason: 'file_missing' });
+  });
+
+  it('clears the session even when the pending zip cannot be deleted', async () => {
+    const fileId = await upload();
+    vi.spyOn(fileStorage, 'deleteFile').mockRejectedValueOnce(new Error('storage down'));
+    await queryAsAdminWithSuccess({ query: CLEAR_MUTATION, variables: { delete_file: true } });
+    expect(await readSession()).toBeNull();
+    expect(await zipExists(fileId)).toBe(true);
   });
 
   it('refuses the session query and mutations to a user without BYPASS', async () => {
