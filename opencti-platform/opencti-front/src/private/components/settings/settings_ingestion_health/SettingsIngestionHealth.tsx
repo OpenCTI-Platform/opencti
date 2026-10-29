@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
-import { Chip, Switch } from '@filigran/design-system';
+import { Switch } from '@filigran/design-system';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import Card from '../../../../components/common/card/Card';
 import TextField from '../../../../components/TextField';
@@ -22,7 +22,6 @@ const settingsIngestionHealthFragment = graphql`
         health_check_code
         health_check_label
         health_check_kind
-        health_check_severity
         enabled
       }
     }
@@ -118,43 +117,32 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
       </Formik>
       <Box component="h4" sx={{ marginTop: 3, marginBottom: 2 }}>{t_i18n('Health checks')}</Box>
       {/* 20px between the toggles, as between the switches of the group edition form */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto auto', alignItems: 'center', columnGap: 2, rowGap: '20px' }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', columnGap: 2, rowGap: '20px' }}>
         {[...(ingestion_health_settings?.health_checks ?? [])]
           // Configuration checks first, then runtime ones; by translated label within each kind
           .sort((a, b) => Number(a.health_check_kind === 'runtime') - Number(b.health_check_kind === 'runtime')
             || t_i18n(a.health_check_label).localeCompare(t_i18n(b.health_check_label)))
-          .map((check) => {
-            // A failing blocking check makes the ingestion critical, an advisory one degraded: same chips as the health status
-            const isBlocking = check.health_check_severity === 'blocking';
-            return (
-              <Box
-                key={check.health_check_code}
-                data-testid={`settings-ingestion-health-check-${check.health_check_code}`}
-                sx={{ display: 'contents' }}
-              >
-                <Box sx={{ minWidth: 0 }}>
-                  <Switch
-                    checked={check.enabled}
-                    disabled={isSaving}
-                    onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
-                    // Named by the backend registry, translated with the labels of the backend schema
-                    label={t_i18n(check.health_check_label)}
-                  />
-                </Box>
-                {/* Centered in their column: the column is as wide as its longest value */}
-                <Box component="span" sx={{ justifySelf: 'center', textAlign: 'center', fontSize: 12, color: 'text.secondary' }}>
-                  {check.health_check_kind === 'runtime' ? t_i18n('Runtime') : t_i18n('Configuration')}
-                </Box>
-                {/* Further apart from the kind than the gap of the grid: same padding on every row, the chips stay aligned */}
-                <Box sx={{ justifySelf: 'center', display: 'flex', paddingLeft: 3 }}>
-                  <Chip
-                    label={isBlocking ? t_i18n('Blocking') : t_i18n('Degraded')}
-                    severity={isBlocking ? 'critical' : 'high'}
-                  />
-                </Box>
+          .map((check) => (
+            <Box
+              key={check.health_check_code}
+              data-testid={`settings-ingestion-health-check-${check.health_check_code}`}
+              sx={{ display: 'contents' }}
+            >
+              <Box sx={{ minWidth: 0 }}>
+                <Switch
+                  checked={check.enabled}
+                  disabled={isSaving}
+                  onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
+                  // Named by the backend registry, translated with the labels of the backend schema
+                  label={t_i18n(check.health_check_label)}
+                />
               </Box>
-            );
-          })}
+              {/* Centered in its column: the column is as wide as its longest value */}
+              <Box component="span" sx={{ justifySelf: 'center', textAlign: 'center', fontSize: 12, color: 'text.secondary' }}>
+                {check.health_check_kind === 'runtime' ? t_i18n('Runtime') : t_i18n('Configuration')}
+              </Box>
+            </Box>
+          ))}
       </Box>
     </Card>
   );

@@ -15,7 +15,7 @@ import {
   HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
   type HealthCheckCode,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
-import { IngestionHealthCheckKind, IngestionHealthCheckSeverity } from '../../../../src/generated/graphql';
+import { IngestionHealthCheckKind } from '../../../../src/generated/graphql';
 
 // Every flag is enabled in the test configuration: only the flag off case overrides it
 const { isFeatureEnabledMock } = vi.hoisted(() => ({ isFeatureEnabledMock: vi.fn() }));
@@ -60,20 +60,20 @@ describe('resolveIngestionHealthSettings', () => {
 });
 
 describe('toGraphqlIngestionHealthSettings', () => {
-  const enabledCheck = (code: HealthCheckCode, label: string, kind: IngestionHealthCheckKind, severity: IngestionHealthCheckSeverity) => (
-    { health_check_code: code, health_check_label: label, health_check_kind: kind, health_check_severity: severity, enabled: true }
+  const enabledCheck = (code: HealthCheckCode, label: string, kind: IngestionHealthCheckKind) => (
+    { health_check_code: code, health_check_label: label, health_check_kind: kind, enabled: true }
   );
 
-  it('should list every check of the registry with its kind and severity, enabled when not configured', () => {
+  it('should list every check of the registry with its kind, enabled when not configured', () => {
     expect(toGraphqlIngestionHealthSettings({})).toEqual({
       notification_delay: DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
       disabled_health_checks: [],
       health_checks: [
-        enabledCheck(HEALTH_CHECK_USER_MISSING, 'User is missing', IngestionHealthCheckKind.Configuration, IngestionHealthCheckSeverity.Blocking),
-        enabledCheck(HEALTH_CHECK_USER_MISSING_CAPABILITY, 'User lacks required capability', IngestionHealthCheckKind.Configuration, IngestionHealthCheckSeverity.Blocking),
-        enabledCheck(HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, 'User is not a service account', IngestionHealthCheckKind.Configuration, IngestionHealthCheckSeverity.Advisory),
-        enabledCheck(HEALTH_CHECK_HEARTBEAT_MISSING, 'No heartbeat received', IngestionHealthCheckKind.Runtime, IngestionHealthCheckSeverity.Blocking),
-        enabledCheck(HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, 'Feed or sync execution failed', IngestionHealthCheckKind.Runtime, IngestionHealthCheckSeverity.Blocking),
+        enabledCheck(HEALTH_CHECK_USER_MISSING, 'User is missing', IngestionHealthCheckKind.Configuration),
+        enabledCheck(HEALTH_CHECK_USER_MISSING_CAPABILITY, 'User lacks required capability', IngestionHealthCheckKind.Configuration),
+        enabledCheck(HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, 'User is not a service account', IngestionHealthCheckKind.Configuration),
+        enabledCheck(HEALTH_CHECK_HEARTBEAT_MISSING, 'No heartbeat received', IngestionHealthCheckKind.Runtime),
+        enabledCheck(HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, 'Feed or sync execution failed', IngestionHealthCheckKind.Runtime),
       ],
     });
   });
