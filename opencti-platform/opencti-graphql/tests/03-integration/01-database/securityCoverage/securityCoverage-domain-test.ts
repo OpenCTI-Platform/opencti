@@ -1,17 +1,26 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   addSecurityCoverage,
+  findSecurityCoverageByCoveredId,
   getSecurityCoverageResultIds,
   listSecurityCoverageResults,
   securityCoverageDelete,
   securityCoverageStixBundle,
 } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
-import { createHasCoveredRelTask, editSecurityCoverageResult } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-domain';
+import {
+  addSecurityCoverageResult,
+  createHasCoveredRelTask,
+  editSecurityCoverageResult,
+  findById as findSecurityCoverageResultById,
+} from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-domain';
 import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
 import { stixDomainObjectDelete } from '../../../../src/domain/stixDomainObject';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
+import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
+import { addStixCoreRelationship } from '../../../../src/domain/stixCoreRelationship';
+import { RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
 import { addMalware } from '../../../../src/domain/malware';
 import { addOrganization } from '../../../../src/modules/organization/organization-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
@@ -33,6 +42,8 @@ describe('SecurityCoverage domain', () => {
   const adminContext = { ...testContext, user: ADMIN_USER };
 
   let report: StoreEntityReport;
+  // Attack pattern contained in the report, so it can be covered by a security coverage of the report.
+  let reportAttackPattern: StoreEntity;
 
   const BASE_INPUT = () => ({
     name: 'sc1',
@@ -41,21 +52,24 @@ describe('SecurityCoverage domain', () => {
   });
 
   beforeAll(async () => {
+    reportAttackPattern = await addAttackPattern(testContext, ADMIN_USER, { name: 'SC tests report AP' });
     report = await addReport(testContext, ADMIN_USER, {
       name: 'Report for SC tests',
       published: '2026-04-24T19:15:00.000Z',
+      objects: [reportAttackPattern.standard_id],
     });
   });
 
   afterAll(async () => {
     await reportDeleteWithElements(testContext, ADMIN_USER, report.standard_id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, reportAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
   });
 
   describe('Function addSecurityCoverage()', () => {
     it('should create coverage result if explicitly asked for', async () => {
       const input = {
         ...BASE_INPUT(),
-        add_related_entities: { selected_ids: ['my-selected-id'] },
+        add_related_entities: { selected_ids: [reportAttackPattern.standard_id] },
       };
       const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -68,7 +82,7 @@ describe('SecurityCoverage domain', () => {
     it('should create coverage result if add_related_entities.selected_ids is provided', async () => {
       const input = {
         ...BASE_INPUT(),
-        add_related_entities: { selected_ids: ['attack-pattern--00000000-0000-0000-0000-000000000001'] },
+        add_related_entities: { selected_ids: [reportAttackPattern.standard_id] },
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -277,7 +291,7 @@ describe('SecurityCoverage domain', () => {
           coverage_name: 'prevention',
           coverage_score: 10,
         }],
-        add_related_entities: { selected_ids: ['my-selected-id'] },
+        add_related_entities: { selected_ids: [reportAttackPattern.standard_id] },
       };
       const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       let results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -311,7 +325,7 @@ describe('SecurityCoverage domain', () => {
       expect(results.length).toEqual(1);
 
       const explicitIds = [attackPattern1.standard_id, attackPattern2.standard_id];
-      const task = await createHasCoveredRelTask(testContext, ADMIN_USER, results[0].id, { selected_ids: explicitIds }) as { task_ids: string[] };
+      const task = await createHasCoveredRelTask(testContext, ADMIN_USER, results[0].id, reportWithTargets.id, { selected_ids: explicitIds }) as { task_ids: string[] };
       expect(task.task_ids).toEqual(explicitIds);
       expect(task.task_ids.length).toBeLessThan(3);
 
@@ -327,7 +341,7 @@ describe('SecurityCoverage domain', () => {
     it('should not create a background task when no ids, filters nor search are provided', async () => {
       const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, {
         ...BASE_INPUT(),
-        add_related_entities: { selected_ids: ['attack-pattern--00000000-0000-0000-0000-000000000001'] },
+        add_related_entities: { selected_ids: [reportAttackPattern.standard_id] },
       });
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(1);
@@ -338,7 +352,7 @@ describe('SecurityCoverage domain', () => {
         { filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }), search: '' },
       ];
       for (const selection of emptySelections) {
-        await expect(() => createHasCoveredRelTask(testContext, ADMIN_USER, results[0].id, selection)).rejects.toThrow();
+        await expect(() => createHasCoveredRelTask(testContext, ADMIN_USER, results[0].id, report.internal_id, selection)).rejects.toThrow();
       }
 
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
@@ -456,10 +470,80 @@ describe('SecurityCoverage domain', () => {
       expect(results.length).toEqual(1);
 
       const task = await findHasCoveredRelTask(results[0].id);
-      expect(task.task_filters).toEqual(JSON.stringify(filters));
+      // User filters are kept, wrapped with the filters restricting to the covered report objects.
+      const taskFilters = JSON.parse(task.task_filters as string);
+      expect(taskFilters.filterGroups).toEqual([filters]);
+      expect(taskFilters.filters).toContainEqual({ key: ['objects'], values: [reportWithTargets.id] });
       expect(task.task_excluded_ids).toEqual([attackPattern3.standard_id]);
 
       await cleanup(securityCoverage.id, reportWithTargets, [attackPattern1, attackPattern2, attackPattern3]);
+    });
+  });
+
+  describe('add_related_entities restricted to the entities linked to the covered entity', () => {
+    it('should reject an entity outside the covered report when updating a result', async () => {
+      const outsideAttackPattern = await addAttackPattern(testContext, ADMIN_USER, { name: 'SCR scope outside AP' });
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a300',
+      });
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+      const initialName = results[0].name;
+
+      await expect(() => editSecurityCoverageResult(testContext, ADMIN_USER, results[0].id, {
+        name: 'SCR scope should not be renamed',
+        add_related_entities: { selected_ids: [reportAttackPattern.standard_id, outsideAttackPattern.standard_id] },
+      })).rejects.toThrow('Entities to cover must be linked to the covered entity');
+      // Nothing is changed when the selection is rejected
+      const result = await findSecurityCoverageResultById(testContext, ADMIN_USER, results[0].id);
+      expect(result.name).toEqual(initialName);
+
+      await expect(() => addSecurityCoverageResult(testContext, ADMIN_USER, {
+        resultOf: securityCoverage.id,
+        name: 'SCR scope rejected result',
+        add_related_entities: { selected_ids: [outsideAttackPattern.standard_id] },
+      })).rejects.toThrow('Entities to cover must be linked to the covered entity');
+
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, outsideAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    });
+
+    it('should only accept the attack patterns used by the covered intrusion set', async () => {
+      const usedAttackPattern = await addAttackPattern(testContext, ADMIN_USER, { name: 'SC scope used AP' });
+      const unusedAttackPattern = await addAttackPattern(testContext, ADMIN_USER, { name: 'SC scope unused AP' });
+      const intrusionSet = await addIntrusionSet(testContext, ADMIN_USER, { name: 'SC scope intrusion set' });
+      await addStixCoreRelationship(testContext, ADMIN_USER, {
+        fromId: intrusionSet.id,
+        toId: usedAttackPattern.id,
+        relationship_type: RELATION_USES,
+      });
+      const input = {
+        ...BASE_INPUT(),
+        name: 'SC scope intrusion set coverage',
+        objectCovered: intrusionSet.standard_id,
+      };
+
+      // Rejected before anything is created
+      await expect(() => addSecurityCoverage(testContext, ADMIN_USER, {
+        ...input,
+        add_related_entities: { selected_ids: [unusedAttackPattern.standard_id] },
+      })).rejects.toThrow('Entities to cover must be linked to the covered entity');
+      const rejectedCoverage = await findSecurityCoverageByCoveredId(testContext, ADMIN_USER, intrusionSet.id);
+      expect(rejectedCoverage).toBeUndefined();
+
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...input,
+        add_related_entities: { selected_ids: [usedAttackPattern.id] },
+      });
+      const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, intrusionSet.id, ENTITY_TYPE_INTRUSION_SET);
+      for (const attackPattern of [usedAttackPattern, unusedAttackPattern]) {
+        await stixDomainObjectDelete(testContext, ADMIN_USER, attackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+      }
     });
   });
 });
