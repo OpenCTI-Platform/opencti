@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { DashboardConfig } from './dashboard-types';
 import { applyDateChange, isSameTimeRange, pickTimeRange } from './dashboardTimeRange';
 
 const empty = { startDate: null, endDate: null, relativeDate: null };
@@ -23,7 +24,8 @@ describe('applyDateChange', () => {
   });
 
   it('keeps the other keys of a dashboard config, and adds no missing date key', () => {
-    expect(applyDateChange({ refresh_interval: 5 }, 'endDate', '2024-01-01T00:00:00Z'))
+    const config: DashboardConfig = { refresh_interval: 5 };
+    expect(applyDateChange(config, 'endDate', '2024-01-01T00:00:00Z'))
       .toEqual({ refresh_interval: 5, endDate: '2024-01-01T00:00:00Z' });
   });
 });
