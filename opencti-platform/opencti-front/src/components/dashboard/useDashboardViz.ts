@@ -27,7 +27,8 @@ const useDashboardViz = <TQuery extends OperationType>({
   query: GraphQLTaggedNode;
   config?: DashboardConfig;
   parameters?: WidgetParameters;
-  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
+  // No variables, and then no query, when the resolved selection must not be queried
+  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'] | null;
 }) => {
   const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query);
   const [isPending, startTransition] = useTransition();
@@ -168,6 +169,9 @@ const useDashboardViz = <TQuery extends OperationType>({
     }
 
     const refreshedVariables = buildQueryVariables(selection, config, parameters);
+    if (!refreshedVariables) {
+      return;
+    }
     const refreshedSignature = JSON.stringify(refreshedVariables);
     loadAndTrackSignature(refreshedVariables, refreshedSignature);
   }, [buildQueryVariables, config, resolvedDataSelection, parameters, reloadData, loadAndTrackSignature]);
