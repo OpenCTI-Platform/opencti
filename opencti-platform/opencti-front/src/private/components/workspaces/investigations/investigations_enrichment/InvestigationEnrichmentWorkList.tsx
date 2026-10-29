@@ -27,6 +27,9 @@ interface InvestigationEnrichmentWorkListProps {
   worksType: 'ongoing' | 'done' | 'toreview';
   onWorkDeleted: () => void;
   onEnrichment: () => void;
+  onDimiss: (workId: string) => void;
+  onReview: (work: InvestigationEnrichmentWork) => void;
+  onAddAll: (work: InvestigationEnrichmentWork) => void;
 }
 
 const InvestigationEnrichmentWorkList = ({
@@ -35,11 +38,17 @@ const InvestigationEnrichmentWorkList = ({
   worksType,
   onWorkDeleted,
   onEnrichment,
+  onDimiss,
+  onReview,
+  onAddAll,
 }: InvestigationEnrichmentWorkListProps) => {
   const { t_i18n } = useFormatter();
-  const [commitEnrichment] = useApiMutation<InvestigationEnrichmentWorkListAskEnrichment>(askEnrichMutation);
-  const { canRefresh } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
+  const {
+    canEdit,
+    canRefresh,
+  } = useInvestigationEnrichmentRights(investigation.currentUserAccessRight);
 
+  const [commitEnrichment] = useApiMutation<InvestigationEnrichmentWorkListAskEnrichment>(askEnrichMutation);
   const askEnrichment = (entityId: string, connectorId: string) => {
     commitEnrichment({
       variables: { id: entityId, connectorId, investigationId: investigation.id },
@@ -98,6 +107,16 @@ const InvestigationEnrichmentWorkList = ({
           return acc;
         }, []);
 
+        const review = (workId: string) => {
+          const work = entityWorks.find((w) => w.id === workId);
+          onReview(work!);
+        };
+
+        const addAll = (workId: string) => {
+          const work = entityWorks.find((w) => w.id === workId);
+          onAddAll(work!);
+        };
+
         return (
           <Accordion
             sx={{ mb: 2 }}
@@ -113,6 +132,10 @@ const InvestigationEnrichmentWorkList = ({
                 onRefresh={(connector) => askEnrichment(entityId, connector.id)}
                 canRefresh={canRefresh}
                 onWorkDeleted={onWorkDeleted}
+                onReviewDismiss={worksType === 'toreview' ? onDimiss : undefined}
+                onReview={worksType === 'toreview' ? review : undefined}
+                onReviewAddAll={worksType === 'toreview' ? addAll : undefined}
+                canEditInvestigation={canEdit}
               />
             </AccordionDetails>
           </Accordion>

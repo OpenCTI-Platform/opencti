@@ -28,6 +28,7 @@ import {
   updateExpectationsNumber,
   updateProcessedTime,
   updateReceivedTime,
+  workTouchedElements,
   worksForConnector,
 } from '../domain/work';
 import { now } from '../utils/format';
@@ -61,6 +62,7 @@ const connectorResolvers = {
     eventSource: (work, _, context) => (work.event_source_id
       ? context.batch.anyIdsBatchLoader.load({ id: work.event_source_id, type: [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP] })
       : null),
+    touchedElements: (work, { first }, context) => workTouchedElements(context, context.user, work.touched_ids, first),
   },
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),

@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { EnrichmentConnectorSelectionQuery } from './__generated__/EnrichmentConnectorSelectionQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -17,6 +17,7 @@ const enrichmentConnectorsQuery = graphql`
 `;
 
 interface EnrichmentConnectorSelectionComponentProps {
+  value: string[];
   onChange: (value: string[]) => void;
   queryRef: PreloadedQuery<EnrichmentConnectorSelectionQuery>;
 }
@@ -24,9 +25,9 @@ interface EnrichmentConnectorSelectionComponentProps {
 const EnrichmentConnectorSelectionComponent = ({
   onChange,
   queryRef,
+  value,
 }: EnrichmentConnectorSelectionComponentProps) => {
   const { t_i18n } = useFormatter();
-  const [selectedConnectors, setSelectedConnectors] = useState<string[]>([]);
 
   const { enrichmentConnectors } = usePreloadedQuery(enrichmentConnectorsQuery, queryRef);
   const connectors = (enrichmentConnectors ?? []).flatMap((c) => {
@@ -36,13 +37,10 @@ const EnrichmentConnectorSelectionComponent = ({
   });
 
   const toggleConnector = (connectorId: string) => {
-    setSelectedConnectors((old) => {
-      const newValue = old.includes(connectorId)
-        ? old.filter((c) => c !== connectorId)
-        : [...old, connectorId];
-      onChange(newValue);
-      return newValue;
-    });
+    const newValue = value.includes(connectorId)
+      ? value.filter((c) => c !== connectorId)
+      : [...value, connectorId];
+    onChange(newValue);
   };
 
   return (
@@ -60,7 +58,7 @@ const EnrichmentConnectorSelectionComponent = ({
         <Box key={connector.id} sx={{ mb: 1 }}>
           <Checkbox
             label={connector.name}
-            checked={selectedConnectors.includes(connector.id)}
+            checked={value.includes(connector.id)}
             onCheckedChange={() => toggleConnector(connector.id)}
           />
         </Box>
@@ -71,11 +69,13 @@ const EnrichmentConnectorSelectionComponent = ({
 
 interface EnrichmentConnectorSelectionProps {
   type: string;
+  value: string[];
   onChange: (value: string[]) => void;
 }
 
 const EnrichmentConnectorSelection = ({
   type,
+  value,
   onChange,
 }: EnrichmentConnectorSelectionProps) => {
   const queryRef = useQueryLoading<EnrichmentConnectorSelectionQuery>(
@@ -87,6 +87,7 @@ const EnrichmentConnectorSelection = ({
     <Suspense fallback={<Loader />}>
       {queryRef && (
         <EnrichmentConnectorSelectionComponent
+          value={value}
           onChange={onChange}
           queryRef={queryRef}
         />

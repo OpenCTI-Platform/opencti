@@ -28,6 +28,7 @@ export interface GraphToolbarContentToolsProps {
   enableReferences?: boolean;
   onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation'];
   onRemove?: GraphToolbarDeleteConfirmProps['onRemove'];
+  onInvestigationExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const GraphToolbarContentTools = ({
@@ -38,6 +39,7 @@ const GraphToolbarContentTools = ({
   onAddRelation,
   onDeleteRelation,
   onRemove,
+  onInvestigationExpand,
 }: GraphToolbarContentToolsProps) => {
   const { t_i18n } = useFormatter();
 
@@ -173,6 +175,7 @@ const GraphToolbarContentTools = ({
 
           <InvestigationEnrichmentTool
             entity={entity}
+            onExpand={onInvestigationExpand}
           />
         </>
       )}

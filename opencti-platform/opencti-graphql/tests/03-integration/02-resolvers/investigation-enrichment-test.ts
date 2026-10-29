@@ -7,7 +7,8 @@ import { connectorDelete, registerConnector } from '../../../src/modules/connect
 import { askElementEnrichmentForConnectors } from '../../../src/domain/stixCoreObject';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { deleteElementById, mergeEntities } from '../../../src/database/middleware';
-import { deleteWork, loadWorkById, reportExpectation, updateExpectationsNumber } from '../../../src/domain/work';
+import { deleteWork, loadWorkById, reportExpectation, updateExpectationsNumber, updateProcessedTime } from '../../../src/domain/work';
+import { editWorkInvestigationStatus } from '../../../src/modules/workspace/investigation-enrichment';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
@@ -470,6 +471,127 @@ describe('Enrichments linked to an investigation', () => {
       expect(asAdmin.data?.workspace.enrichmentWorks.pageInfo.globalCount).toBe(2);
       const asAnalyst = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, query);
       expect(asAnalyst.data?.workspace.enrichmentWorks.pageInfo.globalCount).toBe(1);
+    });
+  });
+
+  describe('investigation status', () => {
+    const EDIT_STATUS = gql`
+      mutation WorkInvestigationStatusEdit($id: ID!, $status: WorkInvestigationStatus!) {
+        workInvestigationStatusEdit(workId: $id, status: $status) { id investigation_status }
+      }
+    `;
+    const statusIntrusionSetIds: string[] = [];
+
+    afterAll(async () => {
+      for (const id of statusIntrusionSetIds) {
+        await deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_INTRUSION_SET);
+      }
+    });
+
+    /**
+     * Start an enrichment of the enriched entity, as admin, optionally linked to an investigation.
+     */
+    const startEnrichment = async (investigationId?: string) => {
+      const [work]: any[] = await askElementEnrichmentForConnectors(testContext, ADMIN_USER, enriched.id, [INV_CONNECTOR_A], { investigationId });
+      workIds.push(work.id);
+      return work.id as string;
+    };
+
+    /**
+     * Create an element while processing the work, so that the work touches it.
+     */
+    const touchUnderWork = async (workId: string) => {
+      const created = await addIntrusionSet({ ...testContext, workId }, ADMIN_USER, { name: `Investigation status touched ${Date.now()}` });
+      statusIntrusionSetIds.push(created.id);
+    };
+
+    /**
+     * Declare and report the single expectation of the work, which completes it.
+     */
+    const completeWork = async (workId: string) => {
+      await updateExpectationsNumber(testContext, ADMIN_USER, workId, 1);
+      await reportExpectation(testContext, ADMIN_USER, workId);
+    };
+
+    /**
+     * Read the investigation status stored on the work.
+     */
+    const statusOf = async (workId: string) => ((await loadWorkById(testContext, ADMIN_USER, workId)) as any).investigation_status;
+
+    /**
+     * Change the investigation status of the work as the analyst, through the GraphQL mutation.
+     */
+    const editAsAnalyst = (workId: string, status: string) => queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, {
+      query: EDIT_STATUS,
+      variables: { id: workId, status },
+    });
+
+    it('should put a work of an investigation to review when it completes', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      expect(await statusOf(workId)).toBeUndefined();
+      await touchUnderWork(workId);
+      await completeWork(workId);
+      expect(await statusOf(workId)).toEqual('TO_REVIEW');
+    });
+
+    it('should put a work to review even when the enrichment touched nothing', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      await completeWork(workId);
+      expect(await statusOf(workId)).toEqual('TO_REVIEW');
+    });
+
+    it('should leave a work outside any investigation without status', async () => {
+      const workId = await startEnrichment();
+      await touchUnderWork(workId);
+      await completeWork(workId);
+      expect(await statusOf(workId)).toBeUndefined();
+    });
+
+    it('should let an editor of the investigation change the status both ways', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      await completeWork(workId);
+      const done = await editAsAnalyst(workId, 'DONE');
+      expect(done.data?.workInvestigationStatusEdit).toEqual({ id: workId, investigation_status: 'DONE' });
+      await editAsAnalyst(workId, 'TO_REVIEW');
+      expect(await statusOf(workId)).toEqual('TO_REVIEW');
+    });
+
+    it('should keep a reviewed work done when a later completion brings nothing new', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      await touchUnderWork(workId);
+      await completeWork(workId);
+      await editAsAnalyst(workId, 'DONE');
+      await updateProcessedTime(testContext, ADMIN_USER, workId, 'late connector message');
+      expect(await statusOf(workId)).toEqual('DONE');
+    });
+
+    it('should put a reviewed work back to review when a later completion brings new elements', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      await touchUnderWork(workId);
+      await completeWork(workId);
+      await editAsAnalyst(workId, 'DONE');
+      await touchUnderWork(workId);
+      await updateProcessedTime(testContext, ADMIN_USER, workId, 'new bundle processed');
+      expect(await statusOf(workId)).toEqual('TO_REVIEW');
+    });
+
+    it('should refuse a view-only member of the investigation', async () => {
+      const workId = await startEnrichment(viewOnlyInvestigationId);
+      await completeWork(workId);
+      await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, { query: EDIT_STATUS, variables: { id: workId, status: 'DONE' } });
+      expect(await statusOf(workId)).toEqual('TO_REVIEW');
+    });
+
+    it('should refuse a work outside any investigation', async () => {
+      const workId = await startEnrichment();
+      await completeWork(workId);
+      await expect(editWorkInvestigationStatus(testContext, analyst, workId, 'DONE' as any)).rejects.toThrow('Work not found');
+    });
+
+    it('should refuse a work that is not completed yet', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      await expect(editWorkInvestigationStatus(testContext, analyst, workId, 'DONE' as any)).rejects.toThrow('Work is not completed yet');
+      expect(await statusOf(workId)).toBeUndefined();
     });
   });
 });

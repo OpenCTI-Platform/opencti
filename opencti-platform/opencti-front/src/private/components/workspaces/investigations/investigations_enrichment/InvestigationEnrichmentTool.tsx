@@ -1,17 +1,17 @@
 import { startTransition, Suspense, useEffect, useMemo, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { CloudRefreshOutline } from 'mdi-material-ui';
 import GraphToolbarItem from '../../../../../components/graph/components/GraphToolbarItem';
 import { useFormatter } from '../../../../../components/i18n';
 import { GraphEntity } from '../../../../../components/graph/graph.types';
 import InvestigationEnrichmentDrawer from './InvestigationEnrichmentDrawer';
-import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
 import { InvestigationEnrichmentToolQuery } from './__generated__/InvestigationEnrichmentToolQuery.graphql';
 import useIntervalBoostable from '../../../../../utils/hooks/useIntervalBoostable';
 import InvestigationEnrichmentButton from './InvestigationEnrichmentButton';
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
 import { addInEnrichmentMap } from './investigation-enrichment.utils';
+import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
 const investigationQuery = graphql`
   query InvestigationEnrichmentToolQuery($id: String!, $entityIds: [String!]) {
@@ -24,15 +24,16 @@ const investigationQuery = graphql`
             id
             status
             event_source_id
+            investigation_status
             eventSource {
-              ...on StixObject {
+              ...on StixCoreObject {
                 id
                 entity_type
                 representative {
                   main
                 }
               }
-              ...on StixRelationship {
+              ...on StixCoreRelationship {
                 id
                 entity_type
                 representative {
@@ -55,6 +56,24 @@ const investigationQuery = graphql`
               active
               connector_type
             }
+            touchedElements {
+              ...on StixCoreObject {
+                id
+                entity_type
+              }
+              ...on StixCoreRelationship {
+                id
+                entity_type
+                fromId
+                toId
+              }
+              ...on StixSightingRelationship {
+                id
+                entity_type
+                fromId
+                toId
+              }
+            }
           }
         }
       }
@@ -65,11 +84,13 @@ const investigationQuery = graphql`
 interface InvestigationEnrichmentToolComponentProps {
   queryRef: PreloadedQuery<InvestigationEnrichmentToolQuery>;
   onRefresh: () => void;
+  onExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const InvestigationEnrichmentToolComponent = ({
   queryRef,
   onRefresh,
+  onExpand,
 }: InvestigationEnrichmentToolComponentProps) => {
   const [openEnrichment, setOpenEnrichment] = useState(false);
   const { workspace: investigation } = usePreloadedQuery(investigationQuery, queryRef);
@@ -82,7 +103,9 @@ const InvestigationEnrichmentToolComponent = ({
     investigation?.enrichmentWorks?.edges?.forEach((work) => {
       if (work?.node) {
         if ((work.node.errors ?? []).length > 0) worksInError = true;
-        if (work.node.status === 'complete' || work.node.status === 'timeout') {
+        if (work.node.investigation_status === 'TO_REVIEW') {
+          addInEnrichmentMap(toreview, work.node);
+        } else if (work.node.status === 'complete' || work.node.status === 'timeout') {
           addInEnrichmentMap(done, work.node);
         } else {
           addInEnrichmentMap(ongoing, work.node);
@@ -115,9 +138,8 @@ const InvestigationEnrichmentToolComponent = ({
         investigation={investigation}
         works={works}
         onClose={() => setOpenEnrichment(false)}
-        onLaunchCompleted={onRefresh}
-        onWorkDeleted={onRefresh}
-        onEnrichment={onRefresh}
+        askRefresh={onRefresh}
+        onExpand={onExpand}
       />
     </>
   );
@@ -125,10 +147,12 @@ const InvestigationEnrichmentToolComponent = ({
 
 interface InvestigationEnrichmentToolProps {
   entity: GraphEntity;
+  onExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const InvestigationEnrichmentTool = ({
   entity,
+  onExpand,
 }: InvestigationEnrichmentToolProps) => {
   const { t_i18n } = useFormatter();
   const { graphState } = useGraphContext();
@@ -136,19 +160,25 @@ const InvestigationEnrichmentTool = ({
   const selectionIds = [...selectedNodes, ...selectedLinks].map((selected) => selected.id);
   const selectionKey = [...selectionIds].sort().join(',');
 
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<InvestigationEnrichmentToolQuery>(
-    investigationQuery,
-    { id: entity.id },
-  );
+  // Loaded by refetch only: a second load in the same tick as the first one, one urgent and one in a transition,
+  // makes Relay release a reference React still renders ("Expected preloadedQuery to not be disposed yet").
+  const [queryRef, loadQuery] = useQueryLoader<InvestigationEnrichmentToolQuery>(investigationQuery);
 
+  /**
+   * Loads the works of the selection. The first load is urgent, so that the fallback shows meanwhile;
+   * the next ones are transitions, so that the loaded works stay on screen until the new ones arrive.
+   */
   const refetch = () => {
     const variables = {
       id: entity.id,
       entityIds: selectionIds.length > 0 ? selectionIds : undefined,
     };
-    startTransition(() => {
-      loadQuery(variables, { fetchPolicy: 'network-only' });
-    });
+    const load = () => loadQuery(variables, { fetchPolicy: 'network-only' });
+    if (!queryRef) {
+      load();
+    } else {
+      startTransition(load);
+    }
   };
 
   useEffect(() => {
@@ -176,6 +206,7 @@ const InvestigationEnrichmentTool = ({
         <InvestigationEnrichmentToolComponent
           queryRef={queryRef}
           onRefresh={activateBoost}
+          onExpand={onExpand}
         />
       )}
     </Suspense>

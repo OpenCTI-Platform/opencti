@@ -531,9 +531,74 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 // endregion
 
 // region work handling
+
+const WORKS_TTL = (conf.get('connector_manager:works_day_range') || 7);
+export const WORK_TOUCHED_TTL = WORKS_TTL * 24 * 60 * 60;
+export const WORK_TOUCHED_CAP = 1000; // safety net, enrichments touch far fewer elements
+
+// Touched elements of enrichment works: ids of elements created or updated while
+// processing the work. A separate key (not a field of the work hash) so that writing
+// it can never recreate an orphaned work hash. All operations are single-key (cluster safe).
+// work_touched:${workId} => Redis key of the set holding the ids touched by a work.
+const workTouchedKey = (workId: string) => `work_touched:${workId}`;
+
+// Cap check, add and TTL refresh in one atomic round-trip on a single key (cluster safe).
+// KEYS[1] touched set, ARGV[1] element id, ARGV[2] cap, ARGV[3] ttl. Returns 0 when refused by the cap.
+const WORK_TOUCHED_ADD_SCRIPT = `
+  if redis.call('SCARD', KEYS[1]) >= tonumber(ARGV[2]) then
+    return 0
+  end
+  redis.call('SADD', KEYS[1], ARGV[1])
+  redis.call('EXPIRE', KEYS[1], ARGV[3])
+  return 1`;
+
+/**
+ * Record an element id as touched by a work. The cap check, the add and the TTL refresh run
+ * atomically in one Lua script, so the cap is exact even under concurrent writers.
+ * @param cap maximum number of ids kept per work, beyond it new ids are dropped
+ * @returns false when the id was refused by the cap
+ */
+export const redisAddWorkTouchedElement = async (
+  workId: string,
+  elementId: string,
+  cap = WORK_TOUCHED_CAP,
+): Promise<boolean> => {
+  const added = await getClientBase().eval(WORK_TOUCHED_ADD_SCRIPT, 1, workTouchedKey(workId), elementId, cap, WORK_TOUCHED_TTL);
+  return added !== 0;
+};
+
+/**
+ * Read the ids touched by a work.
+ */
+export const redisGetWorkTouchedElements = async (workId: string) => {
+  const touched = await getClientBase().smembers(workTouchedKey(workId));
+  return { touched_ids: touched };
+};
+
+/**
+ * Delete the touched ids of the given works.
+ */
+export const redisDeleteWorkTouchedElements = async (workIds: Array<string>) => {
+  await Promise.all(workIds.map((id) => getClientBase().del(workTouchedKey(id))));
+};
+
+/**
+ * Read the event type and the investigation id stored when the work was initialized.
+ * Each field is null when the work has none.
+ */
+export const redisGetWorkTrackingInfo = async (workId: string) => {
+  const [eventType, investigationId] = await getClientBase().hmget(workId, 'event_type', 'investigation_id');
+  return { eventType, investigationId };
+};
+
+/**
+ * Delete the work hashes together with their touched elements sets.
+ */
 export const redisDeleteWorks = async (internalIds: Array<string>) => {
+  await redisDeleteWorkTouchedElements(internalIds);
   return Promise.all(internalIds.map((id) => getClientBase().del(id)));
 };
+
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
 };
@@ -577,6 +642,7 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
+
 // A work created by a Form Intake submission is bound to its applicant, its form and its draft:
 // the API only lets the import write on behalf of a form-only user for that exact work.
 export interface FormSubmissionBinding {
@@ -584,7 +650,8 @@ export interface FormSubmissionBinding {
   form_id: string;
   draft_id?: string | null;
 }
-export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean, formSubmission?: FormSubmissionBinding) => {
+
+export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean, formSubmission?: FormSubmissionBinding, eventType?: string, investigationId?: string) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectRaw(tx, workId, {
       is_initialized: true,
@@ -594,9 +661,12 @@ export const redisInitializeWork = async (workId: string, isMultiPartWork: boole
         form_id: formSubmission.form_id,
         form_draft_id: formSubmission.draft_id ?? '',
       } : {}),
+      ...(eventType ? { event_type: eventType } : {}),
+      ...(investigationId ? { investigation_id: investigationId } : {}),
     });
   });
 };
+
 // Atomic first-completion marker for a work: SET NX guarantees that exactly
 // one caller wins, whichever completion path (reportExpectation vs
 // updateProcessedTime) and whichever node observes the completion first.

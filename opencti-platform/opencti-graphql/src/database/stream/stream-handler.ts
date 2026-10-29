@@ -25,6 +25,7 @@ import { telemetry } from '../../config/tracing';
 import { logApp } from '../../config/conf';
 import { getEntitiesMapFromCache } from '../cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
+import { trackWorkTouchedElement } from '../work-touched-elements';
 
 const streamClient: RawStreamClient = rawRedisStreamClient;
 export const initializeStreamStack = async () => {
@@ -49,7 +50,9 @@ const resolveWorkflowStatusName = async (context: AuthContext, user: AuthUser, i
 const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: AuthUser, event: T, opts: EventOpts = {}) => {
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
-  if (!draftContext && isStreamPublishable(opts)) {
+  const isPublishable = isStreamPublishable(opts);
+
+  if (!draftContext && isPublishable) {
     if (STREAM_FULL_DEBUG_ACTIVATED) {
       logApp.info('Pushing event to stream', { event: eventToPush });
     }
@@ -61,6 +64,7 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
       // Deprecated attribute to be removed when transition done
       [SEMATTRS_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
+    await trackWorkTouchedElement(context, event);
   }
 };
 

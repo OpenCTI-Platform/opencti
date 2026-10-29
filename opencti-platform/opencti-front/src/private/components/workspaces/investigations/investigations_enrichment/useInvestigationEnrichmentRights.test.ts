@@ -21,18 +21,18 @@ const renderRights = (capabilities: string[], accessRight: string) => {
 
 describe('Hook: useInvestigationEnrichmentRights', () => {
   it('lets an editor with every right launch and refresh', () => {
-    expect(renderRights([...ENRICHER, 'KNOWLEDGE_KNUPDATE_KNDELETE'], 'edit')).toEqual({ canLaunch: true, canRefresh: true });
+    expect(renderRights([...ENRICHER, 'KNOWLEDGE_KNUPDATE_KNDELETE'], 'edit')).toEqual({ canEdit: true, canLaunch: true, canRefresh: true });
   });
 
   it('lets an editor without knowledge update refresh but not launch', () => {
-    expect(renderRights(ENRICHER, 'edit')).toEqual({ canLaunch: false, canRefresh: true });
+    expect(renderRights(ENRICHER, 'edit')).toEqual({ canEdit: true, canLaunch: false, canRefresh: true });
   });
 
   it('refuses both actions without the enrichment capability', () => {
-    expect(renderRights(['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNUPDATE'], 'edit')).toEqual({ canLaunch: false, canRefresh: false });
+    expect(renderRights(['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNUPDATE'], 'edit')).toEqual({ canEdit: true, canLaunch: false, canRefresh: false });
   });
 
   it('refuses both actions to a view only member', () => {
-    expect(renderRights([...ENRICHER, 'KNOWLEDGE_KNUPDATE'], 'view')).toEqual({ canLaunch: false, canRefresh: false });
+    expect(renderRights([...ENRICHER, 'KNOWLEDGE_KNUPDATE'], 'view')).toEqual({ canEdit: false, canLaunch: false, canRefresh: false });
   });
 });

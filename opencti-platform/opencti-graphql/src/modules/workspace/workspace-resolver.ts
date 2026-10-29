@@ -28,7 +28,7 @@ import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreator } from '../../database/members';
 import { workspaceVariableDelete, workspaceVariableUpsert } from './workspace-variables-domain';
 import { toGraphqlDashboardVariables } from './workspace-variables-utils';
-import { findInvestigationEnrichmentWorks } from './investigation-enrichment';
+import { editWorkInvestigationStatus, findInvestigationEnrichmentWorks } from './investigation-enrichment';
 
 const workspaceResolvers: Resolvers = {
   Query: {
@@ -86,6 +86,9 @@ const workspaceResolvers: Resolvers = {
     },
     workspaceVariableDelete: (_, { id, variableId }, context) => {
       return workspaceVariableDelete(context, context.user, id, variableId);
+    },
+    workInvestigationStatusEdit: (_, { workId, status }, context) => {
+      return editWorkInvestigationStatus(context, context.user, workId, status) as unknown as ResolversTypes['Work'];
     },
   },
   Subscription: {
