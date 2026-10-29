@@ -28,7 +28,7 @@ describe('addKillChainPhase', () => {
   });
 
   it('should refuse to create a new phase to a user who cannot manage kill chain phases', async () => {
-    vi.mocked(storeLoadById).mockResolvedValue(undefined);
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as any);
     const user: any = { id: 'user-1', capabilities: caps('KNOWLEDGE_KNUPDATE') };
     await expect(addKillChainPhase({}, user, phase)).rejects.toThrow('You are not allowed to create kill chain phases.');
     expect(createEntity).not.toHaveBeenCalled();
@@ -41,7 +41,7 @@ describe('addKillChainPhase', () => {
     await expect(addKillChainPhase({ draft_context: 'draft-1' }, inDraft, phase)).resolves.toEqual({ id: 'new-phase' });
     expect(storeLoadById).not.toHaveBeenCalled();
     // the draft scope only counts in a draft
-    vi.mocked(storeLoadById).mockResolvedValue(undefined);
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as any);
     await expect(addKillChainPhase({}, inDraft, phase)).rejects.toThrow('You are not allowed to create kill chain phases.');
   });
 });
