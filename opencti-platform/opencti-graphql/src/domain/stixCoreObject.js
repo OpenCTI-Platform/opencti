@@ -895,7 +895,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     // Lock the participants that will be merged
     lock = await lockResources(participantIds);
     const { internal_id: internalId } = previous;
-    const filename = fileRef ? fileRef.name : (await file).filename;
+    let filename;
+    if (fileRef) {
+      filename = fileRef.name;
+    } else {
+      ({ filename } = await file);
+    }
     const entitySetting = await getEntitySettingFromCache(context, previous.entity_type);
     const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
     let prefix = 'import';
