@@ -600,6 +600,9 @@ export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
 // User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
 export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
 
+// Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
+export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
+
 // Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
 // check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
 // entity types with a published WorkflowDefinition behave as before this change.

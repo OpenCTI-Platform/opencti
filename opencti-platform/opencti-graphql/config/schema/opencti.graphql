@@ -1367,6 +1367,11 @@ input LocalAuthConfigInput {
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
+  local_auth_lockout_enabled: Boolean
+  local_auth_lockout_max_attempts: Int
+  local_auth_lockout_window: Int
+  local_auth_lockout_duration: Int
+  local_auth_lockout_max_duration: Int
 }
 
 input CertAuthConfigInput {
@@ -1451,6 +1456,11 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   password_policy_validity_days: Int
+  local_auth_lockout_enabled: Boolean @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "false")
+  local_auth_lockout_max_attempts: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "5")
+  local_auth_lockout_window: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "1440")
+  local_auth_lockout_duration: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "15")
+  local_auth_lockout_max_duration: Int @ff(flags: ["LOCAL_AUTH_LOCKOUT"], softFail: true, defaultValue: "180")
   # Built-in authentication strategies
   local_auth: LocalAuthConfig
   cert_auth: CertAuthConfig

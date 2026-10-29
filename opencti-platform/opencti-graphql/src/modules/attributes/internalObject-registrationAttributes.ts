@@ -25,6 +25,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
+import { LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../../config/conf';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -209,6 +210,11 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'password_policy_min_lowercase', label: 'Min policy lowercase', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password_policy_min_uppercase', label: 'Min policy uppercase', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password_policy_validity_days', label: 'Password validity in days', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'local_auth_lockout_enabled', label: 'Local authentication lockout enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+    { name: 'local_auth_lockout_max_attempts', label: 'Local authentication lockout max attempts', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+    { name: 'local_auth_lockout_window', label: 'Local authentication lockout window in minutes', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+    { name: 'local_auth_lockout_duration', label: 'Local authentication lockout duration in minutes', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+    { name: 'local_auth_lockout_max_duration', label: 'Local authentication lockout max duration in minutes', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
     { name: 'platform_whitemark', label: 'Whitemark', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'enterprise_license', label: 'Enterprise edition license', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'activity_listeners_ids', label: 'Activity listeners IDs', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
