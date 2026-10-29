@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { HEALTH_DISPLAY } from '@components/data/connectors/ingestionHealthDisplay';
+import { getHealthDisplay } from '@components/data/connectors/ingestionHealthDisplay';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { capitalizeFirstLetter } from '../../../../utils/String';
@@ -29,7 +29,7 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHeal
   const { isFeatureEnable } = useHelper();
   const ingestionHealth = useFragment(ingestionHealthFragment, ingestionHealthKey ?? null);
   // Nothing to flag: not evaluated yet, healthy or unknown
-  const severity = ingestionHealth ? HEALTH_DISPLAY[ingestionHealth.status]?.chip : undefined;
+  const severity = ingestionHealth ? getHealthDisplay(ingestionHealth.status)?.chip : undefined;
   if (!isFeatureEnable('INGESTION_HEALTH') || !ingestionHealth || !severity) {
     return null;
   }

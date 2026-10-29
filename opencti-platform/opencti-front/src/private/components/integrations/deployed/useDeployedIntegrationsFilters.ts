@@ -26,6 +26,17 @@ export interface DeployedFilterState {
   healthStatuses: DeployedHealthFacet[];
 }
 
+// No filter at all: what clearing resets to, and the base of a filter set from scratch (the health alerts).
+// A new facet gets its empty value here only
+export const EMPTY_DEPLOYED_FILTERS: DeployedFilterState = {
+  search: '',
+  types: [],
+  statuses: [],
+  kinds: [],
+  updateAvailable: false,
+  healthStatuses: [],
+};
+
 export interface DeployedSection {
   key: string;
   items: DeployedIntegrationItem[];
@@ -240,7 +251,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdate
     || filters.healthStatuses.length > 0;
 
   const clearAllFilters = () => {
-    setFilters({ search: '', types: [], statuses: [], kinds: [], updateAvailable: false, healthStatuses: [] });
+    setFilters(EMPTY_DEPLOYED_FILTERS);
   };
 
   return {

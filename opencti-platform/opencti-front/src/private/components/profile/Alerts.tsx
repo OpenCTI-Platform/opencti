@@ -5,7 +5,7 @@ import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLi
 import { AlertsLines_data$data } from '@components/profile/__generated__/AlertsLines_data.graphql';
 import { AlertsLinesPaginationQuery, AlertsLinesPaginationQuery$variables } from '@components/profile/__generated__/AlertsLinesPaginationQuery.graphql';
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
-import { HEALTH_DISPLAY } from '@components/data/connectors/ingestionHealthDisplay';
+import { getHealthDisplay } from '@components/data/connectors/ingestionHealthDisplay';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { Badge, Stack, Tooltip } from '@mui/material';
 import { Chip, type ChipSeverity } from '@filigran/design-system';
@@ -133,9 +133,9 @@ interface AlertsLineActionsProps {
 
 // Event type is categorical, so the tone carries the distinction without asserting a level:
 // create -> low, update -> info, delete -> critical, several at once -> medium.
-// Ingestion health transitions follow the health chip (HEALTH_DISPLAY), recovered -> low.
+// Ingestion health transitions follow the health chip (getHealthDisplay), recovered -> low.
 const operationSeverity = (operation: string): ChipSeverity => {
-  const health = HEALTH_DISPLAY[operation];
+  const health = getHealthDisplay(operation);
   if (health) return health.chip;
   switch (operation) {
     case 'update':

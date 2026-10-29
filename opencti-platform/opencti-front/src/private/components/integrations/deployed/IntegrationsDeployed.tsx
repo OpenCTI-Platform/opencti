@@ -19,7 +19,7 @@ import DeployedIntegrationCard from '@components/integrations/deployed/DeployedI
 import IntegrationsHealthAlerts from '@components/integrations/deployed/IntegrationsHealthAlerts';
 import DeployedIntegrationLine, { DeployedIntegrationLinesHeader } from '@components/integrations/deployed/DeployedIntegrationLine';
 import useDeployedIntegrations from '@components/integrations/deployed/useDeployedIntegrations';
-import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
+import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode, EMPTY_DEPLOYED_FILTERS } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
 import useProgressiveReveal from '@components/integrations/components/useProgressiveReveal';
 import { IntegrationsData } from '@components/integrations/Integrations';
@@ -167,14 +167,7 @@ const IntegrationsDeployedContent = ({
           items={items}
           onShowIssue={(health) => {
             setSearchInput('');
-            setFilters({
-              search: '',
-              types: [],
-              statuses: [],
-              kinds: [],
-              updateAvailable: false,
-              healthStatuses: [health],
-            });
+            setFilters({ ...EMPTY_DEPLOYED_FILTERS, healthStatuses: [health] });
           }}
         />,
         alertsSlot,

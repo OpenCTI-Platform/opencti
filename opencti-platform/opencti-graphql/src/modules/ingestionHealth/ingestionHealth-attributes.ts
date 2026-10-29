@@ -71,8 +71,8 @@ export const ingestionHealthAttributes: AttributeDefinition[] = [
         upsert: false,
         isFilterable: false,
         mappings: [
-          { name: 'health_check_code', label: 'Health check code', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
-          { name: 'health_check_metadata', label: 'Health check metadata', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+          { name: 'health_check_code', label: 'Health check code', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+          { name: 'health_check_metadata', label: 'Health check metadata', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
         ],
       },
     ],
