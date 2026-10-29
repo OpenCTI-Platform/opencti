@@ -48,7 +48,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:admin:password           | APP__ADMIN__PASSWORD           | ChangeMe              | Default password of the admin user                                                                                                                                               |
 | app:admin:token              | APP__ADMIN__TOKEN              | ChangeMe              | Default token (must be a valid UUIDv4)                                                                                                                                           |
 | app:health_access_key        | APP__HEALTH_ACCESS_KEY         | ChangeMe              | Access key for the `/health` endpoint. Must be changed - will not respond to default value. Access with `/health?health_access_key=ChangeMe`                                     |
-| app:health_monitoring:dependency_check_interval | APP__HEALTH_MONITORING__DEPENDENCY_CHECK_INTERVAL | 30000 | Interval in milliseconds between two dependency checks (ElasticSearch/OpenSearch, S3/MinIO, RabbitMQ, Redis). The `/health` endpoint answers from the state collected by these checks. |
+| app:health_monitoring:dependency_check_interval | APP__HEALTH_MONITORING__DEPENDENCY_CHECK_INTERVAL | 30000 | Interval in milliseconds between two dependency checks (ElasticSearch/OpenSearch, S3, RabbitMQ, Redis). The `/health` endpoint answers from the state collected by these checks. |
 | app:health_monitoring:usage_metrics_interval | APP__HEALTH_MONITORING__USAGE_METRICS_INTERVAL | 300000 | Interval in milliseconds between two collections of storage and ingestion usage metrics, collected by the `platform_usage_metrics_manager` (disabled by default, see `platform_usage_metrics_manager:enabled`) and shared across the cluster through Redis. Also the polling interval every node uses to adopt that shared value. Set to `0` to disable the collection.                                                 |
 | app:liveness_port            | APP__LIVENESS_PORT             | null (disabled)       | Port for the [liveness probe](advanced/liveness-probe.md) HTTP server. Starts immediately on process launch, before platform initialization.                                     |
 | app:auth_payload_body_size   | APP__AUTH_PAYLOAD_BODY_SIZE    |                       | Maximum payload body size for SSO/SAML. Controls the Express body-parser `limit` setting (defaults to 100kb). See https://expressjs.com/en/resources/middleware/body-parser.html |
@@ -254,16 +254,20 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 #### S3 Bucket
 
-| Parameter           | Environment variable | Default value  | Description                                                                                                                                                                                                                 |
-|:--------------------|:---------------------|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Silo as an S3 Bucket Service.  |
-| minio:port          | MINIO__PORT          | 9000           | Port of the S3 Service. For AWS Bucket S3 over HTTPS, this value can be changed (usually __443__).                                                                                                                          |
-| minio:use_ssl       | MINIO__USE_SSL       | `false`        | Indicates whether the S3 Service has TLS enabled. For AWS Bucket S3 over HTTPS, this value could be `true`.                                                                                                                 |
-| minio:access_key    | MINIO__ACCESS_KEY    | ChangeMe       | Access key for the S3 Service.                                                                                                                                                                                              |
-| minio:secret_key    | MINIO__SECRET_KEY    | ChangeMe       | Secret key for the S3 Service.                                                                                                                                                                                              |
-| minio:bucket_name   | MINIO__BUCKET_NAME   | opencti-bucket | S3 bucket name. Useful to change if you use AWS.                                                                                                                                                                            |
-| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Silo as an S3 Bucket Service.                                                                                                  |
-| minio:use_aws_role  | MINIO__USE_AWS_ROLE  | `false`        | Indicates whether to use AWS role auto credentials. When this parameter is configured, the `minio:access_key` and `minio:secret_key` parameters are not necessary.                                                          |
+| Parameter        | Environment variable | Default value  | Description                                                                                                                                                                                                               |
+|:-----------------|:---------------------|:---------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| s3:endpoint      | S3__ENDPOINT         | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `s3:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use RustFS as an S3 Bucket Service. |
+| s3:port          | S3__PORT             | 9000           | Port of the S3 Service. For AWS Bucket S3 over HTTPS, this value can be changed (usually __443__).                                                                                                                        |
+| s3:use_ssl       | S3__USE_SSL          | `false`        | Indicates whether the S3 Service has TLS enabled. For AWS Bucket S3 over HTTPS, this value could be `true`.                                                                                                               |
+| s3:access_key    | S3__ACCESS_KEY       | ChangeMe       | Access key for the S3 Service.                                                                                                                                                                                            |
+| s3:secret_key    | S3__SECRET_KEY       | ChangeMe       | Secret key for the S3 Service.                                                                                                                                                                                            |
+| s3:bucket_name   | S3__BUCKET_NAME      | opencti-bucket | S3 bucket name. Useful to change if you use AWS.                                                                                                                                                                          |
+| s3:bucket_region | S3__BUCKET_REGION    | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use RustFS as an S3 Bucket Service.                                                                                              |
+| s3:use_aws_role  | S3__USE_AWS_ROLE     | `false`        | Indicates whether to use AWS role auto credentials. When this parameter is configured, the `s3:access_key` and `s3:secret_key` parameters are not necessary.                                                              |
+
+!!! note "Section renamed in OpenCTI 7.26XXXX.0"
+
+    Since OpenCTI 7.26XXXX.0 this section is named `s3` (environment variables `S3__*`). Before, it was named `minio` (`MINIO__*`). The former names are still read as an alias, so an existing configuration keeps working: for each parameter, the `minio` name is used when the `s3` name is not set at the same or a higher priority level (a parameter set to an empty value counts as set). The remote credentials provider (`credentials_provider`) is read as one block, from the highest priority level that sets it under either name: rename it at once. A warning listing the former names in use, or ignored because the new name is set, is logged at startup. Rename them to `s3` / `S3__*` when you can.
 
 !!! note "Using a proxy for AWS S3"
 
@@ -365,7 +369,7 @@ For each dependency, special configuration keys are available to ensure the plat
 | Dependency     | Prefix          |
 |:---------------|:----------------|
 | ElasticSearch  | `elasticsearch` | 
-| S3 Storage     | `minio`         |
+| S3 Storage     | `s3`            |
 | Redis          | `redis`         |
 | OpenID secrets | `oic`           |
 
@@ -422,19 +426,19 @@ JSON version:
 }
 ```
 
-Another example for the S3 storage (`minio` section) using certificate:
+Another example for the S3 storage (`s3` section, formerly `minio`) using certificate:
 
 Environment variables:
 ```yaml
-- MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__CRT=/cert_volume/mycert.crt
-- MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__KEY=/cert_volume/mycert.key
-- MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__CA=/cert_volume/ca.crt
-- MINIO__CREDENTIALS_PROVIDER__CYBERARK__URI=http://my.cyberark.com/AIMWebService/api/Accounts
-- MINIO__CREDENTIALS_PROVIDER__CYBERARK__APP_ID=opencti-s3
-- MINIO__CREDENTIALS_PROVIDER__CYBERARK__SAFE=mysafe-key
-- MINIO__CREDENTIALS_PROVIDER__CYBERARK__OBJECT=myobject-key
-- "MINIO__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER=:" # As default is already ":", may not be necessary
-- "MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS=[\"access_key\",\"secret_key\"]"
+- S3__CREDENTIALS_PROVIDER__HTTPS_CERT__CRT=/cert_volume/mycert.crt
+- S3__CREDENTIALS_PROVIDER__HTTPS_CERT__KEY=/cert_volume/mycert.key
+- S3__CREDENTIALS_PROVIDER__HTTPS_CERT__CA=/cert_volume/ca.crt
+- S3__CREDENTIALS_PROVIDER__CYBERARK__URI=http://my.cyberark.com/AIMWebService/api/Accounts
+- S3__CREDENTIALS_PROVIDER__CYBERARK__APP_ID=opencti-s3
+- S3__CREDENTIALS_PROVIDER__CYBERARK__SAFE=mysafe-key
+- S3__CREDENTIALS_PROVIDER__CYBERARK__OBJECT=myobject-key
+- "S3__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER=:" # As default is already ":", may not be necessary
+- "S3__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS=[\"access_key\",\"secret_key\"]"
 ```
 
 <a id="engines-schedules-managers"></a>

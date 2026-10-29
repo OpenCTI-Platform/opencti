@@ -15,7 +15,7 @@ The **country boundaries** are the polygons used to colour countries in map widg
 Each file has two possible sources:
 
 - **Bundled** (default) — the file shipped inside the Docker image.
-- **Custom** — a file uploaded by an administrator and stored in the S3 bucket (Silo or any S3-compatible storage).
+- **Custom** — a file uploaded by an administrator and stored in the S3 bucket (RustFS or any S3-compatible storage).
 
 When a custom file has been uploaded, it is used; otherwise, the bundled file is used. The two files are independent: replacing one does not replace the other.
 

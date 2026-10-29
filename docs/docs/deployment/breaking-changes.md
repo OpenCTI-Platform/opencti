@@ -10,6 +10,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 | Change                                                                                                              | Deprecated in | Changed in |
 |:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
+| [Object storage: RustFS and the `s3` configuration section](#s3-object-storage-rustfs)                              | 7.26XXXX.0     | -          |
 | [Removal of filter script](#filter-script-api)                                                                      | -             | 7.260401.0 |
 | [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
 | [Update license for SSO (& migration to UI)](#SSO-update-license)                                                   |               | 7.260224.0 |
@@ -19,6 +20,12 @@ This table regroups all the breaking changes introduced, with the corresponding 
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                    |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                |               | 5.12       |
+
+<a id="s3-object-storage-rustfs"></a>
+### Object storage: RustFS and the `s3` configuration section
+Starting with OpenCTI 7.26XXXX.0, the reference Docker deployment runs RustFS as S3 object storage, and the `minio` configuration section is renamed `s3` (`MINIO__*` becomes `S3__*`). The configuration keeps working as is, the former names are still read. Docker deployments running Silo or MinIO that adopt the new reference compose file need a migration step, described in the guide.
+
+Please read the dedicated migration guide, including how to move a Docker deployment from Silo or MinIO to RustFS: [Object storage migration guide](breaking-changes/s3-object-storage-rustfs.md)
 
 <a id="filter-script-api"></a>
 ### Removal of filter script
