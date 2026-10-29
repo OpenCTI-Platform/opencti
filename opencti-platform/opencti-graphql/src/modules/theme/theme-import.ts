@@ -12,6 +12,8 @@ import { THEME_NAME_MAX_LENGTH, type ThemeImportConfiguration, themeImportSchema
 // A dry run writes nothing: the names the earlier items of the same dry run would take are reserved for the next ones
 export interface ThemeImportOptions extends ConfigImportOptions {
   reservedNames?: Set<string>;
+  // The names that a theme overwritten earlier in a dry run no longer holds, as the real import would have renamed it already
+  releasedNames?: Set<string>;
 }
 
 export type ThemeImportCode = 'invalid' | 'standard_id_required' | 'exists' | 'name_conflict' | 'built_in';
@@ -30,8 +32,13 @@ const refused = (status: 'failed' | 'skipped', code: ThemeImportCode, reason: st
 const MAX_COPIES = 100;
 
 // The name itself when it is free, else the first free `name (n)`; undefined when the first copies are all taken
-const freeThemeName = async (context: AuthContext, user: AuthUser, name: string, reservedNames?: Set<string>) => {
-  const isTaken = async (candidate: string) => !!reservedNames?.has(candidate) || checkExistingTheme(context, user, candidate);
+// Taken by a theme of the platform, or by one that a dry run would have created; not by one that a dry run would have renamed
+const isNameTaken = async (context: AuthContext, user: AuthUser, name: string, { reservedNames, releasedNames }: ThemeImportOptions, excludeId?: string) => {
+  return !!reservedNames?.has(name) || (!releasedNames?.has(name) && await checkExistingTheme(context, user, name, excludeId));
+};
+
+const freeThemeName = async (context: AuthContext, user: AuthUser, name: string, options: ThemeImportOptions) => {
+  const isTaken = (candidate: string) => isNameTaken(context, user, candidate, options);
   if (!(await isTaken(name))) {
     return name;
   }
@@ -64,8 +71,9 @@ export const importTheme = async (
   context: AuthContext,
   user: AuthUser,
   configuration: unknown,
-  { mode, dryRun = false, reservedNames }: ThemeImportOptions,
+  options: ThemeImportOptions,
 ): Promise<ThemeImportResult> => {
+  const { mode, dryRun = false, reservedNames, releasedNames } = options;
   const parsed = themeImportSchema.safeParse(configuration);
   // A built-in theme has the same standard id on every platform: never patched, never created, and never refused for its content
   // (the id is read before the validation: a bundle may carry the name only)
@@ -89,7 +97,7 @@ export const importTheme = async (
   }
   // A copy is never refused for its name or its identity: it takes a free name, and a new standard id when its own is taken
   if (mode === ConfigImportMode.Copy) {
-    const name = await freeThemeName(context, user, theme.name, reservedNames);
+    const name = await freeThemeName(context, user, theme.name, options);
     if (!name) {
       return refused('failed', 'name_conflict', 'Theme name already exists', !!existing, parsed.data);
     }
@@ -101,12 +109,15 @@ export const importTheme = async (
     return { ...copy, theme: await createTheme(context, user, { ...theme, name }, existing ? undefined : standardId) };
   }
   // The theme itself is not another theme: an overwrite that renames it to a name used by a third one is refused too
-  if (reservedNames?.has(theme.name) || await checkExistingTheme(context, user, theme.name, existing?.id)) {
+  if (await isNameTaken(context, user, theme.name, options, existing?.id)) {
     return refused('failed', 'name_conflict', 'Theme name already exists', !!existing, parsed.data);
   }
   const status = existing ? 'overwritten' : 'created';
   if (dryRun) {
     reservedNames?.add(theme.name);
+    if (existing && existing.name !== theme.name) {
+      releasedNames?.add(existing.name);
+    }
     return { status, exists: !!existing, configuration: parsed.data };
   }
   if (existing) {

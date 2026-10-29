@@ -46,6 +46,8 @@ export interface ConfigPresetImportPlan {
   created: Set<string>;
   // The theme names the earlier items of a dry run would take, which writes nothing: an import reads the platform before each item
   themeNames?: Set<string>;
+  // The names that the themes the earlier items of a dry run would rename no longer hold
+  releasedThemeNames?: Set<string>;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;
@@ -53,7 +55,8 @@ export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`
 export interface ConfigPresetImporter {
   // Reads only: finds the existing item, validates, decides the result and records in the plan what it would create
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan, mode: ConfigImportMode) => Promise<ConfigPresetComputedItem>;
-  // Writes the item with one domain call, so that a failure never leaves it half written; an error makes the item failed.
+  // Writes the item, with one domain call when it can: an importer that needs several (the hidden entity types hide, then show) can leave
+  // its item half written, and the error then makes it failed.
   // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten).
   apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem, mode: ConfigImportMode) => Promise<ConfigImportStatus | void>;
 }

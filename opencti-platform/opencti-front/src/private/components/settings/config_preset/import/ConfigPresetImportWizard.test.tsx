@@ -109,6 +109,8 @@ const renderWizard = async (currentSession: unknown) => {
   await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: currentSession }) });
   return rendered;
 };
+const realApplies = ({ relayEnv }: Rendered) => relayEnv.mock.getAllOperations()
+  .filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportWizardApplyMutation' && candidate.request.variables.dry_run === false);
 // The expected results are asked for with the same mutation as the import, with dry_run
 const dryRuns = ({ relayEnv }: Rendered) => relayEnv.mock.getAllOperations()
   .filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportWizardApplyMutation' && candidate.request.variables.dry_run === true);
@@ -252,9 +254,12 @@ describe('ConfigPresetImportWizard', () => {
       await resolveSimulation(rendered);
       await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
-      const names = operationNames(rendered);
-      expect(names.indexOf('ConfigPresetImportPreviewSaveMutation')).toBeLessThan(names.indexOf('ConfigPresetImportWizardApplyMutation'));
-      expect(operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables).toEqual({
+      // The import waits for the answer of the save: the session accepts a save only while it is a draft
+      expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewSaveMutation');
+      expect(realApplies(rendered)).toHaveLength(0);
+      await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+      expect(realApplies(rendered)[0].request.variables).toEqual({
         file_id: 'config_preset/import/id/bundle.zip',
         selections: [{ type: 'platform', items: null }, { type: 'branding', items: null }],
         dry_run: false,
@@ -284,6 +289,43 @@ describe('ConfigPresetImportWizard', () => {
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportWizardClearMutation');
       await rendered.user.click(within(screen.getByRole('dialog', { name: 'Start over' })).getByRole('button', { name: 'Start over' }));
       expect(operation(rendered, 'ConfigPresetImportWizardClearMutation').request.variables).toEqual({ delete_file: true });
+    });
+  });
+
+  describe('preview, requests that fail', () => {
+    const rejectSave = async (rendered: Rendered, reason: string) => {
+      await act(async () => {
+        const target = rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation').pop()!;
+        rendered.relayEnv.mock.reject(target, { res: { errors: [{ message: reason, extensions: { code: 'FUNCTIONAL_ERROR', data: { reason } } }] } } as unknown as Error);
+      });
+    };
+
+    it('goes back to the upload when the save says the file is missing', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(checkbox('Messages (1/1)'));
+      await waitFor(() => expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewSaveMutation'), { timeout: 2000 });
+      await rejectSave(rendered, 'file_missing');
+      expect(await screen.findByText('The uploaded file no longer exists')).toBeInTheDocument();
+    });
+
+    it('applies once the save is answered, even when the save failed', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(checkbox('Messages (1/1)'));
+      await resolveSimulation(rendered);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      expect(realApplies(rendered)).toHaveLength(0);
+      await rejectSave(rendered, 'error');
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+    });
+
+    it('drops the expected results of the previous selection when the new ones cannot be computed', async () => {
+      const rendered = await renderPreview(session(), [{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }]);
+      expect(await screen.findByText('Overwritten')).toBeInTheDocument();
+      await rendered.user.click(checkbox('Platform configuration'));
+      await waitFor(() => expect(dryRuns(rendered).length).toBeGreaterThan(0), { timeout: 2000 });
+      await reject(rendered, 'ConfigPresetImportWizardApplyMutation', 'error');
+      await waitFor(() => expect(screen.queryByText('Overwritten')).not.toBeInTheDocument());
     });
   });
 

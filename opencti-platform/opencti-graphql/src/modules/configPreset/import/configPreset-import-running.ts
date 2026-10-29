@@ -10,7 +10,7 @@ import {
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { isConfigPresetImportLocked } from './configPreset-import-lock';
-import { getConfigPresetPlatformId } from './configPreset-import-utils';
+import { checkConfigPresetImportAccess, getConfigPresetPlatformId } from './configPreset-import-utils';
 
 const RUNNING_RECORD_VERSION = 1;
 
@@ -70,6 +70,7 @@ export const endConfigPresetImportRunning = async (user: AuthUser, startedAt: st
 
 // Running means the lock is held and the record exists. A failing lock check or read answers "not running", and is logged.
 export const findConfigPresetImportRunning = async (context: AuthContext, user: AuthUser) => {
+  checkConfigPresetImportAccess(context, user);
   let lastFinishedAt: string | null = null;
   try {
     lastFinishedAt = await redisGetConfigPresetImportLastFinished();

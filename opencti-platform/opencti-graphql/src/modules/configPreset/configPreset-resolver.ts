@@ -9,32 +9,23 @@ import {
   saveConfigPresetImportSession,
 } from './import/configPreset-import-session-domain';
 import { findConfigPresetImportRunning } from './import/configPreset-import-running';
-import { checkConfigPresetImportAccess } from './import/configPreset-import-utils';
-import { CONFIG_PRESET_FAMILIES } from './configPreset-registry';
-
-const familyOf = (type: string) => CONFIG_PRESET_FAMILIES.find(({ id }) => id === type);
+import { getConfigPresetFamilyDisplay } from './configPreset-registry';
 
 const configPresetResolvers: Resolvers = {
   // A result carries the bare family id: the type and the group come from the registry
   ConfigPresetImportResult: {
     label: ({ label, key }) => label ?? key,
     translatable: ({ translatable }) => translatable ?? false,
-    type_label: ({ type }) => familyOf(type)?.label ?? type,
-    type_index: ({ type }) => Math.max(CONFIG_PRESET_FAMILIES.findIndex(({ id }) => id === type), 0),
-    group: ({ type }) => {
-      const family = familyOf(type);
-      return family ? { key: family.group.id, label: family.group.label } : { key: type, label: type };
-    },
+    type_label: ({ type }) => getConfigPresetFamilyDisplay(type).type_label,
+    type_index: ({ type }) => getConfigPresetFamilyDisplay(type).type_index,
+    group: ({ type }) => getConfigPresetFamilyDisplay(type).group,
   },
   Query: {
     configPresetExportableTypes: (_, __, context) => findConfigPresetExportableTypes(context, context.user!),
     configPresetExportableItems: (_, args, context) => findConfigPresetExportableItems(context, context.user!, args),
     configPresetImportPreview: (_, { file_id }, context) => configPresetImportPreview(context, context.user!, file_id),
     configPresetImportSession: (_, __, context) => findConfigPresetImportSession(context, context.user!),
-    configPresetImportRunning: (_, __, context) => {
-      checkConfigPresetImportAccess(context, context.user!);
-      return findConfigPresetImportRunning(context, context.user!);
-    },
+    configPresetImportRunning: (_, __, context) => findConfigPresetImportRunning(context, context.user!),
   },
   Mutation: {
     configPresetExport: async (_, { selections, bundle_name }, context) => {

@@ -230,6 +230,20 @@ describe('importTheme in copy mode', () => {
     expectNothingWritten();
   });
 
+  it('frees in a dry run the name of a theme that an earlier overwrite renames, as the import that writes them one by one', async () => {
+    const S1 = 'theme--11111111-1111-4111-8111-111111111111';
+    const S2 = 'theme--22222222-2222-4222-8222-222222222222';
+    // The platform has S1 named "B": the bundle renames it to "A", then adds S2 named "B"
+    vi.mocked(findById).mockImplementation((async (_context: unknown, _user: unknown, id: string) => (id === S1 ? { id: 'internal-1', name: 'B', built_in: false } : undefined)) as never);
+    vi.mocked(checkExistingTheme).mockImplementation((async (_context: unknown, _user: unknown, name: string, excludeId?: string) => name === 'B' && excludeId !== 'internal-1') as never);
+    const options = { mode: ConfigImportMode.Overwrite, dryRun: true, reservedNames: new Set<string>(), releasedNames: new Set<string>() };
+    // Without the earlier rename, "B" is taken by S1
+    expect(await importTheme(context, user, themeConfiguration({ standard_id: S2, name: 'B' }), { ...options, reservedNames: new Set(), releasedNames: new Set() })).toMatchObject({ status: 'failed', code: 'name_conflict' });
+    expect(await importTheme(context, user, themeConfiguration({ standard_id: S1, name: 'A' }), options)).toMatchObject({ status: 'overwritten' });
+    expect(await importTheme(context, user, themeConfiguration({ standard_id: S2, name: 'B' }), options)).toMatchObject({ status: 'created' });
+    expectNothingWritten();
+  });
+
   it('decides the same on a dry run and writes nothing, and still skips a built-in theme', async () => {
     vi.mocked(findById).mockResolvedValue({ id: 'existing-id', built_in: false } as never);
     taken('Import test theme');

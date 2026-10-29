@@ -47,7 +47,7 @@ const brandingImporter: ConfigPresetImporter = {
       return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the theme does not match its id' };
     }
     // The rules of a theme are the ones of the theme module: a dry run decides what the import would do
-    const result = await importTheme(context, user, item.configuration, { mode, dryRun: true, reservedNames: plan.themeNames });
+    const result = await importTheme(context, user, item.configuration, { mode, dryRun: true, reservedNames: plan.themeNames, releasedNames: plan.releasedThemeNames });
     // The theme the items depend on is the one with this standard id: a copy of a theme that exists is another theme
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));

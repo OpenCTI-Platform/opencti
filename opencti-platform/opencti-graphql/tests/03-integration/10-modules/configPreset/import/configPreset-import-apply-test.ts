@@ -51,6 +51,12 @@ const SETTINGS_QUERY = gql`
   }
 `;
 
+const EXPORT_MUTATION = gql`
+  mutation ConfigPresetApplyExport($selections: [ConfigPresetSelectionInput!]!) {
+    configPresetExport(selections: $selections) { id }
+  }
+`;
+
 const readStream = async (stream: unknown) => {
   const chunks: Buffer[] = [];
   for await (const chunk of stream as AsyncIterable<Buffer>) {
@@ -168,6 +174,26 @@ describe('Config preset import: apply', () => {
     // The mutation returns the settings so that the front store learns the new values
     expect(output.settings).toMatchObject({ platform_title: 'Imported title', platform_bootstrap_status: 'completed', platform_theme: { name: 'Import test theme' } });
     expect(settings.platform_bootstrap_status).toEqual('completed');
+  });
+
+  it('imports the zip of the real export, from values as the platform stores them: a cleared favicon and a theme logo that is a path', async () => {
+    const theme = await addTheme(testContext, ADMIN_USER, themeConfiguration({ name: 'Round trip theme', theme_logo: '/static/logo.svg' }) as never);
+    const settings = await getSettings(testContext);
+    await settingsEditField(testContext, ADMIN_USER, settings.id, [{ key: 'platform_favicon', value: [''] }, { key: 'platform_theme', value: [theme.id] }]);
+    const exported = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: { selections: [{ type: 'platform', items: ['platform'] }] } });
+    const exportId = exported.data?.configPresetExport.id as string;
+    const zip = await readStream(await downloadFile(exportId));
+    await deleteFile(testContext, ADMIN_USER, exportId, { forceDelete: true });
+    // The platform is a blank one again, without the theme
+    await settingsEditField(testContext, ADMIN_USER, settings.id, [{ key: 'platform_theme', value: [before.platform_theme.id] }]);
+    await deleteTheme(testContext, ADMIN_USER, theme.id);
+    const uploaded = await queryAsAdminWithSuccess({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(zip, 'exported.zip') } });
+    const output = await importData(uploaded.data?.configPresetImportUpload.id, ALL);
+    expect(output.results.map((result: { key: string; status: string }) => `${result.key}:${result.status}`)).toEqual([`${CUSTOM_THEME_ID}:CREATED`, 'platform:OVERWRITTEN']);
+    expect((await findThemeById(testContext, ADMIN_USER, CUSTOM_THEME_ID))?.theme_logo).toEqual('/static/logo.svg');
+    const imported = await readSettings();
+    expect(imported.platform_favicon).toEqual('');
+    expect(imported.platform_theme.standard_id).toEqual(CUSTOM_THEME_ID);
   });
 
   it('overwrites on a second import of the same bundle, without duplicating the theme', async () => {

@@ -198,21 +198,36 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   // The preview is read once for a file
   }, [environment, session.file_id]);
 
-  const flushSave = useCallback(() => {
+  // Resolved once the save is answered, whatever the answer. A failure is notified by the global error toast; a file that is no longer
+  // the one of the session (another tab uploaded a new one) sends the wizard back to the upload.
+  const flushSave = useCallback((): Promise<void> => {
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    if (pendingRef.current) {
-      const selections = pendingRef.current;
-      pendingRef.current = null;
-      // Saved in the background: a failure is notified by the global error toast
-      commitSaveRef.current({ variables: { file_id: session.file_id, selections, revision: revisionRef.current } });
+    if (!pendingRef.current) {
+      return Promise.resolve();
     }
+    const selections = pendingRef.current;
+    pendingRef.current = null;
+    return new Promise((resolve) => {
+      commitSaveRef.current({
+        variables: { file_id: session.file_id, selections, revision: revisionRef.current },
+        onCompleted: () => resolve(),
+        onError: (err) => {
+          if (getConfigPresetErrorReason(err) === 'file_missing') {
+            onFileMissing();
+          }
+          resolve();
+        },
+      });
+    });
   }, [session.file_id]);
 
   // A pending save is sent on close
-  useEffect(() => flushSave, [flushSave]);
+  useEffect(() => () => {
+    flushSave();
+  }, [flushSave]);
   useEffect(() => () => {
     isMountedRef.current = false;
   }, []);
@@ -249,9 +264,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     scheduleSave(selection, next);
   };
 
+  // The import starts once the save is answered: the session only accepts a save while it is a draft, and the two requests would race
   const handleApply = () => {
-    flushSave();
-    onApply(selections);
+    flushSave().then(() => onApply(selections));
   };
 
   // Another import ended since the expected results were computed: the platform is no longer the one they describe. The first date
@@ -295,6 +310,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         onError: (err) => {
           if (isMountedRef.current && request === simulationRef.current) {
             setIsSimulating(false);
+            // The results of the previous selection no longer describe this one
+            setResults(null);
             if (getConfigPresetErrorReason(err) === 'file_missing') {
               onFileMissing();
             }

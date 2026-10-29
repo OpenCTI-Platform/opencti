@@ -17,6 +17,18 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   hiddenEntityTypesFamily,
 ];
 
+// How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.
+// A type the registry does not know (a bundle of a newer platform) is its own group.
+export const getConfigPresetFamilyDisplay = (type: string) => {
+  const index = CONFIG_PRESET_FAMILIES.findIndex(({ id }) => id === type);
+  const family = CONFIG_PRESET_FAMILIES[index];
+  return {
+    type_label: family?.label ?? type,
+    type_index: Math.max(index, 0),
+    group: family ? { key: family.group.id, label: family.group.label } : { key: type, label: type },
+  };
+};
+
 export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, item: ConfigPresetItemDefinition) => {
   return `${family.directory}/${item.fileName ?? `${item.id}.json`}`;
 };
