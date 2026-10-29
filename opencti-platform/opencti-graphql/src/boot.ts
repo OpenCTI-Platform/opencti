@@ -1,5 +1,5 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags, checkTlsVerification } from './initialization';
+import platformInit, { checkFeatureFlags, checkGraphqlSecurity, checkTlsVerification } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
@@ -37,6 +37,7 @@ const doPlatformStart = async () => {
     }
     checkFeatureFlags();
     checkTlsVerification();
+    checkGraphqlSecurity();
     // Check all dependencies access
     try {
       await checkSystemDependencies();
