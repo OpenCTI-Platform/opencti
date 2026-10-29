@@ -66,9 +66,9 @@ const importFields = async (
   return { status: 'overwritten', exists: true, configuration: parsed.data };
 };
 
-// A message is one of the keys of SETTINGS_MESSAGES_FIELDS
+// A message is one of the own keys of SETTINGS_MESSAGES_FIELDS: the id comes from a bundle, `constructor` is not a message
 export const importMessage = (context: AuthContext, user: AuthUser, messageId: string, configuration: unknown, options: ConfigImportOptions) => {
-  if (!(messageId in SETTINGS_MESSAGES_FIELDS)) {
+  if (!Object.hasOwn(SETTINGS_MESSAGES_FIELDS, messageId)) {
     return Promise.resolve(failed('unknown_message', 'Unknown message'));
   }
   const id = messageId as keyof typeof SETTINGS_MESSAGES_FIELDS;

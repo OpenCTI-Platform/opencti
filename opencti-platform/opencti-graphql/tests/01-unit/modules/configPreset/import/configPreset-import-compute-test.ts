@@ -40,6 +40,10 @@ describe('Messages import (compute)', () => {
     expect(await compute('messages', 'banner', { platform_banner_text: 'Hello', platform_banner_level: null })).toMatchObject({ status: 'overwritten', exists: true });
   });
 
+  it.each(['constructor', '__proto__', 'toString', 'hasOwnProperty'])('fails the inherited property name %s as an unknown message, without throwing', async (id) => {
+    expect(await compute('messages', id, { platform_banner_text: 'x' })).toMatchObject({ label: id, status: 'failed', reason: 'Unknown message' });
+  });
+
   it('skips an item with only null values', async () => {
     expect(await compute('messages', 'consent', { platform_consent_message: null, platform_consent_confirm_text: null })).toMatchObject({ status: 'skipped', reason: 'Nothing to import' });
     expect(await compute('messages', 'login', {})).toMatchObject({ status: 'skipped' });
