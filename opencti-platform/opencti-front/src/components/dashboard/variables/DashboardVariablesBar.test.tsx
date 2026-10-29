@@ -184,4 +184,16 @@ describe('DashboardVariablesBar', () => {
       expect(onDelete).toHaveBeenCalledWith(sector);
     });
   });
+
+  it('shows Reset and Set as default values when only the time range is modified', () => {
+    renderBar({ variables: [sector], canManage: true, isTimeRangeModified: true });
+    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Set as default values' })).toBeInTheDocument();
+  });
+
+  it('shows the actions after Create variable when there is no variable but the time range is modified', () => {
+    renderBar({ variables: [], canManage: true, onCreate: vi.fn(), isTimeRangeModified: true });
+    expect(screen.getByRole('button', { name: 'Create variable' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+  });
 });
