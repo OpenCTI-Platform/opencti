@@ -519,32 +519,35 @@ describe('CustomDashboard time range', () => {
   });
 
   it('writes the range in manifest.config on Set as default values, then drops the local range', async () => {
-    captured.relayCommit.mockImplementation((args) => args.onCompleted?.());
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     changeRange('months-1');
     await user.click(setAsDefaultsButton());
-    expect(captured.relayCommit).toHaveBeenCalledTimes(1);
-    const { input } = captured.relayCommit.mock.calls[0][0].variables;
+    // Through the mutation hook, which reports every failure: no variable changed, so no other call.
+    expect(captured.relayCommit).not.toHaveBeenCalled();
+    expect(captured.commit).toHaveBeenCalledTimes(1);
+    const [input] = captured.commit.mock.calls[0][0].variables.input;
     expect(input.key).toBe('manifest');
-    expect(JSON.parse(fromB64(input.value)).config).toMatchObject(relative('months-1'));
+    expect(JSON.parse(fromB64(input.value[0])).config).toMatchObject(relative('months-1'));
     await waitFor(() => expect(window.localStorage.getItem(timeRangeKey)).toBeNull());
   });
 
   it('keeps the local range and re-enables the chips when Set as default values fails', async () => {
-    captured.relayCommit.mockImplementation((args) => args.onError?.(new Error('denied')));
+    // The hook calls onError on any failure, a network one included.
+    captured.commit.mockImplementation((args) => args.onError?.(new Error('Failed to fetch')));
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     changeRange('months-1');
     await user.click(setAsDefaultsButton());
     await waitFor(() => expect(setAsDefaultsButton()).toBeEnabled());
     expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeEnabled();
     expect(window.localStorage.getItem(timeRangeKey)).toBe(JSON.stringify(relative('months-1')));
-    expect(captured.commit).not.toHaveBeenCalled();
+    // The range failed: the variables are not sent.
+    expect(captured.commit).toHaveBeenCalledTimes(1);
   });
 
   it('keeps a range changed while the defaults are being saved', async () => {
     let completeMutation: () => void = () => {};
-    captured.relayCommit.mockImplementation((args) => {
-      completeMutation = () => args.onCompleted?.();
+    captured.commit.mockImplementation((args) => {
+      completeMutation = () => args.onCompleted?.({});
     });
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     changeRange('months-1');
@@ -610,6 +613,7 @@ describe('CustomDashboard viewer permissions', () => {
     window.localStorage.clear();
     window.history.replaceState(null, '', '/');
     captured.granted = true;
+    captured.commit.mockReset();
     captured.relayCommit.mockReset();
   });
 
@@ -630,10 +634,10 @@ describe('CustomDashboard viewer permissions', () => {
       { userContext: userContext(['DASHBOARD_VARIABLES']) },
     );
     await user.click(screen.getByRole('switch', { name: 'Allow viewers to change variable values' }));
-    expect(captured.relayCommit).toHaveBeenCalledTimes(1);
-    const { input } = captured.relayCommit.mock.calls[0][0].variables;
+    expect(captured.commit).toHaveBeenCalledTimes(1);
+    const [input] = captured.commit.mock.calls[0][0].variables.input;
     expect(input.key).toBe('manifest');
-    expect(JSON.parse(fromB64(input.value)).config).toStrictEqual({ relativeDate: 'days-7', allowViewersToChangeVariables: true });
+    expect(JSON.parse(fromB64(input.value[0])).config).toStrictEqual({ relativeDate: 'days-7', allowViewersToChangeVariables: true });
   });
 });
 
