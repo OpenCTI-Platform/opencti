@@ -9,6 +9,8 @@ import type { ConfigPresetBundleMetadata } from './configPreset-import-types';
 import type { ConfigPresetImportItemResult } from './configPreset-import-session';
 
 export const CONFIG_PRESET_IMPORT_REPORT_FILE = 'import-report.json';
+// The copy of the uploaded zip next to the report: a fixed name, never the one of the upload, which could be the one of the report
+export const CONFIG_PRESET_IMPORT_SOURCE_FILE = 'bundle.zip';
 
 export interface ConfigPresetImportReportInput {
   user_id: string;
@@ -20,8 +22,8 @@ export interface ConfigPresetImportReportInput {
   outcome: 'completed' | 'stopped';
 }
 
-// The report of a real import under config_preset/history/<uuid>/ with the uploaded zip copied next to it (entity_id '' so
-// that a BYPASS user can read it), then the pending zip is deleted. Any failure here is a warning: the items are applied.
+// The report of a real import under config_preset/history/<uuid>/ with the uploaded zip copied next to it as bundle.zip (entity_id '' so
+// that a BYPASS user can read it; the name of the upload is in the report), then the pending zip is deleted. Any failure here is a warning: the items are applied.
 export const writeConfigPresetImportReport = async (
   context: AuthContext,
   user: AuthUser,
@@ -43,8 +45,8 @@ export const writeConfigPresetImportReport = async (
       // copyFile logs at error level and returns null on a failure
       const copy = await copyFile(context, {
         sourceId: pending.id,
-        targetId: `${folder}/${pending.name}`,
-        sourceDocument: pending as unknown as BasicStoreEntityDocument,
+        targetId: `${folder}/${CONFIG_PRESET_IMPORT_SOURCE_FILE}`,
+        sourceDocument: { ...pending, name: CONFIG_PRESET_IMPORT_SOURCE_FILE } as unknown as BasicStoreEntityDocument,
         targetEntityId: '',
       });
       if (copy) {

@@ -8,6 +8,7 @@ import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../.
 import { addTheme, deleteTheme, findAllThemes, findById as findThemeById } from '../../../../../src/modules/theme/theme-domain';
 import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
 import { deleteFile } from '../../../../../src/database/file-storage';
+import { downloadFile } from '../../../../../src/database/raw-file-storage';
 import { fullEntitiesList } from '../../../../../src/database/middleware-loader';
 import { entitySettingsEditField, getPlatformHiddenEntityTypes } from '../../../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_ENTITY_SETTING, type BasicStoreEntityEntitySetting } from '../../../../../src/modules/entitySetting/entitySetting-types';
@@ -50,10 +51,17 @@ const SETTINGS_QUERY = gql`
   }
 `;
 
+const readStream = async (stream: unknown) => {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream as AsyncIterable<Buffer>) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+};
 const readSettings = async () => (await queryAsAdminWithSuccess({ query: SETTINGS_QUERY })).data?.settings;
-const upload = async (files: Record<string, string>) => {
+const upload = async (files: Record<string, string>, name = 'bundle.zip') => {
   const content = await buildZip(files);
-  const result = await queryAsAdminWithSuccess({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(content, 'bundle.zip') } });
+  const result = await queryAsAdminWithSuccess({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(content, name) } });
   return result.data?.configPresetImportUpload.id as string;
 };
 const runImport = (fileId: string, selections: unknown[], dryRun = false) => queryAsAdmin({
@@ -333,6 +341,15 @@ describe('Config preset import: apply', () => {
     const session = (await queryAsAdminWithSuccess({ query: SESSION_QUERY })).data?.configPresetImportSession;
     expect(session).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED', report_id: output.report_id, total: 4, counts: { created: 1, overwritten: 3, skipped: 0, failed: 0 } });
     expect(session.results).toHaveLength(4);
+  });
+
+  it('keeps the report when the zip is uploaded under the name of the report', async () => {
+    const output = await importData(await upload(validBundleFiles(), 'import-report.json'), ALL);
+    const folder = (output.report_id as string).replace(/\/import-report\.json$/, '');
+    const files = (await allFilesForPaths(testContext, ADMIN_USER, [folder])).map((file) => file.name).sort();
+    expect(files).toEqual(['bundle.zip', 'import-report.json']);
+    const report = JSON.parse((await readStream(await downloadFile(output.report_id))).toString('utf8'));
+    expect(report).toMatchObject({ report_version: 1, outcome: 'completed', source_file_name: 'import-report.json' });
   });
 
   it('refuses another file, a second import on the finished zip, and a user without BYPASS', async () => {
