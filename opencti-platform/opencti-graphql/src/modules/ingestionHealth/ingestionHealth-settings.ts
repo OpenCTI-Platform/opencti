@@ -11,14 +11,14 @@ import type { IngestionHealthSettings } from './ingestionHealth-types';
 export const MAX_HEALTH_NOTIFICATION_DELAY_MS = 24 * 60 * 60 * 1000;
 
 // The settings as used, absent values replaced by their default: nothing is written on platforms never configured
-export const resolveIngestionHealthSettings = (settings: { ingestion_health_settings?: IngestionHealthSettings | null }): Required<IngestionHealthSettings> => ({
-  notification_delay: settings.ingestion_health_settings?.notification_delay ?? DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
+export const resolveIngestionHealthSettings = (settings: IngestionHealthSettings | null | undefined): Required<IngestionHealthSettings> => ({
+  notification_delay: settings?.notification_delay ?? DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
   // A code no longer in the registry is ignored: the check was removed
-  disabled_health_checks: (settings.ingestion_health_settings?.disabled_health_checks ?? []).filter(isHealthCheckCode),
+  disabled_health_checks: (settings?.disabled_health_checks ?? []).filter(isHealthCheckCode),
 });
 
 // Every check of the registry, so that the settings list the checks added later as enabled
-export const toGraphqlIngestionHealthSettings = (settings: { ingestion_health_settings?: IngestionHealthSettings | null }): GraphqlIngestionHealthSettings => {
+export const toGraphqlIngestionHealthSettings = (settings: IngestionHealthSettings | null | undefined): GraphqlIngestionHealthSettings => {
   const resolved = resolveIngestionHealthSettings(settings);
   return {
     ...resolved,
@@ -45,7 +45,7 @@ const isValidDisabledHealthChecks = (codes: unknown) => Array.isArray(codes)
 export const validateIngestionHealthSettingsInput = async (
   context: AuthContext,
   input: IngestionHealthSettingsInput,
-  currentSettings: { ingestion_health_settings?: IngestionHealthSettings | null },
+  currentSettings: IngestionHealthSettings | null | undefined,
 ) => {
   enforceEnableFeatureFlag(INGESTION_HEALTH_FEATURE_FLAG);
   const { notification_delay, disabled_health_checks } = input;

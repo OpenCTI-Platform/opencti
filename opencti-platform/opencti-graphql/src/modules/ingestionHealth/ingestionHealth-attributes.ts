@@ -79,8 +79,7 @@ export const ingestionHealthAttributes: AttributeDefinition[] = [
   },
 ];
 
-// Stored in the platform settings, edited through the ingestion health API only (see ingestionHealth-domain):
-// not updatable, so that the generic settings edition cannot write it unvalidated, even with BYPASS
+// Stored in the platform settings, registered on them by the module (see ingestionHealth)
 export const ingestionHealthSettingsAttribute: AttributeDefinition = {
   name: 'ingestion_health_settings',
   label: 'Ingestion health settings',
@@ -90,7 +89,6 @@ export const ingestionHealthSettingsAttribute: AttributeDefinition = {
   editDefault: false,
   multiple: false,
   upsert: false,
-  update: false,
   isFilterable: false,
   featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
   mappings: [

@@ -1,7 +1,6 @@
 import type { BasicStoreEntity } from './store';
 import type { XtmHubRegistrationStatus, CguStatus, SmtpAuthType } from '../generated/graphql';
 import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from '../modules/authenticationProvider/authenticationProvider-types';
-import type { IngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-types';
 
 export interface BasicStoreSettingsMessage {
   id: string;
@@ -100,5 +99,4 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   password_policy_min_uppercase?: number;
   password_policy_validity_days?: number;
   smtp_configuration?: SmtpConfiguration;
-  ingestion_health_settings?: IngestionHealthSettings;
 }
