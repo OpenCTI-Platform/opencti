@@ -178,4 +178,37 @@ describe('Ingestion domain timeout options', () => {
       expect.objectContaining({ timeout: 7777, responseType: 'json' }),
     );
   });
+
+  it('should verify the json feed certificate unless ssl_verify is explicitly false', async () => {
+    httpRequestMock.mockResolvedValue({
+      data: { items: [] },
+      headers: {},
+    });
+    findJsonMapperByIdMock.mockResolvedValue({
+      representations: '[]',
+      variables: '[]',
+    });
+    getEntitiesMapFromCacheMock.mockResolvedValue(new Map());
+    jsonMappingExecutionMock.mockResolvedValue([]);
+
+    const ingestion = {
+      headers: [],
+      ingestion_json_state: null,
+      query_attributes: [],
+      authentication_type: 'none',
+      uri: 'http://localhost/json',
+      body: '{}',
+      verb: 'POST',
+      json_mapper_id: 'json-mapper--1',
+      user_id: null,
+      pagination_with_sub_page: false,
+      pagination_with_sub_page_attribute_path: null,
+    } as any;
+
+    await executeJsonQuery({} as any, ingestion);
+    await executeJsonQuery({} as any, { ...ingestion, ssl_verify: false });
+
+    expect(getHttpClientMock).toHaveBeenNthCalledWith(1, expect.objectContaining({ rejectUnauthorized: true }));
+    expect(getHttpClientMock).toHaveBeenNthCalledWith(2, expect.objectContaining({ rejectUnauthorized: false }));
+  });
 });

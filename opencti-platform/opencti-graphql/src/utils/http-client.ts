@@ -500,6 +500,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     return httpResponse;
   };
   return {
+    // Ignores the client TLS options, certificates and proxy: reserved for webhooks, use request otherwise
     call: (config: HttpRequestConfig) => request(config, false),
     request: async (config: HttpRequestConfig) => request(config, true),
     get: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'GET' }, true),
