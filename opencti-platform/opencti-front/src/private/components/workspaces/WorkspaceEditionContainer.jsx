@@ -17,11 +17,14 @@ class WorkspaceEditionContainer extends Component {
         onClose={handleClose}
         context={editContext}
       >
-        <WorkspaceEditionOverview
-          workspace={this.props.workspace}
-          context={editContext}
-        />
-        {children}
+        {/* A single child: the Drawer clones it to pass onClose, a Fragment is passed through. */}
+        <>
+          <WorkspaceEditionOverview
+            workspace={this.props.workspace}
+            context={editContext}
+          />
+          {children}
+        </>
       </Drawer>
     );
   }
