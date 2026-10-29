@@ -432,6 +432,10 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
       res.status(400).json({ error: 'conversation_id field and at least one file are required' });
       return;
     }
+    if (!UUID_RE.test(conversationId)) {
+      res.status(400).json({ error: 'Invalid conversation id' });
+      return;
+    }
     const authHeaders = await generateBasicHeaders(req, context);
     const fileIds: string[] = [];
     for (const file of files) {
