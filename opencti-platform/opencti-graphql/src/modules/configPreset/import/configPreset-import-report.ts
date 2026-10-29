@@ -52,7 +52,9 @@ export const writeConfigPresetImportReport = async (
       if (copy) {
         // A stopped import keeps the pending zip
         if (report.outcome === 'completed') {
-          await deleteFile(context, user, pending.id, { forceDelete: true });
+          // The report is written and the zip copied: a failed cleanup must not lose the report id
+          await deleteFile(context, user, pending.id, { forceDelete: true })
+            .catch((err) => logApp.warn('[CONFIG PRESET] The pending zip could not be deleted after the import', { cause: err, file_id: pending.id }));
         }
       } else {
         logApp.warn('[CONFIG PRESET] The uploaded zip could not be copied next to the import report', { file_id: pending.id });
