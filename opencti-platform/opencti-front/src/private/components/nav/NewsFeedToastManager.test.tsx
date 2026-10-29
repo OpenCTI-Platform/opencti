@@ -162,6 +162,47 @@ describe('NewsFeedToastManager', () => {
     expect(screen.getByRole('link', { name: 'View all on XTM Hub' })).toHaveAttribute('href', `${HUB_URL}/app`);
   });
 
+  describe('overflow banner of the blog posts', () => {
+    const emitMany = (types: string[]) => types.forEach((type, i) => emitAdded({ id: `item-${i}`, news_feed_type: type }));
+
+    it('does not talk about the resources of the hub when only blog posts are hidden', () => {
+      renderManager();
+      emitMany(Array(7).fill('BLOG_POST'));
+      expect(screen.getByText('(+2) Click to view all the new blog posts')).toBeInTheDocument();
+      expect(screen.queryByText(/new resources on the Hub/)).not.toBeInTheDocument();
+    });
+
+    it('links the banner to the Filigran blog when only blog posts are hidden', () => {
+      renderManager();
+      emitMany(Array(7).fill('BLOG_POST'));
+      const url = new URL(screen.getByRole('link', { name: 'See all' }).getAttribute('href') as string);
+      expect(url.origin).toBe('https://filigran.io');
+      expect(url.pathname).toBe('/blog');
+      expect(url.searchParams.get('utm_source')).toBe('settings-id-1');
+      expect(url.searchParams.get('utm_content')).toBe('see_all');
+      expect(url.searchParams.has('platform_id')).toBe(false);
+    });
+
+    it('displays the blog banner even when the hub url is not configured', () => {
+      renderManager({ settings: { id: 'settings-id-1', xtm_hub_registration_status: 'registered' } });
+      emitMany(Array(7).fill('BLOG_POST'));
+      expect(screen.getByText('(+2) Click to view all the new blog posts')).toBeInTheDocument();
+    });
+
+    it('uses a neutral message when blog posts and resources are hidden together', () => {
+      renderManager();
+      emitMany([...Array(5).fill('RESOURCE_PLAYBOOK'), 'BLOG_POST', 'RESOURCE_PLAYBOOK']);
+      expect(screen.getByText('(+2) Click to view all the new items')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute('href', `${HUB_URL}/app`);
+    });
+
+    it('keeps the hub message when only resources are hidden', () => {
+      renderManager();
+      emitMany([...Array(5).fill('BLOG_POST'), 'RESOURCE_PLAYBOOK', 'RESOURCE_PLAYBOOK']);
+      expect(screen.getByText('(+2) Click to view all the new resources on the Hub')).toBeInTheDocument();
+    });
+  });
+
   it('does not display the overflow banner when the hub url is not configured', () => {
     renderManager({ settings: { id: 'settings-id-1', xtm_hub_registration_status: 'registered' } });
     for (let i = 0; i < 7; i += 1) {

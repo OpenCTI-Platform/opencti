@@ -21,7 +21,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import useChipOverflow from '../integrations/catalog/components/card/usecases/useChipOverflow';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
-import { getNewsFeedIcon, isKnownNewsFeedType } from '../../../utils/NewsFeed';
+import { getNewsFeedIcon, isKnownNewsFeedType, NEWS_FEED_BLOG_POST_TYPE } from '../../../utils/NewsFeed';
 
 const LOCAL_STORAGE_KEY = 'newsFeed';
 
@@ -343,6 +343,13 @@ const NewsFeed: FunctionComponent = () => {
         values: [me.id],
         operator: 'eq',
         mode: 'or',
+      },
+      // the blog posts have their own tab
+      {
+        key: 'news_feed_type',
+        values: [NEWS_FEED_BLOG_POST_TYPE],
+        operator: 'not_eq',
+        mode: 'and',
       },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
