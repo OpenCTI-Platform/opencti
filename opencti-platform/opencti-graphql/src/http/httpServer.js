@@ -15,7 +15,7 @@ import passport from 'passport';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
-import createApolloServer from '../graphql/graphql';
+import createApolloServer, { createSubscriptionServerOptions } from '../graphql/graphql';
 import { getSessionMiddleware } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ForbiddenAccess, WorkNotALiveError } from '../config/errors';
@@ -95,7 +95,7 @@ const createHttpServer = async () => {
   app.use(rateLimit(buildRateLimiterOptions()));
   app.use(await getSessionMiddleware());
   app.use(passport.initialize({}));
-  const { schema, apolloServer } = createApolloServer();
+  const { schema, apolloServer, protection } = createApolloServer();
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     try {
@@ -128,10 +128,7 @@ const createHttpServer = async () => {
   wsServer.on('error', (e) => {
     throw e;
   });
-  const serverCleanup = useServer({
-    schema,
-    context: extractWsSessionContext,
-  }, wsServer);
+  const serverCleanup = useServer(createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }), wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({

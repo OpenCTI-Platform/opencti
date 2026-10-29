@@ -533,11 +533,15 @@ export const getPlatformHttpProxyAgent = (uri, fetchDispatcher = false) => {
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_UI = booleanConf('app:enabled_ui', true);
 
+// Global GraphQL hardening, fallback for the GraphQL protections that do not define their own option.
+// Disabled by default for now, it will be enabled by default in an upcoming version.
+export const GRAPHQL_SECURE_BY_DEFAULT = booleanConf('app:graphql:secure_by_default', false);
+
 // Playground
 export const ENABLED_DEMO_MODE = booleanConf('demo_mode', false);
 export const PLAYGROUND_INTROSPECTION_DISABLED = DEV_MODE ? false : (!ENABLED_UI || booleanConf('app:graphql:playground:force_disabled_introspection', true));
-export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', true);
-export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', true);
+export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', !GRAPHQL_SECURE_BY_DEFAULT);
+export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', !GRAPHQL_SECURE_BY_DEFAULT);
 
 // Default activated managers
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);

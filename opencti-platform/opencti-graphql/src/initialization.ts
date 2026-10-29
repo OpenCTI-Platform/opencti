@@ -4,7 +4,7 @@ import semver from 'semver';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema } from './database/engine';
 import { initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues } from './modules/connector/connector-rabbitmq';
-import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
+import { ENABLED_FEATURE_FLAGS, GRAPHQL_SECURE_BY_DEFAULT, logApp, PLATFORM_VERSION } from './config/conf';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
@@ -32,6 +32,13 @@ const PLATFORM_LOCK_ID = 'platform_init_lock';
 export const checkFeatureFlags = () => {
   if (ENABLED_FEATURE_FLAGS.length > 0) {
     logApp.info(`[FEATURE-FLAG] Activated features still in development: ${ENABLED_FEATURE_FLAGS}`);
+  }
+};
+
+export const checkGraphqlSecurity = () => {
+  if (!GRAPHQL_SECURE_BY_DEFAULT) {
+    logApp.warn('[OPENCTI] GraphQL secure defaults are disabled for the protections that do not set their own option (app:graphql:secure_by_default=false). '
+      + 'They will be enabled by default in an upcoming version: set APP__GRAPHQL__SECURE_BY_DEFAULT=true to opt in now.');
   }
 };
 
