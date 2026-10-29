@@ -322,6 +322,22 @@ describe('ConfigPresetImportWizard', () => {
       expect(await screen.findByText('The uploaded file no longer exists')).toBeInTheDocument();
     });
 
+    it('sends one import when Apply is clicked twice while the save is pending', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(checkbox('Messages (1/1)'));
+      await resolveSimulation(rendered);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      // The save is in flight and the import is not sent yet: Apply cannot start a second one
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      expect(realApplies(rendered)).toHaveLength(0);
+      await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+      await act(async () => {});
+      expect(realApplies(rendered)).toHaveLength(1);
+    });
+
     it('applies once the save is answered, even when the save failed', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(checkbox('Messages (1/1)'));

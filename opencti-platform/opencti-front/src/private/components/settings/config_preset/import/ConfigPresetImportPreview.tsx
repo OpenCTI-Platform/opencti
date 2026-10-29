@@ -267,8 +267,23 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   };
 
   // The import starts once the save is answered: the session only accepts a save while it is a draft, and the two requests would race
+  // The ref closes the window of a second click before the button is disabled; the state disables the button until the import is sent
+  const [isStarting, setIsStarting] = useState(false);
+  const isStartingRef = useRef(false);
   const handleApply = () => {
-    flushSave().then(() => onApply(selections));
+    if (isStartingRef.current) {
+      return;
+    }
+    isStartingRef.current = true;
+    setIsStarting(true);
+    flushSave()
+      .then(() => onApply(selections))
+      .finally(() => {
+        isStartingRef.current = false;
+        if (isMountedRef.current) {
+          setIsStarting(false);
+        }
+      });
   };
 
   // Another import ended since the expected results were computed: the platform is no longer the one they describe. The first date
@@ -445,6 +460,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           hasSelection={selections.length > 0}
           isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
+          isStarting={isStarting}
           onStartOver={() => setConfirmStartOver(true)}
           onApply={handleApply}
         />
