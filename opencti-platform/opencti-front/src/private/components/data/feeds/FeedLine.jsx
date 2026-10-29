@@ -43,6 +43,15 @@ const FiltersItem = styled('div')({
   paddingRight: 10,
 });
 
+// The line is a link: a click on the filters must not open it. Clicks coming from a portal
+// (the filters dialog) are not inside the element and are left alone.
+const stopLineClick = (event) => {
+  if (event.currentTarget.contains(event.target)) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+};
+
 class FeedLineLineComponent extends Component {
   render() {
     const { node, dataColumns, paginationOptions, t } = this.props;
@@ -92,6 +101,7 @@ class FeedLineLineComponent extends Component {
                 </BodyItem>
                 <FiltersItem
                   style={{ width: dataColumns.filters.width }}
+                  onClick={stopLineClick}
                 >
                   {isFilterGroupNotEmpty(filters)
                     ? (
@@ -99,6 +109,7 @@ class FeedLineLineComponent extends Component {
                           filters={filters}
                           variant="small"
                           dataColumns={dataColumns}
+                          showGroupsSummaryButtonOnReadOnly
                         />
                       )
                     : EMPTY_VALUE}

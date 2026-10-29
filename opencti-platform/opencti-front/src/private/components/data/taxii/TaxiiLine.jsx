@@ -45,6 +45,15 @@ const FiltersItem = styled('div')({
   paddingRight: 10,
 });
 
+// The line is a link: a click on the filters must not open it. Clicks coming from a portal
+// (the filters dialog) are not inside the element and are left alone.
+const stopLineClick = (event) => {
+  if (event.currentTarget.contains(event.target)) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+};
+
 const itemSx = {
   paddingLeft: '10px',
   height: 50,
@@ -100,6 +109,7 @@ class TaxiiLineLineComponent extends Component {
                 </BodyItem>
                 <FiltersItem
                   style={{ width: dataColumns.filters.width }}
+                  onClick={stopLineClick}
                 >
                   {isFilterGroupNotEmpty(filters)
                     ? (
@@ -107,6 +117,7 @@ class TaxiiLineLineComponent extends Component {
                           filters={filters}
                           dataColumns={dataColumns}
                           variant="small"
+                          showGroupsSummaryButtonOnReadOnly
                         />
                       )
                     : EMPTY_VALUE}

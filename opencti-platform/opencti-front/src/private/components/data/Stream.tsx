@@ -215,12 +215,16 @@ const Stream = () => {
         const deserializedFilters = deserializeFilterGroupForFrontend(filters);
         return isFilterGroupNotEmpty(deserializedFilters)
           ? (
-              <FilterIconButton
-                filters={deserializedFilters}
-                variant="small"
-                // as the stream edition form, so that a custom field filter is shown with its label
-                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-              />
+              // a click on the filters must not trigger the line click (consumers drawer)
+              <div onClick={(e) => e.stopPropagation()}>
+                <FilterIconButton
+                  filters={deserializedFilters}
+                  variant="small"
+                  showGroupsSummaryButtonOnReadOnly
+                  // as the stream edition form, so that a custom field filter is shown with its label
+                  entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                />
+              </div>
             )
           : EMPTY_VALUE;
       },
@@ -256,7 +260,8 @@ const Stream = () => {
             />
           )}
           actions={(node) => (
-            <div>
+            // a click on the menu must not trigger the line click (consumers drawer)
+            <div onClick={(e) => e.stopPropagation()}>
               <Security needs={[TAXIIAPI]}>
                 <StreamPopover
                   streamCollection={node}
