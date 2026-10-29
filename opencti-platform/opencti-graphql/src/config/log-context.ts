@@ -12,7 +12,4 @@ export const requestLogContextMiddleware = (req: Request, _res: Response, next: 
   requestLogStorage.run(userAgent ? { user_agent: userAgent } : {}, next);
 };
 
-// Explicit metadata wins, so a caller can still log the user agent of another request
-export const withRequestLogContext = (meta: Record<string, unknown>) => {
-  return { ...requestLogStorage.getStore(), ...meta };
-};
+export const getRequestLogContext = (): RequestLogContext => requestLogStorage.getStore() ?? {};
