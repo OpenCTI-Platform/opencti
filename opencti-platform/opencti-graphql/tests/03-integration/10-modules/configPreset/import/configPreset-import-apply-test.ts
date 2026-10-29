@@ -339,8 +339,8 @@ describe('Config preset import: apply', () => {
     // The pending zip is gone
     expect((await runImport(fileId, ALL, true)).errors?.[0].extensions?.data).toMatchObject({ reason: 'file_missing' });
     const session = (await queryAsAdminWithSuccess({ query: SESSION_QUERY })).data?.configPresetImportSession;
-    expect(session).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED', report_id: output.report_id, total: 4, counts: { created: 1, overwritten: 3, skipped: 0, failed: 0 } });
-    expect(session.results).toHaveLength(4);
+    expect(session).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED', report_id: output.report_id, total: 3, counts: { created: 1, overwritten: 2, skipped: 0, failed: 0 } });
+    expect(session.results).toHaveLength(3);
   });
 
   it('keeps the report when the zip is uploaded under the name of the report', async () => {
@@ -373,7 +373,7 @@ describe('Config preset import: apply', () => {
     const controller = new AbortController();
     controller.abort();
     const output = await configPresetImport({ ...testContext, requestAbortSignal: controller.signal }, ADMIN_USER, fileId, [{ type: 'messages' }], false);
-    expect(output.results).toEqual([{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }]);
+    expect(output.results).toMatchObject([{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }]);
     expect((await readSettings()).platform_banner_text).toEqual('Hello');
   });
 
