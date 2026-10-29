@@ -781,6 +781,25 @@ describe('useDashboard', () => {
       expect(saved.widgets[widget.id].layout.x).toBe(4);
     });
 
+    it('keeps a change still being saved in the next one, then forgets it once saved', async () => {
+      const completions: (() => void)[] = [];
+      const saveSpy = vi.fn((_id, _manifest, _noRefresh, onCompleted: () => void) => {
+        completions.push(onCompleted);
+      });
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      const first = result.current.handleConfigChange({ allowViewersToEditTimeFilters: true });
+      // Flipped before the first save is done: the manifest still has the old config.
+      const second = result.current.handleConfigChange({ allowViewersToChangeVariables: true });
+      const secondConfig = (saveSpy.mock.calls[1][1] as unknown as DashboardManifest).config;
+      expect(secondConfig).toStrictEqual({ relativeDate: 'days-7', allowViewersToEditTimeFilters: true, allowViewersToChangeVariables: true });
+      act(() => completions.forEach((complete) => complete()));
+      await Promise.all([first, second]);
+      // Both saved: the next change builds on the manifest only.
+      result.current.handleConfigChange({ allowViewersToSwitchPresets: true });
+      expect((saveSpy.mock.calls[2][1] as unknown as DashboardManifest).config)
+        .toStrictEqual({ relativeDate: 'days-7', allowViewersToSwitchPresets: true });
+    });
+
     it('rejects when the save fails', async () => {
       const saveSpy = vi.fn((_id, _manifest, _noRefresh, _onCompleted, onError?: (error: Error) => void) => onError?.(new Error('boom')));
       const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));

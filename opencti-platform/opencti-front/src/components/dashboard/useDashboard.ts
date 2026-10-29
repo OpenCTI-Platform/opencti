@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import * as R from 'ramda';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import fileDownload from 'js-file-download';
 import type { Widget, WidgetLayout } from '../../utils/widget/widget';
 import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
@@ -116,11 +116,32 @@ function useDashboard({
   };
 
   // Saved with the current widget layouts: the manifest of the store misses the moves saved without refresh.
+  // The config changes still being saved. The manifest only reflects a change once its save is done: a change made
+  // meanwhile (another switch flipped) builds on it, or it would send the old value back and the server would keep that.
+  const pendingConfig = useRef<{ count: number; patch: Partial<DashboardConfig> }>({ count: 0, patch: {} });
   const handleConfigChange = (patch: Partial<DashboardConfig>) => new Promise<void>((resolve, reject) => {
     cancelPendingLayoutSave();
+    const pending = pendingConfig.current;
+    pending.patch = { ...pending.patch, ...patch };
+    pending.count += 1;
+    const settle = () => {
+      pending.count -= 1;
+      if (pending.count === 0) pending.patch = {};
+    };
     saveManifest(
-      { ...manifest, config: { ...manifest.config, ...patch } },
-      { layouts: widgetsLayouts, noRefresh: false, onCompleted: resolve, onError: reject },
+      { ...manifest, config: { ...manifest.config, ...pending.patch } },
+      {
+        layouts: widgetsLayouts,
+        noRefresh: false,
+        onCompleted: () => {
+          settle();
+          resolve();
+        },
+        onError: (error) => {
+          settle();
+          reject(error);
+        },
+      },
     );
   });
 
