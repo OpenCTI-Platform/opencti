@@ -1,18 +1,17 @@
 import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
-import { HealthTransition, type IngestionHealthFields, type StoredHealthCheck, type StoredIngestionHealth } from './ingestionHealth-types';
 import {
-  HEALTH_CHECK_HEARTBEAT_MISSING,
-  HEALTH_CHECK_REGISTRY,
-  type HealthCheckCode,
-  type GlobalIngestionHealthContext,
-  type HealthCheckDefinition,
-  type HealthCheckMetadata,
+  HealthTransition,
   type HealthCheckIngestor,
-  type RuntimeData,
+  type HealthCheckMetadata,
+  type IngestionHealthFields,
+  type StoredHealthCheck,
+  type StoredIngestionHealth,
   type SourceIngestionHealthContext,
-  isHeartbeatAlive,
-} from './ingestionHealth-registry';
+  type GlobalIngestionHealthContext,
+} from './ingestionHealth-types';
+import { HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_REGISTRY, type HealthCheckCode, type HealthCheckDefinition, type RuntimeData } from './ingestionHealth-registry';
+import { isHeartbeatAlive } from './ingestionHealth-registry-utils';
 
 // A stored code can be unknown to this platform version (written by another one): undefined then
 const findHealthCheckDefinition = (code: string): HealthCheckDefinition | undefined => {
