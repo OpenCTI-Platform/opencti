@@ -1,5 +1,23 @@
 coverage:
   status:
+    project:
+      default:
+        target: auto
+        # Coverage may drop by up to 0.5 point versus the base commit, to absorb noise from non-deterministic test runs
+        threshold: 0.5%
+        informational: true
+      opencti-graphql-mandatory:
+        target: auto
+        threshold: 0.5%
+        informational: false
+        paths:
+          - opencti-platform/opencti-graphql/src
+          # Background workers, streams and raw HTTP routes are hard to reach from API tests
+          - "!opencti-platform/opencti-graphql/src/connector/"
+          - "!opencti-platform/opencti-graphql/src/graphql/"
+          - "!opencti-platform/opencti-graphql/src/http/"
+          - "!opencti-platform/opencti-graphql/src/lock/"
+          - "!opencti-platform/opencti-graphql/src/rules/"
     patch:
       default:
         target: 80%
@@ -12,19 +30,21 @@ coverage:
       opencti-graphql-mandatory:
         target: 80%
         informational: false
-        paths: 
-          - opencti-platform/opencti-graphql/src/modules
-          - opencti-platform/opencti-graphql/src/domain
-          - opencti-platform/opencti-graphql/src/resolvers
-          - opencti-platform/opencti-graphql/src/database
-          - opencti-platform/opencti-graphql/src/utils
+        paths:
+          - opencti-platform/opencti-graphql/src
+          - "!opencti-platform/opencti-graphql/src/connector/"
+          - "!opencti-platform/opencti-graphql/src/graphql/"
+          - "!opencti-platform/opencti-graphql/src/http/"
+          - "!opencti-platform/opencti-graphql/src/lock/"
+          - "!opencti-platform/opencti-graphql/src/rules/"
       opencti-graphql-info:
         target: 80%
         informational: true
-        paths: 
+        paths:
           - opencti-platform
       client-python:
-        target: 80%
-        informational: true
+        target: 70%
+        informational: false
         paths:
           - client-python
+          - "!client-python/pycti/connector/"
