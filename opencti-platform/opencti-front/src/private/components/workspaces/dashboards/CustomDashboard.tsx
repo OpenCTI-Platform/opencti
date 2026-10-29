@@ -141,7 +141,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     }
   };
 
-  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {
+  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void, onError?: (error: Error) => void) => {
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
     commitMutation({
       mutation,
@@ -153,8 +153,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
         },
       },
       onCompleted,
+      onError,
       // Remove these once commitMutation gets migrated to TS
-      onError: undefined,
       optimisticResponse: undefined,
       optimisticUpdater: undefined,
       setSubmitting: undefined,
