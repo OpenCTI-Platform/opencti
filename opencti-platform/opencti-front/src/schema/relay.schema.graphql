@@ -49,6 +49,11 @@ enum State {
   timeout
 }
 
+enum WorkInvestigationStatus {
+  TO_REVIEW
+  DONE
+}
+
 enum Capabilities {
   BYPASS
   APIACCESS_USETOKEN
@@ -861,6 +866,8 @@ type Work {
   errors: [WorkMessage]
   tracking: WorkTracking
   draft_context: String
+  touchedElements(first: Int = 100): [StixObjectOrStixRelationship]
+  investigation_status: WorkInvestigationStatus
 }
 
 type WorkEdge {
@@ -9949,6 +9956,7 @@ type Mutation {
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
   workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace
   workspaceVariableDelete(id: ID!, variableId: ID!): Workspace
+  workInvestigationStatusEdit(workId: ID!, status: WorkInvestigationStatus!): Work
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
   malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis

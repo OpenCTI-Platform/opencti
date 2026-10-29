@@ -39,11 +39,10 @@ testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-// - 5 created by investigation-enrichment-test (4 deleted, 1 merged into another)
-testCreatedCounter['intrusion-set'] = 13;
+testCreatedCounter['intrusion-set'] = 51;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
-testCreatedCounter.label = 15;
+testCreatedCounter.label = 16;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 22;
 testCreatedCounter['mac-addr'] = 1;
@@ -59,7 +58,7 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 147;
+testCreatedCounter.relationship = 148;
 testCreatedCounter.report = 59;
 testCreatedCounter.sighting = 5;
 testCreatedCounter.software = 2;
@@ -81,7 +80,7 @@ testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 22;
 testUpdatedCounter.file = 27;
-testUpdatedCounter['intrusion-set'] = 5;
+testUpdatedCounter['intrusion-set'] = 15;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
@@ -152,10 +151,9 @@ testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-// - 4 deleted by investigation-enrichment-test (the merged one is removed by the merge, without a delete event)
-testDeletedCounter['intrusion-set'] = 11;
+testDeletedCounter['intrusion-set'] = 49;
 testDeletedCounter['ipv4-addr'] = 1;
-testDeletedCounter.label = 2;
+testDeletedCounter.label = 3;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 17;
 testDeletedCounter['mac-addr'] = 1;

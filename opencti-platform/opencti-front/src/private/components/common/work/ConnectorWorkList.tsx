@@ -1,7 +1,7 @@
-import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined } from '@mui/icons-material';
+import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined, DoNotDisturb, DataSaverOn, OpenWithOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
+import { Divider, Stack } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/material/styles';
@@ -53,6 +53,10 @@ interface ConnectorWorkListProps {
   onRefresh: (connector: ConnectorWorkListConnector) => void;
   canRefresh?: boolean;
   onWorkDeleted?: () => void;
+  onReviewDismiss?: (workId: string) => void;
+  onReview?: (workId: string) => void;
+  onReviewAddAll?: (workId: string) => void;
+  canEditInvestigation?: boolean;
 }
 
 /**
@@ -63,6 +67,10 @@ const ConnectorWorkList = ({
   onRefresh,
   canRefresh = true,
   onWorkDeleted,
+  onReviewDismiss,
+  onReview,
+  onReviewAddAll,
+  canEditInvestigation = false,
 }: ConnectorWorkListProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
@@ -97,51 +105,40 @@ const ConnectorWorkList = ({
           <div key={connector.id}>
             <ListItem
               divider
-              disablePadding
               secondaryAction={canRefresh && (
                 <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                  <div style={{ right: 0 }}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span>
-                          <IconButton
-                            disabled={!connector.active || isRefreshing}
-                            onClick={() => onRefresh(connector)}
-                            aria-label={t_i18n('Refresh the knowledge using this connector')}
-                          >
-                            <RefreshOutlined />
-                          </IconButton>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {t_i18n('Refresh the knowledge using this connector')}
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
+                  <Stack>
+                    <IconButton
+                      disabled={!connector.active || isRefreshing}
+                      onClick={() => onRefresh(connector)}
+                      tooltip={t_i18n('Refresh the knowledge using this connector')}
+                      aria-label={t_i18n('Refresh the knowledge using this connector')}
+                    >
+                      <RefreshOutlined />
+                    </IconButton>
+                  </Stack>
                 </Security>
               )}
             >
-              <ListItemButton>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <ListItemIcon
-                      style={{
-                        color: connector.active
-                          ? theme.palette.success.main
-                          : theme.palette.error.main,
-                      }}
-                    >
-                      <ExtensionOutlined />
-                    </ListItemIcon>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {connector.active
-                      ? t_i18n('This connector is active')
-                      : t_i18n('This connector is disconnected')}
-                  </TooltipContent>
-                </Tooltip>
-                <ListItemText primary={connector.name} />
-              </ListItemButton>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ListItemIcon
+                    style={{
+                      color: connector.active
+                        ? theme.palette.success.main
+                        : theme.palette.error.main,
+                    }}
+                  >
+                    <ExtensionOutlined />
+                  </ListItemIcon>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {connector.active
+                    ? t_i18n('This connector is active')
+                    : t_i18n('This connector is disconnected')}
+                </TooltipContent>
+              </Tooltip>
+              <ListItemText primary={connector.name} />
             </ListItem>
 
             <List
@@ -160,47 +157,84 @@ const ConnectorWorkList = ({
                       <ListItem
                         dense
                         divider
-                        disablePadding
                         secondaryAction={(
                           <Security needs={['CONNECTORAPI', 'MODULES_MODMANAGE']}>
-                            <div style={{ right: 0 }}>
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                            >
+                              {onReview && (
+                                <IconButton
+                                  disabled={isFail}
+                                  tooltip={t_i18n('Review results')}
+                                  aria-label={t_i18n('Review results')}
+                                  onClick={() => onReview?.(work.id)}
+                                >
+                                  <OpenWithOutlined fontSize="small" />
+                                </IconButton>
+                              )}
+                              <Security needs={[]} hasAccess={canEditInvestigation}>
+                                <>
+                                  {onReviewAddAll && (
+                                    <IconButton
+                                      disabled={isFail}
+                                      tooltip={t_i18n('Add all to graph')}
+                                      aria-label={t_i18n('Add all to graph')}
+                                      onClick={() => onReviewAddAll?.(work.id)}
+                                    >
+                                      <DataSaverOn fontSize="small" />
+                                    </IconButton>
+                                  )}
+                                  {onReviewDismiss && (
+                                    <IconButton
+                                      tooltip={t_i18n('Dismiss review')}
+                                      aria-label={t_i18n('Dismiss review')}
+                                      onClick={() => onReviewDismiss?.(work.id)}
+                                    >
+                                      <DoNotDisturb fontSize="small" />
+                                    </IconButton>
+                                  )}
+                                </>
+                              </Security>
+                              {(onReview || onReviewAddAll || onReviewDismiss) && (
+                                <Divider orientation="vertical" flexItem />
+                              )}
                               <IconButton
+                                tooltip={t_i18n('Delete')}
                                 aria-label={t_i18n('Delete')}
                                 onClick={() => deleteWork(work.id)}
                               >
                                 <DeleteOutlined />
                               </IconButton>
-                            </div>
+                            </Stack>
                           </Security>
                         )}
                       >
-                        <ListItemButton sx={{ paddingLeft: theme.spacing(4) }}>
-                          <ListItemIcon>
-                            {isFail && (
-                              <WarningOutlined
-                                style={{
-                                  fontSize: 15,
-                                  color: theme.palette.error.main,
-                                }}
-                              />
-                            )}
-                            {!isFail && work.status === 'complete' && (
-                              <CheckCircleOutlined
-                                style={{
-                                  fontSize: 15,
-                                  color: theme.palette.success.main,
-                                }}
-                              />
-                            )}
-                            {((!isFail && work.status === 'wait') || work.status === 'progress') && (
-                              <Spinner
-                                size="md"
-                                style={{ marginRight: 10 }}
-                              />
-                            )}
-                          </ListItemIcon>
-                          <ListItemText primary={nsdt(work.timestamp)} />
-                        </ListItemButton>
+                        <ListItemIcon>
+                          {isFail && (
+                            <WarningOutlined
+                              style={{
+                                fontSize: 15,
+                                color: theme.palette.error.main,
+                              }}
+                            />
+                          )}
+                          {!isFail && work.status === 'complete' && (
+                            <CheckCircleOutlined
+                              style={{
+                                fontSize: 15,
+                                color: theme.palette.success.main,
+                              }}
+                            />
+                          )}
+                          {((!isFail && work.status === 'wait') || work.status === 'progress') && (
+                            <Spinner
+                              size="md"
+                              style={{ marginRight: 10 }}
+                            />
+                          )}
+                        </ListItemIcon>
+                        <ListItemText primary={nsdt(work.timestamp)} />
                       </ListItem>
                     </TooltipTrigger>
                     <TooltipContent style={{ maxWidth: 600 }}>

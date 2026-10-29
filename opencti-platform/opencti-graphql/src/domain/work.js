@@ -4,7 +4,7 @@ import { logApp } from '../config/conf';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
-import { internalLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById } from '../database/middleware-loader';
 import {
   redisAcquireWorkCompletionFlag,
   redisDeleteWorks,
@@ -26,6 +26,7 @@ import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { addIngestionObjectsProcessedCount } from '../manager/telemetryManager';
+import { buildEnrichmentCompletion } from '../database/work-touched-elements';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -274,7 +275,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   const createdWork = await loadWorkById(context, user, workId);
   // If work was created, initialize work on redis
   if (createdWork) {
-    await redisInitializeWork(createdWork.id, isMultiPartWork);
+    await redisInitializeWork(createdWork.id, isMultiPartWork, connector.connector_type, investigationId);
   }
   logApp.info('Work initiated', {
     workId,
@@ -346,6 +347,10 @@ const countIngestionObjectsProcessed = (work, objectsCount) => {
     .catch((reason) => logApp.warn('Error acquiring work completion flag for telemetry', { reason }));
 };
 
+/**
+ * Called by worker when an expectation is processed. Completes the work when all expectations are done,
+ * persisting the touched elements of an enrichment work.
+ */
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   await redisUpdateWorkFigures(workId);
@@ -387,6 +392,9 @@ export const reportExpectation = async (context, user, workId, errorData) => {
         // Telemetry: objects processed by this completed work (volume proxy,
         // import-side pipelines only, first completion only).
         countIngestionObjectsProcessed(currentWork, total);
+        const touched = await buildEnrichmentCompletion(currentWork);
+        sourceScript += touched.source;
+        Object.assign(params, touched.params);
       }
       await elUpdate(context, currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
       // If work is associated to a task, we also need to update work to completed on the task
@@ -477,6 +485,10 @@ export const updateReceivedTime = async (context, user, workId, message) => {
   return workId;
 };
 
+/**
+ * Called by connector when it has finished processing a work. Completes the work when all expectations are done,
+ * persisting the touched elements of an enrichment work.
+ */
 export const updateProcessedTime = async (context, user, workId, message, inError = false) => {
   const currentWork = await loadWorkById(context, user, workId);
   if (!currentWork) { // work is no longer exists
@@ -500,6 +512,9 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     // import-side pipelines only, first completion only). Use the real
     // processed total, not the defaulted-to-1 completed_number.
     countIngestionObjectsProcessed(currentWork, total);
+    const touched = await buildEnrichmentCompletion(currentWork);
+    source += touched.source;
+    Object.assign(params, touched.params);
   }
   if (isNotEmptyField(message)) {
     if (inError) {
@@ -511,4 +526,20 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
   // Update elastic
   await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
   return workId;
+};
+
+/**
+ * Loads the elements touched by an enrichment work as the requesting user: elements the user cannot
+ * access (markings, organizations) and deleted elements are dropped.
+ * @returns null when the touched ids were never recorded (not an enrichment work, or a work completed
+ * before the feature existed or not completed yet), an empty list when recorded but empty
+ */
+export const workTouchedElements = async (context, user, ids, first = 100) => {
+  if (!ids) {
+    return null;
+  }
+  if (ids.length === 0) {
+    return [];
+  }
+  return internalFindByIds(context, user, ids.slice(0, first));
 };

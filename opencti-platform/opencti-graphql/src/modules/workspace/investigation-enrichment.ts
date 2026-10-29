@@ -1,17 +1,18 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList, internalFindByIdsMapped } from '../../database/middleware-loader';
 import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, validateUserAccessOperation } from '../../utils/access';
-import { ForbiddenAccess } from '../../config/errors';
-import type { BasicStoreEntityWorkspace } from './workspace-types';
-import { findInvestigationById } from './workspace-domain';
-import { findWorkPaginated } from '../../domain/work';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { type BasicStoreEntityWorkspace } from './workspace-types';
+import { findWorkPaginated, loadWorkById } from '../../domain/work';
+import { elUpdate } from '../../database/engine';
 import { emptyPaginationResult, isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import type { WorkspaceEnrichmentWorksArgs } from '../../generated/graphql';
-import type { BasicStoreEntity } from '../../types/store';
+import type { WorkInvestigationStatus, WorkspaceEnrichmentWorksArgs } from '../../generated/graphql';
+import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
 import { xOpenctiStixIds } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { findInvestigationById } from './workspace-domain';
 
 const INVESTIGATION_UPDATE_CAPABILITY = 'INVESTIGATION_INUPDATE';
 
@@ -115,4 +116,31 @@ export const findInvestigationEnrichmentWorks = async (
   // 04. Paginate the works of the kept sources only
   const filters = addFilter(investigationFilters, 'event_source_id', allowedSourceIds);
   return findWorkPaginated(context, user, { ...paginationArgs, filters });
+};
+
+type InvestigationWork = BasicStoreBase & { _index: string; investigation_id?: string; investigation_status?: string };
+
+/**
+ * Change the review status of a work of an investigation, the only attribute of a work this allows to edit.
+ * Requires the right to edit the investigation of the work (see validateEnrichmentInvestigation).
+ * A work outside any investigation is reported as not found. A work without a status yet is not completed,
+ * so there is nothing to review: the edit is refused.
+ */
+export const editWorkInvestigationStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  workId: string,
+  status: WorkInvestigationStatus,
+) => {
+  const work: InvestigationWork | undefined = await loadWorkById(context, user, workId);
+  if (!work?.investigation_id) {
+    throw FunctionalError('Work not found', { workId });
+  }
+  await validateEnrichmentInvestigation(context, user, work.investigation_id);
+  if (!work.investigation_status) {
+    throw FunctionalError('Work is not completed yet', { workId });
+  }
+  const source = 'ctx._source.investigation_status = params.investigation_status;';
+  await elUpdate(context, work._index, workId, { script: { source, lang: 'painless', params: { investigation_status: status } } });
+  return loadWorkById(context, user, workId);
 };

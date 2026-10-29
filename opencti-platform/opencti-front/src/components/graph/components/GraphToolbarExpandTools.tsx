@@ -1,9 +1,9 @@
 import { OpenWithOutlined, Undo } from '@mui/icons-material';
-import React, { useState } from 'react';
-import Dialog from '@mui/material/Dialog';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogTitle, Text } from '@filigran/design-system';
 import { graphql } from 'react-relay';
 import { useParams } from 'react-router';
-import InvestigationExpandForm, { InvestigationExpandFormProps } from '@components/workspaces/investigations/InvestigationExpandForm';
+import InvestigationExpandDialogContent, { InvestigationExpandDialogContentProps } from '@components/workspaces/investigations/InvestigationExpandDialogContent';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
 import InvestigationRollBackExpandDialog from '@components/workspaces/investigations/dialog/InvestigationRollBackExpandDialog';
 import GraphToolbarItem from './GraphToolbarItem';
@@ -13,7 +13,6 @@ import useGraphInteractions from '../utils/useGraphInteractions';
 import { fetchQuery } from '../../../relay/environment';
 import { GraphToolbarExpandToolsRelationshipsQuery$data } from './__generated__/GraphToolbarExpandToolsRelationshipsQuery.graphql';
 import { ObjectToParse } from '../utils/useGraphParser';
-import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 const expandRelationshipsQuery = graphql`
   query GraphToolbarExpandToolsRelationshipsQuery($filters: FilterGroup) {
@@ -77,197 +76,7 @@ const expandRelationshipsQuery = graphql`
             created_at
           }
           from {
-            ... on BasicObject {
-              id
-              standard_id
-              entity_type
-              parent_types
-            }
-            ... on StixCoreObject {
-              is_inferred
-              created_at
-              updated_at
-              numberOfConnectedElement
-              createdBy {
-                ... on Identity {
-                  id
-                  name
-                  entity_type
-                }
-              }
-              objectMarking {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
-            ... on StixDomainObject {
-              created
-              confidence
-            }
-            ... on AttackPattern {
-              name
-              x_mitre_id
-            }
-            ... on Campaign {
-              name
-              first_seen
-              last_seen
-            }
-            ... on CourseOfAction {
-              name
-            }
-            ... on Note {
-              attribute_abstract
-              content
-            }
-            ... on ObservedData {
-              name
-              first_observed
-              last_observed
-            }
-            ... on Opinion {
-              opinion
-            }
-            ... on Report {
-              name
-              published
-            }
-            ... on Grouping {
-              name
-              description
-            }
-            ... on SecurityCoverage {
-              name
-            }
-            ... on SecurityCoverageResult {
-              name
-            }
-            ... on Individual {
-              name
-            }
-            ... on Organization {
-              name
-            }
-            ... on Sector {
-              name
-            }
-            ... on System {
-              name
-            }
-            ... on Indicator {
-              name
-              valid_from
-            }
-            ... on Infrastructure {
-              name
-            }
-            ... on IntrusionSet {
-              name
-              first_seen
-              last_seen
-            }
-            ... on Position {
-              name
-              description
-            }
-            ... on City {
-              name
-              description
-            }
-            ... on AdministrativeArea {
-              name
-              description
-            }
-            ... on Country {
-              name
-              description
-            }
-            ... on Region {
-              name
-              description
-            }
-            ... on Malware {
-              name
-              first_seen
-              last_seen
-            }
-            ... on MalwareAnalysis {
-              result_name
-            }
-            ... on ThreatActor {
-              name
-              first_seen
-              last_seen
-            }
-            ... on Tool {
-              name
-            }
-            ... on Vulnerability {
-              name
-            }
-            ... on Incident {
-              name
-              first_seen
-              last_seen
-            }
-            ... on Event {
-              name
-              start_time
-              stop_time
-            }
-            ... on Channel {
-              name
-            }
-            ... on Narrative {
-              name
-            }
-            ... on Language {
-              name
-            }
-            ... on DataComponent {
-              name
-            }
-            ... on DataSource {
-              name
-            }
-            ... on Case {
-              name
-            }
-            ... on Task {
-              name
-            }
-            ... on StixCyberObservable {
-              observable_value
-            }
-            ... on StixFile {
-              observableName: name
-              hashes {
-                algorithm
-                hash
-              }
-            }
-            ... on StixMetaObject {
-              created
-            }
-            ... on Label {
-              value
-              color
-            }
-            ... on KillChainPhase {
-              kill_chain_name
-              phase_name
-            }
-            ... on MarkingDefinition {
-              definition
-              x_opencti_color
-            }
-            ... on ExternalReference {
-              url
-              source_name
-            }
+            ...graphNodeFragment_node @relay(mask: false)
             ... on BasicRelationship {
               id
               entity_type
@@ -329,165 +138,7 @@ const expandRelationshipsQuery = graphql`
             }
           }
           to {
-            ... on BasicObject {
-              id
-              standard_id
-              entity_type
-              parent_types
-            }
-            ... on StixCoreObject {
-              is_inferred
-              created_at
-              updated_at
-              numberOfConnectedElement
-              createdBy {
-                ... on Identity {
-                  id
-                  name
-                  entity_type
-                }
-              }
-              objectMarking {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
-            }
-            ... on StixDomainObject {
-              created
-              confidence
-            }
-            ... on AttackPattern {
-              name
-              x_mitre_id
-            }
-            ... on Campaign {
-              name
-              first_seen
-              last_seen
-            }
-            ... on CourseOfAction {
-              name
-            }
-            ... on Note {
-              attribute_abstract
-            }
-            ... on ObservedData {
-              name
-              first_observed
-              last_observed
-            }
-            ... on Opinion {
-              opinion
-            }
-            ... on Report {
-              name
-              published
-            }
-            ... on Grouping {
-              name
-              description
-            }
-            ... on SecurityCoverage {
-              name
-            }
-            ... on SecurityCoverageResult {
-              name
-            }
-            ... on Individual {
-              name
-            }
-            ... on Organization {
-              name
-            }
-            ... on Sector {
-              name
-            }
-            ... on System {
-              name
-            }
-            ... on Indicator {
-              name
-              valid_from
-            }
-            ... on Infrastructure {
-              name
-            }
-            ... on IntrusionSet {
-              name
-              first_seen
-              last_seen
-            }
-            ... on Position {
-              name
-            }
-            ... on City {
-              name
-            }
-            ... on AdministrativeArea {
-              name
-            }
-            ... on Country {
-              name
-            }
-            ... on Region {
-              name
-            }
-            ... on Malware {
-              name
-              first_seen
-              last_seen
-            }
-            ... on MalwareAnalysis {
-              result_name
-            }
-            ... on ThreatActor {
-              name
-              first_seen
-              last_seen
-            }
-            ... on Tool {
-              name
-            }
-            ... on Vulnerability {
-              name
-            }
-            ... on Incident {
-              name
-              first_seen
-              last_seen
-            }
-            ... on StixCyberObservable {
-              observable_value
-            }
-            ... on StixFile {
-              observableName: name
-              hashes {
-                algorithm
-                hash
-              }
-            }
-            ... on StixMetaObject {
-              created
-            }
-            ... on Label {
-              value
-              color
-            }
-            ... on KillChainPhase {
-              kill_chain_name
-              phase_name
-            }
-            ... on MarkingDefinition {
-              definition
-              x_opencti_color
-            }
-            ... on ExternalReference {
-              url
-              source_name
-            }
+            ...graphNodeFragment_node @relay(mask: false)
             ... on BasicRelationship {
               id
               entity_type
@@ -620,7 +271,7 @@ const GraphToolbarExpandTools = ({
     onInvestigationRollback?.();
   };
 
-  const onExpand: InvestigationExpandFormProps['onSubmit'] = async (
+  const onExpand: InvestigationExpandDialogContentProps['onSubmit'] = async (
     { entity_types, relationship_types },
     { resetForm },
   ) => {
@@ -687,20 +338,22 @@ const GraphToolbarExpandTools = ({
       />
 
       <Dialog
-        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
-        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
-        fullWidth
-        maxWidth={false}
         open={isExpandOpen}
-        sx={{ '& .MuiDialog-paper': { width: 640 } }}
-        onClose={() => setIsExpandOpen(false)}
+        onOpenChange={setIsExpandOpen}
       >
-        <InvestigationExpandForm
-          links={graphData?.links ?? []}
-          selectedNodes={selectedNodes}
-          onSubmit={onExpand}
-          onReset={() => setIsExpandOpen(false)}
-        />
+        <DialogContent size="md">
+          <DialogTitle>
+            <Text variant="title-md">
+              {t_i18n('Expand the selected entities')}
+            </Text>
+          </DialogTitle>
+          <InvestigationExpandDialogContent
+            links={graphData?.links ?? []}
+            selectedNodes={selectedNodes}
+            onSubmit={onExpand}
+            onReset={() => setIsExpandOpen(false)}
+          />
+        </DialogContent>
       </Dialog>
     </>
   );
