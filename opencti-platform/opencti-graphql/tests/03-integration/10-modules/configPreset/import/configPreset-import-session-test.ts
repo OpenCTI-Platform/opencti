@@ -17,7 +17,7 @@ const SESSION_FIELDS = 'status file_id revision selections { type items excluded
 const UPLOAD_MUTATION = gql`mutation ConfigPresetSessionUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const SESSION_QUERY = gql(`query ConfigPresetSession { configPresetImportSession { ${SESSION_FIELDS} } }`);
 const SAVE_MUTATION = gql(`
-  mutation ConfigPresetSessionSave($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $revision: Int!) {
+  mutation ConfigPresetSessionSave($file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $revision: Int!) {
     configPresetImportSessionSave(file_id: $file_id, selections: $selections, revision: $revision) { ${SESSION_FIELDS} }
   }
 `);

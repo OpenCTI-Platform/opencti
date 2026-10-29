@@ -10205,9 +10205,9 @@ type Mutation {
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
   configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File!
   configPresetImportUpload(file: Upload!): File!
-  configPresetImportSessionSave(file_id: String!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession!
+  configPresetImportSessionSave(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession!
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
-  configPresetImport(file_id: String!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput!
+  configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput!
   configPresetImportSessionBackToSelection: ConfigPresetImportSession!
 }
 
@@ -17904,7 +17904,7 @@ type ConfigPresetItemMode {
 
 type ConfigPresetImportSession {
   status: ConfigPresetImportSessionStatus!
-  file_id: String!
+  file_id: ID!
   selections: [ConfigPresetImportSessionSelection!]!
   revision: Int!
   started_at: DateTime

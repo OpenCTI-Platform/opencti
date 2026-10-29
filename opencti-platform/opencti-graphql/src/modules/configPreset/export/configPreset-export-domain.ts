@@ -166,7 +166,7 @@ export const buildConfigPresetDependencies = (families: SelectedConfigPresetFami
 };
 
 // Called by the garbage collection manager. A failed deletion does not stop the others: the next run retries it.
-// Lists the export folders only: the pending imports and the import reports are never touched.
+// Lists the export folders only: the pending imports and the import history have their own retention (see the import domain).
 export const deleteExpiredConfigPresetExports = async (context: AuthContext, user: AuthUser) => {
   try {
     const notModifiedSince = new Date(Date.now() - CONFIG_PRESET_EXPORT_RETENTION_MS).toISOString();

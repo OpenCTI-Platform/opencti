@@ -159,6 +159,15 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.getByRole('button', { name: 'Upload a configuration bundle' })).toBeInTheDocument();
     });
 
+    it('refuses a file that is not a zip in the field, without uploading it', async () => {
+      const rendered = await renderWizard(null);
+      await rendered.user.click(within(screen.getByTestId('config-preset-wizard-import')).getByRole('button'));
+      // The change event does not go through the accept filter of the browser
+      fireEvent.change(screen.getByTestId('config-preset-import-file'), { target: { files: [new File(['text'], 'notes.txt', { type: 'text/plain' })] } });
+      expect(await screen.findByText('This file is not in the specified format')).toBeInTheDocument();
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportUploadMutation');
+    });
+
     it('uploads the zip and reads the session again', async () => {
       const rendered = await renderWizard(null);
       await rendered.user.click(within(screen.getByTestId('config-preset-wizard-import')).getByRole('button'));
@@ -171,6 +180,11 @@ describe('ConfigPresetImportWizard', () => {
   });
 
   describe('preview', () => {
+    it('says that a value the bundle does not carry is left as it is', async () => {
+      await renderPreview();
+      expect(screen.getByText(/A value that the bundle does not carry is left as it is\./)).toBeInTheDocument();
+    });
+
     it('reads the preview of the file of the session, with every item selected for a new upload', async () => {
       const rendered = await renderPreview();
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
@@ -839,6 +853,29 @@ describe('ConfigPresetImportWizard', () => {
       expect(modeSelect()).toHaveTextContent('Overwrite');
       expect(within(screen.getByTestId('config-preset-import-item-branding-theme--1')).queryByRole('combobox')).not.toBeInTheDocument();
       expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByRole('combobox')).not.toBeInTheDocument();
+    });
+
+    it('says that the platform keeps its default theme when that theme is added as a copy, and only then', async () => {
+      const defaultInConflict = {
+        ...preview,
+        types: preview.types.map((type) => (type.key === 'branding'
+          ? { ...type, items: (type.items as { key: string }[]).map((item) => (item.key === 'theme--1' ? { ...item, exists: true, conflict: true } : item)) }
+          : type)),
+      };
+      const rendered = await renderPreview(session(), [], defaultInConflict);
+      const hint = 'The platform keeps its current default theme.';
+      const defaultSelect = () => screen.getByRole('combobox', { name: 'Import theme: When it already exists' });
+      expect(screen.queryByText(hint)).not.toBeInTheDocument();
+      await rendered.user.click(defaultSelect());
+      await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
+      expect(screen.getByText(hint)).toBeInTheDocument();
+      // The theme that is not the default has no such hint
+      await rendered.user.click(screen.getByRole('combobox', { name: 'Existing theme: When it already exists' }));
+      await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
+      expect(screen.getAllByText(hint)).toHaveLength(1);
+      await rendered.user.click(defaultSelect());
+      await rendered.user.click(await screen.findByRole('option', { name: 'Overwrite' }));
+      expect(screen.queryByText(hint)).not.toBeInTheDocument();
     });
 
     it('is not offered on an item that is not imported', async () => {

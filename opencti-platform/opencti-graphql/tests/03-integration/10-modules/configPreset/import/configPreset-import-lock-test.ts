@@ -20,7 +20,7 @@ import { CONFIG_PRESET_IMPORT_LOCK_KEY, isConfigPresetImportLocked } from '../..
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetLockUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`
-  mutation ConfigPresetLockImport($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean) {
+  mutation ConfigPresetLockImport($file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean) {
     configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) { results { key status reason } report_id settings { id } }
   }
 `;

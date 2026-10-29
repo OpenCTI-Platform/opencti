@@ -4713,7 +4713,7 @@ export type ConfigPresetImportSession = {
   __typename?: 'ConfigPresetImportSession';
   available_events: Array<ConfigPresetImportSessionEvent>;
   counts?: Maybe<ConfigPresetImportCounts>;
-  file_id: Scalars['String']['output'];
+  file_id: Scalars['ID']['output'];
   outcome?: Maybe<ConfigPresetImportOutcome>;
   report_id?: Maybe<Scalars['String']['output']>;
   results: Array<ConfigPresetImportResult>;
@@ -18497,7 +18497,7 @@ export type MutationConfigPresetExportArgs = {
 
 export type MutationConfigPresetImportArgs = {
   dry_run?: InputMaybe<Scalars['Boolean']['input']>;
-  file_id: Scalars['String']['input'];
+  file_id: Scalars['ID']['input'];
   selections: Array<ConfigPresetSelectionInput>;
 };
 
@@ -18508,7 +18508,7 @@ export type MutationConfigPresetImportSessionClearArgs = {
 
 
 export type MutationConfigPresetImportSessionSaveArgs = {
-  file_id: Scalars['String']['input'];
+  file_id: Scalars['ID']['input'];
   revision: Scalars['Int']['input'];
   selections: Array<ConfigPresetSelectionInput>;
 };
@@ -44979,7 +44979,7 @@ export type ConfigPresetImportRunningDetailsResolvers<ContextType = any, ParentT
 export type ConfigPresetImportSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportSession'] = ResolversParentTypes['ConfigPresetImportSession']> = ResolversObject<{
   available_events?: Resolver<Array<ResolversTypes['ConfigPresetImportSessionEvent']>, ParentType, ContextType>;
   counts?: Resolver<Maybe<ResolversTypes['ConfigPresetImportCounts']>, ParentType, ContextType>;
-  file_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  file_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   outcome?: Resolver<Maybe<ResolversTypes['ConfigPresetImportOutcome']>, ParentType, ContextType>;
   report_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   results?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;

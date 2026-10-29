@@ -79,7 +79,7 @@ const configPresetImportPreviewQuery = graphql`
 `;
 
 const configPresetImportPreviewSaveMutation = graphql`
-  mutation ConfigPresetImportPreviewSaveMutation($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $revision: Int!) {
+  mutation ConfigPresetImportPreviewSaveMutation($file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $revision: Int!) {
     configPresetImportSessionSave(file_id: $file_id, selections: $selections, revision: $revision) {
       revision
     }
@@ -343,7 +343,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     // The dialog scrolls: a minimum height gives the list room, and the footer sticks to the bottom of the visible part
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
       <Text variant="title-sm">{preview.bundle_name ?? t_i18n('Configuration bundle')}</Text>
-      <Text variant="content-base">{t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched. An item that already exists is overwritten unless you choose to add it as a copy.')}</Text>
+      <Text variant="content-base">
+        {t_i18n('Everything is selected by default. Uncheck anything you do not want to import; the elements you do not select are not touched. An item that already exists is overwritten unless you choose to add it as a copy.')}
+        {' '}
+        {t_i18n('A value that the bundle does not carry is left as it is.')}
+      </Text>
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
@@ -374,6 +378,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
           const result = results?.[`${type.key}/${item.key}`];
           // The types the import hides: the row alone only says that the item is there
+          // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is
+          const keepsDefaultTheme = hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
           return (
             <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
@@ -399,6 +405,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                   </div>
                 ) : undefined}
               />
+              {keepsDefaultTheme && (
+                <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
+                  {t_i18n('The platform keeps its current default theme.')}
+                </Text>
+              )}
               {hiddenTypes && (
                 <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
                   {translateConfigPresetEntityTypes(t_i18n, hiddenTypes)}

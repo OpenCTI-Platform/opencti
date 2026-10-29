@@ -17,7 +17,7 @@ import { applyConfigPresetImportRunEvent } from '../../../../../src/modules/conf
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetApplyUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`
-  mutation ConfigPresetApplyImport($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean) {
+  mutation ConfigPresetApplyImport($file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean) {
     configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) {
       results { type key status reason }
       report_id

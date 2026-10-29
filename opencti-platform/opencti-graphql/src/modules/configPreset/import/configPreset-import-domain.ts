@@ -7,7 +7,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigPresetImportPreview } from '../../../generated/graphql';
 import type { ConfigImportMode } from '../../configImport/configImport-types';
 import { allFilesForPaths } from '../../internal/document/document-domain';
-import { CONFIG_PRESET_IMPORT_PATH } from '../../internal/document/document-types';
+import { CONFIG_PRESET_HISTORY_PATH, CONFIG_PRESET_IMPORT_PATH } from '../../internal/document/document-types';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-registry';
 import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetPlatformId } from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
@@ -46,6 +46,34 @@ const deleteOtherUploads = async (context: AuthContext, user: AuthUser, keepId: 
   } catch (err) {
     logApp.warn('[CONFIG PRESET] Failed to list the previous import uploads', { cause: err });
   }
+};
+
+// An upload that was never imported is not kept: a wizard session is a matter of minutes. The history (the report and the zip it
+// was made from) is what an administrator may want to download again, so it is kept longer.
+export const CONFIG_PRESET_IMPORT_UPLOAD_RETENTION_MS = 24 * 60 * 60 * 1000;
+export const CONFIG_PRESET_IMPORT_HISTORY_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+
+const deleteExpiredFiles = async (context: AuthContext, user: AuthUser, path: string, retentionMs: number) => {
+  try {
+    const notModifiedSince = new Date(Date.now() - retentionMs).toISOString();
+    const expiredFiles = await allFilesForPaths(context, user, [path], { notModifiedSince });
+    for (let i = 0; i < expiredFiles.length; i += 1) {
+      try {
+        await deleteFile(context, user, expiredFiles[i].id, { forceDelete: true });
+      } catch (err) {
+        logApp.warn('[CONFIG PRESET] Failed to delete an expired import file', { cause: err, file_id: expiredFiles[i].id });
+      }
+    }
+  } catch (err) {
+    logApp.warn('[CONFIG PRESET] Failed to delete the expired import files', { cause: err, path });
+  }
+};
+
+// Called by the garbage collection manager. A failed deletion does not stop the others: the next run retries it.
+// A session whose pending zip is gone reads it as a missing file and goes back to the upload.
+export const deleteExpiredConfigPresetImportFiles = async (context: AuthContext, user: AuthUser) => {
+  await deleteExpiredFiles(context, user, CONFIG_PRESET_IMPORT_PATH, CONFIG_PRESET_IMPORT_UPLOAD_RETENTION_MS);
+  await deleteExpiredFiles(context, user, CONFIG_PRESET_HISTORY_PATH, CONFIG_PRESET_IMPORT_HISTORY_RETENTION_MS);
 };
 
 export const configPresetImportUpload = async (context: AuthContext, user: AuthUser, file: Promise<FileUploadData>): Promise<LoadedFile> => {

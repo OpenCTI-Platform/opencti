@@ -168,7 +168,7 @@ type ConfigPresetItemMode {
 # The wizard state of the calling administrator: the pending zip, the selection, and the progress and result of the last import.
 type ConfigPresetImportSession {
     status: ConfigPresetImportSessionStatus!
-    file_id: String!
+    file_id: ID!
     selections: [ConfigPresetImportSessionSelection!]!
     revision: Int!
     started_at: DateTime
@@ -249,11 +249,11 @@ extend type Mutation {
     # Stores the zip of a configuration bundle for the caller (one pending upload per user) and returns its file; the preview and the import only take its id.
     configPresetImportUpload(file: Upload!): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Saves the selection of the draft session, for its own file only; a revision lower than the stored one is ignored.
-    configPresetImportSessionSave(file_id: String!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    configPresetImportSessionSave(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Start over (draft) or Close (finished): deletes the session, and the pending zip with delete_file.
     configPresetImportSessionClear(delete_file: Boolean): Boolean! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Applies the selected items of the pending zip of the caller (and the items they depend on); with dry_run nothing is written and the expected results are returned.
-    configPresetImport(file_id: String!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # From an interrupted import: back to the selection, with the file and the selection kept.
     configPresetImportSessionBackToSelection: ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

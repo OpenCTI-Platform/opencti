@@ -65,7 +65,7 @@ const configPresetImportWizardQuery = graphql`
 // The same document applies and simulates. The real import returns the settings and the entity settings, so that the store learns
 // completed, the theme, the title and the hidden entity types; a dry run returns them null and writes nothing.
 const configPresetImportWizardApplyMutation = graphql`
-  mutation ConfigPresetImportWizardApplyMutation($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean!) {
+  mutation ConfigPresetImportWizardApplyMutation($file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean!) {
     configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) {
       results {
         type

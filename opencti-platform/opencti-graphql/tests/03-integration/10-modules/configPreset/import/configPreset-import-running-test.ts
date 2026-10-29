@@ -24,7 +24,7 @@ import { deleteFile } from '../../../../../src/database/file-storage';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetRunningUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`
-  mutation ConfigPresetRunningImport($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean) {
+  mutation ConfigPresetRunningImport($file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $dry_run: Boolean) {
     configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run) { results { key status } }
   }
 `;
@@ -33,7 +33,7 @@ const RUNNING_QUERY = gql`query ConfigPresetRunning { configPresetImportRunning 
 const BACK_MUTATION = gql`mutation ConfigPresetRunningBack { configPresetImportSessionBackToSelection { status file_id revision selections { type items } total results { key } } }`;
 const CLEAR_MUTATION = gql`mutation ConfigPresetRunningClear($delete_file: Boolean) { configPresetImportSessionClear(delete_file: $delete_file) }`;
 const SAVE_MUTATION = gql`
-  mutation ConfigPresetRunningSave($file_id: String!, $selections: [ConfigPresetSelectionInput!]!, $revision: Int!) {
+  mutation ConfigPresetRunningSave($file_id: ID!, $selections: [ConfigPresetSelectionInput!]!, $revision: Int!) {
     configPresetImportSessionSave(file_id: $file_id, selections: $selections, revision: $revision) { status }
   }
 `;
