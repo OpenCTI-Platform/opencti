@@ -49,6 +49,15 @@ const baseSmtpOptions = {
   },
 };
 
+const SMTP_TRANSPORT_SELECTORS = {
+  url: undefined,
+  pool: false,
+  sendmail: false,
+  streamTransport: false,
+  jsonTransport: false,
+  SES: undefined,
+};
+
 // OAuth2 caches:
 let cachedDiscoveryConfig;
 let cachedAccessToken;
@@ -198,7 +207,7 @@ const createSmtpTransporter = async () => {
   if (smtpAuth) {
     smtpOptions.auth = smtpAuth;
   }
-  return nodemailer.createTransport(smtpOptions);
+  return nodemailer.createTransport({ ...smtpOptions, ...SMTP_TRANSPORT_SELECTORS });
 };
 
 /**
