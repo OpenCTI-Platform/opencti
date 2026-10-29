@@ -30,7 +30,7 @@ export const savedFilterQuery = graphql`
  * Fetches a saved filter by ID and returns its parsed filters content.
  * Returns null if the filter could not be resolved.
  */
-const fetchSavedFilterContent = async (filterId: string) => {
+export const fetchSavedFilterContent = async (filterId: string) => {
   try {
     const result = await fetchQuery(savedFilterQuery, { id: filterId }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
     if (!result?.savedFilter) return null;
