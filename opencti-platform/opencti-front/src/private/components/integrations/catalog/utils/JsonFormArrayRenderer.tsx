@@ -52,6 +52,12 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
     handleChange(path, finalValue);
   }, [handleChange, normalizeValues, path, schema.default]);
 
+  const getPlaceholder = () => {
+    if (enumValues) return t_i18n('Select options');
+    if (currentValues.length === 0) return t_i18n('Type and press Enter to add items');
+    return t_i18n('Add more items...');
+  };
+
   return (
     <Box sx={{ mb: 2 }}>
       <Combobox<string>
@@ -71,12 +77,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
         <ComboboxLabel>{label}</ComboboxLabel>
         <ComboboxField>
           <ComboboxChips aria-label={String(label)} />
-          <ComboboxInput
-            placeholder={enumValues
-              ? t_i18n('Select options')
-              : (currentValues.length === 0 ? t_i18n('Type and press Enter to add items') : t_i18n('Add more items...'))
-            }
-          />
+          <ComboboxInput placeholder={getPlaceholder()} />
           <ComboboxControls>
             <ComboboxTrigger />
           </ComboboxControls>
