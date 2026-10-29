@@ -470,6 +470,14 @@ describe('CustomDashboard time range', () => {
     expect(window.localStorage.getItem(timeRangeKey)).toBe(JSON.stringify(relative('months-1')));
   });
 
+  it('keeps the config given to the widgets across unrelated re-renders, so they do not refetch', async () => {
+    const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
+    const before = captured.contentConfig;
+    // Opening the variable dialog re-renders the page without changing the range.
+    await user.click(screen.getByRole('button', { name: 'Create variable' }));
+    expect(captured.contentConfig).toBe(before);
+  });
+
   it('places the time filters above the variables bar', () => {
     testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     const filters = screen.getByTestId('time-filters');
