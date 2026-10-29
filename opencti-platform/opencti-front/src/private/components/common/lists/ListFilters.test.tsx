@@ -95,6 +95,12 @@ describe('ListFilters', () => {
     expect(options[0]).toHaveTextContent('Add Filter Group');
   });
 
+  it('does not offer "Add Filter Group" when there is no filter key to default to', async () => {
+    const { user } = testRender(<ListFilters {...baseProps} availableFilterKeys={[]} />, { userContext: mockUserContext() });
+    await user.click(screen.getByRole('combobox'));
+    expect(screen.queryByRole('option', { name: 'Add Filter Group' })).toBeNull();
+  });
+
   it('keeps "Add Filter Group" first when the search term matches no filter key', async () => {
     const { user } = testRender(<ListFilters {...baseProps} />, { userContext: mockUserContext() });
     await user.click(screen.getByRole('combobox'));

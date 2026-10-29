@@ -216,7 +216,7 @@ const Stream = () => {
         return isFilterGroupNotEmpty(deserializedFilters)
           ? (
               // a click on the filters must not trigger the line click (consumers drawer)
-              <div onClick={(e) => e.stopPropagation()}>
+              <div role="presentation" onClick={(e) => e.stopPropagation()}>
                 <FilterIconButton
                   filters={deserializedFilters}
                   variant="small"
@@ -261,7 +261,7 @@ const Stream = () => {
           )}
           actions={(node) => (
             // a click on the menu must not trigger the line click (consumers drawer)
-            <div onClick={(e) => e.stopPropagation()}>
+            <div role="presentation" onClick={(e) => e.stopPropagation()}>
               <Security needs={[TAXIIAPI]}>
                 <StreamPopover
                   streamCollection={node}
