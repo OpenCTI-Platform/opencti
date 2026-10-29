@@ -1,4 +1,4 @@
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import conf, { booleanConf, CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
 import { GARBAGE_COLLECTION_MANAGER_USER, executionContext, SYSTEM_USER } from '../utils/access';
 import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
@@ -124,7 +124,7 @@ export const garbageCollectionHandler = async () => {
   }
 };
 
-const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {
+export const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'GARBAGE_COLLECTION_MANAGER',
   label: 'Garbage collection manager',
   executionContext: 'garbage_collection_manager',
@@ -141,5 +141,3 @@ const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(GARBAGE_COLLECTION_MANAGER_DEFINITION);
