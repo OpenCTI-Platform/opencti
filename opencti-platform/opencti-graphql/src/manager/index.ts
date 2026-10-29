@@ -1,4 +1,3 @@
-import './connectorManager';
 import './garbageCollectionManager';
 import './ingestionHealthManager';
 import './platformUsageMetricsManager';
