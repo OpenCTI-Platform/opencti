@@ -149,7 +149,6 @@ const ListFilters = ({
     groupOrder: Number.MAX_SAFE_INTEGER, // always displayed on top of the other groups
   };
 
-  // Without any filter key (e.g. no entity type chosen yet) a group could only be created empty.
   const isAddFilterGroupDisabled = disableAddFilterGroup || options.length === 0;
 
   // prepended after the sorts so that it cannot be moved by them
@@ -192,7 +191,6 @@ const ListFilters = ({
       ) : (
         <>
           {/* Null value and no <ComboboxLabel>, both deliberate — see fds-migration/MIGRATION-DECISIONS.md#add-filter-picker */}
-          {/* The wrapper is layout-neutral (`contents`) unless the tooltip is active, then it takes the picker's size. */}
           <FdsTooltip open={isDisabledTooltipActive ? undefined : false}>
             <FdsTooltipTrigger asChild>
               <div
@@ -203,9 +201,6 @@ const ListFilters = ({
                 aria-disabled={isDisabledTooltipActive ? true : undefined}
               >
                 <Combobox<OptionType>
-                  // The Combobox ROOT carries `flex w-full flex-col`, so in a flex row it claims the whole line and
-                  // pushes the search field, the funnel and the chips onto lines of their own — the stacked filter bar
-                  // reported on the Triggers page and the threat- actor card page.
                   className={expandAddFilter ? 'min-w-0 flex-1' : 'w-50 shrink-0'}
                   options={allOptions}
                   filterOptions={filterOptions}
@@ -224,8 +219,6 @@ const ListFilters = ({
                   required={required}
                   groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
                   getOptionLabel={(option) => option.label}
-                  // The row element, its role and its state stay the library's: this only fills the content,
-                  // which is how the "Add Filter Group" entry gets its icon back (the MUI renderOption equivalent).
                   renderOption={(option) => (option.value === ADD_FILTER_GROUP_OPTION_VALUE
                     ? (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -242,8 +235,6 @@ const ListFilters = ({
                     setInputValue(newValue);
                   }}
                 >
-                  {/* The declared width was shrunk to 119px by the flex row, which cut the label off at 95px of the 101px
-                it needs. flexShrink keeps it at 200. */}
                   <ComboboxField style={expandAddFilter ? { width: '100%' } : { width: 200, flexShrink: 0 }}>
                     <ComboboxInput
                       placeholder={placeholder}
@@ -267,7 +258,6 @@ const ListFilters = ({
               setCurrentSavedFilter={setCurrentSavedFilter}
             />
           )}
-          {/* The row runs at 8px; the two tertiary icons read as one control and sit closer. */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <ClearFiltersIcon
               disabled={disabled}

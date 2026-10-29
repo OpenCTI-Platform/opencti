@@ -19,6 +19,7 @@ import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -44,15 +45,6 @@ const FiltersItem = styled('div')({
   float: 'left',
   paddingRight: 10,
 });
-
-// The line is a link: a click on the filters must not open it. Clicks coming from a portal
-// (the filters dialog) are not inside the element and are left alone.
-const stopLineClick = (event) => {
-  if (event.currentTarget.contains(event.target)) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-};
 
 const itemSx = {
   paddingLeft: '10px',
@@ -109,7 +101,8 @@ class TaxiiLineLineComponent extends Component {
                 </BodyItem>
                 <FiltersItem
                   style={{ width: dataColumns.filters.width }}
-                  onClick={stopLineClick}
+                  onClick={stopLinkNavigation}
+                  onAuxClick={stopLinkNavigation}
                 >
                   {isFilterGroupNotEmpty(filters)
                     ? (
