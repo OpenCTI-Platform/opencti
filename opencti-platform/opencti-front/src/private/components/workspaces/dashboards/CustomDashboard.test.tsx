@@ -16,6 +16,7 @@ const captured = vi.hoisted(() => ({
   relayCommit: vi.fn(),
   timeFilters: undefined as { config: Record<string, unknown>; handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void } | undefined,
   contentConfig: undefined as Record<string, unknown> | undefined,
+  contentMarkerVariables: undefined as { name: string }[] | undefined,
 }));
 
 vi.mock('../../../../components/dashboard/DashboardVariableValuesContext', async (importOriginal) => ({
@@ -81,10 +82,11 @@ vi.mock('../../../../relay/environment', async (importOriginal) => ({
 }));
 vi.mock('../../../../components/dashboard/DashboardContent', async () => {
   const { useOptionalDashboardVariableDefinitions } = await import('../../../../components/dashboard/DashboardVariablesContext');
-  const Content = ({ helpers }: { helpers: { config: Record<string, unknown> } }) => {
+  const Content = ({ helpers, usageMarkerVariables }: { helpers: { config: Record<string, unknown> }; usageMarkerVariables?: { name: string }[] }) => {
     const definitions = useOptionalDashboardVariableDefinitions();
     captured.contentDefinitions = definitions;
     captured.contentConfig = helpers.config;
+    captured.contentMarkerVariables = usageMarkerVariables;
     return <div>dashboard-content</div>;
   };
   return { default: Content };
@@ -624,5 +626,33 @@ describe('CustomDashboard viewer permissions', () => {
     const { input } = captured.relayCommit.mock.calls[0][0].variables;
     expect(input.key).toBe('manifest');
     expect(JSON.parse(fromB64(input.value)).config).toStrictEqual({ relativeDate: 'days-7', allowViewersToChangeVariables: true });
+  });
+});
+
+describe('CustomDashboard widget usage marker', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState(null, '', '/');
+    captured.contentMarkerVariables = undefined;
+  });
+
+  it('gives the widgets the variable definitions for the usage marker, to readers too', () => {
+    captured.granted = false;
+    testRender(
+      <CustomDashboard data={buildWorkspace({ currentUserAccessRight: 'view' }) as never} />,
+      { userContext: userContext(['DASHBOARD_VARIABLES']) },
+    );
+    expect(captured.contentMarkerVariables?.map(({ name }) => name)).toEqual(['Sector']);
+    captured.granted = true;
+  });
+
+  it('gives no marker on the home dashboard', () => {
+    testRender(<CustomDashboard data={workspace as never} noToolbar />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    expect(captured.contentMarkerVariables).toBeUndefined();
+  });
+
+  it('gives no marker when the flag is off', () => {
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
+    expect(captured.contentMarkerVariables).toBeUndefined();
   });
 });

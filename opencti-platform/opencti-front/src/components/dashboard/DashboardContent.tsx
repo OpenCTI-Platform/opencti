@@ -3,8 +3,11 @@ import Box from '@mui/material/Box';
 import useDashboard from './useDashboard';
 import DashboardWidgetPopover from './DashboardWidgetPopover';
 import DashboardViz from './DashboardViz';
-import type { DashboardLike } from './dashboard-types';
+import DashboardWidgetVariablesMarker from './DashboardWidgetVariablesMarker';
+import { getWidgetVariableNames } from './dashboardWidgetVariableUsage';
+import type { DashboardLike, DashboardVariable } from './dashboard-types';
 import type { WidgetHost } from '../../utils/widget/widget';
+import { useFormatter } from '../i18n';
 
 type DashboardContentProps = {
   helpers: ReturnType<typeof useDashboard>;
@@ -12,12 +15,15 @@ type DashboardContentProps = {
   entity: DashboardLike;
   isEditable: boolean;
   refreshRate?: number | null;
+  // The variables of the dashboard: each widget filtering on some of them shows a marker. Undefined: no marker.
+  usageMarkerVariables?: readonly DashboardVariable[];
 };
 
 const DashboardContent = ({
   entity,
   isEditable,
   refreshRate,
+  usageMarkerVariables,
   helpers: {
     widgetsLayouts,
     widgetsArray,
@@ -32,6 +38,7 @@ const DashboardContent = ({
   },
   host,
 }: DashboardContentProps) => {
+  const { t_i18n } = useFormatter();
   const { width, containerRef } = useContainerWidth();
   return (
     <Box
@@ -72,6 +79,13 @@ const DashboardContent = ({
               host={host}
             />
           );
+          // The marker is for everyone who sees the widget, the menu for those who may edit it.
+          const action = usageMarkerVariables ? (
+            <>
+              <DashboardWidgetVariablesMarker names={getWidgetVariableNames(widget, usageMarkerVariables, t_i18n)} />
+              {popover}
+            </>
+          ) : popover;
 
           return (
             <div key={widget.id}>
@@ -80,7 +94,7 @@ const DashboardContent = ({
                   widget={widget}
                   host={host}
                   config={config}
-                  popover={popover}
+                  popover={action}
                   refreshRate={refreshRate}
                 />
               )}
