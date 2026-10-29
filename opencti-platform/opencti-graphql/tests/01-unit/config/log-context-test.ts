@@ -2,10 +2,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setTimeout as wait } from 'node:timers/promises';
 import type { Server } from 'node:http';
 import type { NextFunction, Request, Response } from 'express';
-import { getRequestLogContext, requestLogContextMiddleware } from '../../../src/config/log-context';
+import { bindRequestLogContext, getRequestLogContext, requestLogContextMiddleware } from '../../../src/config/log-context';
 
 let server: Server;
 let origin: string;
+let onStreamClosed: (contexts: { bound: unknown; unbound: unknown }) => void = () => {};
 
 beforeAll(async () => {
   const express = (await import('express')).default;
@@ -18,6 +19,19 @@ beforeAll(async () => {
   app.get('/context', async (_req, res) => {
     await wait(5);
     res.json(getRequestLogContext());
+  });
+  app.get('/stream', async (_req, res) => {
+    await wait(5);
+    const contexts: { bound: unknown; unbound: unknown } = { bound: undefined, unbound: undefined };
+    res.on('close', () => {
+      contexts.unbound = getRequestLogContext();
+    });
+    res.on('close', bindRequestLogContext(() => {
+      contexts.bound = getRequestLogContext();
+      onStreamClosed(contexts);
+    }));
+    res.writeHead(200, { 'Content-Type': 'text/event-stream' });
+    res.write('data: connected\n\n');
   });
   app.get('/error', async () => {
     await wait(5);
@@ -57,6 +71,20 @@ describe('request log context', () => {
   it('should reach the express error handler', async () => {
     const context = await get('/error', { 'user-agent': 'curl/8.5.0' });
     expect(context).toEqual({ user_agent: 'curl/8.5.0' });
+  });
+
+  it('should keep the request user agent in a bound listener when the client disconnects', async () => {
+    const closed = new Promise<{ bound: unknown; unbound: unknown }>((resolve) => {
+      onStreamClosed = resolve;
+    });
+    const controller = new AbortController();
+    const response = await fetch(`${origin}/stream`, { headers: { 'user-agent': 'stream-client/1.0' }, signal: controller.signal });
+    await response.body?.getReader().read();
+    controller.abort();
+    const contexts = await closed;
+    expect(contexts.bound).toEqual({ user_agent: 'stream-client/1.0' });
+    // Without the binding, the listener runs in the socket context
+    expect(contexts.unbound).toEqual({});
   });
 
   it('should be empty when the request sends no user agent', () => {

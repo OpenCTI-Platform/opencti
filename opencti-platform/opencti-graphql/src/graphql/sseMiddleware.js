@@ -3,6 +3,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
+import { bindRequestLogContext } from '../config/log-context';
 import { TAXIIAPI } from '../modules/user/user-domain';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
@@ -475,7 +476,7 @@ const createSseMiddleware = () => {
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
     let closed = false;
-    const close = () => {
+    const close = bindRequestLogContext(() => {
       if (closed) {
         return;
       }
@@ -487,7 +488,7 @@ const createSseMiddleware = () => {
       logApp.info(`[STREAM] Closing stream processor for ${client.id}`);
       processor.shutdown();
       closed = true;
-    };
+    });
     req.on('close', close); // On closing the request
     res.on('close', close); // On closing the response
     res.writeHead(200, {
