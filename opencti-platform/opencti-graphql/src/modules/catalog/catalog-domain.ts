@@ -62,9 +62,10 @@ export const orderConfigSchemaProperties = <T extends ContractEntityConfigSchema
   if (!Array.isArray(order) || !properties || typeof properties !== 'object') {
     return configSchema;
   }
+  const listedKeys = new Set(order);
   const keys = [
     ...order.filter((key) => Object.hasOwn(properties, key)),
-    ...Object.keys(properties).filter((key) => !order.includes(key)),
+    ...Object.keys(properties).filter((key) => !listedKeys.has(key)),
   ];
   return { ...configSchema, properties: Object.fromEntries(keys.map((key) => [key, properties[key]])) };
 };
