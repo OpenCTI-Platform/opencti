@@ -3,7 +3,8 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../../schema/internalOb
 import { durationInMs } from '../../utils/format';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, type ConnectorInfoError } from '../connector/connector-types';
 import { redisGetConnectorErrors } from '../connector/connector-redis';
-import type { HealthCheckFailures, HealthCheckIngestor } from './ingestionHealth-types';
+import type { IngestionHealthCheckSeverity } from '../../generated/graphql';
+import type { HealthCheckFailure, HealthCheckIngestor } from './ingestionHealth-types';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../ingestion/ingestion-types';
 
 // region USER_MISSING
@@ -147,15 +148,18 @@ export const getConnectorsReportedErrors = async (ingestors: HealthCheckIngestor
 };
 
 /**
- * One failure per error reported on its side of the threshold, null when there is no such error.
+ * One failure, of the given severity, per error reported on its side of the threshold; none when there is no such error.
  * Messages are scrubbed like a work error (written by the connector, they may quote a url with a secret).
  * Only the code and the message: the metadata must stay the same while the failure lasts, the criticity only sets the side.
  */
-export const getReportedConnectorErrorsFailures = (errors: ConnectorInfoError[] | undefined, isOnSide: (criticity: number) => boolean): HealthCheckFailures => {
-  const failures = (errors ?? [])
+export const getReportedConnectorErrorsFailures = (
+  errors: ConnectorInfoError[] | undefined,
+  isOnSide: (criticity: number) => boolean,
+  severity: IngestionHealthCheckSeverity,
+): HealthCheckFailure[] => {
+  return (errors ?? [])
     .filter(({ criticity }) => isOnSide(criticity))
-    .map(({ code, message }) => ({ error_code: code, error_message: scrubWorkError(message) }));
-  return failures.length > 0 ? failures : null;
+    .map(({ code, message }) => ({ severity, metadata: { error_code: code, error_message: scrubWorkError(message) } }));
 };
 
 // endregion

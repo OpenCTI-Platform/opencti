@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
 import {
   HealthTransition,
+  type HealthCheckFailure,
   type HealthCheckIngestor,
   type HealthCheckMetadata,
   type IngestionHealthFields,
@@ -22,7 +23,7 @@ import { isHeartbeatAlive } from './ingestionHealth-registry-utils';
 
 // The context of the evaluation of one ingestion: the context given to the checks, plus the values read by the runtime checks.
 // Declared here, not in ingestionHealth-types: RuntimeData is inferred from the registry, which depends on ingestionHealth-types.
-// The checks never read it from the context: a runtime check is given its own value only, by getFailure
+// The checks never read it from the context: a runtime check is given its own value only, by getFailures
 export interface IngestionHealthEvaluationContext extends SourceIngestionHealthContext {
   // Values read by the runtime checks enabled for this ingestion, by check code: whether they are still fresh is judged here, not when read
   runtimeData?: RuntimeData;
@@ -35,32 +36,26 @@ const findHealthCheckDefinition = (code: string): HealthCheckDefinition | undefi
 
 // region evaluation (pure, no I/O)
 /**
- * Runs one check against one ingestor, giving its getFailure what the kind of the check judges:
+ * Runs one check against one ingestor, giving its getFailures what the kind of the check judges:
  * the ingestor itself for a configuration check, the value read for this check for a runtime check.
  *
  * @param code the code of the check, under which its runtime value is found in context.runtimeData
  * @param definition the check, whose isEnabled is already true for the ingestor
  * @param ingestor the connector, feed or sync evaluated
  * @param context the evaluation context, holding the runtime values of the ingestor
- * @returns the metadata of each failure of the check, one failure per element; none when the check passes.
- * A failure with nothing to tell has {} as metadata
+ * @returns each failure of the check, with its severity; none when the check passes
  */
 const getHealthCheckFailures = (
   code: HealthCheckCode,
   definition: HealthCheckDefinition,
   ingestor: HealthCheckIngestor,
   context: IngestionHealthEvaluationContext,
-): HealthCheckMetadata[] => {
+): HealthCheckFailure[] => {
   // The value type depends on each check, which a loop over all the checks cannot express: it is checked where the check is declared
   const runtimeData: Record<string, unknown> = context.runtimeData ?? {};
-  const failures = definition.kind === IngestionHealthCheckKind.Runtime
-    ? definition.getFailure(runtimeData[code], context)
-    : definition.getFailure(ingestor, context);
-  if (!failures) {
-    return [];
-  }
-  // An empty list is a single failure with nothing to tell
-  return failures.length > 0 ? failures : [{}];
+  return definition.kind === IngestionHealthCheckKind.Runtime
+    ? definition.getFailures(runtimeData[code], context)
+    : definition.getFailures(ingestor, context);
 };
 
 // The runtime checks of the registry not disabled on the platform: the only ones whose runtime data is read
@@ -96,31 +91,36 @@ export const computeIngestionHealthChecks = (
     if (context.disabledHealthChecks?.includes(code)) {
       return [];
     }
-    const metadataList = definition.isEnabled(ingestor, context) ? getHealthCheckFailures(code, definition, ingestor, context) : [];
-    return metadataList.map((metadata) => ({ code, definition, metadata }));
+    const checkFailures = definition.isEnabled(ingestor, context) ? getHealthCheckFailures(code, definition, ingestor, context) : [];
+    return checkFailures.map((failure) => ({ code, definition, failure }));
   });
   // Decided once every check is evaluated. A disabled check never fails: it supersedes nothing
   const failedCodes = new Set(failures.map(({ code }) => code));
   return failures
     .filter(({ definition }) => !definition.supersededBy || !failedCodes.has(definition.supersededBy))
-    .map(({ code, metadata }) => ({ health_check_code: code, health_check_metadata: metadata }));
+    .map(({ code, failure }) => ({
+      health_check_code: code,
+      health_check_severity: failure.severity,
+      health_check_metadata: failure.metadata ?? {},
+    }));
 };
 
 // Priority: critical > degraded > healthy. A stopped ingestion is never evaluated (see the ingestion health manager).
 // Unknown when no status can be computed: no proof of life nor failure.
 export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: IngestionHealthEvaluationContext): IngestionHealthStatus => {
   // A code unknown to this platform version has no definition: it cannot change the status
-  const healthChecks = checks
-    .map((check) => findHealthCheckDefinition(check.health_check_code))
-    .filter((definition): definition is HealthCheckDefinition => !!definition);
+  const healthChecks = checks.flatMap((check) => {
+    const definition = findHealthCheckDefinition(check.health_check_code);
+    return definition ? [{ kind: definition.kind, severity: check.health_check_severity }] : [];
+  });
   // blocking AND runtime -> critical
-  if (healthChecks.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
-    && definition.severity === IngestionHealthCheckSeverity.Blocking)) {
+  if (healthChecks.some(({ kind, severity }) => kind === IngestionHealthCheckKind.Runtime
+    && severity === IngestionHealthCheckSeverity.Blocking)) {
     return IngestionHealthStatus.Critical;
   }
   // advisory runtime OR advisory/blocking configuration -> degraded
-  if (healthChecks.some((definition) => definition.severity === IngestionHealthCheckSeverity.Advisory
-    || definition.kind === IngestionHealthCheckKind.Configuration)) {
+  if (healthChecks.some(({ kind, severity }) => severity === IngestionHealthCheckSeverity.Advisory
+    || kind === IngestionHealthCheckKind.Configuration)) {
     return IngestionHealthStatus.Degraded;
   }
   // healthy needs a proof of life from the runtime data AND no check at all, otherwise the status stays unknown.
@@ -132,10 +132,15 @@ export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, 
 };
 
 const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[] => {
-  const normalized = checks.map((check) => ({ health_check_code: check.health_check_code, health_check_metadata: check.health_check_metadata ?? {} }));
-  // A check may fail several times (one failure per connector error): the metadata orders the failures of a same code, whatever the order they are read in
+  const normalized: StoredHealthCheck[] = checks.map((check) => ({
+    health_check_code: check.health_check_code,
+    health_check_severity: check.health_check_severity,
+    health_check_metadata: check.health_check_metadata ?? {},
+  }));
+  // A check may fail several times (one failure per connector error): the metadata, then the severity, order the failures of a same code, whatever the order they are read in
   return normalized.sort((a, b) => a.health_check_code.localeCompare(b.health_check_code)
-    || JSON.stringify(a.health_check_metadata).localeCompare(JSON.stringify(b.health_check_metadata)));
+    || JSON.stringify(a.health_check_metadata).localeCompare(JSON.stringify(b.health_check_metadata))
+    || (a.health_check_severity ?? '').localeCompare(b.health_check_severity ?? ''));
 };
 
 // Returns the fields to write, or null when neither the status nor the checks changed.
@@ -251,7 +256,7 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined, e
       health_check_message: definition.message?.(check.health_check_metadata ?? {}, entityType) ?? definition.label,
       health_check_metadata: check.health_check_metadata ?? {},
       health_check_kind: definition.kind,
-      health_check_severity: definition.severity,
+      health_check_severity: check.health_check_severity,
     }];
   });
 };

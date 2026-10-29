@@ -1,11 +1,12 @@
-import { type IngestionHealthStatus } from '../../generated/graphql';
+import { type IngestionHealthCheckSeverity, type IngestionHealthStatus } from '../../generated/graphql';
 import { type HealthCheckCode } from './ingestionHealth-registry';
 import type { AuthContext, AuthUser } from '../../types/user';
 
-// A check as stored in Elasticsearch: kind, severity and message are derived from the code (see ingestionHealth-checks).
+// A check as stored in Elasticsearch: kind and message are derived from the code (see ingestionHealth-checks), the severity is the one of the failure.
 export interface StoredHealthCheck {
   // string, not HealthCheckCode: a code written by another platform version can be unknown to this one
   health_check_code: string;
+  health_check_severity: IngestionHealthCheckSeverity;
   health_check_metadata?: Record<string, unknown>;
 }
 
@@ -82,10 +83,13 @@ export interface RuntimeDataReadContext {
 // Keep it a state, not a measure: it is compared at each period, a value changing every time (a date, a counter) rewrites the ingestion every time.
 export type HealthCheckMetadata = Record<string, unknown>;
 
-// getFailure returns null when the check passes, else the metadata of each failure of the check: one failure per element.
-// A check fails once in most cases (a single element), several for a check with several occurrences at once (one per error a connector reports).
-// An empty list is a single failure with nothing to tell
-export type HealthCheckFailures = HealthCheckMetadata[] | null;
+// One failure of a check, as returned by getFailures. The severity is the one of this failure, not of the check:
+// the same check may fail with a different severity depending on a condition. Stored with the failure, like its metadata.
+export interface HealthCheckFailure {
+  severity: IngestionHealthCheckSeverity;
+  // Absent when the failure needs nothing more than the name of the check
+  metadata?: HealthCheckMetadata;
+}
 
 // The ingestor evaluated: a connector, a feed or a sync
 export interface HealthCheckIngestor {

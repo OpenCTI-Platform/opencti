@@ -13,7 +13,7 @@ import { getClientBase } from '../../../src/database/redis';
 import { createWork, loadWorkById, updateProcessedTime } from '../../../src/domain/work';
 import { elUpdate } from '../../../src/database/engine';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import { ConnectorType, IngestionHealthStatus } from '../../../src/generated/graphql';
+import { ConnectorType, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../src/generated/graphql';
 import {
   HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
   HEALTH_CHECK_HEARTBEAT_MISSING,
@@ -115,7 +115,9 @@ describe('Ingestion health manager: connector running as a regular user', () => 
     const health = await loadConnectorHealth();
     expect(health?.status).toBe(IngestionHealthStatus.Degraded);
     // A missing user is not judged as a service account or not: only USER_MISSING is reported
-    expect(health?.health_checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} }]);
+    expect(health?.health_checks).toEqual([
+      { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_severity: IngestionHealthCheckSeverity.Advisory, health_check_metadata: {} },
+    ]);
     expect(health?.last_event_date).toBeDefined();
     const events = connectorHealthEvents();
     expect(events).toHaveLength(1);
@@ -137,7 +139,9 @@ describe('Ingestion health manager: connector running as a regular user', () => 
     await runManagerPeriod();
     const health = await loadConnectorHealth();
     expect(health?.status).toBe(IngestionHealthStatus.Degraded);
-    expect(health?.health_checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_metadata: {} }]);
+    expect(health?.health_checks).toEqual([
+      { health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_severity: IngestionHealthCheckSeverity.Advisory, health_check_metadata: {} },
+    ]);
     // Same status: its start and its notification are kept, only the checks change
     expect(health?.status_since).toEqual(previousHealth?.status_since);
     expect(health?.last_event_date).toEqual(previousHealth?.last_event_date);
@@ -150,8 +154,8 @@ describe('Ingestion health manager: connector running as a regular user', () => 
     const health = await loadConnectorHealth();
     expect(health?.status).toBe(IngestionHealthStatus.Critical);
     expect(health?.health_checks).toEqual([
-      { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} },
-      { health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_metadata: {} },
+      { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_severity: IngestionHealthCheckSeverity.Blocking, health_check_metadata: {} },
+      { health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_severity: IngestionHealthCheckSeverity.Advisory, health_check_metadata: {} },
     ]);
     const events = connectorHealthEvents();
     expect(events).toHaveLength(2);
@@ -281,7 +285,7 @@ describe('Ingestion health manager: connector runtime checks', () => {
     await runManagerPeriod();
     const health = await loadConnectorHealth();
     expect(health?.status).toBe(IngestionHealthStatus.Degraded);
-    expect(health?.health_checks).toEqual([{ health_check_code: HEALTH_CHECK_LAST_RUN_FAILED, health_check_metadata: { error: 'Timeout' } }]);
+    expect(health?.health_checks).toEqual([{ health_check_code: HEALTH_CHECK_LAST_RUN_FAILED, health_check_severity: IngestionHealthCheckSeverity.Advisory, health_check_metadata: { error: 'Timeout' } }]);
     const events = connectorHealthEvents();
     expect(events).toHaveLength(1);
     expect(events[0]).toMatchObject({ event_scope: 'degraded', status: 'error' });
@@ -293,7 +297,9 @@ describe('Ingestion health manager: connector runtime checks', () => {
     await runManagerPeriod();
     const health = await loadConnectorHealth();
     expect(health?.status).toBe(IngestionHealthStatus.Degraded);
-    expect(health?.health_checks).toEqual([{ health_check_code: HEALTH_CHECK_LAST_RUN_FAILED, health_check_metadata: { error: ACCESS_DENIED_ERROR } }]);
+    expect(health?.health_checks).toEqual([
+      { health_check_code: HEALTH_CHECK_LAST_RUN_FAILED, health_check_severity: IngestionHealthCheckSeverity.Advisory, health_check_metadata: { error: ACCESS_DENIED_ERROR } },
+    ]);
     // Same status: not notified again
     expect(connectorHealthEvents()).toHaveLength(1);
   });
@@ -376,7 +382,9 @@ describe('Ingestion health manager: runtime data read failure with the heartbeat
     expect(readFeedHistorySpy).toHaveBeenCalled();
     const connector = await storeLoadById<BasicStoreEntityConnector & IngestionHealthFields>(testContext, ADMIN_USER, CONNECTOR_ID, ENTITY_TYPE_CONNECTOR);
     expect(connector.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
-    expect(connector.ingestion_health?.health_checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} }]);
+    expect(connector.ingestion_health?.health_checks).toEqual([
+      { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_severity: IngestionHealthCheckSeverity.Advisory, health_check_metadata: {} },
+    ]);
     const feed = await storeLoadById<BasicStoreEntity & IngestionHealthFields>(testContext, ADMIN_USER, feedId, ENTITY_TYPE_INGESTION_RSS);
     expect(feed.ingestion_health).toBeUndefined();
   });

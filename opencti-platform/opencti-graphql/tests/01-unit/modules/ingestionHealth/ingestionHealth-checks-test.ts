@@ -32,6 +32,7 @@ import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
 import { type ConnectorWorkError, loadConnectorsRuntimeState } from '../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks';
 import {
+  type HealthCheckFailure,
   type HealthCheckIngestor,
   type HealthCheckUser,
   HealthTransition,
@@ -59,10 +60,18 @@ const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
 const SERVICE_ACCOUNT = { internal: false, user_service_account: true, hasCapability: () => true };
 const CONTEXT = { evaluatedAt: EVALUATED_AT, pingingConnectorsIds: new Set<string>(), user: SERVICE_ACCOUNT };
-const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} };
-const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
+const USER_MISSING: StoredHealthCheck = {
+  health_check_code: HEALTH_CHECK_USER_MISSING,
+  health_check_severity: IngestionHealthCheckSeverity.Advisory,
+  health_check_metadata: {},
+};
+const HEARTBEAT_MISSING: StoredHealthCheck = {
+  health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING,
+  health_check_severity: IngestionHealthCheckSeverity.Blocking,
+  health_check_metadata: {},
+};
 // Not in the registry (stored by another platform version): never changes the status
-const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_metadata: {} };
+const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_severity: IngestionHealthCheckSeverity.Blocking, health_check_metadata: {} };
 const CONNECTOR = { internal_id: 'connector-id', entity_type: 'Connector' };
 const FEED = { internal_id: 'feed-id', entity_type: 'IngestionRss' };
 const SYNC = { internal_id: 'sync-id', entity_type: 'Sync' };
@@ -119,14 +128,14 @@ describe('computeIngestionHealthPatch', () => {
   });
 
   it('should treat a stored check without metadata as a check with empty metadata', () => {
-    const storedWithoutMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING };
+    const storedWithoutMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_severity: IngestionHealthCheckSeverity.Advisory };
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [storedWithoutMetadata] } };
     expect(computeIngestionHealthPatch(current, [USER_MISSING], CONTEXT)).toBeNull();
   });
 
   it('should write the checks but keep since when only the metadata changed', () => {
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    const changedMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: { log: 'new log' } };
+    const changedMetadata: StoredHealthCheck = { ...USER_MISSING, health_check_metadata: { log: 'new log' } };
     const patch = computeIngestionHealthPatch(current, [changedMetadata], CONTEXT);
     expect(patch).toEqual({
       ingestion_health: {
@@ -326,13 +335,14 @@ describe('execution failed check', () => {
   it('should flag a feed or sync whose last execution failed, with the details of the failure and their description', () => {
     expect(computeIngestionHealthChecks(FAILED_FEED, failedWith(NOT_FOUND))).toEqual([{
       health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
       health_check_metadata: { ...NOT_FOUND, failure_description: 'HTTP 404 Not Found' },
     }]);
   });
 
   it('should flag it without details when the logs hold none', () => {
     expect(computeIngestionHealthChecks(FAILED_FEED, failedWith()))
-      .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: {} }]);
+      .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_severity: IngestionHealthCheckSeverity.Blocking, health_check_metadata: {} }]);
   });
 
   it.each(['IngestionRss', 'IngestionCsv', 'IngestionJson', 'IngestionTaxii', 'Sync'])('should evaluate %s', (entityType) => {
@@ -430,7 +440,7 @@ describe('source access denied check', () => {
     [HEALTH_CHECK_SOURCE_ACCESS_DENIED]: details,
   });
   const ACCESS_DENIED = (http_status: number) => (
-    [{ health_check_code: HEALTH_CHECK_SOURCE_ACCESS_DENIED, health_check_metadata: { http_status } }]
+    [{ health_check_code: HEALTH_CHECK_SOURCE_ACCESS_DENIED, health_check_severity: IngestionHealthCheckSeverity.Blocking, health_check_metadata: { http_status } }]
   );
 
   it('should report SOURCE_ACCESS_DENIED instead of FEED_AND_SYNC_EXECUTION_FAILED on a 401', () => {
@@ -450,7 +460,11 @@ describe('source access denied check', () => {
 
   it.each([429, 500])('should keep FEED_AND_SYNC_EXECUTION_FAILED on a %s', (status) => {
     const checks = computeIngestionHealthChecks(FAILED_FEED, { ...CONTEXT, runtimeData: runtime({ http_status: status }) });
-    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: { http_status: status, failure_description: `HTTP ${status}` } }]);
+    expect(checks).toEqual([{
+      health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      health_check_metadata: { http_status: status, failure_description: `HTTP ${status}` },
+    }]);
   });
 
   it('should keep FEED_AND_SYNC_EXECUTION_FAILED when the logs hold no details', () => {
@@ -511,7 +525,11 @@ describe('last run failed check', () => {
   const evaluate = (ingestor: HealthCheckIngestor, value: object) => (
     computeIngestionHealthChecks(ingestor, { ...CONTEXT, runtimeData: { [HEALTH_CHECK_LAST_RUN_FAILED]: value as never } })
   );
-  const failed = (error?: string) => [{ health_check_code: HEALTH_CHECK_LAST_RUN_FAILED, health_check_metadata: error === undefined ? {} : { error } }];
+  const failed = (error?: string) => [{
+    health_check_code: HEALTH_CHECK_LAST_RUN_FAILED,
+    health_check_severity: IngestionHealthCheckSeverity.Advisory,
+    health_check_metadata: error === undefined ? {} : { error },
+  }];
 
   it('should report the failure with the error, query string removed', () => {
     expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout calling https://api.example.com/x?key=secret', source: null }])))
@@ -638,7 +656,11 @@ describe('connector reported errors checks', () => {
     ...CONTEXT,
     runtimeData: errors ? { [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED]: errors as never, [HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]: errors as never } : {},
   });
-  const reported = (code: string, error_code: string, error_message: string) => ({ health_check_code: code, health_check_metadata: { error_code, error_message } });
+  const reported = (code: string, error_code: string, error_message: string) => ({
+    health_check_code: code,
+    health_check_severity: code === HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED ? IngestionHealthCheckSeverity.Blocking : IngestionHealthCheckSeverity.Advisory,
+    health_check_metadata: { error_code, error_message },
+  });
 
   it('should report an error under the threshold as advisory, degrading the status', () => {
     const checks = evaluate([{ code: 'RATE_LIMITED', message: 'Too many requests', criticity: LOW }]);
@@ -706,14 +728,14 @@ describe('check metadata', () => {
   const TEST_CODE = 'TEST_CHECK';
   const registry = HEALTH_CHECK_REGISTRY as Record<string, unknown>;
   const checksContext = { ...CONTEXT, ...NOT_PINGING };
-  // What getFailure returns: null when the check passes, else the metadata of each failure
-  const failWith = (failures: Record<string, unknown>[] | null) => {
+  const { Advisory, Blocking } = IngestionHealthCheckSeverity;
+  // What getFailures returns: the failures of the check, none when it passes
+  const failWith = (failures: HealthCheckFailure[]) => {
     registry[TEST_CODE] = {
       kind: IngestionHealthCheckKind.Configuration,
-      severity: IngestionHealthCheckSeverity.Advisory,
       message: (data: Record<string, unknown>) => `Failing for ${data.reason}`,
       isEnabled: () => true,
-      getFailure: () => failures,
+      getFailures: () => failures,
     };
   };
   const testChecks = () => computeIngestionHealthChecks(CONNECTOR, checksContext).filter((check) => check.health_check_code === TEST_CODE);
@@ -723,28 +745,54 @@ describe('check metadata', () => {
   });
 
   it('should store the metadata of a failing check, and give it to its message', () => {
-    failWith([{ reason: 'test' }]);
+    failWith([{ severity: Advisory, metadata: { reason: 'test' } }]);
     const checks = testChecks();
-    expect(checks).toEqual([{ health_check_code: TEST_CODE, health_check_metadata: { reason: 'test' } }]);
+    expect(checks).toEqual([{ health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: { reason: 'test' } }]);
     expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('Failing for test');
   });
 
-  it('should not store a check that passes: null', () => {
-    failWith(null);
+  it('should not store a check that passes: no failure', () => {
+    failWith([]);
     expect(testChecks()).toEqual([]);
   });
 
-  it('should store a failure with nothing to tell for an empty list: not a check that passes', () => {
-    failWith([]);
-    expect(testChecks()).toEqual([{ health_check_code: TEST_CODE, health_check_metadata: {} }]);
+  it('should store a failure without metadata with empty metadata', () => {
+    failWith([{ severity: Advisory }]);
+    expect(testChecks()).toEqual([{ health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: {} }]);
   });
 
   it('should store a check of its own for each failure of a check', () => {
-    failWith([{ reason: 'one' }, { reason: 'two' }]);
+    failWith([{ severity: Advisory, metadata: { reason: 'one' } }, { severity: Advisory, metadata: { reason: 'two' } }]);
     expect(testChecks()).toEqual([
-      { health_check_code: TEST_CODE, health_check_metadata: { reason: 'one' } },
-      { health_check_code: TEST_CODE, health_check_metadata: { reason: 'two' } },
+      { health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: { reason: 'one' } },
+      { health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: { reason: 'two' } },
     ]);
+  });
+
+  it('should store the severity of each failure, which may differ for the same check', () => {
+    failWith([{ severity: Advisory, metadata: { reason: 'minor' } }, { severity: Blocking, metadata: { reason: 'major' } }]);
+    const checks = testChecks();
+    expect(checks.map((check) => check.health_check_severity)).toEqual([Advisory, Blocking]);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type).map((check) => check.health_check_severity)).toEqual([Advisory, Blocking]);
+  });
+
+  it('should compute the status from the severity of the failure, not the one of the check', () => {
+    // A runtime check, advisory by default: only the severity of its failure makes the status critical
+    const failRuntimeWith = (severity: IngestionHealthCheckSeverity) => {
+      failWith([{ severity }]);
+      registry[TEST_CODE] = { ...(registry[TEST_CODE] as object), kind: IngestionHealthCheckKind.Runtime, getRuntimeData: async () => new Map() };
+    };
+    failRuntimeWith(Blocking);
+    expect(computeIngestionHealthPatch({}, testChecks(), CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+    failRuntimeWith(Advisory);
+    expect(computeIngestionHealthPatch({}, testChecks(), CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+
+  it('should rewrite the health when only the severity of a failure changed', () => {
+    const advisory: StoredHealthCheck = { health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: {} };
+    const blocking: StoredHealthCheck = { ...advisory, health_check_severity: Blocking };
+    const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [advisory] } };
+    expect(computeIngestionHealthPatch(current, [blocking], CONTEXT)?.ingestion_health?.health_checks).toEqual([blocking]);
   });
 });
 
@@ -821,7 +869,11 @@ describe('user not service account check', () => {
   const REGULAR_USER = { internal: false, user_service_account: false, hasCapability: () => true };
   const INTERNAL_USER = { internal: true, user_service_account: false, hasCapability: () => true };
   const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
-  const NOT_SERVICE_ACCOUNT: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_metadata: {} };
+  const NOT_SERVICE_ACCOUNT: StoredHealthCheck = {
+    health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
+    health_check_severity: IngestionHealthCheckSeverity.Advisory,
+    health_check_metadata: {},
+  };
 
   it.each([
     ['connector', { ...CONNECTOR, connector_user_id: 'user-id' }],
@@ -873,7 +925,11 @@ describe('user missing capability check', () => {
   it('should flag a connector whose user lacks CONNECTORAPI, with the description of the capability in the message', () => {
     const checks = checksFor(CONNECTOR_WITH_USER, WITHOUT_CAPABILITY);
     const metadata = { capability: 'CONNECTORAPI', capability_description: CONNECTORAPI_DESCRIPTION };
-    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: metadata }]);
+    expect(checks).toEqual([{
+      health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      health_check_metadata: metadata,
+    }]);
     expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_metadata).toEqual(metadata);
     expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('User lacks required capability: "{capability_description}"');
   });
@@ -1176,6 +1232,7 @@ describe('buildHealthTransitionMessage', () => {
   it('should fill the placeholders of the check messages from their metadata', () => {
     const missingCapability = {
       health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
       health_check_metadata: { capability: 'CONNECTORAPI', capability_description: 'Connectors API usage: register, ping, export push ...' },
     };
     expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [missingCapability]))
@@ -1184,7 +1241,11 @@ describe('buildHealthTransitionMessage', () => {
 
   it('should fill the description of a failed execution from its metadata', () => {
     const metadata = { http_status: 404, http_status_text: 'Not Found', failure_description: 'HTTP 404 Not Found' };
-    const executionFailed = { health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: metadata };
+    const executionFailed = {
+      health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      health_check_metadata: metadata,
+    };
     expect(buildHealthTransitionMessage({ name: 'My feed', entity_type: 'IngestionRss' }, HealthTransition.Critical, [executionFailed]))
       .toBe('reports `My feed` (IngestionRss) as critical: Feed execution failed: HTTP 404 Not Found');
   });
