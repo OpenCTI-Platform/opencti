@@ -476,7 +476,7 @@ describe('toGraphqlIngestionHealth', () => {
         health_check_code: HEALTH_CHECK_USER_MISSING,
         health_check_message: 'User is missing',
         health_check_kind: IngestionHealthCheckKind.Configuration,
-        health_check_severity: IngestionHealthCheckSeverity.Blocking,
+        health_check_severity: IngestionHealthCheckSeverity.Advisory,
       }],
     });
   });

@@ -170,10 +170,11 @@ export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: str
 // Not annotated but checked with satisfies: the annotation would widen every check to HealthCheckDefinition,
 // losing the type of the runtime values that RuntimeData is inferred from
 export const HEALTH_CHECK_REGISTRY = {
-  // No user id or name in the message: reading a connector only needs MODULES, its user is reserved to SETTINGS_SETACCESSES
+  // No user id or name in the message: reading a connector only needs MODULES, its user is reserved to SETTINGS_SETACCESSES.
+  // Advisory: a configuration check degrades the health, only a blocking runtime check makes it critical (see computeHealthStatus)
   [HEALTH_CHECK_USER_MISSING]: {
     kind: IngestionHealthCheckKind.Configuration,
-    severity: IngestionHealthCheckSeverity.Blocking,
+    severity: IngestionHealthCheckSeverity.Advisory,
     message: () => 'User is missing',
     // A required user, or an optional one that was set: it must exist
     isEnabled: (ingestor) => isUserRequired(ingestor) || !!getIngestorUserId(ingestor),
