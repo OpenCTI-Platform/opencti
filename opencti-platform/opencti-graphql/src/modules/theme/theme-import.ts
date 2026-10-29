@@ -61,14 +61,16 @@ export const importTheme = async (
   { mode, dryRun = false }: ConfigImportOptions,
 ): Promise<ThemeImportResult> => {
   const parsed = themeImportSchema.safeParse(configuration);
+  // A built-in theme has the same standard id on every platform: never patched, never created, and never refused for its content
+  // (the id is read before the validation: a bundle may carry the name only)
+  const givenStandardId = (configuration as { standard_id?: unknown } | null)?.standard_id;
+  if (typeof givenStandardId === 'string' && Object.values(BUILT_IN_THEME_STANDARD_IDS).includes(givenStandardId)) {
+    return refused('skipped', 'built_in', 'Built-in theme', true, parsed.success ? parsed.data : undefined);
+  }
   if (!parsed.success) {
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { standard_id: standardId, ...theme } = parsed.data;
-  // A built-in theme has the same standard id on every platform: never patched, never created
-  if (standardId && Object.values(BUILT_IN_THEME_STANDARD_IDS).includes(standardId)) {
-    return refused('skipped', 'built_in', 'Built-in theme', true, parsed.data);
-  }
   if (mode === ConfigImportMode.Overwrite && !standardId) {
     return refused('failed', 'standard_id_required', 'The standard id of the theme is required to overwrite it', false, parsed.data);
   }

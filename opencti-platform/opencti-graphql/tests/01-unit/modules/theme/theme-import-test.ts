@@ -162,6 +162,10 @@ describe('importTheme in overwrite mode', () => {
     expect(await importTheme(context, user, themeConfiguration({ standard_id: standardId }), { mode: ConfigImportMode.Overwrite }))
       .toMatchObject({ status: 'skipped', code: 'built_in', exists: true, reason: 'Built-in theme' });
     expect(findById).not.toHaveBeenCalled();
+    // Whatever its content: the built-in theme of a bundle may carry its name only
+    expect(await importTheme(context, user, { standard_id: standardId, name: 'Dark' }, { mode: ConfigImportMode.Overwrite }))
+      .toMatchObject({ status: 'skipped', code: 'built_in', exists: true });
+    expect(findById).not.toHaveBeenCalled();
     vi.mocked(findById).mockResolvedValue({ id: 'existing-id', built_in: true } as never);
     expect(await importTheme(context, user, themeConfiguration(), { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'built_in' });
     expectNothingWritten();
