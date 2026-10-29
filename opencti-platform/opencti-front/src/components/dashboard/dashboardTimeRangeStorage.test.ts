@@ -1,11 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  dashboardTimeRangeStorageKey,
-  parseTimeRangeParam,
-  readStoredTimeRange,
-  writeStoredTimeRange,
-  writeTimeRangeParam,
-} from './dashboardTimeRangeStorage';
+import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange, writeStoredTimeRange, writeTimeRangeParam } from './dashboardTimeRangeStorage';
 
 const key = dashboardTimeRangeStorageKey('user-1', 'ws-1');
 
