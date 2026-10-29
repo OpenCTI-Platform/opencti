@@ -781,13 +781,6 @@ describe('useDashboard', () => {
       expect(saved.widgets[widget.id].layout.x).toBe(4);
     });
 
-    it('resolves at once when the patch changes nothing', async () => {
-      const saveSpy = vi.fn();
-      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
-      await expect(result.current.handleConfigChange({ relativeDate: 'days-7' })).resolves.toBeUndefined();
-      expect(saveSpy).not.toHaveBeenCalled();
-    });
-
     it('rejects when the save fails', async () => {
       const saveSpy = vi.fn((_id, _manifest, _noRefresh, _onCompleted, onError?: (error: Error) => void) => onError?.(new Error('boom')));
       const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));

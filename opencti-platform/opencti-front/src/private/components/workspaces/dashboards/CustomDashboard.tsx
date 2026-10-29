@@ -274,7 +274,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     />
   );
   // The widgets follow the per user range; flag off, the manifest one, untouched.
-  const contentHelpers = isVariablesEnabled ? { ...helpers, config: { ...config, ...timeRange.range } } : helpers;
+  // Memoized: the widgets rebuild their queries when the config identity changes.
+  const contentConfig = useMemo(() => ({ ...config, ...timeRange.range }), [config, timeRange.range]);
+  const contentHelpers = isVariablesEnabled ? { ...helpers, config: contentConfig } : helpers;
 
   return (
     // Around the whole page: the Create widget entry point lives in the header.
