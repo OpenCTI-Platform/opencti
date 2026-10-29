@@ -72,10 +72,10 @@ const runUp = async () => {
   });
 };
 
-const buildConnector = (id: string, slug: string, contractId: string, configSchema: Record<string, unknown>) => ({
+const buildConnector = (id: string, slug: string, contractId: string, configSchema: Record<string, unknown>, catalogId = 'filigran-catalog') => ({
   id,
-  catalog_id: 'filigran-catalog',
-  manager_contract: { slug, contract_id: contractId, title: slug, config_schema: configSchema },
+  catalog_id: catalogId,
+  manager_contract: { catalog_id: catalogId, slug, contract_id: contractId, title: slug, config_schema: configSchema },
 });
 
 describe('migration 1793265832421 managed connectors options order', () => {
@@ -83,6 +83,7 @@ describe('migration 1793265832421 managed connectors options order', () => {
     vi.clearAllMocks();
     mockPatchAttribute.mockResolvedValue(undefined);
     mockFindCatalogContractsBySlugs.mockResolvedValue([{
+      catalog_id: 'filigran-catalog',
       contract_id: 'misp-2.0.0',
       config_schema: { properties: { MISP_URL: {}, MISP_KEY: {}, MISP_SSL_VERIFY: {} } },
     }]);
@@ -98,7 +99,15 @@ describe('migration 1793265832421 managed connectors options order', () => {
       { id: 'system-user' },
       'connector-1',
       'Connector',
-      { manager_contract: { slug: 'misp', contract_id: 'misp-2.0.0', title: 'misp', config_schema: { ...configSchema, properties_order: ['MISP_URL', 'MISP_KEY', 'MISP_SSL_VERIFY'] } } },
+      {
+        manager_contract: {
+          catalog_id: 'filigran-catalog',
+          slug: 'misp',
+          contract_id: 'misp-2.0.0',
+          title: 'misp',
+          config_schema: { ...configSchema, properties_order: ['MISP_URL', 'MISP_KEY', 'MISP_SSL_VERIFY'] },
+        },
+      },
     );
   });
 
@@ -113,6 +122,31 @@ describe('migration 1793265832421 managed connectors options order', () => {
       'Connector',
       { manager_contract: expect.objectContaining({ config_schema: { ...configSchema, properties_order: ['IPINFO_TOKEN', 'IPINFO_MAX_TLP', 'IPINFO_USE_ASN_NAME'] } }) },
     );
+  });
+
+  it('should take the order from the catalog of the connector when two catalogs share a contract version', async () => {
+    mockFindCatalogContractsBySlugs.mockResolvedValue([
+      { catalog_id: 'filigran-catalog', contract_id: 'misp-2.0.0', config_schema: { properties: { MISP_URL: {}, MISP_KEY: {} } } },
+      { catalog_id: 'custom-catalog', contract_id: 'misp-2.0.0', config_schema: { properties: { MISP_KEY: {}, MISP_URL: {} } } },
+    ]);
+    mockFullEntitiesList.mockResolvedValue([
+      buildConnector('connector-filigran', 'misp', 'misp-2.0.0', { properties: { MISP_KEY: {}, MISP_URL: {} } }),
+      buildConnector('connector-custom', 'misp', 'misp-2.0.0', { properties: { MISP_URL: {}, MISP_KEY: {} } }, 'custom-catalog'),
+    ]);
+    await runUp();
+    const ordersByConnector = Object.fromEntries(mockPatchAttribute.mock.calls.map(([, , id, , patch]) => [id, patch.manager_contract.config_schema.properties_order]));
+    expect(ordersByConnector).toEqual({
+      'connector-filigran': ['MISP_URL', 'MISP_KEY'],
+      'connector-custom': ['MISP_KEY', 'MISP_URL'],
+    });
+  });
+
+  it('should not take the order of the embedded catalog for a contract of another catalog', async () => {
+    mockFullEntitiesList.mockResolvedValue([
+      buildConnector('connector-custom', 'ipinfo', 'ipinfo-1.2.3', { properties: { IPINFO_USE_ASN_NAME: {}, IPINFO_TOKEN: {} } }, 'custom-catalog'),
+    ]);
+    await runUp();
+    expect(mockPatchAttribute).not.toHaveBeenCalled();
   });
 
   it('should leave the connectors whose contract version is unknown or already ordered', async () => {

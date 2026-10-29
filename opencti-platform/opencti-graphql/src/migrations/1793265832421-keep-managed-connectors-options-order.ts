@@ -28,20 +28,22 @@ export const up = async (next: (error?: Error) => void) => {
     .filter((connector) => connector.manager_contract?.config_schema?.properties && !connector.manager_contract.config_schema.properties_order);
   logMigration.info(`${message} > ${managedConnectors.length} managed connector(s) to evaluate`);
 
-  // Order of the options of each contract version, from the catalogs then from the embedded catalog file
-  const ordersByContractId = new Map<string, string[]>();
+  // Order of the options of each contract version, from the catalogs then from the embedded catalog file.
+  // A contract is identified by its catalog and its id: two catalogs can ship the same version in another order.
+  const contractKey = (catalogId: string, contractId: string) => `${catalogId}|${contractId}`;
+  const ordersByContract = new Map<string, string[]>();
   const slugs = [...new Set(managedConnectors.map((connector) => connector.manager_contract?.slug as string))];
   const catalogContracts = slugs.length > 0 ? await findCatalogContractsBySlugs(context, SYSTEM_USER, slugs) : [];
   catalogContracts.forEach((contract) => {
     if (contract.config_schema?.properties) {
-      ordersByContractId.set(contract.contract_id, Object.keys(contract.config_schema.properties));
+      ordersByContract.set(contractKey(contract.catalog_id, contract.contract_id), Object.keys(contract.config_schema.properties));
     }
   });
   const filigranCatalog = openCtiManifest as unknown as CatalogDefinition;
   filigranCatalog.contracts.forEach((contract: CatalogContract) => {
-    const contractId = `${contract.slug}-${contract.container_version}`;
-    if (!ordersByContractId.has(contractId) && contract.config_schema?.properties) {
-      ordersByContractId.set(contractId, Object.keys(contract.config_schema.properties));
+    const key = contractKey(filigranCatalog.id, `${contract.slug}-${contract.container_version}`);
+    if (!ordersByContract.has(key) && contract.config_schema?.properties) {
+      ordersByContract.set(key, Object.keys(contract.config_schema.properties));
     }
   });
 
@@ -49,9 +51,10 @@ export const up = async (next: (error?: Error) => void) => {
     const connector = managedConnectors[i];
     const contract = connector.manager_contract as NonNullable<BasicStoreEntityConnector['manager_contract']>;
     logMigration.info(`${message} > processing connector ${connector.id} (${i + 1}/${managedConnectors.length})`);
-    const order = ordersByContractId.get(contract.contract_id);
+    const catalogId = contract.catalog_id ?? connector.catalog_id as string;
+    const order = ordersByContract.get(contractKey(catalogId, contract.contract_id));
     if (!order) {
-      logMigration.info(`${message} > connector ${connector.id} contract ${contract.contract_id} not found, order of options left as is`);
+      logMigration.info(`${message} > connector ${connector.id} contract ${contract.contract_id} of catalog ${catalogId} not found, order of options left as is`);
     } else {
       const patch = { manager_contract: { ...contract, config_schema: { ...contract.config_schema, properties_order: order } } };
       await patchAttribute(context, SYSTEM_USER, connector.id, ENTITY_TYPE_CONNECTOR, patch);
