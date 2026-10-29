@@ -281,6 +281,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
+        knowledgeEntityId={entityId}
         warning={true}
         warningMessage={t_i18n(
           'Be careful, you are about to delete the selected entities',
