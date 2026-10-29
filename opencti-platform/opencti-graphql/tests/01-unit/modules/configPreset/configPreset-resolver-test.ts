@@ -61,8 +61,8 @@ const bypassUser = { id: 'admin', capabilities: [{ name: 'BYPASS' }] };
 const settingsUser = { id: 'settings-admin', capabilities: [{ name: 'SETTINGS_SETPARAMETERS' }] };
 
 const staticItem = (key: string, label: string, dependsOn: unknown[] = []) => ({ key, label, translatable: true, dependsOn, isDefault: false });
-const themeItem = (theme: { id: string; name: string }, isDefault: boolean) => ({
-  key: theme.id,
+const themeItem = (theme: { standard_id: string; name: string }, isDefault: boolean) => ({
+  key: theme.standard_id,
   label: theme.name,
   translatable: false,
   dependsOn: [],
@@ -89,7 +89,7 @@ describe('Config preset exportable types query', () => {
         description: 'Title, favicon, default theme, language',
         group: platformSettings,
         // The custom default theme is a dependency
-        items: [staticItem('platform', 'Platform configuration', [{ type: 'branding', key: customTheme.id }])],
+        items: [staticItem('platform', 'Platform configuration', [{ type: 'branding', key: customTheme.standard_id }])],
         itemsPageInfo: onePage(1),
       },
       {
@@ -210,7 +210,7 @@ describe('Config preset exportable items query', () => {
     const user = bypassUser as unknown as AuthUser;
     const branding = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'branding')!;
     const listItems = vi.spyOn(branding, 'listItems');
-    const args = { first: 5, after: 'cursor', search: 'soc', ids: [customTheme.id], excludedIds: [otherCustomTheme.id] };
+    const args = { first: 5, after: 'cursor', search: 'soc', ids: [customTheme.standard_id], excludedIds: [otherCustomTheme.standard_id] };
     await findConfigPresetExportableItems(context, user, { type: 'branding', ...args });
     expect(listItems).toHaveBeenCalledWith(context, user, args);
     listItems.mockRestore();

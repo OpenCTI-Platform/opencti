@@ -21,8 +21,6 @@ export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, i
   return `${family.directory}/${item.fileName ?? `${item.id}.json`}`;
 };
 
-export const configPresetItemBundleId = (item: ConfigPresetItemDefinition) => item.bundleId ?? item.id;
-
 // The type written in the item files and in dependencies.json: `<group id>.<category id>`
 export const configPresetFamilyType = (family: ConfigPresetFamilyDefinition) => `${family.group.id}.${family.id}`;
 
@@ -35,8 +33,8 @@ export const exportConfigPresetItem = async (
   return {
     openCTI_version: PLATFORM_VERSION,
     type: configPresetFamilyType(family),
-    // The bundle id, never an internal id: the static item id, or the standard id of an entity
-    id: configPresetItemBundleId(item),
+    // The id of the item: the static id, or the standard id of an entity, never an internal id
+    id: item.id,
     configuration: await item.exporter(context, user),
   };
 };

@@ -19,8 +19,8 @@ export const BRANDING_FAMILY_ID = 'branding';
 const themesArgs = (ids?: string[] | null, excludedIds?: string[] | null) => {
   const filters = [
     { key: ['built_in'], values: ['true'], operator: FilterOperator.NotEq },
-    ...(ids ? [{ key: ['internal_id'], values: ids }] : []),
-    ...(excludedIds && excludedIds.length > 0 ? [{ key: ['internal_id'], values: excludedIds, operator: FilterOperator.NotEq }] : []),
+    ...(ids ? [{ key: ['standard_id'], values: ids }] : []),
+    ...(excludedIds && excludedIds.length > 0 ? [{ key: ['standard_id'], values: excludedIds, operator: FilterOperator.NotEq }] : []),
   ];
   return {
     orderBy: ThemeOrdering.Name,
@@ -29,13 +29,12 @@ const themesArgs = (ids?: string[] | null, excludedIds?: string[] | null) => {
   };
 };
 
+// A theme is identified by its standard id everywhere: it is the same on every platform the theme is imported to
 const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | undefined): ConfigPresetItemDefinition => ({
-  id: theme.id,
-  bundleId: theme.standard_id,
+  id: theme.standard_id,
   label: theme.name,
   translatable: false,
-  fileName: `${theme.standard_id}.json`,
-  isDefault: theme.id === defaultThemeId,
+  isDefault: theme.standard_id === defaultThemeId,
   exporter: async () => getThemeConfigPresetConfiguration(theme),
 });
 
@@ -87,7 +86,7 @@ export const brandingFamily: ConfigPresetFamilyDefinition = {
       findThemePaginated(context, user, { first, after, search, ...themesArgs(ids, excludedIds) }),
       getPlatformDefaultTheme(context, user),
     ]);
-    const edges = page.edges.map(({ cursor, node }) => ({ cursor, node: toThemeItem(node, defaultTheme?.id) }));
+    const edges = page.edges.map(({ cursor, node }) => ({ cursor, node: toThemeItem(node, defaultTheme?.standard_id) }));
     return buildConfigPresetConnection(args, edges, page.pageInfo.globalCount, page.pageInfo.hasNextPage);
   },
   resolveItems: async (context, user, ids, excludedIds) => {
@@ -95,6 +94,6 @@ export const brandingFamily: ConfigPresetFamilyDefinition = {
       return [];
     }
     const [themes, defaultTheme] = await Promise.all([findAllThemes(context, user, themesArgs(ids, excludedIds)), getPlatformDefaultTheme(context, user)]);
-    return themes.map((theme) => toThemeItem(theme, defaultTheme?.id));
+    return themes.map((theme) => toThemeItem(theme, defaultTheme?.standard_id));
   },
 };

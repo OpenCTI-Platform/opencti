@@ -76,7 +76,7 @@ describe('Config preset registry', () => {
         label: 'Branding',
         description: 'Themes, colors, logos',
         group: 'platformSettings',
-        itemIds: [otherCustomTheme.id, customTheme.id],
+        itemIds: [otherCustomTheme.standard_id, customTheme.standard_id],
       },
       { id: 'messages', label: 'Messages', description: 'Banner, login and consent messages', group: 'platformSettings', itemIds: ['banner', 'login', 'consent', 'noAccess'] },
       { id: 'hiddenEntityTypes', label: 'Hidden entity types', description: 'Entity types hidden in the platform', group: 'dataModel', itemIds: ['hiddenEntityTypes'] },
@@ -124,7 +124,7 @@ describe('Config preset registry', () => {
   describe('platform configuration', () => {
     it('exports the allowlisted platform fields and the custom default theme it depends on', async () => {
       const item = await findItem('platform', 'platform');
-      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.id }]);
+      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.standard_id }]);
       expect(await exportConfigPresetItem(context, user, findFamily('platform'), item)).toEqual({
         openCTI_version: PLATFORM_VERSION,
         type: 'platformSettings.platform',
@@ -140,7 +140,7 @@ describe('Config preset registry', () => {
 
     it('references the default theme the dependency was computed with, even if the default changes afterwards', async () => {
       const [item] = await findFamily('platform').resolveItems(context, user, ['platform'], []);
-      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.id }]);
+      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.standard_id }]);
       withSettings({ platform_theme: otherCustomTheme.id });
       expect((await item.exporter(context, user)).default_theme).toEqual({ standard_id: customTheme.standard_id, name: 'SOC night' });
     });
@@ -234,7 +234,7 @@ describe('Config preset registry', () => {
     it('exports a theme in the theme import format, with its standard id', async () => {
       const fullTheme = { ...customTheme, theme_login_aside_gradient_start: '#111111', theme_login_aside_gradient_end: '#222222', theme_login_aside_image: 'https://example.com/aside.png' };
       vi.mocked(fullEntitiesList).mockResolvedValueOnce([fullTheme] as never);
-      const file = await exportConfigPresetItem(context, user, branding, await findItem('branding', customTheme.id));
+      const file = await exportConfigPresetItem(context, user, branding, await findItem('branding', customTheme.standard_id));
       expect(file).toMatchObject({ type: 'platformSettings.branding', id: customTheme.standard_id });
       expect(Object.keys(file.configuration).sort()).toEqual([...THEME_FILE_FIELDS].sort());
       expect(file.configuration).toMatchObject({ standard_id: customTheme.standard_id, name: 'SOC night', theme_logo: 'data:image/png;base64,AAAA', theme_logo_collapsed: '' });
@@ -242,7 +242,7 @@ describe('Config preset registry', () => {
     });
 
     it('leaves the missing values of a theme out, so the import gives them their default', async () => {
-      const file = await exportConfigPresetItem(context, user, branding, await findItem('branding', customTheme.id));
+      const file = await exportConfigPresetItem(context, user, branding, await findItem('branding', customTheme.standard_id));
       const emptyFields = ['theme_login_aside_gradient_start', 'theme_login_aside_gradient_end', 'theme_login_aside_image'];
       expect(Object.keys(file.configuration).sort()).toEqual(THEME_FILE_FIELDS.filter((field) => !emptyFields.includes(field)).sort());
     });
@@ -252,12 +252,12 @@ describe('Config preset registry', () => {
       // The built-in themes are filtered out by the query, so the count and the pages do not include them
       const notBuiltIn = { mode: 'and', filters: [{ key: ['built_in'], values: ['true'], operator: 'not_eq' }], filterGroups: [] };
       expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Theme'], { first: 1, after: undefined, search: undefined, orderBy: 'name', orderMode: 'asc', filters: notBuiltIn });
-      expect(page.edges.map(({ node }) => node.id)).toEqual([otherCustomTheme.id]);
+      expect(page.edges.map(({ node }) => node.id)).toEqual([otherCustomTheme.standard_id]);
       // The next page and its cursor come from the themes
       expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
       const all = await branding.listItems(context, user, { first: 10 });
       expect(all.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 2 });
-      expect(all.edges.map(({ node }) => [node.id, node.isDefault ?? false])).toEqual([[otherCustomTheme.id, false], [customTheme.id, true]]);
+      expect(all.edges.map(({ node }) => [node.id, node.isDefault ?? false])).toEqual([[otherCustomTheme.standard_id, false], [customTheme.standard_id, true]]);
     });
 
     it('lists the themes after a cursor, still counting all of them', async () => {
@@ -267,14 +267,14 @@ describe('Config preset registry', () => {
     });
 
     it('applies search, ids and excluded ids to the themes', async () => {
-      expect(await pageIds({ search: 'soc' })).toEqual([customTheme.id]);
+      expect(await pageIds({ search: 'soc' })).toEqual([customTheme.standard_id]);
       expect((await branding.listItems(context, user, { search: 'soc' })).pageInfo.globalCount).toBe(1);
       // The built-in themes are not found by their name
       expect(await pageIds({ search: 'filigran' })).toEqual([]);
-      expect(await pageIds({ ids: [customTheme.id] })).toEqual([customTheme.id]);
-      expect(await pageIds({ excludedIds: [customTheme.id] })).toEqual([otherCustomTheme.id]);
+      expect(await pageIds({ ids: [customTheme.standard_id] })).toEqual([customTheme.standard_id]);
+      expect(await pageIds({ excludedIds: [customTheme.standard_id] })).toEqual([otherCustomTheme.standard_id]);
       // A built-in theme is not an item, even when it is asked for
-      expect(await pageIds({ ids: [builtInTheme.id] })).toEqual([]);
+      expect(await pageIds({ ids: [builtInTheme.standard_id] })).toEqual([]);
       vi.mocked(pageEntitiesConnection).mockClear();
       // No ids: no theme query, whose empty filter would match every theme
       expect(await pageIds({ ids: [] })).toEqual([]);
@@ -283,15 +283,15 @@ describe('Config preset registry', () => {
 
     it('marks the default theme', async () => {
       const page = await branding.listItems(context, user, {});
-      expect(page.edges.filter(({ node }) => node.isDefault).map(({ node }) => node.id)).toEqual([customTheme.id]);
+      expect(page.edges.filter(({ node }) => node.isDefault).map(({ node }) => node.id)).toEqual([customTheme.standard_id]);
     });
 
     it('resolves the themes to export, with the same rules as the listing', async () => {
       const ids = async (selected: string[] | null, excluded: string[]) => (await branding.resolveItems(context, user, selected, excluded)).map((item) => item.id);
-      expect(await ids(null, [])).toEqual([otherCustomTheme.id, customTheme.id]);
-      expect(await ids(null, [otherCustomTheme.id])).toEqual([customTheme.id]);
+      expect(await ids(null, [])).toEqual([otherCustomTheme.standard_id, customTheme.standard_id]);
+      expect(await ids(null, [otherCustomTheme.standard_id])).toEqual([customTheme.standard_id]);
       // A built-in theme is not an item, even when it is asked for
-      expect(await ids([customTheme.id, builtInTheme.id], [])).toEqual([customTheme.id]);
+      expect(await ids([customTheme.standard_id, builtInTheme.standard_id], [])).toEqual([customTheme.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();

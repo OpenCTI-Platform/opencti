@@ -20,7 +20,7 @@ const getPlatformItems = async (context: AuthContext, user: AuthUser): Promise<C
     id: PLATFORM_ITEM_ID,
     label: PLATFORM_LABEL,
     translatable: true,
-    dependsOn: defaultTheme && !defaultTheme.built_in ? [{ type: BRANDING_FAMILY_ID, id: defaultTheme.id }] : [],
+    dependsOn: defaultTheme && !defaultTheme.built_in ? [{ type: BRANDING_FAMILY_ID, id: defaultTheme.standard_id }] : [],
     exporter: (ctx, usr) => getPlatformConfigPresetConfiguration(ctx, usr, defaultTheme ?? null),
   }];
 };

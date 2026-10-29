@@ -10,7 +10,7 @@ export interface ConfigPresetItemFile {
   openCTI_version: string;
   // `<group id>.<category id>`
   type: string;
-  // Bundle id of the item
+  // Id of the item, the same on every platform
   id: string;
   configuration: ConfigPresetConfiguration;
 }
@@ -22,10 +22,8 @@ export interface ConfigPresetItemReference {
 }
 
 export interface ConfigPresetItemDefinition {
-  // API id: the category id for a singleton, the internal id for an entity
+  // The category id for a singleton, the standard id for an entity: the same in the API and in the bundle, and on every platform
   id: string;
-  // Id in the bundle, the same on every platform: the standard id for an entity, the API id when absent
-  bundleId?: string;
   label: string;
   // True when the label is a static string the UI translates; false when it is user data (an entity name)
   translatable: boolean;

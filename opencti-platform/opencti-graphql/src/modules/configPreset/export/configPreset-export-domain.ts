@@ -21,7 +21,7 @@ import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_EXPORT_PATH } from '../../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../manager/telemetryManager';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemBundleId, configPresetItemFilePath, exportConfigPresetItem } from '../configPreset-registry';
+import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePath, exportConfigPresetItem } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
@@ -148,19 +148,19 @@ export const addConfigPresetDependencies = async (
   }));
 };
 
-// For each exported item that has dependencies, under its type (`<group id>.<category id>`) and its bundle id:
-// the bundle id of each dependency and the path of its file from the zip root. Registry order, then item order.
+// For each exported item that has dependencies, under its type (`<group id>.<category id>`) and its id:
+// the id of each dependency and the path of its file from the zip root. Registry order, then item order.
 export const buildConfigPresetDependencies = (families: SelectedConfigPresetFamily[]) => {
   const files = new Map(families.flatMap((family) => family.items.map((item) => [
     referenceKey(family.id, item.id),
-    [configPresetItemBundleId(item), configPresetItemFilePath(family, item)] as const,
+    [item.id, configPresetItemFilePath(family, item)] as const,
   ])));
   const dependencies: Record<string, Record<string, Record<string, string>>> = {};
   families.forEach((family) => family.items.filter((item) => (item.dependsOn ?? []).length > 0).forEach((item) => {
     const type = configPresetFamilyType(family);
     // The closure exported every dependency
     const itemDependencies = (item.dependsOn ?? []).map((reference) => files.get(referenceKey(reference.type, reference.id))!);
-    dependencies[type] = { ...dependencies[type], [configPresetItemBundleId(item)]: Object.fromEntries(itemDependencies) };
+    dependencies[type] = { ...dependencies[type], [item.id]: Object.fromEntries(itemDependencies) };
   }));
   return dependencies;
 };
@@ -241,7 +241,7 @@ const writeConfigPresetZip = async (
       entity_types: families.map((family) => family.id),
       counts,
       // The bundle ids of the items written in the zip: families in registry order; in a family, the selected items then their dependencies
-      items: Object.fromEntries(families.map((family) => [family.id, family.items.map((item) => configPresetItemBundleId(item))])),
+      items: Object.fromEntries(families.map((family) => [family.id, family.items.map((item) => item.id)])),
     };
   } catch (err) {
     // The original error is the one reported, a stream error caused by the abort is ignored
