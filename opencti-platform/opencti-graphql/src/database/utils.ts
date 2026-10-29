@@ -212,8 +212,9 @@ const computeTimeSeriesRange = (startDate: Date, endDate: Date, interval: string
   return { startDateParsed, elementsOfInterval };
 };
 
+// A period ending before it starts holds no bucket, as its axis
 export const countTimeSeriesIntervals = (startDate: Date, endDate: Date, interval: string) => {
-  return computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1;
+  return Math.max(0, computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1);
 };
 
 export type TimeSeriesAxis = {
