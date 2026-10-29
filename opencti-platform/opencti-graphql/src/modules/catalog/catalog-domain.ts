@@ -21,7 +21,7 @@ import { logApp } from '../../config/conf';
 import { buildCatalogContractCompatibility, groupContractVersionsBySlug, selectLatestContractsBySlug } from './catalog-version-utils';
 
 const validatorCache = new Map<string, ValidateFunction>();
-const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+export const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
 
 const normalizeContractConfigSchema = (
   configSchema: CatalogContract['config_schema'] | null | undefined,

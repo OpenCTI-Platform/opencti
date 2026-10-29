@@ -9,6 +9,7 @@ import type { BasicStoreEntityConnector } from '../modules/connector/connector-t
 import openCtiManifest from '../__generated__/opencti-manifest.json';
 import type { CatalogContract, CatalogDefinition } from '../modules/catalog/catalog-types';
 import { findCatalogContractsBySlugs } from '../modules/catalog/catalog-repository';
+import { withConfigSchemaPropertiesOrder } from '../modules/catalog/catalog-domain';
 
 const message = '[MIGRATION] managed connectors options order';
 
