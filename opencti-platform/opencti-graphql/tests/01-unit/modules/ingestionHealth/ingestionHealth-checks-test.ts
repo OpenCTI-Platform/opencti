@@ -14,7 +14,6 @@ import {
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
 import {
-  CONNECTOR_ERROR_BLOCKING_CRITICITY,
   HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED,
   HEALTH_CHECK_CONNECTOR_ERROR_REPORTED,
   HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
@@ -26,16 +25,22 @@ import {
   HEALTH_CHECK_USER_MISSING_CAPABILITY,
   HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
   type HealthCheckCode,
-  type HealthCheckIngestor,
-  type HealthCheckUser,
-  type RuntimeDataReadContext,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/connector/connector-types';
 import { redisGetConnectorErrors } from '../../../../src/modules/connector/connector-redis';
 import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
 import { type ConnectorWorkError, loadConnectorsRuntimeState } from '../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks';
-import { HealthTransition, type IngestionHealthFields, type StoredHealthCheck, type StoredIngestionHealth } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
+import {
+  type HealthCheckIngestor,
+  type HealthCheckUser,
+  HealthTransition,
+  type IngestionHealthFields,
+  type RuntimeDataReadContext,
+  type StoredHealthCheck,
+  type StoredIngestionHealth,
+} from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
+import { CONNECTOR_ERROR_BLOCKING_CRITICITY } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry-utils';
 
 vi.mock('../../../../src/database/redis', async (importActual) => ({
   ...(await importActual<typeof import('../../../../src/database/redis')>()),
@@ -268,7 +273,7 @@ describe('isRuntimeCheckEnabled', () => {
   });
 
   it('should be false for a stream once the reported errors checks are disabled on the platform: nothing to read', () => {
-    const disabledHealthChecks = [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED];
+    const disabledHealthChecks: HealthCheckCode[] = [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED];
     expect(isRuntimeCheckEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks })).toBe(false);
   });
 
@@ -288,10 +293,15 @@ describe('isRuntimeCheckEnabled', () => {
   });
 
   it('should be false when the only runtime check enabled for the ingestion is disabled on the platform: nothing to read', () => {
-    const connectorChecks = [HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_LAST_RUN_FAILED, HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED];
+    const connectorChecks: HealthCheckCode[] = [
+      HEALTH_CHECK_HEARTBEAT_MISSING,
+      HEALTH_CHECK_LAST_RUN_FAILED,
+      HEALTH_CHECK_CONNECTOR_ERROR_REPORTED,
+      HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED,
+    ];
     expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: connectorChecks })).toBe(false);
     const failingFeed = { ...FEED, last_execution_status: 'error' };
-    const feedChecks = [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, HEALTH_CHECK_SOURCE_ACCESS_DENIED];
+    const feedChecks: HealthCheckCode[] = [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, HEALTH_CHECK_SOURCE_ACCESS_DENIED];
     expect(isRuntimeCheckEnabled(failingFeed, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks: feedChecks })).toBe(false);
     // Another check disabled: still read
     expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(true);
@@ -674,7 +684,7 @@ describe('connector reported errors checks', () => {
   });
 
   it('should be enabled for every connector, pinging or not, and nothing else', () => {
-    [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED].forEach((code) => {
+    ([HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED] as const).forEach((code) => {
       const { isEnabled } = HEALTH_CHECK_REGISTRY[code];
       expect(isEnabled(CONNECTOR, NOT_PINGING)).toBe(true);
       expect(isEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, NOT_PINGING)).toBe(true);

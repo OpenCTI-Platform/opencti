@@ -68,8 +68,6 @@ export interface HealthCheckUser {
 export interface SourceIngestionHealthContext extends GlobalIngestionHealthContext {
   // The moment of the evaluation, taken right after the runtime data is read: what is stale is judged against it
   evaluatedAt: string;
-  // Values read by the runtime checks enabled for this ingestion, by check code: whether they are still fresh is judged here, not when read
-  runtimeData?: RuntimeData;
   // Resolved by the manager for each ingestion: absent when no user is set or it does not exist anymore
   user?: HealthCheckUser;
 }

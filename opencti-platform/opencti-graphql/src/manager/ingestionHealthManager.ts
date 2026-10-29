@@ -25,25 +25,18 @@ import {
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
+  getEnabledRuntimeChecks,
+  type IngestionHealthEvaluationContext,
   isRuntimeCheckEnabled,
   markHealthNotified,
 } from '../modules/ingestionHealth/ingestionHealth-checks';
-import {
-  getIngestorUserId,
-  type GlobalIngestionHealthContext,
-  HEALTH_CHECK_REGISTRY,
-  type HealthCheckCode,
-  type HealthCheckUser,
-  type RuntimeCheck,
-  type RuntimeData,
-  type SourceIngestionHealthContext,
-} from '../modules/ingestionHealth/ingestionHealth-registry';
 import { publishUserAction } from '../listener/UserActionListener';
-import { HealthTransition, type IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
-import { IngestionHealthCheckKind } from '../generated/graphql';
+import { type GlobalIngestionHealthContext, type HealthCheckUser, HealthTransition, type IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 import { findRegularlyPingingConnectors, isConnectorStopped } from '../modules/connector/connector-domain';
 import { isSyncRunning } from '../domain/connector';
 import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
+import type { RuntimeData } from '../modules/ingestionHealth/ingestionHealth-registry';
+import { getIngestorUserId } from '../modules/ingestionHealth/ingestionHealth-registry-utils';
 
 const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:enabled', true);
 const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key') || 'ingestion_health_manager_lock';
@@ -115,9 +108,7 @@ const loadRuntimeData = async (
   globalContext: GlobalIngestionHealthContext,
 ): Promise<Map<string, RuntimeData>> => {
   // A disabled check is not evaluated: its values are not read
-  const runtimeChecks = Object.entries(HEALTH_CHECK_REGISTRY)
-    .filter((entry): entry is [HealthCheckCode, RuntimeCheck] => entry[1].kind === IngestionHealthCheckKind.Runtime)
-    .filter(([code]) => !globalContext.disabledHealthChecks?.includes(code));
+  const runtimeChecks = getEnabledRuntimeChecks(globalContext);
   const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => {
     const enabledElements = elements.filter((element) => definition.isEnabled(element, globalContext));
     return enabledElements.length > 0
@@ -142,7 +133,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   context: AuthContext,
   source: IngestionSource<T>,
   element: T,
-  sourceContext: SourceIngestionHealthContext,
+  sourceContext: IngestionHealthEvaluationContext,
 ) => {
   const healthContext = buildIngestionHealthContext(element, sourceContext);
   const checks = computeIngestionHealthChecks(element, healthContext);

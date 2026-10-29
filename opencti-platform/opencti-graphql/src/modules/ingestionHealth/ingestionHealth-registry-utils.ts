@@ -1,9 +1,10 @@
 import { redisGetIngestionLogHistory } from '../../database/redis';
-import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../../schema/internalObject';
 import { durationInMs } from '../../utils/format';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, type ConnectorInfoError } from '../connector/connector-types';
 import { redisGetConnectorErrors } from '../connector/connector-redis';
 import type { HealthCheckFailures, HealthCheckIngestor } from './ingestionHealth-types';
+import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../ingestion/ingestion-types';
 
 // region USER_MISSING
 
@@ -22,6 +23,15 @@ export const getIngestorUserId = (ingestor: HealthCheckIngestor) => {
 };
 
 // endregion
+// region user capa
+
+// The capability the platform requires from the user of an ingestor, by entity type: a connector registers and pings with CONNECTORAPI.
+// Feeds and syncs enforce none: absent, the check does not apply
+export const REQUIRED_CAPABILITY_BY_INGESTOR_TYPE: Record<string, string> = {
+  [ENTITY_TYPE_CONNECTOR]: 'CONNECTORAPI',
+};
+
+// endregion
 // region HEARTBEAT
 
 /**
@@ -37,6 +47,18 @@ export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: str
 
 // endregion
 // region Feed&Sync EXECUTION_FAILED & ACCESS DENIED
+
+// Executed by the ingestion manager (feeds) or the sync manager (syncs), which log the outcome of each execution
+export const FEED_AND_SYNC_ENTITY_TYPES = [
+  ENTITY_TYPE_INGESTION_RSS,
+  ENTITY_TYPE_INGESTION_CSV,
+  ENTITY_TYPE_INGESTION_JSON,
+  ENTITY_TYPE_INGESTION_TAXII,
+  ENTITY_TYPE_SYNC,
+];
+
+// Only the statuses telling that the credentials are refused: a 429 or a 5xx says nothing about access
+export const ACCESS_DENIED_HTTP_STATUSES: readonly number[] = [401, 402, 403];
 
 // The metadata of a failed feed or sync execution, see buildIngestionErrorMeta
 export interface FeedAndSyncExecutionFailure {
@@ -86,6 +108,10 @@ export const describeFeedAndSyncExecutionFailure = ({ http_status, http_status_t
 
 // endregion
 // region reported errors (connector and work errors)
+
+// A connector reports its errors with a criticity (higher is worse): from this one the most critical error is blocking, below it is advisory
+// ponytail: arbitrary default, tune it once real connectors report errors
+export const CONNECTOR_ERROR_BLOCKING_CRITICITY = 2;
 
 // A work error can quote the url called, with its query string or its user and password: they may hold a secret,
 // and the error is shown to every reader of the connector, and written in the activity log.

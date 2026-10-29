@@ -1,17 +1,20 @@
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity } from '../../generated/graphql';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../../schema/internalObject';
-import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../ingestion/ingestion-types';
 import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
 import { findCapabilityDescription } from '../../database/data-initialization';
 import { getConclusiveWork, getWorkFailure, loadConnectorsRuntimeState } from './ingestionHealth-connectorWorks';
 import {
+  ACCESS_DENIED_HTTP_STATUSES,
+  CONNECTOR_ERROR_BLOCKING_CRITICITY,
   describeFeedAndSyncExecutionFailure,
+  FEED_AND_SYNC_ENTITY_TYPES,
   getConnectorsReportedErrors,
   getFeedsAndSyncsLastFailureDetails,
   getIngestorUserId,
   getReportedConnectorErrorsFailures,
   isHeartbeatAlive,
   isUserRequiredForIngestor,
+  REQUIRED_CAPABILITY_BY_INGESTOR_TYPE,
   scrubWorkError,
 } from './ingestionHealth-registry-utils';
 import type {
@@ -44,7 +47,7 @@ export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
   | typeof HEALTH_CHECK_SOURCE_ACCESS_DENIED
   | typeof HEALTH_CHECK_LAST_RUN_FAILED;
 
-export interface BaseHealthCheckDefinition {
+interface BaseHealthCheckDefinition {
   // Name of the check, the same for every occurrence: shown in the platform settings, translated by the front (lang/back)
   label: string;
   severity: IngestionHealthCheckSeverity;
@@ -64,7 +67,7 @@ export interface BaseHealthCheckDefinition {
 // A read failure must reject, never be read as a missing value.
 // The value given to getFailure is undefined when the sources reported nothing.
 // Its isEnabled must be false for a stopped ingestor: nothing is read for it, a missing value would be reported as a failure.
-export interface RuntimeCheckDefinition<T> extends BaseHealthCheckDefinition {
+interface RuntimeCheckDefinition<T> extends BaseHealthCheckDefinition {
   kind: IngestionHealthCheckKind.Runtime;
   // Whether the ingestor is evaluated for this check. Called before the runtime data is read, to know what to read
   isEnabled: (ingestor: HealthCheckIngestor, context: GlobalIngestionHealthContext) => boolean;
@@ -72,24 +75,12 @@ export interface RuntimeCheckDefinition<T> extends BaseHealthCheckDefinition {
   getFailure: (value: T | undefined, context: SourceIngestionHealthContext) => HealthCheckFailures;
 }
 
-export interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
+interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
   kind: IngestionHealthCheckKind.Configuration;
   // Whether the ingestor is evaluated for this check
   isEnabled: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => boolean;
   getFailure: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => HealthCheckFailures;
 }
-
-// The values read by the runtime checks for one ingestion, by check code.
-// Inferred from the registry: the type of each value is the one returned by the getRuntimeData of its check
-type Registry = typeof HEALTH_CHECK_REGISTRY;
-type RuntimeCheckCode = { [C in HealthCheckCode]: Registry[C] extends RuntimeCheckDefinition<any> ? C : never }[HealthCheckCode];
-// The runtime checks of the registry, each with the type of its value: a union when they read different types
-export type RuntimeCheck = Extract<Registry[HealthCheckCode], { kind: IngestionHealthCheckKind.Runtime }>;
-export type RuntimeData = { [C in RuntimeCheckCode]?: Registry[C] extends RuntimeCheckDefinition<infer T> ? T : never };
-
-// A connector reports its errors with a criticity (higher is worse): from this one the most critical error is blocking, below it is advisory
-// ponytail: arbitrary default, tune it once real connectors report errors
-export const CONNECTOR_ERROR_BLOCKING_CRITICITY = 2;
 
 /**
  * Returns the definition as is. Only typing: T is inferred from getRuntimeData, so that getFailure is checked against it.
@@ -98,18 +89,6 @@ export const CONNECTOR_ERROR_BLOCKING_CRITICITY = 2;
 const defineRuntimeCheck = <T>(definition: RuntimeCheckDefinition<T>): RuntimeCheckDefinition<T> => definition;
 
 export type HealthCheckDefinition = ConfigurationCheckDefinition | RuntimeCheckDefinition<any>;
-
-// The capability the platform requires from the user of an ingestor, by entity type: a connector registers and pings with CONNECTORAPI.
-// Feeds and syncs enforce none: absent, the check does not apply
-const REQUIRED_CAPABILITY_BY_ENTITY_TYPE: Record<string, string> = {
-  [ENTITY_TYPE_CONNECTOR]: 'CONNECTORAPI',
-};
-
-// Executed by the ingestion manager (feeds) or the sync manager (syncs), which log the outcome of each execution
-const FEED_AND_SYNC_ENTITY_TYPES = [ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_TAXII, ENTITY_TYPE_SYNC];
-
-// Only the statuses telling that the credentials are refused: a 429 or a 5xx says nothing about access
-const ACCESS_DENIED_HTTP_STATUSES: readonly number[] = [401, 402, 403];
 
 // Kind, severity and message describe the type of check, not one occurrence: they are never stored,
 // so changing them never requires rewriting Elasticsearch.
@@ -134,9 +113,9 @@ export const HEALTH_CHECK_REGISTRY = {
     // The description of the capability, translated by the front as in the roles
     message: () => 'User lacks required capability: "{capability_description}"',
     // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
-    isEnabled: (ingestor, { user }) => !!user && !user.internal && ingestor.entity_type in REQUIRED_CAPABILITY_BY_ENTITY_TYPE,
+    isEnabled: (ingestor, { user }) => !!user && !user.internal && ingestor.entity_type in REQUIRED_CAPABILITY_BY_INGESTOR_TYPE,
     getFailure: (ingestor, { user }) => {
-      const capability = REQUIRED_CAPABILITY_BY_ENTITY_TYPE[ingestor.entity_type];
+      const capability = REQUIRED_CAPABILITY_BY_INGESTOR_TYPE[ingestor.entity_type];
       if (user?.hasCapability(capability)) {
         return null;
       }
@@ -249,3 +228,11 @@ export const HEALTH_CHECK_REGISTRY = {
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
 
 export const isHealthCheckCode = (code: unknown): code is HealthCheckCode => typeof code === 'string' && Object.hasOwn(HEALTH_CHECK_REGISTRY, code);
+
+// Inferred from the registry: the type of each runtime value is the one returned by the getRuntimeData of its check
+type Registry = typeof HEALTH_CHECK_REGISTRY;
+type RuntimeCheckCode = { [C in HealthCheckCode]: Registry[C] extends RuntimeCheckDefinition<any> ? C : never }[HealthCheckCode];
+// The runtime checks of the registry, each with the type of its value: a union when they read different types
+export type RegisteredRuntimeCheck = Extract<Registry[HealthCheckCode], { kind: IngestionHealthCheckKind.Runtime }>;
+// The values read by the runtime checks for one ingestion, by check code
+export type RuntimeData = { [C in RuntimeCheckCode]?: Registry[C] extends RuntimeCheckDefinition<infer T> ? T : never };
