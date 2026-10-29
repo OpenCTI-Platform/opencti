@@ -4,13 +4,12 @@ import { FunctionalError } from '../../../config/errors';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllThemes, findThemePaginated } from '../../theme/theme-domain';
 import { getThemeConfigPresetConfiguration } from '../../theme/theme-export';
-import { THEME_STANDARD_ID_PATTERN, THEME_URL_KEYS } from '../../theme/theme-import-schema';
+import { THEME_STANDARD_ID_PATTERN } from '../../theme/theme-import-schema';
 import { importTheme } from '../../theme/theme-import';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
-import { buildImportFields } from '../import/configPreset-import-utils';
 import { buildConfigPresetConnection, platformSettingsGroup } from './common-configPreset-registry';
 
 export const BRANDING_FAMILY_ID = 'branding';
@@ -46,7 +45,7 @@ const brandingImporter: ConfigPresetImporter = {
     const base = { label: name, translatable: false };
     // The bundle id of a theme is its standard id
     if (!THEME_STANDARD_ID_PATTERN.test(item.id) || item.configuration.standard_id !== item.id) {
-      return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the theme does not match its id', fields: [] };
+      return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the theme does not match its id' };
     }
     // The rules of a theme are the ones of the theme module: a dry run decides what the import would do
     const result = await importTheme(context, user, item.configuration, { mode, dryRun: true });
@@ -54,11 +53,9 @@ const brandingImporter: ConfigPresetImporter = {
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
     }
-    // The preview shows the URLs and the images of a theme that is valid
-    const fields = result.configuration ? buildImportFields(result.configuration, THEME_URL_KEYS) : [];
     // A theme conflicts when it exists, or when another one has its name: either way a copy is a way out
     const conflict = result.exists || result.code === 'name_conflict';
-    return { ...base, exists: result.exists, conflict, status: result.status, reason: result.reason, fields };
+    return { ...base, exists: result.exists, conflict, status: result.status, reason: result.reason };
   },
   apply: async (context, user, item, computed, mode) => {
     // Decided again by the theme module as it writes: a theme with this standard id created since compute is overwritten, never duplicated

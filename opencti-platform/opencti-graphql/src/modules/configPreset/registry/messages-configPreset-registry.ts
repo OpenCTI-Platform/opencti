@@ -3,7 +3,6 @@ import { getMessagesConfigPresetConfigurations, SETTINGS_MESSAGES_FIELDS } from 
 import { importMessage } from '../../settings/settings-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { buildImportFields } from '../import/configPreset-import-utils';
 import { platformSettingsGroup, staticFamily, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
 
 const MESSAGE_LABELS: Record<string, string> = { banner: 'Banner', login: 'Login message', consent: 'Consent message', noAccess: 'No access message' };
@@ -30,8 +29,7 @@ const getMessagesItems = async (context: AuthContext): Promise<ConfigPresetItemD
 const messagesImporter: ConfigPresetImporter = {
   compute: async (context, user, item, _plan, mode): Promise<ConfigPresetComputedItem> => {
     const result = await importMessage(context, user, item.id, item.configuration, { mode, dryRun: true });
-    const fields = result.configuration ? buildImportFields(result.configuration, SETTINGS_MESSAGES_FIELDS[item.id as keyof typeof SETTINGS_MESSAGES_FIELDS]) : [];
-    return toComputedItem({ label: MESSAGE_LABELS[item.id] ?? item.id, translatable: true }, result, fields);
+    return toComputedItem({ label: MESSAGE_LABELS[item.id] ?? item.id, translatable: true }, result);
   },
   apply: async (context, user, item, computed, mode) => {
     return toAppliedStatus(await importMessage(context, user, item.id, item.configuration, { mode }), computed);

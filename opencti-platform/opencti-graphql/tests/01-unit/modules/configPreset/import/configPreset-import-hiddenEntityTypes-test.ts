@@ -48,7 +48,7 @@ describe('Hidden entity types import (registry)', () => {
 
   it('fails an item that is not the hidden entity types, without asking the module', async () => {
     expect(await family.importer!.compute(context, user, item({ hidden_entity_types: [] }, 'other'), plan, ConfigImportMode.Overwrite))
-      .toMatchObject({ status: 'failed', reason: 'Unexpected item id', fields: [] });
+      .toMatchObject({ status: 'failed', reason: 'Unexpected item id' });
     expect(importHiddenEntityTypes).not.toHaveBeenCalled();
   });
 

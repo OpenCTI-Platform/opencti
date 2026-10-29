@@ -36,13 +36,8 @@ beforeEach(() => {
 });
 
 describe('Messages import (compute)', () => {
-  it('overwrites a message and previews every field of it, null meaning untouched', async () => {
-    const result = await compute('messages', 'banner', { platform_banner_text: 'Hello', platform_banner_level: null });
-    expect(result).toMatchObject({ status: 'overwritten', exists: true });
-    expect(result.fields).toEqual([
-      { key: 'platform_banner_text', value: 'Hello' },
-      { key: 'platform_banner_level', value: null },
-    ]);
+  it('overwrites a message, null meaning untouched', async () => {
+    expect(await compute('messages', 'banner', { platform_banner_text: 'Hello', platform_banner_level: null })).toMatchObject({ status: 'overwritten', exists: true });
   });
 
   it('skips an item with only null values', async () => {
@@ -61,13 +56,8 @@ describe('Messages import (compute)', () => {
 describe('Platform import (compute)', () => {
   const platform = (overrides: Record<string, unknown> = {}) => ({ platform_title: 'Title', platform_favicon: null, platform_language: 'en-us', default_theme: null, ...overrides });
 
-  it('overwrites the platform and previews the title and the favicon', async () => {
-    const result = await compute('platform', 'platform', platform({ platform_favicon: 'https://example.com/favicon.ico' }));
-    expect(result.status).toEqual('overwritten');
-    expect(result.fields).toEqual([
-      { key: 'platform_title', value: 'Title' },
-      { key: 'platform_favicon', value: 'https://example.com/favicon.ico' },
-    ]);
+  it('overwrites the platform', async () => {
+    expect(await compute('platform', 'platform', platform({ platform_favicon: 'https://example.com/favicon.ico' }))).toMatchObject({ status: 'overwritten' });
   });
 
   it('does not fail on a null default theme, and skips an item with only null values', async () => {
@@ -158,15 +148,6 @@ describe('Branding import (compute)', () => {
 
   it.each(['#abc', '#abcd', '#aabbcc', '#AABBCC80'])('accepts the hex colour %s', async (color) => {
     expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_background: color }))).toMatchObject({ status: 'created' });
-  });
-
-  it('previews the URL and image fields only and shows a data image as type and size', async () => {
-    const dataImage = `data:image/png;base64,${'A'.repeat(2048)}`;
-    const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_logo_collapsed: dataImage }));
-    expect(result.fields.map(({ key }) => key)).toEqual(['theme_logo', 'theme_logo_collapsed', 'theme_logo_login', 'theme_login_aside_image']);
-    expect(result.fields[0]).toEqual({ key: 'theme_logo', value: 'https://example.com/logo.png' });
-    expect(result.fields[1]).toEqual({ key: 'theme_logo_collapsed', value: 'image/png (2 KB)' });
-    expect(result.fields[2].value).toBeNull();
   });
 
   it('offers to overwrite or copy the themes, and only to overwrite the other families', () => {

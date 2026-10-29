@@ -256,8 +256,9 @@ const realImport = async (
     }
   }
   logApp.info('[CONFIG PRESET] Import finished', { user_id: user.id, file_id: fileId, outcome, counts });
-  return { results, report_id: report.reportId, // getSettings is untyped (JS), some fields of Settings are resolved by its field resolvers
-    settings: await getSettings(importContext) as unknown as ResolversTypes['Settings'], entity_settings: await findAllEntitySettings(importContext, user) };
+  // getSettings is untyped (JS), some fields of Settings are resolved by its field resolvers
+  const settings = await getSettings(importContext) as unknown as ResolversTypes['Settings'];
+  return { results, report_id: report.reportId, settings, entity_settings: await findAllEntitySettings(importContext, user) };
 };
 
 // Applies the selected items of the pending zip one by one, required dependencies first, and returns the result of each:

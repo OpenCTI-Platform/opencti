@@ -6,27 +6,7 @@ import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../../utils/access'
 import { getDraftContext } from '../../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode } from '../../configImport/configImport-types';
-import { CONFIG_PRESET_DEFAULT_IMPORT_MODE, type ConfigPresetImportField, configPresetPlanKey } from './configPreset-import-types';
-
-const DATA_URL = /^data:([^;,]+);base64,(.*)$/;
-
-// An image given as a data: URL is shown as its type and size
-const describeValue = (value: string) => {
-  const match = DATA_URL.exec(value);
-  if (!match) {
-    return value;
-  }
-  const bytes = Math.floor((match[2].length * 3) / 4);
-  return `${match[1]} (${Math.max(1, Math.round(bytes / 1024))} KB)`;
-};
-
-// The fields of an item shown in the preview, in the order of the keys
-export const buildImportFields = (configuration: Record<string, unknown>, keys: string[]): ConfigPresetImportField[] => {
-  return keys.map((key) => {
-    const value = configuration[key];
-    return { key, value: typeof value === 'string' ? describeValue(value) : null };
-  });
-};
+import { CONFIG_PRESET_DEFAULT_IMPORT_MODE, configPresetPlanKey } from './configPreset-import-types';
 
 // The mode of each item of a selection, by `<type>/<bundle id>`: an item that has none overwrites
 export const configPresetImportModes = (selections: { type: string; item_modes?: { key: string; mode: ConfigImportMode }[] | null }[]) => {

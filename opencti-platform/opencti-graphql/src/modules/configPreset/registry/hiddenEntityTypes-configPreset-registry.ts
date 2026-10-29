@@ -19,7 +19,7 @@ const hiddenEntityTypesImporter: ConfigPresetImporter = {
   compute: async (context, user, item, _plan, mode): Promise<ConfigPresetComputedItem> => {
     const label = { label: HIDDEN_ENTITY_TYPES_LABEL, translatable: true };
     if (item.id !== HIDDEN_ENTITY_TYPES_ID) {
-      return { ...label, exists: true, conflict: false, status: 'failed', reason: 'Unexpected item id', fields: [] };
+      return { ...label, exists: true, conflict: false, status: 'failed', reason: 'Unexpected item id' };
     }
     const result = await importHiddenEntityTypes(context, user, item.configuration, { mode, dryRun: true });
     // The preview shows the types the platform would hide

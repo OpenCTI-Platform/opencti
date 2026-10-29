@@ -135,7 +135,7 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
         isDefault: family.id === 'branding' && defaultThemeId?.standard_id === item.id,
         exists: computed.exists,
         conflict: computed.conflict,
-        fields: computed.fields,
+        fields: computed.fields ?? [],
         dependsOn: bundle.items
           .filter((dependency) => dependencyPaths.includes(dependency.path))
           .map((dependency) => ({ type: dependency.type, key: dependency.id })),

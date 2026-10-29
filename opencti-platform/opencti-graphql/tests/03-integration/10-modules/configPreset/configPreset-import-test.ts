@@ -79,10 +79,8 @@ describe('Config preset import: upload and preview', () => {
     expect(result.types.map((type: { key: string }) => type.key)).toEqual(['platform', 'branding', 'messages']);
     const platform = result.types[0].items[0];
     expect(platform).toMatchObject({ key: 'platform', exists: true, dependsOn: [{ type: 'branding', key: CUSTOM_THEME_ID }] });
-    expect(platform.fields).toEqual([
-      { key: 'platform_title', value: 'Imported title' },
-      { key: 'platform_favicon', value: 'https://example.com/favicon.ico' },
-    ]);
+    // Only the hidden entity types list its values
+    expect(platform.fields).toEqual([]);
     expect(result.types[1].items).toHaveLength(1);
     expect(result.types[1].items[0]).toMatchObject({ key: CUSTOM_THEME_ID, label: 'Import test theme', exists: false, conflict: false, isDefault: true, translatable: false });
   });

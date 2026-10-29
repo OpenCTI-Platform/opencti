@@ -37,7 +37,8 @@ export interface ConfigPresetComputedItem {
   exists: boolean;
   // Whether the item conflicts with one of the platform (it exists, or another one has its name): the user chooses what to do with it
   conflict: boolean;
-  fields: ConfigPresetImportField[];
+  // The values the preview shows of the item, when it shows some
+  fields?: ConfigPresetImportField[];
 }
 
 // What the import would create, shared by the items of one import: `<type>/<bundle id>`

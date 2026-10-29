@@ -39,5 +39,3 @@ export const themeImportSchema = z.strictObject({
 });
 
 export type ThemeImportConfiguration = z.infer<typeof themeImportSchema>;
-
-export const THEME_URL_KEYS = ['theme_logo', 'theme_logo_collapsed', 'theme_logo_login', 'theme_login_aside_image'];
