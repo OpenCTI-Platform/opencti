@@ -1,6 +1,8 @@
-import { getSettingsFromDatabase } from '../../../domain/settings';
+import { getEntityFromCache } from '../../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
+import type { BasicStoreSettings } from '../../../types/settings';
 import { ForbiddenAccess, UnsupportedError } from '../../../config/errors';
-import { BYPASS, isUserHasCapability } from '../../../utils/access';
+import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../../utils/access';
 import { getDraftContext } from '../../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode } from '../../configImport/configImport-types';
@@ -46,4 +48,7 @@ export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUs
 };
 
 // internal_id of the Settings: an import session or a running record of another platform is no session and no record
-export const getConfigPresetPlatformId = async (context: AuthContext): Promise<string> => (await getSettingsFromDatabase(context))!.internal_id;
+// The id of the platform settings never changes: read from the cache, as the session and the running record are read by the polling of the wizard
+export const getConfigPresetPlatformId = async (context: AuthContext): Promise<string> => {
+  return (await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS)).internal_id;
+};
