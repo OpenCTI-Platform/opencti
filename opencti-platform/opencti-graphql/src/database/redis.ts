@@ -524,7 +524,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 
 // region work handling
 
-export const WORK_TOUCHED_TTL = 7 * 24 * 60 * 60; // 7 days backstop, refreshed on each write
+const WORKS_TTL = (conf.get('connector_manager:works_day_range') || 7);
+export const WORK_TOUCHED_TTL = WORKS_TTL * 24 * 60 * 60;
 export const WORK_TOUCHED_CAP = 1000; // safety net, enrichments touch far fewer elements
 
 // Touched elements of enrichment works: ids of elements created or updated while

@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as redis from '../../../src/database/redis';
-import { clearCompletedWorkTouchedElements, resetWorkTrackedCache, trackWorkTouchedElement } from '../../../src/database/work-touched-elements';
+import { buildEnrichmentCompletion, resetWorkTrackedCache, trackWorkTouchedElement } from '../../../src/database/work-touched-elements';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { testContext } from '../../utils/testQuery';
 import { logApp } from '../../../src/config/conf';
 
 vi.mock('../../../src/database/redis', async (importOriginal) => {
   const actual: object = await importOriginal();
-  return { ...actual, redisGetWorkTrackingInfo: vi.fn(), redisAddWorkTouchedElement: vi.fn(), redisDeleteWorkTouchedElements: vi.fn() };
+  return { ...actual, redisGetWorkTrackingInfo: vi.fn(), redisAddWorkTouchedElement: vi.fn(), redisGetWorkTouchedElements: vi.fn() };
 });
 
 /** Build a minimal stream event carrying the given internal id. */
@@ -82,26 +82,46 @@ describe('trackWorkTouchedElement', () => {
   });
 });
 
-describe('clearCompletedWorkTouchedElements', () => {
+describe('buildEnrichmentCompletion', () => {
+  const enrichmentWork = { internal_id: 'work_k', event_type: 'INTERNAL_ENRICHMENT', investigation_id: 'investigation-1' };
+
   beforeEach(() => {
-    vi.mocked(redis.redisDeleteWorkTouchedElements).mockReset().mockResolvedValue(undefined);
+    vi.mocked(redis.redisGetWorkTouchedElements).mockReset().mockResolvedValue({ touched_ids: ['id-1', 'id-2'] });
   });
 
-  it('should delete the touched set of an enrichment work', async () => {
-    await clearCompletedWorkTouchedElements({ internal_id: 'work_f', event_type: 'INTERNAL_ENRICHMENT' });
-    expect(redis.redisDeleteWorkTouchedElements).toHaveBeenCalledWith(['work_f']);
-  });
+  /** Tell whether the completion fragment sets the investigation status. */
+  const setsToReview = (source: string) => source.includes('investigation_status');
 
   it('should leave other works untouched', async () => {
-    await clearCompletedWorkTouchedElements({ internal_id: 'work_g', event_type: 'EXTERNAL_IMPORT' });
-    expect(redis.redisDeleteWorkTouchedElements).not.toHaveBeenCalled();
+    const completion = await buildEnrichmentCompletion({ internal_id: 'work_l', event_type: 'EXTERNAL_IMPORT' });
+    expect(completion).toEqual({ source: '', params: {} });
+    expect(redis.redisGetWorkTouchedElements).not.toHaveBeenCalled();
   });
 
-  it('should never throw when redis fails', async () => {
-    vi.mocked(redis.redisDeleteWorkTouchedElements).mockRejectedValue(new Error('redis down'));
-    const warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => logApp);
-    await expect(clearCompletedWorkTouchedElements({ id: 'work_h', event_type: 'INTERNAL_ENRICHMENT' })).resolves.toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith('[WORK] Unable to clean the touched elements of a completed work', expect.objectContaining({ workId: 'work_h' }));
-    warnSpy.mockRestore();
+  it('should replace the persisted ids with the ids read from redis', async () => {
+    const completion = await buildEnrichmentCompletion({ ...enrichmentWork, touched_ids: ['id-1'] });
+    expect(completion.source).toContain('ctx._source.touched_ids = params.touched_ids;');
+    expect(completion.params).toEqual({ touched_ids: ['id-1', 'id-2'] });
+  });
+
+  it('should put a work of an investigation to review at its first completion, even with nothing touched', async () => {
+    vi.mocked(redis.redisGetWorkTouchedElements).mockResolvedValue({ touched_ids: [] });
+    const completion = await buildEnrichmentCompletion(enrichmentWork);
+    expect(setsToReview(completion.source)).toBe(true);
+  });
+
+  it('should put a reviewed work back to review when new ids were touched', async () => {
+    const completion = await buildEnrichmentCompletion({ ...enrichmentWork, investigation_status: 'DONE', touched_ids: ['id-1'] });
+    expect(setsToReview(completion.source)).toBe(true);
+  });
+
+  it('should keep the review status when nothing new was touched', async () => {
+    const completion = await buildEnrichmentCompletion({ ...enrichmentWork, investigation_status: 'DONE', touched_ids: ['id-1', 'id-2'] });
+    expect(setsToReview(completion.source)).toBe(false);
+  });
+
+  it('should leave a work outside any investigation without status', async () => {
+    const completion = await buildEnrichmentCompletion({ internal_id: 'work_m', event_type: 'INTERNAL_ENRICHMENT' });
+    expect(setsToReview(completion.source)).toBe(false);
   });
 });

@@ -3,7 +3,7 @@ import type { AuthContext } from '../types/user';
 import type { BaseEvent, StreamDataEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
-import { redisAddWorkTouchedElement, redisDeleteWorkTouchedElements, redisGetWorkTouchedElements, redisGetWorkTrackingInfo, WORK_TOUCHED_CAP } from './redis';
+import { redisAddWorkTouchedElement, redisGetWorkTouchedElements, redisGetWorkTrackingInfo } from './redis';
 import { logApp } from '../config/conf';
 import { WORK_INVESTIGATION_STATUS_TO_REVIEW } from '../modules/workspace/workspace-types';
 
@@ -57,70 +57,56 @@ export const trackWorkTouchedElement = async (context: AuthContext, event: BaseE
   }
 };
 
-// Written in the same update that marks the work complete. Completion can be processed more than once
-// (worker and connector, in any order, or a forced close while the connector still writes), and the
-// Redis set is deleted after each one. The ids are therefore merged as a capped union:
-// - a later completion reading an empty set is a no-op, it never wipes the persisted ids;
-// - a later completion reading new ids (written after an early completion) adds them, up to the cap.
+// Written in the same update that marks the work complete. The Redis set keeps every id touched since the
+// work started (it is only deleted with the work), so each completion replaces the persisted ids with it.
 const TOUCHED_IDS_COMPLETION_SCRIPT = `
-  if (ctx._source.touched_ids == null) {
-    ctx._source.touched_ids = [];
-  }
-  for (def touchedId : params.touched_ids) {
-    if (ctx._source.touched_ids.size() >= ${WORK_TOUCHED_CAP}) {
-      break;
-    }
-    if (!ctx._source.touched_ids.contains(touchedId)) {
-      ctx._source.touched_ids.add(touchedId);
-    }
-  }`;
+  ctx._source.touched_ids = params.touched_ids;`;
 
-// Written in the same update, after the touched ids. A work of an investigation is put to review at its first
-// completion, and again at any later completion bringing new touched ids: new results reopen a work already reviewed≠
-// (DONE), while a repeated completion with nothing new (an empty read) leaves the review status as it is.
+// Written in the same update, when isWorkToReview tells so.
 const INVESTIGATION_STATUS_COMPLETION_SCRIPT = `
-  if (ctx._source.investigation_id != null
-    && (ctx._source.investigation_status == null || params.touched_ids.size() > 0)) {
-    ctx._source.investigation_status = "${WORK_INVESTIGATION_STATUS_TO_REVIEW}";
-  }`;
+  ctx._source.investigation_status = "${WORK_INVESTIGATION_STATUS_TO_REVIEW}";`;
+
+type CompletedWork = {
+  id?: string;
+  internal_id?: string;
+  event_type?: string;
+  investigation_id?: string;
+  investigation_status?: string;
+  touched_ids?: string[];
+};
 
 /**
  * Tell whether a work is an enrichment work, the only kind whose touched elements are tracked.
  */
-const isEnrichmentWork = (work: { event_type?: string }) => work.event_type === CONNECTOR_INTERNAL_ENRICHMENT;
+const isEnrichmentWork = (work: CompletedWork) => work.event_type === CONNECTOR_INTERNAL_ENRICHMENT;
+
+/**
+ * Tell whether a completion puts a work of an investigation to review: at its first completion, and again at
+ * any later completion bringing new touched ids. The Redis set only grows, so new ids make it bigger than the
+ * persisted list, and new results reopen a work already reviewed (DONE). A repeated completion with nothing
+ * new leaves the review status as it is.
+ * Decided on the work loaded before the update: a concurrent change can only lead to an extra review.
+ */
+const isWorkToReview = (work: CompletedWork, touchedIds: string[]) => {
+  return !!work.investigation_id && (!work.investigation_status || touchedIds.length > (work.touched_ids?.length ?? 0));
+};
 
 /**
  * Build the painless fragment and params to append to the update that completes an enrichment work.
- * The fragment merges the ids read from Redis into the ids already persisted (capped union, see
- * TOUCHED_IDS_COMPLETION_SCRIPT), so a work completed more than once keeps every id, and an empty read
- * never erases them. For a work of an investigation, it also sets the investigation status to TO_REVIEW
- * (see INVESTIGATION_STATUS_COMPLETION_SCRIPT). Empty for any other kind of work.
+ * The fragment replaces the persisted ids with the ids read from Redis (see TOUCHED_IDS_COMPLETION_SCRIPT)
+ * and, when isWorkToReview tells so, sets the investigation status to TO_REVIEW.
+ * Empty for any other kind of work.
+ * @param work the work as loaded before the update, with its investigation fields and persisted touched ids
  */
-export const buildEnrichmentCompletion = async (work: { id?: string; internal_id?: string; event_type?: string }) => {
+export const buildEnrichmentCompletion = async (work: CompletedWork) => {
   const workId = work.internal_id ?? work.id;
   if (!workId || !isEnrichmentWork(work)) {
     return { source: '', params: {} };
   }
   const touched = await redisGetWorkTouchedElements(workId);
+  const statusSource = isWorkToReview(work, touched.touched_ids) ? INVESTIGATION_STATUS_COMPLETION_SCRIPT : '';
   return {
-    source: TOUCHED_IDS_COMPLETION_SCRIPT + INVESTIGATION_STATUS_COMPLETION_SCRIPT,
+    source: TOUCHED_IDS_COMPLETION_SCRIPT + statusSource,
     params: { ...touched },
   };
-};
-
-/**
- * Delete the Redis set of an enrichment work once its completion update has persisted the ids.
- * Does nothing for any other kind of work. Never throws: a failed cleanup is only logged, the set
- * then expires through its TTL.
- */
-export const clearCompletedWorkTouchedElements = async (work: { id?: string; internal_id?: string; event_type?: string }) => {
-  const workId = work.internal_id ?? work.id;
-  if (!workId || !isEnrichmentWork(work)) {
-    return;
-  }
-  try {
-    await redisDeleteWorkTouchedElements([workId]);
-  } catch (err) {
-    logApp.warn('[WORK] Unable to clean the touched elements of a completed work', { workId, cause: err });
-  }
 };

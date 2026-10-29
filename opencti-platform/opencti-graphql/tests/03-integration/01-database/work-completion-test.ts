@@ -78,7 +78,6 @@ describe('Work completion with touched elements', () => {
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect(completed.status).toEqual('complete');
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id].sort());
-    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
   });
 
   it('should persist touched ids when the connector completes the work', async () => {
@@ -88,7 +87,6 @@ describe('Work completion with touched elements', () => {
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect(completed.status).toEqual('complete');
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id].sort());
-    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
   });
 
   it('should keep the ids when completion is processed a second time', async () => {
@@ -102,13 +100,21 @@ describe('Work completion with touched elements', () => {
   it('should add the ids written after an early completion when the work completes again', async () => {
     const { work, target, created } = await runEnrichment(enrichment);
     await reportExpectation(testContext, ADMIN_USER, work.id);
-    // The first completion deleted the Redis set, so the late write rebuilds it
-    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
+    // The first completion keeps the Redis set, so the late write adds to it
+    expect([...(await redisGetWorkTouchedElements(work.id)).touched_ids].sort()).toEqual([created.id, target.id].sort());
     const late = await addIntrusionSet({ ...testContext, workId: work.id }, ADMIN_USER, { name: `Completion late ${Date.now()}` });
     intrusionSetIds.push(late.id);
     await updateProcessedTime(testContext, ADMIN_USER, work.id, 'late connector message');
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id, late.id].sort());
+  });
+
+  it('should keep the touched set after completion until the work is deleted', async () => {
+    const { work, target, created } = await runEnrichment(enrichment);
+    await reportExpectation(testContext, ADMIN_USER, work.id);
+    expect([...(await redisGetWorkTouchedElements(work.id)).touched_ids].sort()).toEqual([created.id, target.id].sort());
+    await deleteWork(testContext, ADMIN_USER, work.id);
+    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
   });
 
   it('should persist touched ids when an old work is force-closed', async () => {
@@ -119,7 +125,6 @@ describe('Work completion with touched elements', () => {
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
     expect(completed.status).toEqual('complete');
     expect([...completed.touched_ids].sort()).toEqual([created.id, target.id].sort());
-    expect((await redisGetWorkTouchedElements(work.id)).touched_ids).toEqual([]);
   });
 
   it('should not record ids for a non enrichment work', async () => {

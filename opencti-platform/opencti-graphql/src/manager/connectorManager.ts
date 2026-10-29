@@ -5,7 +5,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { now } from '../utils/format';
 import { deleteWorksRaw } from '../domain/work';
-import { buildEnrichmentCompletion, clearCompletedWorkTouchedElements } from '../database/work-touched-elements';
+import { buildEnrichmentCompletion } from '../database/work-touched-elements';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { AuthContext } from '../types/user';
 import type { Work } from '../types/work';
@@ -56,7 +56,6 @@ export const closeOldWorks = async (context: AuthContext, connector: BasicStoreE
                 params: { ...params, ...touched.params },
               },
             });
-            await clearCompletedWorkTouchedElements(element);
             logApp.info('Work completed by force due to age', { workId: element.internal_id });
           }
         } catch (e) {
@@ -71,7 +70,7 @@ export const closeOldWorks = async (context: AuthContext, connector: BasicStoreE
       types: ['Work'],
       orderBy: 'timestamp',
       baseData: true,
-      baseFields: ['internal_id', 'timestamp', 'event_type'],
+      baseFields: ['internal_id', 'timestamp', 'event_type', 'investigation_id', 'investigation_status', 'touched_ids'],
       maxSize: BATCH_SIZE,
       callback: queryCallback,
     });
