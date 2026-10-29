@@ -892,3 +892,158 @@ def test_extract_embedded_relationships_dates_external_reference_reports(
         "Example Labs feed": "1970-01-01T00:00:01Z",
     }
     assert len(embedded["reports"]) == 2
+
+
+STAGED_SYNC_FILE = {
+    "name": "big.pdf",
+    "uri": "/storage/get/import/Report/remote-id/big.pdf",
+    "version": "2026-10-29T10:00:00.000Z",
+    "mime_type": "application/pdf",
+    "object_marking_refs": ["marking-definition--1"],
+    "no_trigger_import": True,
+    "x_opencti_storage_key": "sync/inflight/sync-id/0123456789abcdef0123456789abcdef/content",
+}
+
+EXPECTED_STAGED_FILE_REF = {
+    "sync_id": "sync-id",
+    "storage_key": "sync/inflight/sync-id/0123456789abcdef0123456789abcdef/content",
+    "name": "big.pdf",
+    "mime_type": "application/pdf",
+    "version": "2026-10-29T10:00:00.000Z",
+    "file_markings": ["marking-definition--1"],
+    "no_trigger_import": True,
+    "embedded": False,
+}
+
+
+def no_embedded_relationships(stix_object, types=None):
+    return {
+        "created_by": None,
+        "object_marking": None,
+        "object_label": None,
+        "open_vocabs": {},
+        "granted_refs": [],
+        "kill_chain_phases": [],
+        "object_refs": [],
+        "external_references": [],
+        "reports": {},
+        "sample_refs": [],
+    }
+
+
+def capture_queries(stix2: OpenCTIStix2, monkeypatch) -> list:
+    queries = []
+
+    def fake_query(query, variables=None, disable_impersonate=False):
+        queries.append({"query": query, "variables": variables})
+        return {"data": {}}
+
+    monkeypatch.setattr(stix2.opencti, "query", fake_query)
+    return queries
+
+
+def test_import_object_pushes_staged_sync_file_by_reference(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    stix2 = opencti_stix2_no_server
+    stix2.opencti.sync_id = "sync-id"
+    monkeypatch.setattr(
+        stix2, "extract_embedded_relationships", no_embedded_relationships
+    )
+    queries = capture_queries(stix2, monkeypatch)
+    captured_extras = {}
+
+    def fake_import_from_stix2(**kwargs):
+        captured_extras.update(kwargs["extras"])
+        return {"id": "report-internal-id", "entity_type": "Report"}
+
+    monkeypatch.setattr(
+        stix2.opencti.report, "import_from_stix2", fake_import_from_stix2
+    )
+    stix_object = {
+        "id": "report--11111111-1111-4111-8111-111111111111",
+        "type": "report",
+        "name": "Report",
+        "x_opencti_files": [
+            {"name": "small.txt", "data": "Zm9v", "mime_type": "text/plain"},
+            STAGED_SYNC_FILE,
+        ],
+    }
+
+    stix2.import_object(stix_object)
+
+    assert [file.name for file in captured_extras["files"]] == ["small.txt"]
+    assert len(queries) == 1
+    assert "stixDomainObjectEdit(id: $id)" in queries[0]["query"]
+    assert "importPushRef(fileRef: $fileRef)" in queries[0]["query"]
+    assert "$fileRef: FileRefInput!" in queries[0]["query"]
+    assert queries[0]["variables"] == {
+        "id": "report-internal-id",
+        "fileRef": EXPECTED_STAGED_FILE_REF,
+    }
+
+
+def test_import_observable_pushes_staged_sync_file_by_reference(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    stix2 = opencti_stix2_no_server
+    stix2.opencti.sync_id = "sync-id"
+    monkeypatch.setattr(
+        stix2, "extract_embedded_relationships", no_embedded_relationships
+    )
+    queries = capture_queries(stix2, monkeypatch)
+    captured_kwargs = {}
+
+    def fake_create(**kwargs):
+        captured_kwargs.update(kwargs)
+        return {"id": "observable-internal-id", "entity_type": "IPv4-Addr"}
+
+    monkeypatch.setattr(stix2.opencti.stix_cyber_observable, "create", fake_create)
+    stix_object = {
+        "id": "ipv4-addr--11111111-1111-4111-8111-111111111111",
+        "type": "ipv4-addr",
+        "value": "1.2.3.4",
+        "extensions": {
+            "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+                "files": [STAGED_SYNC_FILE]
+            }
+        },
+    }
+
+    stix2.import_observable(stix_object)
+
+    assert captured_kwargs["files"] is None
+    assert len(queries) == 1
+    assert "stixCyberObservableEdit(id: $id)" in queries[0]["query"]
+    assert "importPushRef(fileRef: $fileRef)" in queries[0]["query"]
+    assert queries[0]["variables"] == {
+        "id": "observable-internal-id",
+        "fileRef": EXPECTED_STAGED_FILE_REF,
+    }
+
+
+def test_import_object_skips_staged_sync_file_without_sync_id(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch, caplog
+):
+    stix2 = opencti_stix2_no_server
+    monkeypatch.setattr(
+        stix2, "extract_embedded_relationships", no_embedded_relationships
+    )
+    queries = capture_queries(stix2, monkeypatch)
+    monkeypatch.setattr(
+        stix2.opencti.report,
+        "import_from_stix2",
+        lambda **kwargs: {"id": "report-internal-id", "entity_type": "Report"},
+    )
+    stix_object = {
+        "id": "report--11111111-1111-4111-8111-111111111111",
+        "type": "report",
+        "name": "Report",
+        "x_opencti_files": [STAGED_SYNC_FILE],
+    }
+
+    stix2.import_object(stix_object)
+
+    assert queries == []
+    assert "sync/inflight" not in caplog.text
+    assert any(record.levelname == "ERROR" for record in caplog.records)

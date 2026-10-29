@@ -78,6 +78,25 @@ STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
 
+IMPORT_PUSH_REF_DOMAIN_OBJECT_MUTATION = """
+    mutation StixDomainObjectEditImportPushRef($id: ID!, $fileRef: FileRefInput!) {
+        stixDomainObjectEdit(id: $id) {
+            importPushRef(fileRef: $fileRef) {
+                id
+            }
+        }
+    }
+"""
+IMPORT_PUSH_REF_OBSERVABLE_MUTATION = """
+    mutation StixCyberObservableEditImportPushRef($id: ID!, $fileRef: FileRefInput!) {
+        stixCyberObservableEdit(id: $id) {
+            importPushRef(fileRef: $fileRef) {
+                id
+            }
+        }
+    }
+"""
+
 
 def _env_bool(name: str, default: bool) -> bool:
     """Read a boolean flag from the environment; unknown values fall back to the default."""
@@ -1378,6 +1397,7 @@ class OpenCTIStix2:
         files_markings = []
         no_trigger_import = []
         embedded_flags = []
+        staged_sync_files = []
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1393,6 +1413,8 @@ class OpenCTIStix2:
                 files_markings.append(file_obj.get("object_marking_refs", None))
                 no_trigger_import.append(file_obj.get("no_trigger_import", False))
                 embedded_flags.append(file_obj.get("embedded", False))
+            elif "x_opencti_storage_key" in file_obj:
+                staged_sync_files.append(file_obj)
 
         # Extract all custom properties
         custom_field_values = self.extract_custom_field_values(stix_object)
@@ -1465,7 +1487,50 @@ class OpenCTIStix2:
                         id=reports[external_reference_id]["id"],
                         stixObjectOrStixRelationshipId=stix_object_result["id"],
                     )
+        # A staged file is consumed by its first copy, so attach it to one entity only.
+        if len(stix_object_results) > 0:
+            self._import_staged_sync_files(
+                IMPORT_PUSH_REF_DOMAIN_OBJECT_MUTATION,
+                stix_object_results[0]["id"],
+                staged_sync_files,
+            )
         return stix_object_results
+
+    def _import_staged_sync_files(
+        self, mutation: str, entity_id: str, staged_sync_files: List[Dict]
+    ) -> None:
+        """Attach files a synchronizer staged in storage, through importPushRef.
+
+        :param mutation: the importPushRef mutation of the entity's edit group
+        :type mutation: str
+        :param entity_id: the id of the imported entity
+        :type entity_id: str
+        :param staged_sync_files: file entries carrying x_opencti_storage_key
+        :type staged_sync_files: List[Dict]
+        """
+        if not staged_sync_files:
+            return
+        if self.opencti.sync_id is None:
+            self.opencti.app_logger.error(
+                "Cannot attach staged sync files without a sync id",
+                {
+                    "id": entity_id,
+                    "files": [file["name"] for file in staged_sync_files],
+                },
+            )
+            return
+        for staged_sync_file in staged_sync_files:
+            file_ref = {
+                "sync_id": self.opencti.sync_id,
+                "storage_key": staged_sync_file["x_opencti_storage_key"],
+                "name": staged_sync_file["name"],
+                "mime_type": staged_sync_file.get("mime_type"),
+                "version": staged_sync_file.get("version"),
+                "file_markings": staged_sync_file.get("object_marking_refs"),
+                "no_trigger_import": staged_sync_file.get("no_trigger_import", False),
+                "embedded": staged_sync_file.get("embedded", False),
+            }
+            self.opencti.query(mutation, {"id": entity_id, "fileRef": file_ref})
 
     def import_observable(
         self, stix_object: Dict, update: bool = False, types: List = None
@@ -1509,6 +1574,7 @@ class OpenCTIStix2:
         files_markings = []
         no_trigger_import = []
         embedded_flags = []
+        staged_sync_files = []
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1524,6 +1590,8 @@ class OpenCTIStix2:
                 files_markings.append(file_obj.get("object_marking_refs", None))
                 no_trigger_import.append(file_obj.get("no_trigger_import", False))
                 embedded_flags.append(file_obj.get("embedded", False))
+            elif "x_opencti_storage_key" in file_obj:
+                staged_sync_files.append(file_obj)
 
         # Extra
         extras = {
@@ -1637,6 +1705,11 @@ class OpenCTIStix2:
                     "id": stix_observable_result["id"],
                     "type": stix_observable_result["entity_type"],
                 },
+            )
+            self._import_staged_sync_files(
+                IMPORT_PUSH_REF_OBSERVABLE_MUTATION,
+                stix_observable_result["id"],
+                staged_sync_files,
             )
             # Iterate over refs to create appropriate relationships
             for key in stix_object.keys():
