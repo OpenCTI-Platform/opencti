@@ -111,9 +111,16 @@ import attackPatternModule from './modules/attackPattern/attackPattern-module';
 import courseOfActionModule from './modules/courseOfAction/courseOfAction-module';
 import customFieldModule from './modules/customField/custom-field-module';
 import configPresetModule from './modules/configPreset/configPreset-module';
+import { TELEMETRY_MANAGER_DEFINITION } from './manager/telemetryManager';
+import { PLATFORM_USAGE_METRICS_MANAGER_DEFINITION } from './manager/platformUsageMetricsManager';
+
+// No module owns the platform telemetry yet: its managers wait here until one does.
+const telemetryManagersModule: ModuleDescriptor = {
+  id: 'telemetryManagers',
+  managers: [TELEMETRY_MANAGER_DEFINITION, PLATFORM_USAGE_METRICS_MANAGER_DEFINITION],
+};
 
 // Every module, in the registration order modules/index used to enforce.
-// Still registered on import: the managers that belong to no module (manager/index).
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   channelModule,
   catalogModule,
@@ -200,6 +207,7 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   courseOfActionModule,
   customFieldModule,
   configPresetModule,
+  telemetryManagersModule,
 ];
 
 let registeredDescriptors: ModuleDescriptor[] | undefined;

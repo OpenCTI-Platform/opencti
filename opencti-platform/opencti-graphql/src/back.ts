@@ -8,9 +8,8 @@ import { defaultResource, resourceFromAttributes } from '@opentelemetry/resource
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import nconf from 'nconf';
 import { ZipkinExporter } from '@opentelemetry/exporter-zipkin';
-// region imported before everything: the composition root loads the modules, then the managers that belong to no module register on import
+// region imported before everything: the composition root loads the modules
 import { registerModules } from './composition-root';
-import './manager/index';
 // import tracing
 import './config/tracing';
 // endregion

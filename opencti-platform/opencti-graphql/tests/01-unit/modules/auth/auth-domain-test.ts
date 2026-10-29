@@ -11,6 +11,8 @@ vi.mock('../../../../src/database/redis', () => ({
   redisGetForgotPasswordOtpPointer: vi.fn(),
   redisSetForgotPasswordOtp: vi.fn(),
   redisDelForgotPassword: vi.fn(),
+  // Read on import by the platform usage metrics manager, which the composition root registers
+  redisIsAlive: vi.fn(),
 }));
 
 vi.mock('../../../../src/modules/user/user-domain', () => ({

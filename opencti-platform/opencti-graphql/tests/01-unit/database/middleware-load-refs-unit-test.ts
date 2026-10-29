@@ -9,7 +9,8 @@ vi.mock('../../../src/database/middleware-loader', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/database/middleware-loader')>();
   return { ...actual, fullRelationsList: vi.fn() };
 });
-vi.mock('../../../src/database/redis', () => ({ notify: vi.fn(), redisAddDeletions: vi.fn() }));
+// redisIsAlive: read on import by the platform usage metrics manager, which the composition root registers
+vi.mock('../../../src/database/redis', () => ({ notify: vi.fn(), redisAddDeletions: vi.fn(), redisIsAlive: vi.fn() }));
 vi.mock('../../../src/database/cache', () => ({
   getEntitiesMapFromCache: vi.fn(),
   getEntityFromCache: vi.fn(),

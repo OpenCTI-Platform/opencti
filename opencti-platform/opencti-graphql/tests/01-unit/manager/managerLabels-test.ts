@@ -440,8 +440,7 @@ describe('Manager labels of the Settings > Parameters page', () => {
   });
 
   it('should collect the managers of every registration path', () => {
-    // RULE_ENGINE and HISTORY_MANAGER are reported by clusterManager.ts, DATA_SANITY_MANAGER is declared by a module
-    // descriptor, the others go through registerManager().
+    // RULE_ENGINE and HISTORY_MANAGER are reported by clusterManager.ts, the others are declared by module descriptors.
     expect(MANAGER_IDS).toEqual(expect.arrayContaining(['RULE_ENGINE', 'HISTORY_MANAGER', 'TELEMETRY_MANAGER', 'RETENTION_MANAGER', 'CATALOG_MANAGER', 'DATA_SANITY_MANAGER']));
   });
 

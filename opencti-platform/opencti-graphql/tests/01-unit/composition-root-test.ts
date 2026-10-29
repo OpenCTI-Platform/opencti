@@ -4,7 +4,6 @@ import { describe, expect, it } from 'vitest';
 import { printSchema } from 'graphql';
 // Most of the src/back.ts import graph (src/boot needs the builder's migrations glob):
 // registration must still be allowed once all of it is evaluated
-import '../../src/manager/index';
 import '../../src/managers';
 import '../../src/http/httpServer';
 import { MODULE_DESCRIPTORS, registerModules } from '../../src/composition-root';
@@ -50,6 +49,6 @@ describe('Composition root', () => {
     // Already evaluated through the composition root, except the unlisted ones: importing a descriptor has no side effect
     const descriptors = await Promise.all(descriptorFiles.map(async (file) => (await import(join(modulesPath, file))).default));
     expect(descriptorFiles.filter((_, index) => !MODULE_DESCRIPTORS.includes(descriptors[index]))).toEqual([]);
-    expect(descriptorFiles).toHaveLength(MODULE_DESCRIPTORS.length);
+    expect(new Set(MODULE_DESCRIPTORS).size).toBe(MODULE_DESCRIPTORS.length);
   });
 });
