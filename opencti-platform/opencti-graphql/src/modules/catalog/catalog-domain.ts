@@ -53,6 +53,34 @@ const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: Catalog
   };
 };
 
+type ContractEntityConfigSchema = CatalogContractEntityFields['config_schema'];
+
+// Puts the properties back in the order of their list, the ones missing from it last.
+export const orderConfigSchemaProperties = <T extends ContractEntityConfigSchema | null | undefined>(configSchema: T): T => {
+  const order = configSchema?.properties_order;
+  const properties = configSchema?.properties;
+  if (!Array.isArray(order) || !properties || typeof properties !== 'object') {
+    return configSchema;
+  }
+  const keys = [
+    ...order.filter((key) => Object.hasOwn(properties, key)),
+    ...Object.keys(properties).filter((key) => !order.includes(key)),
+  ];
+  return { ...configSchema, properties: Object.fromEntries(keys.map((key) => [key, properties[key]])) };
+};
+
+/**
+ * Lists the properties of a contract embedded in a connector in their order.
+ * Every update of a connector rewrites its document through a script, and Elasticsearch then loses
+ * the order of the keys of an object, but not the order of an array.
+ */
+export const withConfigSchemaPropertiesOrder = (configSchema: ContractEntityConfigSchema): ContractEntityConfigSchema => {
+  if (!configSchema?.properties || typeof configSchema.properties !== 'object') {
+    return configSchema;
+  }
+  return { ...configSchema, properties_order: Object.keys(orderConfigSchemaProperties(configSchema).properties) };
+};
+
 /**
  * Compiles (or retrieves from cache) an AJV validator for a given schema.
  * The cacheKey must accurately reflect the exact shape of the schema (properties + required)
@@ -578,7 +606,7 @@ export const mapContractEntityFieldsToGraphqlCatalogContract = (
   } = {},
 ): GraphqlCatalogContract => {
   const { excludeRuntimeConfigVars = false, versions, compatibility } = options;
-  const normalizedConfigSchema = normalizeContractConfigSchema(contract.config_schema);
+  const normalizedConfigSchema = normalizeContractConfigSchema(orderConfigSchemaProperties(contract.config_schema));
   const configSchema = excludeRuntimeConfigVars
     ? getContractConfigSchemaWithoutExcludedRuntimeVars(normalizedConfigSchema)
     : normalizedConfigSchema;
@@ -665,7 +693,7 @@ export const mapContractEntityFieldsToEmbeddedConnectorManagerContract = (
     contract_version,
     image,
     connector_type,
-    config_schema,
+    config_schema: withConfigSchemaPropertiesOrder(config_schema),
     license_type,
     solution_categories,
     contact,

@@ -490,6 +490,20 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
     });
 
+    it('should keep the order of the contract options once the connector is updated', async () => {
+      // The deployment updated the connector, which rewrites its contract snapshot in Elasticsearch
+      const runtimeConfigVars = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
+      const expectedOrder = Object.keys(catalogHelper.getTestSafeConnector().config_schema.properties)
+        .filter((key) => !runtimeConfigVars.includes(key));
+      const connectorResult = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_MANAGER_CONTRACT_ENDPOINTS_QUERY,
+        variables: { id: deploymentConnectorId },
+      });
+      const contract = JSON.parse(connectorResult.data?.connector.manager_contract_definition);
+      expect(Object.keys(contract.config_schema.properties)).toEqual(expectedOrder);
+      expect(contract.config_schema.properties_order).toBeUndefined();
+    });
+
     it('should start a deployed connector', async () => {
       // First ensure connector is stopped
       const stopInput = {
