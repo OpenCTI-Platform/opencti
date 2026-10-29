@@ -313,6 +313,8 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
       setFieldValue(name, newOptions[newOptions.length - 1]);
     }
     deferredCapturedRef.current = [];
+    // A creation dialog may close more than once (resetForm calls onReset, then onCompleted): the next close must keep the selection
+    entityCreatedSuccessfully.current = true;
     return true;
   }, [deferCreation, createEntityType, currentSearchTerm, values, name, multiple, setFieldValue]);
 
@@ -455,7 +457,6 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   const handleSCOEntityCreated = useCallback((createdObservable?: CreatedEntity | null) => {
     // --- Deferred creation path ---
     if (applyDeferredCapture()) {
-      entityCreatedSuccessfully.current = true;
       setOpenSCOCreation(false);
       setCreateEntityType(null);
       setValueBeforeCreate(null);
