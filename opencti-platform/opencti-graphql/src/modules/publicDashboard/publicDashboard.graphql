@@ -78,12 +78,24 @@ type Query {
     startDate: DateTime
     endDate: DateTime
   ): [MultiTimeSeries] @public
+  publicStixCoreObjectsTimeSeriesBreakdown(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): TimeSeriesBreakdown @public @ff(flags: ["TIME_SERIES_BREAKDOWN"])
   publicStixRelationshipsMultiTimeSeries(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
   ): [MultiTimeSeries] @public
+  publicStixRelationshipsTimeSeriesBreakdown(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): TimeSeriesBreakdown @public @ff(flags: ["TIME_SERIES_BREAKDOWN"])
   publicStixCoreObjectsDistribution(
     uriKey: String!
     widgetId : String!
