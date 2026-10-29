@@ -71,6 +71,7 @@ const SUPPORTED_STIX_ENTITY_OBJECTS = [
   'tool',
   'vulnerability',
   'security-coverage',
+  'security-coverage-result',
 ];
 
 // Mirrors pycti's STIX_CYBER_OBSERVABLE_MAPPING keys (opencti_stix2_utils.py)
@@ -135,12 +136,12 @@ export const isIdSupported = (key: string): boolean => {
 };
 
 // Mirrors pycti's external_reference_generate_id (opencti_stix2_identifier.py)
-export const externalReferenceGenerateId = (opts: { url?: string | null; sourceName?: string | null; externalId?: string | null }): string | null => {
+export const externalReferenceGenerateId = (opts: { url?: string | null; sourceName?: string | null; externalId?: string | number | null }): string | null => {
   const { url, sourceName, externalId } = opts;
-  let data: Record<string, string>;
-  if (url) {
+  let data: Record<string, string | number>;
+  if (url !== null && url !== undefined) {
     data = { url };
-  } else if (sourceName && externalId) {
+  } else if (sourceName !== null && sourceName !== undefined && externalId !== null && externalId !== undefined) {
     data = { source_name: sourceName, external_id: externalId };
   } else {
     return null;
