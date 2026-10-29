@@ -56,12 +56,13 @@ vi.mock('../../../../utils/hooks/useVocabularyCategory', () => ({ default: vi.fn
 // The Create widget entry point lives in the header: it must see the variable definitions too.
 vi.mock('../workspaceHeader/WorkspaceHeader', async () => {
   const { useOptionalDashboardVariableDefinitions } = await import('../../../../components/dashboard/DashboardVariablesContext');
-  const Header = () => {
+  const Header = ({ editionExtra }: { editionExtra?: ReactNode }) => {
     const definitions = useOptionalDashboardVariableDefinitions();
     return (
       <>
         <div>workspace-header</div>
         <div data-testid="header-variable-definitions">{definitions ? definitions.map((v) => v.name).join(',') : 'none'}</div>
+        {editionExtra}
       </>
     );
   };
@@ -591,5 +592,37 @@ describe('CustomDashboard time range', () => {
     expect(captured.relayCommit).toHaveBeenCalledTimes(1);
     expect(captured.relayCommit.mock.calls[0][0].variables.input.key).toBe('manifest');
     expect(window.localStorage.getItem(timeRangeKey)).toBeNull();
+  });
+});
+
+describe('CustomDashboard viewer permissions', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState(null, '', '/');
+    captured.granted = true;
+    captured.relayCommit.mockReset();
+  });
+
+  it('gives the edition drawer the viewer permissions when the flag is on', () => {
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    expect(screen.getByRole('switch', { name: 'Allow viewers to edit time filters' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Allow viewers to change variable values' })).toBeInTheDocument();
+  });
+
+  it('gives the edition drawer nothing more when the flag is off', () => {
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  });
+
+  it('saves a switch through the dashboard config, keeping the other keys', async () => {
+    const { user } = testRender(
+      <CustomDashboard data={buildWorkspace({}, { relativeDate: 'days-7' }) as never} />,
+      { userContext: userContext(['DASHBOARD_VARIABLES']) },
+    );
+    await user.click(screen.getByRole('switch', { name: 'Allow viewers to change variable values' }));
+    expect(captured.relayCommit).toHaveBeenCalledTimes(1);
+    const { input } = captured.relayCommit.mock.calls[0][0].variables;
+    expect(input.key).toBe('manifest');
+    expect(JSON.parse(fromB64(input.value)).config).toStrictEqual({ relativeDate: 'days-7', allowViewersToChangeVariables: true });
   });
 });

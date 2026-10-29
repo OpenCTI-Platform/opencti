@@ -18,6 +18,7 @@ import { DashboardVariablesProvider } from '../../../../components/dashboard/Das
 import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
 import { useDashboardTimeRange } from '../../../../components/dashboard/useDashboardTimeRange';
 import DashboardValuesActions from '../../../../components/dashboard/DashboardValuesActions';
+import DashboardViewerPermissions from '../../../../components/dashboard/DashboardViewerPermissions';
 import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
 import DashboardVariableDialog from '../../../../components/dashboard/variables/DashboardVariableDialog';
 import DashboardVariableDeletion from '../../../../components/dashboard/variables/DashboardVariableDeletion';
@@ -293,6 +294,15 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
               handleExport={handleExport}
               data={workspace}
               variant="dashboard"
+              editionExtra={isVariablesEnabled ? (
+                <DashboardViewerPermissions
+                  config={config}
+                  // A failure is already notified by the mutation, and the switch follows the saved config.
+                  onChange={(patch) => {
+                    handleConfigChange(patch).catch(() => {});
+                  }}
+                />
+              ) : undefined}
             />
           </Stack>
         )

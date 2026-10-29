@@ -56,6 +56,8 @@ type WorkspaceHeaderProps = {
   handleAddWidget?: (widget: Widget) => void;
   handleImportWidget?: (widgetFile: File) => void;
   handleExport?: (workspace: { id: string; name: string }) => void;
+  // Rendered in the edition drawer, below the name and the description.
+  editionExtra?: React.ReactNode;
 };
 
 const WorkspaceHeader = ({
@@ -65,6 +67,7 @@ const WorkspaceHeader = ({
   handleAddWidget = () => {},
   handleImportWidget = () => {},
   handleExport = () => {},
+  editionExtra,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
@@ -152,7 +155,9 @@ const WorkspaceHeader = ({
         handleClose={handleCloseEdit}
         open={displayEdit}
         type={workspace.type}
-      />
+      >
+        {editionExtra}
+      </WorkspaceEditionContainer>
     </>
   );
 };
