@@ -155,6 +155,10 @@
     },
     "forgot_password": {
       "otp_ttl_second": 600
+    },
+    "password_change": {
+      "max_attempts": 5,
+      "window_seconds": 900
     }
   },
   "demo_mode": false,

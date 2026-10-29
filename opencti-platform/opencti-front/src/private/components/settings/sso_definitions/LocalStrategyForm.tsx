@@ -11,6 +11,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
@@ -31,6 +32,7 @@ const localStrategyFormQuery = graphql`
       password_policy_min_lowercase
       password_policy_min_uppercase
       password_policy_validity_days
+      password_policy_history_count
       platform_enterprise_edition {
         license_validated
       }
@@ -65,12 +67,16 @@ const localStrategyFormMutation = graphql`
         password_policy_min_lowercase
         password_policy_min_uppercase
         password_policy_validity_days
+        password_policy_history_count
       }
     }
   }
 `;
 
-const validationSchema = Yup.object().shape({
+// Same bounds as the server, which counts the current password and keeps at most 23 previous ones
+const PASSWORD_HISTORY_MAX_COUNT = 24;
+
+const validationSchema = (t_i18n: (message: string) => string) => Yup.object().shape({
   enabled: Yup.boolean(),
   password_policy_min_length: Yup.number(),
   password_policy_max_length: Yup.number(),
@@ -80,6 +86,10 @@ const validationSchema = Yup.object().shape({
   password_policy_min_lowercase: Yup.number(),
   password_policy_min_uppercase: Yup.number(),
   password_policy_validity_days: Yup.number(),
+  password_policy_history_count: Yup.number()
+    .integer(t_i18n('Must be an integer between 0 and 24'))
+    .min(0, t_i18n('Must be an integer between 0 and 24'))
+    .max(PASSWORD_HISTORY_MAX_COUNT, t_i18n('Must be an integer between 0 and 24')),
 });
 
 interface LocalStrategyFormProps {
@@ -89,6 +99,8 @@ interface LocalStrategyFormProps {
 const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const { isFeatureEnable } = useHelper();
+  const isPasswordHistoryEnabled = isFeatureEnable('PASSWORD_HISTORY');
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
   const isConfigurationFromEnv = settings.is_authentication_by_env ?? false;
@@ -119,6 +131,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     password_policy_min_lowercase: settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: settings.password_policy_min_uppercase ?? 0,
     password_policy_validity_days: settings.password_policy_validity_days ?? 0,
+    password_policy_history_count: settings.password_policy_history_count ?? 0,
   };
 
   const handleSubmit = (
@@ -139,6 +152,9 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           password_policy_min_lowercase: Number(values.password_policy_min_lowercase) || 0,
           password_policy_min_uppercase: Number(values.password_policy_min_uppercase) || 0,
           password_policy_validity_days: Number(values.password_policy_validity_days) || 0,
+          ...(isPasswordHistoryEnabled
+            ? { password_policy_history_count: Number(values.password_policy_history_count) || 0 }
+            : {}),
         },
       },
       onCompleted: () => {
@@ -155,7 +171,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     <Formik
       enableReinitialize
       initialValues={initialValues}
-      validationSchema={validationSchema}
+      validationSchema={validationSchema(t_i18n)}
       onSubmit={handleSubmit}
       onReset={onCancel}
     >
@@ -254,6 +270,20 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
             fullWidth
           />
+          {isPasswordHistoryEnabled && (
+            <Field
+              component={TextField}
+              type="number"
+              variant="outlined"
+              className="mt-5"
+              name="password_policy_history_count"
+              label={`${t_i18n('Number of recent passwords that cannot be reused')} (${t_i18n('0 equals disabled')})`}
+              min={0}
+              max={PASSWORD_HISTORY_MAX_COUNT}
+              step={1}
+              fullWidth
+            />
+          )}
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="secondary"
