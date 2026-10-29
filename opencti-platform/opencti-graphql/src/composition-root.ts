@@ -91,6 +91,7 @@ import retentionRulesModule from './modules/retentionRules/retentionRules-module
 import dataSanityModule from './modules/dataSanity/dataSanity-module';
 import newsFeedModule from './modules/xtm/hub/news-feed/news-feed-module';
 import xtmHubModule from './modules/xtm/hub/xtm-hub-module';
+import xtmOneModule from './modules/xtm/one/xtm-one-module';
 import metricsModule from './modules/metrics/metrics-module';
 import userModule from './modules/user/user-module';
 import userMergeModule from './modules/userMerge/userMerge-module';
@@ -179,6 +180,7 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   dataSanityModule,
   newsFeedModule,
   xtmHubModule,
+  xtmOneModule,
   metricsModule,
   userModule,
   userMergeModule,

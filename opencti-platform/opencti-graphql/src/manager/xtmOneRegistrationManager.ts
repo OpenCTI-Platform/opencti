@@ -2,7 +2,6 @@ import conf, { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { registerWithXtmOne, XTM_ONE_SCHEDULE_TIME } from '../modules/xtm/one/xtm-one';
 import type { ManagerDefinition } from './managerModule';
-import { registerManager } from './managerModule';
 
 const XTM_ONE_URL = conf.get('xtm:xtm_one_url');
 const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
@@ -22,7 +21,7 @@ export const xtmOneRegistrationManager = async () => {
   }
 };
 
-const XTM_ONE_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
+export const XTM_ONE_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'XTM_ONE_REGISTRATION_MANAGER',
   label: 'XTM One registration manager',
   executionContext: 'xtm_one_registration_manager',
@@ -43,14 +42,15 @@ const XTM_ONE_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   },
 };
 
-registerManager(XTM_ONE_REGISTRATION_MANAGER_DEFINITION);
-
 // Fire once at boot so the platform appears in XTM One immediately
 // instead of waiting for the first interval tick.
-if (XTM_ONE_ENABLED) {
-  setTimeout(() => {
-    xtmOneRegistrationManager().catch((err: any) => {
-      logApp.warn('[XTM One] Boot registration failed, will retry on next tick', { error: err.message });
-    });
-  }, BOOT_DELAY);
-}
+// Called by back.ts, not on import: scripts and tests load the managers too.
+export const scheduleXtmOneBootRegistration = () => {
+  if (XTM_ONE_ENABLED) {
+    setTimeout(() => {
+      xtmOneRegistrationManager().catch((err: any) => {
+        logApp.warn('[XTM One] Boot registration failed, will retry on next tick', { error: err.message });
+      });
+    }, BOOT_DELAY);
+  }
+};
