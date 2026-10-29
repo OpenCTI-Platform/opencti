@@ -10,11 +10,11 @@ import { paperBorder } from '../paperSurface';
 
 interface IngestionHealthTileBannerProps {
   issue: HealthIssue;
-  // Where Fix / Review leads: the integration detail
+  // Where Review leads: the integration detail
   to: string;
 }
 
-// Strip on top of a deployed integration tile: critical = red / Fix, degraded = orange / Review.
+// Strip on top of a deployed integration tile: critical = red / warning, degraded = orange / clock, both leading to Review.
 const IngestionHealthTileBanner = ({ issue, to }: IngestionHealthTileBannerProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();

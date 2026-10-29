@@ -138,28 +138,35 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   const healthContext = buildIngestionHealthContext(element, sourceContext);
   const checks = computeIngestionHealthChecks(element, healthContext);
   const patch = computeIngestionHealthPatch(element, checks, healthContext);
-  if (patch) {
-    await writeIngestionHealth(context, source, element, patch);
-  }
 
   // The notification is evaluated at every period, even when the health did not change: it is deferred until the status is stable
   const nextHealth = patch ? patch.ingestion_health : element.ingestion_health;
   const transition = computeHealthTransition(nextHealth, sourceContext.evaluatedAt);
-  if (transition) {
-    await publishUserAction({
-      user: INGESTION_HEALTH_MANAGER_USER,
-      event_type: 'ingestion_health',
-      event_scope: transition,
-      event_access: 'administration',
-      status: transition === HealthTransition.Recovered ? 'success' : 'error',
-      message: buildHealthTransitionMessage(element, transition, nextHealth?.health_checks ?? []),
-      context_data: { id: element.internal_id, entity_type: source.entityType, entity_name: element.name },
-    });
-    // Marks the status as notified once published only: a failed publication is retried at the next period.
-    // A failed write publishes the transition again at the next period: a duplicate event rather than a lost one
-    if (nextHealth) {
-      await writeIngestionHealth(context, source, element, { ingestion_health: markHealthNotified(nextHealth, sourceContext.evaluatedAt) });
+  if (transition && nextHealth) {
+    try {
+      await publishUserAction({
+        user: INGESTION_HEALTH_MANAGER_USER,
+        event_type: 'ingestion_health',
+        event_scope: transition,
+        event_access: 'administration',
+        status: transition === HealthTransition.Recovered ? 'success' : 'error',
+        message: buildHealthTransitionMessage(element, transition, nextHealth.health_checks ?? []),
+        context_data: { id: element.internal_id, entity_type: source.entityType, entity_name: element.name },
+      });
+    } catch (error) {
+      // Not published: the health is written without the marker, the transition is published again at the next period
+      if (patch) {
+        await writeIngestionHealth(context, source, element, patch);
+      }
+      throw error;
     }
+    // Published first, so the health and the marker go in a single write (one update event, one cache notification).
+    // A failed write publishes the transition again at the next period: a duplicate event rather than a lost one
+    await writeIngestionHealth(context, source, element, { ingestion_health: markHealthNotified(nextHealth, sourceContext.evaluatedAt) });
+    return;
+  }
+  if (patch) {
+    await writeIngestionHealth(context, source, element, patch);
   }
 };
 

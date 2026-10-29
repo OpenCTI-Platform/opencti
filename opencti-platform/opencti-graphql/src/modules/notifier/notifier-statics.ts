@@ -177,6 +177,7 @@ ${HEADER_TEMPLATE}
     IngestionCsv: 'CSV feed',
     IngestionJson: 'JSON feed',
   };
+  /* Same routes as resolveLink in opencti-front/src/utils/Entity.ts, without /dashboard: keep both in sync */
   const ingestionPaths = {
     Connector: 'integrations/connectors',
     Sync: 'integrations/feeds/sync',

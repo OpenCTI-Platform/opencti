@@ -30,12 +30,12 @@ export const useHealthIssueDisplay = (severity: HealthIssue['severity']): { colo
   return { color, Icon: severity === 'critical' ? WarningAmberOutlined : AccessTimeOutlined };
 };
 
-// Null when the integration has no health yet (unknown)
+// Null when the integration has no health: not evaluated yet, or stopped. Unknown is a status like any other once evaluated
 export const readHealthStatus = (key?: IngestionHealthSummary_ingestionHealth$key | null): string | null => {
   return key ? readInlineData(ingestionHealthSummaryFragment, key).status : null;
 };
 
-// Null when the integration has no health yet (unknown) or is healthy: nothing to flag
+// Null when the integration has no health (not evaluated yet, or stopped) or is neither critical nor degraded: nothing to flag
 export const readHealthIssue = (key?: IngestionHealthSummary_ingestionHealth$key | null): HealthIssue | null => {
   if (!key) return null;
   const { status, healthChecks } = readInlineData(ingestionHealthSummaryFragment, key);
