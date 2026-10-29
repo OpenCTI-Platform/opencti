@@ -1,4 +1,4 @@
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { getEngineUsedSize } from '../database/engine';
 import { getQueueConsumersByType } from '../database/rabbitmq';
@@ -56,7 +56,7 @@ export const platformUsageMetricsHandler = async (): Promise<void> => {
   await redisSetPlatformUsageMetrics(metrics, USAGE_METRICS_TTL_SECONDS);
 };
 
-const PLATFORM_USAGE_METRICS_MANAGER_DEFINITION: ManagerDefinition = {
+export const PLATFORM_USAGE_METRICS_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'PLATFORM_USAGE_METRICS_MANAGER',
   label: 'Platform usage metrics manager',
   executionContext: 'platform_usage_metrics_manager',
@@ -73,5 +73,3 @@ const PLATFORM_USAGE_METRICS_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(PLATFORM_USAGE_METRICS_MANAGER_DEFINITION);

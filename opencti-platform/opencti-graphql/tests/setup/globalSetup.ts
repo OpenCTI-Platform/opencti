@@ -1,6 +1,4 @@
 import { registerModules } from '../../src/composition-root';
-// managers that belong to no module register on import
-import '../../src/manager/index';
 import { initializeBucket } from '../../src/database/raw-file-storage';
 import { deleteQueues } from '../../src/domain/connector';
 import { elDeleteIndices, elPlatformIndices, initializeSchema } from '../../src/database/engine';
