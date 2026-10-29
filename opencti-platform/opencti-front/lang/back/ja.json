@@ -638,6 +638,7 @@
   "Logo URI in file storage": "ファイルストレージ内のロゴ URI",
   "logout": "ログアウト",
   "Logout remote": "ログアウト・リモート",
+  "Logout when the last tab is closed": "最後のタブを閉じたときにログアウト",
   "Longitude": "経度",
   "LZJD": "LZJD",
   "Magic number hex": "マジックナンバー16進数",

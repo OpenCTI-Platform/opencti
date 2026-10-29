@@ -638,6 +638,7 @@
   "Logo URI in file storage": "Logo-URI im Dateispeicher",
   "logout": "Abmelden",
   "Logout remote": "Fernabmeldung",
+  "Logout when the last tab is closed": "Abmeldung beim Schließen des letzten Tabs",
   "Longitude": "Längengrad",
   "LZJD": "LZJD",
   "Magic number hex": "Magische Zahl hex",

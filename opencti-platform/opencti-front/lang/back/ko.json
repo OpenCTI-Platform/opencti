@@ -638,6 +638,7 @@
   "Logo URI in file storage": "파일 저장소의 로고 URI",
   "logout": "로그아웃",
   "Logout remote": "원격 로그아웃",
+  "Logout when the last tab is closed": "마지막 탭을 닫으면 로그아웃",
   "Longitude": "경도",
   "LZJD": "LZJD",
   "Magic number hex": "매직 넘버 헥스",
