@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
-import { Switch } from '@filigran/design-system';
+import { Paper, Switch } from '@filigran/design-system';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import Card from '../../../../components/common/card/Card';
 import TextField from '../../../../components/TextField';
@@ -86,6 +86,14 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
     commitSettings({ disabled_health_checks: enabled ? others : [...others, code] });
   };
 
+  // Configuration checks first, then runtime ones; by translated label within each kind
+  const sortedChecks = [...(ingestion_health_settings?.health_checks ?? [])]
+    .sort((a, b) => Number(a.health_check_kind === 'runtime') - Number(b.health_check_kind === 'runtime')
+      || t_i18n(a.health_check_label).localeCompare(t_i18n(b.health_check_label)));
+  // Two columns, the first one filled first: the order reads from top to bottom, then left to right
+  const half = Math.ceil(sortedChecks.length / 2);
+  const checkColumns = [sortedChecks.slice(0, half), sortedChecks.slice(half)].filter((column) => column.length > 0);
+
   return (
     <Card title={t_i18n('Ingestion health monitoring')} data-testid="settings-ingestion-health">
       <Formik
@@ -114,32 +122,35 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
       </Formik>
       <Box component="h4" sx={{ marginTop: 3, marginBottom: 2 }}>{t_i18n('Health checks')}</Box>
       {/* 20px between the toggles, as between the switches of the group edition form */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', columnGap: 2, rowGap: '20px' }}>
-        {[...ingestion_health_settings.health_checks]
-          // Configuration checks first, then runtime ones; by translated label within each kind
-          .sort((a, b) => Number(a.health_check_kind === 'runtime') - Number(b.health_check_kind === 'runtime')
-            || t_i18n(a.health_check_label).localeCompare(t_i18n(b.health_check_label)))
-          .map((check) => (
-            <Box
-              key={check.health_check_code}
-              data-testid={`settings-ingestion-health-check-${check.health_check_code}`}
-              sx={{ display: 'contents' }}
-            >
-              <Box sx={{ minWidth: 0 }}>
-                <Switch
-                  checked={check.enabled}
-                  disabled={isSaving}
-                  onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
-                  // Named by the backend registry, translated with the labels of the backend schema
-                  label={t_i18n(check.health_check_label)}
-                />
-              </Box>
-              {/* Centered in its column: the column is as wide as its longest value */}
-              <Box component="span" sx={{ justifySelf: 'center', textAlign: 'center', fontSize: 12, color: 'text.secondary' }}>
-                {check.health_check_kind === 'runtime' ? t_i18n('Runtime') : t_i18n('Configuration')}
-              </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, columnGap: 2, rowGap: 2 }}>
+        {/* A surface per column, so that the kind of a check is not read as the one of the check next to it. Same height: the grid stretches them */}
+        {checkColumns.map((column) => (
+          <Paper key={column[0].health_check_code} elevation={2} padding={16}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', columnGap: 2, rowGap: '20px' }}>
+              {column.map((check) => (
+                <Box
+                  key={check.health_check_code}
+                  data-testid={`settings-ingestion-health-check-${check.health_check_code}`}
+                  sx={{ display: 'contents' }}
+                >
+                  <Box sx={{ minWidth: 0 }}>
+                    <Switch
+                      checked={check.enabled}
+                      disabled={isSaving}
+                      onCheckedChange={(enabled) => handleToggleCheck(check.health_check_code, enabled)}
+                      // Named by the backend registry, translated with the labels of the backend schema
+                      label={t_i18n(check.health_check_label)}
+                    />
+                  </Box>
+                  {/* Centered in its column: the column is as wide as its longest value */}
+                  <Box component="span" sx={{ justifySelf: 'center', textAlign: 'center', fontSize: 12, color: 'text.secondary' }}>
+                    {check.health_check_kind === 'runtime' ? t_i18n('Runtime') : t_i18n('Configuration')}
+                  </Box>
+                </Box>
+              ))}
             </Box>
-          ))}
+          </Paper>
+        ))}
       </Box>
     </Card>
   );
