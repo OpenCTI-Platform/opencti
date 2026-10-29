@@ -56,7 +56,7 @@ export const up = async (next: (error?: Error) => void) => {
     if (!order) {
       logMigration.info(`${message} > connector ${connector.id} contract ${contract.contract_id} of catalog ${catalogId} not found, order of options left as is`);
     } else {
-      const patch = { manager_contract: { ...contract, config_schema: { ...contract.config_schema, properties_order: order } } };
+      const patch = { manager_contract: { ...contract, config_schema: withConfigSchemaPropertiesOrder({ ...contract.config_schema, properties_order: order }) } };
       await patchAttribute(context, SYSTEM_USER, connector.id, ENTITY_TYPE_CONNECTOR, patch);
       logMigration.info(`${message} > connector ${connector.id} patched`);
     }
