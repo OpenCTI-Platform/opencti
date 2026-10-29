@@ -7,10 +7,11 @@ import { Chip, Text } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 
-// The pre-built templates: their content is built by the domain experts, so they are disabled until it exists
+// The pre-built templates: their content is built by the domain experts, so they are disabled until it exists.
+// Placeholders, so their texts are not translated: they are replaced when the templates exist.
 const TEMPLATES = [
   { id: 'classic-cti', label: 'Classic CTI', description: 'Standard threat intelligence workspace: actors, malware, indicators and campaigns with ready made dashboards and trusted feeds.' },
-  { id: 'fimi', label: 'FIMI/Disinformation', description: 'Foreign Infomation Manipulation & Interference: narratives, channels, and events tuned for tracking influence operations.' },
+  { id: 'fimi', label: 'FIMI/Disinformation', description: 'Foreign Information Manipulation & Interference: narratives, channels, and events tuned for tracking influence operations.' },
   { id: 'fraud', label: 'Fraud Prevention', description: 'Fraud-centric model: cases, accounts and transactions with detection dashboards and scoring workflows.' },
   { id: 'incident', label: 'Incident Management', description: 'Incident response oriented: incidents, cases and tasks with triage workflows and SLA dashboards.' },
 ];
@@ -32,11 +33,11 @@ const ConfigPresetWizardWelcome: FunctionComponent<ConfigPresetWizardWelcomeProp
       </Text>
       <div data-testid="config-preset-wizard-template" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing(2) }}>
         {TEMPLATES.map((template) => (
-          <Card key={template.id} disabled onClick={() => undefined} aria-label={t_i18n(template.label)}>
+          <Card key={template.id} disabled onClick={() => undefined} aria-label={template.label}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
-              <Text variant="title-sm">{t_i18n(template.label)}</Text>
-              <Text variant="content-base">{t_i18n(template.description)}</Text>
-              <div><Chip label={t_i18n('Coming later')} severity="neutral" /></div>
+              <Text variant="title-sm">{template.label}</Text>
+              <Text variant="content-base">{template.description}</Text>
+              <div><Chip label="Coming later" severity="neutral" /></div>
             </div>
           </Card>
         ))}
