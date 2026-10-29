@@ -35,7 +35,7 @@ type IngestionHealthCheckSetting {
   enabled: Boolean!
 }
 
-# Platform settings of the ingestion health, see Settings.ingestion_health_settings
+# Platform settings of the ingestion health, stored in the ingestion_health_settings object of the platform settings
 type IngestionHealthSettings {
   # ms a status must stay unchanged before it is notified
   notification_delay: Int!
@@ -49,4 +49,19 @@ type IngestionHealth {
   status: IngestionHealthStatus!
   status_since: DateTime!
   healthChecks: [IngestionHealthCheck!]!
+}
+
+# Fields left out are kept unchanged
+input IngestionHealthSettingsInput {
+  notification_delay: Int
+  disabled_health_checks: [String!]
+}
+
+extend type Query {
+  # Null when the feature is disabled: composed into the query of the Parameters page
+  ingestionHealthSettings: IngestionHealthSettings @auth(for: [SETTINGS_SETPARAMETERS]) @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+}
+
+extend type Mutation {
+  ingestionHealthSettingsEdit(input: IngestionHealthSettingsInput!): IngestionHealthSettings @auth(for: [SETTINGS_SETPARAMETERS]) @ff(flags: ["INGESTION_HEALTH"])
 }

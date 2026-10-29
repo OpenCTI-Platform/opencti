@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { INGESTION_HEALTH_FEATURE_FLAG } from '../../config/conf';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 import { type AttributeDefinition, changes, createdAt, creators, draftContext, errors, id, lastEventId, refreshedAt, updatedAt } from '../../schema/attribute-definition';
 import {
@@ -25,7 +24,7 @@ import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
-import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
+import { ingestionHealthAttributes, ingestionHealthSettingsAttribute } from '../ingestionHealth/ingestionHealth-attributes';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -233,22 +232,9 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'cert_auth', label: 'Client certificate authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'headers_auth', label: 'Header authentication configuration', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'smtp_configuration', label: 'SMTP configuration', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    {
-      name: 'ingestion_health_settings',
-      label: 'Ingestion health settings',
-      type: 'object',
-      format: 'standard',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: false,
-      upsert: false,
-      isFilterable: false,
-      featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
-      mappings: [
-        { name: 'notification_delay', label: 'Notification delay (in minute)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-        { name: 'disabled_health_checks', label: 'Disabled health checks', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-      ],
-    },
+    // TODO Invert this dependency: each module should register its own "settings attributes" on Settings during bootstrap,
+    // instead of the Settings definition importing them from the modules (see ingestionHealth-attributes)
+    ingestionHealthSettingsAttribute,
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', label: 'Last run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

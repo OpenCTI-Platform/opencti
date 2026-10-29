@@ -1527,7 +1527,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   caller_ip: String
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
-  ingestion_health_settings: IngestionHealthSettings
   messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
@@ -9001,6 +9000,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  ingestionHealthSettings: IngestionHealthSettings
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
   catalogsRevisions: [CatalogRevision!]!
@@ -9845,6 +9845,7 @@ type Mutation {
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
+  ingestionHealthSettingsEdit(input: IngestionHealthSettingsInput!): IngestionHealthSettings
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
@@ -10911,6 +10912,11 @@ type IngestionHealth {
   status: IngestionHealthStatus!
   status_since: DateTime!
   healthChecks: [IngestionHealthCheck!]!
+}
+
+input IngestionHealthSettingsInput {
+  notification_delay: Int
+  disabled_health_checks: [String!]
 }
 
 type Catalog implements InternalObject & BasicObject {
