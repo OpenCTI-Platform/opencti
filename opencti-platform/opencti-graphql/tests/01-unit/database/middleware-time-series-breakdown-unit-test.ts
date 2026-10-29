@@ -107,7 +107,7 @@ const breakdown = (args: Record<string, unknown>) => timeSeriesBreakdownEntities
 describe('timeSeriesBreakdownEntities', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(accessModule, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+    vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
     vi.mocked(engine.elList).mockResolvedValue([]);
     mockSchema();
   });
@@ -622,7 +622,7 @@ describe('timeSeriesBreakdownHistory', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(accessModule, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+    vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
     vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(['History', 'Activity', 'Report', 'Intrusion-Set', 'PublicDashboard', 'uses']);
   });
 
@@ -734,7 +734,7 @@ describe('timeSeriesBreakdownHistory', () => {
       'org-a': { ...makeEntity('org-a', 'Filigran'), entity_type: 'Organization' },
       'org-b': { ...makeEntity('org-b', 'Hidden'), entity_type: 'Organization' },
     } as any);
-    vi.mocked(accessModule.isUserCanAccessStoreElement).mockImplementation(async (_context, _user, element: any) => element.id === 'org-a');
+    vi.mocked(accessModule.userFilterStoreElements).mockImplementation(async (_context, _user, elements) => elements.filter((element) => element.id === 'org-a'));
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
 
     const result = await historyBreakdown({ field: 'organization_ids' });
@@ -863,7 +863,7 @@ const relationsBreakdown = (args: Record<string, unknown>, relationshipTypes = [
 describe('timeSeriesBreakdownRelations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(accessModule, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+    vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
     mockRelationshipSchema();
   });
 
@@ -963,7 +963,7 @@ describe('timeSeriesBreakdownRelations', () => {
       'identity-a': makeEntity('identity-a', 'Filigran'),
       'identity-b': makeEntity('identity-b', 'Secret'),
     } as any);
-    vi.mocked(accessModule.isUserCanAccessStoreElement).mockImplementation(async (_context, _user, element: any) => element.internal_id === 'identity-a');
+    vi.mocked(accessModule.userFilterStoreElements).mockImplementation(async (_context, _user, elements) => elements.filter((element) => element.internal_id === 'identity-a'));
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(new Map());
 
     const result = await relationsBreakdown({ field: 'createdBy' });

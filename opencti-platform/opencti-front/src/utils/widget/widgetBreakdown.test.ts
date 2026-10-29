@@ -32,6 +32,7 @@ import {
   MAX_RENDERED_LINE_POINTS,
   MIN_RENDERED_BARS,
   nextBreakdownChartWidth,
+  numberSharedSeriesNames,
   scheduleChartDraw,
 } from './widgetBreakdown';
 
@@ -568,6 +569,7 @@ describe('coarsenSeriesForRendering', () => {
     toMonths.series.forEach((serie) => {
       expect(serie.data.reduce((sum, point) => sum + point.y, 0)).toEqual(total);
     });
+    expect(toMonths.weeksCountedByMonday).toBe(false);
   });
 
   it('coarsens a week series with a smaller budget', () => {
@@ -579,11 +581,45 @@ describe('coarsenSeriesForRendering', () => {
     expect(result.pointsCount).toEqual(13);
   });
 
+  it('tells when weeks are counted in the month, quarter or year of their Monday', () => {
+    // The week of Monday 2026-03-30 ends in April: it is counted in March, and in the first quarter
+    const weekly = [
+      { x: new Date('2026-03-23T00:00:00.000Z'), y: 1 },
+      { x: new Date('2026-03-30T00:00:00.000Z'), y: 2 },
+      { x: new Date('2026-04-06T00:00:00.000Z'), y: 4 },
+    ];
+    const series = [{ name: 'A', data: weekly }];
+    const toMonths = coarsenSeriesForRendering(series, 'week', 2);
+    expect(toMonths.interval).toEqual('month');
+    expect(toMonths.series[0].data).toEqual([
+      { x: new Date('2026-03-01T00:00:00.000Z'), y: 1 + 2 },
+      { x: new Date('2026-04-01T00:00:00.000Z'), y: 4 },
+    ]);
+    expect(toMonths.weeksCountedByMonday).toBe(true);
+    const toYears = coarsenSeriesForRendering(series, 'week', 1);
+    expect(toYears.interval).toEqual('year');
+    expect(toYears.weeksCountedByMonday).toBe(true);
+
+    // Weeks drawn as weeks, or weeks summed from days, keep every count where it belongs
+    expect(coarsenSeriesForRendering(series, 'week', 3).weeksCountedByMonday).toBe(false);
+    expect(coarsenSeriesForRendering([{ name: 'A', data: daily('2026-03-23T00:00:00.000Z', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) }], 'day', 5))
+      .toMatchObject({ interval: 'week', weeksCountedByMonday: false });
+  });
+
   it('never goes beyond years', () => {
     const series = [{ name: 'A', data: daily('2026-01-01T00:00:00.000Z', [1, 2]) }];
     const result = coarsenSeriesForRendering(series, 'year', 1);
     expect(result.interval).toEqual('year');
     expect(result.series).toBe(series);
+  });
+});
+
+describe('numberSharedSeriesNames', () => {
+  it('numbers by order the series sharing a name, and only them', () => {
+    expect(numberSharedSeriesNames(['Restricted', 'Alice', 'Restricted', 'Bob', 'Restricted']))
+      .toEqual(['Restricted (1)', 'Alice', 'Restricted (2)', 'Bob', 'Restricted (3)']);
+    expect(numberSharedSeriesNames(['Alice', 'Bob'])).toEqual(['Alice', 'Bob']);
+    expect(numberSharedSeriesNames([])).toEqual([]);
   });
 });
 

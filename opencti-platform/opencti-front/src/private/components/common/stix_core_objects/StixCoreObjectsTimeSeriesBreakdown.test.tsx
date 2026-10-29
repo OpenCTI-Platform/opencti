@@ -214,6 +214,20 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(names[1]).toEqual('Not-A-Translated-Type');
   });
 
+  it('numbers the restricted entities, all named the same, to tell them apart in the legend', async () => {
+    // The API sends an entity the user cannot access with its id, its type and the name "Restricted"
+    const restricted = (id: string) => ({ id, entity_type: 'User', name: 'Restricted' });
+    respond([
+      { label: 'user-a', entity: restricted('user-a'), values: dailyValues(3) },
+      { label: 'user-b', entity: { id: 'user-b', entity_type: 'User', name: 'Alice' }, values: dailyValues(3) },
+      { label: 'user-c', entity: restricted('user-c'), values: dailyValues(3) },
+      { label: 'Other', isOther: true, entity: null, values: dailyValues(3) },
+    ]);
+    render(makeWidget('line', { breakdownBy: 'creator_id' }));
+    expect((await drawn(mocks.lines)).series.map((serie: { name: string }) => serie.name))
+      .toEqual(['Restricted (1)', 'Alice', 'Restricted (2)', 'Other']);
+  });
+
   it('names the other serie and makes it grey, keeping the order of the API', async () => {
     respond([
       { label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values: dailyValues(3) },
@@ -279,7 +293,24 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(props.isAnimated).toBe(false);
     expect(props.hasHoverFilter).toBe(false);
     expect(props.tickAmount).toEqual(20);
-    expect((await findByTestId('widget-warning')).textContent).toContain('Interval adjusted to');
+    const warning = (await findByTestId('widget-warning')).textContent;
+    expect(warning).toContain('Interval adjusted to');
+    // Days summed into months stay exact
+    expect(warning).not.toContain('Each week');
+  });
+
+  it('says that weeks summed into months are counted in the month of their Monday', async () => {
+    // 53 Mondays from 2025-09-29
+    const dates = Array.from({ length: 53 }, (_, i) => new Date(Date.UTC(2025, 8, 29 + 7 * i)).toISOString());
+    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, isOther: false, entity: null, values: dailyValues(53) }));
+    mocks.response = { stixCoreObjectsTimeSeriesBreakdown: { truncated: false, dates, series } };
+    const { findByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type', interval: 'week' }, multiTypesSelection));
+
+    // 1200 px allow 600 bars: 20 series of 53 weeks are too many
+    expect((await drawn(mocks.bars)).interval).toEqual('month');
+    const warning = (await findByTestId('widget-warning')).textContent;
+    expect(warning).toContain('Interval adjusted to');
+    expect(warning).toContain('Each week is counted in full in the interval that contains its Monday.');
   });
 
   it('coarsens less on a wide chart, and more on a narrow one', async () => {

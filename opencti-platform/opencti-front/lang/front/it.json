@@ -1794,6 +1794,7 @@
   "e.g. wrong environment — use staging instead": "Ad es. ambiente errato — usa invece lo staging",
   "Each line must contain a valid email address": "Ogni riga deve contenere un indirizzo email valido",
   "Each tick value must be between min and max value": "Ogni valore di tick deve essere compreso tra il valore minimo e massimo",
+  "Each week is counted in full in the interval that contains its Monday.": "Ogni settimana viene conteggiata per intero nell'intervallo che contiene il suo lunedì.",
   "Edge actions": "Azioni della connessione",
   "Edit": "Modifica",
   "Edit confidence level": "Modifica del livello di confidenza",

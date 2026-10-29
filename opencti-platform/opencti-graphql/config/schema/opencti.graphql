@@ -426,7 +426,8 @@ type MultiTimeSeries {
 type TimeSeriesBreakdownSerie {
   label: String!
   entity: StixObjectOrStixRelationshipOrCreator
-  value: Int
+  # Sum of the values of the series
+  value: Int!
   isOther: Boolean!
   # One value per date of TimeSeriesBreakdown.dates
   values: [Int!]!
