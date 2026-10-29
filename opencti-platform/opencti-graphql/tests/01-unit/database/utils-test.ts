@@ -315,6 +315,11 @@ describe('Function fillTimeSeries() range helpers', () => {
     expect(fillTimeSeries(startDate, endDate, 'day', [])).toHaveLength(5);
   });
 
+  it('should count no interval for a period ending before it starts, as its axis holds none', () => {
+    expect(countTimeSeriesIntervals(endDate, startDate, 'day')).toEqual(0);
+    expect(fillTimeSeries(endDate, startDate, 'day', [])).toHaveLength(0);
+  });
+
   it('should keep known values and fill missing dates with zero', () => {
     const series = fillTimeSeries(startDate, endDate, 'day', [
       { date: '2026-01-02', value: 3 },
