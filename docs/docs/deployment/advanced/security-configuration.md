@@ -20,6 +20,12 @@ To prevent your public dashboards from being embedded in unauthorized websites, 
 
 For a fully secure platform, you should disable the loading of unsecure (HTTP) resources by setting `app:allow_unsecure_http_resources` to `false`.
 
+## Inline scripts
+
+By default, the Content-Security-Policy allows inline scripts (`'unsafe-inline'` in `script-src`). Set `app:allow_inline_scripts` to `false` to remove it: the platform then computes at startup the hashes of the inline scripts of its page and allows only those.
+
+If you set `app:script_snippet`, check that your snippet does not inject other inline scripts at runtime, as the browser would block them.
+
 ## Session timeout
 
 To ensure that user sessions are not kept alive indefinitely, you should configure a session timeout (`app:session_timeout`) that matches your security policy.
