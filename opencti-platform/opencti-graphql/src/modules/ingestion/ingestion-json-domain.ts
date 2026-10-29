@@ -24,7 +24,7 @@ import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConne
 import { publishUserAction } from '../../listener/UserActionListener';
 import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperParsed, type JsonMapperRepresentation } from '../internal/jsonMapper/jsonMapper-types';
 import { type EditInput, FilterMode, IngestionAuthType, type IngestionJsonAddInput, type JsonMapperTestResult } from '../../generated/graphql';
-import { notify } from '../../database/redis';
+import { notify, redisDeleteIngestionLogHistory } from '../../database/redis';
 import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { getHttpClient, type GetHttpClient, OpenCTIHeaders } from '../../utils/http-client';
@@ -250,6 +250,7 @@ export const findJsonMapperForIngestionById = (context: AuthContext, user: AuthU
 export const deleteIngestionJson = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById<StoreEntityIngestionJson>(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON);
   await unregisterConnectorForIngestion(context, deleted.id);
+  await redisDeleteIngestionLogHistory(deleted.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',

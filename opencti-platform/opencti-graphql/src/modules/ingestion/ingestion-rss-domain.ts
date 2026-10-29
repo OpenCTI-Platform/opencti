@@ -3,7 +3,7 @@ import { createEntity, deleteElementById, patchAttribute, updateAttribute } from
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { notify } from '../../database/redis';
+import { notify, redisDeleteIngestionLogHistory } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, IngestionRssAddAutoUserInput, IngestionRssAddInput } from '../../generated/graphql';
@@ -132,6 +132,7 @@ export const ingestionRssResetState = async (context: AuthContext, user: AuthUse
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById<StoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
   await unregisterConnectorForIngestion(context, deleted.id);
+  await redisDeleteIngestionLogHistory(deleted.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',
