@@ -41,7 +41,7 @@ testCreatedCounter.infrastructure = 1;
 // - 2 created and deleted by enrichment-liveness-test
 testCreatedCounter['intrusion-set'] = 8;
 testCreatedCounter['ipv4-addr'] = 1;
-testCreatedCounter['kill-chain-phase'] = 3;
+testCreatedCounter['kill-chain-phase'] = 4; // one created and deleted by form-submission-test
 testCreatedCounter.label = 15;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 21;
@@ -150,6 +150,7 @@ testDeletedCounter.infrastructure = 1;
 // - 2 created and deleted by enrichment-liveness-test
 testDeletedCounter['intrusion-set'] = 7;
 testDeletedCounter['ipv4-addr'] = 1;
+testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submission-test
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 16;
