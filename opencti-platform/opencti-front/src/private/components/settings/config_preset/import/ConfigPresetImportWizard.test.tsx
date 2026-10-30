@@ -41,13 +41,12 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   dependsOn: [],
   ...overrides,
 });
-const previewType = (key: string, label: string, items: unknown[], modes = ['OVERWRITE'], requiresEnterpriseEdition = false, locked = false) => ({
+const previewType = (key: string, label: string, items: unknown[], modes = ['OVERWRITE'], lockedByEnterpriseEdition = false) => ({
   key,
   label,
   description: `${label} description`,
   group: platformSettings,
-  requiresEnterpriseEdition,
-  locked,
+  lockedByEnterpriseEdition,
   modes,
   items,
 });
@@ -73,12 +72,12 @@ const preview = {
 // A bundle with the whitemark, a type that needs the Enterprise Edition: a platform without it has no item of it
 const previewWithWhitemark = {
   ...preview,
-  types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [], ['OVERWRITE'], true, true)],
+  types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [], ['OVERWRITE'], true)],
 };
 // The same bundle once the platform has the license: the type comes with its item
 const previewWithWhitemarkUnlocked = {
   ...preview,
-  types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [previewItem('whitemark', 'Remove Filigran logos')], ['OVERWRITE'], true)],
+  types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [previewItem('whitemark', 'Remove Filigran logos')])],
 };
 const ENTERPRISE_EDITION_GATE = 'Activate the Enterprise Edition to import this item';
 const whitemarkRow = () => within(screen.getByTestId('config-preset-import-item-whitemark-whitemark'));

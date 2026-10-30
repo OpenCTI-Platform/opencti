@@ -16,7 +16,6 @@ import {
   countConfigPresetCheckedItems,
   getConfigPresetCheckboxState,
   groupConfigPresetTypes,
-  isConfigPresetTypeLocked,
   isSingletonConfigPresetType,
   toggleConfigPresetTypes,
 } from './configPresetSelection';
@@ -92,10 +91,8 @@ export interface ConfigPresetAccordionType {
   readonly group: { readonly key: string; readonly label: string };
   readonly items: ReadonlyArray<AccordionItem>;
   readonly itemsPageInfo: { readonly globalCount: number; readonly hasNextPage?: boolean };
-  // The type is part of the Enterprise Edition: without it its row opens the license dialog
-  readonly requiresEnterpriseEdition?: boolean;
-  // The backend cannot use the type now: it has no item
-  readonly locked?: boolean;
+  // The type is part of the Enterprise Edition and the platform has not got it: it has no item, and its row opens the license dialog
+  readonly lockedByEnterpriseEdition?: boolean;
 }
 
 // A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog. When the front end knows the
@@ -157,8 +154,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   onLockedRetry,
 }: ConfigPresetSelectionAccordionProps<T>) => {
   const { t_i18n } = useFormatter();
-  const isEnterpriseEdition = useEnterpriseEdition();
-  const isLocked = (type: T) => isConfigPresetTypeLocked(type, isEnterpriseEdition);
+  const isLocked = (type: T) => !!type.lockedByEnterpriseEdition;
   // Groups start expanded, types with several items collapsed
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<readonly string[]>([]);
   const [toggledTypeKeys, setToggledTypeKeys] = useState<readonly string[]>([]);

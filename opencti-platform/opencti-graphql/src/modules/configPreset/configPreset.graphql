@@ -40,11 +40,9 @@ type ConfigPresetExportableType {
     # What the category holds, translated by the UI like the label.
     description: String!
     group: ConfigPresetExportableGroup!
-    # The category is part of the Enterprise Edition.
-    requiresEnterpriseEdition: Boolean!
-    # The platform cannot use the category now (it requires the Enterprise Edition and the platform has not got it): it has no item,
-    # and the dialog offers to activate the license. False for a category that is available, whether or not it has items.
-    locked: Boolean!
+    # The category is part of the Enterprise Edition and the platform has not got it: the category has no item, and the dialog offers to
+    # activate the license. False once the platform has the license, and for a category that is not part of the Enterprise Edition.
+    lockedByEnterpriseEdition: Boolean!
     # First page of the items; the next pages come from configPresetExportableItems.
     items: [ConfigPresetExportableItem!]!
     # Page info of items: globalCount is the number of exportable items of the type.
@@ -77,11 +75,9 @@ type ConfigPresetImportType {
     label: String!
     description: String!
     group: ConfigPresetExportableGroup!
-    # The category is part of the Enterprise Edition.
-    requiresEnterpriseEdition: Boolean!
-    # The platform cannot import the category now (it requires the Enterprise Edition and the platform has not got it): it has no item,
-    # and the dialog offers to activate the license.
-    locked: Boolean!
+    # The category is part of the Enterprise Edition and the platform has not got it: the category has no item, and the dialog offers to
+    # activate the license. False once the platform has the license, and for a category that is not part of the Enterprise Edition.
+    lockedByEnterpriseEdition: Boolean!
     items: [ConfigPresetImportItem!]!
     # The modes the type supports for an item in conflict; the dialog shows a choice on such an item when there is more than one.
     modes: [ConfigImportMode!]!

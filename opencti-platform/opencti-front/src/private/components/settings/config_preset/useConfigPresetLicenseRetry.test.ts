@@ -6,8 +6,8 @@ vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => 
 
 import useConfigPresetLicenseRetry, { CONFIG_PRESET_LICENSE_MAX_RETRIES, CONFIG_PRESET_LICENSE_RETRY_DELAY_MS } from './useConfigPresetLicenseRetry';
 
-const locked = () => [{ locked: true }];
-const available = () => [{ locked: false }];
+const locked = () => [{ lockedByEnterpriseEdition: true }];
+const available = () => [{ lockedByEnterpriseEdition: false }];
 
 describe('useConfigPresetLicenseRetry', () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe('useConfigPresetLicenseRetry', () => {
     vi.useRealTimers();
   });
 
-  const run = (types: { locked: boolean }[]) => {
+  const run = (types: { lockedByEnterpriseEdition: boolean }[]) => {
     const reload = vi.fn();
     const hook = renderHook(({ current }) => useConfigPresetLicenseRetry(current, reload), { initialProps: { current: types } });
     return { reload, ...hook };

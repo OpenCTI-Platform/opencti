@@ -184,8 +184,7 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
     label: family.label,
     description: family.description,
     group: { key: family.group.id, label: family.group.label },
-    requiresEnterpriseEdition: family.requiresEnterpriseEdition ?? false,
-    locked: !availability[index],
+    lockedByEnterpriseEdition: !availability[index],
     modes: family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE],
     // The items of a family the platform cannot import are not shown: the dialog shows the type as locked
     items: !availability[index] ? [] : results.filter(({ item }) => item.type === family.id).map(({ item, computed }) => {

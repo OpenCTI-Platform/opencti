@@ -8,12 +8,12 @@ export const CONFIG_PRESET_LICENSE_MAX_RETRIES = 3;
 // the backend may not have refreshed its settings yet (on a cluster the refresh travels by pub/sub). The types are read again a few times,
 // each attempt after the previous one, whether or not the answer looks different. Returns what reads them at once and counts again,
 // for the user who clicks after the last attempt.
-const useConfigPresetLicenseRetry = (types: ReadonlyArray<{ readonly locked: boolean }> | null | undefined, reload: () => void): (() => void) => {
+const useConfigPresetLicenseRetry = (types: ReadonlyArray<{ readonly lockedByEnterpriseEdition: boolean }> | null | undefined, reload: () => void): (() => void) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const [attempt, setAttempt] = useState(0);
   const reloadRef = useRef(reload);
   reloadRef.current = reload;
-  const isStale = isEnterpriseEdition && !!types?.some((type) => type.locked);
+  const isStale = isEnterpriseEdition && !!types?.some((type) => type.lockedByEnterpriseEdition);
 
   useEffect(() => {
     if (!isStale) {

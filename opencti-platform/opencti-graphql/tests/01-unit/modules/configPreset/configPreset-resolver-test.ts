@@ -156,16 +156,16 @@ describe('Config preset exportable types query', () => {
 
   it('lists a family that requires the Enterprise Edition without its items when the platform has none, so the dialog can show it locked', async () => {
     enterpriseEdition.enabled = false;
-    const source = '{ configPresetExportableTypes { key requiresEnterpriseEdition locked items { key } itemsPageInfo { hasNextPage globalCount } } }';
+    const source = '{ configPresetExportableTypes { key lockedByEnterpriseEdition items { key } itemsPageInfo { hasNextPage globalCount } } }';
     const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
-    const types = result.data?.configPresetExportableTypes as { key: string; requiresEnterpriseEdition: boolean; locked: boolean; items: unknown[]; itemsPageInfo: unknown }[];
-    expect(types.map((type) => [type.key, type.requiresEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false]]);
-    expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ locked: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
+    const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
+    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false]]);
+    expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
-    const whitemark = (licensed.data?.configPresetExportableTypes as { key: string; locked: boolean; items: unknown[] }[]).find((type) => type.key === 'whitemark');
-    expect(whitemark).toMatchObject({ locked: false });
+    const whitemark = (licensed.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[] }[]).find((type) => type.key === 'whitemark');
+    expect(whitemark).toMatchObject({ lockedByEnterpriseEdition: false });
     expect(whitemark?.items).toHaveLength(1);
   });
 
