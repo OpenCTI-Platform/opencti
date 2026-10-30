@@ -14,34 +14,66 @@ import {
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
 import {
+  HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED,
+  HEALTH_CHECK_CONNECTOR_ERROR_REPORTED,
   HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
   HEALTH_CHECK_HEARTBEAT_MISSING,
+  HEALTH_CHECK_LAST_RUN_FAILED,
   HEALTH_CHECK_REGISTRY,
+  HEALTH_CHECK_SOURCE_ACCESS_DENIED,
+  HEALTH_CHECK_USER_DISABLED,
   HEALTH_CHECK_USER_MISSING,
   HEALTH_CHECK_USER_MISSING_CAPABILITY,
   HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
   type HealthCheckCode,
-  type HealthCheckIngestor,
-  type HealthCheckUser,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/connector/connector-types';
+import { isUserDisabled } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry-utils';
+import { redisGetConnectorErrors } from '../../../../src/modules/connector/connector-redis';
 import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
-import { HealthTransition, type IngestionHealthFields, type StoredHealthCheck, type StoredIngestionHealth } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
+import { type ConnectorWorkError, loadConnectorsRuntimeState } from '../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks';
+import {
+  type HealthCheckFailure,
+  type HealthCheckIngestor,
+  type HealthCheckUser,
+  HealthTransition,
+  type IngestionHealthFields,
+  type RuntimeDataReadContext,
+  type StoredHealthCheck,
+  type StoredIngestionHealth,
+} from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
+import { CONNECTOR_ERROR_BLOCKING_CRITICITY } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry-utils';
 
 vi.mock('../../../../src/database/redis', async (importActual) => ({
   ...(await importActual<typeof import('../../../../src/database/redis')>()),
   redisGetIngestionLogHistory: vi.fn(),
 }));
+vi.mock('../../../../src/modules/connector/connector-redis', async (importActual) => ({
+  ...(await importActual<typeof import('../../../../src/modules/connector/connector-redis')>()),
+  redisGetConnectorErrors: vi.fn(),
+}));
+vi.mock('../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks', async (importActual) => ({
+  ...(await importActual<typeof import('../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks')>()),
+  loadConnectorsRuntimeState: vi.fn(),
+}));
 
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
-const SERVICE_ACCOUNT = { internal: false, user_service_account: true, hasCapability: () => true };
+const SERVICE_ACCOUNT = { internal: false, user_service_account: true, disabled: false, hasCapability: () => true };
 const CONTEXT = { evaluatedAt: EVALUATED_AT, pingingConnectorsIds: new Set<string>(), user: SERVICE_ACCOUNT };
-const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} };
-const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
+const USER_MISSING: StoredHealthCheck = {
+  health_check_code: HEALTH_CHECK_USER_MISSING,
+  health_check_severity: IngestionHealthCheckSeverity.Advisory,
+  health_check_metadata: {},
+};
+const HEARTBEAT_MISSING: StoredHealthCheck = {
+  health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING,
+  health_check_severity: IngestionHealthCheckSeverity.Blocking,
+  health_check_metadata: {},
+};
 // Not in the registry (stored by another platform version): never changes the status
-const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_metadata: {} };
+const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_severity: IngestionHealthCheckSeverity.Blocking, health_check_metadata: {} };
 const CONNECTOR = { internal_id: 'connector-id', entity_type: 'Connector' };
 const FEED = { internal_id: 'feed-id', entity_type: 'IngestionRss' };
 const SYNC = { internal_id: 'sync-id', entity_type: 'Sync' };
@@ -98,14 +130,14 @@ describe('computeIngestionHealthPatch', () => {
   });
 
   it('should treat a stored check without metadata as a check with empty metadata', () => {
-    const storedWithoutMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING };
+    const storedWithoutMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_severity: IngestionHealthCheckSeverity.Advisory };
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [storedWithoutMetadata] } };
     expect(computeIngestionHealthPatch(current, [USER_MISSING], CONTEXT)).toBeNull();
   });
 
   it('should write the checks but keep since when only the metadata changed', () => {
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    const changedMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: { log: 'new log' } };
+    const changedMetadata: StoredHealthCheck = { ...USER_MISSING, health_check_metadata: { log: 'new log' } };
     const patch = computeIngestionHealthPatch(current, [changedMetadata], CONTEXT);
     expect(patch).toEqual({
       ingestion_health: {
@@ -247,8 +279,17 @@ describe('isRuntimeCheckEnabled', () => {
     expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING })).toBe(true);
   });
 
-  it('should be false for a connector not pinging continuously', () => {
-    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
+  it('should be true for a stream not pinging continuously: its reported errors are read', () => {
+    expect(isRuntimeCheckEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
+  });
+
+  it('should be false for a stream once the reported errors checks are disabled on the platform: nothing to read', () => {
+    const disabledHealthChecks: HealthCheckCode[] = [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED];
+    expect(isRuntimeCheckEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks })).toBe(false);
+  });
+
+  it('should be true for a connector not pinging continuously whose last work is read: not a stream', () => {
+    expect(isRuntimeCheckEnabled({ ...CONNECTOR, connector_type: 'EXTERNAL_IMPORT' }, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
   });
 
   it('should be true for feeds and syncs whose last execution failed: the details of the failure are read', () => {
@@ -263,9 +304,16 @@ describe('isRuntimeCheckEnabled', () => {
   });
 
   it('should be false when the only runtime check enabled for the ingestion is disabled on the platform: nothing to read', () => {
-    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_HEARTBEAT_MISSING] })).toBe(false);
+    const connectorChecks: HealthCheckCode[] = [
+      HEALTH_CHECK_HEARTBEAT_MISSING,
+      HEALTH_CHECK_LAST_RUN_FAILED,
+      HEALTH_CHECK_CONNECTOR_ERROR_REPORTED,
+      HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED,
+    ];
+    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: connectorChecks })).toBe(false);
     const failingFeed = { ...FEED, last_execution_status: 'error' };
-    expect(isRuntimeCheckEnabled(failingFeed, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(false);
+    const feedChecks: HealthCheckCode[] = [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, HEALTH_CHECK_SOURCE_ACCESS_DENIED];
+    expect(isRuntimeCheckEnabled(failingFeed, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks: feedChecks })).toBe(false);
     // Another check disabled: still read
     expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(true);
   });
@@ -289,13 +337,14 @@ describe('execution failed check', () => {
   it('should flag a feed or sync whose last execution failed, with the details of the failure and their description', () => {
     expect(computeIngestionHealthChecks(FAILED_FEED, failedWith(NOT_FOUND))).toEqual([{
       health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
       health_check_metadata: { ...NOT_FOUND, failure_description: 'HTTP 404 Not Found' },
     }]);
   });
 
   it('should flag it without details when the logs hold none', () => {
     expect(computeIngestionHealthChecks(FAILED_FEED, failedWith()))
-      .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: {} }]);
+      .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_severity: IngestionHealthCheckSeverity.Blocking, health_check_metadata: {} }]);
   });
 
   it.each(['IngestionRss', 'IngestionCsv', 'IngestionJson', 'IngestionTaxii', 'Sync'])('should evaluate %s', (entityType) => {
@@ -352,6 +401,9 @@ describe('execution failed check', () => {
 
 describe('execution failed check details', () => {
   const readDetails = HEALTH_CHECK_REGISTRY[HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED].getRuntimeData;
+  // The logs are read from Redis only: the read context is not used
+  const READ = {} as RuntimeDataReadContext;
+  const feeds = (...ids: string[]) => ids.map((id) => ({ internal_id: id, entity_type: 'IngestionRss' }));
   const entry = (level: IngestionLogEntry['level'], meta: Record<string, unknown> = {}): IngestionLogEntry => (
     { timestamp: 1, level, type: 'rss', identifier: 'feed', message: 'm', meta }
   );
@@ -362,23 +414,333 @@ describe('execution failed check details', () => {
   it('should read the details of the last outcome when it is a failure, skipping the progress entries', async () => {
     // Most recent first
     historiesOf({ failed: [entry('info'), entry('warn'), entry('error', { http_status: 404 }), entry('error', { http_status: 500 })] });
-    expect(await readDetails(['failed'])).toEqual(new Map([['failed', { http_status: 404 }]]));
+    expect(await readDetails(feeds('failed'), READ)).toEqual(new Map([['failed', { http_status: 404 }]]));
   });
 
   it('should omit a feed whose last outcome is a success, even when an older failure is still logged', async () => {
     historiesOf({ recovered: [entry('info'), entry('success'), entry('error', { http_status: 404 })] });
-    expect((await readDetails(['recovered'])).has('recovered')).toBe(false);
+    expect((await readDetails(feeds('recovered'), READ)).has('recovered')).toBe(false);
   });
 
   it('should omit a feed whose logs hold no outcome, or no log at all: the failure is reported without details', async () => {
     historiesOf({ progress: [entry('info'), entry('warn')] });
-    const details = await readDetails(['progress', 'empty']);
+    const details = await readDetails(feeds('progress', 'empty'), READ);
     expect(details.size).toBe(0);
   });
 
   it('should not hide a read failure', async () => {
     vi.mocked(redisGetIngestionLogHistory).mockRejectedValue(new Error('redis unavailable'));
-    await expect(readDetails(['failed'])).rejects.toThrow('redis unavailable');
+    await expect(readDetails(feeds('failed'), READ)).rejects.toThrow('redis unavailable');
+  });
+});
+
+describe('source access denied check', () => {
+  const FAILED_FEED = { ...FEED, last_execution_status: 'error' };
+  const FAILED_SYNC = { ...SYNC, last_execution_status: 'error' };
+  const runtime = (details: object) => ({
+    [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: details,
+    [HEALTH_CHECK_SOURCE_ACCESS_DENIED]: details,
+  });
+  const ACCESS_DENIED = (http_status: number) => (
+    [{ health_check_code: HEALTH_CHECK_SOURCE_ACCESS_DENIED, health_check_severity: IngestionHealthCheckSeverity.Blocking, health_check_metadata: { http_status } }]
+  );
+
+  it('should report SOURCE_ACCESS_DENIED instead of FEED_AND_SYNC_EXECUTION_FAILED on a 401', () => {
+    const checks = computeIngestionHealthChecks(FAILED_FEED, { ...CONTEXT, runtimeData: runtime({ http_status: 401, http_status_text: 'Unauthorized' }) });
+    expect(checks).toEqual(ACCESS_DENIED(401));
+  });
+
+  it.each([402, 403])('should report SOURCE_ACCESS_DENIED on a %s', (status) => {
+    const checks = computeIngestionHealthChecks(FAILED_FEED, { ...CONTEXT, runtimeData: runtime({ http_status: status }) });
+    expect(checks).toEqual(ACCESS_DENIED(status));
+  });
+
+  it('should report it for a sync too', () => {
+    const checks = computeIngestionHealthChecks(FAILED_SYNC, { ...CONTEXT, runtimeData: runtime({ http_status: 403 }) });
+    expect(checks).toEqual(ACCESS_DENIED(403));
+  });
+
+  it.each([429, 500])('should keep FEED_AND_SYNC_EXECUTION_FAILED on a %s', (status) => {
+    const checks = computeIngestionHealthChecks(FAILED_FEED, { ...CONTEXT, runtimeData: runtime({ http_status: status }) });
+    expect(checks).toEqual([{
+      health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      health_check_metadata: { http_status: status, failure_description: `HTTP ${status}` },
+    }]);
+  });
+
+  it('should keep FEED_AND_SYNC_EXECUTION_FAILED when the logs hold no details', () => {
+    const checks = computeIngestionHealthChecks(FAILED_FEED, { ...CONTEXT, runtimeData: {} });
+    expect(checks.map((check) => check.health_check_code)).toEqual([HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]);
+  });
+
+  it('should report FEED_AND_SYNC_EXECUTION_FAILED again when SOURCE_ACCESS_DENIED is disabled', () => {
+    const checks = computeIngestionHealthChecks(FAILED_FEED, {
+      ...CONTEXT,
+      disabledHealthChecks: [HEALTH_CHECK_SOURCE_ACCESS_DENIED],
+      runtimeData: runtime({ http_status: 401 }),
+    });
+    expect(checks.map((check) => check.health_check_code)).toEqual([HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]);
+  });
+
+  it('should not report it for a feed whose last execution did not fail', () => {
+    expect(computeIngestionHealthChecks(FEED, { ...CONTEXT, runtimeData: runtime({ http_status: 401 }) })).toEqual([]);
+  });
+
+  it('should not be enabled for a connector, managed or not: its access is not checked', () => {
+    const { isEnabled } = HEALTH_CHECK_REGISTRY[HEALTH_CHECK_SOURCE_ACCESS_DENIED];
+    expect(isEnabled({ ...CONNECTOR, connector_type: 'EXTERNAL_IMPORT' }, NOT_PINGING)).toBe(false);
+    expect(isEnabled({ ...CONNECTOR, connector_type: 'STREAM', catalog_id: 'catalog-id' } as HealthCheckIngestor, NOT_PINGING)).toBe(false);
+  });
+
+  it('should give a critical status', () => {
+    const checks = computeIngestionHealthChecks(FAILED_FEED, { ...CONTEXT, runtimeData: runtime({ http_status: 401 }) });
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+  });
+
+  it.each(['IngestionRss', 'Sync'])('should word the message for a %s', (entityType) => {
+    const [check] = toGraphqlHealthChecks(ACCESS_DENIED(401), entityType);
+    expect(check.health_check_message).toBe('Source denied access: HTTP {http_status}');
+    expect(check.health_check_severity).toBe(IngestionHealthCheckSeverity.Blocking);
+    expect(check.health_check_kind).toBe(IngestionHealthCheckKind.Runtime);
+  });
+
+  it('should read the details of the failing feeds and syncs', async () => {
+    const readDetails = HEALTH_CHECK_REGISTRY[HEALTH_CHECK_SOURCE_ACCESS_DENIED].getRuntimeData;
+    vi.mocked(redisGetIngestionLogHistory).mockImplementation(async (id: string) => (
+      id === FAILED_FEED.internal_id
+        ? [{ timestamp: 1, level: 'error', type: 'rss', identifier: 'feed', message: 'm', meta: { http_status: 401 } }]
+        : []
+    ));
+    const values = await readDetails([FAILED_FEED, FAILED_SYNC], {} as RuntimeDataReadContext);
+    expect(values).toEqual(new Map([[FAILED_FEED.internal_id, { http_status: 401 }]]));
+  });
+});
+
+describe('last run failed check', () => {
+  const IMPORT_CONNECTOR = { ...CONNECTOR, connector_type: 'EXTERNAL_IMPORT' };
+  const lastWork = (errors: ConnectorWorkError[]) => ({
+    connector_type: 'EXTERNAL_IMPORT',
+    connector_info: null,
+    last_work: { timestamp: 't', processed_time: '2026-10-26T11:00:00Z', errors },
+  });
+  const evaluate = (ingestor: HealthCheckIngestor, value: object) => (
+    computeIngestionHealthChecks(ingestor, { ...CONTEXT, runtimeData: { [HEALTH_CHECK_LAST_RUN_FAILED]: value as never } })
+  );
+  const failed = (error?: string) => [{
+    health_check_code: HEALTH_CHECK_LAST_RUN_FAILED,
+    health_check_severity: IngestionHealthCheckSeverity.Advisory,
+    health_check_metadata: error === undefined ? {} : { error },
+  }];
+
+  it('should report the failure with the error, absolute url redacted', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout calling https://api.example.com/x?key=secret', source: null }])))
+      .toEqual(failed('Timeout calling <redacted-url>'));
+  });
+
+  it('should redact every absolute url of the error, keeping the rest', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://a.example.com/x?token=1 then http://b.example.com/y?k=2&z=3 failed', source: null }])))
+      .toEqual(failed('GET <redacted-url> then <redacted-url> failed'));
+  });
+
+  it('should redact an absolute url whole: user and password, path, fragment', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://user:secret@api.example.com/v1/TOKEN/x#access_token=1 failed', source: null }])))
+      .toEqual(failed('GET <redacted-url> failed'));
+  });
+
+  it('should redact an absolute url with parentheses in its path', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://api.example.com/items(1)?apikey=SECRET failed', source: null }])))
+      .toEqual(failed('GET <redacted-url> failed'));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: "GET https://api.example.com/users(a)/items[2]?apikey=SECRET failed", source: null }])))
+      .toEqual(failed('GET <redacted-url> failed'));
+  });
+
+  it('should redact the relative url following "url: ", as urllib3 writes it', () => {
+    const maxRetry = "HTTPSConnectionPool(host='api.x', port=443): Max retries exceeded with url: /v1/TOKEN/feed?apikey=SECRET (Caused by …)";
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: maxRetry, source: null }])))
+      .toEqual(failed("HTTPSConnectionPool(host='api.x', port=443): Max retries exceeded with url: <redacted-url> (Caused by …)"));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Max retries exceeded with url: /items(1)?apikey=SECRET (Caused by …)', source: null }])))
+      .toEqual(failed('Max retries exceeded with url: <redacted-url> (Caused by …)'));
+  });
+
+  it('should remove the query string of another relative path, parentheses before the question mark included', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET /items(1)?apikey=SECRET failed', source: null }])))
+      .toEqual(failed('GET /items(1) failed'));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET /v1/feed?ids[]=1&apikey=SECRET failed', source: null }])))
+      .toEqual(failed('GET /v1/feed failed'));
+  });
+
+  it('should keep the punctuation closing the url', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout (https://api.example.com/x?key=secret) [url=/y?token=1]', source: null }])))
+      .toEqual(failed('Timeout (<redacted-url>) [url=/y]'));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout (https://api.example.com/x?filter=(active)&apikey=SECRET).', source: null }])))
+      .toEqual(failed('Timeout (<redacted-url>).'));
+  });
+
+  it('should keep a question mark that does not follow a url or a path', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Is the key valid? No', source: null }]))).toEqual(failed('Is the key valid? No'));
+  });
+
+  it('should scrub a long error without a space in linear time', () => {
+    const [check] = evaluate(IMPORT_CONNECTOR, lastWork([{ message: `${'a/'.repeat(50000)}?key=secret`, source: null }]));
+    expect(check.health_check_metadata?.error).toBe('a/'.repeat(100));
+  });
+
+  it('should truncate the error to 200 characters', () => {
+    const [check] = evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'a'.repeat(300), source: null }]));
+    expect(check.health_check_metadata?.error).toBe('a'.repeat(200));
+  });
+
+  it('should show the error of the connector first, when the work holds several', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'closed with an error', source: null }, { message: 'Traceback: boom', source: 'CONNECTOR' }])))
+      .toEqual(failed('Traceback: boom'));
+  });
+
+  it('should report the failure without error when its entry has no message', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ source: null }]))).toEqual(failed());
+  });
+
+  it('should pass on a work without error, or without conclusive work', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([]))).toEqual([]);
+    expect(evaluate(IMPORT_CONNECTOR, { connector_type: 'EXTERNAL_IMPORT', connector_info: null })).toEqual([]);
+    expect(computeIngestionHealthChecks(IMPORT_CONNECTOR, { ...CONTEXT, runtimeData: {} })).toEqual([]);
+  });
+
+  it('should pass on a work whose only errors are the ones of its elements: not a failure of the connector', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Cannot ingest this entity', source: 'bundle element' }]))).toEqual([]);
+  });
+
+  it('should pass on a work whose only errors are reported by the connector with a source: not a failed work', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Traceback: boom', source: 'CONNECTOR' }]))).toEqual([]);
+  });
+
+  it('should pass on a work that is not conclusive: the last run left none', () => {
+    const state = { ...lastWork([{ message: 'old failure', source: null }]), connector_info: { last_run_datetime: '2026-10-26T12:00:00Z' } };
+    expect(evaluate(IMPORT_CONNECTOR, state)).toEqual([]);
+  });
+
+  it.each(['EXTERNAL_IMPORT', 'INTERNAL_ENRICHMENT', 'INTERNAL_IMPORT_FILE', 'INTERNAL_EXPORT_FILE'])('should be enabled for a %s connector', (connectorType) => {
+    expect(HEALTH_CHECK_REGISTRY[HEALTH_CHECK_LAST_RUN_FAILED].isEnabled({ ...CONNECTOR, connector_type: connectorType }, NOT_PINGING)).toBe(true);
+  });
+
+  it('should not be enabled for a stream connector', () => {
+    expect(HEALTH_CHECK_REGISTRY[HEALTH_CHECK_LAST_RUN_FAILED].isEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, NOT_PINGING)).toBe(false);
+  });
+
+  it('should not be enabled for a feed or a sync', () => {
+    const { isEnabled } = HEALTH_CHECK_REGISTRY[HEALTH_CHECK_LAST_RUN_FAILED];
+    expect(isEnabled({ ...FEED, last_execution_status: 'error' }, NOT_PINGING)).toBe(false);
+    expect(isEnabled({ ...SYNC, last_execution_status: 'error' }, NOT_PINGING)).toBe(false);
+  });
+
+  it('should report a 401 as a failed run: the access of a connector is not checked', () => {
+    const checks = evaluate(IMPORT_CONNECTOR, lastWork([{ message: '401 Client Error: Unauthorized for url: https://api.example.com/x', source: null }]));
+    expect(checks.map((check) => check.health_check_code)).toEqual([HEALTH_CHECK_LAST_RUN_FAILED]);
+  });
+
+  it('should not be superseded by any check', () => {
+    expect(HEALTH_CHECK_REGISTRY[HEALTH_CHECK_LAST_RUN_FAILED]).not.toHaveProperty('supersededBy');
+  });
+
+  it('should make the status degraded (advisory runtime check)', () => {
+    const checks = evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'boom', source: null }]));
+    const patch = computeIngestionHealthPatch({}, checks, CONTEXT);
+    expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+    expect(toGraphqlIngestionHealth(patch?.ingestion_health, CONNECTOR.entity_type)?.healthChecks).toEqual([{
+      health_check_code: HEALTH_CHECK_LAST_RUN_FAILED,
+      health_check_message: 'Last run failed: {error}',
+      health_check_metadata: { error: 'boom' },
+      health_check_kind: IngestionHealthCheckKind.Runtime,
+      health_check_severity: IngestionHealthCheckSeverity.Advisory,
+    }]);
+  });
+
+  it('should word the message without the error when there is none', () => {
+    expect(toGraphqlHealthChecks(failed(), 'Connector')[0].health_check_message).toBe('Last run failed');
+  });
+
+  it('should read the state of the connectors with their last work', async () => {
+    const state = new Map([[IMPORT_CONNECTOR.internal_id, lastWork([])]]);
+    vi.mocked(loadConnectorsRuntimeState).mockResolvedValue(state);
+    const read = {} as RuntimeDataReadContext;
+    expect(await HEALTH_CHECK_REGISTRY[HEALTH_CHECK_LAST_RUN_FAILED].getRuntimeData([IMPORT_CONNECTOR], read)).toBe(state);
+    expect(loadConnectorsRuntimeState).toHaveBeenCalledWith([IMPORT_CONNECTOR], read);
+  });
+});
+
+describe('connector reported errors checks', () => {
+  const LOW = CONNECTOR_ERROR_BLOCKING_CRITICITY - 1;
+  const HIGH = CONNECTOR_ERROR_BLOCKING_CRITICITY;
+  // The errors reported by the connector: both checks read the same list
+  const evaluate = (errors: object[] | undefined) => computeIngestionHealthChecks(CONNECTOR, {
+    ...CONTEXT,
+    runtimeData: errors ? { [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED]: errors as never, [HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]: errors as never } : {},
+  });
+  const reported = (code: string, error_code: string, error_message: string) => ({
+    health_check_code: code,
+    health_check_severity: code === HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED ? IngestionHealthCheckSeverity.Blocking : IngestionHealthCheckSeverity.Advisory,
+    health_check_metadata: { error_code, error_message },
+  });
+
+  it('should report an error under the threshold as advisory, degrading the status', () => {
+    const checks = evaluate([{ code: 'RATE_LIMITED', message: 'Too many requests', criticity: LOW }]);
+    expect(checks).toEqual([reported(HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, 'RATE_LIMITED', 'Too many requests')]);
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+
+  it('should report an error reaching the threshold as blocking, making the status critical', () => {
+    const checks = evaluate([{ code: 'RATE_LIMITED', message: 'Too many requests', criticity: HIGH }]);
+    expect(checks).toEqual([reported(HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED, 'RATE_LIMITED', 'Too many requests')]);
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+  });
+
+  it('should store every error as a check of its own, on the side of the threshold of its criticity', () => {
+    const checks = evaluate([
+      { code: 'B', message: 'second', criticity: LOW },
+      { code: 'A', message: 'first', criticity: LOW },
+      { code: 'C', message: 'critical', criticity: HIGH },
+    ]);
+    expect(checks).toEqual([
+      reported(HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, 'B', 'second'),
+      reported(HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, 'A', 'first'),
+      reported(HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED, 'C', 'critical'),
+    ]);
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+  });
+
+  it('should not rewrite the health when the same errors are reported in another order', () => {
+    const first = { code: 'A', message: 'first', criticity: LOW };
+    const second = { code: 'B', message: 'second', criticity: LOW };
+    const health = computeIngestionHealthPatch({}, evaluate([first, second]), CONTEXT) as IngestionHealthFields;
+    expect(computeIngestionHealthPatch(health, evaluate([second, first]), CONTEXT)).toBeNull();
+  });
+
+  it('should pass when the connector reported nothing', () => {
+    expect(evaluate(undefined)).toEqual([]);
+    expect(evaluate([])).toEqual([]);
+  });
+
+  it('should scrub the query string of the message', () => {
+    const [check] = evaluate([{ code: 'RATE_LIMITED', message: 'GET https://api.example.com/x?key=secret failed', criticity: LOW }]);
+    expect(check.health_check_metadata?.error_message).toBe('GET <redacted-url> failed');
+  });
+
+  it('should be enabled for every connector, pinging or not, and nothing else', () => {
+    ([HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED] as const).forEach((code) => {
+      const { isEnabled } = HEALTH_CHECK_REGISTRY[code];
+      expect(isEnabled(CONNECTOR, NOT_PINGING)).toBe(true);
+      expect(isEnabled({ ...CONNECTOR, connector_type: 'STREAM' }, NOT_PINGING)).toBe(true);
+      expect(isEnabled(FEED, NOT_PINGING)).toBe(false);
+      expect(isEnabled(SYNC, NOT_PINGING)).toBe(false);
+    });
+  });
+
+  it('should read the errors of each connector, omitting the ones without error', async () => {
+    const other = { ...CONNECTOR, internal_id: 'other-id' };
+    const errors = [{ code: 'A', message: 'minor', criticity: 1 }, { code: 'B', message: 'worse', criticity: 3 }];
+    vi.mocked(redisGetConnectorErrors).mockImplementation(async (id) => (id === CONNECTOR.internal_id ? errors : []));
+    const values = await HEALTH_CHECK_REGISTRY[HEALTH_CHECK_CONNECTOR_ERROR_REPORTED].getRuntimeData([CONNECTOR, other], {} as RuntimeDataReadContext);
+    expect(values).toEqual(new Map([[CONNECTOR.internal_id, errors]]));
   });
 });
 
@@ -386,30 +748,71 @@ describe('check metadata', () => {
   const TEST_CODE = 'TEST_CHECK';
   const registry = HEALTH_CHECK_REGISTRY as Record<string, unknown>;
   const checksContext = { ...CONTEXT, ...NOT_PINGING };
-  const failWith = (metadata: Record<string, unknown> | null) => {
+  const { Advisory, Blocking } = IngestionHealthCheckSeverity;
+  // What getFailures returns: the failures of the check, none when it passes
+  const failWith = (failures: HealthCheckFailure[]) => {
     registry[TEST_CODE] = {
       kind: IngestionHealthCheckKind.Configuration,
-      severity: IngestionHealthCheckSeverity.Advisory,
       message: (data: Record<string, unknown>) => `Failing for ${data.reason}`,
       isEnabled: () => true,
-      getFailure: () => metadata,
+      getFailures: () => failures,
     };
   };
+  const testChecks = () => computeIngestionHealthChecks(CONNECTOR, checksContext).filter((check) => check.health_check_code === TEST_CODE);
 
   afterEach(() => {
     delete registry[TEST_CODE];
   });
 
   it('should store the metadata of a failing check, and give it to its message', () => {
-    failWith({ reason: 'test' });
-    const checks = computeIngestionHealthChecks(CONNECTOR, checksContext);
-    expect(checks).toContainEqual({ health_check_code: TEST_CODE, health_check_metadata: { reason: 'test' } });
-    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type).find((check) => check.health_check_code === TEST_CODE)?.health_check_message).toBe('Failing for test');
+    failWith([{ severity: Advisory, metadata: { reason: 'test' } }]);
+    const checks = testChecks();
+    expect(checks).toEqual([{ health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: { reason: 'test' } }]);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('Failing for test');
   });
 
-  it('should not store a check that passes', () => {
-    failWith(null);
-    expect(computeIngestionHealthChecks(CONNECTOR, checksContext).map((check) => check.health_check_code)).not.toContain(TEST_CODE);
+  it('should not store a check that passes: no failure', () => {
+    failWith([]);
+    expect(testChecks()).toEqual([]);
+  });
+
+  it('should store a failure without metadata with empty metadata', () => {
+    failWith([{ severity: Advisory }]);
+    expect(testChecks()).toEqual([{ health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: {} }]);
+  });
+
+  it('should store a check of its own for each failure of a check', () => {
+    failWith([{ severity: Advisory, metadata: { reason: 'one' } }, { severity: Advisory, metadata: { reason: 'two' } }]);
+    expect(testChecks()).toEqual([
+      { health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: { reason: 'one' } },
+      { health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: { reason: 'two' } },
+    ]);
+  });
+
+  it('should store the severity of each failure, which may differ for the same check', () => {
+    failWith([{ severity: Advisory, metadata: { reason: 'minor' } }, { severity: Blocking, metadata: { reason: 'major' } }]);
+    const checks = testChecks();
+    expect(checks.map((check) => check.health_check_severity)).toEqual([Advisory, Blocking]);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type).map((check) => check.health_check_severity)).toEqual([Advisory, Blocking]);
+  });
+
+  it('should compute the status from the severity of the failure, not the one of the check', () => {
+    // A runtime check, advisory by default: only the severity of its failure makes the status critical
+    const failRuntimeWith = (severity: IngestionHealthCheckSeverity) => {
+      failWith([{ severity }]);
+      registry[TEST_CODE] = { ...(registry[TEST_CODE] as object), kind: IngestionHealthCheckKind.Runtime, getRuntimeData: async () => new Map() };
+    };
+    failRuntimeWith(Blocking);
+    expect(computeIngestionHealthPatch({}, testChecks(), CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+    failRuntimeWith(Advisory);
+    expect(computeIngestionHealthPatch({}, testChecks(), CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+
+  it('should rewrite the health when only the severity of a failure changed', () => {
+    const advisory: StoredHealthCheck = { health_check_code: TEST_CODE, health_check_severity: Advisory, health_check_metadata: {} };
+    const blocking: StoredHealthCheck = { ...advisory, health_check_severity: Blocking };
+    const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [advisory] } };
+    expect(computeIngestionHealthPatch(current, [blocking], CONTEXT)?.ingestion_health?.health_checks).toEqual([blocking]);
   });
 });
 
@@ -483,10 +886,14 @@ describe('disabled health checks', () => {
 });
 
 describe('user not service account check', () => {
-  const REGULAR_USER = { internal: false, user_service_account: false, hasCapability: () => true };
-  const INTERNAL_USER = { internal: true, user_service_account: false, hasCapability: () => true };
+  const REGULAR_USER = { internal: false, user_service_account: false, disabled: false, hasCapability: () => true };
+  const INTERNAL_USER = { internal: true, user_service_account: false, disabled: false, hasCapability: () => true };
   const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
-  const NOT_SERVICE_ACCOUNT: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_metadata: {} };
+  const NOT_SERVICE_ACCOUNT: StoredHealthCheck = {
+    health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
+    health_check_severity: IngestionHealthCheckSeverity.Advisory,
+    health_check_metadata: {},
+  };
 
   it.each([
     ['connector', { ...CONNECTOR, connector_user_id: 'user-id' }],
@@ -530,7 +937,7 @@ describe('user not service account check', () => {
 });
 
 describe('user missing capability check', () => {
-  const WITHOUT_CAPABILITY = { internal: false, user_service_account: true, hasCapability: () => false };
+  const WITHOUT_CAPABILITY = { internal: false, user_service_account: true, disabled: false, hasCapability: () => false };
   const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
   const CONNECTOR_WITH_USER = { ...CONNECTOR, connector_user_id: 'user-id' };
   const CONNECTORAPI_DESCRIPTION = 'Connectors API usage: register, ping, export push ...';
@@ -538,7 +945,11 @@ describe('user missing capability check', () => {
   it('should flag a connector whose user lacks CONNECTORAPI, with the description of the capability in the message', () => {
     const checks = checksFor(CONNECTOR_WITH_USER, WITHOUT_CAPABILITY);
     const metadata = { capability: 'CONNECTORAPI', capability_description: CONNECTORAPI_DESCRIPTION };
-    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: metadata }]);
+    expect(checks).toEqual([{
+      health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      health_check_metadata: metadata,
+    }]);
     expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_metadata).toEqual(metadata);
     expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('User lacks required capability: "{capability_description}"');
   });
@@ -559,6 +970,73 @@ describe('user missing capability check', () => {
 
   it('should not judge an internal user', () => {
     expect(checksFor(CONNECTOR_WITH_USER, { ...WITHOUT_CAPABILITY, internal: true })).toEqual([]);
+  });
+
+  it('should not judge a missing user: reported by USER_MISSING only', () => {
+    expect(checksFor({ ...CONNECTOR, connector_user_id: 'deleted-user-id' })).toEqual([USER_MISSING]);
+  });
+});
+
+describe('isUserDisabled', () => {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  it('should not disable an active user, with or without a lock date in the future', () => {
+    expect(isUserDisabled({ account_status: 'Active', account_lock_after_date: undefined })).toBe(false);
+    expect(isUserDisabled({ account_status: 'Active', account_lock_after_date: new Date(Date.now() + DAY_MS) })).toBe(false);
+  });
+
+  it.each(['Expired', 'Locked', 'Custom locked status'])('should disable a user whose status is %s', (status) => {
+    expect(isUserDisabled({ account_status: status, account_lock_after_date: undefined })).toBe(true);
+  });
+
+  it('should disable an active user whose lock date is past: the status is updated later by the expiration manager', () => {
+    expect(isUserDisabled({ account_status: 'Active', account_lock_after_date: new Date(Date.now() - DAY_MS) })).toBe(true);
+  });
+});
+
+describe('user disabled check', () => {
+  const DISABLED_USER = { ...SERVICE_ACCOUNT, disabled: true };
+  const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
+  const CONNECTOR_WITH_USER = { ...CONNECTOR, connector_user_id: 'user-id' };
+
+  it('should flag a connector whose user is disabled, with nothing to tell', () => {
+    expect(checksFor(CONNECTOR_WITH_USER, DISABLED_USER)).toEqual([{
+      health_check_code: HEALTH_CHECK_USER_DISABLED,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      health_check_metadata: {},
+    }]);
+  });
+
+  it('should make the status degraded: a configuration check never makes it critical', () => {
+    const checks = checksFor(CONNECTOR_WITH_USER, DISABLED_USER);
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+    expect(checks.map((check) => check.health_check_severity)).toEqual([IngestionHealthCheckSeverity.Blocking]);
+  });
+
+  it('should not flag a connector whose user is enabled', () => {
+    expect(checksFor(CONNECTOR_WITH_USER, SERVICE_ACCOUNT)).toEqual([]);
+  });
+
+  it.each([
+    ['a feed', { ...FEED, user_id: 'user-id' }],
+    ['a sync', { ...SYNC, user_id: 'user-id' }],
+  ])('should flag %s whose user is disabled: the worker impersonating it is refused', (_, ingestor) => {
+    expect(checksFor(ingestor, DISABLED_USER)).toEqual([{
+      health_check_code: HEALTH_CHECK_USER_DISABLED,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      health_check_metadata: {},
+    }]);
+  });
+
+  it.each([
+    ['a feed', FEED],
+    ['a sync', SYNC],
+  ])('should not flag %s without user: it runs as the system user', (_, ingestor) => {
+    expect(checksFor(ingestor)).toEqual([]);
+  });
+
+  it('should not judge an internal user', () => {
+    expect(checksFor(CONNECTOR_WITH_USER, { ...DISABLED_USER, internal: true })).toEqual([]);
   });
 
   it('should not judge a missing user: reported by USER_MISSING only', () => {
@@ -841,6 +1319,7 @@ describe('buildHealthTransitionMessage', () => {
   it('should fill the placeholders of the check messages from their metadata', () => {
     const missingCapability = {
       health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
       health_check_metadata: { capability: 'CONNECTORAPI', capability_description: 'Connectors API usage: register, ping, export push ...' },
     };
     expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [missingCapability]))
@@ -849,7 +1328,11 @@ describe('buildHealthTransitionMessage', () => {
 
   it('should fill the description of a failed execution from its metadata', () => {
     const metadata = { http_status: 404, http_status_text: 'Not Found', failure_description: 'HTTP 404 Not Found' };
-    const executionFailed = { health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: metadata };
+    const executionFailed = {
+      health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      health_check_metadata: metadata,
+    };
     expect(buildHealthTransitionMessage({ name: 'My feed', entity_type: 'IngestionRss' }, HealthTransition.Critical, [executionFailed]))
       .toBe('reports `My feed` (IngestionRss) as critical: Feed execution failed: HTTP 404 Not Found');
   });

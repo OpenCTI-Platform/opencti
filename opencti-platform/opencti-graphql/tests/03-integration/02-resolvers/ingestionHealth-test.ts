@@ -7,12 +7,14 @@ import { connectorDelete, pingConnector, registerConnector } from '../../../src/
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { ConnectorType } from '../../../src/generated/graphql';
-import { HEALTH_CHECK_USER_MISSING } from '../../../src/modules/ingestionHealth/ingestionHealth-registry';
+import { HEALTH_CHECK_REGISTRY, HEALTH_CHECK_USER_MISSING } from '../../../src/modules/ingestionHealth/ingestionHealth-registry';
 import { ADMIN_USER, testContext, USER_EDITOR, USER_PLATFORM_ADMIN } from '../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 
 const DEFAULT_NOTIFICATION_DELAY = 5 * 60 * 1000;
-const ALL_CHECKS_ENABLED = { USER_MISSING: true, USER_MISSING_CAPABILITY: true, USER_NOT_SERVICE_ACCOUNT: true, HEARTBEAT_MISSING: true, FEED_AND_SYNC_EXECUTION_FAILED: true };
+// Every check of the registry: the expectations follow the checks added later
+const ALL_CHECK_CODES = Object.keys(HEALTH_CHECK_REGISTRY);
+const ALL_CHECKS_ENABLED = Object.fromEntries(ALL_CHECK_CODES.map((code) => [code, true]));
 
 const READ_QUERY = gql`
   query ingestionHealthSettings {
@@ -160,7 +162,7 @@ describe('Ingestion health settings resolver', () => {
   });
 
   it('should reject unknown or duplicated disabled health checks and keep the stored ones', async () => {
-    const error = 'Invalid disabled health checks, expected distinct codes among USER_MISSING, USER_MISSING_CAPABILITY, USER_NOT_SERVICE_ACCOUNT, HEARTBEAT_MISSING, FEED_AND_SYNC_EXECUTION_FAILED';
+    const error = `Invalid disabled health checks, expected distinct codes among ${ALL_CHECK_CODES.join(', ')}`;
     await queryAsAdminWithError(editChecks(['UNKNOWN_CHECK']), error);
     await queryAsAdminWithError(editChecks(['USER_MISSING', 'USER_MISSING']), error);
     const settings = await readSettings();

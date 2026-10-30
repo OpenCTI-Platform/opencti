@@ -37,7 +37,8 @@ const useHealthCheckMessage = () => {
         values[key] = TRANSLATED_METADATA_KEYS.includes(key) ? t_i18n(String(value)) : String(value);
       }
     }
-    return t_i18n(message, { values });
+    const translated = t_i18n(message, { values });
+    return translated === message ? message.replace(PLACEHOLDER_PATTERN, (_, key: string) => values[key]) : translated;
   };
 
   return {
