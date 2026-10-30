@@ -29,7 +29,9 @@ import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { buildPaginationFromEdges } from '../../../../src/database/utils';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from './configPreset-themes-fixtures';
+import { builtInTheme, customTheme, otherCustomTheme } from './configPreset-themes-fixtures';
+import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
+import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -75,7 +77,7 @@ describe('Config preset exportable types query', () => {
     vi.clearAllMocks();
     flags.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id }] as never);
-    mockThemeLoaders();
+    mockConfigPresetLoaders();
   });
 
   it('returns the exportable types to a BYPASS user when the flag is enabled', async () => {
@@ -109,6 +111,14 @@ describe('Config preset exportable types query', () => {
         items: [staticItem('hiddenEntityTypes', 'Hidden entity types')],
         itemsPageInfo: onePage(1),
       },
+      {
+        key: 'roles',
+        label: 'Roles',
+        description: 'Roles and their capabilities',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        items: [administratorRole, analystRole].map((role) => ({ key: role.standard_id, label: role.name, translatable: false, dependsOn: [], isDefault: false })),
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -124,7 +134,7 @@ describe('Config preset exportable types query', () => {
   it('lists the messages set on the platform and hides the category when none is set', async () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'hiddenEntityTypes']);
+    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'hiddenEntityTypes', 'roles']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -166,6 +176,7 @@ describe('Config preset exportable types query', () => {
       ['platform', 'platformSettings'],
       ['branding', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
+      ['roles', 'securityAccess'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
@@ -185,7 +196,7 @@ describe('Config preset exportable items query', () => {
     vi.clearAllMocks();
     flags.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: builtInTheme.id }] as never);
-    mockThemeLoaders();
+    mockConfigPresetLoaders();
   });
 
   const queryItems = (variables: Record<string, unknown>, user: unknown = bypassUser) => graphql({

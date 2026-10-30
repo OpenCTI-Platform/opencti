@@ -9,12 +9,20 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
+// The capabilities of a role are read through its relations
+vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/user/user-domain')>()),
+  roleCapabilities: vi.fn(),
+}));
 
 import { fullEntitiesList, pageEntitiesConnection, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
 import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme, THEME_FILE_FIELDS } from './configPreset-themes-fixtures';
+import { builtInTheme, customTheme, otherCustomTheme, THEME_FILE_FIELDS } from './configPreset-themes-fixtures';
+import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
+import { administratorRole, analystRole, ROLE_CAPABILITIES } from './configPreset-roles-fixtures';
+import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id' } as AuthUser;
@@ -57,7 +65,10 @@ describe('Config preset registry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     withSettings({});
-    mockThemeLoaders(entitySettings);
+    mockConfigPresetLoaders(entitySettings);
+    vi.mocked(roleCapabilities).mockImplementation(async (_ctx, _user, roleId, type = 'has-capability') => {
+      return ROLE_CAPABILITIES[roleId][type].map((name) => ({ id: `${name}-id`, name })) as never;
+    });
   });
 
   it('lists the categories of the spec table in registry order, each in its export group', async () => {
@@ -80,6 +91,14 @@ describe('Config preset registry', () => {
       },
       { id: 'messages', label: 'Messages', description: 'Banner, login and consent messages', group: 'platformSettings', itemIds: ['banner', 'login', 'consent', 'noAccess'] },
       { id: 'hiddenEntityTypes', label: 'Hidden entity types', description: 'Entity types hidden in the platform', group: 'dataModel', itemIds: ['hiddenEntityTypes'] },
+      // The roles by name, built-in ones included
+      {
+        id: 'roles',
+        label: 'Roles',
+        description: 'Roles and their capabilities',
+        group: 'securityAccess',
+        itemIds: [administratorRole.standard_id, analystRole.standard_id],
+      },
     ]);
   });
 
@@ -94,6 +113,8 @@ describe('Config preset registry', () => {
       ['Consent message', true],
       ['No access message', true],
       ['Hidden entity types', true],
+      ['Administrator', false],
+      ['Analyst', false],
     ]);
   });
 
@@ -111,6 +132,8 @@ describe('Config preset registry', () => {
       'platform_settings/messages/consent.json',
       'platform_settings/messages/noAccess.json',
       'data_model/hidden_entity_types.json',
+      `security_access/roles/${administratorRole.standard_id}.json`,
+      `security_access/roles/${analystRole.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -292,6 +315,58 @@ describe('Config preset registry', () => {
       expect(await ids(null, [otherCustomTheme.standard_id])).toEqual([customTheme.standard_id]);
       // A built-in theme is not an item, even when it is asked for
       expect(await ids([customTheme.standard_id, builtInTheme.standard_id], [])).toEqual([customTheme.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('roles', () => {
+    const roles = findFamily('roles');
+    const pageIds = async (args: Parameters<typeof roles.listItems>[2]) => (await roles.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a role in the role import format: its capabilities by name, sorted, and never its ids', async () => {
+      const file = await exportConfigPresetItem(context, user, roles, await findItem('roles', analystRole.standard_id));
+      expect(file).toMatchObject({ type: 'securityAccess.roles', id: analystRole.standard_id });
+      expect(file.configuration).toEqual({
+        name: 'Analyst',
+        // A missing description or flag is written with its default, to keep a stable file shape
+        description: '',
+        can_manage_sensitive_config: false,
+        capabilities: ['EXPLORE', 'KNOWLEDGE', 'KNOWLEDGE_KNUPDATE'],
+        capabilities_in_draft: ['KNOWLEDGE_KNUPDATE'],
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|analyst-role-id|-id"/);
+    });
+
+    it('exports a built-in role like any other', async () => {
+      const file = await exportConfigPresetItem(context, user, roles, await findItem('roles', administratorRole.standard_id));
+      expect(file.configuration).toMatchObject({ name: 'Administrator', capabilities: ['BYPASS'], capabilities_in_draft: [] });
+    });
+
+    it('opens the first page with the roles by name, and counts them', async () => {
+      const page = await roles.listItems(context, user, { first: 1 });
+      const noFilter = { mode: 'and', filters: [], filterGroups: [] };
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Role'], { first: 1, after: undefined, search: undefined, orderBy: 'name', orderMode: 'asc', filters: noFilter });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[administratorRole.standard_id, 'Administrator', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the roles', async () => {
+      expect(await pageIds({ search: 'analy' })).toEqual([analystRole.standard_id]);
+      expect(await pageIds({ ids: [analystRole.standard_id] })).toEqual([analystRole.standard_id]);
+      expect(await pageIds({ excludedIds: [analystRole.standard_id] })).toEqual([administratorRole.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no role query, whose empty filter would match every role
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the roles to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await roles.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([administratorRole.standard_id, analystRole.standard_id]);
+      expect(await ids(null, [administratorRole.standard_id])).toEqual([analystRole.standard_id]);
+      expect(await ids([analystRole.standard_id], [])).toEqual([analystRole.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();

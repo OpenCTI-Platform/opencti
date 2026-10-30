@@ -30,6 +30,13 @@ describe('ConfigPresetResultLine', () => {
     ['Default theme Dark could not be imported', 'Default theme Dark could not be imported'],
     ['Entity types that cannot be hidden: Foo, Bar', 'Entity types that cannot be hidden: Foo, Bar'],
     ['Entity types shown again: Channel, Report', 'Entity types shown again: Channel, Report'],
+    ['The standard id of the role does not match its name', 'The standard id of the role does not match its name'],
+    ['Role already exists', 'Role already exists'],
+    ['Role name already exists', 'Role name already exists'],
+    ['The Administrator role keeps the bypass capability', 'The Administrator role keeps the bypass capability'],
+    ['Grants sensitive rights', 'Grants sensitive rights'],
+    ['Unknown capabilities: FOO, BAR', 'Unknown capabilities: FOO, BAR'],
+    ['Capabilities not available in draft: SETTINGS_SETACCESSES', 'Capabilities not available in draft: SETTINGS_SETACCESSES'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();

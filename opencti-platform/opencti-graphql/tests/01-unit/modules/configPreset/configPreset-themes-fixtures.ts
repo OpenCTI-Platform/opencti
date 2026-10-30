@@ -1,6 +1,3 @@
-import { vi } from 'vitest';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../../src/database/middleware-loader';
-import { buildPagination } from '../../../../src/database/utils';
 import type { BasicStoreEntityTheme } from '../../../../src/modules/theme/theme-types';
 
 const colors = {
@@ -71,33 +68,3 @@ export const THEME_FILE_FIELDS = [
   'theme_login_aside_gradient_end',
   'theme_login_aside_image',
 ];
-
-interface ThemeListingArgs {
-  search?: string | null;
-  filters?: { filters: { key: string[]; values: string[]; operator?: string }[] };
-}
-
-// The eq / not_eq filters and the search the families send, applied like the engine does, sorted by name
-export const listThemesLikeTheEngine = (args: ThemeListingArgs = {}) => {
-  return ALL_THEMES
-    .filter((theme) => (args.filters?.filters ?? []).every(({ key, values, operator }) => {
-      const matches = values.map(String).includes(String((theme as unknown as Record<string, unknown>)[key[0]]));
-      return operator === 'not_eq' ? !matches : matches;
-    }))
-    .filter((theme) => !args.search || theme.name.toLowerCase().includes(args.search.toLowerCase()))
-    .sort((a, b) => a.name.localeCompare(b.name));
-};
-
-// For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
-// the themes come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
-export const mockThemeLoaders = (otherEntities: unknown[] = []) => {
-  vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
-    return (types?.[0] === 'Theme' ? listThemesLikeTheEngine(args as never) : otherEntities) as never;
-  });
-  vi.mocked(pageEntitiesConnection).mockImplementation(async (_ctx, _user, _types, args) => {
-    const first = args?.first ?? 500;
-    const themes = listThemesLikeTheEngine(args as never);
-    return buildPagination(first, args?.after, themes.slice(0, first).map((node) => ({ node, sort: [node.name] })), themes.length) as never;
-  });
-  vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => ALL_THEMES.find((theme) => theme.id === id) as never);
-};

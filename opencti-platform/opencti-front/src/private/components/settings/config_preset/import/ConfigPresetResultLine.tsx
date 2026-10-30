@@ -46,7 +46,20 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Built-in theme': return t_i18n('Built-in theme');
     case 'Theme already exists': return t_i18n('Theme already exists');
     case 'Theme name already exists': return t_i18n('Theme name already exists');
+    case 'The standard id of the role does not match its name': return t_i18n('The standard id of the role does not match its name');
+    case 'Role already exists': return t_i18n('Role already exists');
+    case 'Role name already exists': return t_i18n('Role name already exists');
+    case 'The Administrator role keeps the bypass capability': return t_i18n('The Administrator role keeps the bypass capability');
+    case 'Grants sensitive rights': return t_i18n('Grants sensitive rights');
     default: break;
+  }
+  const unknownCapabilities = reason.match(/^Unknown capabilities: (.+)$/)?.[1];
+  if (unknownCapabilities) {
+    return t_i18n('Unknown capabilities: {capabilities}', { values: { capabilities: unknownCapabilities } });
+  }
+  const draftCapabilities = reason.match(/^Capabilities not available in draft: (.+)$/)?.[1];
+  if (draftCapabilities) {
+    return t_i18n('Capabilities not available in draft: {capabilities}', { values: { capabilities: draftCapabilities } });
   }
   const copyName = reason.match(/^Added as "(.+)"$/)?.[1];
   if (copyName) {
