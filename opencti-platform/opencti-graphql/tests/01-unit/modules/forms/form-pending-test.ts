@@ -656,6 +656,51 @@ describe('resolvePendingFieldRefs', () => {
     expect(() => resolvePendingFieldRefs({ title: { pending: 'l1' }, pendingObjects: pool }, schema)).toThrow(message);
     expect(() => resolvePendingFieldRefs({ other: [{ pending: 'l1' }], pendingObjects: pool }, schema)).toThrow(message);
   });
+
+  // The payload of FormViewUtils (front): the fields of a parsed entity and of a relationship are keyed by attribute name
+  describe('in the fields of a parsed entity or of a relationship', () => {
+    const mapped = (name: string, type: string, entity: string, attributeName: string) => ({ id: name, name, label: name, type, attributeMapping: { entity, attributeName } });
+    const parsedSchema = {
+      mainEntityType: 'Malware',
+      fields: [
+        mapped('field_main_labels', 'objectLabel', 'main_entity', 'objectLabel'),
+        mapped('field_main_desc', 'text', 'main_entity', 'description'),
+        mapped('field_actor_refs', 'externalReferences', 'actor', 'externalReferences'),
+      ],
+      relationships: [
+        { id: 'rel1', fromEntity: 'main_entity', toEntity: 'actor', relationshipType: 'related-to', fields: [mapped('field_rel_labels', 'objectLabel', 'rel1', 'objectLabel')] },
+        { id: 'rel2', fromEntity: 'main_entity', toEntity: 'actor', relationshipType: 'targets', fields: [mapped('field_rel_desc', 'text', 'rel2', 'description')] },
+      ],
+    } as unknown as FormSchemaDefinition;
+
+    it('should resolve the entries by the attribute name of the field', () => {
+      const values = {
+        mainEntityParsed: ['Qakbot', 'IcedID'],
+        mainEntityFields: { objectLabel: ['existing-name', { pending: 'l1' }] },
+        additional_actor_fields: { externalReferences: [{ pending: 'e1' }] },
+        relationships: [{ id: 'rel1', fromEntity: 'main_entity', toEntity: 'actor', relationshipType: 'related-to', fields: { objectLabel: [{ pending: 'l1' }] } }],
+        pendingObjects: pool,
+      };
+      const resolved = resolvePendingFieldRefs(values, parsedSchema);
+      expect(resolved.mainEntityFields).toEqual({ objectLabel: ['existing-name', 'new-label'] });
+      expect(resolved.additional_actor_fields).toEqual({ externalReferences: [{ source_name: 'src', url: 'https://example.com' }] });
+      expect(resolved.relationships).toEqual([{ id: 'rel1', fromEntity: 'main_entity', toEntity: 'actor', relationshipType: 'related-to', fields: { objectLabel: ['new-label'] } }]);
+    });
+
+    it('should reject an entry in a field of the entity or relationship that does not take its type', () => {
+      const message = 'This field cannot receive this object created in the form';
+      const check = (values: Record<string, any>) => expect(() => resolvePendingFieldRefs({ ...values, pendingObjects: pool }, parsedSchema)).toThrow(message);
+      check({ mainEntityFields: { description: { pending: 'l1' } } });
+      check({ mainEntityFields: { objectLabel: [{ pending: 'e1' }] } });
+      // a field of another entity or relationship does not count
+      check({ mainEntityFields: { externalReferences: [{ pending: 'e1' }] } });
+      check({ additional_actor_fields: { objectLabel: [{ pending: 'l1' }] } });
+      check({ relationships: [{ id: 'rel2', fields: { objectLabel: [{ pending: 'l1' }] } }] });
+      check({ relationships: [{ id: 'unknown', fields: { objectLabel: [{ pending: 'l1' }] } }] });
+      // nor outside the fields of the relationship
+      check({ relationships: [{ id: 'rel1', fromEntity: { pending: 'l1' }, fields: {} }] });
+    });
+  });
 });
 
 describe('files of pending objects', () => {
