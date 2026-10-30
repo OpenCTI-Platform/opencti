@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { gunzipSync } from 'node:zlib';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
@@ -242,6 +242,147 @@ describe('Settings resolver standard behavior', () => {
     const readResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     const { editContext } = readResult.data.settings;
     expect(editContext.length).toEqual(0);
+  });
+});
+
+const READ_LOCKOUT_QUERY = gql`
+  query settingsLockout {
+    settings {
+      id
+      local_auth_lockout_enabled
+      local_auth_lockout_max_attempts
+      local_auth_lockout_window
+      local_auth_lockout_duration
+      local_auth_lockout_max_duration
+    }
+  }
+`;
+
+const UPDATE_LOCAL_AUTH_QUERY = gql`
+  mutation updateLocalAuth($id: ID!, $input: LocalAuthConfigInput!) {
+    settingsEdit(id: $id) {
+      updateLocalAuth(input: $input) {
+        id
+        local_auth {
+          enabled
+        }
+        local_auth_lockout_enabled
+        local_auth_lockout_max_attempts
+        local_auth_lockout_window
+        local_auth_lockout_duration
+        local_auth_lockout_max_duration
+      }
+    }
+  }
+`;
+
+describe('Settings resolver local authentication lockout policy', () => {
+  // A null value removes the stored value, so the default is returned again
+  const RESET_LOCKOUT_INPUT = {
+    enabled: true,
+    local_auth_lockout_enabled: null,
+    local_auth_lockout_max_attempts: null,
+    local_auth_lockout_window: null,
+    local_auth_lockout_duration: null,
+    local_auth_lockout_max_duration: null,
+  };
+  let settingsInternalId;
+  beforeAll(async () => {
+    const queryResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
+    settingsInternalId = queryResult.data.settings.id;
+    await queryAsAdmin({ query: UPDATE_LOCAL_AUTH_QUERY, variables: { id: settingsInternalId, input: RESET_LOCKOUT_INPUT } });
+  });
+  beforeEach(() => {
+    // Validation reads the current policy from the settings cache
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+  });
+  afterAll(async () => {
+    await queryAsAdmin({ query: UPDATE_LOCAL_AUTH_QUERY, variables: { id: settingsInternalId, input: RESET_LOCKOUT_INPUT } });
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+  });
+  it('should return the default lockout policy', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
+    const { settings } = queryResult.data;
+    expect(settings.local_auth_lockout_enabled).toEqual(false);
+    expect(settings.local_auth_lockout_max_attempts).toEqual(5);
+    expect(settings.local_auth_lockout_window).toEqual(1440);
+    expect(settings.local_auth_lockout_duration).toEqual(15);
+    expect(settings.local_auth_lockout_max_duration).toEqual(180);
+  });
+  it('should update the lockout policy', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_LOCAL_AUTH_QUERY,
+      variables: {
+        id: settingsInternalId,
+        input: {
+          enabled: true,
+          local_auth_lockout_enabled: true,
+          local_auth_lockout_max_attempts: 3,
+          local_auth_lockout_window: 60,
+          local_auth_lockout_duration: 10,
+          local_auth_lockout_max_duration: 120,
+        },
+      },
+    });
+    const settings = queryResult.data.settingsEdit.updateLocalAuth;
+    expect(settings.local_auth.enabled).toEqual(true);
+    expect(settings.local_auth_lockout_enabled).toEqual(true);
+    expect(settings.local_auth_lockout_max_attempts).toEqual(3);
+    expect(settings.local_auth_lockout_window).toEqual(60);
+    expect(settings.local_auth_lockout_duration).toEqual(10);
+    expect(settings.local_auth_lockout_max_duration).toEqual(120);
+  });
+  it('should keep the lockout policy when the input omits it', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_LOCAL_AUTH_QUERY,
+      variables: { id: settingsInternalId, input: { enabled: true, local_auth_lockout_max_attempts: 4 } },
+    });
+    const settings = queryResult.data.settingsEdit.updateLocalAuth;
+    expect(settings.local_auth_lockout_enabled).toEqual(true);
+    expect(settings.local_auth_lockout_max_attempts).toEqual(4);
+    expect(settings.local_auth_lockout_window).toEqual(60);
+    expect(settings.local_auth_lockout_duration).toEqual(10);
+    expect(settings.local_auth_lockout_max_duration).toEqual(120);
+  });
+  it.each([
+    ['max attempts lower than 1', { local_auth_lockout_max_attempts: 0 }, 'Lockout max attempts must be greater than or equal to 1'],
+    ['window equal to 0', { local_auth_lockout_window: 0 }, 'Lockout window must be greater than 0'],
+    ['negative duration', { local_auth_lockout_duration: -5 }, 'Lockout duration must be greater than 0'],
+    ['max duration equal to 0', { local_auth_lockout_max_duration: 0 }, 'Lockout max duration must be greater than 0'],
+    ['window above 24 hours', { local_auth_lockout_window: 1441 }, 'Lockout window must be lower than or equal to 1440'],
+    ['max duration above 3 hours', { local_auth_lockout_max_duration: 181 }, 'Lockout max duration must be lower than or equal to 180'],
+    ['duration greater than max duration', { local_auth_lockout_duration: 200, local_auth_lockout_max_duration: 120 }, 'Lockout duration must be lower than or equal to lockout max duration'],
+    ['duration greater than the stored max duration', { local_auth_lockout_duration: 121 }, 'Lockout duration must be lower than or equal to lockout max duration'],
+  ])('should reject a lockout policy with %s', async (_, lockoutInput, expectedMessage) => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_LOCAL_AUTH_QUERY,
+      variables: { id: settingsInternalId, input: { enabled: true, ...lockoutInput } },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toEqual(expectedMessage);
+    // Nothing is patched
+    const readResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
+    expect(readResult.data.settings.local_auth_lockout_max_attempts).toEqual(4);
+    expect(readResult.data.settings.local_auth_lockout_duration).toEqual(10);
+    expect(readResult.data.settings.local_auth_lockout_max_duration).toEqual(120);
+  });
+  it('should reject a lockout policy edited through fieldPatch, bypassing its validation', async () => {
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, {
+      query: EDIT_FIELD_QUERY,
+      variables: { id: settingsInternalId, input: { key: 'local_auth_lockout_max_attempts', value: ['0'] } },
+    });
+    const readResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
+    expect(readResult.data.settings.local_auth_lockout_max_attempts).toEqual(4);
+  });
+  it('should reject a lockout policy edited through fieldPatch, even with the BYPASS capability', async () => {
+    const queryResult = await queryAsAdmin({
+      query: EDIT_FIELD_QUERY,
+      variables: { id: settingsInternalId, input: { key: 'local_auth_lockout_max_attempts', value: ['0'] } },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toEqual('Local authentication lockout settings can only be edited through updateLocalAuth');
+    const readResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
+    expect(readResult.data.settings.local_auth_lockout_max_attempts).toEqual(4);
   });
 });
 
