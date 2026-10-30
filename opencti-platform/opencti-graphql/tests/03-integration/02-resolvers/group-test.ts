@@ -239,8 +239,9 @@ describe('Group resolver standard behavior', () => {
     expect(queryResult?.data?.group.id).toEqual(groupInternalId);
   });
   it('should list groups', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult?.data?.groups.edges.length).toEqual(entitiesCounter.Group + 1);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 100 } });
+    // the platform groups plus the 2 groups created by this file
+    expect(queryResult?.data?.groups.edges.length).toEqual(entitiesCounter.Group + 2);
   });
   it('should update group', async () => {
     const UPDATE_QUERY = gql`

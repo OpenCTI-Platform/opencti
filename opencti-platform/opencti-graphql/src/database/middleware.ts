@@ -236,6 +236,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
+import { isCreateOnlyFormImport } from '../modules/form/form-submission-context';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -3641,6 +3642,10 @@ export const createRelationRaw = async (
       if (fromRule) {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
+      // A form submission without Create / Update knowledge only creates: the existing relationship is used as it is
+      if (isCreateOnlyFormImport(context, user)) {
+        return { element: existingRelationship, event: null, isCreation: false };
+      }
       // If not upsert the element
       return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
     }
@@ -3966,6 +3971,11 @@ const internalCreateEntityRaw = async (
         }
         // If upsert come from a rule, do a specific upsert.
         return await upsertEntityRule(context, user, filteredEntities[0], input, { ...opts, fromRule, locks: participantIds });
+      }
+      // A form submission without Create / Update knowledge only creates: the existing entity is used as it is, never upserted nor merged
+      if (isCreateOnlyFormImport(context, user)) {
+        const existing = R.find((e) => e.standard_id === standardId, filteredEntities) ?? filteredEntities[0];
+        return { element: existing, event: null, isCreation: false };
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true, elementAlreadyResolved: true };

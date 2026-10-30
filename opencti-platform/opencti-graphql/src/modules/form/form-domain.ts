@@ -6,16 +6,18 @@ import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../d
 import type { BasicStoreEntityForm, FormSchemaDefinition, StoreEntityForm } from './form-types';
 import { ENTITY_TYPE_FORM, FormFieldType, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { FunctionalError } from '../../config/errors';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { logApp } from '../../config/conf';
 import { pushBundleToWorker } from '../../database/rabbitmq';
-import { createWork } from '../../domain/work';
+import { redisDeleteWorks } from '../../database/redis';
+import { createWork, updateProcessedTime } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, type DraftWorkspaceAddInput, FilterMode, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { BYPASS, isUserHasCapability, SETTINGS_SETLABELS, SYSTEM_USER } from '../../utils/access';
-import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
+import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
+import { addDraftWorkspace, deleteDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -30,6 +32,7 @@ import {
   validatePendingPayload,
   validatePendingRoots,
 } from './form-pending';
+import { canUpdateKnowledgeIn, checkFormSubmissionAccess } from './form-submission-context';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from './form-bundle-builder';
 
 export { completeEntity } from './form-entity-builder';
@@ -489,11 +492,6 @@ export const buildDraftPlan = (
   return { draftInput };
 };
 
-const canCreateLabels = (user: AuthUser, isDraft: boolean): boolean => {
-  return isUserHasCapability(user, SETTINGS_SETLABELS)
-    || (isDraft && (user.capabilitiesInDraft ?? []).some((capability) => capability.name === SETTINGS_SETLABELS));
-};
-
 export type SubmissionPlan
   = | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: true; draftPlan: DraftPlan }
     | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: false; draftPlan: null };
@@ -533,11 +531,12 @@ export const planSubmission = async (
   const isBypass = isUserHasCapability(user, BYPASS);
   validateFormSubmission(schema, values, isBypass);
   validatePendingPayload(values, input.files?.length ?? 0);
-  validatePendingRoots(schema, values);
-  // The import creates the labels of the form as the submitter: creating a label needs its own right, in the destination scope
-  if (!isBypass && countPendingLabels(values) > 0 && !canCreateLabels(user, finalIsDraft)) {
-    throw ForbiddenAccess('You are not allowed to create labels.', { capability: SETTINGS_SETLABELS });
+  if (!isBypass) {
+    // A submission that creates no draft is imported in the current draft of the applicant, if any (see commitSubmission)
+    const toDraft = finalIsDraft || !!getDraftContext(context, user); // '' once the applicant left a draft
+    checkFormSubmissionAccess(user, toDraft, { pendingLabels: countPendingLabels(values) });
   }
+  validatePendingRoots(schema, values);
   const uploads = await readUploads(input.files, getPendingUploadCopies(values));
   values = resolvePendingFieldRefs(values, schema, uploads);
   const bundle: any = {
@@ -581,6 +580,32 @@ export interface SubmissionResult {
   entityId: string | undefined;
 }
 
+// Best effort: the submission failed, nothing must be imported for it. The push may still have reached the queue
+// (a broker error after it accepted the message): the live state of the work is deleted first, so the worker skips such
+// a bundle (WORK_NOT_ALIVE) and its binding to the applicant and the draft can no longer be used. Then the work is closed
+// in error (as a connector does when it fails) and the draft created for this submission is deleted.
+const rollbackFailedSubmission = async (context: AuthContext, draftId: string | null, workId: string | undefined) => {
+  if (workId) {
+    try {
+      await redisDeleteWorks([workId]);
+    } catch (cleanupError) {
+      logApp.error('[FORM] Cannot end the work of a failed submission', { workId, cause: cleanupError });
+    }
+    try {
+      await updateProcessedTime(context, SYSTEM_USER, workId, 'Form submission failed before the bundle was sent to the worker', true);
+    } catch (cleanupError) {
+      logApp.error('[FORM] Cannot close the work of a failed submission', { workId, cause: cleanupError });
+    }
+  }
+  if (draftId) {
+    try {
+      await deleteDraftWorkspace(bypassDraftContext(context), SYSTEM_USER, draftId);
+    } catch (cleanupError) {
+      logApp.error('[FORM] Cannot delete the draft of a failed submission', { draftId, cause: cleanupError });
+    }
+  }
+};
+
 export const commitSubmission = async (
   context: AuthContext,
   user: AuthUser,
@@ -593,36 +618,50 @@ export const commitSubmission = async (
     const connectorId = connectorIdFromIngestId(formId);
     const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
     const workName = `Form submission @ ${now()}`;
-    const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
-
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
 
-    let draftId = null;
-    if (finalIsDraft && draftPlan) {
-      const draft = await addDraftWorkspace(context, SYSTEM_USER, draftPlan.draftInput);
-      draftId = draft.id;
-      // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
-      await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
+    // The draft and the work are created before the bundle is sent: if one step fails, the ones already done must not stay behind
+    let createdDraftId: string | null = null;
+    let workId: string | undefined;
+    try {
+      if (finalIsDraft && draftPlan) {
+        const draft = await addDraftWorkspace(context, SYSTEM_USER, draftPlan.draftInput);
+        createdDraftId = draft.id;
+        // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
+        await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
+      }
+      // A submission that creates no draft is imported where it was made: in the current draft of the applicant, or in main
+      const draftId = createdDraftId ?? (getDraftContext(context, user) || null);
+      // The work is bound to the applicant, the form and the draft: the import is only allowed to write for this submission
+      const formSubmission = { applicant_id: user.id, form_id: formId, draft_id: draftId };
+      const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now(), formSubmission });
+      workId = work.id;
+      await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
+        type: 'bundle',
+        applicant_id: user.id,
+        content,
+        work_id: work.id,
+        // An empty id (not null) makes the worker send an empty draft header: a missing header would make the API fall back
+        // to the draft the applicant is in at import time, which may no longer be the one of the submission
+        draft_id: draftId ?? '',
+        // Without Create / Update knowledge, an existing object is not force merged (and not upserted, see isCreateOnlyFormImport)
+        update: canUpdateKnowledgeIn(user, draftId !== null),
+        no_split: true,
+      });
+    } catch (error) {
+      await rollbackFailedSubmission(context, createdDraftId, workId);
+      throw error;
     }
-    await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
-      type: 'bundle',
-      applicant_id: user.id,
-      content,
-      work_id: work.id,
-      draft_id: draftId,
-      update: true,
-      no_split: true,
-    });
 
-    logApp.info('[FORM] Bundle sent to connector queue', { formId, workId: work.id, bundleId: bundle.id });
+    logApp.info('[FORM] Bundle sent to connector queue', { formId, workId, bundleId: bundle.id });
     await addFormIntakeSubmittedCount();
 
     return {
       success: true,
       bundleId: bundle.id,
       message: 'Form submitted successfully and sent for processing',
-      entityId: finalIsDraft ? draftId ?? undefined : mainEntityStixId,
+      entityId: finalIsDraft ? createdDraftId ?? undefined : mainEntityStixId,
     };
   } catch (error) {
     logApp.error('[FORM] Error sending bundle to connector queue', { error });

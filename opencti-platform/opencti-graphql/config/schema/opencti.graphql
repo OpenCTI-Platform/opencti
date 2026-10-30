@@ -50,6 +50,7 @@ enum Capabilities {
   KNOWLEDGE_KNUPDATE_KNMERGE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS
+  KNOWLEDGE_KNFORMINTAKE
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
   KNOWLEDGE_KNGETEXPORT
@@ -15722,7 +15723,7 @@ type Mutation {
   labelEdit(id: ID!): LabelEditMutations @auth(for: [SETTINGS_SETLABELS])
   externalReferenceAdd(input: ExternalReferenceAddInput!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
-  killChainPhaseAdd(input: KillChainPhaseAddInput!): KillChainPhase @auth(for: [SETTINGS_SETKILLCHAINPHASES])
+  killChainPhaseAdd(input: KillChainPhaseAddInput!): KillChainPhase @auth(for: [SETTINGS_SETKILLCHAINPHASES, KNOWLEDGE_KNUPDATE])
   killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS_SETKILLCHAINPHASES])
 
   ######## STIX CORE OBJECT ENTITIES
