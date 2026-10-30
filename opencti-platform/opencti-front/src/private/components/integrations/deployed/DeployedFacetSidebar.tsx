@@ -80,9 +80,9 @@ const DeployedFacetSidebar = ({
   const typeMetadata = useDeployedTypeMetadata();
 
   const statusLabel = (status: DeployedStatusFacet): string => {
-    if (status === 'active') return t_i18n('Active');
+    if (status === 'active') return t_i18n('Started');
     if (status === 'processing') return t_i18n('Processing');
-    return t_i18n('Inactive');
+    return t_i18n('Stopped');
   };
 
   const kindLabel = (kind: DeployedKindFacet): string => {
