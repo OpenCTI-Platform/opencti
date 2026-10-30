@@ -8,7 +8,7 @@ import {
   mergeUpsertInput,
   mergeUpsertInputs,
   sanitizeSynchronizedWorkflowInputs,
-  sanitizeSynchronizedWorkflowUpsertOperations
+  sanitizeSynchronizedWorkflowUpsertOperations,
 } from '../../../src/utils/upsert-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
@@ -163,7 +163,7 @@ describe('middleware upsertElement test', () => {
         'Indicator',
         updatePatch,
         { isConfidenceMatch: true, isConfidenceUpper: true },
-        true
+        true,
       );
       expect(inputs.find((n) => n.key === 'x_opencti_workflow_id')).toBeUndefined();
       expect(inputs.find((n) => n.key === 'description')).toEqual({ key: 'description', value: ['updated description'] });
@@ -184,7 +184,7 @@ describe('middleware upsertElement test', () => {
         'Indicator',
         updatePatch,
         { isConfidenceMatch: true, isConfidenceUpper: true },
-        true
+        true,
       );
       expect(inputs.find((n) => n.key === 'x_opencti_workflow_id')).toEqual({ key: 'x_opencti_workflow_id', value: ['local-status-id'] });
       expect(inputs.find((n) => n.key === 'description')).toEqual({ key: 'description', value: ['updated description'] });
