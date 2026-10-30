@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { Worker } from 'worker_threads';
 import '../../../src/config/prototype-seal';
 
 // A dedicated file: the seal applies to the whole test process (ci-unit isolates each test file).
@@ -20,5 +21,22 @@ describe('Object.prototype seal', () => {
     expect(String(Reflect.construct(Legacy, []))).toBe('legacy');
     expect(Number(Reflect.construct(Legacy, []))).toBe(42);
     expect(literalPrototype.constructor).toBe(Legacy);
+  });
+
+  it('should seal Object.prototype in the safeEjs worker, which has its own', async () => {
+    const workerUrl = new URL('../../../build/safeEjs.worker.js', import.meta.url).href;
+    const probe = new Worker(`
+      const { parentPort } = require('worker_threads');
+      import(${JSON.stringify(workerUrl)}).then(() => parentPort.postMessage(Object.isSealed(Object.prototype)));
+    `, { eval: true });
+    try {
+      const sealed = await new Promise((resolve, reject) => {
+        probe.once('message', resolve);
+        probe.once('error', reject);
+      });
+      expect(sealed).toBe(true);
+    } finally {
+      await probe.terminate();
+    }
   });
 });
