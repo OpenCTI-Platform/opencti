@@ -40,12 +40,39 @@ const errorConverter = (e: any) => {
   };
 };
 
-const escapeCsvField = (separator: string, data: string) => {
-  if (data.includes('"') || data.includes(separator) || data.includes('\n') || data.includes('\r')) {
-    const escapedData = data.replaceAll('"', '""');
+// Leading characters that spreadsheet engines evaluate as a formula (CWE-1236, OWASP CSV injection)
+const CSV_FORMULA_PREFIXES = ['=', '+', '-', '@', '＝', '＋', '－', '＠'];
+// Spreadsheets split cells on their own list separator, whatever the feed separator is
+const CSV_SPREADSHEET_DELIMITERS = [',', ';', '\t', '|'];
+// Without letters there is no cell reference, function or DDE call (e.g. a phone number or a negative latitude)
+const CSV_SAFE_VALUE = /^[+-]?[\d\s().,eE+-]*$/;
+
+const isCsvFormula = (data: string) => {
+  if (data.startsWith('\t') || data.startsWith('\r')) return true;
+  // Leading spaces can be trimmed on import
+  const trimmedData = data.trimStart();
+  return CSV_FORMULA_PREFIXES.some((prefix) => trimmedData.startsWith(prefix)) && !CSV_SAFE_VALUE.test(trimmedData);
+};
+
+export const escapeCsvField = (separator: string, data: string, neutralizeFormulas = true) => {
+  const isFormula = neutralizeFormulas && isCsvFormula(data);
+  // A leading single quote makes the spreadsheet read the cell as text
+  const value = isFormula ? `'${data}` : data;
+  const hasSpreadsheetDelimiter = CSV_SPREADSHEET_DELIMITERS.some((delimiter) => value.includes(delimiter));
+  if (isFormula || hasSpreadsheetDelimiter || value.includes('"') || value.includes(separator) || value.includes('\n') || value.includes('\r')) {
+    const escapedData = value.replaceAll('"', '""');
     return `"${escapedData}"`;
   }
-  return data;
+  return value;
+};
+
+// Feeds created before the option existed have no stored value and keep their output for now
+const isFormulaNeutralized = (feed: BasicStoreEntityFeed) => feed.neutralize_formulas ?? false;
+
+export const buildCsvHeader = (feed: BasicStoreEntityFeed): string => {
+  const separator = feed.separator ?? ',';
+  const neutralizeFormulas = isFormulaNeutralized(feed);
+  return feed.feed_attributes.map((a) => escapeCsvField(separator, a.attribute, neutralizeFormulas)).join(separator);
 };
 
 const neighborKey = (relType: string, targetType: string) => `${relType}:${targetType}`;
@@ -218,6 +245,7 @@ export const resolveNeighborsForFeed = async (
 export const buildCsvLines = async (context: any, user: any, elements: any[], feed: BasicStoreEntityFeed, neighborsMap?: NeighborsMap): Promise<string[]> => {
   const lines: string[] = [];
   const separator = feed.separator ?? ',';
+  const neutralizeFormulas = isFormulaNeutralized(feed);
   for (let index = 0; index < elements.length; index += 1) {
     const element = elements[index];
     const dataElements = [];
@@ -230,7 +258,7 @@ export const buildCsvLines = async (context: any, user: any, elements: any[], fe
           const key = neighborKey(mapping.relationship_type, mapping.target_entity_type);
           const neighbors = neighborsMap?.get(element.internal_id)?.get(key) ?? [];
           if (neighbors.length === 0) {
-            dataElements.push(escapeCsvField(separator, ''));
+            dataElements.push(escapeCsvField(separator, '', neutralizeFormulas));
           } else {
             const strategy = attribute.multi_match_strategy ?? 'list';
             const targetEntities = strategy === 'first' ? [neighbors[0]] : neighbors;
@@ -238,7 +266,7 @@ export const buildCsvLines = async (context: any, user: any, elements: any[], fe
             const values = targetEntities
               .map((n) => extractAttributeFromEntity(n, mapping.attribute, multiSep))
               .filter((v) => v.length > 0);
-            dataElements.push(escapeCsvField(separator, values.join(multiSep)));
+            dataElements.push(escapeCsvField(separator, values.join(multiSep), neutralizeFormulas));
           }
         } else {
           // Direct attribute mapping (existing behavior)
@@ -248,28 +276,28 @@ export const buildCsvLines = async (context: any, user: any, elements: any[], fe
           if (isNotEmptyField(data)) {
             if (isMultipleAttribute(element.entity_type, baseKey)) {
               const dataArray = data as string[];
-              dataElements.push(escapeCsvField(separator, dataArray.join(',')));
+              dataElements.push(escapeCsvField(separator, dataArray.join(','), neutralizeFormulas));
             } else if (isObjectAttribute(baseKey)) {
               if (isComplexKey) {
                 const [, innerKey] = mapping.attribute.split('.');
                 const dictInnerData = data[innerKey.toUpperCase()];
                 if (isNotEmptyField(dictInnerData)) {
-                  dataElements.push(escapeCsvField(separator, String(dictInnerData)));
+                  dataElements.push(escapeCsvField(separator, String(dictInnerData), neutralizeFormulas));
                 } else {
-                  dataElements.push(escapeCsvField(separator, ''));
+                  dataElements.push(escapeCsvField(separator, '', neutralizeFormulas));
                 }
               } else {
-                dataElements.push(escapeCsvField(separator, JSON.stringify(data)));
+                dataElements.push(escapeCsvField(separator, JSON.stringify(data), neutralizeFormulas));
               }
             } else {
-              dataElements.push(escapeCsvField(separator, String(data)));
+              dataElements.push(escapeCsvField(separator, String(data), neutralizeFormulas));
             }
           } else {
             const customFieldValue = await extractStringifiedCustomFieldValueFromStoreEntity(context, user, element, baseKey);
             if (customFieldValue) {
-              dataElements.push(escapeCsvField(separator, customFieldValue));
+              dataElements.push(escapeCsvField(separator, customFieldValue, neutralizeFormulas));
             } else {
-              dataElements.push(escapeCsvField(separator, ''));
+              dataElements.push(escapeCsvField(separator, '', neutralizeFormulas));
             }
           }
         }
@@ -329,7 +357,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       const elements = R.take(SIZE_LIMIT, paginateElements); // Due to pagination, number of results can be slightly superior
       const neighborsMap = await resolveNeighborsForFeed(context, user, elements, feed);
       if (feed.include_header) {
-        res.write(`${feed.feed_attributes.map((a) => a.attribute).join(feed.separator)}\r\n`);
+        res.write(`${buildCsvHeader(feed)}\r\n`);
       }
 
       const lines = await buildCsvLines(context, context.user, elements, feed, neighborsMap);
