@@ -24,7 +24,8 @@ interface PublicTimeSeriesBreakdownContentProps<TQuery extends OperationType> ex
   type: string;
   parameters: NonNullable<Widget['parameters']>;
   queryRef: PreloadedQuery<TQuery>;
-  onMounted: (chart: ApexCharts) => void;
+  // Called with the chart once it is drawn, and without it once it is gone
+  onMounted: (chart?: ApexCharts) => void;
   onWarningChange: (warning?: string) => void;
 }
 
