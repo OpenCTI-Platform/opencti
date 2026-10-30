@@ -1,7 +1,7 @@
 import { pipe, assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, createRelation, deleteElementById, updateAttribute } from '../database/middleware';
-import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
@@ -16,6 +16,10 @@ export const findById = (context, user, killChainPhaseId) => {
 
 export const findKillChainPhasePaginated = (context, user, args) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], args);
+};
+
+export const findAllKillChainPhases = (context, user, args = {}) => {
+  return fullEntitiesList(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], args);
 };
 
 // An import upserts the kill chain phases of the objects it writes: attaching an existing phase is part of updating the
