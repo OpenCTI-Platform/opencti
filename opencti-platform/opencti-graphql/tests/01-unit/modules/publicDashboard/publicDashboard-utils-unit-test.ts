@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { getServedPublicManifest, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
+import { getBreakdownEntityTypes, getServedPublicManifest, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
 import { ENABLED_FEATURE_FLAGS, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../../src/config/conf';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
 
@@ -55,5 +55,47 @@ describe('getServedPublicManifest', () => {
     const withoutBreakdown = toB64({ widgets: { 'widget-2': { type: 'donut', parameters: { title: 'Donut' } } } }) as string;
     expect(getServedPublicManifest(withoutBreakdown)).toBe(withoutBreakdown);
     expect(getServedPublicManifest(null)).toBeNull();
+  });
+});
+
+describe('getBreakdownEntityTypes', () => {
+  const typeFilter = (values: string[], overrides: Record<string, unknown> = {}) => ({ key: ['entity_type'], values, operator: 'eq', mode: 'or', ...overrides });
+  const notRevoked = { key: ['revoked'], values: ['false'], operator: 'eq', mode: 'or' };
+  const group = (filters: unknown[], overrides: Record<string, unknown> = {}) => ({ mode: 'and', filters, filterGroups: [], ...overrides }) as any;
+
+  it('should read the types of a top level type filter, whatever the form of its key', () => {
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report', 'Malware']), notRevoked]))).toEqual(['Report', 'Malware']);
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report'], { key: 'entity_type' })]))).toEqual(['Report']);
+    // The relationship type of the relationships
+    const targets = typeFilter(['targets'], { key: ['relationship_type'] });
+    expect(getBreakdownEntityTypes(group([targets]), 'relationship_type')).toEqual(['targets']);
+    expect(getBreakdownEntityTypes(group([targets]))).toEqual([]);
+  });
+
+  it('should not restrict the types of a group in "or" with several entries', () => {
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report']), notRevoked], { mode: 'or' }))).toEqual([]);
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report'])], { mode: 'or', filterGroups: [group([notRevoked])] }))).toEqual([]);
+    // A single entry restricts the types whatever the mode of its group
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report'])], { mode: 'or' }))).toEqual(['Report']);
+  });
+
+  it('should not restrict the types of a type filter excluding them', () => {
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report'], { operator: 'not_eq' })]))).toEqual([]);
+    // Without operator, a filter is an equality
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report'], { operator: undefined })]))).toEqual(['Report']);
+  });
+
+  it('should only read several types in "and" as no restriction, a single one restricts the type', () => {
+    // Elements of every type at once
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report', 'Malware'], { mode: 'and' })]))).toEqual([]);
+    expect(getBreakdownEntityTypes(group([typeFilter(['Report'], { mode: 'and' })]))).toEqual(['Report']);
+  });
+
+  it('should read the stored filters missing a key', () => {
+    expect(getBreakdownEntityTypes({ mode: 'and', filters: [typeFilter(['Report'])] } as any)).toEqual(['Report']);
+    expect(getBreakdownEntityTypes({ mode: 'or', filters: [typeFilter(['Report'])] } as any)).toEqual(['Report']);
+    expect(getBreakdownEntityTypes({ mode: 'and', filterGroups: [] } as any)).toEqual([]);
+    expect(getBreakdownEntityTypes({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', mode: 'or' }] } as any)).toEqual([]);
+    expect(getBreakdownEntityTypes(null)).toEqual([]);
   });
 });

@@ -41,17 +41,22 @@ export const getServedPublicManifest = (publicManifest?: string | null) => {
 /**
  * Types every element of the dataset belongs to, read from a top level "entity type = ..." filter, or
  * "relationship type = ..." for relationships. Empty when the filters do not restrict the type for sure.
- * Same rule as the front (widgetBreakdown.ts).
+ * Same rule as the front (getBreakdownEntityTypes in widgetBreakdown.ts).
  */
 export const getBreakdownEntityTypes = (filters?: FilterGroup | null, typeFilterKey = TYPE_FILTER): string[] => {
   if (!filters) return [];
-  const isRestrictingGroup = filters.mode === FilterMode.And || filters.filters.length + filters.filterGroups.length === 1;
+  // Stored filters can miss a key
+  const topFilters = filters.filters ?? [];
+  const isRestrictingGroup = filters.mode === FilterMode.And || topFilters.length + (filters.filterGroups?.length ?? 0) === 1;
   // Manifest filters can hold the key as a string or as a list
-  const typeFilter = filters.filters.find((filter) => [filter.key].flat().includes(typeFilterKey));
-  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== FilterOperator.Eq) || typeFilter.mode === FilterMode.And) {
+  const typeFilter = topFilters.find((filter) => [filter.key].flat().includes(typeFilterKey));
+  const typeValues = typeFilter?.values ?? [];
+  // Several types in "and" only keep the elements of every type, while a single one restricts the type whatever the mode
+  const isTypeIntersection = typeFilter?.mode === FilterMode.And && typeValues.length > 1;
+  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== FilterOperator.Eq) || isTypeIntersection) {
     return [];
   }
-  return typeFilter.values.filter((value): value is string => typeof value === 'string');
+  return typeValues.filter((value): value is string => typeof value === 'string');
 };
 
 /**
