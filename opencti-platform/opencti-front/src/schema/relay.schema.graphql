@@ -10904,6 +10904,7 @@ enum IngestionHealthStatus {
   critical
   healthy
   degraded
+  unknown
 }
 
 enum IngestionHealthCheckKind {

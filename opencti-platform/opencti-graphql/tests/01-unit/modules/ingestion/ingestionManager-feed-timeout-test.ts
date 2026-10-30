@@ -14,6 +14,7 @@ const executeJsonQueryMock = vi.fn();
 const decryptIngestionCredentialMock = vi.fn();
 const queueDetailsMock = vi.fn();
 const getHttpClientMock = vi.fn();
+const redisPushIngestionLogMock = vi.fn();
 
 vi.mock('../../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../src/config/conf')>();
@@ -36,6 +37,11 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => {
     },
   };
 });
+
+vi.mock('../../../../src/database/redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/redis')>()),
+  redisPushIngestionLog: redisPushIngestionLogMock,
+}));
 
 vi.mock('../../../../src/modules/ingestion/ingestion-rss-domain', () => ({
   findAllRssIngestion: findAllRssIngestionMock,
@@ -114,6 +120,7 @@ describe('Ingestion manager feed timeout behavior', () => {
     patchCsvIngestionMock.mockResolvedValue({});
     patchJsonIngestionMock.mockResolvedValue({});
     decryptIngestionCredentialMock.mockResolvedValue('');
+    redisPushIngestionLogMock.mockResolvedValue(undefined);
     fetchCsvFromUrlMock.mockRejectedValue(timeoutError);
     executeJsonQueryMock.mockResolvedValue({ objects: [], variables: {}, nextExecutionState: {} });
 
@@ -251,6 +258,77 @@ describe('Ingestion manager feed timeout behavior', () => {
       expect.anything(),
       'csv-internal--hang',
       expect.objectContaining({ last_execution_date: expect.any(String) }),
+    );
+  });
+
+  it('should keep the HTTP status of a CSV fetch error in the ingestion log', async () => {
+    const notFoundError = new HttpClientError('Request failed with status code 404', 'ERR_BAD_REQUEST', {
+      status: 404,
+      statusText: 'Not Found',
+      headers: {},
+      data: undefined,
+    });
+    fetchCsvFromUrlMock.mockRejectedValue(notFoundError);
+    const csvIngestion = {
+      id: 'csv--gone',
+      internal_id: 'csv-internal--gone',
+      name: 'Gone CSV',
+      user_id: 'user--1',
+      scheduling_period: 'auto',
+      last_execution_date: undefined,
+      csv_mapper_type: 'inline',
+      csv_mapper: '{}',
+      markings: [],
+    };
+    findAllCsvIngestionMock.mockResolvedValue([csvIngestion]);
+
+    const { csvExecutor } = await import('../../../../src/manager/ingestionManager');
+
+    await expect(csvExecutor({} as any)).resolves.toBeDefined();
+
+    expect(redisPushIngestionLogMock).toHaveBeenCalledWith(
+      'csv-internal--gone',
+      expect.objectContaining({
+        level: 'error',
+        meta: expect.objectContaining({ error_code: 'ERR_BAD_REQUEST', http_status: 404, http_status_text: 'Not Found' }),
+      }),
+    );
+  });
+
+  it('should record a success outcome for a RSS execution that succeeded, even when its success status patch fails', async () => {
+    const rssIngestion = {
+      id: 'ingestion--ok',
+      internal_id: 'internal--ok',
+      name: 'Working RSS',
+      uri: 'http://localhost/feed',
+      user_id: 'user--2',
+      scheduling_period: 'auto',
+      last_execution_date: undefined,
+      ssl_verify: false,
+      created_by_ref: 'identity--1',
+      object_marking_refs: [],
+      report_types: ['threat-report'],
+    };
+    findAllRssIngestionMock.mockResolvedValue([rssIngestion]);
+    // Only the success status patch fails: the state patch of the execution itself succeeds
+    patchRssIngestionMock.mockImplementation(async (_context, _user, _id, patch) => {
+      if (patch.last_execution_status === 'success') {
+        throw new Error('Elasticsearch unavailable');
+      }
+      return {};
+    });
+
+    const { rssExecutor } = await import('../../../../src/manager/ingestionManager');
+
+    await expect(rssExecutor({} as any, new TurndownService())).resolves.toBeDefined();
+
+    expect(redisPushIngestionLogMock).toHaveBeenCalledWith('internal--ok', expect.objectContaining({ level: 'success' }));
+    expect(redisPushIngestionLogMock).not.toHaveBeenCalledWith('internal--ok', expect.objectContaining({ level: 'error' }));
+    expect(patchRssIngestionMock).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      'internal--ok',
+      expect.objectContaining({ last_execution_status: 'error' }),
     );
   });
 
