@@ -21,7 +21,7 @@ import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_EXPORT_PATH } from '../../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../manager/telemetryManager';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePath, exportConfigPresetItem } from '../configPreset-registry';
+import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePath, exportConfigPresetItem, isConfigPresetFamilyAvailable } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
@@ -44,8 +44,22 @@ const findConfigPresetFamily = (type: string) => {
   return family;
 };
 
+// A family the platform cannot export (its Enterprise Edition is missing) is refused like the Enterprise Edition features are
+const findAvailableConfigPresetFamily = async (context: AuthContext, type: string) => {
+  const family = findConfigPresetFamily(type);
+  if (!(await isConfigPresetFamilyAvailable(context, family))) {
+    throw UnsupportedError('Enterprise edition is not enabled', { type });
+  }
+  return family;
+};
+
+const findAvailableConfigPresetFamilies = async (context: AuthContext) => {
+  const availability = await Promise.all(CONFIG_PRESET_FAMILIES.map((family) => isConfigPresetFamilyAvailable(context, family)));
+  return CONFIG_PRESET_FAMILIES.filter((_family, index) => availability[index]);
+};
+
 export const findConfigPresetExportableTypes = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetExportableType[]> => {
-  const types = await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
+  const types = await Promise.all((await findAvailableConfigPresetFamilies(context)).map(async (family) => {
     const page = await family.listItems(context, user, { first: CONFIG_PRESET_FIRST_PAGE_SIZE });
     return {
       key: family.id,
@@ -65,7 +79,7 @@ export const findConfigPresetExportableItems = async (
   user: AuthUser,
   { type, ...args }: QueryConfigPresetExportableItemsArgs,
 ): Promise<ConfigPresetExportableItemConnection> => {
-  const page = await findConfigPresetFamily(type).listItems(context, user, args);
+  const page = await (await findAvailableConfigPresetFamily(context, type)).listItems(context, user, args);
   return { ...page, edges: page.edges.map(({ cursor, node }) => ({ cursor, node: toExportableItem(node) })) };
 };
 
@@ -81,12 +95,13 @@ export const resolveConfigPresetSelections = async (
   user: AuthUser,
   selections: ConfigPresetSelectionInput[],
 ): Promise<SelectedConfigPresetFamily[]> => {
-  selections.forEach(({ type, items, excluded_items }) => {
-    findConfigPresetFamily(type);
+  for (let i = 0; i < selections.length; i += 1) {
+    const { type, items, excluded_items } = selections[i];
+    await findAvailableConfigPresetFamily(context, type);
     if (items && excluded_items && excluded_items.length > 0) {
       throw FunctionalError('Excluded items require a selection of every item of the type', { type });
     }
-  });
+  }
   const resolved: SelectedConfigPresetFamily[] = [];
   for (let i = 0; i < CONFIG_PRESET_FAMILIES.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES[i];

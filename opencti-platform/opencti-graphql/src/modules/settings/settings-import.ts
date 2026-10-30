@@ -4,8 +4,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { configImportValidationReason } from '../configImport/configImport-utils';
 import { findById as findThemeById } from '../theme/theme-domain';
-import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS } from './settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema } from './settings-import-schema';
+import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS } from './settings-export';
+import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema } from './settings-import-schema';
 
 export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'default_theme_missing';
 
@@ -73,6 +73,11 @@ export const importMessage = (context: AuthContext, user: AuthUser, messageId: s
   }
   const id = messageId as keyof typeof SETTINGS_MESSAGES_FIELDS;
   return importFields(context, user, messageConfigurationSchemas[id], SETTINGS_MESSAGES_FIELDS[id], configuration, options);
+};
+
+// The Enterprise Edition is not checked here but by the family that carries the whitemark (requiresEnterpriseEdition)
+export const importWhitemark = (context: AuthContext, user: AuthUser, configuration: unknown, options: ConfigImportOptions) => {
+  return importFields(context, user, whitemarkConfigurationSchema, SETTINGS_WHITEMARK_FIELDS, configuration, options);
 };
 
 // Title, favicon and language, and the default theme: the theme is found by its standard id on this platform, and set by its internal id
