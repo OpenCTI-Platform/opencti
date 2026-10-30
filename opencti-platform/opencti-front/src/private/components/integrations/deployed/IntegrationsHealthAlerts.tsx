@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import IngestionHealthBanner from '@components/data/connectors/IngestionHealthBanner';
-import { formatOthersCount, type HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
+import { type HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
 import useHealthCheckMessage from '@components/data/connectors/useHealthCheckMessage';
 import type { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -41,7 +41,7 @@ const IntegrationsHealthAlerts = ({ items, onShowIssue }: IntegrationsHealthAler
     const more = count > MAX_NAMES ? ` +${count - MAX_NAMES}` : '';
     // A single integration says what is wrong with it
     const issue = isSingleAlert ? affected[0].healthIssue : null;
-    const message = issue?.check ? [getHealthCheckMessage(issue.check), formatOthersCount(issue.othersCount)].filter(Boolean).join(' ') : null;
+    const message = issue?.check ? getHealthCheckMessage(issue.check) : null;
     const label = isSingleAlert ? t_i18n('Review') : t_i18n('See all');
     return [(
       <IngestionHealthBanner

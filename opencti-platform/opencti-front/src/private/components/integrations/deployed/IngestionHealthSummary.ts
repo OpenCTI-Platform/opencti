@@ -24,11 +24,11 @@ export interface HealthIssue {
   severity: HealthIssueSeverity;
   // First failing check of the severity of the status, worded by getHealthCheckMessage; null when the status carries none
   check: HealthCheckMessageSource | null;
-  // Failing checks of the same severity that are not shown: displayed as (+x) next to the check
+  // Failing checks, whatever their severity, that are not shown: displayed as (+x) next to the check
   othersCount: number;
 }
 
-// The count of the other checks of the same severity, as displayed next to the message of the check: empty when there is none
+// The count of the other checks, as displayed next to the message of the check: empty when there is none
 export const formatOthersCount = (othersCount: number): string => (othersCount > 0 ? `(+${othersCount})` : '');
 
 // Color and icon every marker of a health issue shares: critical = red / warning, degraded = orange / clock
@@ -54,5 +54,6 @@ export const readHealthIssue = (key?: IngestionHealthSummary_ingestionHealth$key
     const isCritical = check.health_check_kind === 'runtime' && check.health_check_severity === 'blocking';
     return isCritical === (status === 'critical');
   });
-  return { severity: status, check: sameSeverityChecks[0] ?? null, othersCount: Math.max(sameSeverityChecks.length - 1, 0) };
+  // The others are counted over all the checks, whatever their severity
+  return { severity: status, check: sameSeverityChecks[0] ?? null, othersCount: Math.max(healthChecks.length - 1, 0) };
 };
