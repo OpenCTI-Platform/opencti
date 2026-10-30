@@ -8,7 +8,8 @@ import type { ConfigPresetImportPreview } from '../../../generated/graphql';
 import type { ConfigImportMode } from '../../configImport/configImport-types';
 import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_HISTORY_PATH, CONFIG_PRESET_IMPORT_PATH } from '../../internal/document/document-types';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-registry';
+import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
+import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, isConfigPresetFamilyAvailable } from '../configPreset-registry';
 import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetPlatformId } from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
 import {
@@ -21,6 +22,7 @@ import {
 } from './configPreset-import-bundle';
 import {
   CONFIG_PRESET_DEFAULT_IMPORT_MODE,
+  CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED,
   CONFIG_PRESET_REASON_FILE_MISSING,
   type ConfigPresetBundle,
   type ConfigPresetBundleItem,
@@ -118,6 +120,24 @@ export const readConfigPresetImportBundle = async (context: AuthContext, user: A
   return readConfigPresetBundle(await loadConfigPresetImportZip(context, user, fileId));
 };
 
+// What the importer of the family decides for an item. A family that requires the Enterprise Edition skips its items on a platform
+// without it, whatever the importer decides, except an item that is invalid. The platform is read at each call: a license
+// applied since the preview is taken into account by the next computation, and the real import computes before it writes.
+export const computeConfigPresetItem = async (
+  context: AuthContext,
+  user: AuthUser,
+  family: ConfigPresetFamilyDefinition,
+  item: ConfigPresetBundleItem,
+  plan: ConfigPresetImportPlan,
+  mode: ConfigImportMode,
+): Promise<ConfigPresetComputedItem> => {
+  const computed = await family.importer!.compute(context, user, item, plan, mode);
+  if (computed.status === 'failed' || await isConfigPresetFamilyAvailable(context, family)) {
+    return computed;
+  }
+  return { ...computed, status: 'skipped', reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED, conflict: false };
+};
+
 // compute of every item, required dependencies first: reads only, the plan records what would be created
 // modes: the mode of each item, OVERWRITE for the items that have none (the preview, the dependencies)
 export const computeConfigPresetItems = async (
@@ -131,7 +151,7 @@ export const computeConfigPresetItems = async (
   for (let i = 0; i < items.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;
     const mode = configPresetImportMode(modes, items[i].type, items[i].id);
-    results.push({ item: items[i], computed: await family.importer!.compute(context, user, items[i], plan, mode) });
+    results.push({ item: items[i], computed: await computeConfigPresetItem(context, user, family, items[i], plan, mode) });
   }
   return results;
 };
@@ -156,6 +176,7 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
         label: computed.label,
         translatable: computed.translatable,
         isDefault: family.id === 'branding' && defaultThemeId?.standard_id === item.id,
+        requiresEnterpriseEdition: family.requiresEnterpriseEdition ?? false,
         exists: computed.exists,
         conflict: computed.conflict,
         fields: computed.fields ?? [],

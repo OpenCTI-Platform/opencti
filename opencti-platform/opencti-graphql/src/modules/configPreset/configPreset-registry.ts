@@ -5,6 +5,7 @@ import { platformFamily } from './registry/platform-configPreset-registry';
 import { brandingFamily } from './registry/branding-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
 import { hiddenEntityTypesFamily } from './registry/hiddenEntityTypes-configPreset-registry';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export { BRANDING_FAMILY_ID } from './registry/branding-configPreset-registry';
 
@@ -27,6 +28,12 @@ export const getConfigPresetFamilyDisplay = (type: string) => {
     type_index: Math.max(index, 0),
     group: family ? { key: family.group.id, label: family.group.label } : { key: type, label: type },
   };
+};
+
+// A family that requires the Enterprise Edition is only available on a platform that has it: the single place that knows
+// the rule, for the export and the import of any family that sets requiresEnterpriseEdition
+export const isConfigPresetFamilyAvailable = async (context: AuthContext, family: ConfigPresetFamilyDefinition) => {
+  return !family.requiresEnterpriseEdition || isEnterpriseEdition(context);
 };
 
 export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, item: ConfigPresetItemDefinition) => {

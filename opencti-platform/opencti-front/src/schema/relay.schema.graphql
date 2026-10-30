@@ -17812,6 +17812,7 @@ type ConfigPresetImportItem {
   label: String!
   translatable: Boolean!
   isDefault: Boolean!
+  requiresEnterpriseEdition: Boolean!
   exists: Boolean!
   conflict: Boolean!
   fields: [ConfigPresetImportField!]!
