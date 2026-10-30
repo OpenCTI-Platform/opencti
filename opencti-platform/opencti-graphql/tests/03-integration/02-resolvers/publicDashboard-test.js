@@ -174,6 +174,56 @@ const API_SCR_NUMBER_QUERY = gql`
     }
 `;
 
+const API_SCO_BREAKDOWN_QUERY = gql`
+  query PublicStixCoreObjectsTimeSeriesBreakdown(
+    $startDate: DateTime
+    $endDate: DateTime
+    $uriKey: String!
+    $widgetId : String!
+  ) {
+    publicStixCoreObjectsTimeSeriesBreakdown(
+      startDate: $startDate
+      endDate: $endDate
+      uriKey: $uriKey
+      widgetId : $widgetId
+    ) {
+      truncated
+      dates
+      series {
+        label
+        value
+        isOther
+        values
+      }
+    }
+  }
+`;
+
+const API_SCR_BREAKDOWN_QUERY = gql`
+  query PublicStixRelationshipsTimeSeriesBreakdown(
+    $startDate: DateTime
+    $endDate: DateTime
+    $uriKey: String!
+    $widgetId : String!
+  ) {
+    publicStixRelationshipsTimeSeriesBreakdown(
+      startDate: $startDate
+      endDate: $endDate
+      uriKey: $uriKey
+      widgetId : $widgetId
+    ) {
+      truncated
+      dates
+      series {
+        label
+        value
+        isOther
+        values
+      }
+    }
+  }
+`;
+
 describe('PublicDashboard resolver', () => {
   let privateDashboardInternalId;
   const publicDashboardName = 'publicDashboard';
@@ -769,29 +819,6 @@ describe('PublicDashboard resolver', () => {
         });
 
         describe('SCO Time series breakdown', () => {
-          const API_SCO_BREAKDOWN_QUERY = gql`
-            query PublicStixCoreObjectsTimeSeriesBreakdown(
-              $startDate: DateTime
-              $endDate: DateTime
-              $uriKey: String!
-              $widgetId : String!
-            ) {
-              publicStixCoreObjectsTimeSeriesBreakdown(
-                startDate: $startDate
-                endDate: $endDate
-                uriKey: $uriKey
-                widgetId : $widgetId
-              ) {
-                truncated
-                dates
-                series {
-                  label
-                  isOther
-                  values
-                }
-              }
-            }
-          `;
           const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
           it('should return the data for API: SCO Time series breakdown', async () => {
@@ -882,30 +909,6 @@ describe('PublicDashboard resolver', () => {
         });
 
         describe('SCR Time series breakdown', () => {
-          const API_SCR_BREAKDOWN_QUERY = gql`
-            query PublicStixRelationshipsTimeSeriesBreakdown(
-              $startDate: DateTime
-              $endDate: DateTime
-              $uriKey: String!
-              $widgetId : String!
-            ) {
-              publicStixRelationshipsTimeSeriesBreakdown(
-                startDate: $startDate
-                endDate: $endDate
-                uriKey: $uriKey
-                widgetId : $widgetId
-              ) {
-                truncated
-                dates
-                series {
-                  label
-                  value
-                  isOther
-                  values
-                }
-              }
-            }
-          `;
           const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
           it('should return the data for API: SCR Time series breakdown', async () => {
@@ -1352,6 +1355,9 @@ describe('PublicDashboard resolver', () => {
       let spainId;
       let raditzId;
       let vegetaId;
+      // Above the markings of both public dashboards
+      let portugalId;
+      let nappaId;
 
       afterAll(async () => {
         // region Delete areas.
@@ -1363,6 +1369,10 @@ describe('PublicDashboard resolver', () => {
         await queryAsAdmin({
           query: DELETE_AREA,
           variables: { id: spainId },
+        });
+        await queryAsAdmin({
+          query: DELETE_AREA,
+          variables: { id: portugalId },
         });
         // endregion
         // region Delete malwares.
@@ -1380,6 +1390,10 @@ describe('PublicDashboard resolver', () => {
         await queryAsAdmin({
           query: DELETE_MALWARE,
           variables: { id: vegetaId },
+        });
+        await queryAsAdmin({
+          query: DELETE_MALWARE,
+          variables: { id: nappaId },
         });
         // endregion
         // region Delete the publicDashboards.
@@ -1505,6 +1519,30 @@ describe('PublicDashboard resolver', () => {
           },
         });
         // endregion
+        // region Create an area, a malware and a targets relationship above the markings of both public dashboards.
+        const portugal = await queryAsAdmin({
+          query: CREATE_AREA,
+          variables: { input: { name: 'portugal', description: 'widget tests', objectMarking: [tlpAmber.id] } },
+        });
+        portugalId = portugal.data.administrativeAreaAdd.id;
+        const nappa = await queryAsAdmin({
+          query: CREATE_MALWARES,
+          variables: { input: { name: 'nappa', malware_types: ['ddos'], description: 'widget tests', objectMarking: [tlpAmber.id] } },
+        });
+        nappaId = nappa.data.malwareAdd.id;
+        // From a green malware: only the marking of the relationship itself hides it
+        await queryAsAdmin({
+          query: ADD_TARGETS_REL,
+          variables: {
+            input: {
+              relationship_type: 'targets',
+              fromId: vegetaId,
+              toId: portugalId,
+              objectMarking: [tlpAmber.id],
+            },
+          },
+        });
+        // endregion
       });
 
       it('should return the data for API: SCR Number', async () => {
@@ -1532,6 +1570,36 @@ describe('PublicDashboard resolver', () => {
         const result = aaa.data.publicStixRelationshipsNumber;
         expect(result.total).toEqual(0);
         expect(result.count).toEqual(0);
+      });
+
+      // Computed right before each query, as in the breakdown tests above
+      const breakdownOf = async (query, uriKey, widgetId) => {
+        const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data, errors } = await queryAsAdmin({ query, variables: { uriKey, widgetId, startDate } });
+        expect(errors).toBeUndefined();
+        return Object.values(data)[0];
+      };
+      const seriesOf = ({ series }) => series.map((serie) => [serie.label, serie.value, serie.isOther]);
+
+      it('should only break down the elements under the markings of the dashboard, in the series and in Other', async () => {
+        // Green: spain, raditz and vegeta, not the amber portugal and nappa. The top type is Malware, the areas are
+        // counted in Other: with the amber elements, Malware would count 3 and Other 2.
+        const green = await breakdownOf(API_SCO_BREAKDOWN_QUERY, 'public-dashboard-marking-green', '65b10e7f-f502-4fed-a192-085f460fb94a');
+        expect(seriesOf(green)).toEqual([['Malware', 2, false], ['Other', 1, true]]);
+        expect(green.truncated).toEqual(true);
+      });
+
+      it('should only break down the elements under the markings of the dashboard, with more restricted markings', async () => {
+        // Clear: every element is above, none is counted, not even in Other
+        const clear = await breakdownOf(API_SCO_BREAKDOWN_QUERY, 'public-dashboard-marking-clear', '65b10e7f-f502-4fed-a192-085f460fb94a');
+        expect(seriesOf(clear)).toEqual([['Other', 0, true]]);
+        expect(clear.truncated).toEqual(false);
+      });
+
+      it('should only break down the relationships under the markings of the dashboard', async () => {
+        // The two green targets of spain, not the amber one of portugal, whose source vegeta is green
+        const green = await breakdownOf(API_SCR_BREAKDOWN_QUERY, 'public-dashboard-marking-green', 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38');
+        expect(seriesOf(green)).toEqual([['Administrative-Area', 2, false], ['Other', 0, true]]);
       });
     });
   });
