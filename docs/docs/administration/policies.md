@@ -78,6 +78,8 @@ Password history prevents users from going back to a password they used recently
 
 The history starts from the moment the rule is enabled: passwords set before that are not known to the platform. Lowering the value drops the oldest passwords beyond the new count. Setting it back to `0` disables the rule and deletes every user's password history, so enabling it again starts from scratch.
 
+A user's history is also deleted when the account stops being a local account: when it is turned into a service account, when it starts signing in through an external provider, or when it is merged into another user (the history of the merged account is deleted).
+
 !!! warning "Long passwords"
 
     Passwords are compared on their first 72 bytes, a limit of the bcrypt hashing algorithm. Two passwords that share their first 72 bytes are considered identical.
@@ -86,7 +88,7 @@ The history starts from the moment the rule is enabled: passwords set before tha
 
 - The password rules shown next to the password fields include "Must be different from your last N passwords" (or "your current password" when the value is `1`). This rule cannot be checked while typing, since only the platform knows the previous passwords.
 - A refused password shows: "This password has already been used recently. Please choose a different one." In the forgot password flow, the user stays on the new password step and can try again with the same code.
-- To limit guessing, each person can submit at most 5 password changes on an account per 15 minutes, counted once the new password meets the other policies. The user, an administrator and the forgot password flow each have their own count, so nobody can block the others: an administrator can always reset the password of a compromised account. Beyond that, the change is refused with "Too many password change attempts. Please try again in a few minutes." Both values can be changed with `app:password_change:max_attempts` and `app:password_change:window_seconds` (see [Configuration](../deployment/configuration.md#network-and-security)).
+- To limit guessing, each person can submit at most 5 password changes on an account per 15 minutes, counted once the new password meets the other policies. The user, an administrator and the forgot password flow each have their own count, so nobody can block the others: an administrator can always reset the password of a compromised account. Beyond that, the change is refused with "Too many password change attempts. Please try again in a few minutes." Both values can be changed with `app:password_change:max_attempts` and `app:password_change:window_seconds` (see [Configuration](../deployment/configuration.md#network-and-security)). Each must be a positive integer: any other value, `0` included, is ignored and the default applies, with a warning in the application log.
 
 ### Audit and alerting
 
