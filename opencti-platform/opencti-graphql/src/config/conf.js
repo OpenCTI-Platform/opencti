@@ -24,7 +24,6 @@ import {
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
-import { getRequestLogContext } from './log-context';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
@@ -200,12 +199,10 @@ const prepareLogMetadataComplexityWrapper = (obj, acc, current_depth = 0) => {
   return obj;
 };
 // Prepare the data - Format the errors and limit complexity
-// Merged after the conversion: spreading the metadata first would drop the non-enumerable fields of an Error
-export const prepareLogMetadata = (obj, extra = {}, requestContext = {}) => {
+export const prepareLogMetadata = (obj, extra = {}) => {
   const acc = { current_nb_key: 0 };
   const protectedObj = prepareLogMetadataComplexityWrapper(obj, acc);
-  const protectedContext = prepareLogMetadataComplexityWrapper(requestContext, acc);
-  return { ...extra, ...protectedContext, ...protectedObj, version: PLATFORM_VERSION };
+  return { ...extra, ...protectedObj, version: PLATFORM_VERSION };
 };
 
 const appLogTransports = [];
@@ -329,7 +326,7 @@ export const logMigration = {
 export const logApp = {
   _log: (level, message, meta = {}) => {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
-      const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' }, getRequestLogContext());
+      const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' });
       appLogger.log(level, message, data);
       if (supportLogger.isLevelEnabled(level)) {
         supportLogger.log(level, message, data);
@@ -358,7 +355,7 @@ export const logAudit = {
 
 export const logFrontend = {
   _log: (level, message, meta = {}) => {
-    const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' }, getRequestLogContext());
+    const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'frontend' });
     appLogger.log(level, message, data);
     supportLogger.log(level, message, data);
   },

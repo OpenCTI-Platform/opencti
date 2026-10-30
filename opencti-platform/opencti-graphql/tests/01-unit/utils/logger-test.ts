@@ -1,8 +1,6 @@
 import * as R from 'ramda';
-import { describe, expect, it, vi } from 'vitest';
-import type { Request, Response } from 'express';
-import { appLogLevelMaxArraySize, appLogLevelMaxStringSize, logApp, prepareLogMetadata } from '../../../src/config/conf';
-import { requestLogContextMiddleware } from '../../../src/config/log-context';
+import { describe, expect, it } from 'vitest';
+import { appLogLevelMaxArraySize, appLogLevelMaxStringSize, prepareLogMetadata } from '../../../src/config/conf';
 import { FunctionalError } from '../../../src/config/errors';
 
 // region objects definition
@@ -129,57 +127,6 @@ describe('Logger test suite', () => {
     const cleanObject = prepareLogMetadata(WITH_ERROR_OBJECT);
     expect(cleanObject.cause.message).toBe('my error');
     expect(cleanObject.cause.attributes.cause.message).toBe('embedded error');
-  });
-
-  it('Log error given directly as metadata keeps its fields', () => {
-    const cleanObject = prepareLogMetadata(new Error('direct error'));
-    expect(cleanObject.name).toBe('Error');
-    expect(cleanObject.message).toBe('direct error');
-    expect(cleanObject.stack).toContain('direct error');
-  });
-
-  it('Log error given directly as metadata keeps its fields with a request context', () => {
-    const cleanObject = prepareLogMetadata(new Error('direct error'), {}, { user_agent: 'pycti/6.9.0' });
-    expect(cleanObject.message).toBe('direct error');
-    expect(cleanObject.stack).toContain('direct error');
-    expect(cleanObject.user_agent).toBe('pycti/6.9.0');
-  });
-
-  it('Log error given directly to logApp keeps its fields, inside and outside a request', () => {
-    // The console transport writes to console._stdout
-    const stdout = (console as unknown as { _stdout: { write: (chunk: string) => boolean } })._stdout;
-    const write = vi.spyOn(stdout, 'write').mockImplementation(() => true);
-    try {
-      logApp.error('DIRECT_ERROR_OUTSIDE', new Error('outside error'));
-      requestLogContextMiddleware({ header: () => 'pycti/6.9.0' } as unknown as Request, {} as Response, () => {
-        logApp.error('DIRECT_ERROR_INSIDE', new Error('inside error'));
-      });
-      const findLine = (marker: string) => {
-        const line = write.mock.calls.map(([chunk]) => String(chunk)).find((chunk) => chunk.includes(marker));
-        return JSON.parse(line ?? '{}');
-      };
-      const outside = findLine('DIRECT_ERROR_OUTSIDE');
-      expect(outside.name).toBe('Error');
-      expect(outside.stack).toContain('outside error');
-      expect(outside.user_agent).toBeUndefined();
-      const inside = findLine('DIRECT_ERROR_INSIDE');
-      expect(inside.name).toBe('Error');
-      expect(inside.stack).toContain('inside error');
-      expect(inside.user_agent).toBe('pycti/6.9.0');
-    } finally {
-      write.mockRestore();
-    }
-  });
-
-  it('Log explicit metadata wins over the request context', () => {
-    const cleanObject = prepareLogMetadata({ user_agent: 'explicit' }, {}, { user_agent: 'from-request' });
-    expect(cleanObject.user_agent).toBe('explicit');
-  });
-
-  it('Log request context is limited', () => {
-    const longUserAgent = R.range(0, appLogLevelMaxStringSize + 100).map(() => 'A').join('');
-    const cleanObject = prepareLogMetadata({}, {}, { user_agent: longUserAgent });
-    expect(cleanObject.user_agent.length).toBe(appLogLevelMaxStringSize);
   });
 
   it('Log object is correctly limited', () => {

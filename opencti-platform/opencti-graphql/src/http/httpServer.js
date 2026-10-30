@@ -38,7 +38,6 @@ import {
 } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
-import { requestLogContextMiddleware } from '../config/log-context';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -94,7 +93,6 @@ const createHttpServer = async () => {
   // Rate limiter must be first registered so it applies to all requests including /graphql
   // Even before session so it avoid creating session on rate limited requests.
   app.use(rateLimit(buildRateLimiterOptions()));
-  app.use(requestLogContextMiddleware);
   app.use(await getSessionMiddleware());
   app.use(passport.initialize({}));
   const { schema, apolloServer } = createApolloServer();

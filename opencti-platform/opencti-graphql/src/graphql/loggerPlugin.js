@@ -72,6 +72,7 @@ export default {
         const operationType = `${isWrite ? 'WRITE' : 'READ'}`;
         const callMetaData = {
           user_id: contextUser?.id,
+          user_agent: context.request.http?.headers.get('user-agent'),
           type: operationType + (isCallError ? '_ERROR' : ''),
           inner_relation_creation: innerRelationCount,
           operation: context.operationName ?? 'Unspecified',
