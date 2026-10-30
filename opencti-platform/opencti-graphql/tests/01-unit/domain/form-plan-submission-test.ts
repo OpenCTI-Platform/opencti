@@ -51,8 +51,8 @@ describe('planSubmission', () => {
     // Confirms the planner actually wires the builders together (values/schema decoded and
     // threaded through, main entities passed on to relationship-building and container wrapping)
     // rather than just happening to return a well-shaped, still-empty bundle.
-    expect(buildMainStixEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, 'Report', false);
-    expect(buildAdditionalEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, plan.bundle, false);
+    expect(buildMainStixEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, 'Report', false, []);
+    expect(buildAdditionalEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, plan.bundle, false, []);
     expect(buildRelationships).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, [{ id: 'report--main' }], new Map(), plan.bundle);
     expect(wrapInContainerOrPush).toHaveBeenCalledWith('Report', [{ id: 'report--main' }], plan.bundle, false);
   });

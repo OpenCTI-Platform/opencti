@@ -2,6 +2,8 @@ import { internalLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { FormFieldDefinition } from './form-types';
 import { isEmptyField } from '../../database/utils';
+import { FunctionalError } from '../../config/errors';
+import { PENDING_EXTERNAL_REFERENCE } from './form-pending-marker';
 
 // Helper function to convert string values to proper types based on field type
 export const convertFieldType = (value: any, field: FormFieldDefinition): any => {
@@ -123,6 +125,12 @@ export const transformSpecialFields = async (
           if (refEntity) {
             references.push(refEntity);
           }
+        } else if (typeof refId === 'object' && refId !== null) {
+          // Only the external references created on submission (resolved from the pool) are accepted
+          if (!(refId as any)[PENDING_EXTERNAL_REFERENCE]) {
+            throw FunctionalError('An external reference must be an existing one or one created in the form', { field: field.name });
+          }
+          references.push(refId);
         }
       }
       (transformed as any).externalReferences = references;
