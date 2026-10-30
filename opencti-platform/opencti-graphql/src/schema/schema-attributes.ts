@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { GraphQLDateTime } from 'graphql-scalars';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
+import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition, NestedObjectAttribute } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
@@ -24,6 +24,15 @@ const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) => schem
 const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.type === 'date';
 const isObjectAttributeWithMappings = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
   return schemaDef.type === 'object' && (schemaDef.format === 'standard' || schemaDef.format === 'nested');
+};
+
+// A filterable nested attribute is exposed as one 'nested' filter key (with subFilters).
+// Nested attributes whose mappings declare associatedFilterKeys (e.g. connections) keep the flattened keys.
+export const isGenericNestedFilterAttribute = (schemaDef: AttributeDefinition): schemaDef is NestedObjectAttribute => {
+  return schemaDef.type === 'object'
+    && schemaDef.format === 'nested'
+    && !!schemaDef.isFilterable
+    && !schemaDef.mappings.some((mapping) => mapping.associatedFilterKeys);
 };
 
 /**
@@ -281,6 +290,19 @@ export const schemaAttributesDefinition = {
 };
 
 // -- TYPE --
+
+// Looks up the filterable nested attribute of that name among the attributes registered per type
+// (the same attribute can be non-filterable for most types and filterable for one, e.g. coverage_information).
+export const getFilterableNestedAttribute = (name: string): NestedObjectAttribute | undefined => {
+  for (const entityType of schemaAttributesDefinition.getRegisteredTypes()) {
+    const attribute = schemaAttributesDefinition.getAttribute(entityType, name);
+    if (attribute && isGenericNestedFilterAttribute(attribute)) {
+      return attribute;
+    }
+  }
+  return undefined;
+};
+
 export const isBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'boolean')
 );

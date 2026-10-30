@@ -497,11 +497,23 @@ export const coverageInformation: NestedObjectAttribute = {
   multiple: true,
   upsert: true,
   upsert_force_replace: true,
-  isFilterable: false, // Filter will be done by a special key
+  isFilterable: false, // filterable variant, registered only for has-covered: hasCoveredCoverageInformation
   mappings: [
     { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
   ],
+};
+
+// Same attribute as coverageInformation (same names, types and formats, as required by the attributes homogeneity check),
+// but filterable: it is registered for the has-covered relationship only.
+export const hasCoveredCoverageInformation: NestedObjectAttribute = {
+  ...coverageInformation,
+  label: 'Coverage score',
+  isFilterable: true,
+  mappings: coverageInformation.mappings.map((mapping) => ({
+    ...mapping,
+    isFilterable: true,
+  })),
 };
 
 export const opinionsMetrics: ObjectAttribute = {
