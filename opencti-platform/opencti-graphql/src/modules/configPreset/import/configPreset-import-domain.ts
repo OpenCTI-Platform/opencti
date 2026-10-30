@@ -132,9 +132,10 @@ export const computeConfigPresetItem = async (
   mode: ConfigImportMode,
 ): Promise<ConfigPresetComputedItem> => {
   // The importer of a family the platform cannot import is never called: it may read through domain functions that refuse without
-  // the Enterprise Edition, and what it would validate or find is of no use. The item is named after its family.
+  // the Enterprise Edition, and what it would validate or find is of no use. The item is named by the family from its bundle entry, or after the family.
   if (!(await isConfigPresetFamilyAvailable(context, family))) {
-    return { label: family.label, translatable: true, exists: false, conflict: false, status: 'skipped', reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED };
+    const itemLabel = family.bundleItemLabel?.(item);
+    return { label: itemLabel ?? family.label, translatable: !itemLabel, exists: false, conflict: false, status: 'skipped', reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED };
   }
   return family.importer!.compute(context, user, item, plan, mode);
 };
@@ -172,6 +173,7 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
     description: family.description,
     group: { key: family.group.id, label: family.group.label },
     requiresEnterpriseEdition: family.requiresEnterpriseEdition ?? false,
+    locked: !availability[index],
     modes: family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE],
     // The items of a family the platform cannot import are not shown: the dialog shows the type as locked
     items: !availability[index] ? [] : results.filter(({ item }) => item.type === family.id).map(({ item, computed }) => {
@@ -181,7 +183,6 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
         label: computed.label,
         translatable: computed.translatable,
         isDefault: family.id === 'branding' && defaultThemeId?.standard_id === item.id,
-        requiresEnterpriseEdition: family.requiresEnterpriseEdition ?? false,
         exists: computed.exists,
         conflict: computed.conflict,
         fields: computed.fields ?? [],

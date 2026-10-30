@@ -58,6 +58,14 @@ describe('Import of a family that requires the Enterprise Edition (compute)', ()
     });
   });
 
+  it('names a skipped item after its bundle entry when the family tells how, as its importer is not called', async () => {
+    enterpriseEdition.enabled = false;
+    const family = { ...futureFamily(), bundleItemLabel: ({ configuration }: { configuration: Record<string, unknown> }) => configuration.name as string };
+    expect(await compute(family, 'item', { name: 'Weekly report' })).toMatchObject({ label: 'Weekly report', translatable: false, status: 'skipped' });
+    expect(await compute(family, 'item', {})).toMatchObject({ label: 'Messages', translatable: true, status: 'skipped' });
+    expect(family.importer!.compute).not.toHaveBeenCalled();
+  });
+
   it('takes a license applied since the last computation into account, without any state to refresh', async () => {
     const family = futureFamily();
     enterpriseEdition.enabled = false;

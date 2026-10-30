@@ -4624,6 +4624,7 @@ export type ConfigPresetExportableType = {
   itemsPageInfo: PageInfo;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
+  locked: Scalars['Boolean']['output'];
   requiresEnterpriseEdition: Scalars['Boolean']['output'];
 };
 
@@ -4650,7 +4651,6 @@ export type ConfigPresetImportItem = {
   isDefault: Scalars['Boolean']['output'];
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
-  requiresEnterpriseEdition: Scalars['Boolean']['output'];
   translatable: Scalars['Boolean']['output'];
 };
 
@@ -4760,6 +4760,7 @@ export type ConfigPresetImportType = {
   items: Array<ConfigPresetImportItem>;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
+  locked: Scalars['Boolean']['output'];
   modes: Array<ConfigImportMode>;
   requiresEnterpriseEdition: Scalars['Boolean']['output'];
 };
@@ -44915,6 +44916,7 @@ export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType ex
   itemsPageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  locked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   requiresEnterpriseEdition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
@@ -44938,7 +44940,6 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  requiresEnterpriseEdition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
@@ -45009,6 +45010,7 @@ export type ConfigPresetImportTypeResolvers<ContextType = any, ParentType extend
   items?: Resolver<Array<ResolversTypes['ConfigPresetImportItem']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  locked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modes?: Resolver<Array<ResolversTypes['ConfigImportMode']>, ParentType, ContextType>;
   requiresEnterpriseEdition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
