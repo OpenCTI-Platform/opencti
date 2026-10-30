@@ -1,4 +1,4 @@
-import React, { FunctionComponent, Suspense, useEffect, useState } from 'react';
+import React, { FunctionComponent, Suspense, useCallback, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import { Input, Text } from '@filigran/design-system';
 import { DownloadOutlined } from '@mui/icons-material';
@@ -17,6 +17,7 @@ import { ConfigPresetExportDrawerMutation } from './__generated__/ConfigPresetEx
 import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from '../configPresetSelection';
 import ConfigPresetExportItems from './ConfigPresetExportItems';
 import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
+import useConfigPresetLicenseRetry from '../useConfigPresetLicenseRetry';
 
 const BUNDLE_NAME_MAX_LENGTH = 80;
 
@@ -27,6 +28,7 @@ export const configPresetExportDrawerQuery = graphql`
       label
       description
       requiresEnterpriseEdition
+      locked
       group {
         key
         label
@@ -135,10 +137,12 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
 interface ConfigPresetExportFormProps {
   queryRef: PreloadedQuery<ConfigPresetExportDrawerQuery>;
   onClose: () => void;
+  onReload: () => void;
 }
 
-const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose }) => {
+const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose, onReload }) => {
   const { configPresetExportableTypes } = usePreloadedQuery(configPresetExportDrawerQuery, queryRef);
+  useConfigPresetLicenseRetry(configPresetExportableTypes, onReload);
   // A type without item has nothing to check: it is not shown, and neither is a group left without type. A type that needs the
   // Enterprise Edition the platform does not have is shown, locked.
   const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.requiresEnterpriseEdition);
@@ -154,15 +158,16 @@ const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = (
 const ConfigPresetExportLoader: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const [queryRef, loadQuery] = useQueryLoader<ConfigPresetExportDrawerQuery>(configPresetExportDrawerQuery);
+  const reload = useCallback(() => loadQuery({}, { fetchPolicy: 'store-and-network' }), [loadQuery]);
   useEffect(() => {
-    loadQuery({}, { fetchPolicy: 'store-and-network' });
-  }, [isEnterpriseEdition]);
+    reload();
+  }, [reload, isEnterpriseEdition]);
   if (!queryRef) {
     return <Loader variant={LoaderVariant.inElement} />;
   }
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <ConfigPresetExportForm queryRef={queryRef} onClose={onClose} />
+      <ConfigPresetExportForm queryRef={queryRef} onClose={onClose} onReload={reload} />
     </Suspense>
   );
 };

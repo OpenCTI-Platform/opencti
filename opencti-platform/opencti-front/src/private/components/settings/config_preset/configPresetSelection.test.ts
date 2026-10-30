@@ -165,16 +165,15 @@ describe('configPresetSelection', () => {
     expect(buildConfigPresetSelections(types, selection, {}, forced)).toEqual([{ type: 'platform', items: null }]);
   });
 
-  it('locks a type that needs the Enterprise Edition while the platform has no item of it', () => {
-    const flagged = { requiresEnterpriseEdition: true, items: [] };
-    expect(isConfigPresetTypeLocked(flagged, false)).toBe(true);
-    // With the license, the type is locked only until its items are loaded
-    expect(isConfigPresetTypeLocked(flagged, true)).toBe(true);
-    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, items: [{}] }, true)).toBe(false);
-    // Nothing of it is listed without the license, whatever the items it came with
-    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, items: [{}] }, false)).toBe(true);
-    // A type that does not need it is never locked, even empty
-    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: false, items: [] }, false)).toBe(false);
-    expect(isConfigPresetTypeLocked({ items: [] }, false)).toBe(false);
+  it('locks a type the backend says is locked, or that needs the Enterprise Edition on a platform the front end knows has none', () => {
+    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, locked: true }, false)).toBe(true);
+    // The backend has not taken the license into account yet: the type stays locked, whatever the front end knows
+    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, locked: true }, true)).toBe(true);
+    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, locked: false }, true)).toBe(false);
+    // Without the license nothing of it is listed, whatever the backend sent
+    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, locked: false }, false)).toBe(true);
+    // A type that does not need it is not locked, even with no item: it is not guessed from its items
+    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: false, locked: false }, false)).toBe(false);
+    expect(isConfigPresetTypeLocked({}, false)).toBe(false);
   });
 });

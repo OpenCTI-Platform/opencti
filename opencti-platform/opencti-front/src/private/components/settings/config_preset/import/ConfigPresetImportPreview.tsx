@@ -37,6 +37,7 @@ import ConfigPresetImportActions from './ConfigPresetImportActions';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import { translateConfigPresetEntityTypes } from '../configPresetEntityTypes';
+import useConfigPresetLicenseRetry from '../useConfigPresetLicenseRetry';
 import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
@@ -56,6 +57,7 @@ const configPresetImportPreviewQuery = graphql`
         label
         description
         requiresEnterpriseEdition
+        locked
         modes
         group {
           key
@@ -167,6 +169,10 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   // Read live: a license activated from the preview is known without a refresh, and the preview is read again with what it unlocks
   const isEnterpriseEdition = useEnterpriseEdition();
   const hasLoadedRef = useRef(false);
+  // The types that needed the license and were unlocked by the last load: the next load selects those it unlocks, and only those
+  const unlockedKeysRef = useRef<Set<string>>(new Set());
+  // Read again by the retry, while the backend has not taken a license into account
+  const [reloadCount, setReloadCount] = useState(0);
   const [commitSave] = useApiMutation<ConfigPresetImportPreviewSaveMutation>(configPresetImportPreviewSaveMutation);
   // The revision only goes up: the backend ignores a lower one
   const revisionRef = useRef(session.revision);
@@ -189,17 +195,20 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         if (active && data) {
           const loaded = data.configPresetImportPreview;
           setPreview(loaded);
+          const previouslyUnlocked = unlockedKeysRef.current;
+          const unlocked = loaded.types.filter((type) => type.requiresEnterpriseEdition && !type.locked);
+          unlockedKeysRef.current = new Set(unlocked.map((type) => type.key));
           if (!hasLoadedRef.current) {
             hasLoadedRef.current = true;
             // A new upload has no saved selection yet: every item starts selected, as in the export
             const isNew = session.revision === 0 && session.selections.length === 0;
             setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
             setImportModes(toConfigImportModes(session.selections));
-          } else if (isEnterpriseEdition) {
-            // A license was activated: the types that needed it come with their items, and are selected, as activating it was asking for them
-            const unlocked = loaded.types.filter((type) => type.requiresEnterpriseEdition);
-            if (unlocked.length > 0) {
-              const next = toggleConfigPresetTypes(selectionRef.current, unlocked, true);
+          } else {
+            // A license was activated: the types it unlocks come with their items, and are selected, as activating it was asking for them
+            const newlyUnlocked = unlocked.filter((type) => !previouslyUnlocked.has(type.key));
+            if (newlyUnlocked.length > 0) {
+              const next = toggleConfigPresetTypes(selectionRef.current, newlyUnlocked, true);
               setSelection(next);
               scheduleSaveRef.current(next, importModesRef.current, toCountedTypes(loaded.types));
             }
@@ -219,8 +228,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     return () => {
       active = false;
     };
-  // The preview is read again when a license is activated, which unlocks the types that need it
-  }, [environment, session.file_id, isEnterpriseEdition]);
+  // The preview is read again when a license is activated, which unlocks the types that need it, and by the retry
+  }, [environment, session.file_id, isEnterpriseEdition, reloadCount]);
 
   // Resolved once the save is answered, whatever the answer. A failure is notified by the global error toast; a file that is no longer
   // the one of the session (another tab uploaded a new one) sends the wizard back to the upload.
@@ -247,6 +256,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       });
     });
   }, [session.file_id]);
+
+  useConfigPresetLicenseRetry(preview?.types, () => setReloadCount((count) => count + 1));
 
   // A pending save is sent on close
   useEffect(() => () => {
