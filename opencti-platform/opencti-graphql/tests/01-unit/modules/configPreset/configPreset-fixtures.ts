@@ -2,8 +2,11 @@ import { vi } from 'vitest';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../../src/database/middleware-loader';
 import { buildPagination } from '../../../../src/database/utils';
 import type { BasicStoreEntityKillChainPhase } from '../../../../src/modules/killChainPhase/killChainPhase-types';
+import { buildRefRelationKey } from '../../../../src/schema/general';
+import { type BasicStoreEntityCaseTemplate, TEMPLATE_TASK_RELATION } from '../../../../src/modules/case/case-template/case-template-types';
 import type { BasicStoreEntityLabel } from '../../../../src/modules/label/label-types';
 import type { BasicStoreEntityStatusTemplate } from '../../../../src/modules/statusTemplate/statusTemplate-types';
+import type { BasicStoreEntityTaskTemplate } from '../../../../src/modules/task/task-template/task-template-types';
 import type { BasicStoreEntityVocabulary } from '../../../../src/modules/vocabulary/vocabulary-types';
 import type { BasicStoreEntityTheme } from '../../../../src/modules/theme/theme-types';
 
@@ -227,6 +230,53 @@ export const customStatusTemplate = {
 
 export const ALL_STATUS_TEMPLATES = [defaultStatusTemplate, customStatusTemplate];
 
+// A case template with two tasks, and one with none and no description. The id of a case template is random on every platform.
+export const phishingCaseTemplate = {
+  id: 'phishing-case-template-id',
+  internal_id: 'phishing-case-template-id',
+  standard_id: 'case-template--1a80c59c-d839-4984-af04-04f3286d8f89',
+  entity_type: 'Case-Template',
+  creator_id: ['creator-secret-id'],
+  created_at: '2026-01-01T00:00:00.000Z',
+  name: 'Phishing triage',
+  description: 'Triage of a phishing report',
+} as unknown as BasicStoreEntityCaseTemplate;
+
+export const fraudCaseTemplate = {
+  ...phishingCaseTemplate,
+  id: 'fraud-case-template-id',
+  internal_id: 'fraud-case-template-id',
+  standard_id: 'case-template--7c6b5a49-3827-4615-b403-9e8d7c6b5a49',
+  name: 'Fraud investigation',
+  description: undefined,
+} as unknown as BasicStoreEntityCaseTemplate;
+
+export const ALL_CASE_TEMPLATES = [phishingCaseTemplate, fraudCaseTemplate];
+
+// The task templates are read through the relation they have with their case template
+const TASK_RELATION_KEY = buildRefRelationKey(TEMPLATE_TASK_RELATION);
+export const notifyTask = {
+  id: 'notify-task-id',
+  internal_id: 'notify-task-id',
+  standard_id: 'task-template--aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',
+  entity_type: 'Task-Template',
+  creator_id: ['creator-secret-id'],
+  name: 'Notify users',
+  description: undefined,
+  [TASK_RELATION_KEY]: [phishingCaseTemplate.id],
+} as unknown as BasicStoreEntityTaskTemplate;
+
+export const blockTask = {
+  ...notifyTask,
+  id: 'block-task-id',
+  internal_id: 'block-task-id',
+  standard_id: 'task-template--11111111-2222-4333-8444-555555555555',
+  name: 'Block sender',
+  description: 'Block the sender domain',
+} as unknown as BasicStoreEntityTaskTemplate;
+
+export const ALL_TASK_TEMPLATES = [notifyTask, blockTask];
+
 interface ListingArgs {
   search?: string | null;
   filters?: { filters: { key: string[]; values: string[]; operator?: string }[] };
@@ -252,6 +302,8 @@ export const listThemesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEn
 export const listLabelsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_LABELS, ['value'], args);
 export const listVocabulariesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_VOCABULARIES, ['category', 'order', 'name'], args);
 export const listStatusTemplatesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_STATUS_TEMPLATES, ['name'], args);
+export const listCaseTemplatesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_CASE_TEMPLATES, ['name'], args);
+export const listTaskTemplatesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_TASK_TEMPLATES, ['name'], args);
 export const listKillChainPhasesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_KILL_CHAIN_PHASES, ['kill_chain_name', 'x_opencti_order'], args, ['kill_chain_name', 'phase_name']);
 
 // The entities of a type the fixtures know, listed like the engine does
@@ -265,6 +317,10 @@ const listFixtures = (type: string | undefined, args: unknown) => {
       return listVocabulariesLikeTheEngine(args as ListingArgs);
     case 'StatusTemplate':
       return listStatusTemplatesLikeTheEngine(args as ListingArgs);
+    case 'Case-Template':
+      return listCaseTemplatesLikeTheEngine(args as ListingArgs);
+    case 'Task-Template':
+      return listTaskTemplatesLikeTheEngine(args as ListingArgs);
     case 'Theme':
       return listThemesLikeTheEngine(args as ListingArgs);
     default:
@@ -273,7 +329,8 @@ const listFixtures = (type: string | undefined, args: unknown) => {
 };
 
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
-// the themes, the labels, the kill chain phases, the vocabularies and the status templates come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
+// the themes, the labels, the kill chain phases, the vocabularies, the status templates and the case templates come from the fixtures,
+// any other type listed by fullEntitiesList gets otherEntities
 export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
     return (listFixtures(types?.[0], args) ?? otherEntities) as never;
@@ -284,6 +341,6 @@ export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
     const sortOf = (entity: unknown) => ['name', 'value', 'kill_chain_name'].map((field) => (entity as Record<string, unknown>)[field]).find((value) => value !== undefined);
     return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [sortOf(node)] })), entities.length) as never;
   });
-  const everyEntity = [...ALL_THEMES, ...ALL_LABELS, ...ALL_KILL_CHAIN_PHASES, ...ALL_VOCABULARIES, ...ALL_STATUS_TEMPLATES];
+  const everyEntity = [...ALL_THEMES, ...ALL_LABELS, ...ALL_KILL_CHAIN_PHASES, ...ALL_VOCABULARIES, ...ALL_STATUS_TEMPLATES, ...ALL_CASE_TEMPLATES, ...ALL_TASK_TEMPLATES];
   vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => everyEntity.find((entity) => entity.id === id) as never);
 };
