@@ -19,6 +19,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { parse } from '../../../../utils/Time';
@@ -94,6 +95,7 @@ export const ObservedDataCreationForm: FunctionComponent<
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isDeferredMode } = useDeferredCreation();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
   const basicShape = yupShapeConditionalRequired({
     objects: Yup.array(),
@@ -188,10 +190,12 @@ export const ObservedDataCreationForm: FunctionComponent<
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form>
-          <StixCoreObjectsField
-            name="objects"
-            required={(mandatoryAttributes.includes('objects'))}
-          />
+          {!isDeferredMode && (
+            <StixCoreObjectsField
+              name="objects"
+              required={(mandatoryAttributes.includes('objects'))}
+            />
+          )}
           <Field
             component={DateTimePickerField}
             name="first_observed"

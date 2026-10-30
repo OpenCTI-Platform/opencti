@@ -35,6 +35,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -270,6 +271,7 @@ const StixCyberObservableCreation = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const { isDeferredMode } = useDeferredCreation();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
@@ -1000,13 +1002,15 @@ const StixCyberObservableCreation = ({
                           : undefined
                         }
                       />
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="createIndicator"
-                        label={t_i18n('Create an indicator from this observable')}
-                        containerstyle={{ marginTop: 20 }}
-                      />
+                      {!isDeferredMode && (
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="createIndicator"
+                          label={t_i18n('Create an indicator from this observable')}
+                          containerstyle={{ marginTop: 20 }}
+                        />
+                      )}
                       <FormButtonContainer>
                         {!isFromBulkRelation && (
                           <Button

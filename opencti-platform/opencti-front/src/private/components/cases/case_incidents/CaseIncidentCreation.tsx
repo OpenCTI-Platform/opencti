@@ -280,10 +280,12 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
           />
-          <CaseTemplateField
-            onChange={setFieldValue}
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          {!isDeferredMode && (
+            <CaseTemplateField
+              onChange={setFieldValue}
+              containerStyle={fieldSpacingContainerStyle}
+            />
+          )}
           <ConfidenceField
             entityType="Case-Incident"
             containerStyle={fieldSpacingContainerStyle}
@@ -354,7 +356,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <CustomFieldValuesCreation />
-          {isEnterpriseEdition && (
+          {isEnterpriseEdition && !isDeferredMode && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >

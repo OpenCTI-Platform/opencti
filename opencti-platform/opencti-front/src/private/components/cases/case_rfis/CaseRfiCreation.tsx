@@ -275,10 +275,12 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
           />
-          <CaseTemplateField
-            onChange={setFieldValue}
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          {!isDeferredMode && (
+            <CaseTemplateField
+              onChange={setFieldValue}
+              containerStyle={fieldSpacingContainerStyle}
+            />
+          )}
           <ConfidenceField
             entityType="Case-Rfi"
             containerStyle={fieldSpacingContainerStyle}
@@ -349,7 +351,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <CustomFieldValuesCreation />
-          {isEnterpriseEdition && (
+          {isEnterpriseEdition && !isDeferredMode && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
