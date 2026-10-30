@@ -2,9 +2,13 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { UnsupportedError } from '../../../src/config/errors';
+import { ingestionHealthHandler } from '../../../src/manager/ingestionHealthManager';
+import { connectorDelete, pingConnector, registerConnector } from '../../../src/modules/connector/connector-domain';
 import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
-import { USER_EDITOR, USER_PLATFORM_ADMIN } from '../../utils/testQuery';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { ConnectorType } from '../../../src/generated/graphql';
+import { HEALTH_CHECK_USER_MISSING } from '../../../src/modules/ingestionHealth/ingestionHealth-registry';
+import { ADMIN_USER, testContext, USER_EDITOR, USER_PLATFORM_ADMIN } from '../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 
 const DEFAULT_NOTIFICATION_DELAY = 5 * 60 * 1000;
@@ -49,6 +53,25 @@ const SETTINGS_EDIT_QUERY = gql`
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
         id
+      }
+    }
+  }
+`;
+
+const CONNECTOR_HEALTH_QUERY = gql`
+  query connectorIngestionHealth($id: String!) {
+    connector(id: $id) {
+      id
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+          health_check_metadata
+          health_check_kind
+          health_check_severity
+        }
       }
     }
   }
@@ -171,5 +194,58 @@ describe('Ingestion health settings resolver', () => {
       { query: SETTINGS_EDIT_QUERY, variables: { id: data?.settings.id, input: { key: 'ingestion_health_settings', value: [{ notification_delay: -1 }] } } },
       'You cannot update incompatible attribute',
     );
+  });
+});
+
+describe('Ingestion health field resolver', () => {
+  const CONNECTOR_ID = '5d1a5c3e-8b0f-4f43-9a52-6f3f0c1e2a11';
+  const DELETED_USER_ID = '5d1a5c3e-8b0f-4f43-9a52-6f3f0c1e2a12';
+
+  const readConnectorHealth = async () => {
+    const { data } = await queryAsAdminWithSuccess({ query: CONNECTOR_HEALTH_QUERY, variables: { id: CONNECTOR_ID } });
+    return data?.connector.ingestionHealth;
+  };
+
+  // The manager reads users and connectors from the cache, refreshed asynchronously by the platform events
+  const runManagerPeriod = async () => {
+    resetCacheForEntity(ENTITY_TYPE_USER);
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    await ingestionHealthHandler({ signal: new AbortController().signal });
+  };
+
+  beforeAll(async () => {
+    // Registered with the user of a token that does not exist anymore: reported as USER_MISSING
+    await registerConnector(
+      testContext,
+      ADMIN_USER,
+      { id: CONNECTOR_ID, name: 'Ingestion health resolver connector', type: ConnectorType.ExternalImport },
+      { connector_user_id: DELETED_USER_ID },
+    );
+    await pingConnector(testContext, ADMIN_USER, CONNECTOR_ID, null, { run_and_terminate: false, buffering: false, queue_threshold: 500, queue_messages_size: 0 });
+  });
+
+  afterAll(async () => {
+    await connectorDelete(testContext, ADMIN_USER, CONNECTOR_ID);
+    resetCacheForEntity(ENTITY_TYPE_USER);
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+  });
+
+  it('should resolve the ingestion health to null until the manager evaluates the connector', async () => {
+    expect(await readConnectorHealth()).toBeNull();
+  });
+
+  it('should resolve the stored health of the connector once evaluated', async () => {
+    await runManagerPeriod();
+    const health = await readConnectorHealth();
+    expect(health.status).toEqual('degraded');
+    expect(health.status_since).toBeDefined();
+    // Kind, severity and message are derived from the stored code
+    expect(health.healthChecks).toEqual([{
+      health_check_code: HEALTH_CHECK_USER_MISSING,
+      health_check_message: 'User is missing',
+      health_check_metadata: {},
+      health_check_kind: 'configuration',
+      health_check_severity: 'advisory',
+    }]);
   });
 });
