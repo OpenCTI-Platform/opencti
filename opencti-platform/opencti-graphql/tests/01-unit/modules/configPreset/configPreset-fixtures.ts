@@ -3,6 +3,7 @@ import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../.
 import { buildPagination } from '../../../../src/database/utils';
 import type { BasicStoreEntityKillChainPhase } from '../../../../src/modules/killChainPhase/killChainPhase-types';
 import type { BasicStoreEntityLabel } from '../../../../src/modules/label/label-types';
+import type { BasicStoreEntityVocabulary } from '../../../../src/modules/vocabulary/vocabulary-types';
 import type { BasicStoreEntityTheme } from '../../../../src/modules/theme/theme-types';
 
 const colors = {
@@ -130,6 +131,78 @@ export const disarmKillChainPhase = {
 // By kill chain, then by order in the kill chain
 export const ALL_KILL_CHAIN_PHASES = [killChainPhase, otherKillChainPhase, disarmKillChainPhase];
 
+// The way the platform creates its own entries (see openVocabularies): no description is '', no aliases [], no order 0
+const storedVocabulary = {
+  creator_id: ['creator-secret-id'],
+  created_at: '2026-01-01T00:00:00.000Z',
+  entity_type: 'Vocabulary',
+  builtIn: false,
+};
+
+// An entry of the platform that nobody modified: not exported, its category is when another entry of it is
+export const defaultVocabulary = {
+  ...storedVocabulary,
+  id: 'default-vocabulary-id',
+  internal_id: 'default-vocabulary-id',
+  standard_id: 'vocabulary--11111111-2222-5333-8444-555555555555',
+  name: 'threat-report',
+  category: 'report_types_ov',
+  description: '',
+  aliases: [],
+  order: 0,
+} as unknown as BasicStoreEntityVocabulary;
+
+// The only entry of its category the fixtures have, and nobody modified it: the category is not exported
+export const untouchedVocabulary = {
+  ...defaultVocabulary,
+  id: 'untouched-vocabulary-id',
+  internal_id: 'untouched-vocabulary-id',
+  standard_id: 'vocabulary--99999999-8888-5777-8666-555555555555',
+  name: 'alert',
+  category: 'incident_type_ov',
+  description: 'An alert.',
+} as unknown as BasicStoreEntityVocabulary;
+
+// An entry of the platform whose description was modified: exported
+export const modifiedVocabulary = {
+  ...storedVocabulary,
+  id: 'modified-vocabulary-id',
+  internal_id: 'modified-vocabulary-id',
+  standard_id: 'vocabulary--66666666-7777-5888-8999-aaaaaaaaaaaa',
+  name: 'high',
+  category: 'integrity_level_ov',
+  description: 'Our own description of a high integrity',
+  aliases: ['elevated'],
+  order: 3,
+} as unknown as BasicStoreEntityVocabulary;
+
+// A custom entry: exported
+export const customVocabulary = {
+  ...storedVocabulary,
+  id: 'custom-vocabulary-id',
+  internal_id: 'custom-vocabulary-id',
+  standard_id: 'vocabulary--bbbbbbbb-cccc-5ddd-8eee-ffffffffffff',
+  name: 'fimi-report',
+  category: 'report_types_ov',
+  description: 'Foreign information manipulation',
+  aliases: ['fimi'],
+  order: 5,
+} as unknown as BasicStoreEntityVocabulary;
+
+export const otherCustomVocabulary = {
+  ...customVocabulary,
+  id: 'other-custom-vocabulary-id',
+  internal_id: 'other-custom-vocabulary-id',
+  standard_id: 'vocabulary--00000000-1111-5222-8333-444444444444',
+  name: 'sev-x',
+  category: 'case_severity_ov',
+  description: '',
+  aliases: [],
+  order: 0,
+} as unknown as BasicStoreEntityVocabulary;
+
+export const ALL_VOCABULARIES = [defaultVocabulary, untouchedVocabulary, modifiedVocabulary, customVocabulary, otherCustomVocabulary];
+
 interface ListingArgs {
   search?: string | null;
   filters?: { filters: { key: string[]; values: string[]; operator?: string }[] };
@@ -153,6 +226,7 @@ const listLikeTheEngine = <T extends object>(entities: T[], sortFields: string[]
 
 export const listThemesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_THEMES, ['name'], args);
 export const listLabelsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_LABELS, ['value'], args);
+export const listVocabulariesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_VOCABULARIES, ['category', 'order', 'name'], args);
 export const listKillChainPhasesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_KILL_CHAIN_PHASES, ['kill_chain_name', 'x_opencti_order'], args, ['kill_chain_name', 'phase_name']);
 
 // The entities of a type the fixtures know, listed like the engine does
@@ -162,6 +236,8 @@ const listFixtures = (type: string | undefined, args: unknown) => {
       return listLabelsLikeTheEngine(args as ListingArgs);
     case 'Kill-Chain-Phase':
       return listKillChainPhasesLikeTheEngine(args as ListingArgs);
+    case 'Vocabulary':
+      return listVocabulariesLikeTheEngine(args as ListingArgs);
     case 'Theme':
       return listThemesLikeTheEngine(args as ListingArgs);
     default:
@@ -170,7 +246,7 @@ const listFixtures = (type: string | undefined, args: unknown) => {
 };
 
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
-// the themes, the labels and the kill chain phases come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
+// the themes, the labels, the kill chain phases and the vocabularies come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
 export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
     return (listFixtures(types?.[0], args) ?? otherEntities) as never;
@@ -181,5 +257,6 @@ export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
     const sortOf = (entity: unknown) => ['name', 'value', 'kill_chain_name'].map((field) => (entity as Record<string, unknown>)[field]).find((value) => value !== undefined);
     return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [sortOf(node)] })), entities.length) as never;
   });
-  vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => [...ALL_THEMES, ...ALL_LABELS, ...ALL_KILL_CHAIN_PHASES].find((entity) => entity.id === id) as never);
+  const everyEntity = [...ALL_THEMES, ...ALL_LABELS, ...ALL_KILL_CHAIN_PHASES, ...ALL_VOCABULARIES];
+  vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => everyEntity.find((entity) => entity.id === id) as never);
 };

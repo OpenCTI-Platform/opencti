@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
-import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { countAllThings, type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -66,13 +66,21 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
   });
 };
 
+export const findAllVocabularies = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityVocabulary> = {}) => {
+  return fullEntitiesList<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], args);
+};
+
 // A closed category only accepts its default values, new ones can't be added
-const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) => {
+export const isVocabularyNameAllowed = (category: VocabularyCategory, name: string) => {
   if (!vocabularyDefinitions[category]?.closed) {
-    return;
+    return true;
   }
   const allowedNames = (openVocabularies[category] ?? []).map(({ key }) => normalizeName(key));
-  if (!allowedNames.includes(normalizeName(name))) {
+  return allowedNames.includes(normalizeName(name));
+};
+
+const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) => {
+  if (!isVocabularyNameAllowed(category, name)) {
     throw FunctionalError('This vocabulary category is closed, new values cannot be added', { category, name });
   }
 };
