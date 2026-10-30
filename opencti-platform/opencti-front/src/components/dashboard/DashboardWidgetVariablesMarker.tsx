@@ -1,5 +1,5 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { DataObjectOutlined } from '@mui/icons-material';
+import { Variable } from 'mdi-material-ui';
 import { useFormatter } from '../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../utils/Image';
 
@@ -22,7 +22,8 @@ const DashboardWidgetVariablesMarker = ({ names }: DashboardWidgetVariablesMarke
           data-testid="widget-variables-marker"
           style={{ display: 'inline-flex', verticalAlign: 'middle' }}
         >
-          <DataObjectOutlined fontSize="small" color="action" />
+          {/* The glyph of the Variable value source in the widget filters. */}
+          <Variable fontSize="small" color="action" />
         </span>
       </TooltipTrigger>
       <TooltipContent>
