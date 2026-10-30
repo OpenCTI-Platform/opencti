@@ -138,7 +138,7 @@
     "jwt-decode": "4.0.0",
     "lru-cache": "11.5.3",
     "luxon": "3.7.2",
-    "marked": "18.1.1",
+    "marked": "18.1.2",
     "migrate": "2.1.0",
     "mime-types": "3.0.2",
     "moment": "2.31.0",
