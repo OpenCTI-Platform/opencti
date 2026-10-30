@@ -34,7 +34,8 @@ The capability **Create knowledge via Form Intake** lets a user submit form inta
 Like the other capabilities that can be controlled in draft, it is granted per scope (main, draft). With the capability only in draft, the submission is always made in a draft.
 Roles that had Create / Update knowledge received it automatically at upgrade, in each scope where they had Create / Update knowledge.
 
-- While a submission is imported, only Create / Update knowledge is granted to the user. Every other right still applies (markings, confidence, organization, draft).
+- While a submission is imported, the user can create knowledge as with Create / Update knowledge. Every other right still applies (markings, confidence, organization, draft).
+- Such a submission never changes the knowledge that already exists: when an object of the form already exists (e.g. a malware with the same name), it is used as it is, without updating or merging it, and the relationships and containers of the form still point to it. A user who also has Create / Update knowledge in the destination updates existing objects as before.
 - Creating a new label through a form requires the **Manage labels** capability.
 - The import dialog of the top bar and the form intake buttons of the entity lists are available to these users. The other import modes (file upload, step-by-step) still need the **Import knowledge** capability.
 

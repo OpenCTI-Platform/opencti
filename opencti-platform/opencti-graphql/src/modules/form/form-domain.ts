@@ -32,7 +32,7 @@ import {
   validatePendingPayload,
   validatePendingRoots,
 } from './form-pending';
-import { checkFormSubmissionAccess } from './form-submission-context';
+import { canUpdateKnowledgeIn, checkFormSubmissionAccess } from './form-submission-context';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from './form-bundle-builder';
 
 export { completeEntity } from './form-entity-builder';
@@ -645,7 +645,8 @@ export const commitSubmission = async (
         // An empty id (not null) makes the worker send an empty draft header: a missing header would make the API fall back
         // to the draft the applicant is in at import time, which may no longer be the one of the submission
         draft_id: draftId ?? '',
-        update: true,
+        // Without Create / Update knowledge, an existing object is not force merged (and not upserted, see isCreateOnlyFormImport)
+        update: canUpdateKnowledgeIn(user, draftId !== null),
         no_split: true,
       });
     } catch (error) {

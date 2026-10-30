@@ -29,7 +29,7 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;&nbsp;&nbsp;`Manage authorized members`     | Restrict the access to an entity to a user, group or organization.                            |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass enforced reference`     | If external references enforced in a type of entity, be able to bypass the enforcement.       |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Bypass mandatory fields`       | Bypass any custom fields marked as mandatory in entity customization.                         |
-| &nbsp;&nbsp;`Create knowledge via Form Intake`          | Submit Form Intakes to create knowledge, without the general `Create / Update knowledge` capability. See [Form Intake](../usage/form-intake.md). |
+| &nbsp;&nbsp;`Create knowledge via Form Intake`          | Submit Form Intakes to create knowledge, without the general `Create / Update knowledge` capability. A submission does not update existing knowledge. See [Form Intake](../usage/form-intake.md). |
 | &nbsp;&nbsp;`Upload knowledge files`                    | Upload files in the `Data` and `Content` section of entities. Required to use Draft mode.     |
 | &nbsp;&nbsp;`Import knowledge`                          | Trigger the ingestion of an uploaded file. Required to use Draft mode.                        |
 | &nbsp;&nbsp;`Download knowledge export`                 | Download the exports generated in the entities (in the `Data` section).                       |
