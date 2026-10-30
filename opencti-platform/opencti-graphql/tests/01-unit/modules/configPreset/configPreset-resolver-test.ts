@@ -154,11 +154,17 @@ describe('Config preset exportable types query', () => {
     });
   });
 
-  it('does not list a family that requires the Enterprise Edition when the platform has none', async () => {
+  it('lists a family that requires the Enterprise Edition without its items when the platform has none, so the dialog can show it locked', async () => {
     enterpriseEdition.enabled = false;
-    const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
+    const source = '{ configPresetExportableTypes { key requiresEnterpriseEdition items { key } itemsPageInfo { hasNextPage globalCount } } }';
+    const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
-    expect((result.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'hiddenEntityTypes']);
+    const types = result.data?.configPresetExportableTypes as { key: string; requiresEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
+    expect(types.map((type) => [type.key, type.requiresEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false]]);
+    expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
+    enterpriseEdition.enabled = true;
+    const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
+    expect((licensed.data?.configPresetExportableTypes as { key: string; items: unknown[] }[]).find((type) => type.key === 'whitemark')?.items).toHaveLength(1);
   });
 
   it('rejects a user without BYPASS', async () => {

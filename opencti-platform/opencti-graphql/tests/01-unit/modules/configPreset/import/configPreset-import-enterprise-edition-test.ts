@@ -46,13 +46,15 @@ describe('Import of a family that requires the Enterprise Edition (compute)', ()
     expect(await compute(futureFamily(), 'item', {})).toEqual(computed);
   });
 
-  it('skips the item, with the reason, on a platform without the Enterprise Edition', async () => {
+  it('skips the item, with the reason and named after its family, on a platform without the Enterprise Edition', async () => {
     enterpriseEdition.enabled = false;
     expect(await compute(futureFamily(), 'item', {})).toEqual({
-      ...computed,
+      label: 'Messages',
+      translatable: true,
+      exists: false,
+      conflict: false,
       status: 'skipped',
       reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED,
-      conflict: false,
     });
   });
 
@@ -64,10 +66,12 @@ describe('Import of a family that requires the Enterprise Edition (compute)', ()
     expect(await compute(family, 'item', {})).toEqual(computed);
   });
 
-  it('keeps an item that is invalid as failed, with its own reason, whatever the edition', async () => {
-    const failed: ConfigPresetComputedItem = { ...computed, status: 'failed', reason: 'invalid' };
+  it('never calls the importer of a family the platform cannot import, whatever it would decide', async () => {
+    const family = futureFamily();
+    vi.mocked(family.importer!.compute).mockRejectedValue(new Error('Enterprise edition is not enabled'));
     enterpriseEdition.enabled = false;
-    expect(await compute(futureFamily(failed), 'item', {})).toEqual(failed);
+    expect(await compute(family, 'item', {})).toMatchObject({ status: 'skipped', reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED });
+    expect(family.importer!.compute).not.toHaveBeenCalled();
   });
 
   it('leaves the families that do not require it alone', async () => {
@@ -101,8 +105,10 @@ describe('Import of the whitemark (compute)', () => {
     expect(await compute(whitemark(), 'whitemark', { platform_whitemark: true })).toMatchObject({ status: 'overwritten' });
   });
 
-  it('keeps an invalid whitemark as failed, whatever the edition', async () => {
+  it('is validated only on a platform that can import it', async () => {
     enterpriseEdition.enabled = false;
+    expect(await compute(whitemark(), 'whitemark', { platform_whitemark: 'yes' })).toMatchObject({ status: 'skipped' });
+    enterpriseEdition.enabled = true;
     expect(await compute(whitemark(), 'whitemark', { platform_whitemark: 'yes' })).toMatchObject({ status: 'failed' });
   });
 });

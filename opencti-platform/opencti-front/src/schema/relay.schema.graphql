@@ -17836,6 +17836,7 @@ type ConfigPresetExportableType {
   label: String!
   description: String!
   group: ConfigPresetExportableGroup!
+  requiresEnterpriseEdition: Boolean!
   items: [ConfigPresetExportableItem!]!
   itemsPageInfo: PageInfo!
 }
@@ -17862,6 +17863,7 @@ type ConfigPresetImportType {
   label: String!
   description: String!
   group: ConfigPresetExportableGroup!
+  requiresEnterpriseEdition: Boolean!
   items: [ConfigPresetImportItem!]!
   modes: [ConfigImportMode!]!
 }
