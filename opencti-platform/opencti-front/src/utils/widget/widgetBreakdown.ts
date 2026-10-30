@@ -4,12 +4,15 @@ import { isDraftWorkspaceFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FilterDefinition } from '../hooks/useAuth';
 import { isCustomFieldAttribute } from '../customFields';
-import { daysAgo, monthsAgo } from '../Time';
+import { dayStartDate, daysAgo, monthsAgo, parse } from '../Time';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { parseVariableToken } from '../../components/dashboard/dashboardVariablesResolution';
 
 export const BREAKDOWN_LIMIT_OPTIONS = [5, 10, 20, 50];
 export const DEFAULT_BREAKDOWN_LIMIT = 10;
+
+// Draft workspaces cannot be broken down: read on the filters of the widget, or on the content of its saved filter
+const isDraftWorkspaceDataset = (dataSelection: Widget['dataSelection']) => isDraftWorkspaceFilterGroup(dataSelection[0]?.filters);
 
 // Relation refs and id attributes with a small, stable cardinality. Vocabularies and enums are
 // always allowed, whatever their key. The backend enforces the same fields, split in three
@@ -100,7 +103,9 @@ export const getBreakdownEntityTypes = (filters?: FilterGroup | null, perspectiv
   if (!filters || !typeFilterKey) return [];
   const isRestrictingGroup = filters.mode === 'and' || filters.filters.length + filters.filterGroups.length === 1;
   const typeFilter = filters.filters.find((filter) => filter.key === typeFilterKey);
-  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== 'eq') || typeFilter.mode === 'and') {
+  // Several types in "and" only keep the elements of every type, while a single one restricts the type whatever the mode
+  const isTypeIntersection = typeFilter?.mode === 'and' && typeFilter.values.length > 1;
+  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== 'eq') || isTypeIntersection) {
     return [];
   }
   return typeFilter.values.filter((value): value is string => typeof value === 'string');
@@ -131,11 +136,13 @@ export const resolveBreakdownTypeVariables = (types: string[], variables?: Dashb
  * (BREAKDOWN_ALLOWED_REFS, vocabularies and enums); with several types, the ones they have in common,
  * plus the type itself, also offered for a single abstract type, which holds several concrete ones.
  * Relationships can also be broken down by the type of their source or target.
+ * The fields are ordered by their label as shown, `translate`d.
  */
 export const getBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   entityTypes: string[],
   perspective: WidgetPerspective = 'entities',
+  translate: (label: string) => string = (label) => label,
 ): BreakdownField[] => {
   const breakdownPerspective = getBreakdownPerspective(perspective);
   if (!breakdownPerspective) return [];
@@ -157,26 +164,31 @@ export const getBreakdownFieldOptions = (
   if (entityTypes.length !== 1 || isAbstractType) {
     options.push(breakdownPerspective.typeField);
   }
-  return options.sort((a, b) => a.label.localeCompare(b.label));
+  return options.sort((a, b) => translate(a.label).localeCompare(translate(b.label)));
 };
 
 /**
  * Fields the first dataset of the widget can be broken down by: the fields of its entity or relationship
  * types for the entities and the relationships, the allowed fields of the logs for the audits.
  * The dataset filters are the ones of the widget, its saved filters read: its type variables are
- * resolved with the dashboard `variables`.
+ * resolved with the dashboard `variables`. None for draft workspaces, which a saved filter can select.
+ * The audits fields keep their order, the others are ordered by their `translate`d label.
  */
 export const getWidgetBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection'>,
   variables?: DashboardVariable[],
+  translate?: (label: string) => string,
 ): BreakdownField[] => {
+  if (isDraftWorkspaceDataset(widget.dataSelection)) {
+    return [];
+  }
   if (widget.perspective === 'audits') {
     return AUDITS_BREAKDOWN_FIELDS;
   }
   const perspective = widget.perspective ?? 'entities';
   const types = resolveBreakdownTypeVariables(getBreakdownEntityTypes(widget.dataSelection[0]?.filters, perspective), variables);
-  return getBreakdownFieldOptions(filterKeysSchema, types, perspective);
+  return getBreakdownFieldOptions(filterKeysSchema, types, perspective, translate);
 };
 
 /**
@@ -189,9 +201,12 @@ export const isBreakdownFieldSupported = (
   widget: Pick<Widget, 'perspective' | 'dataSelection' | 'parameters'>,
 ) => {
   const breakdownBy = widget.parameters?.breakdownBy;
+  if (!breakdownBy || isDraftWorkspaceDataset(widget.dataSelection)) {
+    return false;
+  }
   // The API accepts the type itself for any dataset: it is only not offered for a single type, a single series.
   // A type variable may well hold a single type once resolved.
-  if (breakdownBy && getBreakdownPerspective(widget.perspective ?? 'entities')?.typeField.key === breakdownBy) {
+  if (getBreakdownPerspective(widget.perspective ?? 'entities')?.typeField.key === breakdownBy) {
     return true;
   }
   return getWidgetBreakdownFieldOptions(filterKeysSchema, widget).some(({ key }) => key === breakdownBy);
@@ -199,6 +214,15 @@ export const isBreakdownFieldSupported = (
 
 export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) => {
   return parameters?.breakdownLimit ?? DEFAULT_BREAKDOWN_LIMIT;
+};
+
+/**
+ * Numbers of series offered, with the one of the widget among them: the API accepts any from 1 to 50,
+ * so an imported widget, or one written through the API, can hold another.
+ */
+export const getBreakdownLimitOptions = (parameters?: WidgetParameters | null) => {
+  const limit = getWidgetBreakdownLimit(parameters);
+  return BREAKDOWN_LIMIT_OPTIONS.includes(limit) ? BREAKDOWN_LIMIT_OPTIONS : [...BREAKDOWN_LIMIT_OPTIONS, limit].sort((a, b) => a - b);
 };
 
 export const getWidgetBreakdownOrder = (parameters?: WidgetParameters | null): 'asc' | 'desc' => {
@@ -211,10 +235,14 @@ export const getWidgetBreakdownOther = (parameters?: WidgetParameters | null) =>
 
 /**
  * Start date used when the dashboard sets none: a daily breakdown over the default 12 months
- * would draw too many bars, so it only looks back 30 days.
+ * would draw too many bars, so it only looks back 30 days. It looks back from the `endDate` of the
+ * dashboard when it sets one, from today otherwise: an end date in the past keeps a period to draw.
  */
-export const getBreakdownDefaultStartDate = (interval: string) => {
-  return interval === 'day' ? daysAgo(30) : monthsAgo(12);
+export const getBreakdownDefaultStartDate = (interval: string, endDate?: string | null) => {
+  if (!endDate) {
+    return interval === 'day' ? daysAgo(30) : monthsAgo(12);
+  }
+  return interval === 'day' ? daysAgo(30, endDate) : parse(dayStartDate(endDate)).subtract(12, 'months').format();
 };
 
 type BreakdownWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'>;
@@ -235,7 +263,7 @@ const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
     && getCurrentCategory(widget.type) === 'timeseries'
     && widget.dataSelection.length === 1
     && (dataset.perspective ?? widget.perspective) === widget.perspective
-    && !isDraftWorkspaceFilterGroup(dataset.filters)
+    && !isDraftWorkspaceDataset(widget.dataSelection)
     && !isCountingDistinctValues(widget);
 };
 
@@ -488,10 +516,13 @@ export const coarsenSeriesForRendering = <T extends { data: TimeSeriesPoint[] }>
 export const numberSharedSeriesNames = (names: string[]) => {
   const counts = new Map<string, number>();
   names.forEach((name) => counts.set(name, (counts.get(name) ?? 0) + 1));
+  // A number another series is already named with is skipped: "Alice (1)" next to two "Alice"
+  const inputNames = new Set(names);
   const ranks = new Map<string, number>();
   return names.map((name) => {
     if ((counts.get(name) ?? 0) < 2) return name;
-    const rank = (ranks.get(name) ?? 0) + 1;
+    let rank = (ranks.get(name) ?? 0) + 1;
+    while (inputNames.has(`${name} (${rank})`)) rank += 1;
     ranks.set(name, rank);
     return `${name} (${rank})`;
   });

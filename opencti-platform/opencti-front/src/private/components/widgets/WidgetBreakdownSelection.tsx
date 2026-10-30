@@ -4,7 +4,7 @@ import { useFormatter } from '../../../components/i18n';
 import useHelper from '../../../utils/hooks/useHelper';
 import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
 import {
-  BREAKDOWN_LIMIT_OPTIONS,
+  getBreakdownLimitOptions,
   getWidgetBreakdownLimit,
   getWidgetBreakdownLockReason,
   getWidgetBreakdownOrder,
@@ -45,17 +45,18 @@ const WidgetBreakdownSelection = () => {
   // Filters changed to types without this field: drop the breakdown rather than keeping a field the API refuses.
   // Not before the saved filter is read: its types are unknown until then.
   useEffect(() => {
-    if (isEnabled && isEditable && isResolved && breakdownBy && !isFieldAvailable) {
+    if (isEnabled && isResolved && breakdownBy && !isFieldAvailable) {
       setParameters(NO_BREAKDOWN);
     }
-  }, [isEnabled, isEditable, isResolved, breakdownBy, isFieldAvailable]);
+  }, [isEnabled, isResolved, breakdownBy, isFieldAvailable]);
 
   if (!isSupported) {
     return null;
   }
 
-  // A field set next to several datasets or distinct values is kept visible, but nothing can be changed
-  const hasField = !!breakdownBy && (isFieldAvailable || !isEditable);
+  // The editor drops the breakdown of a widget with several datasets or distinct values as soon as it opens
+  // (applyBreakdownCompatibility): a locked widget has no field, only its choice is shown, disabled
+  const hasField = !!breakdownBy && isFieldAvailable;
 
   const fieldSelect = (
     <Select
@@ -82,14 +83,13 @@ const WidgetBreakdownSelection = () => {
     <Select
       value={String(getWidgetBreakdownLimit(parameters))}
       onValueChange={(value: string) => setParameters({ breakdownLimit: parseInt(value, 10) })}
-      disabled={!isEditable}
     >
       <SelectLabel>{t_i18n('Maximum number of series')}</SelectLabel>
       <SelectTrigger className="w-full">
         <SelectValue />
       </SelectTrigger>
       <SelectContent aria-label={t_i18n('Maximum number of series')}>
-        {BREAKDOWN_LIMIT_OPTIONS.map((limit) => (
+        {getBreakdownLimitOptions(parameters).map((limit) => (
           <SelectItem key={limit} value={String(limit)}>
             {limit}
           </SelectItem>
@@ -102,7 +102,6 @@ const WidgetBreakdownSelection = () => {
     <Select
       value={getWidgetBreakdownOrder(parameters)}
       onValueChange={(value: string) => setParameters({ breakdownOrder: value === 'asc' ? 'asc' : 'desc' })}
-      disabled={!isEditable}
     >
       <SelectLabel>{t_i18n('Order')}</SelectLabel>
       <SelectTrigger className="w-full">
@@ -127,7 +126,6 @@ const WidgetBreakdownSelection = () => {
       <Switch
         checked={getWidgetBreakdownOther(parameters)}
         onCheckedChange={(checked: boolean) => setParameters({ breakdownOther: checked })}
-        disabled={!isEditable}
         label={t_i18n('Include Other')}
       />
     </div>
@@ -143,14 +141,12 @@ const WidgetBreakdownSelection = () => {
         <div style={{ display: 'flex', gap: 20, alignItems: 'flex-end' }}>
           <div style={{ flex: 2 }}>{orderSelect}</div>
           <div style={{ flex: 1 }}>
-            {isEditable ? (
-              <Tooltip>
-                <TooltipTrigger asChild>{otherSwitch}</TooltipTrigger>
-                <TooltipContent>
-                  {otherTooltip}
-                </TooltipContent>
-              </Tooltip>
-            ) : otherSwitch}
+            <Tooltip>
+              <TooltipTrigger asChild>{otherSwitch}</TooltipTrigger>
+              <TooltipContent>
+                {otherTooltip}
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       )}

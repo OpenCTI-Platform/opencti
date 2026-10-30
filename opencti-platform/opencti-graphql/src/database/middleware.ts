@@ -68,7 +68,6 @@ import {
   type ElFindByIdsOpts,
   elHistogramBreakdownCount,
   getHistogramDateFormat,
-  HISTOGRAM_BREAKDOWN_OTHER_KEY,
   elHistogramCount,
   elIndexElements,
   elList,
@@ -921,8 +920,36 @@ type BreakdownField = {
   // Set to break relationships down by the type of their source or target
   connectionSide?: ConnectionSide;
 };
+// Letters and punctuation asciifolding folds that have no decomposition, which stripping the diacritics leaves as
+// they are: the most common ones, with the typographic quotes (‘ ’ ‚ ‛ “ ” „) and dashes (– —)
+const ASCII_FOLDINGS: Record<string, string> = {
+  ß: 'ss', œ: 'oe', æ: 'ae', ø: 'o', ł: 'l', đ: 'd', ð: 'd', þ: 'th', ı: 'i',
+  '\u2018': "'", '\u2019': "'", '\u201a': "'", '\u201b': "'", '\u201c': '"', '\u201d': '"', '\u201e': '"', '\u2013': '-', '\u2014': '-',
+};
+const ASCII_FOLDINGS_PATTERN = new RegExp(`[${Object.keys(ASCII_FOLDINGS).join('')}]`, 'g');
 // Indexed form of a keyword value (string_normalizer: lowercase and asciifolding), for the accented latin letters
-const normalizeKeywordValue = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+// and the most common letters and punctuation without decomposition
+export const normalizeKeywordValue = (value: string) => value.toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(ASCII_FOLDINGS_PATTERN, (character) => ASCII_FOLDINGS[character]);
+// Entity types are indexed in lowercase: give them back the name of their registered type. The lookup is built at
+// the first use, once every type is registered, and only built again if the registered types change.
+let entityTypesLookup: { registeredTypes: string[]; size: number; labels: Map<string, string> } | null = null;
+const resolveEntityTypeLabel = (key: string) => {
+  const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
+  if (entityTypesLookup?.registeredTypes !== registeredTypes || entityTypesLookup.size !== registeredTypes.length) {
+    const labels = new Map<string, string>();
+    // The first registered type of a lowercase name keeps it
+    registeredTypes.forEach((type) => {
+      if (!labels.has(type.toLowerCase())) {
+        labels.set(type.toLowerCase(), type);
+      }
+    });
+    entityTypesLookup = { registeredTypes, size: registeredTypes.length, labels };
+  }
+  return entityTypesLookup.labels.get(key) ?? key;
+};
 // A breakdown field read from the schema is a filter key that every requested type carries: a relation ref of
 // the allowlist (author, labels, markings, assignees, participants), or an id, vocabulary or enum attribute.
 // Free text, dates, numbers and the special filter keys cannot be broken down.
@@ -958,7 +985,7 @@ const resolveSchemaBreakdownField = (types: string[], field: string): BreakdownF
 // Entities: the schema fields, and the entity type
 export const resolveBreakdownField = (types: string[], field: string): BreakdownField => {
   if (field === 'entity_type') {
-    return { aggregationField: field, resolveEntities: false };
+    return { aggregationField: field, resolveEntities: false, resolveLabel: resolveEntityTypeLabel };
   }
   const breakdownField = resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {
@@ -976,17 +1003,13 @@ export const resolveRelationshipBreakdownField = (types: string[], field: string
   }
   if (field === RELATION_FROM_TYPES_FILTER || field === RELATION_TO_TYPES_FILTER) {
     const connectionSide = field === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
-    return { aggregationField: 'connections.types', resolveEntities: false, connectionSide };
+    return { aggregationField: 'connections.types', resolveEntities: false, resolveLabel: resolveEntityTypeLabel, connectionSide };
   }
   const breakdownField = resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {
     throw FunctionalError('Time series breakdown does not support this field for these relationship types', { field, types });
   }
   return breakdownField;
-};
-// Entity types are indexed in lowercase: give them back the name of their registered type
-const resolveEntityTypeLabel = (key: string) => {
-  return schemaAttributesDefinition.getRegisteredTypes().find((type) => type.toLowerCase() === key) ?? key;
 };
 // Fields of the history and activity logs a breakdown accepts, all with a bounded cardinality: the kind of
 // event, who did it (user, groups, organizations) and the types involved. Any other field is refused, the
@@ -1066,6 +1089,7 @@ const timeSeriesBreakdown = async (
   const seriesCount = seriesLimit + (withOther ? 1 : 0);
   if (seriesCount * intervalsCount > TIME_SERIES_BREAKDOWN_MAX_BUCKETS) {
     throw FunctionalError('Time series breakdown is too large, reduce the period, the interval or the number of series', {
+      reason: 'too_large',
       limit: seriesCount,
       intervalsCount,
       max: TIME_SERIES_BREAKDOWN_MAX_BUCKETS,
@@ -1083,9 +1107,10 @@ const timeSeriesBreakdown = async (
   // Ranked on their number of entities (the series values below stay weighted), which spares the weight
   // sum of every value; no missing bucket either, so a real "unknown" value is a value like any other.
   // The types of a side of the relationships are ranked the same way, on their number of relationships.
+  // desc gets the top values only, asc every value, ranked exactly or refused when there are too many of them.
   const candidates = connectionSide
     ? await elConnectionTypesAggregationCount(context, user, indices, { ...breakdownArgs, connectionSide, bucketsOrder })
-    : await elAggregationCount(context, user, indices, { ...breakdownArgs, convertEntityTypeLabel: true, normalizeLabel: false, rankByCount: true, bucketsOrder });
+    : await elAggregationCount(context, user, indices, { ...breakdownArgs, normalizeLabel: false, rankByCount: true, bucketsOrder });
   const labelledCandidates = resolveLabel ? candidates.map((candidate) => ({ ...candidate, label: resolveLabel(candidate.key) })) : candidates;
   // desc keeps the values with the most entities over the period, asc the fewest
   const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], labelledCandidates);
@@ -1102,19 +1127,19 @@ const timeSeriesBreakdown = async (
     usableCandidates = sortedCandidates.map((candidate) => ({ ...candidate, entity: null }));
   }
   const selected = R.take(seriesLimit, usableCandidates);
-  // The terms aggregation is capped: a full candidates page means some values may never have been seen
-  // (in asc, the true lowest values may be among them)
-  const truncated = usableCandidates.length > seriesLimit || candidates.length >= MAX_AGGREGATION_SIZE;
+  // In desc, the terms aggregation is capped: a full candidates page means some values may never have been seen.
+  // In asc, every value has been seen.
+  const truncated = usableCandidates.length > seriesLimit || (!isAscending && candidates.length >= MAX_AGGREGATION_SIZE);
   if (selected.length === 0 && !withOther) {
     return { truncated, dates: [], series: [] };
   }
   // 3. Count every selected value, and the entities carrying none of them, over time in a single query.
-  // Many distinct values (a full candidates page, or several times the limit) mean a field with many values
-  // per entity or a high cardinality, where one filter per value is much faster than a restricted terms
+  // Many distinct values (as many as a full desc candidates page, or several times the limit) mean a field with many
+  // values per entity or a high cardinality, where one filter per value is much faster than a restricted terms
   const filterPerKey = candidates.length >= MAX_AGGREGATION_SIZE || candidates.length >= BREAKDOWN_FILTER_PER_KEY_RATIO * seriesLimit;
   const keys = selected.map((candidate) => candidate.key);
   // The names of the vocabularies are read during the histogram, only for the values kept
-  const [histograms, vocabularyLabels] = await Promise.all([
+  const [{ histograms, other }, vocabularyLabels] = await Promise.all([
     elHistogramBreakdownCount(context, user, indices, {
       ...breakdownArgs,
       interval,
@@ -1134,7 +1159,7 @@ const timeSeriesBreakdown = async (
     return { label: vocabularyLabels.get(key) ?? label, value: sumOf(values), entity, isOther: false, values };
   });
   if (withOther) {
-    const otherValues = fillTimeSeriesValues(axis, histograms.get(HISTOGRAM_BREAKDOWN_OTHER_KEY) ?? []);
+    const otherValues = fillTimeSeriesValues(axis, other ?? []);
     series.push({ label: BREAKDOWN_OTHER_LABEL, value: sumOf(otherValues), entity: null, isOther: true, values: otherValues });
   }
   return { truncated, dates: axis.dates, series };
