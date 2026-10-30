@@ -399,14 +399,25 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   it('says why the API refused the breakdown, and leaves any other error to the widget', () => {
     // React logs the errors its boundaries catch
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const refusal = (message: string) => ({ res: { errors: [{ message, extensions: { code: 'FUNCTIONAL_ERROR' } }] } });
+    const refusal = (message: string, data?: Record<string, unknown>) => ({ res: { errors: [{ message, extensions: { code: 'FUNCTIONAL_ERROR', data } }] } });
     const widget = makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection);
+    const tooLarge = 'This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.';
+    const tooManyValues = 'There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.';
+    const generic = 'This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.';
+    const refusedWith = (error: unknown) => {
+      mocks.error = error;
+      const { container, unmount } = render(widget);
+      const { textContent } = container;
+      unmount();
+      return textContent;
+    };
 
-    mocks.error = refusal('Time series breakdown is too large, reduce the period, the interval or the number of series');
-    expect(render(widget).getByText('This breakdown has too many points for the selected period. Reduce the period, the interval or the number of series.')).toBeTruthy();
-
-    mocks.error = refusal('Time series breakdown does not support this field for these entity types');
-    expect(render(widget).getByText('This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.')).toBeTruthy();
+    // The reason of the refusal tells which one it is, whatever its message says
+    expect(refusedWith(refusal('Refused', { reason: 'too_large', limit: 50, intervalsCount: 1097, max: 50000 }))).toEqual(tooLarge);
+    expect(refusedWith(refusal('Refused', { reason: 'too_many_values', max: 5000 }))).toEqual(tooManyValues);
+    // Any other refusal, even one whose message speaks of a size, keeps the generic message
+    expect(refusedWith(refusal('Time series breakdown is too large, reduce the period, the interval or the number of series'))).toEqual(generic);
+    expect(refusedWith(refusal('Time series breakdown does not support this field for these entity types', { reason: 'unsupported' }))).toEqual(generic);
 
     mocks.error = new Error('Network error');
     expect(() => render(widget)).toThrow('Network error');

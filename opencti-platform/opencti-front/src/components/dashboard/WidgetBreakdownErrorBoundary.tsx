@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { useFormatter } from '../i18n';
 import WidgetNoData from './WidgetNoData';
 
-type GraphQLResponseError = { message?: string; extensions?: { code?: string } };
+type GraphQLResponseError = { message?: string; extensions?: { code?: string; data?: { reason?: string } } };
 
 // Errors of a GraphQL response, as thrown by the network layer
 const getResponseErrors = (error: unknown): GraphQLResponseError[] => {
@@ -10,15 +10,16 @@ const getResponseErrors = (error: unknown): GraphQLResponseError[] => {
   return responseError?.res?.errors ?? responseError?.data?.res?.errors ?? [];
 };
 
-const BreakdownRefusal = ({ isTooLarge }: { isTooLarge: boolean }) => {
+// The reasons of the refusals are read from extensions.data.reason, never from their messages
+const BreakdownRefusal = ({ reasons }: { reasons: (string | undefined)[] }) => {
   const { t_i18n } = useFormatter();
-  return (
-    <WidgetNoData
-      message={isTooLarge
-        ? t_i18n('This breakdown has too many points for the selected period. Reduce the period, the interval or the number of series.')
-        : t_i18n('This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.')}
-    />
-  );
+  let message = t_i18n('This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.');
+  if (reasons.includes('too_large')) {
+    message = t_i18n('This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.');
+  } else if (reasons.includes('too_many_values')) {
+    message = t_i18n('There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.');
+  }
+  return <WidgetNoData message={message} />;
 };
 
 interface WidgetBreakdownErrorBoundaryProps {
@@ -33,9 +34,9 @@ interface WidgetBreakdownErrorBoundaryState {
 }
 
 /**
- * The breakdown API refuses the requests it cannot serve (too many points for the period, settings it does
- * not support): the widget says why and keeps its menu, instead of being replaced by the error of the whole
- * widget. Any other error goes on to the enclosing error boundary.
+ * The breakdown API refuses the requests it cannot serve (too many points for the period, too many values
+ * to rank the lowest ones, settings it does not support): the widget says why and keeps its menu, instead
+ * of being replaced by the error of the whole widget. Any other error goes on to the enclosing error boundary.
  */
 class WidgetBreakdownErrorBoundary extends React.Component<WidgetBreakdownErrorBoundaryProps, WidgetBreakdownErrorBoundaryState> {
   constructor(props: WidgetBreakdownErrorBoundaryProps) {
@@ -58,7 +59,7 @@ class WidgetBreakdownErrorBoundary extends React.Component<WidgetBreakdownErrorB
       if (refusals.length === 0) {
         throw error;
       }
-      return <BreakdownRefusal isTooLarge={refusals.some((refusal) => refusal.message?.includes('too large'))} />;
+      return <BreakdownRefusal reasons={refusals.map((refusal) => refusal.extensions?.data?.reason)} />;
     }
     return this.props.children;
   }
