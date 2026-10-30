@@ -31,6 +31,7 @@ import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/er
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
@@ -332,6 +333,12 @@ export const settingsEditField = async (context, user, settingsId, input) => {
         throw UnsupportedError('Invalid license');
       }
     }
+  }
+  // Removing the Filigran logos is an Enterprise Edition feature: turning it on needs the license, turning it off never does
+  // Every edit of the key counts: with a repeated key the last one is the one that is written
+  const whitemarks = data.filter((inputData) => inputData.key === 'platform_whitemark');
+  if (whitemarks.some((whitemark) => whitemark.value?.some((value) => value === true || value === 'true'))) {
+    await checkEnterpriseEdition(context);
   }
   const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
   if (cguStatus && cguStatus.value) {
