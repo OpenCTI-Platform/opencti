@@ -1237,8 +1237,11 @@ export const validateAndNormalizeEmailInput = async (context: AuthContext, userI
 export const userEditField = async (context: AuthContext, user: AuthUser, userId: string, rawInputs: any[], opts: Parameters<typeof updateAttribute>[5] = {}) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
-  let skipThisInput = false;
   let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
+  // Switching between user and service account sets or removes the password itself, so a password sent
+  // alongside is dropped, whatever the order of the inputs
+  const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
+  const switchesAccountType = userServiceAccountInput !== undefined && userToUpdate.user_service_account !== userServiceAccountInput.value[0];
   checkDateDisplayInput(rawInputs, 'date_format', 'time_format');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
@@ -1261,11 +1264,9 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     // Check user email is valid and not already used in case of email change
     await validateAndNormalizeEmailInput(context, userId, input);
     if (input.key === 'password') {
-      const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
-      if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
-        skipThisInput = true;
+      if (switchesAccountType) {
+        continue;
       }
-
       if (!userToUpdate.user_service_account) {
         const userPassword = R.head(input.value)!.toString();
         await checkPasswordFromPolicy(context, userPassword);
@@ -1330,10 +1331,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       hasPasswordUpdate = true;
       await addServiceAccountIntoUserCount();
     }
-
-    if (!skipThisInput) {
-      inputs.push(input);
-    }
+    inputs.push(input);
   }
   // Reset the password validity window whenever the password changes.
   if (hasPasswordUpdate) {

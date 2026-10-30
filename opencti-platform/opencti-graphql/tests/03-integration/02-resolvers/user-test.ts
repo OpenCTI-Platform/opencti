@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import bcrypt from 'bcryptjs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
@@ -1608,6 +1609,34 @@ describe('Service account User coverage', async () => {
         input: [{ key: 'password', value: ['toto'] }],
       },
     }, 'Cannot update password for Service account');
+  });
+  it('should turn service account into user when the password comes first', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: [{ key: 'password', value: ['toto'] }, { key: 'user_service_account', value: [false] }],
+      },
+    });
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_service_account).toEqual(false);
+    // the generated password is kept, the one sent alongside is dropped
+    const userUpdated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
+    expect(userUpdated.password).toBeDefined();
+    expect(bcrypt.compareSync('toto', userUpdated.password)).toBe(false);
+  });
+  it('should turn user into service account when the password comes first', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: [{ key: 'password', value: ['toto'] }, { key: 'user_service_account', value: [true] }],
+      },
+    });
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_service_account).toEqual(true);
+    const userUpdated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
+    expect(userUpdated.password).toBeUndefined();
   });
   it('should service account user deleted', async () => {
     // Delete the users
