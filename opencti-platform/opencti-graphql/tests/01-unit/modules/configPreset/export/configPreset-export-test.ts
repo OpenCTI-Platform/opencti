@@ -11,6 +11,7 @@ vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) 
   ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
+  fullRelationsList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));

@@ -1,8 +1,9 @@
 import { vi } from 'vitest';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, fullEntitiesThroughRelationsToList, fullRelationsList, pageEntitiesConnection, storeLoadById } from '../../../../src/database/middleware-loader';
 import { buildPagination } from '../../../../src/database/utils';
 import { ALL_THEMES } from './configPreset-themes-fixtures';
 import { ALL_ROLES } from './configPreset-roles-fixtures';
+import { ALL_GROUPS, GROUP_ALLOWED_MARKINGS, GROUP_ROLE_RELATIONS } from './configPreset-groups-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -13,6 +14,7 @@ interface ListingArgs {
 const FIXTURE_ENTITIES: Record<string, { id: string; name: string }[]> = {
   Theme: ALL_THEMES,
   Role: ALL_ROLES,
+  Group: ALL_GROUPS,
 };
 
 // The eq / not_eq filters and the search the families send, applied like the engine does, sorted by name
@@ -41,4 +43,13 @@ export const mockConfigPresetLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => {
     return Object.values(FIXTURE_ENTITIES).flat().find((entity) => entity.id === id) as never;
   });
+  if (vi.isMockFunction(fullRelationsList)) {
+    vi.mocked(fullRelationsList).mockImplementation(async (_ctx, _user, _type, args) => {
+      const fromIds = [args?.fromId ?? []].flat();
+      return GROUP_ROLE_RELATIONS.filter(({ fromId }) => fromIds.includes(fromId)) as never;
+    });
+  }
+  if (vi.isMockFunction(fullEntitiesThroughRelationsToList)) {
+    vi.mocked(fullEntitiesThroughRelationsToList).mockImplementation(async (_ctx, _user, fromId) => GROUP_ALLOWED_MARKINGS[fromId as string] as never);
+  }
 };

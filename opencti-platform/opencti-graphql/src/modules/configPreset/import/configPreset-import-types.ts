@@ -50,6 +50,8 @@ export interface ConfigPresetImportPlan {
   releasedThemeNames?: Set<string>;
   // The standard ids of the roles the earlier items of a dry run would create
   roleIds?: Set<string>;
+  // The standard ids of the groups the earlier items of a dry run would create
+  groupIds?: Set<string>;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;

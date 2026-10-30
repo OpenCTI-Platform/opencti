@@ -6,6 +6,7 @@ import { brandingFamily } from './registry/branding-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
 import { hiddenEntityTypesFamily } from './registry/hiddenEntityTypes-configPreset-registry';
 import { rolesFamily } from './registry/roles-configPreset-registry';
+import { groupsFamily } from './registry/groups-configPreset-registry';
 
 export { BRANDING_FAMILY_ID } from './registry/branding-configPreset-registry';
 
@@ -17,6 +18,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   messagesFamily,
   hiddenEntityTypesFamily,
   rolesFamily,
+  groupsFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.

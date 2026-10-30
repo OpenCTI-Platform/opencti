@@ -126,7 +126,7 @@ export const computeConfigPresetItems = async (
   items: ConfigPresetBundleItem[],
   { modes = new Map() }: { modes?: Map<string, ConfigImportMode> } = {},
 ): Promise<{ item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[]> => {
-  const plan: ConfigPresetImportPlan = { created: new Set(), themeNames: new Set(), releasedThemeNames: new Set(), roleIds: new Set() };
+  const plan: ConfigPresetImportPlan = { created: new Set(), themeNames: new Set(), releasedThemeNames: new Set(), roleIds: new Set(), groupIds: new Set() };
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;

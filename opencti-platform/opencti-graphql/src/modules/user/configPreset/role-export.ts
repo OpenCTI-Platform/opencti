@@ -10,7 +10,6 @@ const capabilityNames = async (context: AuthContext, user: AuthUser, roleId: str
   return (await roleCapabilities(context, user, roleId, relationshipType)).map(({ name }) => name).sort();
 };
 
-// A role in the import format: its capabilities by name, sorted for a stable file. Its standard id is computed from its name
 export const getRoleConfigPresetConfiguration = async (context: AuthContext, user: AuthUser, role: BasicStoreEntityRole): Promise<RoleImportConfiguration> => {
   const [capabilities, capabilitiesInDraft] = await Promise.all([
     capabilityNames(context, user, role.id, RELATION_HAS_CAPABILITY),

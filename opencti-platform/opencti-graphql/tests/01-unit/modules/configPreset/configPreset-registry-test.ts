@@ -6,22 +6,36 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
+  fullRelationsList: vi.fn(),
+  fullEntitiesThroughRelationsToList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
+// The markings of a group are read from the cache
+vi.mock('../../../../src/database/cache', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../../src/database/cache')>();
+  const { ALL_MARKINGS } = await import('./configPreset-markings-fixtures');
+  const markings = new Map(ALL_MARKINGS.flatMap((marking) => [[marking.id, marking], [marking.standard_id, marking]]));
+  return {
+    ...original,
+    getEntitiesMapFromCache: vi.fn(async (ctx, usr, type) => (type === 'Marking-Definition' ? markings : original.getEntitiesMapFromCache(ctx, usr, type))),
+  };
+});
 // The capabilities of a role are read through its relations
 vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/user/user-domain')>()),
   roleCapabilities: vi.fn(),
 }));
 
-import { fullEntitiesList, pageEntitiesConnection, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
 import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { builtInTheme, customTheme, otherCustomTheme, THEME_FILE_FIELDS } from './configPreset-themes-fixtures';
 import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole, ROLE_CAPABILITIES } from './configPreset-roles-fixtures';
+import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
+import { papRed, tlpAmber } from './configPreset-markings-fixtures';
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 
 const context = { source: 'test' } as AuthContext;
@@ -99,6 +113,14 @@ describe('Config preset registry', () => {
         group: 'securityAccess',
         itemIds: [administratorRole.standard_id, analystRole.standard_id],
       },
+      // The groups by name, built-in ones included
+      {
+        id: 'groups',
+        label: 'Groups',
+        description: 'Groups with their roles, markings and confidence level',
+        group: 'securityAccess',
+        itemIds: [administratorsGroup.standard_id, analystsGroup.standard_id],
+      },
     ]);
   });
 
@@ -115,6 +137,8 @@ describe('Config preset registry', () => {
       ['Hidden entity types', true],
       ['Administrator', false],
       ['Analyst', false],
+      ['Administrators', false],
+      ['Analysts', false],
     ]);
   });
 
@@ -134,6 +158,8 @@ describe('Config preset registry', () => {
       'data_model/hidden_entity_types.json',
       `security_access/roles/${administratorRole.standard_id}.json`,
       `security_access/roles/${analystRole.standard_id}.json`,
+      `security_access/groups/${administratorsGroup.standard_id}.json`,
+      `security_access/groups/${analystsGroup.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -367,6 +393,79 @@ describe('Config preset registry', () => {
       expect(await ids(null, [])).toEqual([administratorRole.standard_id, analystRole.standard_id]);
       expect(await ids(null, [administratorRole.standard_id])).toEqual([analystRole.standard_id]);
       expect(await ids([analystRole.standard_id], [])).toEqual([analystRole.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('groups', () => {
+    const groups = findFamily('groups');
+    const pageIds = async (args: Parameters<typeof groups.listItems>[2]) => (await groups.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a group in the group import format: its roles and markings by standard id, never its ids nor its members', async () => {
+      const file = await exportConfigPresetItem(context, user, groups, await findItem('groups', administratorsGroup.standard_id));
+      expect(file).toMatchObject({ type: 'securityAccess.groups', id: administratorsGroup.standard_id });
+      const amber = { standard_id: tlpAmber.standard_id, definition_type: 'TLP', definition: 'TLP:AMBER' };
+      const red = { standard_id: papRed.standard_id, definition_type: 'PAP', definition: 'PAP:RED' };
+      expect(file.configuration).toEqual({
+        name: 'Administrators',
+        description: 'Administrator group',
+        default_assignation: false,
+        auto_integration_assignation: [],
+        no_creators: false,
+        restrict_delete: true,
+        auto_new_marking: true,
+        group_confidence_level: { max_confidence: 100, overrides: [{ entity_type: 'Report', max_confidence: 80 }] },
+        default_hidden_types: ['Channel', 'Malware'],
+        default_dashboard: null,
+        roles: [{ standard_id: administratorRole.standard_id, name: 'Administrator' }],
+        allowed_markings: [amber, red].sort((a, b) => a.standard_id.localeCompare(b.standard_id)),
+        // A marking that no longer exists is left out
+        default_marking: [{ entity_type: 'GLOBAL', values: [amber] }],
+        max_shareable_markings: [{ type: 'TLP', value: amber }, { type: 'PAP', value: 'none' }],
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|-group-id|-role-id|tlp-amber-id|deleted-marking-id/);
+    });
+
+    it('exports a group with none of the optional values set with their defaults, to keep a stable file shape', async () => {
+      const file = await exportConfigPresetItem(context, user, groups, await findItem('groups', analystsGroup.standard_id));
+      expect(file.configuration).toMatchObject({
+        description: '',
+        default_assignation: false,
+        auto_integration_assignation: [],
+        group_confidence_level: null,
+        default_hidden_types: [],
+        default_dashboard: null,
+        allowed_markings: [],
+        default_marking: [],
+        max_shareable_markings: [],
+      });
+    });
+
+    it('depends on its roles, read once for the groups of a page', async () => {
+      const page = await groups.listItems(context, user, { first: 10 });
+      expect(page.edges.map(({ node }) => [node.id, node.dependsOn])).toEqual([
+        [administratorsGroup.standard_id, [{ type: 'roles', id: administratorRole.standard_id }]],
+        [analystsGroup.standard_id, [{ type: 'roles', id: analystRole.standard_id }]],
+      ]);
+      expect(fullRelationsList).toHaveBeenCalledTimes(1);
+    });
+
+    it('applies search, ids and excluded ids to the groups', async () => {
+      expect(await pageIds({ search: 'analy' })).toEqual([analystsGroup.standard_id]);
+      expect(await pageIds({ ids: [analystsGroup.standard_id] })).toEqual([analystsGroup.standard_id]);
+      expect(await pageIds({ excludedIds: [analystsGroup.standard_id] })).toEqual([administratorsGroup.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no group query, whose empty filter would match every group
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the groups to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await groups.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([administratorsGroup.standard_id, analystsGroup.standard_id]);
+      expect(await ids(null, [administratorsGroup.standard_id])).toEqual([analystsGroup.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();

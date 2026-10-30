@@ -24,7 +24,6 @@ const rolesArgs = (ids?: string[] | null, excludedIds?: string[] | null) => {
   };
 };
 
-// A role is identified by its standard id everywhere: computed from its name, it is the same on every platform
 const toRoleItem = (role: BasicStoreEntityRole): ConfigPresetItemDefinition => ({
   id: role.standard_id,
   label: role.name,
@@ -36,20 +35,16 @@ const rolesImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
     const name = typeof item.configuration.name === 'string' ? item.configuration.name : item.id;
     const base = { label: name, translatable: false };
-    // The bundle id of a role is its standard id, computed from its name
     if (roleStandardId(name) !== item.id) {
       return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the role does not match its name' };
     }
-    // The rules of a role are the ones of the role module: a dry run decides what the import would do
     const result = await importRole(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.roleIds });
-    // The role the items depend on is the one with this standard id: a copy of a role that exists is another role
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(ROLES_FAMILY_ID, item.id));
     }
     return { ...base, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason };
   },
   apply: async (context, user, item, computed, mode) => {
-    // Decided again by the role module as it writes: a role with this name created since compute is overwritten, never duplicated
     const result = await importRole(context, user, item.configuration, { mode });
     if (result.status !== 'created' && result.status !== 'overwritten') {
       throw FunctionalError(result.reason ?? 'Role cannot be imported');
@@ -58,10 +53,8 @@ const rolesImporter: ConfigPresetImporter = {
   },
 };
 
-// Roles, with their capabilities, paged and searched by name
 export const rolesFamily: ConfigPresetFamilyDefinition = {
   importer: rolesImporter,
-  // The roles that exist, built-in ones included, can be overwritten or copied
   importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
   id: ROLES_FAMILY_ID,
   label: 'Roles',
@@ -70,7 +63,6 @@ export const rolesFamily: ConfigPresetFamilyDefinition = {
   directory: 'security_access/roles',
   listItems: async (context, user, args) => {
     const { first, after, search, ids, excludedIds } = args;
-    // An empty list of ids is no role: as a filter value it would match every role
     if (ids?.length === 0) {
       return buildConfigPresetConnection(args, [], 0, false);
     }
