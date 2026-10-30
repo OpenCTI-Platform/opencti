@@ -73,4 +73,6 @@ export interface ConfigPresetFamilyDefinition {
   importer?: ConfigPresetImporter;
   // What an import can do with the items that already exist: OVERWRITE when absent. The dialog offers a choice from two modes.
   importModes?: ConfigImportMode[];
+  // The family is part of the Enterprise Edition: a platform without it neither exports its items nor imports them
+  requiresEnterpriseEdition?: boolean;
 }

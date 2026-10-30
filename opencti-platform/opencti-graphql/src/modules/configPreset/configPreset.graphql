@@ -58,6 +58,8 @@ type ConfigPresetImportItem {
     label: String!
     translatable: Boolean!
     isDefault: Boolean!
+    # The item is part of the Enterprise Edition: a platform without it cannot import it, and the dialog offers to activate it.
+    requiresEnterpriseEdition: Boolean!
     # The item already exists on the platform.
     exists: Boolean!
     # The item conflicts with one of the platform: it exists, or another one has its name. The dialog offers a choice of what to do with it.

@@ -11,7 +11,7 @@ import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { BYPASS, isUserHasCapability } from '../../../utils/access';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes } from './configPreset-import-utils';
-import { computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
+import { computeConfigPresetItem, computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
 import { withConfigPresetImportLock } from './configPreset-import-lock';
@@ -178,13 +178,15 @@ const realImport = async (
           throw FunctionalError('The user who started the import no longer has the right to import');
         }
         const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
-        const importer = CONFIG_PRESET_FAMILIES.find((family) => family.id === item.type)!.importer!;
+        const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === item.type)!;
+        const importer = family.importer!;
         const mode = configPresetImportMode(modes, item.type, item.id);
         let computed: ConfigPresetComputedItem | undefined;
         let result: ConfigPresetImportItemResult;
         // An error of the item, whether it is read or written, fails this item and never the next ones
         try {
-          computed = await importer.compute(importContext, runUser, item, plan, mode);
+          // An item of a family the platform cannot apply is skipped here, so it never reaches apply
+          computed = await computeConfigPresetItem(importContext, runUser, family, item, plan, mode);
           result = toResult(item, computed.status, computed.reason, computed);
           if (computed.status !== 'failed' && computed.status !== 'skipped') {
             const applied = await importer.apply(importContext, runUser, item, computed, mode);
