@@ -570,4 +570,15 @@ describe('JSON ingestion resolver — ingestion logs', () => {
       expect(result.errors[0].message).toContain('Unknown ingestion log level');
     }
   });
+
+  it('should delete the JSON ingestion used for logs tests and its log history', async () => {
+    await redisPushIngestionLog(jsonLogsIngestionId, { level: 'info', type: 'json', identifier: jsonLogsIngestionName, message: 'before-delete' });
+    const result = await queryAsAdminWithSuccess({
+      query: gql`mutation deleteJsonIngestionForLogs($id: ID!) { ingestionJsonDelete(id: $id) }`,
+      variables: { id: jsonLogsIngestionId },
+    });
+    expect(result.data?.ingestionJsonDelete).toEqual(jsonLogsIngestionId);
+    expect(await getClientBase().exists(`ingestion-log-${jsonLogsIngestionId}-history`)).toBe(0);
+    jsonLogsIngestionId = ''; // already deleted, nothing left for afterAll
+  });
 });

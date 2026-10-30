@@ -436,8 +436,8 @@ describe('RSS ingestion resolver — ingestion logs', () => {
     }
   });
 
-  it('should delete the RSS ingestion used for logs tests', async () => {
-    await redisDeleteIngestionLogHistory(rssLogsIngestionId);
+  it('should delete the RSS ingestion used for logs tests and its log history', async () => {
+    await redisPushIngestionLog(rssLogsIngestionId, { level: 'info', type: 'rss', identifier: rssLogsIngestionName, message: 'before-delete' });
     const result = await queryAsAdminWithSuccess({
       query: gql`
         mutation deleteRssIngesterForLogs($id: ID!) {
@@ -447,5 +447,6 @@ describe('RSS ingestion resolver — ingestion logs', () => {
       variables: { id: rssLogsIngestionId },
     });
     expect(result.data?.ingestionRssDelete).toEqual(rssLogsIngestionId);
+    expect(await getClientBase().exists(`ingestion-log-${rssLogsIngestionId}-history`)).toBe(0);
   });
 });
