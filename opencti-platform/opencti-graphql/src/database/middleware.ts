@@ -1082,6 +1082,7 @@ const timeSeriesBreakdown = async (
   // Ranked on their number of entities (the series values below stay weighted), which spares the weight
   // sum of every value; no missing bucket either, so a real "unknown" value is a value like any other.
   // The types of a side of the relationships are ranked the same way, on their number of relationships.
+  // desc gets the top values only, asc every value, ranked exactly or refused when there are too many of them.
   const candidates = connectionSide
     ? await elConnectionTypesAggregationCount(context, user, indices, { ...breakdownArgs, connectionSide, bucketsOrder })
     : await elAggregationCount(context, user, indices, { ...breakdownArgs, convertEntityTypeLabel: true, normalizeLabel: false, rankByCount: true, bucketsOrder });
@@ -1101,15 +1102,15 @@ const timeSeriesBreakdown = async (
     usableCandidates = sortedCandidates.map((candidate) => ({ ...candidate, entity: null }));
   }
   const selected = R.take(seriesLimit, usableCandidates);
-  // The terms aggregation is capped: a full candidates page means some values may never have been seen
-  // (in asc, the true lowest values may be among them)
-  const truncated = usableCandidates.length > seriesLimit || candidates.length >= MAX_AGGREGATION_SIZE;
+  // In desc, the terms aggregation is capped: a full candidates page means some values may never have been seen.
+  // In asc, every value has been seen.
+  const truncated = usableCandidates.length > seriesLimit || (!isAscending && candidates.length >= MAX_AGGREGATION_SIZE);
   if (selected.length === 0 && !withOther) {
     return { truncated, dates: [], series: [] };
   }
   // 3. Count every selected value, and the entities carrying none of them, over time in a single query.
-  // Many distinct values (a full candidates page, or several times the limit) mean a field with many values
-  // per entity or a high cardinality, where one filter per value is much faster than a restricted terms
+  // Many distinct values (as many as a full desc candidates page, or several times the limit) mean a field with many
+  // values per entity or a high cardinality, where one filter per value is much faster than a restricted terms
   const filterPerKey = candidates.length >= MAX_AGGREGATION_SIZE || candidates.length >= BREAKDOWN_FILTER_PER_KEY_RATIO * seriesLimit;
   const keys = selected.map((candidate) => candidate.key);
   // The names of the vocabularies are read during the histogram, only for the values kept

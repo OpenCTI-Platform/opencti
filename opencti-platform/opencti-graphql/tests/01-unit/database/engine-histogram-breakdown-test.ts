@@ -19,7 +19,15 @@ vi.mock('@opensearch-project/opensearch', () => ({ Client: FakeOpenClient }));
 vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() => ({})) }));
 
 import conf from '../../../src/config/conf';
-import { buildHistogramBreakdownAggregations, elConnectionTypesAggregationCount, elHistogramBreakdownCount, searchEngineInit } from '../../../src/database/engine';
+import {
+  buildHistogramBreakdownAggregations,
+  elAggregationCount,
+  elConnectionTypesAggregationCount,
+  elHistogramBreakdownCount,
+  MAX_AGGREGATION_SIZE,
+  MAX_EXACT_RANKING_SIZE,
+  searchEngineInit,
+} from '../../../src/database/engine';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
 import type { AuthContext } from '../../../src/types/user';
@@ -106,6 +114,7 @@ const abortedContext = () => {
   return { ...context, requestAbortSignal: controller.signal } as AuthContext;
 };
 const searchResponse = (aggregations: Record<string, unknown>) => ({ _shards: { total: 2, successful: 2, failed: 0 }, aggregations });
+const lastSearchBody = () => elkSearch.mock.lastCall?.[0].body;
 
 describe('engine: requests of the time series breakdowns', () => {
   beforeAll(async () => {
@@ -122,10 +131,103 @@ describe('engine: requests of the time series breakdowns', () => {
     elkSearch.mockReset();
   });
 
+  describe('elAggregationCount', () => {
+    const rankByCount = (bucketsOrder: 'asc' | 'desc') => elAggregationCount(context, SYSTEM_USER, 'index', {
+      field: 'creator_id',
+      normalizeLabel: false,
+      rankByCount: true,
+      bucketsOrder,
+    });
+    const genres = (sumOtherDocCount: number) => searchResponse({
+      genres: { sum_other_doc_count: sumOtherDocCount, buckets: [{ key: 'user-a', doc_count: 1 }, { key: 'user-b', doc_count: 3 }] },
+    });
+
+    it('should rank every value of every shard for the lowest values', async () => {
+      elkSearch.mockResolvedValue(genres(0));
+
+      const distribution = await rankByCount('asc');
+
+      expect(lastSearchBody().aggs.genres).toEqual({
+        terms: { field: 'creator_id.keyword', size: MAX_EXACT_RANKING_SIZE, shard_size: MAX_EXACT_RANKING_SIZE, order: { _count: 'asc' } },
+      });
+      expect(distribution).toEqual([
+        { key: 'user-a', label: 'user-a', value: 1, count: 1 },
+        { key: 'user-b', label: 'user-b', value: 3, count: 3 },
+      ]);
+    });
+
+    it('should keep the top values of each shard for the highest values', async () => {
+      // Values left out are expected in desc: they are below the ones kept
+      elkSearch.mockResolvedValue(genres(12));
+
+      await expect(rankByCount('desc')).resolves.toHaveLength(2);
+
+      expect(lastSearchBody().aggs.genres).toEqual({
+        terms: { field: 'creator_id.keyword', size: MAX_AGGREGATION_SIZE, order: { _count: 'desc' } },
+      });
+    });
+
+    it('should refuse the lowest values when a value was left out, the ranking being no longer exact', async () => {
+      elkSearch.mockResolvedValue(genres(1));
+
+      await expect(rankByCount('asc')).rejects.toMatchObject({
+        extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_many_values', max: MAX_EXACT_RANKING_SIZE } },
+      });
+    });
+
+    it('should not check the values left out of a weighted distribution', async () => {
+      elkSearch.mockResolvedValue(searchResponse({
+        genres: { sum_other_doc_count: 5, buckets: [{ key: 'malware', doc_count: 2, weight: { value: 2 } }] },
+      }));
+
+      const distribution = await elAggregationCount(context, SYSTEM_USER, 'index', { field: 'entity_type', bucketsOrder: 'asc' });
+
+      expect(distribution).toEqual([{ key: 'malware', label: 'Malware', value: 2, count: 2 }]);
+      expect(lastSearchBody().aggs.genres.terms).toEqual({ field: 'entity_type.keyword', size: MAX_AGGREGATION_SIZE, missing: 'unknown', order: { weight: 'asc' } });
+    });
+  });
+
   describe('elConnectionTypesAggregationCount', () => {
     const rankTypes = (bucketsOrder: 'asc' | 'desc', ctx = context) => elConnectionTypesAggregationCount(ctx, SYSTEM_USER, 'index', {
       connectionSide: 'from',
       bucketsOrder,
+    });
+    const connections = (sumOtherDocCount: number) => searchResponse({
+      connections: { side: { types: { sum_other_doc_count: sumOtherDocCount, buckets: [{ key: 'malware', doc_count: 2 }] } } },
+    });
+    const typesTermsOf = (body: any) => body.aggs.connections.aggs.side.aggs.types.terms;
+
+    it('should rank every type of every shard for the lowest types, the abstract ones excluded', async () => {
+      elkSearch.mockResolvedValue(connections(0));
+
+      const distribution = await rankTypes('asc');
+
+      expect(typesTermsOf(lastSearchBody())).toMatchObject({
+        field: 'connections.types.keyword',
+        size: MAX_EXACT_RANKING_SIZE,
+        shard_size: MAX_EXACT_RANKING_SIZE,
+        order: { _count: 'asc' },
+        exclude: expect.arrayContaining(['stix-domain-object', 'basic-object']),
+      });
+      expect(distribution).toEqual([{ key: 'malware', label: 'Malware', value: 2, count: 2 }]);
+    });
+
+    it('should keep the top types of each shard for the highest types', async () => {
+      elkSearch.mockResolvedValue(connections(4));
+
+      await expect(rankTypes('desc')).resolves.toHaveLength(1);
+
+      const terms = typesTermsOf(lastSearchBody());
+      expect(terms).toMatchObject({ field: 'connections.types.keyword', size: MAX_AGGREGATION_SIZE, order: { _count: 'desc' } });
+      expect(terms.shard_size).toBeUndefined();
+    });
+
+    it('should refuse the lowest types when a type was left out', async () => {
+      elkSearch.mockResolvedValue(connections(3));
+
+      await expect(rankTypes('asc')).rejects.toMatchObject({
+        extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_many_values', max: MAX_EXACT_RANKING_SIZE } },
+      });
     });
 
     it('should keep a request aborted by its client a client abort', async () => {

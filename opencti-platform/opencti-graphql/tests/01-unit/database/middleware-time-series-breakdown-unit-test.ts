@@ -52,6 +52,7 @@ import { INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_HISTORY, READ_RELATIONSHIPS_IN
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../../../src/database/utils';
+import { FunctionalError } from '../../../src/config/errors';
 
 // ── Shared fixtures ──────────────────────────────────────────────────────────
 
@@ -73,6 +74,12 @@ const bucket = (key: string, value: number) => ({ key, label: key, value, count:
 type Points = { date: string; value: number }[];
 // Result of elHistogramBreakdownCount: the histogram of each key, and apart the one of Other when it is requested
 const histogramsOf = (entries: [string, Points][] = [], other: Points | null = null) => ({ histograms: new Map(entries), other });
+
+// Refusal of the engine when the lowest values cannot be ranked exactly
+const tooManyValuesError = () => FunctionalError('Too many values to rank the lowest ones, narrow the filters or the period', {
+  reason: 'too_many_values',
+  max: engine.MAX_EXACT_RANKING_SIZE,
+});
 
 // Minimal schema: Reports carry every field below, Malwares have no report types
 const REFS: Record<string, string> = {
@@ -301,16 +308,59 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(result.truncated).toBe(false);
   });
 
-  it('should flag a full candidates page as truncated in asc, because the lowest values may be missing', async () => {
+  it('should keep the lowest values first in asc order, truncated when more values are usable than the limit', async () => {
     const candidates = Array.from({ length: engine.MAX_AGGREGATION_SIZE }, (_, i) => bucket(`report-${i}`, 100 - i));
-    vi.mocked(engine.elAggregationCount).mockResolvedValue(candidates.map((c) => ({ ...c, label: `Report-${c.key}` })));
+    vi.mocked(engine.elAggregationCount).mockResolvedValue(candidates);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
     const result = await breakdown({ field: 'entity_type', limit: 50, order: 'asc' });
 
     expect(result.truncated).toBe(true);
-    // The lowest candidates seen are kept, lowest first
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys[0]).toEqual(`report-${engine.MAX_AGGREGATION_SIZE - 1}`);
+  });
+
+  it('should not flag as truncated in asc a candidates page as large as a desc one, every value being seen', async () => {
+    // As many candidates as a full desc page, only two of them usable: in desc more values may exist, not in asc
+    const users = Array.from({ length: engine.MAX_AGGREGATION_SIZE }, (_, i) => `user-${i}`);
+    vi.mocked(engine.elAggregationCount).mockResolvedValue(users.map((id, i) => bucket(id, 100 - i)));
+    vi.mocked(engine.elFindByIds).mockImplementation(async (_context, _user, ids) => Object.fromEntries(
+      (ids as string[]).filter((id) => id === 'user-0' || id === 'user-1').map((id) => [id, makeEntity(id, id)]),
+    ) as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+
+    const asc = await breakdown({ field: 'creator_id', limit: 10, order: 'asc' });
+    expect(asc.series.map((serie) => serie.label)).toEqual(['user-1', 'user-0']);
+    expect(asc.truncated).toBe(false);
+
+    const desc = await breakdown({ field: 'creator_id', limit: 10, order: 'desc' });
+    expect(desc.series.map((serie) => serie.label)).toEqual(['user-0', 'user-1']);
+    expect(desc.truncated).toBe(true);
+  });
+
+  it('should only resolve the lowest candidates needed among every value ranked in asc order', async () => {
+    const users = Array.from({ length: engine.MAX_EXACT_RANKING_SIZE }, (_, i) => `user-${i}`);
+    vi.mocked(engine.elAggregationCount).mockResolvedValue(users.map((id, i) => bucket(id, i + 1)));
+    vi.mocked(engine.elFindByIds).mockImplementation(async (_context, _user, ids) => Object.fromEntries(
+      (ids as string[]).map((id) => [id, makeEntity(id, id)]),
+    ) as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+
+    const result = await breakdown({ field: 'creator_id', limit: 5, order: 'asc' });
+
+    expect(engine.elFindByIds).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(engine.elFindByIds).mock.calls[0][2]).toEqual(users.slice(0, 15));
+    expect(result.series.map((serie) => serie.label)).toEqual(users.slice(0, 5));
+    expect(result.truncated).toBe(true);
+  });
+
+  it('should pass the refusal of the lowest values on to the caller, before any histogram', async () => {
+    vi.mocked(engine.elAggregationCount).mockRejectedValue(tooManyValuesError());
+
+    await expect(breakdown({ field: 'creator_id', order: 'asc' })).rejects.toMatchObject({
+      extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_many_values', max: engine.MAX_EXACT_RANKING_SIZE } },
+    });
+    expect(engine.elFindByIds).not.toHaveBeenCalled();
+    expect(engine.elHistogramBreakdownCount).not.toHaveBeenCalled();
   });
 
   it('should append the Other series last, computed from its own histogram', async () => {
@@ -972,6 +1022,15 @@ describe('timeSeriesBreakdownRelations', () => {
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3]).toMatchObject({ connectionSide: 'to', keys: ['country'] });
     expect(result.truncated).toBe(true);
     expect(result.series.map((serie) => serie.label)).toEqual(['Country']);
+  });
+
+  it('should pass the refusal of the lowest types of a side on to the caller', async () => {
+    vi.mocked(engine.elConnectionTypesAggregationCount).mockRejectedValue(tooManyValuesError());
+
+    await expect(relationsBreakdown({ field: 'fromTypes', order: 'asc' })).rejects.toMatchObject({
+      extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_many_values', max: engine.MAX_EXACT_RANKING_SIZE } },
+    });
+    expect(engine.elHistogramBreakdownCount).not.toHaveBeenCalled();
   });
 
   it('should resolve the authors of the relationships, restricted ones included', async () => {

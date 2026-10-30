@@ -231,6 +231,9 @@ export const ES_RETRY_ON_CONFLICT = 30;
 export const BULK_TIMEOUT = '1h';
 const ES_MAX_MAPPINGS = Number(conf.get('elasticsearch:max_mapping_fields') ?? 3500);
 export const MAX_AGGREGATION_SIZE = 100;
+// Values ranked at once, every shard returning all of its own, when the lowest values are asked: within it the
+// ranking is exact, beyond it the request is refused. As the default maximum pagination, far under max_buckets (65,535).
+export const MAX_EXACT_RANKING_SIZE = 5000;
 
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
@@ -3517,6 +3520,22 @@ export const elHistogramCount = async (
 };
 // Types are indexed in lowercase: give back the label of the right entity type
 const convertEntityTypeKeyToLabel = (key: string) => (isStixCoreRelationship(key) ? key : generateInternalType({ type: key }));
+// Terms options ranking the values on their number of documents. The highest values are kept from the top of
+// each shard, as by any terms aggregation. The lowest cannot be: a value rare on a shard but frequent on another
+// would be taken for one of them. Every shard returns all of its values instead, up to MAX_EXACT_RANKING_SIZE.
+const buildCountRankingTerms = (bucketsOrder: 'asc' | 'desc' | null) => (bucketsOrder === 'asc'
+  ? { size: MAX_EXACT_RANKING_SIZE, shard_size: MAX_EXACT_RANKING_SIZE, order: { _count: 'asc' } }
+  : { size: MAX_AGGREGATION_SIZE, order: { _count: 'desc' } });
+// The documents of the values a shard or the final reduction left out are counted in sum_other_doc_count:
+// the lowest values may be among them, the ranking is refused rather than wrong
+const checkExactRanking = (termsAggregation: { sum_other_doc_count?: number }) => {
+  if ((termsAggregation.sum_other_doc_count ?? 0) > 0) {
+    throw FunctionalError('Too many values to rank the lowest ones, narrow the filters or the period', {
+      reason: 'too_many_values',
+      max: MAX_EXACT_RANKING_SIZE,
+    });
+  }
+};
 type AggregationCountOpts = QueryBodyBuilderOpts & {
   field: string;
   weightField?: string | null;
@@ -3528,6 +3547,7 @@ type AggregationCountOpts = QueryBodyBuilderOpts & {
   bucketsOrder?: 'asc' | 'desc' | null;
   // Ranks the buckets on their number of documents only, without the weight sum nor the missing bucket:
   // a much cheaper request when only the ranking of the values is needed. `value` is then the number of documents.
+  // The lowest values (asc) are ranked exactly, or refused beyond MAX_EXACT_RANKING_SIZE values.
   rankByCount?: boolean | null;
 };
 export const elAggregationCount = async (
@@ -3558,7 +3578,7 @@ export const elAggregationCount = async (
     },
   };
   if (rankByCount) {
-    genres.terms.order = { _count: bucketsOrder === 'asc' ? 'asc' : 'desc' };
+    Object.assign(genres.terms, buildCountRankingTerms(bucketsOrder));
   } else {
     genres.aggs = {
       weight: {
@@ -3581,25 +3601,33 @@ export const elAggregationCount = async (
     body,
   };
   logApp.debug('[SEARCH] aggregationCount', { query });
-  return elRawSearch(context, user, types, query)
+  const { termsAggregation, distribution } = await elRawSearch(context, user, types, query)
     .then((data) => {
       const { buckets } = data.aggregations.genres;
-      return buckets.map((b: any) => {
-        let label = b.key;
-        if (typeof label === 'number') {
-          label = String(b.key);
-        } else if (field === 'entity_type' && convertEntityTypeLabel) {
-          label = convertEntityTypeKeyToLabel(b.key);
-        } else if (!isIdFields && normalizeLabel) {
-          label = pascalize(b.key);
-        }
-        // key is the raw term as indexed, usable to target the same bucket in a later aggregation
-        return { key: String(b.key), label, value: rankByCount ? b.doc_count : b.weight.value, count: b.doc_count };
-      });
+      return {
+        termsAggregation: data.aggregations.genres,
+        distribution: buckets.map((b: any) => {
+          let label = b.key;
+          if (typeof label === 'number') {
+            label = String(b.key);
+          } else if (field === 'entity_type' && convertEntityTypeLabel) {
+            label = convertEntityTypeKeyToLabel(b.key);
+          } else if (!isIdFields && normalizeLabel) {
+            label = pascalize(b.key);
+          }
+          // key is the raw term as indexed, usable to target the same bucket in a later aggregation
+          return { key: String(b.key), label, value: rankByCount ? b.doc_count : b.weight.value, count: b.doc_count };
+        }),
+      };
     })
     .catch((err) => {
       throw wrapEngineError('Aggregation computation count fail', err, { query });
     });
+  // Checked out of the chain above: a refusal is not an engine failure
+  if (rankByCount && bucketsOrder === 'asc') {
+    checkExactRanking(termsAggregation);
+  }
+  return distribution;
 };
 // Source or target of a relationship, stored in its nested connections
 export type ConnectionSide = 'from' | 'to';
@@ -3641,21 +3669,29 @@ export const elConnectionTypesAggregationCount = async (
   const { connectionSide, types = null, bucketsOrder = null } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
-  const terms = { size: MAX_AGGREGATION_SIZE, exclude: CONNECTION_ABSTRACT_TYPES, order: { _count: bucketsOrder === 'asc' ? 'asc' : 'desc' } };
+  // The abstract types are excluded before the ranking: they are not values left out
+  const terms = { ...buildCountRankingTerms(bucketsOrder), exclude: CONNECTION_ABSTRACT_TYPES };
   body.aggs = { connections: buildConnectionTypesAggregation(connectionSide, terms) };
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
   };
   logApp.debug('[SEARCH] connectionTypesAggregationCount', { query });
-  return elRawSearch(context, user, types, query)
+  const { termsAggregation, distribution } = await elRawSearch(context, user, types, query)
     .then((data) => {
       const { buckets } = data.aggregations.connections.side.types;
-      return buckets.map((b: any) => ({ key: String(b.key), label: convertEntityTypeKeyToLabel(b.key), value: b.doc_count, count: b.doc_count }));
+      return {
+        termsAggregation: data.aggregations.connections.side.types,
+        distribution: buckets.map((b: any) => ({ key: String(b.key), label: convertEntityTypeKeyToLabel(b.key), value: b.doc_count, count: b.doc_count })),
+      };
     })
     .catch((err) => {
       throw wrapEngineError('Connection types aggregation count fail', err, { query });
     });
+  if (bucketsOrder === 'asc') {
+    checkExactRanking(termsAggregation);
+  }
+  return distribution;
 };
 export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   field: string;
