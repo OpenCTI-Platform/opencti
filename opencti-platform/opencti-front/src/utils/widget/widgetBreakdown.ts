@@ -4,7 +4,7 @@ import { isDraftWorkspaceFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FilterDefinition } from '../hooks/useAuth';
 import { isCustomFieldAttribute } from '../customFields';
-import { daysAgo, monthsAgo } from '../Time';
+import { dayStartDate, daysAgo, monthsAgo, parse } from '../Time';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { parseVariableToken } from '../../components/dashboard/dashboardVariablesResolution';
 
@@ -213,10 +213,14 @@ export const getWidgetBreakdownOther = (parameters?: WidgetParameters | null) =>
 
 /**
  * Start date used when the dashboard sets none: a daily breakdown over the default 12 months
- * would draw too many bars, so it only looks back 30 days.
+ * would draw too many bars, so it only looks back 30 days. It looks back from the `endDate` of the
+ * dashboard when it sets one, from today otherwise: an end date in the past keeps a period to draw.
  */
-export const getBreakdownDefaultStartDate = (interval: string) => {
-  return interval === 'day' ? daysAgo(30) : monthsAgo(12);
+export const getBreakdownDefaultStartDate = (interval: string, endDate?: string | null) => {
+  if (!endDate) {
+    return interval === 'day' ? daysAgo(30) : monthsAgo(12);
+  }
+  return interval === 'day' ? daysAgo(30, endDate) : parse(dayStartDate(endDate)).subtract(12, 'months').format();
 };
 
 type BreakdownWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'>;

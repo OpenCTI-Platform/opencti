@@ -3,7 +3,7 @@ import type { Widget } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
-import { daysAgo, monthsAgo } from '../Time';
+import { dayStartDate, daysAgo, monthsAgo } from '../Time';
 import {
   AUDITS_BREAKDOWN_FIELDS,
   BREAKDOWN_ALLOWED_REFS,
@@ -161,6 +161,21 @@ describe('getBreakdownDefaultStartDate', () => {
     ['week', 'month', 'quarter', 'year'].forEach((interval) => {
       expect(getBreakdownDefaultStartDate(interval)).toEqual(monthsAgo(12));
     });
+  });
+
+  it('looks back from the end date of the dashboard, which can be long ago', () => {
+    const endDate = '2024-03-31T12:00:00.000Z';
+    const endDay = dayStartDate(endDate);
+    const dailyStart = new Date(getBreakdownDefaultStartDate('day', endDate));
+    expect(dailyStart.getTime()).toEqual(new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate() - 30).getTime());
+    expect(dailyStart.getTime()).toBeLessThan(new Date(endDate).getTime());
+    ['week', 'month', 'quarter', 'year'].forEach((interval) => {
+      const start = new Date(getBreakdownDefaultStartDate(interval, endDate));
+      expect(start.getTime()).toEqual(new Date(endDay.getFullYear() - 1, endDay.getMonth(), endDay.getDate()).getTime());
+    });
+    // Without end date, from today
+    expect(getBreakdownDefaultStartDate('day', null)).toEqual(daysAgo(30));
+    expect(getBreakdownDefaultStartDate('month', undefined)).toEqual(monthsAgo(12));
   });
 });
 
