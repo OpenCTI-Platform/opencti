@@ -18,7 +18,7 @@ To prevent your public dashboards from being embedded in unauthorized websites, 
 
 ## Unsecure HTTP resources
 
-For a fully secure platform, you should disable the loading of unsecure (HTTP) resources by setting `app:allow_unsecure_http_resources` to `false`.
+For a fully secure platform, you should disable the loading of unsecure (HTTP) resources by setting `app:allow_unsecure_http_resources` to `false`, or `app:http:secure_by_default` to `true`.
 
 ## Session timeout
 

@@ -66,6 +66,7 @@ import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
 import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
+import { getMaxPayloadBodySize } from './httpConfig';
 import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules/catalog/catalog-http';
 
 const publicDir = DEV_MODE ? '../opencti-front/dist' : 'public';
@@ -180,7 +181,7 @@ const createApp = async (app, schema) => {
     initHttpMaps(app);
   }
 
-  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
+  const requestSizeLimit = getMaxPayloadBodySize();
   app.use(express.json({ limit: requestSizeLimit }));
 
   const sseMiddleware = createSseMiddleware();
