@@ -33,13 +33,16 @@ type ConfigPresetExportableGroup {
     label: String!
 }
 
-# A category of configuration, in registry order, when it has at least one item. A singleton category has exactly one item, whose key is the key of the category.
+# A category of configuration, in registry order, when it has at least one item or needs the Enterprise Edition. A singleton category has exactly one item, whose key is the key of the category.
 type ConfigPresetExportableType {
     key: String!
     label: String!
     # What the category holds, translated by the UI like the label.
     description: String!
     group: ConfigPresetExportableGroup!
+    # The category is part of the Enterprise Edition and the platform has not got it: the category has no item, and the dialog offers to
+    # activate the license. False once the platform has the license, and for a category that is not part of the Enterprise Edition.
+    lockedByEnterpriseEdition: Boolean!
     # First page of the items; the next pages come from configPresetExportableItems.
     items: [ConfigPresetExportableItem!]!
     # Page info of items: globalCount is the number of exportable items of the type.
@@ -72,6 +75,9 @@ type ConfigPresetImportType {
     label: String!
     description: String!
     group: ConfigPresetExportableGroup!
+    # The category is part of the Enterprise Edition and the platform has not got it: the category has no item, and the dialog offers to
+    # activate the license. False once the platform has the license, and for a category that is not part of the Enterprise Edition.
+    lockedByEnterpriseEdition: Boolean!
     items: [ConfigPresetImportItem!]!
     # The modes the type supports for an item in conflict; the dialog shows a choice on such an item when there is more than one.
     modes: [ConfigImportMode!]!

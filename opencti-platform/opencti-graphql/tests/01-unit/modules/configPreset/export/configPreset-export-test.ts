@@ -7,6 +7,11 @@ import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } fr
 // @ts-expect-error unzipper ships no type declarations
 import unzipper from 'unzipper';
 
+const enterpriseEdition = vi.hoisted(() => ({ enabled: true }));
+vi.mock('../../../../../src/enterprise-edition/ee', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/enterprise-edition/ee')>()),
+  isEnterpriseEdition: vi.fn(async () => enterpriseEdition.enabled),
+}));
 vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
@@ -136,6 +141,7 @@ const expectNothingWritten = () => {
 describe('Config preset export', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    enterpriseEdition.enabled = true;
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(NOW);
     createWriteStreamSpy = vi.spyOn(fs, 'createWriteStream');
@@ -184,6 +190,25 @@ describe('Config preset export', () => {
     // No item has dependencies
     expect(entries['dependencies.json']).toEqual({});
     expect(JSON.stringify(entries)).not.toContain('secret-license');
+  });
+
+  it('writes the whitemark of a platform that has the Enterprise Edition', async () => {
+    await configPresetExport(context, bypassUser, [{ type: 'whitemark', items: ['whitemark'] }]);
+    const entries = await readZip(uploadedZip!);
+    expect(Object.keys(entries).sort()).toEqual(['dependencies.json', 'metadata.json', 'platform_settings/whitemark.json']);
+    expect(entries['platform_settings/whitemark.json']).toEqual({
+      openCTI_version: PLATFORM_VERSION,
+      type: 'platformSettings.whitemark',
+      id: 'whitemark',
+      configuration: { platform_whitemark: true },
+    });
+  });
+
+  it('refuses to export the whitemark of a platform without the Enterprise Edition, and writes nothing', async () => {
+    enterpriseEdition.enabled = false;
+    await expect(configPresetExport(context, bypassUser, [{ type: 'whitemark', items: ['whitemark'] }])).rejects.toThrow('Enterprise edition is not enabled');
+    await expect(configPresetExport(context, bypassUser, [{ type: 'whitemark' }])).rejects.toThrow('Enterprise edition is not enabled');
+    expectNothingWritten();
   });
 
   it('only writes the selected items and merges duplicated selections', async () => {

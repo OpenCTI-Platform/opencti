@@ -21,7 +21,7 @@ import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_EXPORT_PATH } from '../../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../manager/telemetryManager';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePath, exportConfigPresetItem } from '../configPreset-registry';
+import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePath, exportConfigPresetItem, isConfigPresetFamilyAvailable } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
@@ -44,20 +44,37 @@ const findConfigPresetFamily = (type: string) => {
   return family;
 };
 
+// A family the platform cannot export (its Enterprise Edition is missing) is refused like the Enterprise Edition features are
+const findAvailableConfigPresetFamily = async (context: AuthContext, type: string) => {
+  const family = findConfigPresetFamily(type);
+  if (!(await isConfigPresetFamilyAvailable(context, family))) {
+    throw UnsupportedError('Enterprise edition is not enabled', { type });
+  }
+  return family;
+};
+
+const NO_ITEMS_PAGE_INFO = { startCursor: '', endCursor: '', hasNextPage: false, hasPreviousPage: false, globalCount: 0 };
+
+// A family the platform cannot export is listed without its items, and its items are never read: the dialog shows it as locked
 export const findConfigPresetExportableTypes = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetExportableType[]> => {
-  const types = await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
-    const page = await family.listItems(context, user, { first: CONFIG_PRESET_FIRST_PAGE_SIZE });
+  const types = await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family): Promise<ConfigPresetExportableType | null> => {
+    const isAvailable = await isConfigPresetFamilyAvailable(context, family);
+    const page = isAvailable ? await family.listItems(context, user, { first: CONFIG_PRESET_FIRST_PAGE_SIZE }) : null;
+    // A category with nothing to export on this platform (no message set) is not shown, but a category the platform cannot export is
+    if (page && page.pageInfo.globalCount === 0) {
+      return null;
+    }
     return {
       key: family.id,
       label: family.label,
       description: family.description,
       group: { key: family.group.id, label: family.group.label },
-      items: page.edges.map(({ node }) => toExportableItem(node)),
-      itemsPageInfo: page.pageInfo,
+      lockedByEnterpriseEdition: !isAvailable,
+      items: (page?.edges ?? []).map(({ node }) => toExportableItem(node)),
+      itemsPageInfo: page?.pageInfo ?? NO_ITEMS_PAGE_INFO,
     };
   }));
-  // A category with nothing to export on this platform (no message set) is not shown
-  return types.filter((type) => type.itemsPageInfo.globalCount > 0);
+  return types.filter((type): type is ConfigPresetExportableType => type !== null);
 };
 
 export const findConfigPresetExportableItems = async (
@@ -65,7 +82,7 @@ export const findConfigPresetExportableItems = async (
   user: AuthUser,
   { type, ...args }: QueryConfigPresetExportableItemsArgs,
 ): Promise<ConfigPresetExportableItemConnection> => {
-  const page = await findConfigPresetFamily(type).listItems(context, user, args);
+  const page = await (await findAvailableConfigPresetFamily(context, type)).listItems(context, user, args);
   return { ...page, edges: page.edges.map(({ cursor, node }) => ({ cursor, node: toExportableItem(node) })) };
 };
 
@@ -81,12 +98,13 @@ export const resolveConfigPresetSelections = async (
   user: AuthUser,
   selections: ConfigPresetSelectionInput[],
 ): Promise<SelectedConfigPresetFamily[]> => {
-  selections.forEach(({ type, items, excluded_items }) => {
-    findConfigPresetFamily(type);
+  for (let i = 0; i < selections.length; i += 1) {
+    const { type, items, excluded_items } = selections[i];
+    await findAvailableConfigPresetFamily(context, type);
     if (items && excluded_items && excluded_items.length > 0) {
       throw FunctionalError('Excluded items require a selection of every item of the type', { type });
     }
-  });
+  }
   const resolved: SelectedConfigPresetFamily[] = [];
   for (let i = 0; i < CONFIG_PRESET_FAMILIES.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES[i];
@@ -120,7 +138,7 @@ export const resolveConfigPresetSelections = async (
 const referenceKey = (type: string, id: string) => `${type}/${id}`;
 
 // Adds, depth first, the items the selected ones depend on, whatever the selection excluded.
-// The visited set stops on cycles; a dependency the registry cannot export fails the export.
+// The visited set stops on cycles; a dependency the registry cannot export fails the export, and so does one of a family the platform has no license for.
 export const addConfigPresetDependencies = async (
   context: AuthContext,
   user: AuthUser,
@@ -134,6 +152,10 @@ export const addConfigPresetDependencies = async (
     if (!visited.has(referenceKey(reference.type, reference.id))) {
       visited.add(referenceKey(reference.type, reference.id));
       const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === reference.type);
+      // The items of a family the platform cannot export are never read, a dependency on one included: the export is refused for its license
+      if (family && !(await isConfigPresetFamilyAvailable(context, family))) {
+        throw UnsupportedError('Enterprise edition is not enabled', { type: reference.type, item: reference.id });
+      }
       const [item] = family ? await family.resolveItems(context, user, [reference.id], []) : [];
       if (!item) {
         throw FunctionalError('A configuration preset dependency cannot be exported', { type: reference.type, item: reference.id });

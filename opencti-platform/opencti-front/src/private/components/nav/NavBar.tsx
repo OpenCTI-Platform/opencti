@@ -13,6 +13,7 @@ import logoXTMHubLight from '../../../static/images/logo_xtm_hub_light.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import useAuth from '../../../utils/hooks/useAuth';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -193,6 +194,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   // own margins; only the platform message banner is left for the rail to reserve here.
   const flowOffset = `${settingsMessagesBannerHeight}px`;
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+  const isEnterpriseEdition = useEnterpriseEdition();
   const data = usePreloadedQuery<NavBarQuery>(navBarQuery, queryRef);
   const groups = useNavMenu();
 
@@ -285,7 +287,8 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
           ]}
         />
       )}
-      footer={!data?.settings?.platform_whitemark && (
+      // The whitemark only counts with the Enterprise Edition, as on the login page and the loader
+      footer={!(data?.settings?.platform_whitemark && isEnterpriseEdition) && (
         <MadeByFiligran collapsed={!navOpen} />
       )}
     />

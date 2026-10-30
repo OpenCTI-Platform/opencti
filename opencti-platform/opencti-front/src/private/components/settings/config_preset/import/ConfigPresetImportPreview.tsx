@@ -7,6 +7,7 @@ import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
 import { toConfigImportModes, toConfigPresetSelection } from './configPresetImportSelection';
@@ -28,12 +29,14 @@ import {
   isConfigPresetItemSelected,
   isSingletonConfigPresetType,
   selectAllConfigPresetItems,
+  toggleConfigPresetTypes,
 } from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import { translateConfigPresetEntityTypes } from '../configPresetEntityTypes';
+import useConfigPresetLicenseRetry from '../useConfigPresetLicenseRetry';
 import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
@@ -52,6 +55,7 @@ const configPresetImportPreviewQuery = graphql`
         key
         label
         description
+        lockedByEnterpriseEdition
         modes
         group {
           key
@@ -152,14 +156,19 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   // The expected results, by `<type>/<key>`: held here only, never saved; computed again when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
-  // True from a change of the selection until the results of the latest request are in: Apply waits
-  const [isSimulating, setIsSimulating] = useState(false);
   // Only the response of the latest request is kept
   const simulationRef = useRef(0);
   const hasSimulatedRef = useRef(false);
   const isMountedRef = useRef(true);
   const onSimulateRef = useRef(onSimulate);
   onSimulateRef.current = onSimulate;
+  // Read live: a license activated from the preview is known without a refresh, and the preview is read again with what it unlocks
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const hasLoadedRef = useRef(false);
+  // The types the last load locked: the next load selects those it unlocks, and only those
+  const lockedKeysRef = useRef<Set<string>>(new Set());
+  // Read again by the retry, while the backend has not taken a license into account
+  const [reloadCount, setReloadCount] = useState(0);
   const [commitSave] = useApiMutation<ConfigPresetImportPreviewSaveMutation>(configPresetImportPreviewSaveMutation);
   // The revision only goes up: the backend ignores a lower one
   const revisionRef = useRef(session.revision);
@@ -167,6 +176,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const timerRef = useRef<number | null>(null);
   const commitSaveRef = useRef(commitSave);
   commitSaveRef.current = commitSave;
+  // What the load of the preview reads when a license is activated: the selection and the modes as they are then
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+  const importModesRef = useRef(importModes);
+  importModesRef.current = importModes;
+  const scheduleSaveRef = useRef<(nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes, nextTypes: ReturnType<typeof toCountedTypes>) => void>(() => {});
 
   useEffect(() => {
     let active = true;
@@ -176,10 +191,23 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         if (active && data) {
           const loaded = data.configPresetImportPreview;
           setPreview(loaded);
-          // A new upload has no saved selection yet: every item starts selected, as in the export
-          const isNew = session.revision === 0 && session.selections.length === 0;
-          setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
-          setImportModes(toConfigImportModes(session.selections));
+          const previouslyLocked = lockedKeysRef.current;
+          lockedKeysRef.current = new Set(loaded.types.filter((type) => type.lockedByEnterpriseEdition).map((type) => type.key));
+          if (!hasLoadedRef.current) {
+            hasLoadedRef.current = true;
+            // A new upload has no saved selection yet: every item starts selected, as in the export
+            const isNew = session.revision === 0 && session.selections.length === 0;
+            setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
+            setImportModes(toConfigImportModes(session.selections));
+          } else {
+            // A license was activated: the types it unlocks come with their items, and are selected, as activating it was asking for them
+            const newlyUnlocked = loaded.types.filter((type) => previouslyLocked.has(type.key) && !type.lockedByEnterpriseEdition);
+            if (newlyUnlocked.length > 0) {
+              const next = toggleConfigPresetTypes(selectionRef.current, newlyUnlocked, true);
+              setSelection(next);
+              scheduleSaveRef.current(next, importModesRef.current, toCountedTypes(loaded.types));
+            }
+          }
         }
       })
       .catch((err) => {
@@ -195,8 +223,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     return () => {
       active = false;
     };
-  // The preview is read once for a file
-  }, [environment, session.file_id]);
+  // The preview is read again when a license is activated, which unlocks the types that need it, and by the retry
+  }, [environment, session.file_id, isEnterpriseEdition, reloadCount]);
 
   // Resolved once the save is answered, whatever the answer. A failure is notified by the global error toast; a file that is no longer
   // the one of the session (another tab uploaded a new one) sends the wizard back to the upload.
@@ -224,6 +252,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     });
   }, [session.file_id]);
 
+  const retryLocked = useConfigPresetLicenseRetry(preview?.types, () => setReloadCount((count) => count + 1));
+
   // A pending save is sent on close
   useEffect(() => () => {
     flushSave();
@@ -233,20 +263,24 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   }, []);
 
   const types = preview ? toCountedTypes(preview.types) : [];
+  // What is imported: a type that is locked has no item to import, whatever a selection saved before says
+  const selectableTypes = (allTypes: typeof types) => allTypes.filter((type) => !type.lockedByEnterpriseEdition);
   const forced = getConfigPresetForcedItems(types, selection);
-  const selections = buildConfigPresetSelections(types, selection, importModes, forced);
+  const selections = buildConfigPresetSelections(selectableTypes(types), selection, importModes, forced);
   // Selected, or required by a selected item
   const isImportedItem = (typeKey: string, itemKey: string) => (forced[typeKey] ?? []).includes(itemKey) || isConfigPresetItemSelected(selection, typeKey, itemKey);
 
   // The selection and the modes are saved together, after a short delay
-  const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes) => {
+  const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes, nextTypes = types) => {
     revisionRef.current += 1;
-    pendingRef.current = buildConfigPresetSelections(types, nextSelection, nextImportModes, getConfigPresetForcedItems(types, nextSelection));
+    pendingRef.current = buildConfigPresetSelections(selectableTypes(nextTypes), nextSelection, nextImportModes, getConfigPresetForcedItems(nextTypes, nextSelection));
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
     }
     timerRef.current = window.setTimeout(flushSave, SAVE_DELAY_MS);
   };
+
+  scheduleSaveRef.current = scheduleSave;
 
   const handleSelectionChange = (next: ConfigPresetSelection) => {
     setSelection(next);
@@ -307,12 +341,10 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     if (selections.length === 0) {
       simulationRef.current += 1;
       setResults(null);
-      setIsSimulating(false);
       return undefined;
     }
     simulationRef.current += 1;
     const request = simulationRef.current;
-    setIsSimulating(true);
     const delay = hasSimulatedRef.current ? SIMULATE_DELAY_MS : 0;
     const timer = window.setTimeout(() => {
       hasSimulatedRef.current = true;
@@ -320,13 +352,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         // A response that arrives after a newer request, or after the wizard was closed, is dropped
         onCompleted: (simulated) => {
           if (isMountedRef.current && request === simulationRef.current) {
-            setIsSimulating(false);
             setResults(Object.fromEntries(simulated.map((result) => [`${result.type}/${result.key}`, result])));
           }
         },
         onError: (err) => {
           if (isMountedRef.current && request === simulationRef.current) {
-            setIsSimulating(false);
             // The results of the previous selection no longer describe this one
             setResults(null);
             if (getConfigPresetErrorReason(err) === 'file_missing') {
@@ -371,6 +401,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         selection={selection}
         forced={forced}
         expandTypes
+        lockedTitle="Activate the Enterprise Edition to import this item"
+        onLockedRetry={retryLocked}
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
           // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none
@@ -452,13 +484,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       >
         <ConfigPresetImportMessages
           itemsCount={itemsCount}
-          isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
           startedBy={startedBy}
         />
         <ConfigPresetImportActions
           hasSelection={selections.length > 0}
-          isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
           isStarting={isStarting}
           onStartOver={() => setConfirmStartOver(true)}
