@@ -1,10 +1,10 @@
 import * as jsonpatch from 'fast-json-patch';
-import type { AuthUser } from '../../types/user';
+import type { AuthUser, UserOrigin } from '../../types/user';
 import type { StoreObject } from '../../types/store';
 import { generateMergeMessage } from '../data-changes';
 import { convertStoreToStix_2_1 } from '../stix-2-1-converter';
 import type { StixCoreObject, StixObject } from '../../types/stix-2-1-common';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_DEPENDENCIES, EVENT_TYPE_INIT, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../utils';
 import { UnsupportedError } from '../../config/errors';
 import { INTERNAL_EXPORTABLE_TYPES } from '../../schema/stixCoreObject';
 import type {
@@ -91,6 +91,24 @@ export interface RawStreamClient {
 
 export const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
+};
+
+// Origin attributes published to live stream consumers.
+// Other attributes are only used by the managers reading the redis stream directly (history, activity).
+const STREAM_EXPOSED_ORIGIN_FIELDS = ['socket', 'user_id', 'group_ids', 'organization_ids', 'applicant_id', 'playbook_id'];
+// Referers set by the SSE middleware itself to flag synthetic events
+const STREAM_EXPOSED_REFERERS = [EVENT_TYPE_DEPENDENCIES, EVENT_TYPE_INIT];
+export const sanitizeStreamEventOrigin = (origin: Partial<UserOrigin> | undefined): Partial<UserOrigin> | undefined => {
+  if (!origin) {
+    return origin;
+  }
+  const sanitized: Partial<UserOrigin> = Object.fromEntries(
+    Object.entries(origin).filter(([key, value]) => STREAM_EXPOSED_ORIGIN_FIELDS.includes(key) && value !== undefined),
+  );
+  if (origin.referer && STREAM_EXPOSED_REFERERS.includes(origin.referer)) {
+    sanitized.referer = origin.referer;
+  }
+  return sanitized;
 };
 // Merge
 export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>): Promise<MergeEvent> => {
