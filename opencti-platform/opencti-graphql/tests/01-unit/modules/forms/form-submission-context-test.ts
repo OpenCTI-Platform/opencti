@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canSubmitFormTo, isVerifiedFormSubmission } from '../../../../src/modules/form/form-submission-context';
+import { canSubmitFormTo, isCreateOnlyFormImport, isVerifiedFormSubmission } from '../../../../src/modules/form/form-submission-context';
 
 const caps = (...names: string[]) => names.map((name) => ({ name }));
 const applicant = (overrides: Record<string, any> = {}) => ({
@@ -84,5 +84,27 @@ describe('canSubmitFormTo', () => {
   it('should not verify the import of a submission for an applicant that only has Import knowledge', () => {
     const importInDraft = applicant({ capabilities: [], capabilitiesInDraft: caps('KNOWLEDGE_KNASKIMPORT') });
     expect(isVerifiedFormSubmission(contextOf(importInDraft, { draft_context: 'draft-1' }), work({ form_draft_id: 'draft-1' }))).toBe(false);
+  });
+});
+
+describe('isCreateOnlyFormImport', () => {
+  const verified = (user: any, overrides: Record<string, any> = {}) => contextOf(user, { form_submission: true, ...overrides });
+
+  it('should only create for an applicant without Create / Update knowledge in the destination', () => {
+    expect(isCreateOnlyFormImport(verified(applicant()), applicant() as any)).toBe(true);
+    const editor = applicant({ capabilities: caps('KNOWLEDGE_KNFORMINTAKE', 'KNOWLEDGE_KNUPDATE') });
+    expect(isCreateOnlyFormImport(verified(editor), editor as any)).toBe(false);
+  });
+
+  it('should count Create / Update knowledge granted in the draft scope for an import in a draft only', () => {
+    const draftEditor = applicant({ capabilitiesInDraft: caps('KNOWLEDGE_KNUPDATE') });
+    expect(isCreateOnlyFormImport(verified(draftEditor, { draft_context: 'draft-1' }), draftEditor as any)).toBe(false);
+    expect(isCreateOnlyFormImport(verified(draftEditor), draftEditor as any)).toBe(true);
+    // an applicant who left a draft has an empty draft context: main
+    expect(isCreateOnlyFormImport(verified(draftEditor, { draft_context: '' }), draftEditor as any)).toBe(true);
+  });
+
+  it('should not restrict a request that is not a verified form submission', () => {
+    expect(isCreateOnlyFormImport(contextOf(applicant()), applicant() as any)).toBe(false);
   });
 });

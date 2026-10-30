@@ -1,6 +1,7 @@
 import { ForbiddenAccess } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../utils/access';
+import { BYPASS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../utils/access';
+import { getDraftContext } from '../../utils/draftContext';
 
 const hasCapability = (names: string[] | undefined, capability: string) => (names ?? []).some((name) => name.includes(capability));
 
@@ -25,6 +26,15 @@ export const canSubmitFormTo = (user: AuthUser, isDraft: boolean): boolean => {
   // here would turn a behavior of the API into an error. This grants nothing else: the import of the submission is
   // only verified (and given Create / Update knowledge) for an applicant who holds the form capability.
   return isDraft && hasCapability((user.capabilitiesInDraft ?? []).map((capability) => capability.name), KNOWLEDGE_KNASKIMPORT);
+};
+
+/**
+ * Can the result of a form change the knowledge that already exists in this destination? Only with Create / Update
+ * knowledge: the form capability alone creates, it never updates nor merges an existing object (isCreateOnlyFormImport).
+ */
+export const canUpdateKnowledgeIn = (user: AuthUser, isDraft: boolean): boolean => {
+  const names = scopeCapabilities(user, isDraft);
+  return [BYPASS, KNOWLEDGE_KNUPDATE].some((capability) => hasCapability(names, capability));
 };
 
 export interface FormSubmissionSideEffects {
@@ -65,4 +75,12 @@ export const isVerifiedFormSubmission = (context: AuthContext, work: Record<stri
   const draftId = work.form_draft_id || undefined;
   if ((context.draft_context || undefined) !== draftId) return false;
   return hasCapability(scopeCapabilities(user, draftId !== undefined), KNOWLEDGE_KNFORMINTAKE);
+};
+
+/**
+ * Is this request the verified import of a submission whose applicant cannot update knowledge where it is imported?
+ * It is only given Create / Update knowledge to create: an object that already exists is used as it is.
+ */
+export const isCreateOnlyFormImport = (context: AuthContext, user: AuthUser): boolean => {
+  return context.form_submission === true && !canUpdateKnowledgeIn(user, !!getDraftContext(context, user));
 };
