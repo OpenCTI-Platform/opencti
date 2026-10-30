@@ -39,10 +39,10 @@ testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 51;
+testCreatedCounter['intrusion-set'] = 54;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
-testCreatedCounter.label = 16;
+testCreatedCounter.label = 18;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 22;
 testCreatedCounter['mac-addr'] = 1;
@@ -51,7 +51,7 @@ testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
 testCreatedCounter['network-traffic'] = 1;
-testCreatedCounter.note = 6;
+testCreatedCounter.note = 7;
 // 1 in the dataset + 2 created by observedData-domain-test
 testCreatedCounter['observed-data'] = 3;
 testCreatedCounter.opinion = 5;
@@ -59,7 +59,7 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 testCreatedCounter.relationship = 148;
-testCreatedCounter.report = 59;
+testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 5;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
