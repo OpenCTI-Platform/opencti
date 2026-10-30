@@ -14,6 +14,7 @@ import {
   selectAllConfigPresetItems,
   toggleConfigPresetItem,
   toggleConfigPresetTypes,
+  withConfigPresetItemsChecked,
 } from './configPresetSelection';
 
 const platformSettings = { key: 'platformSettings', label: 'Platform settings' };
@@ -73,6 +74,20 @@ describe('configPresetSelection', () => {
     expect(toggleConfigPresetItem(one, 'branding', 'theme-1', false).branding).toEqual({ mode: 'some', ids: [] });
   });
 
+  it('checks or unchecks a list of items across types, leaving the others as they are', () => {
+    const items = [{ type: 'whitemark', key: 'whitemark' }, { type: 'messages', key: 'banner' }];
+    const unchecked = withConfigPresetItemsChecked(selectAllConfigPresetItems([{ key: 'whitemark' }, { key: 'messages' }, { key: 'platform' }]), items, false);
+    expect(isConfigPresetItemSelected(unchecked, 'whitemark', 'whitemark')).toBe(false);
+    expect(isConfigPresetItemSelected(unchecked, 'messages', 'banner')).toBe(false);
+    expect(isConfigPresetItemSelected(unchecked, 'messages', 'login')).toBe(true);
+    expect(isConfigPresetItemSelected(unchecked, 'platform', 'platform')).toBe(true);
+    const checked = withConfigPresetItemsChecked(unchecked, items, true);
+    expect(isConfigPresetItemSelected(checked, 'whitemark', 'whitemark')).toBe(true);
+    expect(isConfigPresetItemSelected(checked, 'messages', 'banner')).toBe(true);
+    // A type that was not in the selection at all
+    expect(isConfigPresetItemSelected(withConfigPresetItemsChecked({}, items, false), 'whitemark', 'whitemark')).toBe(false);
+  });
+
   it('switches a whole type to all or none, clearing its exceptions', () => {
     const allButOne = toggleConfigPresetItem(selectAllConfigPresetItems(types), 'branding', 'theme-1', false);
     expect(toggleConfigPresetTypes(allButOne, [branding], false).branding).toEqual({ mode: 'some', ids: [] });
@@ -86,6 +101,13 @@ describe('configPresetSelection', () => {
     expect(getConfigPresetCheckboxState([branding], all, NO_FORCED)).toBe(true);
     expect(getConfigPresetCheckboxState([branding], toggleConfigPresetItem(all, 'branding', 'theme-1', false), NO_FORCED)).toBe('indeterminate');
     expect(getConfigPresetCheckboxState([platform, messages], toggleConfigPresetTypes(all, [messages], false), NO_FORCED)).toBe('indeterminate');
+    // An unselectable item stays unchecked: it does not keep the checkbox from being checked, but the other items still count
+    const lockedPlatform = toggleConfigPresetItem(all, 'platform', 'platform', false);
+    const locked = [{ type: 'platform', key: 'platform' }];
+    expect(getConfigPresetCheckboxState([platform, messages], lockedPlatform, NO_FORCED)).toBe('indeterminate');
+    expect(getConfigPresetCheckboxState([platform, messages], lockedPlatform, NO_FORCED, locked)).toBe(true);
+    expect(getConfigPresetCheckboxState([platform, messages], toggleConfigPresetTypes(lockedPlatform, [messages], false), NO_FORCED, locked)).toBe(false);
+    expect(getConfigPresetCheckboxState([messages], all, NO_FORCED, locked)).toBe(true);
   });
 
   it('forces the items a selected item depends on, which count as checked and cannot be excluded', () => {
