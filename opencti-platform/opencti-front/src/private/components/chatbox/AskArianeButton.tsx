@@ -1,10 +1,10 @@
-import Button from '@common/button/Button';
+import { Button } from '@filigran/design-system';
 import FiligranIcon from '@components/common/FiligranIcon';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import React, { useEffect, useRef, useState } from 'react';
 import type { Theme } from '../../../components/Theme';
@@ -88,18 +88,22 @@ const AskArianeButton = () => {
 
   return (
     <>
+      {/* `clickable={false}` keeps the chip a plain element inside the button —
+          see fds-migration/MIGRATION-DECISIONS.md#ee-badge-inside-button */}
       <EETooltip
         title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
       >
         <Button
-          variant="tertiary"
-          gradient
-          gradientVariant="ai"
+          variant="ia"
+          priority="tertiary"
           onClick={toggleChatbot}
-          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+          // The `ia` variant gradients the LABEL only; the icon keeps `currentColor`, near-black in light.
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" style={{ color: 'var(--color-filigran-ia-primary)' }} />}
+          endIcon={isEnterpriseEdition
+            ? undefined
+            : <EEChip clickable={false} style={{ marginInlineStart: 0 }} />}
         >
           {t_i18n('Ask Ariane')}
-          <EEChip />
         </Button>
       </EETooltip>
 

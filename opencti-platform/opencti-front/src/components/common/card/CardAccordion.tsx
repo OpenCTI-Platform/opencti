@@ -29,7 +29,7 @@ const CardAccordion = ({
 
   const containerSx: SxProps = {
     padding: theme.spacing(3),
-    background: theme.palette.background.secondary,
+    background: 'var(--bg-elevation-default-layer-1)',
   };
 
   const summarySx: SxProps = {

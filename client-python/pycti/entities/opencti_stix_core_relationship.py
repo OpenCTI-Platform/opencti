@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class StixCoreRelationship:
     """Main StixCoreRelationship class for OpenCTI
@@ -43,6 +45,16 @@ class StixCoreRelationship:
                 coverage_name
                 coverage_score
             }
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             status {
                 id
                 template {
@@ -50,6 +62,10 @@ class StixCoreRelationship:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -716,10 +732,14 @@ class StixCoreRelationship:
         :type x_opencti_stix_ids: list
         :param x_opencti_modified_at: (optional) custom modification date
         :type x_opencti_modified_at: str
+        :param external_uri: (optional) coverage external URI
+        :type external_uri: str
         :param coverage_information: (optional) coverage information
         :type coverage_information: list
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: stix_core_relationship object
         :rtype: dict or None
         """
@@ -744,9 +764,15 @@ class StixCoreRelationship:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
+        external_uri = kwargs.get("external_uri", None)
         coverage_information = kwargs.get("coverage_information", None)
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
 
         self.opencti.app_logger.info(
             "Creating stix_core_relationship",
@@ -791,9 +817,11 @@ class StixCoreRelationship:
                     "x_opencti_workflow_id": x_opencti_workflow_id,
                     "x_opencti_stix_ids": x_opencti_stix_ids,
                     "x_opencti_modified_at": x_opencti_modified_at,
+                    "external_uri": external_uri,
                     "coverage_information": coverage_information,
                     "update": update,
                     "upsertOperations": upsert_operations,
+                    "customFieldValues": custom_field_values,
                 }
             },
         )
@@ -1387,15 +1415,16 @@ class StixCoreRelationship:
             raw_coverages = (
                 stix_relation["coverage"] if "coverage" in stix_relation else []
             )
-            coverage_information = list(
-                map(
-                    lambda cov: {
-                        "coverage_name": cov["name"],
-                        "coverage_score": cov["score"],
-                    },
-                    raw_coverages,
-                )
+            external_uri = (
+                stix_relation["external_uri"]
+                if "external_uri" in stix_relation
+                else None
             )
+            coverage_information = [
+                {"coverage_name": cov["name"], "coverage_score": cov["score"]}
+                for cov in raw_coverages
+                if "score" in cov
+            ]
 
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]
@@ -1419,6 +1448,7 @@ class StixCoreRelationship:
                     if "stop_time" in stix_relation
                     else default_date
                 ),
+                external_uri=external_uri,
                 coverage_information=coverage_information,
                 revoked=(
                     stix_relation["revoked"] if "revoked" in stix_relation else None
@@ -1482,6 +1512,7 @@ class StixCoreRelationship:
                     if "opencti_upsert_operations" in stix_relation
                     else None
                 ),
+                custom_field_values=extras.get("custom_field_values", None),
             )
         else:
             self.opencti.app_logger.error(

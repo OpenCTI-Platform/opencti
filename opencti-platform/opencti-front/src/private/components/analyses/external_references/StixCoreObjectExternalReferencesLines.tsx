@@ -13,28 +13,24 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { includes } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
-import { truncate } from '../../../../utils/String';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -49,31 +45,6 @@ import { externalReferenceMutationRelationDelete } from './AddExternalReferences
 import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import ExternalReferencePopover from './ExternalReferencePopover';
 import { StixCoreObjectExternalReferencesLines_data$data } from './__generated__/StixCoreObjectExternalReferencesLines_data.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttonExpand: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    height: 25,
-    color: theme.palette.primary.main,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    '&:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
-    },
-  },
-}));
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -108,7 +79,6 @@ const BUTTON_CONTAINER_WIDTH = 180;
 const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
   StixCoreObjectExternalReferencesLinesContainerProps
 > = ({ stixCoreObjectId, data, relay }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
@@ -274,6 +244,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                     const externalReferenceId = externalReference.external_id
                       ? `(${externalReference.external_id})`
                       : '';
+                    const externalReferenceName = `${externalReference.source_name} ${externalReferenceId}`;
                     let externalReferenceSecondary: string;
                     if (externalReference.url && externalReference.url.length > 0) {
                       externalReferenceSecondary = externalReference.url;
@@ -293,13 +264,19 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                             divider={true}
                             disablePadding
                             secondaryAction={(
-                              <Stack direction="row" gap={1}>
+                              <Stack
+                                direction="row"
+                                sx={{
+                                  gap: 0.5,
+                                }}
+                              >
                                 <Tooltip title={t_i18n('Browse the link')}>
                                   <IconButton
                                     onClick={() => handleOpenExternalLink(
                                       externalReference.url ?? '',
                                     )}
                                     color="primary"
+                                    aria-label={t_i18n('Browse the link')}
                                   >
                                     <OpenInBrowserOutlined />
                                   </IconButton>
@@ -342,18 +319,30 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                 <ItemIcon type="External-Reference" />
                               </ListItemIcon>
                               <ListItemText
-                                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                                secondary={externalReferenceSecondary}
+                                primary={(
+                                  <Tooltip title={externalReferenceName}>
+                                    <span>{externalReferenceName}</span>
+                                  </Tooltip>
+                                )}
+                                secondary={(
+                                  <Tooltip title={externalReferenceSecondary}>
+                                    <span>{externalReferenceSecondary}</span>
+                                  </Tooltip>
+                                )}
                                 slotProps={{
                                   primary: {
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
+                                    sx: {
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    },
                                   },
                                   secondary: {
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
+                                    sx: {
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    },
                                   },
                                 }}
                               />
@@ -393,7 +382,12 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                           divider={true}
                           disablePadding
                           secondaryAction={(
-                            <>
+                            <Stack
+                              direction="row"
+                              sx={{
+                                gap: 0.5,
+                              }}
+                            >
                               {!isFileAttached && (
                                 <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                                   <FileUploader
@@ -413,19 +407,48 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                   variant="inLine"
                                 />
                               </Security>
-                            </>
+                            </Stack>
                           )}
                         >
                           <ListItemButton
                             component={Link}
                             to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                            sx={{
+                              '&.MuiListItemButton-root': {
+                                paddingRight: `${BUTTON_CONTAINER_WIDTH}px`,
+                              },
+                            }}
                           >
                             <ListItemIcon>
                               <ItemIcon type="External-Reference" />
                             </ListItemIcon>
                             <ListItemText
-                              primary={`${externalReference.source_name} ${externalReferenceId}`}
-                              secondary={truncate(externalReference.description, 120)}
+                              primary={(
+                                <Tooltip title={externalReferenceName}>
+                                  <span>{externalReferenceName}</span>
+                                </Tooltip>
+                              )}
+                              secondary={(
+                                <Tooltip title={externalReference.description}>
+                                  <span>{externalReference.description}</span>
+                                </Tooltip>
+                              )}
+                              slotProps={{
+                                primary: {
+                                  sx: {
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  },
+                                },
+                                secondary: {
+                                  sx: {
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  },
+                                },
+                              }}
                             />
                           </ListItemButton>
                         </ListItem>
@@ -475,7 +498,27 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
           <IconButton
             aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
             onClick={handleToggleExpand}
-            classes={{ root: classes.buttonExpand }}
+            sx={(theme) => ({
+              position: 'absolute',
+              left: 0,
+              bottom: 0,
+              width: '100%',
+              height: 25,
+              color: theme.palette.primary.main,
+              backgroundColor:
+                theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, .1)'
+                  : 'rgba(0, 0, 0, .1)',
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              '&:hover': {
+                backgroundColor:
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, .2)'
+                    : 'rgba(0, 0, 0, .2)',
+              },
+            })}
+            aria-expanded={expanded}
           >
             {expanded ? (
               <ExpandLessOutlined />
@@ -522,7 +565,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
               title={t_i18n('Launch an import')}
             >
               <Field
-                component={SelectField}
+                component={SelectFieldFds}
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth={true}
@@ -539,21 +582,21 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                         connector.connector_scope,
                       ));
                   return (
-                    <MenuItem
+                    <SelectItem
                       key={i}
-                      value={connector?.id}
+                      value={connector?.id ?? ''}
                       disabled={disabled || !connector?.active}
                     >
                       {connector?.name}
-                    </MenuItem>
+                    </SelectItem>
                   );
                 })}
               </Field>
               {(selectedConnector?.configurations?.length ?? 0) > 0
                 ? (
                     <Field
-                      component={SelectField}
-                      variant="standard"
+                      component={SelectFieldFds}
+                      variant="outlined"
                       name="configuration"
                       label={t_i18n('Configuration')}
                       fullWidth={true}
@@ -562,12 +605,12 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                     >
                       {(selectedConnector?.configurations ?? []).map((config) => {
                         return (
-                          <MenuItem
+                          <SelectItem
                             key={config.id}
                             value={config.configuration}
                           >
                             {config.name}
-                          </MenuItem>
+                          </SelectItem>
                         );
                       })}
                     </Field>

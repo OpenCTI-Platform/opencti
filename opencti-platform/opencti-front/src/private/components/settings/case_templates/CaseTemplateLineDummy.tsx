@@ -1,65 +1,40 @@
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import Checkbox from '@mui/material/Checkbox';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent } from 'react';
 import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
+import { Checkbox } from '@filigran/design-system';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-    cursor: 'default',
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface CaseTemplateLineDummyProps {
   dataColumns: DataColumns;
 }
 
 const CaseTemplateLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({ dataColumns }) => {
-  const classes = useStyles();
-
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem sx={{ paddingLeft: '10px', height: 50, cursor: 'default' }} divider={true}>
       <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
+        sx={{ color: 'grey.700' }}
         style={{ minWidth: 40 }}
       >
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox
+          disabled={true}
+        />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map(({ label, width }) => (
-              <div
+              <BodyItem
                 key={label}
-                className={classes.bodyItem}
                 style={{ width }}
               >
                 <Skeleton
@@ -68,12 +43,12 @@ const CaseTemplateLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({ 
                   width={width}
                   height="100%"
                 />
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItem>

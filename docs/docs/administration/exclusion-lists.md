@@ -21,6 +21,11 @@ When creating a list, you can provide the following data:
 - File format expected: .txt
 - Formatting of values within the file itself: please only add a flat list of value, one value per line.
 
+**Formatting IPv4-Addr / IPv6-Addr values**
+
+- A single address can be added as is, e.g. `192.168.20.10`
+- A CIDR range can also be used to exclude a whole subnet at once, e.g. `192.168.0.0/16` will exclude every address in that range, including `192.168.20.10`
+
 As said before, there are different indicator observable types possible :
 
 `Artifact`, `Domain-name`, `Email-Addr`, `Hostname`, `Ipv4-Addr`, `ipv6-Addr`, `StixFile`, `Url`
@@ -60,5 +65,8 @@ It is also possible to completely change the file, by toggling `Upload a file` .
 
 From now on, when an indicator is about to be created, if its pattern contains an observable value belonging to an exclusion list, then this indicator will not be created, with an error message of `Indicator of type stix is contained in exclusion list`.
 This applies regardless of the source of ingestion: Manual, Connectors, Feed ingestors (CSV, RSS, TAXII) and also Playbook.
+
+> "Exclusion lists apply to Indicators, not Observables"
+    The check is only performed when an Indicator is created from a STIX pattern. A standalone Observable created directly (for instance by a connector or feed ingestor that does not generate an Indicator) is not filtered by exclusion lists.
 
 ![Exclusion lists indicator creation](./assets/exclusion-lists/exclusion-lists-indicator-creation.png)

@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -18,6 +18,7 @@ import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -236,7 +237,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             type="number"
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={(name, value) => handleSubmitField(name, value === '' ? null : value)}
             helperText={
@@ -296,6 +297,13 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={intrusionSet.entity_type}
+            entityId={intrusionSet.id}
+            values={intrusionSet.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -316,6 +324,7 @@ export default createFragmentContainer(IntrusionSetEditionOverviewComponent, {
   intrusionSet: graphql`
     fragment IntrusionSetEditionOverview_intrusionSet on IntrusionSet {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       confidence
       x_opencti_score

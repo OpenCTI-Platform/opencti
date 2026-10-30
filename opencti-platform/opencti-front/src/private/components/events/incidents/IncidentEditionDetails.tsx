@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { isNone, useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -20,6 +20,7 @@ import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForE
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
+import TextareaField from '../../../../components/TextareaField';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -205,7 +206,7 @@ const IncidentEditionDetails: FunctionComponent<
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('First seen'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="first_seen" />
@@ -222,7 +223,7 @@ const IncidentEditionDetails: FunctionComponent<
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Last seen'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -232,12 +233,12 @@ const IncidentEditionDetails: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="source"
             required={(mandatoryAttributes.includes('source'))}
             label={t_i18n('Source')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -245,15 +246,12 @@ const IncidentEditionDetails: FunctionComponent<
             }
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="objective"
             required={(mandatoryAttributes.includes('objective'))}
             label={t_i18n('Objective')}
-            fullWidth={true}
-            multiline={true}
             rows={4}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={

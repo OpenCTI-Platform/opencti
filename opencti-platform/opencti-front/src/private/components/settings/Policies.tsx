@@ -5,8 +5,7 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import GroupSetDefaultGroupForIngestionUsers from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import Alert from '@mui/material/Alert';
 import Grid from '@mui/material/Grid';
-import MenuItem from '@mui/material/MenuItem';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -14,7 +13,7 @@ import * as Yup from 'yup';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Card from '../../../components/common/card/Card';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../components/fields/SwitchField';
 
 import { useFormatter } from '../../../components/i18n';
@@ -143,7 +142,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     >
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Formik
             onSubmit={() => {
             }}
@@ -154,7 +153,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
             {({ values, setFieldValue }) => (
               <Form>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <DangerZoneBlock
                       type="platform_organization"
                       title={<>{t_i18n('Platform main organization')} <EEChip /></>}
@@ -232,7 +231,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
 
                   <GroupSetDefaultGroupForIngestionUsers />
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Card title={t_i18n('Users visibility')}>
                       <Alert severity="info" variant="outlined">
                         {t_i18n('This option is automatically disabled when a platform organization is set.')}
@@ -248,11 +247,11 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Card>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Card title={t_i18n('Platform Banner Configuration')}>
                       <Field
-                        component={SelectField}
-                        variant="standard"
+                        component={SelectFieldFds}
+                        variant="outlined"
                         name="platform_banner_level"
                         label={t_i18n('Platform banner level')}
                         fullWidth={true}
@@ -262,15 +261,15 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         }}
                         displ
                       >
-                        <MenuItem value="">&nbsp;</MenuItem>
-                        <MenuItem value="GREEN">{t_i18n('GREEN')}</MenuItem>
-                        <MenuItem value="RED">{t_i18n('RED')}</MenuItem>
-                        <MenuItem value="YELLOW">{t_i18n('YELLOW')}</MenuItem>
+                        <SelectItem value="">&nbsp;</SelectItem>
+                        <SelectItem value="GREEN">{t_i18n('GREEN')}</SelectItem>
+                        <SelectItem value="RED">{t_i18n('RED')}</SelectItem>
+                        <SelectItem value="YELLOW">{t_i18n('YELLOW')}</SelectItem>
                       </Field>
                       <Field
                         component={TextField}
-                        variant="standard"
-                        style={{ marginTop: 20 }}
+                        variant="outlined"
+                        className="mt-5"
                         name="platform_banner_text"
                         label={t_i18n('Platform banner text')}
                         fullWidth={true}
@@ -280,7 +279,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
 
                   {/* Full width: Login messages */}
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <Card title={t_i18n('Login messages')}>
                       <Field
                         component={MarkdownField}
@@ -290,7 +289,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         multiline={true}
                         rows="3"
                         onSubmit={handleSubmitField}
-                        variant="standard"
+                        variant="outlined"
                       />
                       <Field
                         component={MarkdownField}
@@ -299,7 +298,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         fullWidth
                         style={{ marginTop: 20 }}
                         onSubmit={handleSubmitField}
-                        variant="standard"
+                        variant="outlined"
                       />
                       <Field
                         component={MarkdownField}
@@ -309,13 +308,13 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         style={{ marginTop: 20 }}
                         height={38}
                         onSubmit={handleSubmitField}
-                        variant="standard"
+                        variant="outlined"
                       />
                     </Card>
                   </Grid>
 
                   {/* Full width: Platform error messages */}
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <Card title={t_i18n('Platform error messages')}>
                       <Field
                         component={MarkdownField}
@@ -325,7 +324,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         multiline={true}
                         rows={3}
                         onSubmit={handleSubmitField}
-                        variant="standard"
+                        variant="outlined"
                       />
                     </Card>
                   </Grid>

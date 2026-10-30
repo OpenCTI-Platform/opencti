@@ -4,11 +4,12 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from 'src/relay/environment';
 import * as Yup from 'yup';
@@ -29,6 +30,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -40,6 +42,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
+import CustomFieldValuesCreation from '../../common/custom_fields/CustomFieldValuesCreation';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
@@ -138,6 +142,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: CaseIncidentAddInput = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -155,11 +160,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({
@@ -217,6 +218,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   }
   return (
     <Formik<FormikCaseIncidentAddInput>
+      entityType={CASE_INCIDENT_TYPE}
       initialValues={initialValues}
       validationSchema={validator}
       onSubmit={onSubmit}
@@ -228,7 +230,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -242,7 +244,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             textFieldProps={{
               label: t_i18n('Incident date'),
               required: mandatoryAttributes.includes('created'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
@@ -345,6 +347,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

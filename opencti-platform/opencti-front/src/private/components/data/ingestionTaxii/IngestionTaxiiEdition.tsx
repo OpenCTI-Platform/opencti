@@ -2,7 +2,6 @@ import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, useMemo } from 'react';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import {
@@ -13,7 +12,7 @@ import CommitMessage from '@components/common/form/CommitMessage';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
 import { convertUser } from '../../../../utils/edition';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import {
   BASIC_AUTH,
@@ -292,7 +291,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -300,26 +299,26 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onSubmit={handleSubmitField}
           />
           <IngestionSchedulingField handleSubmitField={handleSubmitField} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="uri"
             label={t_i18n('TAXII server URL')}
             fullWidth={true}
             onSubmit={handleSubmitField}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="version"
             label={t_i18n('TAXII version')}
             onSubmit={handleSubmitField}
@@ -329,20 +328,20 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
               marginTop: 20,
             }}
           >
-            <MenuItem value="v21">{t_i18n('TAXII 2.1')}</MenuItem>
+            <SelectItem value="v21">{t_i18n('TAXII 2.1')}</SelectItem>
           </Field>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="collection"
             label={t_i18n('TAXII Collection')}
             onSubmit={handleSubmitField}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="authentication_type"
             label={t_i18n('Authentication type')}
             onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
@@ -353,23 +352,23 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
               marginTop: 20,
             }}
           >
-            <MenuItem value="none">{t_i18n('None')}</MenuItem>
-            <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
-            <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-            <MenuItem value="certificate">
+            <SelectItem value="none">{t_i18n('None')}</SelectItem>
+            <SelectItem value="basic">{t_i18n('Basic user / password')}</SelectItem>
+            <SelectItem value="bearer">{t_i18n('Bearer token')}</SelectItem>
+            <SelectItem value="certificate">
               {t_i18n('Client certificate')}
-            </MenuItem>
+            </SelectItem>
           </Field>
           {values.authentication_type === BASIC_AUTH && (
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="username"
                 label={t_i18n('Username')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="password"
@@ -391,12 +390,12 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             <>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="cert"
                 label={t_i18n('Certificate (base64)')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <PasswordTextField
                 name="key"
@@ -406,12 +405,12 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="ca"
                 label={t_i18n('CA certificate (base64)')}
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value, values)}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}

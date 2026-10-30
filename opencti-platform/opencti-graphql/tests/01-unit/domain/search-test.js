@@ -1,7 +1,11 @@
 import { expect, it } from 'vitest';
-import { buildLocalMustFilter, elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine';
+import '../../../src/modules/index';
+import { buildLocalMustFilter, elGenerateFullTextSearchShould, isSearchingRelationships, specialElasticCharsEscape } from '../../../src/database/engine';
 import { isNotEmptyField } from '../../../src/database/utils';
 import { adaptFilterToIdsFilterKey } from '../../../src/utils/filtering/filtering-completeSpecialFilterKeys';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { RELATION_RELATED_TO } from '../../../src/schema/stixCoreRelationship';
 
 const parse = (search) => {
   const shouldSearch = elGenerateFullTextSearchShould(search);
@@ -36,6 +40,26 @@ it('should search parsing correctly generated', () => {
   parsed = parse('https://localhost:4000/graphql second');
   expect(parsed.queriesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
   expect(parsed.matchesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
+
+  parsed = parse('https://example.com/~user/page');
+  expect(parsed.queriesString).toBe('https\\:\\/\\/example.com\\/\\~user\\/page*');
+
+  // FUZZY TESTING
+  parsed = parse('lazarous~ apt~1 group');
+  expect(parsed.queriesString).toBe('lazarous~ apt~1 group*');
+
+  parsed = parse('~ ~1 apt~5 a~b');
+  expect(parsed.queriesString).toBe('\\~* \\~1* apt\\~5* a\\~b*');
+
+  parsed = parse('lazarous~\tgroup');
+  expect(parsed.queriesString).toBe('lazarous~ group*');
+
+  parsed = parse('apt\n~1');
+  expect(parsed.queriesString).toBe('apt* \\~1*');
+
+  // Fuzzy is only kept on a single word, as fuzzy terms are not split by the analyzer
+  parsed = parse('apt-28~ https://x.com/a~ mal*~1');
+  expect(parsed.queriesString).toBe('apt\\-28\\~* https\\:\\/\\/x.com\\/a\\~* mal*~1');
 
   // GENERIC TESTING
   parsed = parse('(Citation:');
@@ -118,4 +142,57 @@ it('should generate search clauses for both activity and history fields in histo
 
   expect(topLevelActivityAndHistoryQueryString).toBeDefined();
   expect(nestedHistoryQueryString).toBeDefined();
+});
+
+it('should only search the allowed connections', () => {
+  const connectionsSearches = (shouldSearch) => shouldSearch.filter((e) => e?.nested?.path === 'connections');
+  const unrestricted = connectionsSearches(elGenerateFullTextSearchShould('"exact" partial'));
+  expect(unrestricted.length).toBe(1);
+  expect(unrestricted[0].nested.query.bool.should.length).toBe(2);
+  expect(unrestricted[0].nested.query.bool.filter).toBeUndefined();
+
+  const restricted = connectionsSearches(elGenerateFullTextSearchShould('"exact" partial', { allowedConnectionIds: ['ID1', 'ID2'] }));
+  expect(restricted.length).toBe(1);
+  expect(restricted[0].nested.query.bool.should.length).toBe(2);
+  expect(restricted[0].nested.query.bool.filter).toEqual([{ terms: { 'connections.internal_id.keyword': ['ID1', 'ID2'] } }]);
+
+  const withoutConnections = elGenerateFullTextSearchShould('"exact" partial', { allowedConnectionIds: [] });
+  expect(connectionsSearches(withoutConnections).length).toBe(0);
+  expect(withoutConnections.length).toBe(3);
+});
+
+it('should resolve connections restrictions unless only objects are searched', () => {
+  expect(isSearchingRelationships(null)).toBe(true);
+  expect(isSearchingRelationships([])).toBe(true);
+  expect(isSearchingRelationships([RELATION_RELATED_TO])).toBe(true);
+  expect(isSearchingRelationships([ABSTRACT_STIX_META_RELATIONSHIP])).toBe(true);
+  expect(isSearchingRelationships([ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP])).toBe(true);
+  expect(isSearchingRelationships([ENTITY_TYPE_IDENTITY_ORGANIZATION, RELATION_RELATED_TO])).toBe(true);
+  expect(isSearchingRelationships([ENTITY_TYPE_IDENTITY_ORGANIZATION])).toBe(false);
+  expect(isSearchingRelationships([ABSTRACT_STIX_CORE_OBJECT])).toBe(false);
+});
+
+it('should bound overlong search input instead of processing it in full', () => {
+  const MAX_SEARCH_LENGTH = 512;
+  const marker = 'shouldBeTruncatedAway';
+  // Marker sits well beyond the bound, so it must not survive into the query.
+  const overlongSearch = `${'a'.repeat(MAX_SEARCH_LENGTH + 50)}${marker}`;
+  const shouldSearch = elGenerateFullTextSearchShould(overlongSearch);
+  const queriesString = shouldSearch
+    .map((e) => e?.query_string?.query)
+    .filter((f) => isNotEmptyField(f))
+    .join(' ');
+  const matchesString = shouldSearch
+    .map((e) => e?.multi_match?.query)
+    .filter((f) => isNotEmptyField(f))
+    .join(' ');
+  expect(queriesString).not.toContain(marker);
+  expect(matchesString).not.toContain(marker);
+});
+
+it('should not throw when a percent-encoded sequence straddles the search length boundary', () => {
+  const MAX_SEARCH_LENGTH = 512;
+  // Place a percent-encoded byte so it gets cut mid-sequence by the length bound.
+  const searchWithSplitEncoding = `${'a'.repeat(MAX_SEARCH_LENGTH - 1)}%E0%A4%A`;
+  expect(() => elGenerateFullTextSearchShould(searchWithSplitEncoding)).not.toThrow();
 });

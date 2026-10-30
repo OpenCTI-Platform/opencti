@@ -1,7 +1,6 @@
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import React, { FunctionComponent } from 'react';
@@ -17,32 +16,14 @@ import { findFlagUrl } from '../../../../utils/flags';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
   fragment StixNestedRefRelationshipCreationFromEntityLine_node on StixCoreObject {
@@ -251,12 +232,11 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
   onToggleShiftEntity,
   index,
 }) => {
-  const classes = useStyles();
   const data = useFragment(stixNestedRefRelationshipCreationFromEntityLineFragment, node);
   const flagUrl = data.entity_type === 'Country' && findFlagUrl(data.x_opencti_aliases);
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       onClick={(event) => (event.shiftKey
         ? onToggleShiftEntity(index, data, event)
@@ -264,7 +244,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
       }
     >
       <ListItemIcon
-        classes={{ root: classes.itemIcon }}
+        sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, data, event)
@@ -272,15 +252,13 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
         }
       >
         <Checkbox
-          edge="start"
           checked={
             (selectAll && !(data.id in (deSelectedElements || {})))
             || data.id in (selectedElements || {})
           }
-          disableRipple={true}
         />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         {flagUrl ? (
           <img
             style={{ width: 20 }}
@@ -294,27 +272,23 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <ItemEntityType entityType={data.entity_type} />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(data)}
               {data.draftVersion && (<DraftChip />)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               {data.createdBy?.name ?? EMPTY_VALUE}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -322,16 +296,15 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
                 labels={data.objectLabel}
                 onClick={onLabelClick}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
                 markingDefinitions={data.objectMarking ?? []}
                 limit={1}
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
@@ -342,27 +315,24 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
 export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
   dataColumns,
 }: { dataColumns: DataColumns }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       style={{ minWidth: 40 }}
     >
       <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
         <CircleOutlined />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <Skeleton
@@ -371,9 +341,8 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.value.width }}
             >
               <Skeleton
@@ -382,9 +351,8 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               <Skeleton
@@ -393,9 +361,8 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
@@ -404,9 +371,8 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <Skeleton
@@ -415,7 +381,7 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
                 width="100%"
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

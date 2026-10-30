@@ -1,11 +1,14 @@
 import Typography from '@mui/material/Typography';
 import { GroupsOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import IngestionCatalogChip from '@components/integrations/catalog/IngestionCatalogUseCaseChip';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
+import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
+import DisabledReasonTooltip from '@components/integrations/catalog/components/DisabledReasonTooltip';
 import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -26,13 +29,25 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
   const theme = useTheme<Theme>();
 
   const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
+  const shouldRenderDeploy = connector.manager_supported === true;
+  const canDeploy = canDeployConnector(connector);
+  const compatibilityMessage = useConnectorCompatibilityMessage(connector);
+  // Community Edition: the EE upsell only where EE would make the connector deployable
+  const showEnterpriseUpsell = !isEnterpriseEdition && canDeploy;
 
   return (
     <Stack
       direction="row"
-      justifyContent="space-between"
+      sx={{
+        justifyContent: 'space-between',
+      }}
     >
-      <Stack direction="row" gap={2}>
+      <Stack
+        direction="row"
+        sx={{
+          gap: 2,
+        }}
+      >
         <img
           src={connector.logo}
           alt={connector.title}
@@ -44,8 +59,17 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
           }}
         />
 
-        <Stack gap={1}>
-          <Stack direction="row" gap={2} alignItems="center">
+        <Stack sx={{
+          gap: 1,
+        }}
+        >
+          <Stack
+            direction="row"
+            sx={{
+              gap: 2,
+              alignItems: 'center',
+            }}
+          >
             {/* Sentence case: the V7 design language avoids all-caps text. */}
             <Typography
               variant="h1"
@@ -62,23 +86,15 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
             {connector.verified
               ? (
                   <Tag
-                    label={(
-                      <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
-                        <FiligranIcon icon={LogoFiligranIcon} size="small" />
-                        {t_i18n('Supported by Filigran')}
-                      </Stack>
-                    )}
+                    label={t_i18n('Supported by Filigran')}
+                    icon={<FiligranIcon icon={LogoFiligranIcon} size="small" />}
                     color={theme.palette.primary.main}
                   />
                 )
               : (
                   <Tag
-                    label={(
-                      <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
-                        <GroupsOutlined fontSize="small" />
-                        {t_i18n('Supported by Community')}
-                      </Stack>
-                    )}
+                    label={t_i18n('Supported by Community')}
+                    icon={<GroupsOutlined fontSize="small" />}
                     color={theme.palette.action?.disabled}
                   />
                 )
@@ -102,12 +118,14 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
       </Stack>
 
       <div>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
+        <Security needs={[INGESTION_SETINGESTIONS]} hasAccess={shouldRenderDeploy}>
           {
-            isEnterpriseEdition ? (
-              <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
-            ) : (
+            showEnterpriseUpsell ? (
               <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+            ) : (
+              <DisabledReasonTooltip reason={compatibilityMessage}>
+                <Button disabled={!canDeploy} onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+              </DisabledReasonTooltip>
             )
           }
         </Security>

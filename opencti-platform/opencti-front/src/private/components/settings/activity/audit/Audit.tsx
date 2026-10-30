@@ -14,13 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { useRef, useState, useEffect } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import Checkbox from '@mui/material/Checkbox';
+import { styled } from '@mui/material/styles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Alert from '@mui/material/Alert';
 import { CSVLink } from 'react-csv';
 import { graphql } from 'react-relay';
-import type { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
@@ -36,15 +34,12 @@ import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
+import { Checkbox } from '@filigran/design-system';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 const LOCAL_STORAGE_KEY = 'audit';
 
@@ -78,11 +73,19 @@ export const AuditCSVQuery = graphql`
             id
             name
           }
+          user_metadata
           context_data {
             entity_id
             entity_type
             entity_name
             message
+            from_id
+            to_id
+            changes {
+              field
+              changes_added
+              changes_removed
+            }
           }
         }
       }
@@ -90,14 +93,91 @@ export const AuditCSVQuery = graphql`
   }
 `;
 
+type AuditCsvNode = {
+  id: string;
+  entity_type?: string | null;
+  event_type: string;
+  event_scope?: string | null;
+  event_status: string;
+  timestamp: unknown;
+  context_uri?: string | null;
+  user?: { id: string; name: string } | null;
+  user_metadata?: unknown;
+  context_data?: {
+    entity_id?: string | null;
+    entity_type?: string | null;
+    entity_name?: string | null;
+    message: string;
+    from_id?: string | null;
+    to_id?: string | null;
+    changes?: ReadonlyArray<{
+      field: string;
+      changes_added?: ReadonlyArray<string> | null;
+      changes_removed?: ReadonlyArray<string> | null;
+    } | null> | null;
+  } | null;
+};
+
+type AuditCsvRow = {
+  id: string;
+  entity_type?: string | null;
+  event_type: string;
+  event_scope?: string | null;
+  event_status: string;
+  timestamp: unknown;
+  context_uri?: string | null;
+  user_id: string;
+  user_name: string;
+  context_data_id: string;
+  context_data_entity_type: string;
+  context_data_entity_name: string;
+  context_data_message: string;
+  user_metadata: string;
+  context_data_from_id: string;
+  context_data_to_id: string;
+  context_data_changes: string;
+};
+
+// react-csv wraps values in quotes but never escapes quotes within them (no RFC4180 support),
+// so every string value must go through this before being handed to CSVLink, otherwise the row breaks and columns shift.
+export const escapeCsvValue = <T,>(value: T): T | string => (typeof value === 'string' ? value.replace(/"/g, '""') : value);
+
+export const toCsvSafeJson = (value: unknown): string => {
+  if (value === null || value === undefined) return 'undefined';
+  // JSON.stringify returns undefined for non-serializable inputs such as functions or symbols.
+  const serialized = JSON.stringify(value);
+  return serialized === undefined ? 'undefined' : escapeCsvValue(serialized);
+};
+
+// Column order is a public contract: consumers (SIEM, scripts, spreadsheets) may read the export by position,
+// so new columns must only be appended after the existing ones.
+export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>): AuditCsvRow[] => nodes.map(({ node }) => ({
+  id: escapeCsvValue(node.id),
+  entity_type: escapeCsvValue(node.entity_type),
+  event_type: escapeCsvValue(node.event_type),
+  event_scope: escapeCsvValue(node.event_scope),
+  event_status: escapeCsvValue(node.event_status),
+  timestamp: escapeCsvValue(node.timestamp),
+  context_uri: escapeCsvValue(node.context_uri),
+  user_id: escapeCsvValue(node.user?.id ?? 'undefined'),
+  user_name: escapeCsvValue(node.user?.name ?? 'undefined'),
+  context_data_id: escapeCsvValue(node.context_data?.entity_id ?? 'undefined'),
+  context_data_entity_type: escapeCsvValue(node.context_data?.entity_type ?? 'undefined'),
+  context_data_entity_name: escapeCsvValue(node.context_data?.entity_name ?? 'undefined'),
+  context_data_message: escapeCsvValue(node.context_data?.message ?? 'undefined'),
+  user_metadata: toCsvSafeJson(node.user_metadata),
+  context_data_from_id: escapeCsvValue(node.context_data?.from_id ?? 'undefined'),
+  context_data_to_id: escapeCsvValue(node.context_data?.to_id ?? 'undefined'),
+  context_data_changes: toCsvSafeJson(node.context_data?.changes),
+}));
+
 const Audit = () => {
-  const classes = useStyles();
   const csvLink = useRef<
   CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }
   >(null);
   const hasPageRendered = useRef(false);
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<AuditCsvRow[]>([]);
   const { settings } = useAuth();
   const hasBothCapabilities = useGranted(
     [SETTINGS_SECURITYACTIVITY, KNOWLEDGE],
@@ -173,26 +253,7 @@ const Audit = () => {
         const { audits } = result;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const csvData = audits.edges.map((n) => {
-          const { node } = n;
-          return {
-            id: node.id,
-            entity_type: node.entity_type,
-            event_type: node.event_type,
-            event_scope: node.event_scope,
-            event_status: node.event_status,
-            timestamp: node.timestamp,
-            context_uri: node.context_uri,
-            user_id: node.user?.id ?? 'undefined',
-            user_name: node.user?.name ?? 'undefined',
-            context_data_id: node.context_data?.entity_id ?? 'undefined',
-            context_data_entity_type:
-              node.context_data?.entity_type ?? 'undefined',
-            context_data_entity_name:
-              node.context_data?.entity_name ?? 'undefined',
-            context_data_message: node.context_data?.message ?? 'undefined',
-          };
-        });
+        const csvData = buildAuditCsvData(audits.edges);
         setData(csvData);
         setLoading(false);
       });
@@ -204,8 +265,8 @@ const Audit = () => {
         value="start"
         control={(
           <Checkbox
-            style={{ padding: 7 }}
-            onChange={() => {
+            aria-label={t_i18n('Include knowledge')}
+            onCheckedChange={() => {
               const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
               storageHelpers.handleAddProperty('types', newTypes);
             }}
@@ -214,11 +275,12 @@ const Audit = () => {
         )}
         label={t_i18n('Include knowledge')}
         labelPlacement="end"
+        sx={{ '& .MuiFormControlLabel-label': { ml: 1 } }}
       />
     </div>
   ) : <></>;
   return (
-    <div className={classes.container} data-testid="audit-page">
+    <Container data-testid="audit-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Activity') },
@@ -280,7 +342,7 @@ const Audit = () => {
         )}
       </ListLines>
       <CSVLink filename={`${t_i18n('Audit logs')}.csv`} ref={csvLink} data={data} />
-    </div>
+    </Container>
   );
 };
 

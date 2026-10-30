@@ -4,47 +4,20 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { LockPersonOutlined, NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 import { DataColumns } from '../../../../../components/list_lines';
-import type { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import EntitySettingAttributeEdition from './EntitySettingAttributeEdition';
 import { EntitySettingAttributeLine_attribute$key } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../../../../utils/authorizedMembers';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const entitySettingAttributeLineFragment = graphql`
   fragment EntitySettingAttributeLine_attribute on TypeAttribute {
@@ -70,7 +43,6 @@ interface EntitySettingAttributeLineProps {
 }
 
 const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLineProps> = ({ node = null, dataColumns, entitySetting }) => {
-  const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
   const attribute = useFragment(entitySettingAttributeLineFragment, node);
 
@@ -91,20 +63,21 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
       <ListItemButton
         key={attribute.name}
         divider={true}
-        classes={{ root: classes.item }}
         onClick={() => !needEE && !nothingToUpdate && handleOpenUpdate()}
         disableRipple={needEE || nothingToUpdate}
-        sx={needEE || nothingToUpdate
-          ? {
-              '&:hover': {
-                cursor: 'default',
-                backgroundColor: 'transparent',
-              },
-            }
-          : {}
-        }
+        sx={[
+          { paddingLeft: '10px', height: '50px' },
+          needEE || nothingToUpdate
+            ? {
+                '&:hover': {
+                  cursor: 'default',
+                  backgroundColor: 'transparent',
+                },
+              }
+            : {},
+        ]}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           {attribute.name === INPUT_AUTHORIZED_MEMBERS
             ? (
                 <LockPersonOutlined
@@ -119,19 +92,18 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
           primary={(
             <div>
               {Object.values(dataColumns ?? {}).map((value, i) => (
-                <div
+                <BodyItem
                   key={value.label}
-                  className={classes.bodyItem}
                   style={{ width: value.width }}
                 >
                   {value.render?.(attribute)}
                   {needEE && i === 0 && <EEChip />}
-                </div>
+                </BodyItem>
               ))}
             </div>
           )}
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
           {!needEE && !nothingToUpdate && <NorthEastOutlined />}
         </ListItemIcon>
       </ListItemButton>
@@ -152,27 +124,21 @@ export const EntitySettingAttributeLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
     <ListItem
       divider={true}
-      classes={{ root: classes.item }}
-      secondaryAction={(
-        <Box sx={{ root: classes.itemIconDisabled }}>
-          <NorthEastOutlined />
-        </Box>
-      )}
+      sx={{ paddingLeft: '10px', height: '50px' }}
+      secondaryAction={<NorthEastOutlined />}
     >
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 <Skeleton
@@ -181,7 +147,7 @@ export const EntitySettingAttributeLineDummy = ({
                   width="90%"
                   height={20}
                 />
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}

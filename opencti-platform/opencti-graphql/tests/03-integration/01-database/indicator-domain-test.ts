@@ -28,6 +28,7 @@ import * as indicatorUtils from '../../../src/modules/indicator/indicator-utils'
 import * as decayExclusionRuleDomain from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
 import type { BasicStoreEntityDecayExclusionRule } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
+import { UNTIL_END_STR } from '../../../src/utils/format';
 
 describe('Testing field patch and upsert on indicator for trio {score, valid until, revoked}', () => {
   // Region Mock and Spy setup
@@ -666,7 +667,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 80, // unchanged score
       valid_from: todayMorning.toISOString(),
-      valid_until: tomorrow.toISOString(), // different valid_until — should NOT be applied
+      valid_until: tomorrow.toISOString(), // different valid_until - should NOT be applied
     };
     await createIndicator(connectorUser, indicatorUpsertInput);
     const indicatorAfterUpsert = await findById(testContext, ADMIN_USER, indicatorCreated.id);
@@ -700,7 +701,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       name: 'Indicator domain - exclusion rule - upsert score changed',
       pattern: "[domain-name:value = 'excluded-upsert-changed.test']",
       pattern_type: STIX_PATTERN_TYPE,
-      x_opencti_score: 60, // score changed — guard should NOT block the update
+      x_opencti_score: 60, // score changed - guard should NOT block the update
       valid_from: todayMorning.toISOString(),
       valid_until: tomorrow.toISOString(),
     };
@@ -709,6 +710,28 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
 
     // THEN the new score is accepted
     expect(indicatorAfterUpsert.x_opencti_score).toBe(60);
+  });
+
+  it('decay excluded indicator - creation without an explicit valid_until should never expire', async () => {
+    // GIVEN decay is enabled and an exclusion rule matches this indicator
+    isDecayEnabledSpy.mockResolvedValue(true);
+    vi.spyOn(decayExclusionRuleDomain, 'getActiveDecayExclusionRules').mockResolvedValue([fakeExclusionRule]);
+    vi.spyOn(decayExclusionRuleDomain, 'checkDecayExclusionRules').mockResolvedValue(fakeExclusionRule);
+
+    // AND an indicator created without any explicit valid_until
+    const indicatorInput: IndicatorAddInput = {
+      name: 'Indicator domain - exclusion rule - no explicit valid_until',
+      pattern: "[domain-name:value = 'excluded-no-valid-until.test']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 40,
+    };
+    const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput);
+
+    // THEN it must default to "never expires" rather than inherit a short decay-computed expiration,
+    // and must not be considered revoked.
+    expect(indicatorCreated.decay_exclusion_applied_rule).toBeDefined();
+    expect(indicatorCreated.valid_until).toBe(UNTIL_END_STR);
+    expect(indicatorCreated.revoked).toBeFalsy();
   });
 });
 

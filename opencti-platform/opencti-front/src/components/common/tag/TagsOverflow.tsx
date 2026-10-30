@@ -13,6 +13,7 @@ interface TagsOverflowProps<T> {
   children?: React.ReactNode;
   direction?: 'ltr' | 'rtl';
   onTagCounterClick?: () => void;
+  renderOverflowTooltip?: (hiddenItems: T[]) => React.ReactNode;
 }
 
 export function TagsOverflow<T>({
@@ -21,6 +22,7 @@ export function TagsOverflow<T>({
   getLabel,
   renderTag,
   onTagCounterClick,
+  renderOverflowTooltip,
   maxWidth = '100%',
   gapPx = 8,
   children,
@@ -42,9 +44,14 @@ export function TagsOverflow<T>({
   const displayItems = isRTL ? [...visibleItems].reverse() : visibleItems;
 
   const hiddenItems = (items as T[]).slice(visibleCount);
-  const tooltipTitle = getLabel
-    ? hiddenItems.map((item) => getLabel(item)).join(', ')
-    : undefined;
+  const renderDefaultOverflowTooltip = (items: T[]) => {
+    return getLabel
+      ? items.map((item) => getLabel(item)).join(', ')
+      : undefined;
+  };
+  const tooltipTitle = renderOverflowTooltip
+    ? renderOverflowTooltip(hiddenItems)
+    : renderDefaultOverflowTooltip(hiddenItems);
 
   return (
     <>
@@ -52,8 +59,9 @@ export function TagsOverflow<T>({
       <Stack
         ref={measureContainerRef}
         direction="row"
-        gap={`${gapPx}px`}
+        aria-hidden="true"
         sx={{
+          gap: `${gapPx}px`,
           position: 'absolute',
           visibility: 'hidden',
           pointerEvents: 'none',
@@ -63,7 +71,6 @@ export function TagsOverflow<T>({
           flexWrap: 'nowrap',
           flexDirection: isRTL ? 'row-reverse' : 'row',
         }}
-        aria-hidden="true"
       >
         {items.map((item) => (
           <div key={getKey(item)} data-tag-item>
@@ -84,8 +91,8 @@ export function TagsOverflow<T>({
       <Stack
         ref={visibleContainerRef}
         direction="row"
-        gap={`${gapPx}px`}
         sx={{
+          gap: `${gapPx}px`,
           flex: 1,
           minWidth: 0,
           maxWidth,

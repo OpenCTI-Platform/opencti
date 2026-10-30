@@ -7,6 +7,8 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class Report:
     """Main Report class for OpenCTI
@@ -25,6 +27,16 @@ class Report:
         """
         self.opencti = opencti
         self.properties = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -39,6 +51,10 @@ class Report:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -235,6 +251,16 @@ class Report:
             }
         """
         self.properties_with_files = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -249,6 +275,10 @@ class Report:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -797,10 +827,17 @@ class Report:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: Report object
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -844,6 +881,7 @@ class Report:
             """
             input_variables = {
                 "stix_id": stix_id,
+                "customFieldValues": custom_field_values,
                 "createdBy": created_by,
                 "objectMarking": object_marking,
                 "objectLabel": object_label,
@@ -1035,6 +1073,7 @@ class Report:
                     )
                 )
             return self.create(
+                custom_field_values=extras.get("custom_field_values", None),
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None

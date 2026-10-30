@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, List, ListItem, Stack, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from 'src/components/Theme';
 import { useFormatter } from 'src/components/i18n';
 import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
@@ -24,6 +24,7 @@ import { entityTypeRenderers } from 'src/utils/widget/widgetCustomAttributesRend
 import ListItemText from '@mui/material/ListItemText';
 import { openVocabListRenderers, openVocabSingleRenderers } from 'src/utils/widget/widgetOpenVocabRendererUtils';
 import { EMPTY_VALUE } from 'src/utils/String';
+import { getCustomFieldRawValueByFieldName, isCustomFieldAttribute } from 'src/utils/customFields';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
@@ -107,7 +108,13 @@ const renderByAttributeType = (
       if (!list?.length) return empty();
       return (
         <FieldOrEmpty source={list}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
             {list.map((item) => <Tag key={item} label={item} />)}
           </Stack>
         </FieldOrEmpty>
@@ -184,6 +191,42 @@ const renderAttributeValue = (
     );
   }
 
+  if (isCustomFieldAttribute(attribute)) {
+    const rawValue = getCustomFieldRawValueByFieldName(
+      (data as unknown as { customFieldValues?: never }).customFieldValues as never,
+      attribute,
+    );
+    if (rawValue === undefined || rawValue === null || rawValue === '') return empty();
+    // Reuse the standard type-based renderer (date/boolean/markdown/tag/tag_list...) by
+    // patching the value onto the data under its own attribute key. Custom fields without
+    // a matching attributeType (text, integer) fall back to plain text / tag list below.
+    if (column.attributeType) {
+      const patchedData = { ...data, [attribute]: rawValue } as StixCoreObject;
+      const rendered = renderByAttributeType(column, patchedData, t_i18n, fldt);
+      if (rendered !== null) return rendered;
+    }
+    if (isStringArray(rawValue)) {
+      if (rawValue.length === 0) return empty();
+      return (
+        <FieldOrEmpty source={rawValue}>
+          <Stack
+            direction="row"
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
+            {rawValue.map((item) => <Tag key={item} label={item} />)}
+          </Stack>
+        </FieldOrEmpty>
+      );
+    }
+    return (
+      <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+        {String(rawValue)}
+      </Typography>
+    );
+  }
   const entityType = data.entity_type ?? '';
   const isSCO = 'observable_value' in data;
   const specificRenderer
@@ -216,7 +259,13 @@ const renderAttributeValue = (
       const labels = getField<{ id: string; value: string; color: string }[]>(data, 'objectLabel');
       return (
         <FieldOrEmpty source={labels}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
             {labels?.map((label) => (
               <RawTag key={label.id} label={label.value} color={label.color} />
             ))}
@@ -271,7 +320,13 @@ const renderAttributeValue = (
       if (objectArr) {
         if (objectArr.length === 0) return empty();
         return (
-          <Stack direction="row" flexWrap="wrap" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
             {objectArr.map((item, i) => (
               <Tag key={i} label={String(item.name ?? item.value ?? item)} />
             ))}
@@ -284,7 +339,13 @@ const renderAttributeValue = (
         if (stringArr.length === 0) return empty();
         return (
           <FieldOrEmpty source={stringArr}>
-            <Stack direction="row" flexWrap="wrap" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                flexWrap: 'wrap',
+                gap: 1,
+              }}
+            >
               {stringArr.map((item) => <Tag key={item} label={item} />)}
             </Stack>
           </FieldOrEmpty>

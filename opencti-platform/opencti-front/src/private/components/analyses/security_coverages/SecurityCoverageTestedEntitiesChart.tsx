@@ -2,18 +2,22 @@ import { useFormatter } from '../../../../components/i18n';
 import Card from '@common/card/Card';
 import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, useMemo } from 'react';
+import { Stack } from '@mui/material';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import { verticalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 import { SecurityCoverageTestedEntitiesChart_securityCoverage$key } from './__generated__/SecurityCoverageTestedEntitiesChart_securityCoverage.graphql';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 
 const securityCoverageRelationshipDistributionFragment = graphql`
     fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage{
-        totalCountPerEntityType : stixCoreRelationshipsDistribution(
+        totalCountPerEntityType : coveredEntitiesDistribution(
             field:"entity_type", 
             relationship_type: "has-covered", 
             operation:count,
@@ -27,7 +31,7 @@ const securityCoverageRelationshipDistributionFragment = graphql`
             label,
             value
         }
-        testedCountPerEntityType: stixCoreRelationshipsDistribution(
+        testedCountPerEntityType: coveredEntitiesDistribution(
             field:"entity_type", 
             relationship_type: "has-covered", 
             operation:count, 
@@ -125,7 +129,22 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
   );
 
   return (
-    <Card title={t_i18n('Tested entities')}>
+    <Card
+      title={(
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
+          <span>{t_i18n('Tested entities')}</span>
+          <Tooltip title={t_i18n('Total count of entities tested in Security Coverage Result(s)')}>
+            <InformationOutline fontSize="small" color="primary" />
+          </Tooltip>
+        </Stack>
+      )}
+    >
       {categories.length === 0
         ? <WidgetNoData /> : (
             <Chart

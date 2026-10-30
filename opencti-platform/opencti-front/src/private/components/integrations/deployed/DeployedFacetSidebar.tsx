@@ -4,10 +4,12 @@ import { Box, Stack } from '@mui/material';
 import { AutorenewOutlined, ExtensionOutlined, PauseCircleOutlined, PlayCircleOutlined, WidgetsOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
+import { useIngestionHealthColor } from '@components/data/connectors/ingestionHealthDisplay';
 import { FacetCheckbox, FacetGroupLabel, toggleValue } from '@components/integrations/catalog/IngestionCatalogFacetSidebar';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import {
+  DEPLOYED_HEALTH_FACETS,
   DEPLOYED_KIND_FACETS,
   DEPLOYED_STATUS_FACETS,
   DeployedFilterState,
@@ -15,6 +17,8 @@ import {
   DeployedStatusFacet,
 } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { useFormatter } from '../../../../components/i18n';
+import { capitalizeFirstLetter } from '../../../../utils/String';
+import { paperBg, paperBorder } from '../paperSurface';
 
 const STATUS_FACET_ICONS: Record<DeployedStatusFacet, SvgIconComponent> = {
   active: PlayCircleOutlined,
@@ -49,11 +53,15 @@ interface DeployedFacetSidebarProps {
   onFiltersChange: Dispatch<SetStateAction<DeployedFilterState>>;
   hasActiveFilters: boolean;
   onClearAll: () => void;
+  showUpdateAvailableFacet: boolean;
+  showHealthFacet: boolean;
   facets: {
     types: string[];
     typeCounts: Record<string, number>;
     statusCounts: Record<string, number>;
     kindCounts: Record<string, number>;
+    updateAvailableCount: number;
+    healthCounts: Record<string, number>;
   };
 }
 
@@ -62,10 +70,13 @@ const DeployedFacetSidebar = ({
   onFiltersChange,
   hasActiveFilters,
   onClearAll,
+  showUpdateAvailableFacet,
+  showHealthFacet,
   facets,
 }: DeployedFacetSidebarProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const healthColor = useIngestionHealthColor();
   const typeMetadata = useDeployedTypeMetadata();
 
   const statusLabel = (status: DeployedStatusFacet): string => {
@@ -111,8 +122,8 @@ const DeployedFacetSidebar = ({
           gap: 2,
           padding: 2,
           borderRadius: 1,
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${paperBorder(theme)}`,
+          backgroundColor: paperBg(theme),
           maxHeight: { xs: 'none', md: `calc(100vh - ${theme.spacing(20)})` },
           overflowY: { xs: 'visible', md: 'auto' },
         }}
@@ -120,7 +131,13 @@ const DeployedFacetSidebar = ({
         {/* No 'Filters' title: the sidebar is self-explanatory, the row only
             appears to host the clear action when a filter is active. */}
         {hasActiveFilters && (
-          <Stack direction="row" alignItems="center" justifyContent="flex-end">
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+            }}
+          >
             <Button
               variant="tertiary"
               size="small"
@@ -175,6 +192,41 @@ const DeployedFacetSidebar = ({
             />
           ))}
         </Box>
+
+        {showHealthFacet && (
+          <Box sx={dividedGroupSx}>
+            <FacetGroupLabel>{t_i18n('Health status')}</FacetGroupLabel>
+            {DEPLOYED_HEALTH_FACETS.map((health) => (
+              <FacetCheckbox
+                key={health}
+                checked={filters.healthStatuses.includes(health)}
+                count={facets.healthCounts[health] ?? 0}
+                adornment={(
+                  <Box
+                    component="span"
+                    aria-hidden
+                    sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '50%', backgroundColor: healthColor(health) }}
+                  />
+                )}
+                label={t_i18n(capitalizeFirstLetter(health))}
+                onToggle={() => onFiltersChange((prev) => ({ ...prev, healthStatuses: toggleValue(prev.healthStatuses, health) }))}
+              />
+            ))}
+          </Box>
+        )}
+
+        {showUpdateAvailableFacet && (
+          <Box sx={dividedGroupSx}>
+            <FacetGroupLabel>{t_i18n('Version')}</FacetGroupLabel>
+            <FacetCheckbox
+              checked={filters.updateAvailable}
+              count={facets.updateAvailableCount}
+              icon={AutorenewOutlined}
+              label={t_i18n('Update available')}
+              onToggle={() => onFiltersChange((prev) => ({ ...prev, updateAvailable: !prev.updateAvailable }))}
+            />
+          </Box>
+        )}
       </Box>
     </Box>
   );

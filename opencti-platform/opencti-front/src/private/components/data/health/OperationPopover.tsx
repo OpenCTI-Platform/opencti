@@ -149,6 +149,7 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
         aria-haspopup="true"
         style={{ marginTop: 3 }}
         color="primary"
+        aria-label={t_i18n('Open the menu')}
       >
         <MoreVert />
       </IconButton>
@@ -234,7 +235,12 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
                 </Typography>
               ))
             ) : (
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {t_i18n('No impact estimated.')}
               </Typography>
             )}

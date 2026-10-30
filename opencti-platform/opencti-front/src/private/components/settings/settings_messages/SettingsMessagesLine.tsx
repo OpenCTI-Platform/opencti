@@ -3,50 +3,36 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import IconButton from '@common/button/IconButton';
 import Box from '@mui/material/Box';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
 import { SettingsMessagesLine_settingsMessage$key } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import SettingsMessagesPopover from './SettingsMessagesPopover';
 import { useFormatter } from '../../../../components/i18n';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: theme.spacing(1),
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    fontSize: theme.typography.h3.fontSize,
-    display: 'flex',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: theme.spacing(1),
-    alignItems: 'center',
-    minWidth: 0,
-    width: '100%',
-  },
-  bodyItemText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-    flex: 1,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
+const BodyItem = styled('div')(({ theme }) => ({
+  fontSize: theme.typography.h3.fontSize,
+  display: 'flex',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: theme.spacing(1),
+  alignItems: 'center',
+  minWidth: 0,
+  width: '100%',
 }));
+
+const BodyItemText = styled('span')({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  minWidth: 0,
+  flex: 1,
+});
 
 const settingsMessageFragment = graphql`
   fragment SettingsMessagesLine_settingsMessage on SettingsMessage {
@@ -72,7 +58,6 @@ const SettingsMessagesLine = ({
   node: SettingsMessagesLine_settingsMessage$key;
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   const message = useFragment(settingsMessageFragment, node);
   if (!node || !message) {
     return <ErrorNotFound />;
@@ -81,25 +66,24 @@ const SettingsMessagesLine = ({
     <ListItem
       key={message.id}
       divider={true}
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: 1, height: '50px' }}
       secondaryAction={<SettingsMessagesPopover settingsId={entityId} message={message} />}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <MessageOutlined />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div style={{ display: 'flex' }}>
             {Object.values(dataColumns ?? {}).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                <span className={classes.bodyItemText}>
+                <BodyItemText>
                   {value.render?.(message)}
-                </span>
-              </div>
+                </BodyItemText>
+              </BodyItem>
             ))}
           </div>
         )}
@@ -115,15 +99,14 @@ export const SettingsMessagesLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
     <ListItem
       divider={true}
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: 1, height: '50px' }}
       secondaryAction={(
-        <Box sx={{ root: classes.itemIconDisabled }}>
-          <IconButton aria-label={t_i18n('Open menu')} disabled={true} aria-haspopup="true">
+        <Box>
+          <IconButton aria-label={t_i18n('Open menu')} disabled={true}>
             <MoreVert />
           </IconButton>
         </Box>
@@ -133,20 +116,19 @@ export const SettingsMessagesLineDummy = ({
         primary={(
           <div style={{ display: 'flex' }}>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                <span className={classes.bodyItemText}>
+                <BodyItemText>
                   <Skeleton
                     animation="wave"
                     variant="rectangular"
                     width="90%"
                     height={20}
                   />
-                </span>
-              </div>
+                </BodyItemText>
+              </BodyItem>
             ))}
           </div>
         )}

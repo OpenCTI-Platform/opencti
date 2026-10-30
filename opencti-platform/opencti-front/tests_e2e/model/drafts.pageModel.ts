@@ -27,10 +27,17 @@ export default class DraftsPage {
     return this.page.getByTestId(name).first();
   }
 
+  /** Clicks a draft's row to open it (UI navigation, avoids racing a pending post-login reload). */
+  async openDraft(name: string) {
+    await this.getDraft(name).click();
+  }
+
   async deleteDraft(name: string) {
-    await this.getDraft(name).getByRole('checkbox').click();
-    // await this.page.getByTestId('delete-draftworkspace-button').click();
-    // await this.page.getByRole('button', { name: 'Delete' }).click();
+    const row = this.getDraft(name);
+    await row.getByRole('button', { name: 'Draft popover of actions' }).click();
+    await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+    await this.page.getByRole('button', { name: 'Confirm' }).click();
+    await expect(row).toHaveCount(0);
   }
 
   getCreateDraftButton() {
@@ -47,7 +54,11 @@ export default class DraftsPage {
     const createDraftDrawer = this.getCreateDraftDrawer();
     await expect(createDraftDrawer).toBeVisible();
 
-    await createDraftDrawer.getByTestId('draft-creation-form-name-input').locator('input').fill(name);
+    // No `.locator('input')` hop: the pivot forwards `data-*` to the library
+    // Input, which places everything but `className` on the native <input>
+    // itself. MUI put the attribute on the field's root wrapper, so the extra
+    // hop used to be required and now finds nothing.
+    await createDraftDrawer.getByTestId('draft-creation-form-name-input').fill(name);
 
     for (const member of authorizedMembers) {
       await this.accessRestriction.addAccess(member.name, member.permission);

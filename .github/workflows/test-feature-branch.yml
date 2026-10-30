@@ -25,40 +25,61 @@ on:
 
 jobs:
   wf-build-image:
-      name: Build image
-      uses: ./.github/workflows/ci-docker-build.yml
-      with:
-        image_tag: ${{ github.ref_name }}
-        client_python_local: ${{ inputs.client_python_local }}
-        publish_to_registry: true
-      secrets:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    name: Build image
+    uses: ./.github/workflows/ci-docker-build.yml
+    with:
+      image_tag: ${{ github.ref_name }}
+      client_python_local: ${{ inputs.client_python_local }}
+      publish_to_registry: true
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
 
   deploy:
     name: deploy
     needs: wf-build-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=67; else ID=66; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
+      - name: Resolve AWX template ID
+        env:
+          UPGRADE_FROM_58: ${{ inputs.upgrade_from_58 }}
+        run: |
+          if [ "$UPGRADE_FROM_58" = "true" ]; then ID=67; else ID=66; fi
+          echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
 
       - name: Install AWX cli
         run: pip install awxkit
 
       - name: Deploy feature environment via AWX
+        env:
+          AWX_HOST: ${{ secrets.AWX_URL }}
+          AWX_USERNAME: ${{ secrets.AWX_USER }}
+          AWX_PASSWORD: ${{ secrets.AWX_PASSWORD }}
+          OCTI_VERSION: ${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}
+          OCTI_CONFIG: ${{ inputs.octi_config }}
+          REDIS_CLUSTER: ${{ inputs.redis_cluster }}
         run: |
-          awx --conf.host ${{ secrets.AWX_URL }} \
-            --conf.username ${{ secrets.AWX_USER }} \
-            --conf.password ${{ secrets.AWX_PASSWORD }} \
+          EXTRA_VARS=$(jq -c -n \
+            --arg v "$OCTI_VERSION" \
+            --argjson c "${OCTI_CONFIG:-{\}}" \
+            --argjson r "${REDIS_CLUSTER:-false}" \
+            '{octi_version: $v, octi_config: $c, redis_cluster: $r}')
+
+          awx --conf.host "$AWX_HOST" \
+            --conf.username "$AWX_USERNAME" \
+            --conf.password "$AWX_PASSWORD" \
             job_templates launch 'Deploy OpenCTI feature branch for testing' \
             --wait \
             --inventory eu-west-staging \
-            --extra_vars '{"octi_version":"${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}","octi_config": ${{ inputs.octi_config }},"redis_cluster": ${{ inputs.redis_cluster }} }' \
+            --extra_vars "$EXTRA_VARS" \
             -f human
       - name: Forge URL to match playbook limitations
         id: urlforge
+        env:
+          RAW_VERSION: ${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}
         run: |
-          url=$(echo "${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}" | cut -c 1-15 | sed 's/[_.]/-/g' | sed 's/-*$//')
-          echo "url=$url" >> $GITHUB_OUTPUT
+          url=$(echo "$RAW_VERSION" | cut -c 1-15 | sed 's/[_.]/-/g' | sed 's/-*$//')
+          echo "url=$url" >> "$GITHUB_OUTPUT"
       - name: display URL
         run: echo "https://feat-${{steps.urlforge.outputs.url}}.octi.staging.filigran.io"

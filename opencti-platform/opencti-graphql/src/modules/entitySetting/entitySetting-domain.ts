@@ -18,7 +18,7 @@ import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
 import type { BasicConnection, BasicStoreEntity } from '../../types/store';
-import { findAllMembers } from '../../domain/user';
+import { findAllMembers } from '../user/user-domain';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
@@ -223,4 +223,17 @@ export const queryDefaultValuesAttributesForSetting = async (
     return { ...a, defaultValues: a.defaultValues ?? [] };
   }));
   return defaultValuesAttributes;
+};
+
+export const findAllEntitySettings = async (context: AuthContext, user: AuthUser) => {
+  return fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING]);
+};
+
+// Entity types hidden for the whole platform (platform_hidden_type on their entity setting), sorted
+export const getPlatformHiddenEntityTypes = async (context: AuthContext, user: AuthUser): Promise<string[]> => {
+  const entitySettings = await findAllEntitySettings(context, user);
+  return entitySettings
+    .filter((entitySetting) => entitySetting.platform_hidden_type)
+    .map((entitySetting) => entitySetting.target_type)
+    .sort();
 };

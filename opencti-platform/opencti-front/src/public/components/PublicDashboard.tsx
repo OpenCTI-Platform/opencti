@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
 import { ErrorBoundary } from '@components/Error';
 import Loader, { LoaderVariant } from '../../components/Loader';

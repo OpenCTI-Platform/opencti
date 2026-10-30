@@ -65,4 +65,3 @@ describe('hasSameSourceAlreadyUpdateThisScore', () => {
     expect(hasSameSourceAlreadyUpdateThisScore(sourceId, 75, undefined as unknown as DecayHistory[])).toBe(false);
   });
 });
-

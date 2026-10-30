@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Box, IconButton, Tooltip, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
@@ -11,7 +12,7 @@ export interface NewsFeedToastData {
   id: string;
   title: string;
   news_feed_type: string;
-  metadata: { key: string; readonly value: string | null | undefined }[];
+  metadata: readonly { readonly key: string; readonly value: string | null | undefined }[];
 }
 
 export const NEWS_FEED_TOAST_WIDTH = 450;
@@ -89,16 +90,19 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
       {resourceLink && (
         <Tooltip title={t_i18n('Open in XTM Hub')}>
           <IconButton
-            component="a"
-            href={resourceLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            size="small"
-            color="primary"
+            asChild
+            variant="default"
+            priority="tertiary"
+            size="sm"
             aria-label={t_i18n('Open in XTM Hub')}
-            sx={{ flexShrink: 0 }}
+            icon={<OpenInNewOutlined fontSize="small" />}
           >
-            <OpenInNewOutlined fontSize="small" />
+            {/* IconButton's `asChild` clones this element and injects the
+                (aria-hidden) icon glyph as its child at runtime (see
+                IconButton.mjs), so the anchor does have accessible content —
+                ESLint's static analysis just can't see it. */}
+            {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
+            <a href={resourceLink} target="_blank" rel="noopener noreferrer" />
           </IconButton>
         </Tooltip>
       )}

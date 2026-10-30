@@ -10,7 +10,12 @@ export default class FileFieldPageModel {
     readonly rootLocator?: Locator,
   ) {
     this.inputLocator = (rootLocator ?? page).getByText(label);
-    this.parentLocator = this.inputLocator.locator('..');
+    // Nearest ancestor that actually holds the file input, rather than a fixed
+    // number of '..' hops: the FDS field puts the label in its own row, so the
+    // input sits one level higher than it did under MUI.
+    this.parentLocator = this.inputLocator.locator(
+      'xpath=ancestor::*[.//input[@type="file"]][1]',
+    );
   }
 
   async uploadContentFile(filePath: string) {

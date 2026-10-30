@@ -21,7 +21,7 @@ const eventWithGrantedRefIds = {
       group_ids: ['9c746e48-28fd-432a-abd7-d7593eb310c4'],
       organization_ids: [],
       user_metadata: {},
-      referer: 'http://localhost:3000/dashboard/analyses/reports/58fbfcfa-01ce-4440-8edf-7ea38e7a6ae9'
+      referer: 'http://localhost:3000/dashboard/analyses/reports/58fbfcfa-01ce-4440-8edf-7ea38e7a6ae9',
     },
     data: {
       id: 'report--d27398f3-8086-50e7-9c71-088b9bd69605',
@@ -39,8 +39,8 @@ const eventWithGrantedRefIds = {
           creator_ids: ['88ec0c6a-13ce-5e39-b486-354fe4a7084f'],
           granted_refs_ids: ['c080a677-f640-4643-9d2a-75929ac07b1c', '0c897410-3579-4770-b26e-1fce2e441204'],
           workflow_id: '78973513-cebc-49f9-a316-12487acd7903',
-          labels_ids: ['7b705594-e2bc-48f8-bdc3-8c55ce1adb0e']
-        }
+          labels_ids: ['7b705594-e2bc-48f8-bdc3-8c55ce1adb0e'],
+        },
       },
       created: '2024-02-20T15:34:11.000Z',
       modified: '2024-11-14T14:42:37.551Z',
@@ -54,14 +54,14 @@ const eventWithGrantedRefIds = {
     context: {
       patch: [
         { op: 'add', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs_ids/1', value: '0c897410-3579-4770-b26e-1fce2e441204' },
-        { op: 'add', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs/1', value: 'identity--8cb00c79-ab20-5ed4-b37d-337241b96a29' }
+        { op: 'add', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs/1', value: 'identity--8cb00c79-ab20-5ed4-b37d-337241b96a29' },
       ],
       reverse_patch: [
         { op: 'remove', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs_ids/1' },
-        { op: 'remove', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs/1' }
-      ]
-    }
-  }
+        { op: 'remove', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs/1' },
+      ],
+    },
+  },
 };
 
 const eventWithGrantedRefsOnly = {
@@ -79,7 +79,7 @@ const eventWithGrantedRefsOnly = {
       group_ids: ['9c746e48-28fd-432a-abd7-d7593eb310c4'],
       organization_ids: [],
       user_metadata: {},
-      referer: 'http://localhost:3000/dashboard/analyses/reports/58fbfcfa-01ce-4440-8edf-7ea38e7a6ae9'
+      referer: 'http://localhost:3000/dashboard/analyses/reports/58fbfcfa-01ce-4440-8edf-7ea38e7a6ae9',
     },
     data: {
       id: 'report--609acc0c-c821-52e0-a6b2-25be0050bbc0',
@@ -95,8 +95,8 @@ const eventWithGrantedRefsOnly = {
           is_inferred: false,
           granted_refs: ['identity--a16d7ba8-5bea-5fe5-9d92-931e20e36727'], // TestOrganization
           creator_ids: ['a93d949b-b56d-4426-b7fe-b79ec3718b0e'],
-          workflow_id: 'b28a370a-317b-4c50-8f0d-483b17d11abb'
-        }
+          workflow_id: 'b28a370a-317b-4c50-8f0d-483b17d11abb',
+        },
       },
       created: '2024-06-10T12:55:08.000Z',
       modified: '2024-06-10T12:55:40.833Z',
@@ -105,17 +105,17 @@ const eventWithGrantedRefsOnly = {
       lang: 'en',
       name: 'test',
       published: '2024-06-10T12:55:08.000Z',
-      object_refs: ['attack-pattern--033921be-85df-5f05-8bc0-d3d9fc945db9']
+      object_refs: ['attack-pattern--033921be-85df-5f05-8bc0-d3d9fc945db9'],
     },
     context: {
       patch: [
-        { op: 'add', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs', value: ['identity--a16d7ba8-5bea-5fe5-9d92-931e20e36727'] }
+        { op: 'add', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs', value: ['identity--a16d7ba8-5bea-5fe5-9d92-931e20e36727'] },
       ],
       reverse_patch: [
-        { op: 'remove', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs' }
-      ]
-    }
-  }
+        { op: 'remove', path: '/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs' },
+      ],
+    },
+  },
 };
 
 const eventWithRelatedRestriction = {
@@ -131,11 +131,11 @@ const eventWithRelatedRestriction = {
       ip: '::1',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       group_ids: [
-        'eeacced8-cf03-4fd3-bfdb-7398839ef015'
+        'eeacced8-cf03-4fd3-bfdb-7398839ef015',
       ],
       organization_ids: [],
       user_metadata: {},
-      referer: 'http://localhost:3000/dashboard'
+      referer: 'http://localhost:3000/dashboard',
     },
     data: {
       id: 'report--50ddc6fe-2a84-5c9a-904d-f964a94d1ff7',
@@ -150,13 +150,13 @@ const eventWithRelatedRestriction = {
           updated_at: '2024-12-09T15:24:28.686Z',
           is_inferred: false,
           creator_ids: [
-            '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           ],
           assignee_ids: [
-            '71432b4c-34d3-42dc-9b3d-5622b02b4954'
+            '71432b4c-34d3-42dc-9b3d-5622b02b4954',
           ],
-          workflow_id: 'a4b90e6f-06ae-461a-8dac-666cdb4a5ae7'
-        }
+          workflow_id: 'a4b90e6f-06ae-461a-8dac-666cdb4a5ae7',
+        },
       },
       created: '2024-11-18T09:43:40.000Z',
       modified: '2024-12-09T14:18:43.125Z',
@@ -164,12 +164,12 @@ const eventWithRelatedRestriction = {
       confidence: 100,
       lang: 'en',
       object_marking_refs: [
-        'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9'
+        'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
       ],
       name: 'Report test',
       description: 'description',
       report_types: [
-        'threat-report'
+        'threat-report',
       ],
       published: '2024-11-18T09:43:40.000Z',
       object_refs: [
@@ -180,30 +180,30 @@ const eventWithRelatedRestriction = {
         'malware--3b0ff6e4-58fc-5312-aa59-ae755dc10189',
         'intrusion-set--36319194-19e1-50ac-9163-778b56a1bf12',
         'malware--4cc56e92-fc59-500e-966d-bcd32538c248',
-        'identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb'
-      ]
+        'identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb',
+      ],
     },
     context: {
       patch: [
         {
           op: 'add',
           path: '/object_refs/7',
-          value: 'identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb'
-        }
+          value: 'identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb',
+        },
       ],
       reverse_patch: [
         {
           op: 'remove',
-          path: '/object_refs/7'
-        }
+          path: '/object_refs/7',
+        },
       ],
       related_restrictions: {
         markings: [
-          '4584aeee-10b6-47a7-808e-603440642285'
-        ]
+          '4584aeee-10b6-47a7-808e-603440642285',
+        ],
       },
-    }
-  }
+    },
+  },
 };
 
 describe('History manager test resolveGrantedRefsIds', () => {
@@ -297,7 +297,7 @@ describe('History manager test generatePirContextData', () => {
               source_ref_pir_refs: [pirId1],
               target_value: 'myCampaign',
               target_ref: 'e5503163-d8b7-4e80-985a-fb1c5220fb20',
-              target_type: 'Campaign'
+              target_type: 'Campaign',
             },
           },
           created: '2025-05-28T07:02:53.492Z',
@@ -309,9 +309,9 @@ describe('History manager test generatePirContextData', () => {
           source_ref: 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd',
           target_ref: 'campaign--fdcacc8e-de4d-5a13-8886-401d363664fd',
           start_time: '2025-05-28T07:01:50.000Z',
-          stop_time: '2025-05-28T07:02:50.000Z'
-        }
-      }
+          stop_time: '2025-05-28T07:02:50.000Z',
+        },
+      },
     };
     expect(generatePirContextData(relationshipEventWithSourceFlagged).pir_ids).toEqual([pirId1]);
     expect(generatePirContextData(relationshipEventWithSourceFlagged).from_id).toEqual('42e68a45-55e0-425e-aa11-51947f96e6bc');
@@ -345,9 +345,9 @@ describe('History manager test generatePirContextData', () => {
           confidence: 100,
           relationship_type: 'in-pir',
           source_ref: 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714',
-          target_ref: 'pir--8a00a0bf-f62e-5662-8dd1-a8a88960c306'
+          target_ref: 'pir--8a00a0bf-f62e-5662-8dd1-a8a88960c306',
         },
-      }
+      },
     };
     expect(generatePirContextData(createInPirRelEvent).pir_ids).toEqual([pirId1]);
     expect(generatePirContextData(createInPirRelEvent).pir_score).toEqual(100);
@@ -374,7 +374,7 @@ describe('History manager test generatePirContextData', () => {
           lang: 'en',
           name: 'myReport',
           published: '2025-05-28T07:13:16.000Z',
-          object_refs: []
+          object_refs: [],
         },
         context: {
           patch: [{
@@ -384,9 +384,9 @@ describe('History manager test generatePirContextData', () => {
           }],
           reverse_patch: [{ op: 'remove', path: '/object_refs/0' }],
           related_restrictions: [{ markings: [] }],
-          pir_ids: [pirId1, pirId2]
-        }
-      }
+          pir_ids: [pirId1, pirId2],
+        },
+      },
     };
     expect(generatePirContextData(updateEventAddFlaggedEntityInContainer).pir_ids).toEqual([pirId1, pirId2]);
   });

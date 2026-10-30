@@ -30,6 +30,8 @@ const stixCoreObjectFilterKeys: string[] = [
   'first_observed',
   'last_observed',
   'number_observed',
+  'number_seen',
+  'max_distinct_count',
   'explanation',
   'opinion',
   'report_types',

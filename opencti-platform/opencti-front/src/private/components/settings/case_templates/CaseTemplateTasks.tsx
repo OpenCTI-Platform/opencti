@@ -1,9 +1,9 @@
 import { Box } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import HeaderMainEntityLayout from '../../../../components/common/header/HeaderMainEntityLayout';
 import DeleteDialog from '../../../../components/DeleteDialog';
@@ -27,14 +27,10 @@ import CaseTemplateEdition, { caseTemplateQuery } from './CaseTemplateEdition';
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
 import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLines';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 const caseTemplateTasksDeletionMutation = graphql`
   mutation CaseTemplateTasksDeletionMutation($id: ID!) {
@@ -62,8 +58,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
 
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('CaseTemplate') },
   });
   const [commitDeleteMutation] = useApiMutation(
@@ -149,7 +144,6 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
 const LOCAL_STORAGE_KEY = 'case-template-tasks';
 
 const CaseTemplateTasks = () => {
-  const classes = useStyles();
   const { caseTemplateId } = useParams() as { caseTemplateId: string };
   const caseTemplateQueryRef = useQueryLoading<CaseTemplateEditionQuery>(
     caseTemplateQuery,
@@ -229,7 +223,7 @@ const CaseTemplateTasks = () => {
     );
   };
   return (
-    <div className={classes.container}>
+    <Container>
       {caseTemplateQueryRef && (
         <>
           <React.Suspense
@@ -244,7 +238,7 @@ const CaseTemplateTasks = () => {
         </>
       )}
       {renderLines()}
-    </div>
+    </Container>
   );
 };
 

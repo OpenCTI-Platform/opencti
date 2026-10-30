@@ -1,12 +1,11 @@
 import React from 'react';
-import { Field, Form, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
+import { Field, Form } from 'formik';
 import { ArrowRightAlt } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import ConfidenceField from '../form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -23,66 +22,72 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { minutesBefore, now } from '../../../../utils/Time';
-import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
+import CoverageInformationField from '../form/CoverageInformationField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CustomFieldsFormik from '../custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '../custom_fields/CustomFieldValuesCreation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  containerRelation: {
-    padding: '10px 20px 20px 20px',
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 10,
-  },
-  itemHeader: {
-    padding: '10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-    textOverflow: 'ellipsis',
-    maxWidth: 180,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    padding: 8,
-  },
-  relationCreate: {
-    position: 'relative',
-    height: 100,
-  },
-  middle: {
-    margin: '0 auto',
-    width: 200,
-    textAlign: 'center',
-    padding: 0,
-    color: theme.palette.text.primary,
-  },
+const ContainerRelation = styled('div')({
+  padding: '10px 20px 20px 20px',
+});
+
+const Item = styled('div')({
+  position: 'absolute',
+  width: 180,
+  height: 80,
+  borderRadius: 10,
+});
+
+const ItemHeader = styled('div')({
+  padding: '10px 0',
+});
+
+const ItemIconContainer = styled('div')({
+  position: 'absolute',
+  top: 8,
+  left: 5,
+  fontSize: 8,
+});
+
+const ItemType = styled('div')(({ theme }) => ({
+  width: '100%',
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+  fontSize: 11,
+}));
+
+const ItemContent = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: 40,
+  maxHeight: 40,
+  lineHeight: '40px',
+  color: theme.palette.text.primary,
+  textAlign: 'center',
+}));
+
+const ItemName = styled('span')({
+  display: 'inline-block',
+  lineHeight: 1,
+  fontSize: 12,
+  verticalAlign: 'middle',
+  textOverflow: 'ellipsis',
+  maxWidth: 180,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  padding: 8,
+});
+
+const RelationCreate = styled('div')({
+  position: 'relative',
+  height: 100,
+});
+
+const Middle = styled('div')(({ theme }) => ({
+  margin: '0 auto',
+  width: 200,
+  textAlign: 'center',
+  padding: 0,
+  color: theme.palette.text.primary,
 }));
 
 export const stixCoreRelationshipBasicShape = (t, isCoverage = false) => {
@@ -102,7 +107,7 @@ export const stixCoreRelationshipBasicShape = (t, isCoverage = false) => {
   if (isCoverage) {
     return {
       ...baseSchema,
-      coverage: Yup.array().of(
+      coverage_information: Yup.array().of(
         Yup.object().shape({
           coverage_name: Yup.string().required(t('This field is required')),
           coverage_score: Yup.number()
@@ -121,7 +126,10 @@ const STIX_CORE_RELATIONSHIP_TYPE = 'stix-core-relationship';
 
 const StixCoreRelationshipCreationForm = ({
   fromEntities,
+  // Can be empty if the targets are resolved later (ex: in backend by filters).
   toEntities,
+  // Type displayed when toEntities is empty.
+  toEntityType = 'Stix-Core-Object',
   relationshipTypes,
   handleReverseRelation,
   handleResetSelection,
@@ -135,13 +143,13 @@ const StixCoreRelationshipCreationForm = ({
   isCoverage = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n, isCoverage));
 
   const fromEntity = fromEntities[0];
-  const toEntity = toEntities[0];
+  const isToUnresolved = !toEntities || toEntities.length === 0;
+  const toEntity = isToUnresolved ? { entity_type: toEntityType } : toEntities[0];
   const isMultipleFrom = fromEntities.length > 1;
-  const isMultipleTo = toEntities.length > 1;
+  const isMultipleTo = isToUnresolved || toEntities.length > 1;
 
   const defaultRelationshipType = R.head(relationshipTypes)
     ? R.head(relationshipTypes)
@@ -168,7 +176,8 @@ const StixCoreRelationshipCreationForm = ({
   );
 
   return (
-    <Formik
+    <CustomFieldsFormik
+      entityType={STIX_CORE_RELATIONSHIP_TYPE}
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={stixCoreRelationshipValidator}
@@ -176,95 +185,91 @@ const StixCoreRelationshipCreationForm = ({
     >
       {({ submitForm, isSubmitting, setFieldValue, values }) => (
         <Form style={{ paddingBottom: 50 }}>
-          <div className={classes.containerRelation}>
-            <div className={classes.relationCreate}>
-              <div
-                className={classes.item}
+          <ContainerRelation>
+            <RelationCreate>
+              <Item
                 style={{
                   border: `2px solid ${itemColor(fromEntity.entity_type)}`,
                   top: 10,
                   left: 0,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(fromEntity.entity_type)}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <ItemIconContainer>
                     <ItemIcon
                       type={fromEntity.entity_type}
                       color={itemColor(fromEntity.entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </ItemIconContainer>
+                  <ItemType>
                     {fromEntity.relationship_type
                       ? t_i18n(`relationship_${fromEntity.entity_type}`)
                       : t_i18n(`entity_${fromEntity.entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </ItemType>
+                </ItemHeader>
+                <ItemContent>
+                  <ItemName>
                     {isMultipleFrom
                       ? (<em>{t_i18n('Multiple entities selected')}</em>)
                       : (getMainRepresentative(fromEntity))}
-                  </span>
-                </div>
-              </div>
-              <div className={classes.middle} style={{ paddingTop: 25 }}>
+                  </ItemName>
+                </ItemContent>
+              </Item>
+              <Middle style={{ paddingTop: 25 }}>
                 <ArrowRightAlt fontSize="large" />
                 <br />
                 {typeof handleReverseRelation === 'function' && (
                   <Button
-                    variant="secaondary"
+                    variant="secondary"
                     onClick={handleReverseRelation}
                     size="small"
                   >
                     {t_i18n('Reverse')}
                   </Button>
                 )}
-              </div>
-              <div
-                className={classes.item}
+              </Middle>
+              <Item
                 style={{
                   border: `2px solid ${itemColor(toEntity.entity_type)}`,
                   top: 10,
                   right: 0,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(toEntity.entity_type)}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <ItemIconContainer>
                     <ItemIcon
                       type={toEntity.entity_type}
                       color={itemColor(toEntity.entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </ItemIconContainer>
+                  <ItemType>
                     {toEntity.relationship_type
                       ? t_i18n(`relationship_${toEntity.entity_type}`)
                       : t_i18n(`entity_${toEntity.entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </ItemType>
+                </ItemHeader>
+                <ItemContent>
+                  <ItemName>
                     {isMultipleTo
                       ? (<em>{t_i18n('Multiple entities selected')}</em>)
                       : (getMainRepresentative(toEntity))}
-                  </span>
-                </div>
-              </div>
-            </div>
+                  </ItemName>
+                </ItemContent>
+              </Item>
+            </RelationCreate>
             <Field
-              component={SelectField}
-              variant="standard"
+              component={SelectFieldFds}
+              variant="outlined"
               name="relationship_type"
               label={t_i18n('Relationship type')}
               fullWidth={true}
@@ -272,9 +277,9 @@ const StixCoreRelationshipCreationForm = ({
             >
               {relationshipTypes.map(
                 (type) => (
-                  <MenuItem key={type} value={type}>
+                  <SelectItem key={type} value={type}>
                     {t_i18n(`relationship_${type}`)}
-                  </MenuItem>
+                  </SelectItem>
                 ),
               )}
             </Field>
@@ -287,7 +292,7 @@ const StixCoreRelationshipCreationForm = ({
               name="start_time"
               textFieldProps={{
                 label: t_i18n('Start time'),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
@@ -297,7 +302,7 @@ const StixCoreRelationshipCreationForm = ({
               name="stop_time"
               textFieldProps={{
                 label: t_i18n('Stop time'),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
@@ -312,11 +317,9 @@ const StixCoreRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
             />
             {isCoverage && (
-              <CoverageInformationFieldAdd
+              <Field
+                component={CoverageInformationField}
                 name="coverage_information"
-                values={values.coverage_information || []}
-                containerStyle={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
               />
             )}
             {hasKillChainPhase(values.relationship_type) ? (
@@ -342,6 +345,7 @@ const StixCoreRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            <CustomFieldValuesCreation />
 
             <FormButtonContainer>
               {typeof handleResetSelection === 'function' && (
@@ -367,10 +371,10 @@ const StixCoreRelationshipCreationForm = ({
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
-          </div>
+          </ContainerRelation>
         </Form>
       )}
-    </Formik>
+    </CustomFieldsFormik>
   );
 };
 

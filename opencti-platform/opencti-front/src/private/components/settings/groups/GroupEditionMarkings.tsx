@@ -4,18 +4,17 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
-import Alert from '@mui/lab/Alert';
-import makeStyles from '@mui/styles/makeStyles';
+import { Checkbox } from '@filigran/design-system';
+import Alert from '@mui/material/Alert';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import MaxShareableMarkingsSelectField from '@components/common/form/MaxShareableMarkingsSelectField';
 import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -24,18 +23,15 @@ import { markingDefinitionsLinesSearchQuery } from '../MarkingDefinitionsQuery';
 import type { Theme } from '../../../../components/Theme';
 import MarkingIcon from '../../../../utils/MarkingIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const Icon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const Text = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
 });
 
 const groupMutationRelationAdd = graphql`
@@ -98,7 +94,6 @@ const GroupEditionMarkingsComponent = ({
 }: {
   group: GroupEditionMarkings_group$data;
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const groupMarkingDefinitions = group.allowed_marking || [];
@@ -123,9 +118,9 @@ const GroupEditionMarkingsComponent = ({
         id?: string;
       }
       | undefined,
-    event: React.ChangeEvent<HTMLInputElement>,
+    checked: boolean | 'indeterminate',
   ) => {
-    if (event.target.checked) {
+    if (checked === true) {
       commitAdd({
         variables: {
           id: group.id,
@@ -255,10 +250,11 @@ const GroupEditionMarkingsComponent = ({
                         divider={true}
                         secondaryAction={(
                           <Checkbox
-                            onChange={(event) => handleToggleAllowedMarkings(
+                            aria-label={markingDefinition.definition ?? undefined}
+                            onCheckedChange={(checked) => handleToggleAllowedMarkings(
                               markingDefinition.id,
                               groupMarkingDefinition,
-                              event,
+                              checked,
                             )
                             }
                             checked={groupMarkingDefinition !== undefined}
@@ -302,29 +298,25 @@ const GroupEditionMarkingsComponent = ({
                         )}
                       </Alert>
                       <Field
-                        component={AutocompleteField}
+                        component={ComboboxField}
                         style={fieldSpacingContainerStyle}
                         name="defaultMarkings"
                         multiple={true}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t_i18n('Default markings'),
-                        }}
+                        label={t_i18n('Default markings')}
                         noOptionsText={t_i18n('No available options')}
                         options={resolvedGroupMarkingDefinitions}
-                        renderOption={(
-                          renderProps: React.HTMLAttributes<HTMLLIElement>,
-                          option: FieldOption,
-                        ) => (
-                          <li {...renderProps}>
-                            <div
-                              className={classes.icon}
+                        // Same rule as ObjectMarkingField: on a marking the
+                        // colour is the classification.
+                        getChipColor={(option: FieldOption) => option.color}
+                        renderOption={(option: FieldOption) => (
+                          <>
+                            <Icon
                               style={{ color: option.color }}
                             >
                               <MarkingIcon theme={theme} color={option.color} />
-                            </div>
-                            <div className={classes.text}>{option.label}</div>
-                          </li>
+                            </Icon>
+                            <Text>{option.label}</Text>
+                          </>
                         )}
                         onChange={(name: string, values: FieldOption[]) => handleToggleDefaultValues(values)
                         }

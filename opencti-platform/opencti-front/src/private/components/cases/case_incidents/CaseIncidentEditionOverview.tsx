@@ -25,6 +25,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CustomFieldValuesEdition from '../../common/custom_fields/CustomFieldValuesEdition';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -122,6 +123,16 @@ const caseIncidentEditionOverviewFragment = graphql`
       id
       name
       entity_type
+    }
+    customFieldValues {
+      field_id
+      field_name
+      int_value
+      string_value
+      boolean_value
+      date_value
+      select_value
+      select_values
     }
   }
 `;
@@ -288,7 +299,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
           <AlertConfidenceForEntity entity={caseData} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -308,7 +319,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             textFieldProps={{
               label: t_i18n('Incident date'),
               required: (mandatoryAttributes.includes('created')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="created" />
@@ -429,6 +440,13 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={CASE_INCIDENT_TYPE}
+            entityId={caseData.id}
+            values={caseData.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

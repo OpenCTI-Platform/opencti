@@ -1,26 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose, filter, head, map } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { filter, head, map } from 'ramda';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { CheckCircle } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { ListItemButton } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import ExternalReferenceCreation from './ExternalReferenceCreation';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
-
-const styles = (theme) => ({
-  icon: {
-    color: theme.palette.primary.main,
-  },
-});
 
 export const externalReferenceLinesMutationRelationAdd = graphql`
   mutation AddExternalReferencesLinesRelationAddMutation(
@@ -165,7 +158,6 @@ class AddExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      classes,
       data,
       stixCoreObjectOrStixCoreRelationshipReferences,
       open,
@@ -209,7 +201,6 @@ class AddExternalReferencesLinesContainer extends Component {
               return (
                 <ListItemButton
                   key={externalReference.id}
-                  classes={{ root: classes.menuItem }}
                   divider={true}
                   onClick={this.toggleExternalReference.bind(
                     this,
@@ -217,12 +208,11 @@ class AddExternalReferencesLinesContainer extends Component {
                     false,
                   )}
                 >
+                  <ListItemIcon style={{ minWidth: 40 }}>
+                    <Checkbox checked={alreadyAdded} />
+                  </ListItemIcon>
                   <ListItemIcon>
-                    {alreadyAdded ? (
-                      <CheckCircle classes={{ root: classes.icon }} />
-                    ) : (
-                      <ItemIcon type="External-Reference" />
-                    )}
+                    <ItemIcon type="External-Reference" />
                   </ListItemIcon>
                   {computeTextItem(externalReferenceNode)}
                 </ListItemButton>
@@ -231,7 +221,6 @@ class AddExternalReferencesLinesContainer extends Component {
             return (
               <ListItemButton
                 key={externalReference.id}
-                classes={{ root: classes.menuItem }}
                 divider={true}
                 onClick={this.toggleExternalReference.bind(
                   this,
@@ -239,12 +228,11 @@ class AddExternalReferencesLinesContainer extends Component {
                   false,
                 )}
               >
+                <ListItemIcon style={{ minWidth: 40 }}>
+                  <Checkbox checked={alreadyAdded} />
+                </ListItemIcon>
                 <ListItemIcon>
-                  {alreadyAdded ? (
-                    <CheckCircle classes={{ root: classes.icon }} />
-                  ) : (
-                    <ItemIcon type="External-Reference" />
-                  )}
+                  <ItemIcon type="External-Reference" />
                 </ListItemIcon>
                 {computeTextItem(externalReferenceNode)}
               </ListItemButton>
@@ -270,7 +258,6 @@ AddExternalReferencesLinesContainer.propTypes = {
   stixCoreObjectOrStixCoreRelationshipReferences: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,
@@ -359,7 +346,4 @@ const AddExternalReferencesLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddExternalReferencesLines);
+export default inject18n(AddExternalReferencesLines);

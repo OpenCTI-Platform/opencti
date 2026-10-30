@@ -1,0 +1,70 @@
+import conf, { booleanConf, logApp } from '../../config/conf';
+import { executionContext, SYSTEM_USER } from '../../utils/access';
+import { autoUpgradeManagedConnectors } from '../connector/connector-domain';
+import { synchronizeCatalogs } from './sync/catalog-sync-domain';
+import { registerManager, type ManagerDefinition } from '../../manager/managerModule';
+
+const CATALOG_MANAGER_ID = 'CATALOG_MANAGER';
+const CATALOG_MANAGER_LABEL = 'Catalog Manager';
+const CATALOG_MANAGER_CONTEXT = 'catalog_manager';
+const CATALOG_MANAGER_ENABLED = booleanConf('catalog_manager:enabled', true);
+const CATALOG_MANAGER_LOCK_KEY = conf.get('catalog_manager:lock_key') ?? 'catalog_manager_lock';
+const CATALOG_MANAGER_INTERVAL = conf.get('catalog_manager:interval') ?? 60_000;
+const DEFAULT_CATALOG_SYNC_REMOTE_TIMEOUT_MS = 30_000;
+
+const resolveCatalogSyncRemoteTimeoutMs = () => {
+  const configuredTimeout = Number(conf.get('catalog_manager:catalog_sync_remote_timeout') ?? conf.get('app:request_timeout'));
+  if (!Number.isFinite(configuredTimeout) || configuredTimeout <= 0) {
+    return DEFAULT_CATALOG_SYNC_REMOTE_TIMEOUT_MS;
+  }
+  return configuredTimeout;
+};
+
+export const isCatalogManagerEnabled = () => CATALOG_MANAGER_ENABLED;
+
+let isSyncCompleteUntilRestart = false;
+
+export const catalogManagerHandler = async () => {
+  if (isSyncCompleteUntilRestart) {
+    logApp.debug('[OPENCTI-MODULE] Embedded catalogs already synchronized, skipping catalog synchronization until restart', { module: 'catalog' });
+    return;
+  }
+  const context = executionContext('catalog_manager');
+  // Sync catalogs to ES
+  const { synchronizedCatalogIds, isEmbeddedOnlySyncComplete } = await synchronizeCatalogs(context, SYSTEM_USER, {
+    remoteCatalogTimeoutMs: resolveCatalogSyncRemoteTimeoutMs(),
+  });
+  // TODO Replace this cross-module call with a catalog-synchronized event once
+  // manager initialization guarantees that subscribers start before runOnStart handlers.
+  // Process every successfully synchronized catalog so a previous partial
+  // connector auto-upgrade is retried even when the manifest itself is unchanged.
+  const { hasErrors } = await autoUpgradeManagedConnectors(context, SYSTEM_USER, synchronizedCatalogIds);
+  // A failed connector auto-upgrade keeps the next runs going so it gets retried.
+  isSyncCompleteUntilRestart = isEmbeddedOnlySyncComplete && !hasErrors;
+  if (isSyncCompleteUntilRestart) {
+    logApp.info('[OPENCTI-MODULE] Embedded catalogs synchronized, skipping the next catalog synchronizations until restart', { module: 'catalog' });
+  }
+};
+
+const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {
+  id: CATALOG_MANAGER_ID,
+  label: CATALOG_MANAGER_LABEL,
+  executionContext: CATALOG_MANAGER_CONTEXT,
+  enabledByConfig: CATALOG_MANAGER_ENABLED,
+  enabled(): boolean {
+    return this.enabledByConfig && !!CATALOG_MANAGER_LOCK_KEY;
+  },
+  enabledToStart(): boolean {
+    return this.enabledByConfig && !!CATALOG_MANAGER_LOCK_KEY;
+  },
+  enterpriseEditionOnly: false,
+  cronSchedulerHandler: {
+    handler: catalogManagerHandler,
+    runOnStart: true,
+    interval: CATALOG_MANAGER_INTERVAL,
+    lockKey: CATALOG_MANAGER_LOCK_KEY,
+  },
+};
+
+// Automatically register manager on start.
+registerManager(CATALOG_MANAGER_DEFINITION);

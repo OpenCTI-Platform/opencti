@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -18,6 +18,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -251,7 +252,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             type="number"
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={(name, value) => handleSubmitField(name, value === '' ? null : value)}
             helperText={
@@ -311,6 +312,13 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={threatActorGroup.entity_type}
+            entityId={threatActorGroup.id}
+            values={threatActorGroup.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -333,6 +341,7 @@ export default createFragmentContainer(
     threatActorGroup: graphql`
       fragment ThreatActorGroupEditionOverview_ThreatActorGroup on ThreatActorGroup {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         name
         threat_actor_types
         confidence

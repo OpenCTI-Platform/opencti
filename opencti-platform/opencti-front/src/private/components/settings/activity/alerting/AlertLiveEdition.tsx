@@ -15,6 +15,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import NotifierField from '../../../common/form/NotifierField';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import Filters from '../../../common/lists/Filters';
+import { ACTIVITY_FILTER_KEYS } from './activityFilterKeys';
 import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import { AlertLiveEdition_trigger$key } from './__generated__/AlertLiveEdition_trigger.graphql';
@@ -153,7 +154,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -194,13 +195,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
             }}
           >
             <Filters
-              availableFilterKeys={[
-                'event_type',
-                'event_scope',
-                'members_user',
-                'members_group',
-                'members_organization',
-              ]}
+              availableFilterKeys={ACTIVITY_FILTER_KEYS}
               helpers={helpers}
               searchContext={{ entityTypes: ['History'] }}
             />
@@ -211,6 +206,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
               filters={filters}
               helpers={helpers}
               entityTypes={['History']}
+              availableFilterKeys={ACTIVITY_FILTER_KEYS}
             />
           )}
         </Form>

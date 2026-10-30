@@ -1,12 +1,13 @@
 import { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import IconButton from '@common/button/IconButton';
-import { useTheme } from '@mui/styles';
-import { Stack, Box } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
+import { Stack, Box, Tooltip } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import NotePopover from './NotePopover';
 import { resolveLink } from '../../../../utils/Entity';
@@ -86,9 +87,9 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
     <Card>
       <Stack
         direction="row"
-        alignItems="center"
-        justifyContent="space-between"
         sx={{
+          alignItems: 'center',
+          justifyContent: 'space-between',
           borderBottom: '1px solid',
           borderColor: theme.palette.border.main,
           pb: 2,
@@ -111,15 +112,22 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
           </Typography>
         </Stack>
 
-        <div>
-          <IconButton
-            aria-label={t_i18n('Go to note')}
-            component={Link}
-            to={`/dashboard/analyses/notes/${note.id}`}
-            sx={{ mr: 1 }}
-          >
-            <OpenInNewOutlined fontSize="small" />
-          </IconButton>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
+          <Tooltip title={t_i18n('Go to note')}>
+            <IconButton
+              aria-label={t_i18n('Go to note')}
+              component={Link}
+              to={`/dashboard/analyses/notes/${note.id}`}
+            >
+              <OpenInNewOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
             <NotePopover
               data={note}
@@ -127,11 +135,16 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
               entityId={stixCoreObjectOrStixCoreRelationshipId}
             />
           </CollaborativeSecurity>
-        </div>
+        </Stack>
       </Stack>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 8 }} gap={3}>
+        <Grid
+          size={{ xs: 8 }}
+          sx={{
+            gap: 3,
+          }}
+        >
           <Box>
             <Label>{t_i18n('Abstract')}</Label>
             <FieldOrEmpty source={note.attribute_abstract}>

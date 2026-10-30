@@ -6,7 +6,7 @@ import { patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
 import { isEmptyField } from '../database/utils';
 import { findById as findGroup } from '../domain/group';
-import { findAllMembers, findById as findUser } from '../domain/user';
+import { findAllMembers, findById as findUser } from '../modules/user/user-domain';
 import type { MemberAccess, MemberAccessInput, MemberGroupRestriction } from '../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
@@ -85,8 +85,9 @@ export const getAuthorizedMembers = async (
       });
     }
     return {
-      // To avoid id relay caching issue, we need to change the id as it is a different object
-      id: `${currentAuthMember.id}_${i}`,
+      // To avoid id relay caching issue, we need to change the id as it is a different object.
+      // Prefixed by the entity: the same member at the same index of another entity is another rule, with its own access and groups
+      id: `${entity.internal_id}_${currentAuthMember.id}_${i}`,
       member_id: currentAuthMember.id,
       name: member?.name ?? '',
       entity_type: member?.entity_type ?? '',

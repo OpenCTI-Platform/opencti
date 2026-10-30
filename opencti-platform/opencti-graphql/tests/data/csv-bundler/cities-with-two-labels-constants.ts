@@ -25,17 +25,17 @@ export const citiesWithTwoLabelsCsvMapper: Partial<CsvMapperParsed> = {
         { key: 'objectLabel',
           based_on: {
             representations: [
-              'labelRepresentation'
-            ]
-          }
+              'labelRepresentation',
+            ],
+          },
         },
-      ]
+      ],
     },
     {
       id: 'labelRepresentation',
       type: CsvMapperRepresentationType.Entity,
       target:
-        { entity_type: ENTITY_TYPE_LABEL
+        { entity_type: ENTITY_TYPE_LABEL,
         },
       attributes: [
         { key: 'color',
@@ -47,8 +47,8 @@ export const citiesWithTwoLabelsCsvMapper: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'B',
           },
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
 };

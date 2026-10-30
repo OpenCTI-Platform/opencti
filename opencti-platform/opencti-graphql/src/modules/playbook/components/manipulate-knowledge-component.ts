@@ -29,8 +29,12 @@ import { getParentTypes } from '../../../schema/schemaUtils';
 import * as jsonpatch from 'fast-json-patch';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
-import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
+import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
+import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
+import { CUSTOM_FIELD_PREFIX } from '../../customField/custom-field-types';
+import { getCustomFieldDefinitionsForEntityType } from '../../customField/custom-field-cache';
+import { buildCustomFieldPlaybookOperations } from '../../customField/custom-field-playbook';
 
 const attributePathMapping: any = {
   [INPUT_MARKINGS]: {
@@ -56,6 +60,7 @@ const attributePathMapping: any = {
     [ABSTRACT_STIX_RELATIONSHIP]: '/confidence',
   },
   x_opencti_score: {
+    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/score`,
     [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/score`,
     [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/score`,
     [ENTITY_TYPE_IDENTITY_ORGANIZATION]: `/extensions/${STIX_EXT_OCTI}/score`,
@@ -154,10 +159,11 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
   ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
   configuration_schema: PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+  executor: async ({ dataInstanceId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
     const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
     const { actions, applyToElements, applyWithFilters } = playbookNode.configuration;
+    const eventContext = buildPlaybookEventContext(event);
 
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType: string, attribute: string) => {
@@ -190,11 +196,15 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       return value;
     };
 
+    const customFieldActions = isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)
+      ? actions.filter((action) => action.attribute.startsWith(CUSTOM_FIELD_PREFIX))
+      : [];
+
     const patchOperations: jsonpatch.Operation[] = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const isMatchingScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
-      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       if (isMatchingScope && isMatchingFilters) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
@@ -267,6 +277,15 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
             applyOperationFieldPatch(element, operationObject);
           }
           pushAll(patchOperations, elementOperations.map((e) => e.patchOperation));
+        }
+        // Custom fields depend on the definitions attached to the element type
+        if (customFieldActions.length > 0) {
+          const definitions = await getCustomFieldDefinitionsForEntityType(context, AUTOMATION_MANAGER_USER, type);
+          const customFieldOperations = buildCustomFieldPlaybookOperations(element, `/objects/${index}`, customFieldActions, definitions);
+          if (id && customFieldOperations.upsertOperations.length > 0) {
+            applyOperationFieldPatch(element, customFieldOperations.upsertOperations);
+          }
+          pushAll(patchOperations, customFieldOperations.patchOperations);
         }
       }
     }

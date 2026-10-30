@@ -19,6 +19,7 @@ const convertEventToStix = (instance: StoreEntityEvent): StixEvent => {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
+        score: instance.x_opencti_score,
       }),
     },
   };
@@ -35,6 +36,7 @@ export const convertEventToStix_2_0 = (instance: StoreEntity): Stix2Event => {
     start_time: convertToStixDate(event.start_time),
     stop_time: convertToStixDate(event.stop_time),
     aliases: instance.x_opencti_aliases ?? [],
+    x_opencti_score: instance.x_opencti_score,
   };
 };
 

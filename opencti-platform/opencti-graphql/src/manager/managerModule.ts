@@ -20,6 +20,7 @@ export interface HandlerInput {
 export interface ManagerCronScheduler {
   handler: (input?: any) => Promise<void>;
   shutdown?: () => void;
+  runOnStart?: boolean;
   interval: number;
   lockKey: string;
   infiniteInterval?: number;
@@ -63,6 +64,7 @@ const initManager = (manager: ManagerDefinition) => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
+  let enterpriseBlockedLogged = false;
 
   const cronTimer = new InterruptibleTimer();
   const streamTimer = new InterruptibleTimer();
@@ -70,8 +72,13 @@ const initManager = (manager: ManagerDefinition) => {
   const cronHandler = async (cronInputFn?: () => Promise<HandlerInput>) => {
     if (manager.cronSchedulerHandler) {
       if (!(await isEnterpriseEditionAuthorized(manager))) {
+        if (!enterpriseBlockedLogged) {
+          logApp.info(`[OPENCTI-MODULE] ${manager.label} not running (enterprise edition license required)`);
+          enterpriseBlockedLogged = true;
+        }
         return;
       }
+      enterpriseBlockedLogged = false;
       let lock;
       let cronInput;
       const startDate = utcDate();
@@ -113,8 +120,13 @@ const initManager = (manager: ManagerDefinition) => {
   const streamHandler = async () => {
     if (manager.streamSchedulerHandler) {
       if (!(await isEnterpriseEditionAuthorized(manager))) {
+        if (!enterpriseBlockedLogged) {
+          logApp.info(`[OPENCTI-MODULE] ${manager.label} not running (enterprise edition license required)`);
+          enterpriseBlockedLogged = true;
+        }
         return;
       }
+      enterpriseBlockedLogged = false;
       let lock;
       try {
       // Lock the manager
@@ -149,6 +161,9 @@ const initManager = (manager: ManagerDefinition) => {
         const asyncInterval = manager.cronSchedulerHandler.dynamicSchedule ? setDynamicIntervalAsync : setIntervalAsync;
         logApp.info(`[OPENCTI-MODULE] Starting ${manager.label} every ${manager.cronSchedulerHandler.interval}`);
         const { handlerInitializer } = manager.cronSchedulerHandler;
+        if (manager.cronSchedulerHandler.runOnStart) {
+          void cronHandler(handlerInitializer);
+        }
         scheduler = asyncInterval(async () => {
           await cronHandler(handlerInitializer);
         }, manager.cronSchedulerHandler.interval);

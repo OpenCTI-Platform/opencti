@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "script",
+    "src",
+    "tests"
+  ],
+  // Unlike the wildcards above, `files` errors when the file is missing.
+  "files": ["src/generated/graphql.ts"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.back.tsbuildinfo",
+    "typeRoots": ["node_modules/@types", "src/types"]
+  }
+}

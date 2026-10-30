@@ -15,7 +15,10 @@ It uses **Relay** for data fetching and **Material UI** for styling.
 - **Framework**: React 19
 - **Bundler**: Vite
 - **Data Fetching**: Relay (GraphQL)
-- **UI Library**: Material UI (MUI) v6
+- **UI Library**: the Filigran Design System first, Material UI (MUI) v6 as the
+  fallback. The rule and the per-component status live in `AGENTS.md` at the
+  repository root — read it before writing UI code. Do not infer from the
+  surrounding file: most of this codebase predates the migration.
 - **Routing**: Internal routing
 - **Testing**: Vitest, Playwright (E2E)
 
@@ -41,7 +44,7 @@ It uses **Relay** for data fetching and **Material UI** for styling.
 - **Relay Compiler**: Essential for GraphQL fragment generation.
 
 ### Commands
-Before running commands, ensure `.yarnrc.yml` is present (copy from parent).
+The front is a workspace of the repository-root Yarn project: `yarn install` from the root installs it, `yarn workspaces focus opencti-front` installs it alone.
 
 ```bash
 # Installation
@@ -72,6 +75,7 @@ yarn test:e2e     # E2E (Playwright)
 > - [Forms & Validation](frontend/patterns/forms-validation.md)
 > - [Styling](frontend/patterns/styling-mui.md)
 > - [Components](frontend/patterns/components.md)
+> - [Graph badges and node actions](frontend/patterns/graph-badges.md)
 
 ## Common Issues
 - **Missing Data**: Did you run `yarn relay`?

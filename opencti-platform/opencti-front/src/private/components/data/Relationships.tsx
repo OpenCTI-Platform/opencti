@@ -7,7 +7,7 @@ import {
 import { RelationshipsStixCoreRelationshipsLines_data$data } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
 import { AutoFix } from 'mdi-material-ui';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -108,6 +108,11 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
         created
         representative {
           main
+        }
+      }
+      ... on SecurityCoverageResult {
+        resultOf {
+          id
         }
       }
     }

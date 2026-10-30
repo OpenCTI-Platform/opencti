@@ -18,6 +18,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 
 export const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
@@ -110,7 +111,7 @@ interface MembersListContainerProps {
 }
 
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
 
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -192,7 +193,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     password_valid_until: {
       label: 'Password valid until',
       percentWidth: 10,
-      render: (date) => (date ? fd(date) : '-'),
+      render: (date) => defaultRender(ftd(date)),
     },
     created_at: {
       percentWidth: 10,
@@ -208,14 +209,14 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
   } as UsePreloadedPaginationFragment<SettingsOrganizationUsersPaginationQuery>;
 
   return (
-    <Grid item xs={12} style={{ marginTop: 0 }}>
+    <Grid style={{ marginTop: 0 }} size={12}>
       <Card
         title={t_i18n('Users')}
         action={(
           <SettingsOrganizationUserCreation
             paginationOptions={queryPaginationOptions}
             organization={organization}
-            variant="standard"
+            variant="outlined"
           />
         )}
       >

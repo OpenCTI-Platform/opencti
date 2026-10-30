@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
@@ -99,7 +99,7 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
             fullWidth={true}
             onSubmit={onUpdate}
             required
-            style={{ marginTop: theme.spacing(2) }}
+            className="mt-4"
           />
           <Field
             component={TextField}
@@ -108,7 +108,7 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
             fullWidth={true}
             onSubmit={onUpdate}
             required
-            style={{ marginTop: theme.spacing(2) }}
+            className="mt-4"
           />
           {!isEdition && (
             <FormButtonContainer>

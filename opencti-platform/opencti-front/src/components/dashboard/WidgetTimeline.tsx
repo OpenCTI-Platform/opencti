@@ -2,7 +2,7 @@ import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
@@ -14,7 +14,7 @@ import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
 import FieldOrEmpty from '../FieldOrEmpty';
 import Card from '../common/card/Card';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../Theme';
 
 interface WidgetTimelineProps {
@@ -41,8 +41,10 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
           return (
             <TimelineItem key={`${value.id}-${index}`}>
               <TimelineOppositeContent
-                sx={{ paddingTop: '18px' }}
-                color="text.secondary"
+                sx={{
+                  color: 'text.secondary',
+                  paddingTop: '18px',
+                }}
               >
                 <FieldOrEmpty source={value[dateAttribute]}>
                   {fldt(value[dateAttribute])}
@@ -75,7 +77,7 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
                   <Typography variant="h2">
                     {getMainRepresentative(value)}
                   </Typography>
-                  <div style={{ marginTop: -5, color: '#a8a8a8' }}>
+                  <div style={{ marginTop: -5, color: theme.palette.text.tertiary }}>
                     <MarkdownDisplay
                       content={getSecondaryRepresentative(value)}
                       limit={150}

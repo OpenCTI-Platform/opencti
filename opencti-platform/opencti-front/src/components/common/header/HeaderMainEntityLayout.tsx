@@ -26,20 +26,28 @@ const HeaderMainEntityLayout = ({
   const hasTagsRow = !isNestedHeader && (hasLeftTags || hasRightTags);
 
   return (
-    <Stack gap={1} sx={{ marginBottom: 0 }}>
+    <Stack
+      sx={{
+        gap: 1,
+        marginBottom: 0,
+      }}
+    >
       {/* Title + TitleRight on left + Actions on right */}
       <Stack
         direction="row"
-        justifyContent="space-between"
-        gap={3}
+        sx={{
+          justifyContent: 'space-between',
+          gap: 3,
+        }}
       >
         <Stack
           direction="row"
           sx={{
+            alignItems: 'center',
+            gap: 1,
             flex: 1,
             minWidth: 0,
           }}
-          gap={1}
         >
           {/* Title */}
           {!isNestedHeader && (
@@ -73,8 +81,10 @@ const HeaderMainEntityLayout = ({
         {/* Right actions */}
         <Stack
           direction="row"
-          alignItems="center"
-          gap={1}
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+          }}
         >
           {rightActions}
         </Stack>
@@ -85,14 +95,16 @@ const HeaderMainEntityLayout = ({
         && (
           <Stack
             direction="row"
-            alignContent="center"
-            justifyContent="space-between"
-            gap={3}
+            sx={{
+              alignContent: 'center',
+              justifyContent: 'space-between',
+              gap: 3,
+            }}
           >
             <Stack
               direction="row"
-              gap={1}
               sx={{
+                gap: 1,
                 flex: 1,
                 minWidth: 0,
                 maxWidth: hasBothTags ? '50%' : '100%',
@@ -104,8 +116,8 @@ const HeaderMainEntityLayout = ({
 
             <Stack
               direction="row"
-              alignItems="center"
               sx={{
+                alignItems: 'center',
                 flex: 1,
                 minWidth: 0,
                 maxWidth: hasBothTags ? '50%' : '100%',

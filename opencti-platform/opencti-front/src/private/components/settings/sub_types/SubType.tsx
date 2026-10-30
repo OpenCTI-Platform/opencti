@@ -2,7 +2,7 @@ import type { SubTypeQuery } from './__generated__/SubTypeQuery.graphql';
 import { Box, Stack } from '@mui/material';
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Outlet, useParams } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router';
 import { ErrorBoundary } from '@components/Error';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -27,6 +27,7 @@ export const subTypeQuery = graphql`
       settings {
         id
         availableSettings
+        sync_workflow_status_by_name
         ...EntitySettingsOverviewLayoutCustomization_entitySetting
         ...EntitySettingsFragment_entitySetting
         ...EntitySettingAttributes_entitySetting
@@ -86,7 +87,13 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   };
 
   return (
-    <Stack sx={{ pr: '200px', pb: 4 }} gap={2}>
+    <Stack
+      sx={{
+        gap: 2,
+        pr: '200px',
+        pb: 4,
+      }}
+    >
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },

@@ -32,4 +32,3 @@ export const EXPECTED_IPV4 = {
   resolves_to_refs: [],
   belongs_to_refs: [],
 };
-

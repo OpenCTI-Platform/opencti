@@ -1,16 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 import { FieldProps } from 'formik';
 import JsonMapperRepresentationAttributesForm from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
-import MUIAutocomplete from '@mui/material/Autocomplete';
-import { SelectChangeEvent } from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import makeStyles from '@mui/styles/makeStyles';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
+import { styled, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { Accordion, AccordionDetails } from '@mui/material';
 import { DeleteOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import AccordionSummary from '@mui/material/AccordionSummary';
-import classNames from 'classnames';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
 import IconButton from '@common/button/IconButton';
 import Button from '@common/button/Button';
@@ -26,27 +23,22 @@ import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import { FieldOption } from '../../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  container: {
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  red: {
-    borderColor: theme.palette.designSystem.tertiary.red[400],
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
+
+const OptionLabel = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
+
+const SummaryContent = styled('div')({
+  display: 'inline-flex',
+  alignItems: 'center',
+});
 
 export interface RepresentationFormEntityOption extends FieldOption {
   type: string;
@@ -75,7 +67,7 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
   attributes,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
 
   const { name, value } = field;
   const { setFieldValue } = form;
@@ -144,9 +136,7 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
 
   // -- MUI Autocomplete --
 
-  const searchType = (event: React.SyntheticEvent) => {
-    const selectChangeEvent = event as SelectChangeEvent;
-    const val = selectChangeEvent?.target.value ?? '';
+  const searchType = (val: string) => {
     return availableTypes.filter(
       (type) => type.value.includes(val)
         || t_i18n(`${prefixLabel}${type.label}`).includes(val),
@@ -158,54 +148,58 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
         expanded={open}
         variant="outlined"
         style={{ width: '100%' }}
-        className={classNames({
-          [classes.red]: hasError,
-        })}
+        sx={hasError ? { borderColor: theme.palette.designSystem.tertiary.red[400] } : undefined}
       >
         <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
-          <div className={classes.container}>
+          <SummaryContent>
             <Typography>
               {representationLabel(index, value, t_i18n)}
             </Typography>
             <Tooltip title={t_i18n('Delete')}>
-              <IconButton color="error" onClick={handleOpenDelete}>
+              <IconButton color="error" onClick={handleOpenDelete} aria-label={t_i18n('Delete')}>
                 <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
-          </div>
+          </SummaryContent>
         </AccordionSummary>
         <AccordionDetails style={{ width: '100%' }}>
           <>
-            <MUIAutocomplete<RepresentationFormEntityOption>
+            <Combobox<RepresentationFormEntityOption>
               selectOnFocus
               openOnFocus
-              autoHighlight
               getOptionLabel={(option) => t_i18n(`${prefixLabel}${option.label}`)}
-              noOptionsText={t_i18n('No available options')}
               options={availableTypes}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
               value={availableTypes.find((e) => e.id === value.target?.entity_type) || null}
-              onInputChange={(event) => searchType(event)}
-              onChange={(_, val) => handleChangeEntityType(val)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={t_i18n('Entity type')}
-                  variant="outlined"
-                  size="small"
-                />
-              )}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  <div className={classes.icon}>
+              renderOption={(option) => (
+                <>
+                  <OptionIcon>
                     <ItemIcon type={option.label} />
-                  </div>
-                  <div className={classes.text}>
+                  </OptionIcon>
+                  <OptionLabel>
                     {t_i18n(`${prefixLabel}${option.label}`)}
-                  </div>
-                </li>
+                  </OptionLabel>
+                </>
               )}
-            />
+              onValueChange={(val) => handleChangeEntityType(val as RepresentationFormEntityOption | null)}
+              onInputChange={(event, meta) => {
+                if (meta.cause === 'type') {
+                  searchType(event);
+                }
+              }}
+            >
+              <ComboboxLabel>{t_i18n('Entity type')}</ComboboxLabel>
+              <ComboboxField>
+                <ComboboxInput />
+                <ComboboxControls>
+                  <ComboboxTrigger />
+                </ComboboxControls>
+              </ComboboxField>
+              <ComboboxContent
+                emptyMessage={t_i18n('No available options')}
+                listAriaLabel={t_i18n('Entity type')}
+              />
+            </Combobox>
             <div>
               <JsonMapperRepresentationAttributesForm
                 handleErrors={handleErrors}

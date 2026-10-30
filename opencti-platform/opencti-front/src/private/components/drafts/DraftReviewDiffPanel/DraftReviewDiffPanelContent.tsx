@@ -2,9 +2,9 @@ import React, { FunctionComponent, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import { IconButton } from '@filigran/design-system';
 import LaunchIcon from '@mui/icons-material/Launch';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Loader from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
@@ -13,6 +13,8 @@ import { ErrorBoundary } from '../../Error';
 import { DraftEntitySelection } from '../DraftReviewEntityList';
 import { DraftReviewDiffPanelContentQuery } from './__generated__/DraftReviewDiffPanelContentQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from '../../../../utils/customFields';
 import { buildFieldLabelMap, parseUpdatesPatch, RenderChangeValuesFn } from './draftReviewDiffPanelUtils';
 import ContainerObjectsTab from './ContainerObjectsTab';
 import EntityRelationsTab from './EntityRelationsTab';
@@ -52,7 +54,15 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
     queryRef,
   );
 
+  const { schema: { filterKeysSchema } } = useAuth();
   const labelMap = buildFieldLabelMap(subTypeData.subType?.settings?.attributesDefinitions);
+  const changes = parseUpdatesPatch(entity.draft_updates_patch, entity.custom_field_values);
+  // Custom fields are not part of the attribute definitions: their label comes from the filter keys schema
+  changes.forEach(({ field }) => {
+    if (field && isCustomFieldAttribute(field)) {
+      labelMap[field] = getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, [entity.entity_type], field);
+    }
+  });
 
   const renderHeader = () => {
     const link = resolveLink(entity.entity_type);
@@ -63,15 +73,14 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
         </Typography>
         {link && (
           <IconButton
+            asChild
+            variant="default"
+            priority="tertiary"
+            size="sm"
             aria-label={t_i18n('Open link in new tab')}
-            component={Link}
-            to={`${link}/${entity.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            size="small"
-            sx={{ width: 26, height: 26, borderRadius: '4px', color: 'primary.main', backgroundColor: 'action.hover' }}
+            icon={<LaunchIcon sx={{ fontSize: 18 }} />}
           >
-            <LaunchIcon sx={{ fontSize: 18 }} />
+            <Link to={`${link}/${entity.id}`} target="_blank" rel="noopener noreferrer" />
           </IconButton>
         )}
       </Box>
@@ -153,8 +162,6 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
       </Box>
     );
   }
-
-  const changes = parseUpdatesPatch(entity.draft_updates_patch);
 
   const renderFieldsTab = () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

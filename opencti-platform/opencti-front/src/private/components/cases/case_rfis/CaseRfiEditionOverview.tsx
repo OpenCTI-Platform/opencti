@@ -13,6 +13,7 @@ import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipant
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -64,6 +65,7 @@ export const caseRfiEditionOverviewFocus = graphql`
 const caseRfiEditionOverviewFragment = graphql`
   fragment CaseRfiEditionOverview_case on CaseRfi {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     revoked
     description
@@ -290,7 +292,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           <AlertConfidenceForEntity entity={caseData} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -309,7 +311,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Request for Information date'),
-              variant: 'standard',
+              variant: 'outlined',
               required: (mandatoryAttributes.includes('created')),
               fullWidth: true,
               helperText: (
@@ -428,6 +430,13 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={caseData.entity_type}
+            entityId={caseData.id}
+            values={caseData.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

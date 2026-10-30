@@ -3,11 +3,13 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StoreEntity, BasicStoreEntity } from '../../types/store';
 import { IngestionAuthType, IngestionCsvMapperType } from '../../generated/graphql';
 import type { AuthorizedMember } from '../../utils/access';
+import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
 
 // region Rss ingestion
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
 
-export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionRss extends BasicStoreEntity, IngestionHealthFields {
+  kind: 'rss';
   name: string;
   description: string;
   scheduling_period: string;
@@ -19,6 +21,7 @@ export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
   current_state_date: Date | undefined;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   ssl_verify?: boolean;
 }
 
@@ -52,7 +55,7 @@ export interface StixIngestionRss extends StixObject {
 // region Taxii ingestion
 export const ENTITY_TYPE_INGESTION_TAXII = 'IngestionTaxii';
 
-export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity, IngestionHealthFields {
   kind: 'taxii';
   name: string;
   description: string;
@@ -107,7 +110,8 @@ export interface StixIngestionTaxii extends StixObject {
 // region Csv ingestion
 export const ENTITY_TYPE_INGESTION_CSV = 'IngestionCsv';
 
-export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity, IngestionHealthFields {
+  kind: 'csv';
   current_state_hash: string;
   name: string;
   description: string;
@@ -121,6 +125,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   user_id: string | undefined;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   markings?: string[];
   ssl_verify?: boolean;
 }
@@ -152,7 +157,8 @@ export interface StixIngestionCsv extends StixObject {
 // region json ingestion
 export const ENTITY_TYPE_INGESTION_JSON = 'IngestionJson';
 
-export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionJson extends BasicStoreEntity, IngestionHealthFields {
+  kind: 'json';
   name: string;
   description: string;
   scheduling_period: string;
@@ -167,6 +173,7 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
   ingestion_json_state: Record<string, object>;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   headers?: { name: string; value: string }[];
   // pagination
   pagination_with_sub_page: boolean;
@@ -177,6 +184,7 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
 }
 
 export interface StoreEntityIngestionJson extends StoreEntity {
+  kind: 'json';
   name: string;
   description: string;
   scheduling_period: string;
@@ -191,6 +199,7 @@ export interface StoreEntityIngestionJson extends StoreEntity {
   ingestion_json_state: Record<string, object>;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  last_execution_status: string | undefined;
   headers?: { name: string; value: string }[];
   // pagination
   pagination_with_sub_page: boolean;
@@ -215,7 +224,7 @@ export interface StixIngestionJson extends StixObject {
 // region Taxii ingestion
 export const ENTITY_TYPE_INGESTION_TAXII_COLLECTION = 'IngestionTaxiiCollection';
 
-export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEntity, IngestionHealthFields {
   name: string;
   description: string;
   user_id: string | undefined;

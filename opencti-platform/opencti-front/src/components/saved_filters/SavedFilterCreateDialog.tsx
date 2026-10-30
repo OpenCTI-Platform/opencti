@@ -1,8 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
@@ -13,11 +12,16 @@ import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
-import { type AuthorizedMemberOption } from '../../utils/authorizedMembers';
+import { authorizedMembersToInput } from '../../utils/authorizedMembers';
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
 import Security from '../../utils/Security';
+import { Input } from '@filigran/design-system';
+import { serializeSavedFilterGroup } from './savedFiltersUtils';
+
+// Kept for backward compatibility: the helper now lives in savedFiltersUtils (pure, testable).
+export { serializeSavedFilterGroup } from './savedFiltersUtils';
 
 const savedFilterCreateDialogMutation = graphql`
   mutation SavedFilterCreateDialogMutation($input: SavedFilterAddInput!) {
@@ -34,6 +38,10 @@ const savedFilterCreateDialogMutation = graphql`
         entity_type
         access_right
         member_id
+        groups_restriction {
+          id
+          name
+        }
       }
     }
   }
@@ -52,6 +60,7 @@ interface SavedFilterFormValues {
 const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: SavedFilterDialogProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
 
   const owner = { id: me.id, name: me.name, entity_type: 'User' };
 
@@ -79,18 +88,14 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   };
 
   const handleSubmitSaveFilter = (values: SavedFilterFormValues) => {
-    const restrictedMembers = values.authorized_members
-      ? values.authorized_members.map((m: AuthorizedMemberOption) => ({
-          id: m.value,
-          access_right: m.accessRight,
-        }))
-      : undefined;
+    // No members given: undefined, so the backend applies its default access
+    const restrictedMembers = values.authorized_members ? authorizedMembersToInput(values.authorized_members) : undefined;
 
     commit({
       variables: {
         input: {
           name: filterName,
-          filters: JSON.stringify(filters),
+          filters: serializeSavedFilterGroup(filters),
           scope: localStorageKey,
           authorized_members: restrictedMembers,
         },
@@ -118,6 +123,12 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
       onClose={onClose}
       size="medium"
       title={t_i18n('Save filter')}
+      slotProps={{
+        // MUI's transition mounts asynchronously; focusing on mount would
+        // race the DOM insertion, so wait for it to fully enter instead
+        // (same pattern as WorkflowTransitions.tsx's comment dialog).
+        transition: { onEntered: () => nameInputRef.current?.focus() },
+      }}
     >
       <Formik<SavedFilterFormValues>
         initialValues={{ authorized_members: null }}
@@ -125,10 +136,10 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
       >
         {({ submitForm }) => (
           <Form>
-            <TextField
+            <Input
+              ref={nameInputRef}
               label={t_i18n('Name')}
               placeholder={t_i18n('My saved filter')}
-              fullWidth
               value={filterName}
               onChange={handleChange}
             />

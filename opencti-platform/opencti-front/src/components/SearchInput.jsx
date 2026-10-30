@@ -1,21 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import { ManageSearchOutlined, Search, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
+import { SearchField, Spinner } from '@filigran/design-system';
+import { ManageSearchOutlined, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import { useNavigate } from 'react-router-dom';
-import makeStyles from '@mui/styles/makeStyles';
+import { useNavigate } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import CircularProgress from '@mui/material/CircularProgress';
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from './i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
@@ -29,136 +24,19 @@ import useAI from '../utils/hooks/useAI';
 import { fetchAgentsForIntent } from '../utils/ai/agentApi';
 import { NLQ_INTENT } from '../private/components/common/ai/AINLQ';
 import { useChatbot } from '../private/components/chatbox/ChatbotContext';
+import { hexToRGB } from '../utils/Colors';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  searchRoot: {
-    borderRadius: 4,
-    padding: '0 10px 0 10px',
-  },
-  searchRootTopBar: {
-    borderRadius: 4,
-    padding: '1px 10px 0 10px',
-    marginRight: 5,
-    width: '100%',
-  },
-  searchRootInDrawer: {
-    borderRadius: 4,
-    width: '100%',
-    minWidth: 100,
-    maxWidth: '255px',
-  },
-  searchRootThin: {
-    borderRadius: 4,
-    padding: '0 10px 0 10px',
-    height: 30,
-  },
-  searchRootNoAnimation: {
-    borderRadius: 4,
-    padding: '0 10px 0 10px',
-    backgroundColor: theme.palette.background.default,
-  },
-  searchInputTopBar: {
-    width: '100%',
-  },
-  searchInputInDrawer: {
-    width: '100%',
-  },
-  searchInput: {
-    transition: theme.transitions.create('width'),
-    width: 200,
-    '&:focus': {
-      width: 350,
-    },
-  },
-  searchInputSmall: {
-    transition: theme.transitions.create('width'),
-    width: 150,
-    '&:focus': {
-      width: 250,
-    },
-  },
-}));
-
-export function GradientBorderTextField({
-  isActive,
-  ...props
-}) {
-  const theme = useTheme();
-
-  return (
-    <TextField
-      {...props}
-      variant="outlined"
-      sx={{
-        '& .MuiInputBase-input::placeholder': {
-          opacity: 1,
-          color: theme.palette.text.light,
-        },
-        '& .MuiOutlinedInput-root': {
-          position: 'relative',
-          borderRadius: 1,
-          borderWidth: '1px',
-          backgroundColor: theme.palette.background.secondary,
-          '& input': {
-            height: '19px', // textfield is computing something to make the search equal to 36px
-            boxSizing: 'content-box',
-          },
-
-          '& fieldset': {
-            // default mode without border color
-            borderColor: 'transparent',
-          },
-
-          '&.Mui-focused:not(:hover) fieldset': {
-            // when focus and not hover, prevent default mui change borderwidth
-            borderWidth: '1px',
-          },
-
-          ...(isActive && {
-            '&.Mui-focused:not(:hover) fieldset': {
-              // prevent showing the default border when ai mode on and mouse out
-              border: `1px solid ${theme.palette.ai.dark}`,
-            },
-
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              inset: 0,
-              borderRadius: 'inherit',
-              padding: '1px',
-              background: `linear-gradient(
-                90deg,
-                ${theme.palette.ai?.light},
-                ${theme.palette.ai?.dark}
-              )`,
-              WebkitMask:
-                'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-              maskComposite: 'exclude',
-              pointerEvents: 'none',
-              opacity: 0.8,
-            },
-
-            '&:hover fieldset': {
-              border: `1px solid ${theme.palette.ai.dark}`,
-            },
-          }),
-        },
-      }}
-    />
-  );
-}
-
-// ── Mode constants ─────────────────────────────────────────────────────────
 const MODE_SEARCH = 'search';
 const MODE_BULK = 'bulk';
 // NLQ modes are dynamic: `nlq:<agentSlug>`
 const isNlqMode = (mode) => typeof mode === 'string' && mode.startsWith('nlq:');
 const nlqSlugFromMode = (mode) => (isNlqMode(mode) ? mode.slice(4) : null);
 
+const SIZE_BY_VARIANT = {
+  thin: 'sm',
+};
+
 const SearchInput = (props) => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured, fullyActive } = useAI();
@@ -188,6 +66,11 @@ const SearchInput = (props) => {
   const [nlqAgentsFetched, setNlqAgentsFetched] = useState(false);
   // Track the default agent slug so clicking NLQ toggle auto-selects it
   const [defaultNlqSlug, setDefaultNlqSlug] = useState(null);
+  // Shared hover state for the whole split-button: hovering EITHER the
+  // icon-toggle zone or the caret zone must tint the entire wrapper as one
+  // continuous button (matching the original single-<ToggleButton> look),
+  // not just the sub-zone under the pointer.
+  const [isNlqSplitHovered, setIsNlqSplitHovered] = useState(false);
 
   useEffect(() => {
     // Don't sync when in bulk mode: navigating to /search_bulk clears the URL
@@ -205,27 +88,6 @@ const SearchInput = (props) => {
   // Derive selected agent from mode
   const selectedAgentSlug = nlqSlugFromMode(mode);
   const selectedAgent = nlqAgents.find((a) => a.slug === selectedAgentSlug) ?? null;
-
-  let classRoot = classes.searchRoot;
-  if (variant === 'inDrawer') {
-    classRoot = classes.searchRootInDrawer;
-  } else if (variant === 'noAnimation') {
-    classRoot = classes.searchRootNoAnimation;
-  } else if (variant === 'topBar') {
-    classRoot = classes.searchRootTopBar;
-  } else if (variant === 'thin') {
-    classRoot = classes.searchRootThin;
-  }
-  let classInput = classes.searchInput;
-  if (variant === 'small' || variant === 'thin') {
-    classInput = classes.searchInputSmall;
-  } else if (variant === 'topBar') {
-    classInput = classes.searchInputTopBar;
-  } else if (variant === 'noAnimation') {
-    classInput = classes.searchInputNoAnimation;
-  } else if (variant === 'inDrawer') {
-    classInput = classes.searchInputInDrawer;
-  }
 
   // ── Fetch NLQ agents eagerly on mount when AI is available ──────────────
   const fetchNlqAgentsIfNeeded = useCallback(() => {
@@ -346,42 +208,47 @@ const SearchInput = (props) => {
     }
   };
 
+  // Emptying the field, by typing or clearing, must drop the keyword still active in the URL:
+  // otherwise it keeps filtering the results unseen, and adding filters afterwards finds nothing.
+  const handleValueChange = (value) => {
+    setSearchValue(value);
+    if (value === '' && keyword && typeof onSubmit === 'function') {
+      onSubmit('');
+    }
+  };
+
   // ── Non-topBar variant: keep the simple input ──────────────────────────
   if (variant !== 'topBar') {
     return (
-      <>
-        <GradientBorderTextField
-          name="keyword"
-          value={searchValue}
-          variant="outlined"
-          size="small"
-          placeholder={placeholder}
-          onChange={(event) => {
-            const { value } = event.target;
-            setSearchValue(value);
-          }}
-          onKeyDown={(event) => {
-            const { value } = event.target;
-            if (typeof onSubmit === 'function' && event.key === 'Enter') {
-              onSubmit(value);
-            }
-          }}
-          isActive={false}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <Search fontSize="small" sx={{ mr: 0.5 }} />
-              ),
-              classes: {
-                root: classRoot,
-                input: classInput,
-              },
-            },
-          }}
-          {...otherProps}
-          autoComplete="off"
-        />
-      </>
+      <SearchField
+        name="keyword"
+        // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
+        aria-label={placeholder}
+        size={SIZE_BY_VARIANT[variant] ?? 'md'}
+        value={searchValue}
+        placeholder={placeholder}
+        onChange={(event) => {
+          setSearchValue(event.target.value);
+        }}
+        onSubmit={(value) => {
+          if (typeof onSubmit === 'function') {
+            onSubmit(value);
+          }
+        }}
+        // The library renders a clear cross only when it can act on one, and clearing has to
+        // re-run the search: dropping the keyword locally while leaving the list filtered would
+        // be a worse state than before, when there was no cross at all.
+        onClear={() => {
+          setSearchValue('');
+          if (typeof onSubmit === 'function') {
+            onSubmit('');
+          }
+        }}
+        // Spread last, exactly as the MUI field did: the three call sites that pass their own onChange drive the
+        // value themselves and must keep winning over the internal handler above.
+        {...otherProps}
+        autoComplete="off"
+      />
     );
   }
 
@@ -412,84 +279,56 @@ const SearchInput = (props) => {
 
   const isCGUStatusPending = useXtmOne && !fullyActive;
   const nlqNoAgentAvailable = useXtmOne && nlqAgentsFetched && nlqAgents.length === 0;
+  const nlqSplitDisabled = nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin);
+  const hasCaret = useXtmOne && nlqAgents.length > 0;
+
+  // Same focus-visible ring color the MuiToggleButtonGroup theme override
+  // gives every ToggleButton in this bar, for the caret <button>, which isn't
+  // a ToggleButton so doesn't get it for free (see .nlq-split-caret in index.css).
+  const nlqCaretFocusRingColor = theme.palette.border.focus;
 
   const aiColor = theme.palette.ai?.main;
-  const nlqToggleButtonSx = {
-    ...toggleButtonSx,
-    width: 'auto', // wider than standard because it contains icon + caret
-    minWidth: 36,
-    px: 1,
-    // Always show AI/pink color on the NLQ button — use !important to beat MUI's default ToggleButton color
-    color: `${aiColor} !important`,
-    '&.Mui-selected': {
-      backgroundColor: aiColor ? `${aiColor}24` : undefined,
-      color: `${aiColor} !important`,
-      borderColor: aiColor,
-      '&:hover': {
-        backgroundColor: aiColor ? `${aiColor}30` : undefined,
-      },
-    },
-    '&:hover': {
-      backgroundColor: aiColor ? `${aiColor}12` : undefined,
-    },
-    ...(isNLQActivated && {
-      backgroundColor: aiColor ? `${aiColor}18` : undefined,
-      borderColor: aiColor,
-    }),
-    // Keep AI/pink color even when disabled (no agents available)
-    '&.Mui-disabled': {
-      color: `${aiColor} !important`,
-      opacity: 0.5,
-    },
-  };
+  // Single source of truth for the split-button's background: both the
+  // icon-toggle zone and the caret zone must render the SAME tint at the
+  // SAME time (driven by shared hover state, not each zone's own hover).
+  // Idle/hover-while-unselected match the tint the app-wide
+  // MuiToggleButtonGroup theme override applies to every other button in
+  // this control (theme.palette.primary.main alpha). Once in AI mode
+  // (selected) AND hovered, the background switches to the AI color instead,
+  // so hovering the active AI button reads as distinctly "AI" rather than
+  // generic-selected. Both the ToggleButton and the caret <button> have
+  // their own background neutralized to transparent so this wrapper
+  // background is the only thing visible.
+  const nlqSplitBackground = (() => {
+    if (nlqSplitDisabled) return 'transparent';
+    if (isNLQActivated) {
+      return isNlqSplitHovered && aiColor
+        ? hexToRGB(aiColor, 0.3)
+        : hexToRGB(theme.palette.primary.main, 0.25);
+    }
+    return isNlqSplitHovered ? hexToRGB(theme.palette.primary.main, 0.15) : 'transparent';
+  })();
 
   return (
     <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={1}
-        sx={{ minWidth: 550, width: '50%', maxWidth: 680 }}
-      >
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' }}>
         {/* ── Search Input Field (left, fills remaining space) ──── */}
-        <GradientBorderTextField
+        <SearchField
           name="keyword"
+          // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
+          aria-label={getPlaceholder()}
           value={searchValue}
-          variant="outlined"
-          size="small"
           fullWidth
           placeholder={getPlaceholder()}
-          onChange={(event) => {
-            const { value } = event.target;
-            setSearchValue(value);
-          }}
+          onChange={(event) => handleValueChange(event.target.value)}
           onKeyDown={handleKeyDown}
-          isActive={isNLQActivated}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <Search
-                  fontSize="small"
-                  sx={{
-                    color: isNLQActivated ? theme.palette.ai.main : 'inherit',
-                    mr: 0.5,
-                  }}
-                />
-              ),
-              endAdornment: isNLQActivated && isNLQLoading ? (
-                <InputAdornment position="end">
-                  <Loader variant="inline" />
-                </InputAdornment>
-              ) : null,
-              classes: {
-                root: classRoot,
-                input: classInput,
-              },
-            },
-          }}
+          onClear={() => handleValueChange('')}
           {...otherProps}
           autoComplete="off"
+          label={t_i18n('Search')}
         />
+        {/* FDS-WORKAROUND #20: NLQ loading indicator beside the field, SearchField exposes no busy slot — see fds-migration/LIBRARY-FEEDBACK.md #20 */}
+        {isNLQActivated && isNLQLoading && <Loader variant="inline" />}
 
         {/* ── Mode Toggles (right) ────────────────────────────────── */}
         <ToggleButtonGroup
@@ -523,56 +362,105 @@ const SearchInput = (props) => {
             </ToggleButton>
           </Tooltip>
 
-          {/* NLQ split button — icon toggles NLQ, caret opens agent selector */}
+          {/* NLQ split button — icon toggles NLQ, caret opens agent selector.
+              The icon toggle and the caret are two real, independently
+              focusable elements (a <button> cannot validly nest another),
+              but they share one background driven by React state so they
+              still read, hover, and highlight as a single button, matching
+              the rest of the segmented control (no visible outer border). */}
           {isAIEnabled && (
-            <Tooltip
-              title={(isCGUStatusPending && !isAdmin)
-                ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
-                : nlqNoAgentAvailable
-                  ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
-                  : isNLQActivated && selectedAgent
-                    ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
-                    : t_i18n('Ask AI')}
+            <span
+              onMouseEnter={() => setIsNlqSplitHovered(true)}
+              onMouseLeave={() => setIsNlqSplitHovered(false)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'stretch',
+                height: 36,
+                borderRadius: theme.shape.borderRadius,
+                backgroundColor: nlqSplitBackground,
+                // No overflow: hidden here — both zones have their own
+                // background/border-radius fully neutralized (transparent,
+                // 0), so nothing needs clipping to this wrapper's rounded
+                // corners, and clipping would also cut off each zone's
+                // focus-visible ring when tabbing through them.
+                opacity: nlqSplitDisabled ? 0.5 : 1,
+              }}
             >
-              <span>
-                <ToggleButton
-                  value={mode}
-                  selected={isNLQActivated}
-                  sx={nlqToggleButtonSx}
-                  onClick={handleNlqToggleClick}
-                  disabled={nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin)}
-                >
-                  <Stack direction="row" alignItems="center" spacing={0}>
+              <Tooltip
+                title={(isCGUStatusPending && !isAdmin)
+                  ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
+                  : nlqNoAgentAvailable
+                    ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
+                    : isNLQActivated && selectedAgent
+                      ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
+                      : t_i18n('Ask AI')}
+              >
+                <span>
+                  <ToggleButton
+                    value={mode}
+                    selected={isNLQActivated}
+                    disableRipple
+                    disableFocusRipple
+                    sx={{
+                      height: '100%',
+                      minWidth: 36,
+                      width: hasCaret ? 36 : 'auto',
+                      px: 1,
+                      border: '0 !important',
+                      borderRadius: `${theme.shape.borderRadius}px !important`,
+                      textTransform: 'none',
+                      // Neutralized to transparent (with !important, since
+                      // the app-wide MuiToggleButtonGroup theme override
+                      // would otherwise tint this zone on its own hover):
+                      // the wrapping <span> above is the single source of
+                      // truth for the background, so both this zone and the
+                      // caret tint/untint together, as one continuous button.
+                      backgroundColor: 'transparent !important',
+                      color: `${aiColor} !important`,
+                      '&.Mui-disabled': { color: `${aiColor} !important` },
+                    }}
+                    onClick={handleNlqToggleClick}
+                    disabled={nlqSplitDisabled}
+                    // Named here: the tooltip labels the wrapping <span>, not this icon-only toggle
+                    aria-label={t_i18n('Ask AI')}
+                  >
                     <FiligranIcon
                       icon={LogoXtmOneIcon}
                       size="small"
                       color="ai"
                     />
-                    {/* Caret click zone — larger hit area with visual separator */}
-                    {useXtmOne && nlqAgents.length > 0 && (
-                      <Box
-                        component="span"
-                        sx={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          ml: 0.5,
-                          pl: 0.5,
-                          borderLeft: `1px solid ${isNLQActivated ? theme.palette.ai?.main + '40' : theme.palette.divider}`,
-                          cursor: 'pointer',
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenNlqMenu(e);
-                        }}
-                      >
-                        <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
-                      </Box>
-                    )}
-                  </Stack>
-                </ToggleButton>
-              </span>
-            </Tooltip>
+                  </ToggleButton>
+                </span>
+              </Tooltip>
+              {hasCaret && (
+                <Tooltip title={t_i18n('Choose AI agent')}>
+                  {/* FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67 */}
+                  <button
+                    type="button"
+                    aria-label={t_i18n('Choose AI agent')}
+                    className="nlq-split-caret"
+                    onClick={handleOpenNlqMenu}
+                    disabled={nlqSplitDisabled}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingLeft: 4,
+                      paddingRight: 4,
+                      border: 0,
+                      borderLeft: `1px solid ${isNLQActivated ? `${aiColor}40` : theme.palette.divider}`,
+                      background: 'transparent',
+                      color: aiColor,
+                      cursor: nlqSplitDisabled ? 'default' : 'pointer',
+                      '--nlq-caret-focus-color': nlqCaretFocusRingColor,
+                      '--nlq-caret-focus-radius': `${theme.shape.borderRadius}px`,
+                    }}
+                  >
+                    <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
+                  </button>
+                </Tooltip>
+              )}
+            </span>
           )}
         </ToggleButtonGroup>
 
@@ -593,7 +481,7 @@ const SearchInput = (props) => {
           {nlqAgentsLoading && (
             <MenuItem disabled>
               <ListItemIcon>
-                <CircularProgress size={18} />
+                <Spinner size="md" label={t_i18n('Loading agents...')} />
               </ListItemIcon>
             </MenuItem>
           )}
@@ -635,7 +523,7 @@ const SearchInput = (props) => {
             </MenuItem>
           ))}
         </Menu>
-      </Stack>
+      </div>
 
       {isAdmin ? (
         <EnterpriseEditionAgreement

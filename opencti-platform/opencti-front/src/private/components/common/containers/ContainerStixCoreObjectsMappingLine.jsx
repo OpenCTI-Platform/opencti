@@ -1,13 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
+import { styled } from '@mui/material/styles';
+import { Chip } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import IconButton from '@common/button/IconButton';
@@ -22,38 +22,9 @@ import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip } from '../draft/DraftChip';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const ContainerStixCoreObjectLineComponent = (props) => {
   const {
@@ -66,8 +37,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
     contentMappingData,
     enableReferences,
   } = props;
-  const classes = useStyles();
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
@@ -98,43 +68,38 @@ const ContainerStixCoreObjectLineComponent = (props) => {
       }
     >
       <ListItemButton
-        classes={{ root: classes.item }}
+        sx={{ paddingLeft: '10px', height: 50 }}
         component={Link}
         to={`${resolveLink(node.entity_type)}/${node.id}`}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={(
             <>
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.entity_type.width }}
               >
                 <ItemEntityType entityType={node.entity_type} />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.value.width }}
               >
                 {node.representative?.main}
                 {node.draftVersion && (<DraftChip />)}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.createdBy.width }}
               >
                 {node.createdBy?.name ?? EMPTY_VALUE}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.created_at.width }}
               >
-                {fd(node.created_at)}
-              </div>
-              <div
-                className={classes.bodyItem}
+                {ftd(node.created_at)}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <ItemMarkings
@@ -142,20 +107,18 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                   markingDefinitions={node.objectMarking ?? []}
                   limit={1}
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.mapping.width }}
               >
                 <Chip
-                  classes={{ root: classes.chipInList }}
-                  label={
+                  label={String(
                     (mappedString && contentMappingCount[mappedString])
                       ? contentMappingCount[mappedString]
-                      : '0'
-                  }
+                      : '0',
+                  )}
                 />
-              </div>
+              </BodyItem>
             </>
           )}
         />
@@ -203,34 +166,31 @@ export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
 );
 
 export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { dataColumns } = props;
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       secondaryAction={(
         <IconButton
           aria-label={t_i18n('Open menu')}
-          classes={classes.itemIconDisabled}
+          keepMui={true}
           disabled={true}
-          aria-haspopup="true"
         >
           <MoreVert />
         </IconButton>
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 <Skeleton
@@ -239,7 +199,7 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
                   width="90%"
                   height={20}
                 />
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}

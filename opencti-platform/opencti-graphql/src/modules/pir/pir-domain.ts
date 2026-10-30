@@ -66,7 +66,7 @@ import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { READ_INDEX_HISTORY } from '../../database/utils';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
 import { elPaginate, type PaginateOpts } from '../../database/engine';
-import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
+import { registerConnectorQueues, unregisterConnector } from '../connector/connector-rabbitmq';
 import { lockResources } from '../../lock/master-lock';
 import type { LogConnection } from '../../types/log';
 

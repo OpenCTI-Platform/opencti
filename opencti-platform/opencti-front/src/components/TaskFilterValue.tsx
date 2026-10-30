@@ -1,31 +1,32 @@
 import * as R from 'ramda';
 import React from 'react';
-import Tooltip from '@mui/material/Tooltip';
+import { Chip } from '@filigran/design-system';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
-import Box from '@mui/material/Box';
-import FilterValuesContent, { filterValuesContentQuery } from './FilterValuesContent';
+import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import { useFormatter } from './i18n';
-import { convertOperatorToIcon, filterOperatorsWithIcon, useFilterDefinition } from '../utils/filters/filtersUtils';
-import { truncate } from '../utils/String';
-import type { Theme } from './Theme';
-import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
+import { entityTypesFilters, filterOperatorsWithIcon, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { displayEntityTypeForTranslation, truncate } from '../utils/String';
+import FilterGroupSummaryButton from './filters/FilterGroupSummaryButton';
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
+import { useOptionalDashboardVariableDefinitions } from './dashboard/DashboardVariablesContext';
+import { getVariableTokenLabel } from './dashboard/dashboardVariableTokenLabel';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  filter: {
-    margin: '5px 10px 5px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '5px 10px 5px 0',
-  },
-}));
+/**
+ * The task detail was the last screen mixing shapes: a MUI pill here next to the library Chip
+ * everywhere else on the same block.
+ */
+const CHIP_STYLE = { margin: '5px 10px 5px 0' };
+
+// Text twin of `convertOperatorToIcon`, which returns JSX and cannot go in a label.
+const OPERATOR_SYMBOL: Record<string, string> = {
+  lt: '<',
+  lte: '≤',
+  gt: '>',
+  gte: '≥',
+  eq: '=',
+  not_eq: '≠',
+};
 
 const TaskFilterValue = ({
   filters,
@@ -37,110 +38,81 @@ const TaskFilterValue = ({
   entityTypes?: string[];
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  // In a dashboard (dynamic filter tooltip of a widget filter), a variable token is shown under the variable name.
+  const variables = useOptionalDashboardVariableDefinitions();
   const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
     filterValuesContentQuery,
     queryRef,
   );
   const filtersRepresentativesMap = new Map(
-    (filtersRepresentatives ?? []).map((n) => [n?.id, n]),
+    (filtersRepresentatives ?? []).map((n) => [n?.representativeId, n]),
   );
   const globalFilterMode = t_i18n(filters.mode.toUpperCase());
   return (
     <>
       {(filters.filters ?? []).map((currentFilter) => {
+        const filterDefinition = useFilterDefinition(currentFilter.key, entityTypes);
         const label = truncate(
-          t_i18n(
-            useFilterDefinition(currentFilter.key, entityTypes)?.label ?? currentFilter.key,
-          ),
+          t_i18n(filterDefinition?.label ?? currentFilter.key),
           20,
         );
-        const isOperatorDisplayed = filterOperatorsWithIcon.includes(currentFilter.operator ?? 'eq');
+        // `filterValue` is a hook, so it cannot run per value here; these are the
+        // branches of it that this screen actually hits.
+        const formatValue = (raw: string) => {
+          if (entityTypesFilters.includes(currentFilter.key)) {
+            return raw === 'all' ? t_i18n('entity_All') : t_i18n(displayEntityTypeForTranslation(raw));
+          }
+          if (filterDefinition?.type === 'enum' || filterDefinition?.type === 'boolean') {
+            return t_i18n(raw);
+          }
+          if (currentFilter.key === 'relationship_type' || currentFilter.key === 'type') {
+            return t_i18n(`relationship_${raw}`);
+          }
+          return raw;
+        };
+        const operator = currentFilter.operator ?? 'eq';
+        const isOperatorDisplayed = filterOperatorsWithIcon.includes(operator);
         if (currentFilter.key === 'regardingOf') {
           const sortedFilterValues = [...currentFilter.values].sort((a, b) => -a.key.localeCompare(b.key)); // display type first, then id
+          // The nested group used to live inside this chip's label; it renders as
+          // a sibling now, so every chip on the row keeps the same box.
           return (
             <span key={currentFilter.key}>
-              <Chip
-                classes={{ root: classes.filter }}
-                label={(
-                  <div>
-                    <strong>{label}</strong>:{' '}
-                    <TaskFilterValue filters={{ mode: 'and', filters: sortedFilterValues, filterGroups: [] }} queryRef={queryRef} />
-                  </div>
-                )}
-              />
+              <Chip label={`${label}:`} style={CHIP_STYLE} />
+              <TaskFilterValue filters={{ mode: 'and', filters: sortedFilterValues, filterGroups: [] }} queryRef={queryRef} />
             </span>
           );
         }
+        const values = currentFilter.values.map(
+          (o) => getVariableTokenLabel(o, variables, t_i18n)?.label ?? formatValue(`${filtersRepresentativesMap.get(o)?.value ?? o}`),
+        );
+        const localFilterMode = t_i18n((currentFilter.mode ?? 'or').toUpperCase());
+        const joined = truncate(values.join(` ${localFilterMode} `), 40);
+        const head = isOperatorDisplayed
+          ? `${label} ${OPERATOR_SYMBOL[operator] ?? ''}`.trim()
+          : `${label} ${t_i18n(operator)}`.trim();
         return (
           <span key={currentFilter.key}>
             <Chip
-              classes={{ root: classes.filter }}
-              label={(
-                <div>
-                  <strong>{label}</strong>
-                  {!isOperatorDisplayed && (
-                    <Box
-                      component="span"
-                      sx={{ padding: '0 4px', fontWeight: 'normal' }}
-                    >
-                      {t_i18n(currentFilter.operator)}
-                    </Box>
-                  )}
-                  {isOperatorDisplayed
-                    ? convertOperatorToIcon(currentFilter.operator ?? 'eq')
-                    : currentFilter.values.length > 0 && ': '}
-                  {currentFilter.values.map((o) => {
-                    const localFilterMode = t_i18n(
-                      (currentFilter.mode ?? 'or').toUpperCase(),
-                    );
-                    return (
-                      <Tooltip
-                        key={o}
-                        title={(
-                          <FilterValuesContent
-                            filterKey={currentFilter.key}
-                            id={o}
-                            value={filtersRepresentativesMap.get(o)?.value ?? o}
-                            isFilterTooltip={true}
-                            filterOperator={currentFilter.operator}
-                          />
-                        )}
-                      >
-                        <span key={o}>
-                          <FilterValuesContent
-                            filterKey={currentFilter.key}
-                            id={o}
-                            value={filtersRepresentativesMap.get(o)?.value ?? o}
-                            filterOperator={currentFilter.operator}
-                          />
-                          {R.last(currentFilter.values) !== o && (
-                            <code>{localFilterMode}</code>
-                          )}{' '}
-                        </span>
-                      </Tooltip>
-                    );
-                  })
-                  }
-                </div>
-              )}
+              label={values.length > 0 ? `${head} ${joined}` : head}
+              style={CHIP_STYLE}
             />
             {R.last(filters.filters)?.key !== currentFilter.key && (
-              <Chip
-                classes={{ root: classes.operator }}
-                label={globalFilterMode}
-              />
+              <Chip label={globalFilterMode} style={CHIP_STYLE} />
             )}
           </span>
         );
       })}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && (
-        <ImbricatedFilterGroupDisplay
+        <FilterGroupSummaryButton
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
-          filterMode={filters.mode}
-          filterStyle={{ margin: '5px 10px 5px 0' }}
+          showOnlyFilterGroups
+          filterStyle={CHIP_STYLE}
+          buttonLabel={t_i18n('Filters are not fully displayed')}
+          dialogTitle={t_i18n('Imbricated filter groups')}
+          dialogDescription={t_i18n('This filter group contains nested filter groups. The full content is displayed below for reference. It can be edited directly from the filters line on the entity page.')}
         />
       )}
     </>

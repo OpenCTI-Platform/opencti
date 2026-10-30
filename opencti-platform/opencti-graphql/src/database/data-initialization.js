@@ -12,12 +12,12 @@ import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
-import { TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../modules/user/user-domain';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import conf, { logApp } from '../config/conf';
+import conf, { CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
@@ -468,6 +468,8 @@ export const initializeData = async (context, withMarkings = true) => {
     platform_email: 'admin@opencti.io',
     platform_theme: darkTheme.id,
     platform_language: 'auto',
+    // Only a new platform goes through here: the wizard opens at the first login
+    ...(isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG) ? { platform_bootstrap_status: 'pending' } : {}),
     view_all_users: false,
     local_auth: { enabled: true },
     cert_auth: {

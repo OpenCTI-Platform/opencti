@@ -20,7 +20,12 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
   return (
     <>
       {canEdit && (
-        <Stack direction="row" justifyContent="flex-end">
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'flex-end',
+          }}
+        >
           <DraftEdition draftId={draft.id} overviewData={draft} />
         </Stack>
       )}
@@ -35,13 +40,13 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
               switch (key) {
                 case 'details':
                   return (
-                    <Grid key={key} item xs={width}>
+                    <Grid key={key} size={width}>
                       <DraftDetails draft={draft} />
                     </Grid>
                   );
                 case 'basicInformation':
                   return (
-                    <Grid key={key} item xs={width}>
+                    <Grid key={key} size={width}>
                       <DraftBasicInformation draft={draft} />
                     </Grid>
                   );

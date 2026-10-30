@@ -17,8 +17,10 @@ import StatusField from '../../common/form/StatusField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 const individualMutationFieldPatch = graphql`
   mutation IndividualEditionOverviewFieldPatchMutation(
@@ -196,7 +198,7 @@ const IndividualEditionOverviewComponent = (props) => {
           <AlertConfidenceForEntity entity={individual} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             disabled={external}
             label={t_i18n('Name')}
@@ -233,15 +235,12 @@ const IndividualEditionOverviewComponent = (props) => {
             variant="edit"
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="contact_information"
             label={t_i18n('Contact information')}
             required={(mandatoryAttributes.includes('contact_information'))}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -294,6 +293,13 @@ const IndividualEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={individual.entity_type}
+            entityId={individual.id}
+            values={individual.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -314,6 +320,7 @@ export default createFragmentContainer(IndividualEditionOverviewComponent, {
   individual: graphql`
       fragment IndividualEditionOverview_individual on Individual {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         name
         description
         contact_information

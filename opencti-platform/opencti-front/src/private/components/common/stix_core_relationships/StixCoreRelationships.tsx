@@ -2,7 +2,7 @@ import React, { FunctionComponent, ReactElement } from 'react';
 import { AutoFix } from 'mdi-material-ui';
 import { graphql } from 'react-relay';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPaginationQuery$variables } from './__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$data } from './__generated__/StixCoreRelationshipsLines_data.graphql';
@@ -364,7 +364,9 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
 
   return (
     <>
-      <div style={{ marginTop: -12 }}>
+      {/* No offset: TabsList already sets the 24px below the tab bar, and this
+          pulled the table back up to 12. */}
+      <div>
         {queryRef && (
           <DataTable
             variant={DataTableVariant.inline}

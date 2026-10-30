@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
@@ -7,7 +7,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { graphql } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import MyOrganizationField from '@components/common/form/MyOrganizationField';
 import * as Yup from 'yup';
 import { useFormatter } from './i18n';
@@ -19,6 +19,7 @@ import { handleErrorInForm } from '../relay/environment';
 import useAuth from '../utils/hooks/useAuth';
 import { FieldOption, fieldSpacingContainerStyle } from '../utils/field';
 import type { Theme } from './Theme';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../utils/fdsLayer';
 
 const requestAccessDialogMutation = graphql`
   mutation RequestAccessDialogMutation($input: RequestAccessAddInput!) {
@@ -52,6 +53,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { me } = useAuth();
+  const reasonInputRef = useRef<HTMLInputElement | null>(null);
   const meResolvedId = me.id;
   let initialOrganization: FieldOption = { value: '', label: '' };
   if (me?.objectOrganization && me?.objectOrganization?.edges?.length > 0) {
@@ -98,7 +100,16 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
       <Dialog
         open={open}
         slotProps={{
-          paper: { variant: 'elevation', elevation: 1 },
+          // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+          paper: {
+            variant: 'elevation',
+            elevation: 1,
+            className: fdsLayerClass(SURFACE_LAYER),
+            sx: { ...layerInputVars },
+          },
+          // MUI's transition mounts asynchronously; focusing on mount would
+          // race the DOM insertion, so wait for it to fully enter instead.
+          transition: { onEntered: () => reasonInputRef.current?.focus() },
         }}
         keepMounted={true}
         fullWidth={true}
@@ -120,11 +131,14 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                       {t_i18n('Your organization does not have permission...')}
                     </DialogContentText>
                     <Field
+                      innerRef={(node: HTMLInputElement | null) => {
+                        reasonInputRef.current = node;
+                      }}
                       component={TextField}
                       name="request_access_reason"
                       label={t_i18n('Enter justification for requesting access to this knowledge')}
                       fullWidth={true}
-                      variant="standard"
+                      variant="outlined"
                       style={fieldSpacingContainerStyle}
                       askAi={false}
                       multiline={true}

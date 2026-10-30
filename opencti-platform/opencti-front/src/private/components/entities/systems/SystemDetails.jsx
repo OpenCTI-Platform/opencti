@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -17,13 +18,13 @@ class SystemDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Description')}
               </Label>
               <ExpandableMarkdown source={system.description} limit={400} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Reliability')}
               </Label>
@@ -41,6 +42,7 @@ class SystemDetailsComponent extends Component {
                 commonmark={true}
               />
             </Grid>
+            <CustomFieldValuesDisplay entityType={system.entity_type} values={system.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -58,6 +60,10 @@ const SystemDetails = createFragmentContainer(SystemDetailsComponent, {
   system: graphql`
     fragment SystemDetails_system on System {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       contact_information
       description
       x_opencti_reliability

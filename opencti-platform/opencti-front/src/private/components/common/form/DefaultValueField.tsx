@@ -1,5 +1,5 @@
 import { Field } from 'formik';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import KillChainPhasesField from '@components/common/form/KillChainPhasesField';
 import CreatedByField from '@components/common/form/CreatedByField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
@@ -156,7 +156,7 @@ const DefaultValueField = ({
         textFieldProps={{
           textField: {
             label,
-            variant: 'standard',
+            variant: 'outlined',
             fullWidth: true,
             style: { marginTop: 20 },
           },
@@ -184,11 +184,11 @@ const DefaultValueField = ({
       <Field
         component={TextField}
         type="number"
-        variant="standard"
+        variant="outlined"
         name={name}
         label={label}
         fullWidth={true}
-        style={{ marginTop: 20 }}
+        className="mt-5"
         disabled={disabled}
       />
     );
@@ -228,11 +228,11 @@ const DefaultValueField = ({
   return (
     <Field
       component={TextField}
-      variant="standard"
+      variant="outlined"
       name={name}
       label={label}
       fullWidth={true}
-      style={{ marginTop: 20 }}
+      className="mt-5"
       disabled={disabled}
     />
   );

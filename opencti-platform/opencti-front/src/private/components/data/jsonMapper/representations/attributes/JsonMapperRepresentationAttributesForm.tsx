@@ -8,8 +8,8 @@ import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/re
 import {
   JsonMapperRepresentationAttributesForm_allSchemaAttributes$key,
 } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
-import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
+import Box from '@mui/material/Box';
+import { styled, useTheme } from '@mui/material/styles';
 import { useJsonMappersData } from '../../jsonMappers.data';
 import { useFormatter } from '../../../../../../components/i18n';
 import TextField from '../../../../../../components/TextField';
@@ -61,30 +61,22 @@ interface JsonMapperRepresentationAttributesFormProps {
   representationName: string;
 }
 
+const Container = styled('div')({
+  width: '100%',
+  display: 'inline-grid',
+  gridTemplateColumns: '2fr 3fr 50px',
+  alignItems: 'center',
+  padding: 10,
+  marginTop: 20,
+  marginBottom: 10,
+  gap: '10px',
+});
+
 const JsonMapperRepresentationAttributesForm: FunctionComponent<
   JsonMapperRepresentationAttributesFormProps
 > = ({ handleErrors, representation, representationType, representationName }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  // Deprecated - https://mui.com/system/styles/basics/
-  // Do not use it for new code.
-  const useStyles = makeStyles(() => ({
-    container: {
-      width: '100%',
-      display: 'inline-grid',
-      gridTemplateColumns: '2fr 3fr 50px',
-      alignItems: 'center',
-      padding: 10,
-      marginTop: 20,
-      marginBottom: 10,
-      gap: '10px',
-    },
-    redStar: {
-      color: theme.palette.designSystem.tertiary.red[400],
-      marginLeft: '5px',
-    },
-  }));
-  const classes = useStyles();
   const { schemaAttributes } = useJsonMappersData();
   const data = useFragment<JsonMapperRepresentationAttributesForm_allSchemaAttributes$key>(
     JsonMapperRepresentationAttributesFormFragment,
@@ -122,9 +114,9 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
   return (
     <>
       {mutableSchemaAttributes.length > 0 && (
-        <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}` }}>
+        <Container style={{ border: `1px solid ${theme.palette.divider}` }}>
           <div>
-            Entity path mapping <span className={classes.redStar}>*</span>
+            Entity path mapping <Box component="span" sx={{ color: theme.palette.designSystem.tertiary.red[400], marginLeft: '5px' }}>*</Box>
           </div>
           <div>
             <Field
@@ -132,7 +124,7 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
               label={t_i18n('JSON Path')}
               required={true}
               name={`${representationName}.target.path`}
-              variant="standard"
+              variant="outlined"
               style={{ width: '100%' }}
               onChange={(_event: React.SyntheticEvent, newValue: string) => {
                 handleErrors('target.path', isEmptyField(newValue) ? 'This field is required' : null);
@@ -150,13 +142,13 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
                   component={TextField}
                   label={t_i18n('JSON Path')}
                   name={`${representationName}.identifier`}
-                  variant="standard"
+                  variant="outlined"
                   style={{ width: '100%' }}
                 />
               </div>
             </>
           )}
-        </div>
+        </Container>
       )}
       {[...mutableSchemaAttributes]
         .sort((a1, a2) => Number(a2.mandatory) - Number(a1.mandatory))

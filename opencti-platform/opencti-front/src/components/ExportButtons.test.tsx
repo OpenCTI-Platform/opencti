@@ -15,6 +15,7 @@ vi.mock('../utils/Image', () => ({
 // Mock MESSAGING$ so we can assert error notifications
 // Use a Proxy for environment so any method call (retain, check, etc.) is auto-mocked
 vi.mock('../relay/environment', () => ({
+  APP_BASE_PATH: '',
   MESSAGING$: { notifyError: vi.fn() },
   environment: new Proxy({}, {
     get: () => vi.fn(() => ({ dispose: vi.fn() })),
@@ -29,7 +30,7 @@ vi.mock('../utils/ExportThemeContext', () => ({
 
 const mockThemeNode = {
   id: 'theme-1',
-  name: 'Dark',
+  name: 'Filigran Dark',
   theme_background: '#000000',
 };
 

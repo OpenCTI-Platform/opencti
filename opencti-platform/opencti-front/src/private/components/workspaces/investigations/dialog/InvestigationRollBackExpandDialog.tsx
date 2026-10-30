@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useFormatter } from '../../../../../components/i18n';
 import { useInvestigationState } from '../utils/useInvestigationState';
 

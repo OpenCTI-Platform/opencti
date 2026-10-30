@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as cacheModule from '../../../../src/database/cache';
 import {
   getCustomFieldDefinitionByLabel,
-  getCustomFieldDefinitionByName,
+  getCustomFieldDefinitionByNameOrAlias,
   getCustomFieldDefinitions,
   getCustomFieldDefinitionsForEntityType,
   getCustomFieldSettingForEntityType,
@@ -76,6 +76,40 @@ describe('custom-field-cache', () => {
     });
   });
 
+  describe('stix core relationships inheritance', () => {
+    it('returns the definitions attached to stix-core-relationship for a relationship type', async () => {
+      seed(
+        makeDefinition({ name: 'x_opencti_cf_rel', entity_types: ['stix-core-relationship'] }),
+        makeDefinition({ name: 'x_opencti_cf_targets', entity_types: ['targets'] }),
+        makeDefinition({ name: 'x_opencti_cf_sighting', entity_types: ['stix-sighting-relationship'] }),
+      );
+      const result = await getCustomFieldDefinitionsForEntityType(CONTEXT, USER, 'targets');
+      expect(result.map((def) => def.name)).toEqual(['x_opencti_cf_rel', 'x_opencti_cf_targets']);
+    });
+
+    it('does not apply the relationship inheritance to sightings or entities', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_rel', entity_types: ['stix-core-relationship'] }));
+      expect(await getCustomFieldDefinitionsForEntityType(CONTEXT, USER, 'stix-sighting-relationship')).toEqual([]);
+      expect(await getCustomFieldDefinitionsForEntityType(CONTEXT, USER, 'Case-Incident')).toEqual([]);
+    });
+
+    it('returns the setting of stix-core-relationship for a relationship type, unless the type has its own', () => {
+      const def = makeDefinition({
+        entity_types: ['stix-core-relationship'],
+        entity_type_settings: [{ entity_type: 'stix-core-relationship', mandatory: true, default_value: 'x' }],
+      });
+      expect(getCustomFieldSettingForEntityType(def, 'targets')).toEqual({ entity_type: 'stix-core-relationship', mandatory: true, default_value: 'x' });
+      const defWithOwnSetting = makeDefinition({
+        entity_types: ['stix-core-relationship', 'targets'],
+        entity_type_settings: [
+          { entity_type: 'stix-core-relationship', mandatory: true },
+          { entity_type: 'targets', mandatory: false },
+        ],
+      });
+      expect(getCustomFieldSettingForEntityType(defWithOwnSetting, 'targets')).toEqual({ entity_type: 'targets', mandatory: false });
+    });
+  });
+
   describe('getCustomFieldSettingForEntityType', () => {
     it('returns the setting matching the entity type', () => {
       const def = makeDefinition({
@@ -102,12 +136,12 @@ describe('custom-field-cache', () => {
     it('finds a definition by its technical name', async () => {
       const def = makeDefinition({ name: 'x_opencti_cf_score' });
       seed(def);
-      expect(await getCustomFieldDefinitionByName(CONTEXT, USER, 'x_opencti_cf_score')).toEqual(def);
+      expect(await getCustomFieldDefinitionByNameOrAlias(CONTEXT, USER, 'x_opencti_cf_score')).toEqual(def);
     });
 
     it('returns undefined when no definition matches the name', async () => {
       seed(makeDefinition({ name: 'x_opencti_cf_score' }));
-      expect(await getCustomFieldDefinitionByName(CONTEXT, USER, 'x_opencti_cf_unknown')).toBeUndefined();
+      expect(await getCustomFieldDefinitionByNameOrAlias(CONTEXT, USER, 'x_opencti_cf_unknown')).toBeUndefined();
     });
   });
 

@@ -31,8 +31,8 @@ export const csvMapperMockSimpleEntityWithRef: Partial<CsvMapperParsed> = {
           based_on: {
             representations: ['representation03'],
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'representation02',
@@ -46,8 +46,8 @@ export const csvMapperMockSimpleEntityWithRef: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'A',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'representation03',
@@ -67,8 +67,8 @@ export const csvMapperMockSimpleEntityWithRef: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'D',
           },
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
 };

@@ -1,7 +1,7 @@
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import { DeleteOutline } from '@mui/icons-material';
+import { DeleteOutlined } from '@mui/icons-material';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import IconButton from '@common/button/IconButton';
 import { ObjectSchema } from 'yup';
@@ -9,17 +9,6 @@ import TextField from '../../../../../components/TextField';
 import ColorPickerField from '../../../../../components/ColorPickerField';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Tick, UndefinedTick } from './scale';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  button: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    alignItems: 'end',
-    height: '100%',
-  },
-}));
 
 interface EntitySettingScaleTickLineProps {
   tick: Tick | UndefinedTick;
@@ -42,7 +31,6 @@ const ScaleConfigurationLine: FunctionComponent<
   handleDelete,
   noMargin,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   return (
@@ -54,33 +42,33 @@ const ScaleConfigurationLine: FunctionComponent<
     >
       {({ validateForm }) => {
         return (
-          <Form style={{ marginTop: noMargin ? 0 : 15 }}>
+          <Form style={{ marginTop: noMargin ? -24 : 15 }}>
             <Grid container spacing={3} columns={13}>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={4}>
                 <Field
                   component={TextField}
                   type="number"
-                  variant="standard"
+                  variant="outlined"
                   name="value"
                   label={tickLabel}
                   fullWidth={true}
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value !== '' ? Number.parseInt(value, 10) : '')}
                 />
               </Grid>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={4}>
                 <Field
                   component={ColorPickerField}
-                  variant="standard"
+                  variant="outlined"
                   name="color"
                   label={t_i18n('Color')}
                   fullWidth={true}
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
                 />
               </Grid>
-              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
+              <Grid size={4}>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="label"
                   label={t_i18n('Label')}
                   fullWidth={true}
@@ -88,14 +76,21 @@ const ScaleConfigurationLine: FunctionComponent<
                 />
               </Grid>
               {deleteEnabled && (
-                <Grid item xs={1} style={{ paddingTop: noMargin ? 0 : 24 }}>
-                  <div className={classes.button}>
+                <Grid size={1}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      alignItems: 'end',
+                      height: '100%',
+                    }}
+                  >
                     {handleDelete && (
                       <IconButton aria-label={t_i18n('Delete')} onClick={() => handleDelete()}>
-                        <DeleteOutline fontSize="small" style={{ color: '#00b1ff' }} />
+                        <DeleteOutlined fontSize="small" style={{ color: '#00b1ff' }} />
                       </IconButton>
                     )}
-                  </div>
+                  </Box>
                 </Grid>
               )}
             </Grid>

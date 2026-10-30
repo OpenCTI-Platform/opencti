@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import FormEdition from './FormEdition';
 import { FormEditionContainerQuery } from './__generated__/FormEditionContainerQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -35,7 +35,6 @@ const FormEditionContainer: FunctionComponent<FormEditionContainerProps> = ({
   return (
     <Drawer
       title={t_i18n('Update a form')}
-      variant={open == null ? DrawerVariant.update : undefined}
       onClose={handleClose}
       open={open}
     >

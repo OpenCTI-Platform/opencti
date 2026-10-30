@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { FunctionalError } from '../config/errors';
+import { DOC_INCORRECT_OBSERVABLE_FORMAT, FUNCTIONAL_ERROR, FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import {
@@ -35,7 +35,6 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, buildRefRelationKey, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixRefRelationship';
 import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { checkScore, now, observableValue } from '../utils/format';
@@ -45,6 +44,8 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage';
 import { isNumericAttribute } from '../schema/schema-attributes';
+import { paginatedForExportContext } from '../modules/internal/document/document-domain';
+import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -241,7 +242,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(type, observableInput);
   if (observableSyntaxResult !== true) {
-    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput, doc_code: 'INCORRECT_OBSERVABLE_FORMAT' });
+    throw FunctionalError('Observable is not correctly formatted', { type, input: observableInput, doc_code: DOC_INCORRECT_OBSERVABLE_FORMAT });
   }
   // If everything ok, create adapt/create the observable
   const created = await createEntity(context, user, observableInput, type);
@@ -257,8 +258,7 @@ export const addStixCyberObservable = async (context, user, input) => {
 };
 
 export const stixCyberObservableDelete = async (context, user, stixCyberObservableId) => {
-  const sco = await findById(context, user, stixCyberObservableId);
-  await deleteElementById(context, user, stixCyberObservableId, sco.entity_type);
+  await deleteElementById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   return stixCyberObservableId;
 };
 
@@ -273,6 +273,9 @@ export const stixCyberObservableDeleteRelation = async (context, user, stixCyber
 
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  if (!originalStixCyberObservable) {
+    throw ResourceNotFoundError('Cannot edit the field, Stix-Cyber-Observable cannot be found.', { stixCyberObservableId });
+  }
   const scoreInput = input.find((i) => i.key === 'x_opencti_score');
   const urlInput = input.find((i) => i.key === 'url');
   const payloadBinInput = input.find((i) => i.key === 'payload_bin');
@@ -346,6 +349,10 @@ export const stixCyberObservableEditContext = async (context, user, stixCyberObs
 // endregion
 
 // region export
+export const stixCyberObservablesExportFiles = async (context, user, exportContext, { first }) => {
+  return paginatedForExportContext(context, user, exportContext, { first });
+};
+
 export const stixCyberObservablesExportAsk = async (context, user, args) => {
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters, types } = args;
@@ -385,11 +392,26 @@ const checksumFile = async (hashName, stream) => {
   });
 };
 
-const extractInfectedZipFile = async (file) => {
+export const ARTIFACT_ZIP_MAX_EXTRACTED_SIZE = nconf.get('app:artifact_zip_max_extracted_size') ?? 104857600; // 100MB
+
+export const extractInfectedZipFile = async (file) => {
   const buffer = await streamToBuffer(file.createReadStream());
   const directory = await unzipper.Open.buffer(buffer);
   const newFile = directory.files[0];
-  const extracted = await newFile.buffer(nconf.get('app:artifact_zip_password'));
+  if (newFile.uncompressedSize > ARTIFACT_ZIP_MAX_EXTRACTED_SIZE) {
+    throw FunctionalError('Artifact archive content is too large to be extracted');
+  }
+  // Declared size can be wrong, count the real extracted bytes
+  const chunks = [];
+  let extractedSize = 0;
+  for await (const chunk of newFile.stream(nconf.get('app:artifact_zip_password'))) {
+    extractedSize += chunk.length;
+    if (extractedSize > ARTIFACT_ZIP_MAX_EXTRACTED_SIZE) {
+      throw FunctionalError('Artifact archive content is too large to be extracted');
+    }
+    chunks.push(chunk);
+  }
+  const extracted = Buffer.concat(chunks);
   const mimetype = await fileTypeFromBuffer(extracted);
   return { createReadStream: () => Readable.from(extracted), filename: newFile.path, mimetype: mimetype.mime };
 };
@@ -416,8 +438,11 @@ export const artifactImport = async (context, user, args) => {
   if (!isOfficeMimeType && !isOfficeXmlExtension) {
     try {
       resolvedFile = await extractInfectedZipFile(resolvedFile);
-    } catch {
-      // do nothing
+    } catch (err) {
+      // Not an archive is the usual case, only trace rejected archives
+      if (err?.extensions?.code === FUNCTIONAL_ERROR) {
+        logApp.warn('[ARTIFACT] Archive not extracted, file imported as is', { cause: err, filename: resolvedFile.filename });
+      }
     }
   }
 

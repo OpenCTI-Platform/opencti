@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -146,6 +149,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
     const allNames = splitMultilines(values.name);
     const variables: ThreatActorGroupCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -189,6 +193,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
 
   return (
     <Formik<ThreatActorGroupAddInput>
+      entityType={THREAT_ACTOR_GROUP_TYPE}
       initialValues={initialValues}
       validationSchema={threatActorGroupValidator}
       validateOnChange={true}
@@ -267,13 +272,13 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="x_opencti_score"
               required={(mandatoryAttributes.includes('x_opencti_score'))}
               label={t_i18n('Score')}
               fullWidth={true}
               type="number"
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <CreatedByField
               name="createdBy"
@@ -311,6 +316,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

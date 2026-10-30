@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Stack, Tooltip } from '@mui/material';
 import { InformationOutline } from 'mdi-material-ui';
 import { filterValue, SELF_ID_VALUE } from '../utils/filters/filtersUtils';
@@ -13,7 +13,7 @@ import type { WidgetHost } from '../utils/widget/widget';
 export const filterValuesContentQuery = graphql`
     query FilterValuesContentQuery($filters: FilterGroup!, $isMeValueForbidden: Boolean) {
         filtersRepresentatives(filters: $filters, isMeValueForbidden: $isMeValueForbidden) {
-            id
+            representativeId: id
             value
             entity_type
             color
@@ -42,6 +42,9 @@ const FilterValuesContent: FunctionComponent<
   const rawValue = isFilterTooltip
     ? filterValue(filterKey, value, filterType, filterOperator)
     : truncate(filterValue(filterKey, value, filterType, filterOperator), 20);
+  const wrapStyle: React.CSSProperties | undefined = isFilterTooltip
+    ? { whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }
+    : undefined;
 
   if (rawValue === null) {
     return (
@@ -60,10 +63,12 @@ const FilterValuesContent: FunctionComponent<
     return (
       <Stack
         direction="row"
-        alignItems="center"
-        gap={0.5}
+        sx={{
+          alignItems: 'center',
+          gap: 0.5,
+        }}
       >
-        <span>{rawValue}</span>
+        <span style={wrapStyle}>{rawValue}</span>
         {tooltipMessage && (
           <Tooltip title={tooltipMessage}>
             <InformationOutline color="primary" fontSize="small" />
@@ -81,11 +86,11 @@ const FilterValuesContent: FunctionComponent<
   if (redirection && isRedirectableFilter) {
     return (
       <Link to={`/dashboard/id/${id}`}>
-        <span color="primary">{displayedValue}</span>
+        <span color="primary" style={wrapStyle}>{displayedValue}</span>
       </Link>
     );
   }
-  return <span>{displayedValue}</span>;
+  return <span style={wrapStyle}>{displayedValue}</span>;
 };
 
 export default FilterValuesContent;

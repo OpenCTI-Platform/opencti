@@ -1,26 +1,10 @@
-# syntax=docker/dockerfile:1.26
-FROM filigran/python-nodejs-fips:latest AS base
-FROM node:22-alpine3.23 AS base-nonfips
+# syntax=docker/dockerfile:1.28
+FROM filigran/alpine-python-nodejs-fips:python3.12-nodejs24 AS base
+FROM node:24-alpine3.23 AS base-nonfips
 
 
 ##############################
-### Build builder
-##############################
-FROM base AS builder
-
-# For layer optimisation, start by installing resources not dependant from source code
-RUN <<EOT
-  set -euxo pipefail
-
-  apk --no-cache add make g++ libmagic gettext-dev
-  npm install -g corepack
-EOT
-
-COPY .yarnrc.yml /opt/opencti/
-
-
-##############################
-### Build builder (non fips, needed for building front)
+### Build builder (non fips)
 ##############################
 
 FROM base-nonfips AS builder-nonfips
@@ -29,35 +13,39 @@ FROM base-nonfips AS builder-nonfips
 RUN <<EOT
   set -euxo pipefail
 
-  apk --no-cache add make g++ python3 python3-dev libmagic
+  apk --no-cache add make g++ python3 python3-dev
   rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   python3 -m ensurepip
   npm install -g corepack
 EOT
 
-COPY .yarnrc.yml /opt/opencti/
+WORKDIR /opt/opencti
+
+COPY .yarnrc.yml package.json yarn.lock ./
+COPY patch/ ./patch/
+COPY opencti-platform/eslint-plugin-custom-rules/package.json ./opencti-platform/eslint-plugin-custom-rules/
+COPY opencti-platform/opencti-front/package.json ./opencti-platform/opencti-front/
+COPY opencti-platform/opencti-graphql/package.json ./opencti-platform/opencti-graphql/
+
+ENV YARN_ENABLE_IMMUTABLE_INSTALLS="true"
 
 
 ##############################
 ### Build back
 ##############################
 
-FROM builder AS builder-back
+FROM builder-nonfips AS builder-back
 
 # TAG_VERSION used to generate connector manifest on a tag during yarn build. Default to rolling manifest
 ARG TAG_VERSION
 ENV TAG_VERSION="${TAG_VERSION}"
 
-WORKDIR /opt/opencti/opencti-graphql
+RUN yarn workspaces focus opencti-graphql
 
-# Copy sources necessary for install (preserve cache if no dependency changes)
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-COPY opencti-graphql/patch/ ./patch/
-
-RUN yarn install --immutable
+WORKDIR /opt/opencti/opencti-platform/opencti-graphql
 
 # Copy all remaining sources
-COPY opencti-graphql/ ./
+COPY opencti-platform/opencti-graphql/ ./
 RUN yarn build:prod
 
 ##############################
@@ -65,17 +53,12 @@ RUN yarn build:prod
 ##############################
 
 FROM builder-nonfips AS builder-front
-WORKDIR /opt/opencti/opencti-front
+RUN yarn workspaces focus opencti-front
 
-# Copy sources necessary for install (preserve cache if no dependency changes)
-COPY opencti-front/package.json opencti-front/yarn.lock ./
-COPY opencti-front/packages/ ./packages/
-COPY opencti-front/patch/ ./patch/
-
-RUN yarn install --immutable
+WORKDIR /opt/opencti/opencti-platform/opencti-front
 
 # Copy all remaining sources and build
-COPY opencti-front/ ./
+COPY opencti-platform/opencti-front/ ./
 RUN yarn build
 
 ##############################
@@ -87,11 +70,12 @@ FROM base AS app
 RUN <<EOT
   set -euxo pipefail
 
-  apk --no-cache add tini libmagic
+  apk --no-cache add tini python3-dev
+  rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   rm /var/log/apk.log
 EOT
 
-RUN --mount=type=bind,source=opencti-graphql/src/python/requirements.txt,target=/opt/opencti/src/python/requirements.txt <<EOT
+RUN --mount=type=bind,source=opencti-platform/opencti-graphql/src/python/requirements.txt,target=/opt/opencti/src/python/requirements.txt <<EOT
   set -euxo pipefail
 
   apk --no-cache add -t .pip_deps git
@@ -102,10 +86,11 @@ EOT
 
 WORKDIR /opt/opencti
 
-COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
-COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
-COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
-COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
+COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/build/ ./build/
+COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/config/ ./config/
+COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/src/python/runtime/ ./src/python/runtime/
+COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/static/ ./static/
+COPY --from=builder-front /opt/opencti/opencti-platform/opencti-front/dist/ ./public/
 
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"

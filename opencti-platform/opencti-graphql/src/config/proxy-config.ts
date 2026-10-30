@@ -192,10 +192,10 @@ export const getProxyConfigurationForContract = (
   return config;
 };
 
-export const injectProxyConfiguration = (
-  existingConfig: Array<{ key: string; value: string }>,
+export const injectProxyConfiguration = <T extends { key: string }>(
+  existingConfig: Array<T>,
   configAdapter: ConfigAdapter = defaultConfigAdapter,
-): Array<{ key: string; value: string }> => {
+): Array<T | { key: string; value: string }> => {
   const proxyConfig = getProxyConfigurationForContract(configAdapter);
   const filteredConfig = existingConfig.filter(
     (item) => !['HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_CA_CERTIFICATES', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'].includes(item.key),

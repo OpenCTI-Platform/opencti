@@ -18,6 +18,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
@@ -283,7 +284,20 @@ const GroupingEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
-            <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+            <CustomFieldValuesEdition
+              entityType={grouping.entity_type}
+              entityId={grouping.id}
+              values={grouping.customFieldValues ?? []}
+              fieldPatch={editor.fieldPatch}
+              enableReferences={enableReferences}
+            />
+            <Stack
+              sx={{
+                flexDirection: 'row',
+                justifyContent: 'flex-end',
+                gap: 2,
+              }}
+            >
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
@@ -306,6 +320,7 @@ export default createFragmentContainer(GroupingEditionOverviewComponent, {
   grouping: graphql`
     fragment GroupingEditionOverview_grouping on Grouping {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       description
       context

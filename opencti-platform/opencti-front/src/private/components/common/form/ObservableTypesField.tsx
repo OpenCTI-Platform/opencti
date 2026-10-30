@@ -1,22 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
-import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { styled } from '@mui/material/styles';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    paddingRight: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  paddingRight: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
 
 interface ObservableTypesFieldProps {
@@ -37,7 +31,6 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   disabled,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { schema } = useAuth();
@@ -46,31 +39,24 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
 
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       name={name}
       multiple={multiple || false}
-      fullWidth={true}
       disabled={disabled}
-      textfieldprops={{
-        variant: 'standard',
-        label,
-      }}
+      label={label}
       required={required}
       options={allObservableTypes}
       getOptionLabel={(option: string) => t_i18n(`entity_${option}`)}
       onChange={typeof onChange === 'function' ? onChange : null}
       isOptionEqualToValue={(option: string, value: string) => option === value}
       style={style}
-      renderOption={(
-        props: React.HTMLAttributes<HTMLLIElement>,
-        option: string,
-      ) => (
-        <li {...props} key={option}>
-          <div className={classes.icon}>
+      renderOption={(option: string) => (
+        <>
+          <OptionIcon>
             <ItemIcon type={option} />
-          </div>
-          <ListItemText primary={t_i18n(`entity_${option}`)} />
-        </li>
+          </OptionIcon>
+          <span>{t_i18n(`entity_${option}`)}</span>
+        </>
       )}
     />
   );

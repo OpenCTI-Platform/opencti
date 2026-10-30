@@ -4,7 +4,7 @@ import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
 import { FullscreenOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
 import { CSSProperties, useState } from 'react';
@@ -12,6 +12,7 @@ import useAI from '../../utils/hooks/useAI';
 import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
+import Box from '@mui/material/Box';
 
 interface RichTextFieldProps extends FieldProps<string> {
   disabled?: boolean;
@@ -51,31 +52,44 @@ const RichTextField = ({
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
   const RichTextEditorInstance = (
-    <RichTextEditor
-      onTextSelection={(text) => {
-        if (onTextSelection && disabled && !fullScreen && text.length > 2) {
-          onTextSelection(text);
-        }
+    <Box
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        '& .tiptap-editor-content': {
+          // Same surface as the markdown textarea, read from the token so it
+          // follows the layer the field is dropped on.
+          backgroundColor: 'var(--bg-input-default)',
+          borderRadius: 'var(--radius-sm)',
+        },
       }}
-      data={value}
-      onChange={(_, adapter) => {
-        const html = adapter.getData();
-        setFieldValue(name, html);
-        onChange?.(name, html);
-      }}
-      onBlur={() => {
-        setFieldTouched(name, true);
-        onSubmit?.(name, value);
-      }}
-      onFocus={() => onFocus?.(name)}
-      disabled={disabled}
-    />
+    >
+      <RichTextEditor
+        onTextSelection={(text) => {
+          if (onTextSelection && disabled && !fullScreen && text.length > 2) {
+            onTextSelection(text);
+          }
+        }}
+        data={value}
+        onChange={(_, adapter) => {
+          const html = adapter.getData();
+          setFieldValue(name, html);
+          onChange?.(name, html);
+        }}
+        onBlur={() => {
+          setFieldTouched(name, true);
+          onSubmit?.(name, value);
+        }}
+        onFocus={() => onFocus?.(name)}
+        disabled={disabled}
+      />
+    </Box>
   );
 
   const toolbarEmpty = !label && !askAi && !hasFullScreen && lastSavedValue === undefined;
 
   return (
-    <div style={style}>
+    <div style={{ display: 'flex', flexDirection: 'column', ...style }}>
       {!toolbarEmpty && (
         <div style={{ display: 'flex', alignItems: 'end', height: '24px' }}>
           {label && (
@@ -108,7 +122,7 @@ const RichTextField = ({
             />
           )}
           {hasFullScreen && (
-            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)}>
+            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)} sx={{ marginBottom: '2px' }}>
               <FullscreenOutlined fontSize="small" />
             </IconButton>
           )}

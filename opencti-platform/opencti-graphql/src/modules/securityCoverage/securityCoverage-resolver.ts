@@ -1,11 +1,20 @@
 import {
   addSecurityCoverage,
-  pageSecurityCoverageConnections,
-  findSecurityCoverageById,
+  findSecurityCoveragePaginated,
+  findById,
   securityCoverageDelete,
   securityCoverageStixBundle,
   objectCovered,
+  loadSecurityCoverageResultProperty,
+  loadAverageCoverageInformation,
+  loadMostRecentLastCoverageResult,
+  loadSecurityCoverageResults,
+  findCoveredEntities,
+  findCoveredEntitiesDistribution,
+  findResultsRelationshipsPaginated,
 } from './securityCoverage-domain';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -20,12 +29,25 @@ import { ENTITY_TYPE_SECURITY_COVERAGE } from './securityCoverage-types';
 
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
-    securityCoverage: (_, { id }, context) => findSecurityCoverageById(context, context.user, id),
-    securityCoverages: (_, args, context) => pageSecurityCoverageConnections(context, context.user, args),
+    securityCoverage: (_, { id }, context) => findById(context, context.user, id),
+    securityCoverages: (_, args, context) => findSecurityCoveragePaginated(context, context.user, args),
   },
   SecurityCoverage: {
-    objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
-    toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id),
+    objectCovered: (securityCoverage, _, context) => objectCovered<any>(context, context.user, securityCoverage.id),
+    toStixBundle: (securityCoverage, _, context) => securityCoverageStixBundle(context, context.user, securityCoverage.id),
+    results: (securityCoverage, _, context) => loadSecurityCoverageResults(context, context.user, securityCoverage),
+    // security coverage result info
+    external_uri: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'external_uri'),
+    coverage_last_result: (securityCoverage, _, context) => loadMostRecentLastCoverageResult(context, context.user, securityCoverage),
+    coverage_valid_from: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_from'),
+    coverage_valid_to: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_to'),
+    coverage_information: (securityCoverage, _, context) => loadAverageCoverageInformation(context, context.user, securityCoverage),
+    coveredEntitiesDistribution: (securityCoverage, args, context) => findCoveredEntitiesDistribution(context, context.user, securityCoverage, args),
+    stixCoreRelationshipsFromResults: (securityCoverage, args, context) => findResultsRelationshipsPaginated(context, context.user, securityCoverage, args as any),
+    coveredAttackPatterns: (securityCoverage, args, context) =>
+      findCoveredEntities(context, context.user, securityCoverage, ENTITY_TYPE_ATTACK_PATTERN, args),
+    coveredVulnerabilities: (securityCoverage, args, context) =>
+      findCoveredEntities(context, context.user, securityCoverage, ENTITY_TYPE_VULNERABILITY, args),
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
@@ -47,7 +69,7 @@ const SecurityCoverageResolvers: Resolvers = {
       },
       subscribe: (_: any, { id }: any, context: any) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_SECURITY_COVERAGE,
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC, bus.ADDED_TOPIC], { type: ENTITY_TYPE_SECURITY_COVERAGE,
           notifySelf: true,
         });
       },

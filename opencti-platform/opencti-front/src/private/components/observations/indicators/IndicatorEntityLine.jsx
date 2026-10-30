@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
-import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
@@ -20,40 +18,15 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { isEmptyField } from '../../../../utils/utils';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-const styles = (theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
+const BodyItem = styled('div')(bodyItemStyle);
 
 class IndicatorEntityLineComponent extends Component {
   render() {
     const {
-      fsd,
+      ftd,
       t,
-      classes,
       dataColumns,
       node,
       paginationOptions,
@@ -91,29 +64,27 @@ class IndicatorEntityLineComponent extends Component {
         )}
       >
         <ListItemButton
-          classes={{ root: classes.item }}
+          sx={{ paddingLeft: '10px', height: 50 }}
           component={Link}
           to={link}
           disabled={restricted}
         >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ListItemIcon sx={{ color: 'primary.main' }}>
             <ItemIcon type={node.entity_type} />
           </ListItemIcon>
           <ListItemText
             primary={(
               <div>
                 {displayRelation && (
-                  <div
-                    className={classes.bodyItem}
+                  <BodyItem
                     style={{ width: dataColumns.relationship_type.width }}
                   >
                     <ItemEntityType
                       entityType={node.relationship_type}
                     />
-                  </div>
+                  </BodyItem>
                 )}
-                <div
-                  className={classes.bodyItem}
+                <BodyItem
                   style={{ width: dataColumns.entity_type.width }}
                 >
                   <ItemEntityType
@@ -125,43 +96,37 @@ class IndicatorEntityLineComponent extends Component {
                     size="large"
                     showIcon
                   />
-                </div>
-                <div
-                  className={classes.bodyItem}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.name.width }}
                 >
                   {displayName}
-                </div>
-                <div
-                  className={classes.bodyItem}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.createdBy.width }}
                 >
                   {node.createdBy?.name ?? EMPTY_VALUE}
-                </div>
-                <div
-                  className={classes.bodyItem}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.creator.width }}
                 >
                   {(node.creators ?? []).map((c) => c?.name).join(', ')}
-                </div>
-                <div
-                  className={classes.bodyItem}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.start_time.width }}
                 >
-                  {fsd(node.start_time)}
-                </div>
-                <div
-                  className={classes.bodyItem}
+                  {ftd(node.start_time)}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.stop_time.width }}
                 >
-                  {fsd(node.stop_time)}
-                </div>
-                <div
-                  className={classes.bodyItem}
+                  {ftd(node.stop_time)}
+                </BodyItem>
+                <BodyItem
                   style={{ width: dataColumns.confidence.width }}
                 >
                   <ItemConfidence confidence={node.confidence} entityType="stix-core-relationship" variant="inList" />
-                </div>
+                </BodyItem>
               </div>
             )}
           />
@@ -175,9 +140,8 @@ IndicatorEntityLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
-  fsd: PropTypes.func,
+  ftd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
 };
@@ -698,25 +662,18 @@ const IndicatorEntityLineFragment = createFragmentContainer(
   },
 );
 
-export const IndicatorEntityLine = compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorEntityLineFragment);
+export const IndicatorEntityLine = inject18n(IndicatorEntityLineFragment);
 
 class IndicatorEntityLineDummyComponent extends Component {
   render() {
-    const { classes, dataColumns, displayRelation } = this.props;
+    const { dataColumns, displayRelation } = this.props;
     return (
       <ListItem
-        classes={{ root: classes.item }}
+        sx={{ paddingLeft: '10px', height: 50 }}
         divider={true}
-        secondaryAction={(
-          <Box sx={{ root: classes.itemIconDisabled }}>
-            <MoreVert />
-          </Box>
-        )}
+        secondaryAction={<MoreVert />}
       >
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <ListItemIcon sx={{ color: 'grey.700' }}>
           <Skeleton
             animation="wave"
             variant="circular"
@@ -728,8 +685,7 @@ class IndicatorEntityLineDummyComponent extends Component {
           primary={(
             <div>
               {displayRelation && (
-                <div
-                  className={classes.bodyItem}
+                <BodyItem
                   style={{ width: dataColumns.relationship_type.width }}
                 >
                   <Skeleton
@@ -738,10 +694,9 @@ class IndicatorEntityLineDummyComponent extends Component {
                     width="90%"
                     height="100%"
                   />
-                </div>
+                </BodyItem>
               )}
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.entity_type.width }}
               >
                 <Skeleton
@@ -750,9 +705,8 @@ class IndicatorEntityLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.name.width }}
               >
                 <Skeleton
@@ -761,9 +715,8 @@ class IndicatorEntityLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.start_time.width }}
               >
                 <Skeleton
@@ -772,9 +725,8 @@ class IndicatorEntityLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.stop_time.width }}
               >
                 <Skeleton
@@ -783,9 +735,8 @@ class IndicatorEntityLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.confidence.width }}
               >
                 <Skeleton
@@ -794,7 +745,7 @@ class IndicatorEntityLineDummyComponent extends Component {
                   width={100}
                   height="100%"
                 />
-              </div>
+              </BodyItem>
             </div>
           )}
         />
@@ -805,11 +756,7 @@ class IndicatorEntityLineDummyComponent extends Component {
 
 IndicatorEntityLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
-  classes: PropTypes.object,
   displayRelation: PropTypes.bool,
 };
 
-export const IndicatorEntityLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorEntityLineDummyComponent);
+export const IndicatorEntityLineDummy = inject18n(IndicatorEntityLineDummyComponent);

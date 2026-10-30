@@ -123,7 +123,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
               placeholder={t_i18n('Default')}
               fullWidth
               onSubmit={fieldPatch}
-              variant="standard"
+              variant="outlined"
               style={fieldSpacingContainerStyle}
             />
             <Field
@@ -133,7 +133,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
               placeholder={t_i18n('Default')}
               fullWidth
               onSubmit={fieldPatch}
-              variant="standard"
+              variant="outlined"
               style={fieldSpacingContainerStyle}
             />
             <Field
@@ -143,7 +143,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUplo
               placeholder={t_i18n('Default')}
               fullWidth
               onSubmit={fieldPatch}
-              variant="standard"
+              variant="outlined"
               style={fieldSpacingContainerStyle}
             />
           </Form>

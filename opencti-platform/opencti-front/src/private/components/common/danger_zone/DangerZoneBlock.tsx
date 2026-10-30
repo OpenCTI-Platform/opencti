@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import React, { cloneElement, CSSProperties, FunctionComponent, ReactElement, ReactNode } from 'react';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
@@ -6,7 +6,7 @@ import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
 import useSensitiveModifications, { SensitiveConfigType } from '../../../../utils/hooks/useSensitiveModifications';
-import { Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 
 interface ChildProps {
   disabled?: boolean;
@@ -42,9 +42,26 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
   let currentTitle = title;
   if (isSensitive) {
     currentTitle = (
-      <Stack direction="row" alignItems="center" gap={1}>
-        <span>{title}</span>
-        <DangerZoneChip />
+      // The chip must never shrink, so the title is the one that clips.
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+          minWidth: 0,
+          maxWidth: '100%',
+        }}
+      >
+        <Box
+          component="span"
+          title={typeof title === 'string' ? title : undefined}
+          sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {title}
+        </Box>
+        <Box component="span" sx={{ flexShrink: 0, display: 'inline-flex' }}>
+          <DangerZoneChip />
+        </Box>
       </Stack>
     );
   }

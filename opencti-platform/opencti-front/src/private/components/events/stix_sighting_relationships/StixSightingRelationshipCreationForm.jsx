@@ -1,8 +1,8 @@
 import React from 'react';
 import { ArrowRightAlt } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { Field, Form, Formik } from 'formik';
-import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form } from 'formik';
+import { styled } from '@mui/material/styles';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import { itemColor } from '../../../../utils/Colors';
@@ -21,71 +21,70 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import CustomFieldsFormik from '../../common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '../../common/custom_fields/CustomFieldValuesCreation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  containerRelation: {
-    padding: '10px 20px 20px 20px',
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 10,
-  },
-  itemHeader: {
-    padding: '10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-    textOverflow: 'ellipsis',
-    maxWidth: 180,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    padding: 8,
-  },
-  relationCreate: {
-    position: 'relative',
-    height: 100,
-  },
-  middle: {
-    margin: '0 auto',
-    width: 200,
-    textAlign: 'center',
-    padding: 0,
-    color: theme.palette.text.primary,
-  },
-  buttonBack: {
-    marginTop: 20,
-    float: 'left',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
+const ContainerRelation = styled('div')({
+  padding: '10px 20px 20px 20px',
+});
+
+const Item = styled('div')({
+  position: 'absolute',
+  width: 180,
+  height: 80,
+  borderRadius: 10,
+});
+
+const ItemHeader = styled('div')({
+  padding: '10px 0',
+});
+
+const IconContainer = styled('div')({
+  position: 'absolute',
+  top: 8,
+  left: 5,
+  fontSize: 8,
+});
+
+const Type = styled('div')(({ theme }) => ({
+  width: '100%',
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+  fontSize: 11,
+}));
+
+const Content = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: 40,
+  maxHeight: 40,
+  lineHeight: '40px',
+  color: theme.palette.text.primary,
+  textAlign: 'center',
+}));
+
+const Name = styled('span')({
+  display: 'inline-block',
+  lineHeight: 1,
+  fontSize: 12,
+  verticalAlign: 'middle',
+  textOverflow: 'ellipsis',
+  maxWidth: 180,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  padding: 8,
+});
+
+const RelationCreate = styled('div')({
+  position: 'relative',
+  height: 100,
+});
+
+const Middle = styled('div')(({ theme }) => ({
+  margin: '0 auto',
+  width: 200,
+  textAlign: 'center',
+  padding: 0,
+  color: theme.palette.text.primary,
 }));
 
 const STIX_SIGHTING_TYPE = 'stix-sighting-relationship';
@@ -104,7 +103,6 @@ const StixSightingRelationshipCreationForm = ({
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const { mandatoryAttributes } = useIsMandatoryAttribute(STIX_SIGHTING_TYPE);
   const basicShape = yupShapeConditionalRequired({
     attribute_count: Yup.number(),
@@ -143,7 +141,8 @@ const StixSightingRelationshipCreationForm = ({
   );
 
   return (
-    <Formik
+    <CustomFieldsFormik
+      entityType={STIX_SIGHTING_TYPE}
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={stixSightingRelationshipValidator}
@@ -154,50 +153,48 @@ const StixSightingRelationshipCreationForm = ({
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form style={{ paddingBottom: 50 }}>
-          <div className={classes.containerRelation}>
-            <div className={classes.relationCreate}>
-              <div
-                className={classes.item}
+          <ContainerRelation>
+            <RelationCreate>
+              <Item
                 style={{
                   border: `2px solid ${itemColor(fromEntity?.entity_type)}`,
                   top: 10,
                   left: 0,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(fromEntity?.entity_type)}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <IconContainer>
                     <ItemIcon
                       type={fromEntity?.entity_type}
                       color={itemColor(fromEntity?.entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </IconContainer>
+                  <Type>
                     {fromEntity?.relationship_type
                       ? t_i18n(`relationship_${fromEntity?.entity_type}`)
                       : t_i18n(`entity_${fromEntity?.entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
+                  </Type>
+                </ItemHeader>
+                <Content>
                   {isMultipleFrom ? (
-                    <span className={classes.name}>
+                    <Name>
                       <em>{t_i18n('Multiple entities selected')}</em>
-                    </span>
+                    </Name>
                   ) : (
                     <Tooltip title={getMainRepresentative(fromEntity)}>
-                      <span className={classes.name}>
+                      <Name>
                         {getMainRepresentative(fromEntity)}
-                      </span>
+                      </Name>
                     </Tooltip>
                   )}
-                </div>
-              </div>
-              <div className={classes.middle} style={{ paddingTop: 25 }}>
+                </Content>
+              </Item>
+              <Middle style={{ paddingTop: 25 }}>
                 <ArrowRightAlt fontSize="large" />
                 <br />
                 {typeof handleReverseRelation === 'function' && (
@@ -209,59 +206,57 @@ const StixSightingRelationshipCreationForm = ({
                     {t_i18n('Reverse')}
                   </Button>
                 )}
-              </div>
-              <div
-                className={classes.item}
+              </Middle>
+              <Item
                 style={{
                   border: `2px solid ${itemColor(toEntity?.entity_type)}`,
                   top: 10,
                   right: 0,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(toEntity?.entity_type)}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <IconContainer>
                     <ItemIcon
                       type={toEntity?.entity_type}
                       color={itemColor(toEntity?.entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </IconContainer>
+                  <Type>
                     {toEntity?.relationship_type
                       ? t_i18n(`relationship_${toEntity?.entity_type}`)
                       : t_i18n(`entity_${toEntity?.entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
+                  </Type>
+                </ItemHeader>
+                <Content>
                   {isMultipleTo ? (
-                    <span className={classes.name}>
+                    <Name>
                       <em>{t_i18n('Multiple entities selected')}</em>
-                    </span>
+                    </Name>
                   ) : (
                     <Tooltip title={getMainRepresentative(toEntity)}>
-                      <span className={classes.name}>
+                      <Name>
                         {getMainRepresentative(toEntity)}
-                      </span>
+                      </Name>
                     </Tooltip>
                   )}
-                </div>
+                </Content>
 
-              </div>
-            </div>
+              </Item>
+            </RelationCreate>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="attribute_count"
               required={(mandatoryAttributes.includes('attribute_count'))}
               label={t_i18n('Count')}
               fullWidth={true}
               type="number"
-              style={{ marginTop: 20 }}
+              className="mt-5"
             />
             <ConfidenceField
               entityType="stix-sighting-relationship"
@@ -273,7 +268,7 @@ const StixSightingRelationshipCreationForm = ({
               textFieldProps={{
                 label: t_i18n('First seen'),
                 required: (mandatoryAttributes.includes('first_seen')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
@@ -284,7 +279,7 @@ const StixSightingRelationshipCreationForm = ({
               textFieldProps={{
                 label: t_i18n('Last seen'),
                 required: (mandatoryAttributes.includes('last_seen')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
@@ -324,18 +319,20 @@ const StixSightingRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
-            {typeof handleResetSelection === 'function' && (
-              <div className={classes.buttonBack}>
-                <Button
-                  variant="secondary"
-                  onClick={handleResetSelection}
-                  disabled={isSubmitting}
-                >
-                  {t_i18n('Back')}
-                </Button>
-              </div>
-            )}
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
+              {typeof handleResetSelection === 'function' && (
+                // A wrapper, not `sx`: the product Button falls back to MUI when given one.
+                <div style={{ marginRight: 'auto' }}>
+                  <Button
+                    variant="secondary"
+                    onClick={handleResetSelection}
+                    disabled={isSubmitting}
+                  >
+                    {t_i18n('Back')}
+                  </Button>
+                </div>
+              )}
               <Button
                 variant="secondary"
                 onClick={handleReset}
@@ -350,10 +347,10 @@ const StixSightingRelationshipCreationForm = ({
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
-          </div>
+          </ContainerRelation>
         </Form>
       )}
-    </Formik>
+    </CustomFieldsFormik>
   );
 };
 

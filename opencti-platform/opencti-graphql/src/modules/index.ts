@@ -24,6 +24,7 @@ import './relationsRef/stixCyberObservable-registrationRef';
 // endregion
 // region registration modules, need to be imported before graphql code registration
 import './channel/channel';
+import './connector/connector';
 import './language/language';
 import './event/event';
 import './grouping/grouping';
@@ -79,11 +80,13 @@ import './securityPlatform/securityPlatform';
 import './emailTemplate/emailTemplate';
 import './form/form';
 import './securityCoverage/securityCoverage';
+import './securityCoverage/securityCoverageResult/securityCoverageResult';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
 import './dataSanity/dataSanity';
 import './xtm/hub/news-feed/news-feed';
+import './user/user';
 
 // incomplete modules
 import './report/report';
@@ -104,6 +107,8 @@ import './customField/custom-field';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
+import './connector/connector-graphql';
+import './ingestionHealth/ingestionHealth-graphql';
 import './catalog/catalog-graphql';
 import './language/language-graphql';
 import './event/event-graphql';
@@ -135,6 +140,7 @@ import './ingestion/ingestion-taxii-collection-graphql';
 import './ingestion/ingestion-csv-graphql';
 import './ingestion/ingestion-json-graphql';
 import './indicator/indicator-graphql';
+import './vulnerability/vulnerability-graphql';
 import './decayRule/decayRule-graphql';
 import './decayRule/exclusions/decayExclusionRule-graphql';
 import './organization/organization-graphql';
@@ -156,6 +162,7 @@ import './pir/pir-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
 import './securityCoverage/securityCoverage-graphql';
+import './securityCoverage/securityCoverageResult/securityCoverageResult-graphql';
 import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
@@ -169,6 +176,13 @@ import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
 import './dataSanity/dataSanity-graphql';
+import './user/user-graphql';
+import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
+import './configPreset/configPreset-graphql';
+// endregion
+
+// region modules static init
+import './userMerge/userMerge-init';
 // endregion

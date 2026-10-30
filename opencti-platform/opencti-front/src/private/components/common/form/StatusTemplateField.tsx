@@ -1,32 +1,27 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field, useFormikContext } from 'formik';
+import { Field } from 'formik';
 import { Label } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import StatusTemplateCreation from '../../settings/status_templates/StatusTemplateCreation';
 import { useFormatter } from '../../../../components/i18n';
 import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTemplateFieldSearchQuery.graphql';
 import { StatusTemplateCreationContextualMutation$data } from '../../settings/status_templates/__generated__/StatusTemplateCreationContextualMutation.graphql';
 import { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface StatusTemplateFieldProps {
   name: string;
@@ -60,8 +55,6 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   required = false,
   label,
 }) => {
-  const { values } = useFormikContext<Record<string, { value: string; label: string; color: string } | { id: string; name: string; color: string }>>();
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [statusTemplateCreation, setStatusTemplateCreation] = useState<boolean>(false);
@@ -102,50 +95,46 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
       });
   };
 
-  const fieldValue = values[name];
-
-  const normalizedValue = (fieldValue && 'id' in fieldValue)
-    ? { value: fieldValue.id, label: fieldValue.name, color: fieldValue.color }
-    : (fieldValue ?? null);
+  // Formik hands the stored `{ id, name }` to a combobox fed `{ value, label }`.
+  type AnyTemplate = { value?: string; label?: string; id?: string; name?: string };
+  const optionLabel = (option: AnyTemplate) => option?.label ?? option?.name ?? '';
+  const optionValue = (option: AnyTemplate) => option?.value ?? option?.id;
 
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         name={name}
         style={style}
-        value={normalizedValue}
+        getOptionLabel={optionLabel}
+        isOptionEqualToValue={(a: AnyTemplate, b: AnyTemplate) => optionValue(a) === optionValue(b)}
         onChange={(name: string, value: FieldOption) => {
           if (setFieldValue) {
             setFieldValue(name, value);
           }
         }}
-        textfieldprops={{
-          variant: 'standard',
-          label: label && t_i18n('Name'),
-          helperText: helpertext,
-          // Prevent filtering on previous status
-          onFocus: () => handleSearch(''),
-        }}
+        label={label && t_i18n(label)}
+        helperText={helpertext}
+        // Prevent filtering on previous status
+        onFocusInput={() => handleSearch('')}
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={statusTemplates}
-        onInputChange={(_event: React.FocusEvent<HTMLInputElement>, value: string) => {
-          handleSearch(value);
+        onInputChange={(value: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') handleSearch(value);
         }}
         openCreate={handleOpenStatusTemplateCreation}
-        renderOption={(
-          { key, ...optionProps }: React.HTMLAttributes<HTMLLIElement> & { key?: string | number },
-          option: { color: string; label: string },
-        ) => (
-          <li key={key} {...optionProps}>
-            <div className={classes.icon} style={{ color: option.color }}>
+        renderOption={(option: { color: string; label: string }) => (
+          <>
+            <OptionIcon style={{ color: option.color }}>
               <Label />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
       <StatusTemplateCreation
         contextual={true}

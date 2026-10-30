@@ -1,7 +1,8 @@
 import { dissoc, mergeLeft, pipe, split } from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
+import { stringifyFilterGroupForUrl } from './filters/filtersUtils';
 
-const buildParamsFromHistory = (params) => {
+export const buildParamsFromHistory = (params) => {
   let urlParams = pipe(
     dissoc('graphData'),
     dissoc('openTimeField'),
@@ -34,13 +35,13 @@ const buildParamsFromHistory = (params) => {
   if (params.filters) {
     urlParams = {
       ...urlParams,
-      filters: JSON.stringify(params.filters),
+      filters: stringifyFilterGroupForUrl(params.filters),
     };
   }
   if (params.timeLineFilters) {
     urlParams = {
       ...urlParams,
-      timeLineFilters: JSON.stringify(params.timeLineFilters),
+      timeLineFilters: stringifyFilterGroupForUrl(params.timeLineFilters),
     };
   }
   if (params.zoom) {
@@ -87,11 +88,13 @@ export const saveViewParameters = (
   saveParamsToLocalStorage(localStorageKey, params);
   // Apply params in history
   const searchParams = buildParamsFromHistory(params);
-  const newUrl = `${APP_BASE_PATH}${location.pathname}?${searchParams}`;
+  const relativeUrl = `${location.pathname}?${searchParams}`;
   if (refresh) {
-    navigate(newUrl, { replace: true });
+    // navigate() already prepends APP_BASE_PATH via the router's basename
+    navigate(relativeUrl, { replace: true });
   } else {
-    window.history.replaceState(null, '', newUrl);
+    // history.replaceState is a native browser API, not router-aware
+    window.history.replaceState(null, '', `${APP_BASE_PATH}${relativeUrl}`);
   }
 };
 

@@ -1,13 +1,12 @@
 import React, { FunctionComponent, useEffect, useRef } from 'react';
-import InputLabel from '@mui/material/InputLabel';
 import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
 import MuiTextField from '@mui/material/TextField';
 import IconButton from '@common/button/IconButton';
-import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import FormControl from '@mui/material/FormControl';
 import { DeleteOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import * as Yup from 'yup';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { InformationOutline } from 'mdi-material-ui';
@@ -25,6 +24,7 @@ import type { Theme } from '../../../components/Theme';
 import { toCamelCase } from '../../../utils/String';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
+import useCustomFieldWidgetColumns from './useCustomFieldWidgetColumns';
 
 const stixCoreObjectsAvailableAttributesColumns: { attribute: string; label: string }[] = [
   { attribute: 'representative.main', label: 'Representative' },
@@ -180,8 +180,14 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
   );
 
   const specificAttributesOfType = attributesByEntityType.get(entityType ?? '') ?? [];
+  const { columns: customFieldColumns } = useCustomFieldWidgetColumns(entityType);
+  const customFieldAttributes = customFieldColumns.map((column) => ({
+    attribute: column.attribute ?? '',
+    label: column.label ?? column.attribute ?? '',
+  }));
   const availableAttributes: { attribute: string; label: string }[] = stixCoreObjectsAvailableAttributesColumns
     .concat(specificAttributesOfType)
+    .concat(customFieldAttributes)
     .sort((a, b) => a.label.localeCompare(b.label));
 
   const findAttribute = (attributeName: string | null) => {
@@ -306,6 +312,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                                   remove(index);
                                 }
                               }}
+                              aria-label={t_i18n('Remove attribute')}
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>
@@ -313,16 +320,13 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                         </div>
                       ))}
 
-                      <div style={{ display: 'flex', gap: theme.spacing(2) }}>
+                      <div style={{ display: 'flex', gap: theme.spacing(2), alignItems: 'end' }}>
                         <FormControl sx={{ flex: 1 }}>
-                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
                           <Select
-                            label={t_i18n('Attribute')}
-                            sx={{ flex: 1 }}
                             value=""
                             disabled={!config.widget.dataSelection[0].instance_id}
-                            onChange={({ target }) => {
-                              const attribute = findAttribute(target.value as string);
+                            onValueChange={(value) => {
+                              const attribute = findAttribute(value);
                               if (attribute) {
                                 insert(values.attributes.length, {
                                   ...attribute,
@@ -331,11 +335,17 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                               }
                             }}
                           >
-                            {filteredAttributes.map((v) => (
-                              <MenuItem key={v.attribute} value={v.attribute ?? ''}>
-                                {t_i18n(v.label)}
-                              </MenuItem>
-                            ))}
+                            <SelectLabel>{t_i18n('Attribute')}</SelectLabel>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent aria-label={t_i18n('Attribute')}>
+                              {filteredAttributes.map((v) => (
+                                <SelectItem key={v.attribute} value={v.attribute ?? ''}>
+                                  {t_i18n(v.label)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
                           </Select>
                           {!config.widget.dataSelection[0].instance_id && (
                             <FormHelperText>
@@ -358,7 +368,13 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             },
                           }}
                         />
-                        <IconButton aria-label={t_i18n('Delete')} size="small" color="primary" disabled>
+                        <IconButton
+                          aria-label={t_i18n('Delete')}
+                          size="small"
+                          color="primary"
+                          disabled
+                          sx={{ mb: '6px' }}
+                        >
                           <DeleteOutlined fontSize="small" />
                         </IconButton>
                       </div>

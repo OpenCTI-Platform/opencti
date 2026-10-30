@@ -93,12 +93,11 @@ const WorkspaceHeader = ({
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <Tooltip title={workspace.name}>
             <Typography
               variant="h1"
               sx={{ margin: 0 }}
-              style={{ marginRight: canEdit ? 0 : 10 }}
             >
               {truncate(workspace.name, 40)}
             </Typography>
@@ -117,6 +116,8 @@ const WorkspaceHeader = ({
             domElementId="container"
             name={workspace.name}
             type={workspace.type}
+            // An investigation is a graph: its toolbar exports the image of the drawing.
+            exportToImage={workspace.type !== 'investigation'}
             adjust={adjust}
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}

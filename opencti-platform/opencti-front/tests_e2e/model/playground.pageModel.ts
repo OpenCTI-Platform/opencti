@@ -12,8 +12,10 @@ export default class PlaygroundPage {
     return this.page.locator('.graphiql-container');
   }
 
+  // The title is a Chip, not a control: it was a Button with
+  // `pointer-events: none` and is now the library Chip, which renders a span.
   getPageTitle() {
-    return this.page.getByRole('button', { name: 'GraphQL playground' });
+    return this.page.getByText('GraphQL playground', { exact: true });
   }
 
   // Error boundary fallback shared by HighLevelError and SimpleError.

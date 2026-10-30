@@ -1,7 +1,19 @@
 import React, { useCallback, useState } from 'react';
 import { and, ControlProps, isPrimitiveArrayControl, RankedTester, rankWith, schemaMatches } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
+import {
+  Combobox,
+  ComboboxChangeMeta,
+  ComboboxChips,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxHelperText,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
+import { Box } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
 import { splitAndTrimArray } from '../../../../../utils/String';
 
@@ -18,6 +30,10 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
 
   const { t_i18n } = useFormatter();
 
+  // Items restricted to an enum are picked from it, other items are typed freely
+  const items = Array.isArray(schema.items) ? undefined : schema.items;
+  const enumValues = Array.isArray(items?.enum) ? items.enum.map(String) : undefined;
+
   // Convert null to empty array for component state
   const currentValues = Array.isArray(data) ? data : [];
   const [inputValue, setInputValue] = useState('');
@@ -28,7 +44,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
     return Array.from(new Set(splitAndTrimmedValues));
   }, []);
 
-  const handleValuesChange = useCallback((event: React.SyntheticEvent, newValues: string[]) => {
+  const handleValuesChange = useCallback((newValues: string[]) => {
     const cleanValues = normalizeValues(newValues);
 
     const finalValue = cleanValues.length === 0 && schema.default === null ? null : cleanValues;
@@ -36,74 +52,41 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
     handleChange(path, finalValue);
   }, [handleChange, normalizeValues, path, schema.default]);
 
-  const handleInputChange = useCallback((event: React.SyntheticEvent, newInputValue: string) => {
-    setInputValue(newInputValue);
-  }, []);
-
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' && inputValue.trim()) {
-      event.preventDefault();
-      const parsedValues = normalizeValues([inputValue]);
-      const newValues = normalizeValues([...currentValues, ...parsedValues]);
-
-      if (newValues.length !== currentValues.length) {
-        handleValuesChange(event, newValues);
-      }
-
-      setInputValue('');
-    }
-  }, [inputValue, normalizeValues, currentValues, handleValuesChange]);
+  const getPlaceholder = () => {
+    if (enumValues) return t_i18n('Select options');
+    if (currentValues.length === 0) return t_i18n('Type and press Enter to add items');
+    return t_i18n('Add more items...');
+  };
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography component="label" variant="subtitle2" sx={{ fontSize: '11px' }}>{label}</Typography>
-      <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>{description}</Typography>
-      <Autocomplete
+      <Combobox<string>
         multiple
-        freeSolo
+        closeOnSelect
+        allowCustomValue={!enumValues}
+        createValueFromInput={enumValues ? undefined : (input) => input}
+        options={enumValues ?? []}
         value={currentValues}
+        onValueChange={(next) => handleValuesChange((next ?? []) as string[])}
         inputValue={inputValue}
-        onChange={handleValuesChange}
-        onInputChange={handleInputChange}
-        options={[]}
-        renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => (
-          <Chip
-            label={option}
-            size="small"
-            {...getTagProps({ index })}
-            key={index}
-            sx={{ m: 0.25 }}
-          />
-        ))
-        }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            placeholder={currentValues.length === 0
-              ? t_i18n('Type and press Enter to add items')
-              : t_i18n('Add more items...')
-            }
-            error={!!errors}
-            onKeyDown={handleKeyDown}
-            helperText={errors}
-          />
-        )}
-        sx={{
-          '& .MuiOutlinedInput-root': {
-            alignItems: 'center',
-          },
-          '& .MuiAutocomplete-input': {
-            minWidth: '200px',
-          },
-          '& .MuiChip-root, & .MuiChip-root::first-letter': {
-            textTransform: 'none !important',
-          },
-          '& .MuiChip-label, & .MuiChip-label::first-letter': {
-            textTransform: 'none !important',
-          },
-        }}
-      />
+        onInputChange={(next: string, _meta: ComboboxChangeMeta) => setInputValue(next)}
+        getOptionLabel={(option) => option}
+        isOptionEqualToValue={(a, b) => a === b}
+        error={!!errors}
+      >
+        <ComboboxLabel>{label}</ComboboxLabel>
+        <ComboboxField>
+          <ComboboxChips aria-label={String(label)} />
+          <ComboboxInput placeholder={getPlaceholder()} />
+          <ComboboxControls>
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent listAriaLabel={String(label)} />
+        {(errors || description) ? (
+          <ComboboxHelperText>{errors || description}</ComboboxHelperText>
+        ) : null}
+      </Combobox>
     </Box>
   );
 };

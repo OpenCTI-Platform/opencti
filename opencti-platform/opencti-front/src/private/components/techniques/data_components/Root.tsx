@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useParams, useLocation, Route } from 'react-router-dom';
+import { useParams, useLocation, Route } from 'react-router';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -52,7 +52,6 @@ const dataComponentQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...DataComponent_dataComponent
-      ...DataComponentKnowledge_dataComponent
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -145,7 +144,7 @@ const RootDataComponent = () => {
                       <Route
                         path="/knowledge/*"
                         element={
-                          <DataComponentKnowledge data={dataComponent} />
+                          <DataComponentKnowledge />
                         }
                       />
                     )}

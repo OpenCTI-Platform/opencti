@@ -5,7 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
 import { buildQueryFilters, findBackgroundTask, updateTask } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { resolveUserByIdFromCache } from '../domain/user';
+import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
 import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
@@ -48,17 +48,21 @@ import {
   TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE,
+  ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
-import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
-import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
+import { getBestBackgroundConnectorId, pushBundleToWorker } from '../database/rabbitmq';
+import { updateProcessedTime } from '../domain/work';
 import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
+import { getCustomFieldDefinitions, isCustomFieldDefinitionOfEntityType } from '../modules/customField/custom-field-cache';
+import { buildCustomFieldTaskInputs } from '../modules/customField/custom-field-task';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -89,13 +93,16 @@ const findTasksToExecute = async (context) => {
   });
 };
 
+const ruleScanOrder = (taskPosition) => (isEmptyField(taskPosition) ? 'created_at' : 'updated_at');
 export const taskRule = async (context, user, task, callback) => {
   const { task_position, rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
+    // Ordered by an immutable field: applying the rule updates the scanned elements, an updated_at order would list them again.
+    // A legacy task_position is a cursor on the updated_at order, so it keeps that order to resume where it stopped.
+    const options = { baseData: true, orderMode: 'asc', orderBy: ruleScanOrder(task_position), ...buildEntityFilters(scan.types, scan), after: task_position };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
@@ -105,7 +112,7 @@ export const taskRule = async (context, user, task, callback) => {
       filterGroups: [],
     };
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
+    const options = { baseData: true, orderMode: 'asc', orderBy: ruleScanOrder(task_position), filters, after: task_position };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
@@ -129,7 +136,7 @@ export const taskList = async (context, user, task, callback) => {
     includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
-  callback(elements);
+  await callback(elements);
 };
 
 const throwErrorInDraftContext = (context, user, actionType) => {
@@ -155,12 +162,20 @@ const isUnshareAction = (actionType) => {
   return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
 };
 
-export const baseOperationBuilder = (actionType, operations, element) => {
+export const baseOperationBuilder = (actionType, operations, element, customFieldDefinitions = []) => {
   const baseOperationObject = {};
   // Knowledge management
   if (actionType === 'KNOWLEDGE_CHANGE') {
     baseOperationObject.opencti_operation = 'patch';
-    baseOperationObject.opencti_field_patch = operations.map((action) => {
+    baseOperationObject.opencti_field_patch = operations.flatMap((action) => {
+      // Custom fields are edited through custom_field_values, only on the elements whose type carries them
+      if (action.context.field?.startsWith(CUSTOM_FIELD_PREFIX)) {
+        const definition = customFieldDefinitions.find((d) => d.name === action.context.field);
+        if (!definition || !isCustomFieldDefinitionOfEntityType(definition, element.entity_type)) {
+          return [];
+        }
+        return buildCustomFieldTaskInputs(definition, action.type, action.context.values ?? []);
+      }
       let attrKey = action.context.field;
       if (action.context.type === 'RELATION') {
         attrKey = schemaRelationsRefDefinition
@@ -218,6 +233,12 @@ export const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.sharing_organization_ids = operations[0].context.values;
     baseOperationObject.sharing_direct_container = false;
   }
+  // Has-covered relationships task
+  if (actionType === ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES) {
+    baseOperationObject.opencti_operation = 'add_related_covered_entities';
+    baseOperationObject.security_coverage_result_id = operations[0].id;
+    baseOperationObject.relationships_config = operations[0].relationships_config;
+  }
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
     baseOperationObject.opencti_operation = 'clear_access_restriction';
@@ -257,17 +278,14 @@ const buildAndSendBundle = async (context, user, task, objects, opts) => {
   // Send actions to queue
   const stixBundle = JSON.stringify({ id: uuidv4(), type: 'bundle', objects });
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-  // Only add explicit expectation if the worker will not split anything
-  if (objects.length === 1 || opts.forceNoSplit) {
-    await updateExpectationsNumber(context, user, task.work_id, objects.length);
-  }
-  await pushToWorkerForConnector(task.connector_id, {
+  const forceNoSplit = opts.forceNoSplit ?? false;
+  await pushBundleToWorker(context, user, task.connector_id, {
     type: 'bundle',
     applicant_id: user.id,
     content,
     work_id: task.work_id,
     draft_id: task.draft_context ?? null,
-    no_split: opts.forceNoSplit ?? false,
+    no_split: forceNoSplit,
   });
 };
 
@@ -283,7 +301,7 @@ export const sendResultToQueue = async (context, user, task, objects, opts = {})
   }
 };
 
-const buildBundleElement = (element, actionType, operations) => {
+const buildBundleElement = (element, actionType, operations, customFieldDefinitions = []) => {
   const baseObject = {
     id: element.standard_id,
     type: convertTypeToStixType(element.entity_type),
@@ -291,7 +309,7 @@ const buildBundleElement = (element, actionType, operations) => {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
         type: element.entity_type,
-        ...baseOperationBuilder(actionType, operations, element),
+        ...baseOperationBuilder(actionType, operations, element, customFieldDefinitions),
       },
     },
   };
@@ -308,21 +326,33 @@ const buildBundleElement = (element, actionType, operations) => {
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
   let totalProcessed = task.task_processed_number;
-  return async (elements) => {
+  const hasCustomFieldActions = operations.some((action) => action.context?.field?.startsWith(CUSTOM_FIELD_PREFIX));
+  const customFieldDefinitions = hasCustomFieldActions ? await getCustomFieldDefinitions(context, user) : [];
+  let hasQueuedWork = false;
+  const callback = async (elements) => {
     // Build limited stix object to limit memory footprint
     const objects = [];
     for (let index = 0; index < elements.length; index += 1) {
       await doYield();
       const e = elements[index];
-      const object = buildBundleElement(e, actionType, operations);
-      objects.push(object);
+      const object = buildBundleElement(e, actionType, operations, customFieldDefinitions);
+      // An element without any change to apply (e.g. its type does not carry the custom field) is skipped
+      const fieldPatch = object.extensions[STIX_EXT_OCTI].opencti_field_patch;
+      if (!Array.isArray(fieldPatch) || fieldPatch.length > 0) {
+        objects.push(object);
+      }
     }
     // Send actions to queue
-    await sendResultToQueue(context, user, task, objects);
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+      hasQueuedWork = true;
+    }
     // Update task
     totalProcessed += elements.length;
     await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
+  callback.hasQueuedWork = () => hasQueuedWork;
+  return callback;
 };
 
 export const buildContainersElementsBundle = async (context, user, containers, elements, withNeighbours, operationType) => {
@@ -332,8 +362,10 @@ export const buildContainersElementsBundle = async (context, user, containers, e
     const element = elements[index];
     elementIds.add(element.internal_id);
     elementStandardIds.add(element.standard_id);
-    if (element.fromId) elementIds.add(element.fromId);
-    if (element.toId) elementIds.add(element.toId);
+    if (operationType !== ACTION_TYPE_REMOVE || !isStixRelationship(element.entity_type)) {
+      if (element.fromId) elementIds.add(element.fromId);
+      if (element.toId) elementIds.add(element.toId);
+    }
   }
   if (withNeighbours) {
     const callback = (relations) => {
@@ -459,7 +491,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
           objects.push(stixRelation);
         }
       } catch (e) {
-        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', {
+        logApp.warn('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', {
           cause: e,
           taskId: task.internal_id,
           workId: task.work_id,
@@ -610,7 +642,7 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   return standardOperationCallback(context, user, task, actionType, operations);
 };
 
-const workerTaskHandler = async (context, user, task, actionType, operations) => {
+export const workerTaskHandler = async (context, user, task, actionType, operations) => {
   // Generate the right callback
   const callback = await computeOperationCallback(context, user, task, actionType, operations);
   // Handle queries and list
@@ -628,6 +660,11 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   if (task.type === TASK_TYPE_RULE) {
     // Task rule is enlist step by step
     await taskRule(context, user, task, callback);
+  }
+  // Elements can have nothing to apply (e.g. a custom field their type does not carry): when the whole task sent
+  // nothing to the workers, its work is completed here, otherwise it would stay in progress
+  if (task.work_id && callback.hasQueuedWork?.() === false) {
+    await updateProcessedTime(context, user, task.work_id, 'No change to apply');
   }
   return updateTask(context, task.id, { completed: true });
 };
@@ -657,7 +694,7 @@ const taskHandlerGenerator = (context) => {
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
     if (!isQueryTask && !isListTask && !isRuleTask) {
-      logApp.error('[OPENCTI-MODULE] Task manager unsupported type', { type: task.type });
+      logApp.warn('[OPENCTI-MODULE] Task manager unsupported type', { type: task.type });
       return;
     }
     // endregion

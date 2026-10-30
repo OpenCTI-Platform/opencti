@@ -4,13 +4,97 @@ This module provides utility classes and constants for working with STIX2 object
 in OpenCTI, including type mappings, pattern generation, and object reference counting.
 """
 
-from typing import Any, Dict
+import datetime
+from typing import Any, Dict, Iterable, List, Optional
 
+import datefinder
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
+
+# datefinder only catches ValueError while parsing candidates; an out-of-range date
+# raises OverflowError, which must be swallowed the same way.
+datefinder.ValueError = ValueError, OverflowError
+
+
+def build_custom_field_values_input(
+    custom_field_values: Optional[List[Dict]],
+    custom_properties: Any,
+    logger: Any = None,
+) -> Optional[List[Dict]]:
+    """Return the custom field value inputs of a create method.
+
+    ``custom_field_values`` is the explicit list of ``{"field_name", "value"}``
+    custom field inputs (e.g. extracted by the STIX import). ``custom_properties``
+    is the dict of the STIX ``x_*`` custom properties of the object (the stix2
+    convention used by the connectors): each of them is converted into a custom
+    field input, as for a STIX import, so that the platform maps it to a custom
+    field by name or alias, and ignores it if none matches. For a same name, the
+    explicit custom field input wins.
+
+    :param custom_field_values: explicit custom field inputs, defaults to None
+    :type custom_field_values: Optional[List[Dict]]
+    :param custom_properties: dict of STIX ``x_*`` custom properties, defaults to None
+    :type custom_properties: Any
+    :param logger: logger used to warn about ignored custom properties, defaults to None
+    :type logger: Any, optional
+    :return: the list of custom field inputs, or None if there is none
+    :rtype: Optional[List[Dict]]
+    """
+    if custom_properties is None:
+        return custom_field_values
+    if not isinstance(custom_properties, dict):
+        if logger is not None:
+            logger.warning(
+                "custom_properties ignored: a dict of STIX custom properties is expected",
+                {"type": type(custom_properties).__name__},
+            )
+        return custom_field_values
+    explicit_names = {
+        entry.get("field_name")
+        for entry in (custom_field_values or [])
+        if isinstance(entry, dict)
+    }
+    converted = [
+        {"field_name": key, "value": value}
+        for key, value in custom_properties.items()
+        if isinstance(key, str)
+        and key.startswith("x_")
+        and value is not None
+        and key not in explicit_names
+    ]
+    if len(converted) == 0:
+        return custom_field_values
+    return list(custom_field_values or []) + converted
+
+
+# The Unix epoch as a naive datetime. datetime.fromtimestamp(0) depends on the local
+# time zone and raises OSError on Windows when the result is before 1970, which is the
+# case for every zone west of UTC.
+EPOCH = datetime.datetime(1970, 1, 1)
+
+
+def _to_naive_utc(value: datetime.datetime) -> datetime.datetime:
+    """Return a datetime as a naive UTC datetime; a naive one is taken as UTC already.
+
+    :param value: Datetime to convert, naive or time-zone-aware
+    :type value: datetime.datetime
+    :return: The same instant as a naive UTC datetime
+    :rtype: datetime.datetime
+    """
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+
 
 # Aliases field constants
 ALIASES_FIELD = "aliases"
 X_OPENCTI_ALIASES_FIELD = "x_opencti_aliases"
+
+# Sentinel used to distinguish "value not provided by the caller" from an
+# explicit ``None``/``null``. Any dict value equal (by identity) to this
+# sentinel is stripped from GraphQL mutation variables before the request
+# is sent, so the corresponding key is entirely omitted from the payload
+# instead of being sent as ``null``.
+NOT_PROVIDED = object()
 
 SUPPORTED_INTERNAL_OBJECTS = [
     "user",
@@ -75,6 +159,7 @@ STIX_CORE_OBJECTS = [
     "tool",
     "vulnerability",
     "security-coverage",
+    "security-coverage-result",
 ]
 
 SUPPORTED_STIX_ENTITY_OBJECTS = STIX_META_OBJECTS + STIX_CORE_OBJECTS
@@ -279,6 +364,46 @@ class OpenCTIStix2Utils:
         return OpenCTIStix2Utils.retrieve_class_for_method(
             openCTIApiClient, entity, type_path, method
         )
+
+    @staticmethod
+    def guess_past_date(
+        text: Optional[str], now: Optional[datetime.datetime] = None
+    ) -> Optional[str]:
+        """Find the first date older than a day in a free text (an external reference
+        description or source name) and return it as an ISO 8601 UTC string.
+
+        The dates are compared as naive UTC datetimes, never through ``timestamp()``:
+        on Windows ``datetime.timestamp()`` raises ``OSError`` for dates near or before
+        the epoch, which made the worker fail on references mentioning such dates.
+        A date carrying a time zone is converted to UTC, a date without one is taken as
+        UTC, as the ``Z`` of the result states. Any failure of the date finder leaves
+        the result empty.
+
+        :param text: Text to search for a date
+        :type text: str or None
+        :param now: Reference time, naive UTC or time-zone-aware, defaults to the
+            current time (tests override it)
+        :type now: datetime.datetime or None
+        :return: The date as ``%Y-%m-%dT%H:%M:%SZ`` or None when no past date is found
+        :rtype: str or None
+        """
+        if not text:
+            return None
+        try:
+            matches: Iterable[datetime.datetime] = datefinder.find_dates(
+                text, base_date=EPOCH
+            )
+            reference = (
+                now if now is not None else datetime.datetime.now(datetime.timezone.utc)
+            )
+            yesterday = _to_naive_utc(reference) - datetime.timedelta(days=1)
+            for match in matches:
+                match = _to_naive_utc(match)
+                if match < yesterday and len(str(match.year)) == 4:
+                    return match.strftime("%Y-%m-%dT%H:%M:%SZ")
+        except (TypeError, OverflowError, ValueError, OSError):
+            return None
+        return None
 
     @staticmethod
     def compute_object_refs_number(entity: Dict):

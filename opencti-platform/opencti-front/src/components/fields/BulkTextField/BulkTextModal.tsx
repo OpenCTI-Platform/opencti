@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Alert, DialogActions, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Alert, DialogActions, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { splitMultilines } from '../../../utils/String';
 import { useFormatter } from '../../i18n';
@@ -57,7 +58,10 @@ const BulkTextModal = ({
       onClose={onClose}
       title={title || t_i18n('Create multiple entities')}
     >
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <Alert severity="info" variant="outlined">
           <Typography variant="body2">
             {t_i18n('If you are adding more than {limit} values, please upload them through', { values: { limit: MAX_LINES } })} <a href="/dashboard/data/import">{t_i18n('Imports')}</a>
@@ -65,22 +69,20 @@ const BulkTextModal = ({
         </Alert>
 
         {availableKeys && (
-          <FormControl>
-            <InputLabel id="bulk-text-modal-key-select">
-              {t_i18n('Attribute used to create multiple')}
-            </InputLabel>
-            <Select
-              labelId="bulk-text-modal-key-select"
-              label={t_i18n('Attribute used to create multiple')}
-              value={selectedKey ?? ''}
-              onChange={(event) => onSelectKey?.(event.target.value)}
-              fullWidth={true}
-            >
+          <Select
+            value={selectedKey ?? ''}
+            onValueChange={(value) => onSelectKey?.(value)}
+          >
+            <SelectLabel>{t_i18n('Attribute used to create multiple')}</SelectLabel>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Attribute used to create multiple')}>
               {availableKeys?.map((key) => (
-                <MenuItem key={key} value={key}>{key}</MenuItem>
+                <SelectItem key={key} value={key}>{key}</SelectItem>
               ))}
-            </Select>
-          </FormControl>
+            </SelectContent>
+          </Select>
         )}
 
         <TextField

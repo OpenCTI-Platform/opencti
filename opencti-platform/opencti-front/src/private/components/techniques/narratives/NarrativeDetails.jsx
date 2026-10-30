@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -17,19 +18,20 @@ class NarrativeDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Description')}
               </Label>
               <ExpandableMarkdown source={narrative.description} limit={400} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               {narrative.isSubNarrative ? (
                 <NarrativeParentNarratives narrative={narrative} />
               ) : (
                 <NarrativeSubNarratives narrative={narrative} />
               )}
             </Grid>
+            <CustomFieldValuesDisplay entityType={narrative.entity_type} values={narrative.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -47,6 +49,10 @@ const NarrativeDetails = createFragmentContainer(NarrativeDetailsComponent, {
   narrative: graphql`
     fragment NarrativeDetails_narrative on Narrative {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       description
       isSubNarrative
       ...NarrativeSubNarratives_narrative

@@ -1,6 +1,6 @@
 import { extractRefererPathFromReq, setCookieError } from '../../http/httpUtils';
 import type { Request, Response } from 'express';
-import { loginFromProvider, sessionAuthenticateUser } from '../../domain/user';
+import { loginFromProvider, sessionAuthenticateUser } from '../user/user-domain';
 import { executionContext } from '../../utils/access';
 import { getSettings } from '../../domain/settings';
 import type { BasicStoreSettings } from '../../types/settings';

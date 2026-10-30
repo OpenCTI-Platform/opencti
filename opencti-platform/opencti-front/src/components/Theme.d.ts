@@ -1,5 +1,6 @@
-import { CommonColors, PaletteColorOptions, PaletteMode, PaletteOptions, TypeBackground, TypeText } from '@mui/material/styles/createPalette';
-import { Theme as MuiTheme, ThemeOptions } from '@mui/material/styles/createTheme';
+// Types the date pickers' entries (MuiPickers*) in the theme `components`.
+import type {} from '@mui/x-date-pickers/themeAugmentation';
+import { CommonColors, PaletteColorOptions, PaletteMode, PaletteOptions, Theme as MuiTheme, ThemeOptions, TypeBackground, TypeText } from '@mui/material/styles';
 
 declare module '@mui/material/IconButton' {
   interface IconButtonPropsColorOverrides {
@@ -43,10 +44,15 @@ declare module '@mui/material/Alert' {
 }
 
 declare module '@mui/material/styles' {
+  interface TypeBackground {
+    nav: string;
+  }
+
   interface Palette {
     border: {
       main: string;
       primary: string;
+      focus: string;
     };
     gradient?: {
       main: string;
@@ -58,6 +64,7 @@ declare module '@mui/material/styles' {
       contrastText: string;
       light?: string;
       dark?: string;
+      background?: string;
     };
     background: {
       paper: string;
@@ -86,6 +93,7 @@ declare module '@mui/material/styles' {
     border?: {
       main?: string;
       primary?: string;
+      focus?: string;
     };
     gradient?: {
       main?: string;
@@ -270,6 +278,8 @@ interface ExtendedPaletteOptions extends PaletteOptions {
     primary: string;
     secondary: string;
     pagination: string;
+    // Focus ring of the toggle buttons (and of the AI search caret beside them).
+    focus: string;
     main?: string;
     lightBackground?: string;
     paper?: string;

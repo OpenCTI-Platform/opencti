@@ -11,18 +11,18 @@ export const repRelTargets: CsvMapperRepresentation = {
     {
       key: 'from',
       based_on: {
-        representations: ['representation-malware-default']
-      }
+        representations: ['representation-malware-default'],
+      },
     },
     {
       key: 'to',
       based_on: {
-        representations: ['representation-area-default']
-      }
+        representations: ['representation-area-default'],
+      },
     },
     {
       key: 'confidence',
       default_values: ['77'],
-    }
-  ]
+    },
+  ],
 };

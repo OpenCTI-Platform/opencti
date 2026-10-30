@@ -1,18 +1,18 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { SecurityCoverageDetails_securityCoverage$key } from './__generated__/SecurityCoverageDetails_securityCoverage.graphql';
-import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
@@ -23,6 +23,10 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 const securityCoverageDetailsFragment = graphql`
   fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     description
     external_uri
@@ -33,7 +37,6 @@ const securityCoverageDetailsFragment = graphql`
           main
       }
     }
-    ...SecurityCoverageSecurityPlatforms_securityCoverage
     ...SecurityCoverageVulnerabilities_securityCoverage
   }
 `;
@@ -53,19 +56,19 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Entity details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Name')}
             </Label>
             {data.name || EMPTY_VALUE}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Covered entity')}
             </Label>
@@ -91,10 +94,8 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
               </FieldOrEmpty>
             </List>
           </Grid>
-          <Grid item xs={12}>
-            <SecurityCoverageSecurityPlatforms securityCoverage={data} />
-          </Grid>
-          <Grid item xs={12}>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
+          <Grid size={12}>
             <SecurityCoverageVulnerabilities securityCoverage={data} />
           </Grid>
         </Grid>

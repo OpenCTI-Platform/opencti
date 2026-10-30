@@ -31,8 +31,16 @@ export default class SecurityCoverageFormPage {
     return this.getEntityFromList(name).click();
   }
 
+  getNextButton() {
+    return this.formLocator.getByRole('button', { name: 'Next', exact: true });
+  }
+
+  goToNextStep() {
+    return this.getNextButton().click();
+  }
+
   addMetric() {
-    return this.formLocator.getByRole('button', { name: 'Add coverage metric' }).click();
+    return this.formLocator.getByRole('button', { name: 'Add coverage score' }).click();
   }
 
   getCreateTitle() {

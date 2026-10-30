@@ -24,9 +24,12 @@ type IngestionCsv implements InternalObject & BasicObject {
     current_state_hash: String
     current_state_date: DateTime
     last_execution_date: DateTime
+    last_execution_status: String
+    ingestionLogs: [IngestionEntry]
     markings: [String!]
     toConfigurationExport: String!
     duplicateCsvMapper: CsvMapper!
+    ingestionHealth: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
 }
 
 enum IngestionCsvOrdering {
@@ -83,6 +86,7 @@ type Query {
     ): CSVFeedAddInputFromImport! @auth(for: [INGESTION, CSVMAPPERS])
     defaultIngestionGroupCount: Int @auth(for: [INGESTION])
     userAlreadyExists(name: String!): Boolean @auth(for: [INGESTION])
+    ingestionCsvLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION])
 }
 
 # Mutations

@@ -1,5 +1,5 @@
 import { ConnectorsStateQuery$data } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
-import { stixFilters, useAvailableFilterKeysForEntityTypes } from './filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, useStixFilters } from './filters/filtersUtils';
 import useSchema from './hooks/useSchema';
 
 export interface Connector {
@@ -56,18 +56,22 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
   if (connector.connector_type !== 'INTERNAL_ENRICHMENT') {
     return []; // only for enrichment
   }
+  // filter to keep only stixFilters
   const entityTypes = useGetConnectorFilterEntityTypes(connector);
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
-  // filter to keep only stixFilters
+  const stixFilters = useStixFilters();
   availableFilterKeys = availableFilterKeys.filter((key) => stixFilters.includes(key));
   return availableFilterKeys;
 };
+
+// Only the fields the status reads: a connector of any query carrying them fits, whatever its other fragments
+export type ConnectorStatusSource = Partial<Pick<ConnectorsStateQuery$data['connectors'][0], 'manager_current_status' | 'manager_requested_status' | 'active'>>;
 
 export const computeConnectorStatus = ({
   manager_current_status,
   manager_requested_status,
   active,
-}: Partial<ConnectorsStateQuery$data['connectors'][0]>) => {
+}: ConnectorStatusSource) => {
   if (manager_requested_status) {
     // On connector created, manager_current_status is null
     const isTransitioning = (manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5);

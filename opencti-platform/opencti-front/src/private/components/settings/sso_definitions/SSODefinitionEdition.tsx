@@ -4,7 +4,7 @@ import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import SSODefinitionDeletion from '@components/settings/sso_definitions/SSODefinitionDeletion';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
-import IconButton from '@mui/material/IconButton';
+import { IconButton } from '@filigran/design-system';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import OidcProviderForm from './OidcProviderForm';
 import SamlProviderForm from './SamlProviderForm';
@@ -264,14 +264,14 @@ const SSODefinitionEdition = ({
         >
           {({ handleOpenDelete, deleting }) => (
             <IconButton
+              variant="destructive"
+              priority="tertiary"
+              size="sm"
               onClick={handleOpenDelete}
               disabled={deleting}
-              color="error"
-              size="small"
               aria-label={t_i18n('Delete')}
-            >
-              <DeleteOutlined fontSize="small" />
-            </IconButton>
+              icon={<DeleteOutlined fontSize="small" />}
+            />
           )}
         </SSODefinitionDeletion>
       )}

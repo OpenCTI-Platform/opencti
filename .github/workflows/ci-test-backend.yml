@@ -7,11 +7,6 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
-      client_python_local:
-        description: "Use client python from the same commit"
-        type: boolean
-        required: false
-        default: true
       run-id:
         required: true
         type: string
@@ -23,7 +18,7 @@ on:
 jobs:
   run-opencti-integration-test:
     name: Integration tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
     - name: OpenCTI checkout
@@ -35,32 +30,26 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Use client-python in OpenCTI from same branch
-      if: ${{ inputs.client_python_local == true }}
-      env:
-        CHECKOUT_REF: ${{ inputs.checkout_ref }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
-
     - name: Fetch EE license
       run: |
         echo "EE_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')" >> "$GITHUB_ENV"
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: docker-image-opencti-platform
         path: /tmp
 
     - name: Download image builder
       continue-on-error: true
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: docker-image-opencti-builder
         path: /tmp
 
     - name: Download image worker
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: docker-image-opencti-worker
         path: /tmp
@@ -95,7 +84,6 @@ jobs:
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
@@ -106,20 +94,19 @@ jobs:
           -e "APP__ENTERPRISE_EDITION_LICENSE=${{ env.EE_LICENSE }}" \
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
-            cd /home/workspace/opencti-platform/opencti-graphql 
+            cd /opt/opencti/opencti-platform/opencti-graphql
             mkdir -p ../../opencti-connectors/stream/backup-files/src
             wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
             mkdir -p ../../opencti-connectors/external-import/restore-files/src
             wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
-            yarn install
             apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
-            yarn build
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
         '
+        docker cp api-tests:/opt/opencti/opencti-platform/opencti-graphql/coverage opencti-platform/opencti-graphql/
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f #v7.0.0
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
@@ -128,14 +115,19 @@ jobs:
         override_branch: ${{ github.head_ref || github.ref_name }}
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
+    - name: Collect backend test result
+      if: always()
+      continue-on-error: true
+      run: docker cp api-tests:/opt/opencti/opencti-platform/opencti-graphql/test-results opencti-platform/opencti-graphql/
+
     - name: Upload backend test result
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       if: always()
       continue-on-error: true
       with:
         name: backend-test-results-integration
         path: ${{ github.workspace }}/opencti-platform/opencti-graphql/test-results
-        retention-days: 15
+        retention-days: 10
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
@@ -180,7 +172,7 @@ jobs:
 
   run-opencti-rules-test:
     name: Rules and Taxii tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
     - name: OpenCTI checkout
@@ -192,25 +184,19 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Use client-python in OpenCTI from same branch
-      if: ${{ inputs.client_python_local == true }}
-      env:
-        CHECKOUT_REF: ${{ inputs.checkout_ref }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
-
     - name: Fetch EE license
       run: |
         echo "EE_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')" >> "$GITHUB_ENV"
 
     - name: Download image builder
       continue-on-error: true
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: docker-image-opencti-builder
         path: /tmp
 
     - name: Download image worker
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: docker-image-opencti-worker
         path: /tmp
@@ -237,27 +223,25 @@ jobs:
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e PYTHONUNBUFFERED=1  \
           -e "APP__ENTERPRISE_EDITION_LICENSE=${{ env.EE_LICENSE }}" \
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
-              cd /home/workspace/opencti-platform/opencti-graphql 
+              cd /opt/opencti/opencti-platform/opencti-graphql
               mkdir -p ../../opencti-connectors/stream/backup-files/src
               wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
               mkdir -p ../../opencti-connectors/external-import/restore-files/src
               wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
-              yarn install
               apk add --no-cache git # required by pip to install pycti from a git reference
               yarn install:python
-              yarn get-connectors-manifest
               NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
           '
+        docker cp api-tests:/opt/opencti/opencti-platform/opencti-graphql/coverage opencti-platform/opencti-graphql/
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f #v7.0.0
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
@@ -288,7 +272,7 @@ jobs:
 
   run-opencti-backend-unit-test:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
     - name: OpenCTI checkout
@@ -300,15 +284,9 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Use client-python in OpenCTI from same branch
-      if: ${{ inputs.client_python_local == true }}
-      env:
-        CHECKOUT_REF: ${{ inputs.checkout_ref }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
-
     - name: Download image builder
       continue-on-error: true
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: docker-image-opencti-builder
         path: /tmp
@@ -319,51 +297,40 @@ jobs:
           docker load --input /tmp/opencti-builder.tar   
           docker images
 
-    - name: Backend install and build
-      run: |
-        docker run --name backend-build \
-          -v ${{ github.workspace }}:/home/workspace \
-          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
-          -e PYTHONUNBUFFERED=1  \
-          filigran/builder:${{ github.sha }} \
-          sh -c 'set -eux
-            cd /home/workspace/opencti-platform/opencti-graphql
-            yarn install
-            apk add --no-cache git # required by pip to install pycti from a git reference
-            yarn install:python
-            yarn build
-        '
-
-    - name: Backend type checking and linting
+    - name: Backend type checking, linting and dependency check
       run: |
         docker run --name backend-lint \
-          -v ${{ github.workspace }}:/home/workspace \
+          -v ${{ github.workspace }}/.gitignore:/opt/opencti/.gitignore:ro \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
-            cd /home/workspace/opencti-platform/opencti-graphql
+            cd /opt/opencti/opencti-platform/opencti-graphql
             yarn check-ts
             yarn lint
+            # --dependencies only: the wider knip report (unused files and exports) still has a
+            # large pre-existing backlog on both workspaces, so only declaration drift is enforced.
+            yarn knip --dependencies
         '
 
     - name: Start unit tests (aka yarn test:ci-unit)
       if: '!cancelled()'
       run: |
         docker run --name unit-tests \
-          -v ${{ github.workspace }}:/home/workspace \
+          -v ${{ github.workspace }}/opencti-platform/opencti-front/lang:/opt/opencti/opencti-platform/opencti-front/lang:ro \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
-            cd /home/workspace/opencti-platform/opencti-graphql
+            cd /opt/opencti/opencti-platform/opencti-graphql
             apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
+        docker cp unit-tests:/opt/opencti/opencti-platform/opencti-graphql/coverage opencti-platform/opencti-graphql/
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f #v7.0.0
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json

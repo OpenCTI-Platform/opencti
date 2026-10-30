@@ -1,11 +1,7 @@
-import FiligranIcon from '@components/common/FiligranIcon';
 import { NarrativeWithSubnarrativeLineDummy } from '@components/techniques/narratives/NarrativeWithSubnarrativeLine';
 import { NarrativesLines_data$data } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
 import { Stack } from '@mui/material';
-import ToggleButton from '@mui/material/ToggleButton';
-import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
-import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
+import { useTheme } from '@mui/material/styles';
 import React, { FunctionComponent } from 'react';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import SearchInput from '../../../components/SearchInput';
@@ -72,9 +68,11 @@ const Narratives: FunctionComponent = () => {
       <>
         <Stack
           direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ marginBottom: theme.spacing(2) }}
+          sx={{
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: theme.spacing(2),
+          }}
         >
           <SearchInput
             variant="small"
@@ -82,7 +80,12 @@ const Narratives: FunctionComponent = () => {
             keyword={searchTerm}
           />
 
-          <Stack direction="row" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+            }}
+          >
             <ViewSwitchingButtons
               handleChangeView={helpers.handleChangeView}
               disableCards={true}
@@ -167,26 +170,13 @@ const Narratives: FunctionComponent = () => {
             preloadedPaginationProps={preloadedPaginationProps}
             contextFilters={contextFilters}
             additionalHeaderToggleButtons={[
-              (
-                <Tooltip key="lines" title={t_i18n('Lines view')}>
-                  <ToggleButton
-                    value="lines"
-                    aria-label="lines"
-                  >
-                    <FiligranIcon icon={ListViewIcon} size="small" />
-                  </ToggleButton>
-                </Tooltip>
-              ),
-              (
-                <Tooltip key="subEntityLines" title={t_i18n('Sub entity lines view')}>
-                  <ToggleButton
-                    value="subEntityLines"
-                    aria-label="subEntityLines"
-                  >
-                    <FiligranIcon icon={SublistViewIcon} size="small" />
-                  </ToggleButton>
-                </Tooltip>
-              )]}
+              <ViewSwitchingButtons
+                key="switching_buttons"
+                handleChangeView={helpers.handleChangeView}
+                disableCards={true}
+                currentView={view}
+                enableSubEntityLines={true}
+              />]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
                 <NarrativeCreation paginationOptions={queryPaginationOptions} />

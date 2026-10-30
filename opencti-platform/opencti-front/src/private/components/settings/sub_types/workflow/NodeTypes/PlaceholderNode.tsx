@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { Chip } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { NODE_SIZE } from '../utils';
+import { hoverFade, useNodeHighlight } from '../hoverHighlight';
 
 const PlaceholderNode = ({ id }: NodeProps) => {
   const theme = useTheme<Theme>();
   const [isHover, setIsHover] = useState(false);
+  const { dimmed } = useNodeHighlight(id);
 
   return (
     <>
@@ -19,6 +21,7 @@ const PlaceholderNode = ({ id }: NodeProps) => {
       />
       <Chip
         key={id}
+        data-testid={`workflow-placeholder-node-${id}`}
         style={{
           fontSize: 12,
           height: NODE_SIZE.height,
@@ -36,6 +39,7 @@ const PlaceholderNode = ({ id }: NodeProps) => {
           minWidth: NODE_SIZE.width,
           cursor: 'pointer',
           textAlign: 'center',
+          ...hoverFade(dimmed),
         }}
         variant="outlined"
         label="+"

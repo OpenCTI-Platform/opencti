@@ -12,23 +12,22 @@ import {
 import { stixCoreObjectTriggersFragment } from '@components/common/stix_core_objects/stixCoreObjectTriggersUtils';
 import { Badge, ListItemButton, ListItemIcon, Stack, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
+
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { useRefetchableFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as Yup from 'yup';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import Tag from '../../../../components/common/tag/Tag';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -51,6 +50,7 @@ import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEdition
 import { triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import NotifierField from '../form/NotifierField';
+import { Checkbox } from '@filigran/design-system';
 
 interface InstanceTriggerEditionFormValues {
   id: string;
@@ -60,16 +60,6 @@ interface InstanceTriggerEditionFormValues {
   notifiers: readonly FieldOption[];
   filters: string | null;
 }
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  nested: {
-    margin: `0 ${theme.spacing(1)}`,
-    width: 'auto',
-    backgroundColor: theme.palette.background.nav,
-  },
-}));
 
 interface StixCoreObjectQuickSubscriptionContentProps {
   triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data;
@@ -92,7 +82,6 @@ const NOTIFIER_IDS = {
 const StixCoreObjectQuickSubscription: FunctionComponent<
   StixCoreObjectQuickSubscriptionContentProps
 > = ({ triggerData, instanceId, paginationOptions, instanceName, title }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
@@ -318,13 +307,20 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
     return (
       <Stack
         key={instanceTrigger?.id}
-        gap={3}
+        sx={{
+          gap: 3,
+        }}
       >
-        <Stack gap={1}>
+        <Stack sx={{
+          gap: 1,
+        }}
+        >
           <Stack
             direction="row"
-            alignItems="center"
-            gap={1}
+            sx={{
+              alignItems: 'center',
+              gap: 1,
+            }}
           >
             <Typography variant="h6">{t_i18n('Subscribe')}</Typography>
             <Tag
@@ -346,39 +342,36 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                   padding: '16px',
                 }}
               >
-                <Stack gap={3}>
+                <Stack sx={{
+                  gap: 3,
+                }}
+                >
                   <div>
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="name"
                       label={t_i18n('Name')}
                       fullWidth={true}
                     />
                     <NotifierField name="notifiers" onChange={setFieldValue} />
                     <Field
-                      component={AutocompleteField}
+                      component={ComboboxField}
                       name="event_types"
                       style={fieldSpacingContainerStyle}
                       multiple={true}
-                      textfieldprops={{
-                        variant: 'standard',
-                        label: t_i18n('Triggering on'),
-                      }}
+                      label={t_i18n('Triggering on')}
                       options={instanceEventTypesOptions}
                       onChange={setFieldValue}
-                      renderOption={(
-                        props: React.HTMLAttributes<HTMLLIElement>,
-                        option: { value: string; label: string },
-                      ) => (
-                        <MenuItem value={option.value} {...props}>
+                      renderOption={(option: { value: string; label: string }) => (
+                        <>
                           <Checkbox
                             checked={values.event_types
                               .map((n) => n.value)
                               .includes(option.value)}
                           />
-                          <ListItemText primary={option.label} />
-                        </MenuItem>
+                          <span>{option.label}</span>
+                        </>
                       )}
                     />
                     {multipleInstanceTrigger && instanceTriggerFilters && (
@@ -504,7 +497,10 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
         open={open}
         onClose={handleClose}
       >
-        <Stack gap={3}>
+        <Stack sx={{
+          gap: 3,
+        }}
+        >
           <Alert severity="info" variant="outlined">
             {t_i18n('When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.')}
           </Alert>
@@ -526,14 +522,18 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                   <IconButton
                     aria-label={expandedLines ? t_i18n('Collapse') : t_i18n('Expand')}
                     onClick={handleToggleLine}
-                    aria-haspopup="true"
+                    aria-expanded={expandedLines}
                   >
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
                 )}
               >
                 <ListItemButton
-                  classes={{ root: classes.nested }}
+                  sx={{
+                    margin: `0 ${theme.spacing(1)}`,
+                    width: 'auto',
+                    backgroundColor: theme.palette.background.nav,
+                  }}
                   onClick={handleToggleLine}
                 >
                   <ListItemText

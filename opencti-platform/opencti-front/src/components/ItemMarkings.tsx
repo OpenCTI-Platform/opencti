@@ -3,6 +3,7 @@ import { Badge, Stack, Tooltip } from '@mui/material';
 import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 import stopEvent from '../utils/domEvent';
+import { isWashVisibleOn } from '../utils/Colors';
 import FieldOrEmpty from './FieldOrEmpty';
 
 interface Marking {
@@ -31,9 +32,13 @@ const ChipMarking = ({
   const theme = useTheme<Theme>();
 
   const getColor = () => {
-    let color = markingDefinition.x_opencti_color;
+    // The admin's colour wins whenever it can be seen.
+    const stored = markingDefinition.x_opencti_color;
+    if (stored) {
+      return isWashVisibleOn(stored, theme.palette.background.paper) ? stored : undefined;
+    }
 
-    if (color) return color;
+    let color;
 
     switch (markingDefinition.definition) {
       case 'CD':
@@ -98,7 +103,13 @@ const ItemMarkings = ({
   if (!limit || markings.length <= 1) {
     return (
       <FieldOrEmpty source={markings}>
-        <Stack direction="row" gap={1} flexWrap="wrap">
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
           {markings.map((markingDefinition) => (
             <ChipMarking
               key={markingDefinition.id}
@@ -118,10 +129,10 @@ const ItemMarkings = ({
     <Tooltip
       title={(
         <Stack
-          gap={1}
           direction="row"
-          flexWrap="wrap"
           sx={{
+            gap: 1,
+            flexWrap: 'wrap',
             alignItems: 'flex-start',
             p: 1,
           }}
@@ -149,7 +160,13 @@ const ItemMarkings = ({
         },
       }}
     >
-      <Stack direction="row" gap={1} flexWrap="wrap">
+      <Stack
+        direction="row"
+        sx={{
+          gap: 1,
+          flexWrap: 'wrap',
+        }}
+      >
         {markings.slice(0, limit).map((markingDefinition, index) => {
           const isLastVisible = index === limit - 1;
           const showBadge = hasOverflow && isLastVisible;

@@ -9,7 +9,7 @@ import TableBody from '@mui/material/TableBody';
 import Switch from '@mui/material/Switch';
 import { DragIndicatorOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../../components/Theme';

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Typography } from '@mui/material';
+import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import { Paper } from '@filigran/design-system';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { ImportFilesFormSelectorQuery } from '@components/common/files/import_files/__generated__/ImportFilesFormSelectorQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
@@ -71,7 +72,8 @@ const ImportFilesFormSelectorContent: React.FC<ImportFilesFormSelectorContentPro
         />
       </Box>
 
-      <Paper variant="outlined" sx={{ flex: 1, overflow: 'auto' }}>
+      {/* FDS-WORKAROUND #36: no `overflow-auto` in the shipped sheet — see fds-migration/LIBRARY-FEEDBACK.md #36 */}
+      <Paper padding={0} className="flex-1" style={{ overflow: 'auto' }}>
         <List>
           {forms.length === 0 ? (
             <ListItem>

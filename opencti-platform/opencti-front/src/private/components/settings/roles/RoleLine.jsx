@@ -1,56 +1,29 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
-import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import DangerZoneChip from '../../common/danger_zone/DangerZoneChip';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-const styles = (theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
+const BodyItem = styled('div')(bodyItemStyle);
 
-const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
+const RoleLineComponent = ({ ftd, dataColumns, node }) => {
   const { isSensitive } = useSensitiveModifications('roles', node.standard_id);
 
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: '50px' }}
       divider={true}
       component={Link}
       to={`/dashboard/settings/accesses/roles/${node.id}`}
@@ -58,8 +31,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
       <ListItemText
         primary={(
           <>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{
                 width: dataColumns.name.width,
                 display: 'flex',
@@ -69,7 +41,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
             >
               <span>{node.name}</span>
               { isSensitive && <DangerZoneChip /> }
-            </div>
+            </BodyItem>
             <QueryRenderer
               query={groupsSearchQuery}
               variables={{
@@ -86,39 +58,35 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
                     (id) => id !== null,
                   ).length;
                   return (
-                    <div
-                      className={classes.bodyItem}
+                    <BodyItem
                       style={{ width: dataColumns.groups.width }}
                     >
                       {numberOfGroups}
-                    </div>
+                    </BodyItem>
                   );
                 }
                 return (
-                  <div
-                    className={classes.bodyItem}
+                  <BodyItem
                     style={{ width: dataColumns.groups.width }}
                   >
-                  </div>
+                  </BodyItem>
                 );
               }}
             />
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
-              {fd(node.created_at)}
-            </div>
-            <div
-              className={classes.bodyItem}
+              {ftd(node.created_at)}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.updated_at.width }}
             >
-              {fd(node.updated_at)}
-            </div>
+              {ftd(node.updated_at)}
+            </BodyItem>
           </>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
@@ -130,8 +98,7 @@ RoleLineComponent.propTypes = {
   node: PropTypes.object,
   paginationOptions: PropTypes.object,
   me: PropTypes.object,
-  classes: PropTypes.object,
-  fd: PropTypes.func,
+  ftd: PropTypes.func,
 };
 
 const RoleLineFragment = createFragmentContainer(RoleLineComponent, {
@@ -146,25 +113,18 @@ const RoleLineFragment = createFragmentContainer(RoleLineComponent, {
   `,
 });
 
-export const RoleLine = compose(
-  inject18n,
-  withStyles(styles),
-)(RoleLineFragment);
+export const RoleLine = inject18n(RoleLineFragment);
 
 class RoleLineDummyComponent extends Component {
   render() {
-    const { classes, dataColumns } = this.props;
+    const { dataColumns } = this.props;
     return (
       <ListItem
-        classes={{ root: classes.item }}
+        sx={{ paddingLeft: '10px', height: '50px' }}
         divider={true}
-        secondaryAction={(
-          <Box sx={{ root: classes.itemIconDisabled }}>
-            <KeyboardArrowRightOutlined />
-          </Box>
-        )}
+        secondaryAction={<KeyboardArrowRightOutlined />}
       >
-        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <ListItemIcon sx={{ color: 'grey.700' }}>
           <Skeleton
             animation="wave"
             variant="circular"
@@ -175,8 +135,7 @@ class RoleLineDummyComponent extends Component {
         <ListItemText
           primary={(
             <div>
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.name.width }}
               >
                 <Skeleton
@@ -185,9 +144,8 @@ class RoleLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.groups.width }}
               >
                 <Skeleton
@@ -196,9 +154,8 @@ class RoleLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.created_at.width }}
               >
                 <Skeleton
@@ -207,9 +164,8 @@ class RoleLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.updated_at.width }}
               >
                 <Skeleton
@@ -218,7 +174,7 @@ class RoleLineDummyComponent extends Component {
                   width="90%"
                   height="100%"
                 />
-              </div>
+              </BodyItem>
             </div>
           )}
         />
@@ -229,10 +185,6 @@ class RoleLineDummyComponent extends Component {
 
 RoleLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
-  classes: PropTypes.object,
 };
 
-export const RoleLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(RoleLineDummyComponent);
+export const RoleLineDummy = inject18n(RoleLineDummyComponent);

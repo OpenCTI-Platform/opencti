@@ -1,5 +1,15 @@
 import { GraphQLError } from 'graphql';
 
+// region DOC CODE
+// Doc codes are a stable contract, they identify a precise error.
+// They are used to build the troubleshooting documentation links,
+// to classify work errors in the UI and by the worker.
+export const DOC_INSUFFICIENT_CONFIDENCE_LEVEL = 'INSUFFICIENT_CONFIDENCE_LEVEL';
+export const DOC_INCORRECT_OBSERVABLE_FORMAT = 'INCORRECT_OBSERVABLE_FORMAT';
+export const DOC_INCORRECT_INDICATOR_FORMAT = 'INCORRECT_INDICATOR_FORMAT';
+export const DOC_INDICATOR_PATTERN_EXCLUDED = 'INDICATOR_PATTERN_EXCLUDED';
+// End region DOC CODE
+
 const CATEGORY_TECHNICAL = 'TECHNICAL';
 const CATEGORY_BUSINESS = 'BUSINESS';
 
@@ -151,7 +161,7 @@ export const TECHNICAL_ERRORS = [
 
 // region CATEGORY_FUNCTIONAL
 export const FUNCTIONAL_ERROR = 'FUNCTIONAL_ERROR';
-export const INSUFFICIENT_CONFIDENCE_LEVEL = 'INSUFFICIENT_CONFIDENCE_LEVEL';
+
 export const FunctionalError = (reason?: string, data?: any) => error('FUNCTIONAL_ERROR', reason || 'Business validation', {
   http_status: 400,
   genre: CATEGORY_BUSINESS,
@@ -178,6 +188,15 @@ export const ValidationError = (message: string, field?: string | number, data?:
   genre: CATEGORY_BUSINESS,
   field,
   ...(data ?? {}),
+});
+
+// The caller sent an input that the platform cannot use (ex: unknown or malformed filter key).
+// It is a mistake of the client, already reported in the response: not a platform failure.
+export const BAD_USER_INPUT_ERROR = 'BAD_USER_INPUT_ERROR';
+export const BadUserInputError = (reason: string, data?: any) => error(BAD_USER_INPUT_ERROR, reason, {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+  ...data,
 });
 
 export const RESOURCE_NOT_FOUND_ERROR = 'RESOURCE_NOT_FOUND';
@@ -226,5 +245,10 @@ export const FUNCTIONAL_ERRORS = [
   RESOURCE_NOT_FOUND_ERROR,
   TYPE_LOCK_ERROR,
   CLIENT_ABORT_ERROR,
+];
+
+// Errors caused by the input of the client, already returned to it: logged at info level
+export const CLIENT_INPUT_ERRORS = [
+  BAD_USER_INPUT_ERROR,
 ];
 // endregion

@@ -1,21 +1,18 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
+import { IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import { IconButton, Radio, RadioGroup, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
 import { FormikHelpers } from 'formik/dist/types';
-import { SelectChangeEvent } from '@mui/material/Select';
 import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
-import classNames from 'classnames';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import { CsvMapperProvider } from '@components/data/csvMapper/CsvMapperContext';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -24,21 +21,25 @@ import { representationInitialization } from './representations/RepresentationUt
 import CsvMapperTestDialog from './CsvMapperTestDialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  center: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  marginTop: {
-    marginTop: 20,
-  },
-  representationContainer: {
-    marginTop: 20,
-    display: 'flex',
-  },
-}));
+const Centered = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const Section = styled('div')({
+  marginTop: 20,
+});
+
+const CenteredSection = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  marginTop: 20,
+});
+
+const RepresentationContainer = styled('div')({
+  marginTop: 20,
+  display: 'flex',
+});
 
 const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
   name: Yup.string().trim().required(t_i18n('This field is required')),
@@ -58,7 +59,6 @@ interface CsvMapperFormProps {
 
 const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit, isDuplicated }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   // accordion state
   const [open, setOpen] = useState(false);
@@ -167,12 +167,12 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth
               />
-              <div className={classNames(classes.center, classes.marginTop)}>
+              <CenteredSection>
                 <Field
                   component={SwitchField}
                   type="checkbox"
@@ -190,37 +190,24 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                     style={{ cursor: 'default' }}
                   />
                 </Tooltip>
-              </div>
-              <div className={classes.marginTop}>
+              </CenteredSection>
+              <Section>
                 <Typography>{t_i18n('CSV separator')}</Typography>
-                <div className={classes.center}>
+                <Centered>
                   <RadioGroup
                     aria-label="CSV separator"
                     name="separator"
-                    style={{ flexDirection: 'row' }}
+                    orientation="horizontal"
                     value={values.separator}
-                    onChange={(event: SelectChangeEvent) => setFieldValue('separator', event.target.value)}
+                    onValueChange={(value) => setFieldValue('separator', value)}
                   >
-                    <FormControlLabel
-                      value=","
-                      control={<Radio />}
-                      label={t_i18n('Comma')}
-                    />
-                    <FormControlLabel
-                      value=";"
-                      control={<Radio />}
-                      label={t_i18n('Semicolon')}
-                    />
-                    <FormControlLabel
-                      value="|"
-                      control={<Radio />}
-                      label={t_i18n('Pipe')}
-                    />
+                    <Radio value="," label={t_i18n('Comma')} />
+                    <Radio value=";" label={t_i18n('Semicolon')} />
+                    <Radio value="|" label={t_i18n('Pipe')} />
                   </RadioGroup>
-                </div>
-              </div>
-              <div
-                className={classes.marginTop}
+                </Centered>
+              </Section>
+              <Section
                 style={{ display: 'flex', alignItems: 'end', gap: '8px' }}
               >
                 <Field
@@ -239,29 +226,28 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                     style={{ cursor: 'default' }}
                   />
                 </Tooltip>
-              </div>
+              </Section>
 
-              <div className={classNames(classes.center, classes.marginTop)}>
+              <CenteredSection>
                 <Typography variant="h3" sx={{ m: 0 }}>
                   {t_i18n('Representations for entity')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)
                   }
-                >
-                  <Add fontSize="small" />
-                </IconButton>
-              </div>
+                  icon={<Add fontSize="small" />}
+                />
+              </CenteredSection>
               <FieldArray
                 name="entity_representations"
                 render={(arrayHelpers) => (
                   <>
                     {values.entity_representations.map((_, idx) => (
-                      <div
+                      <RepresentationContainer
                         key={`entity-${idx}`}
-                        className={classes.representationContainer}
                       >
                         <Field
                           component={CsvMapperRepresentationForm}
@@ -272,33 +258,32 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           prefixLabel="entity_"
                           onDelete={() => arrayHelpers.remove(idx)}
                         />
-                      </div>
+                      </RepresentationContainer>
                     ))}
                   </>
                 )}
               />
 
-              <div className={classNames(classes.center, classes.marginTop)}>
+              <CenteredSection>
                 <Typography variant="h3" sx={{ m: 0 }}>
                   {t_i18n('Representations for relationship')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
                   }
-                >
-                  <Add fontSize="small" />
-                </IconButton>
-              </div>
+                  icon={<Add fontSize="small" />}
+                />
+              </CenteredSection>
               <FieldArray
                 name="relationship_representations"
                 render={(arrayHelpers) => (
                   <>
                     {values.relationship_representations.map((_, idx) => (
-                      <div
+                      <RepresentationContainer
                         key={`relationship-${idx}`}
-                        className={classes.representationContainer}
                       >
                         <Field
                           component={CsvMapperRepresentationForm}
@@ -309,7 +294,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           prefixLabel="relationship_"
                           onDelete={() => arrayHelpers.remove(idx)}
                         />
-                      </div>
+                      </RepresentationContainer>
                     ))}
                   </>
                 )}

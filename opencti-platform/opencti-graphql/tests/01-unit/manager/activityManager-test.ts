@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { isLiveActivity } from '../../../src/manager/activityManager';
+import { buildActivityNotificationData, isLiveActivity, resolveActivitySourceUser } from '../../../src/manager/activityManager';
 import type { ResolvedTrigger } from '../../../src/manager/notificationManager';
+import { INGESTION_HEALTH_MANAGER_USER, SYSTEM_USER } from '../../../src/utils/access';
+import type { AuthUser } from '../../../src/types/user';
 
 const buildResolvedTrigger = (trigger_type: string, trigger_scope: string): ResolvedTrigger => {
   return {
@@ -43,3 +45,32 @@ describe('Activity manager - isLiveActivity', () => {
   });
 });
 
+describe('Activity manager - resolveActivitySourceUser', () => {
+  const platformUser = { id: 'platform-user-id', name: 'Platform user' } as AuthUser;
+  const platformUsers = new Map([[platformUser.id, platformUser]]);
+
+  it('should resolve an internal user absent from the users cache', () => {
+    expect(resolveActivitySourceUser(INGESTION_HEALTH_MANAGER_USER.id, platformUsers)?.name).toBe('INGESTION HEALTH MANAGER');
+  });
+
+  it('should resolve a platform user from the users cache', () => {
+    expect(resolveActivitySourceUser(platformUser.id, platformUsers)).toBe(platformUser);
+  });
+
+  it('should resolve the system user when the event has no user', () => {
+    expect(resolveActivitySourceUser(undefined, platformUsers)).toBe(SYSTEM_USER);
+  });
+});
+
+describe('Activity manager - buildActivityNotificationData', () => {
+  it('should give the entity name as representative', () => {
+    const data = buildActivityNotificationData({ id: 'connector-id', entity_name: 'AlienVault' });
+    expect(data.representative).toEqual({ main: 'AlienVault', secondary: '' });
+    expect(data.id).toBe('connector-id');
+  });
+
+  it('should keep the data unchanged without entity name', () => {
+    const data = { id: 'user-id' };
+    expect(buildActivityNotificationData(data)).toBe(data);
+  });
+});

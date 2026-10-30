@@ -3,10 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useDashboardRefresh from './useDashboardRefresh';
 
 const setTabHidden = (hidden: boolean) => {
-  Object.defineProperty(document, 'hidden', {
-    configurable: true,
-    get: () => hidden,
-  });
+  vi.spyOn(document, 'hidden', 'get').mockReturnValue(hidden);
   document.dispatchEvent(new Event('visibilitychange'));
 };
 

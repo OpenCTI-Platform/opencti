@@ -1,48 +1,26 @@
 import Button from '@common/button/Button';
-import { InfoOutlined } from '@mui/icons-material';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
-import Tooltip from '@mui/material/Tooltip';
-import withStyles from '@mui/styles/withStyles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import { Stack } from '@mui/material';
+import GenerateExportTitle from '../GenerateExportTitle';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const styles = () => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
-});
 
 export const StixDomainObjectsExportCreationMutation = graphql`
   mutation StixDomainObjectsExportCreationMutation(
@@ -172,49 +150,42 @@ class StixDomainObjectsExportCreation extends Component {
                     open={this.props.open}
                     onClose={this.props.onClose}
                     data-testid="StixDomainObjectsExportCreationDialog"
-                    title={(
-                      <Stack direction="row" gap={1} alignContent="center">
-                        {t('Generate an export')}
-                        <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                          <InfoOutlined color="primary" />
-                        </Tooltip>
-                      </Stack>
-                    )}
+                    title={<GenerateExportTitle />}
                   >
                     <Field
-                      component={SelectField}
-                      variant="standard"
+                      component={SelectFieldFds}
+                      variant="outlined"
                       name="format"
                       label={t('Export format')}
                       fullWidth={true}
                       containerstyle={{ width: '100%' }}
                     >
                       {availableFormat.map((value, i) => (
-                        <MenuItem
+                        <SelectItem
                           key={i}
                           value={value}
                           disabled={!isExportActive(value)}
                         >
                           {value}
-                        </MenuItem>
+                        </SelectItem>
                       ))}
                     </Field>
                     <Field
-                      component={SelectField}
-                      variant="standard"
+                      component={SelectFieldFds}
+                      variant="outlined"
                       name="type"
                       label={t('Export type')}
                       fullWidth={true}
                       containerstyle={fieldSpacingContainerStyle}
                     >
-                      <MenuItem value="simple">
+                      <SelectItem value="simple">
                         {t('Simple export (just the entity)')}
-                      </MenuItem>
-                      <MenuItem value="full">
+                      </SelectItem>
+                      <SelectItem value="full">
                         {t(
                           'Full export (entity and first neighbours)',
                         )}
-                      </MenuItem>
+                      </SelectItem>
                     </Field>
                     <ObjectMarkingField
                       name="contentMaxMarkings"
@@ -235,19 +206,19 @@ class StixDomainObjectsExportCreation extends Component {
                     {visibleColumnExportEnabledFormats.includes(values.format)
                       ? (
                           <Field
-                            component={SelectField}
-                            variant="standard"
+                            component={SelectFieldFds}
+                            variant="outlined"
                             name="columns"
                             label={t('Choose column to export')}
                             fullWidth={true}
                             containerstyle={fieldSpacingContainerStyle}
                           >
-                            <MenuItem value="all">
+                            <SelectItem value="all">
                               {t('All attributes')}
-                            </MenuItem>
-                            <MenuItem value="view">
+                            </SelectItem>
+                            <SelectItem value="view">
                               {t('Current view')}
-                            </MenuItem>
+                            </SelectItem>
                           </Field>
                         ) : undefined}
                     <DialogActions>
@@ -280,7 +251,6 @@ class StixDomainObjectsExportCreation extends Component {
 }
 
 StixDomainObjectsExportCreation.propTypes = {
-  classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   data: PropTypes.object,
   exportContext: PropTypes.object,
@@ -289,7 +259,4 @@ StixDomainObjectsExportCreation.propTypes = {
   open: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectsExportCreation);
+export default inject18n(StixDomainObjectsExportCreation);

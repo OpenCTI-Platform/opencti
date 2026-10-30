@@ -20,7 +20,7 @@ const DraftWorkspaceViewer = ({ entityId }: DraftWorkspaceViewerProps) => {
   const canCreateKnowledgeInDraft = hasCapabilitiesInDraft([KNOWLEDGE_KNUPDATE]);
 
   return (
-    <Grid item xs={6}>
+    <Grid size={6}>
       <Card
         padding="horizontal"
         title={t_i18n('Drafts')}

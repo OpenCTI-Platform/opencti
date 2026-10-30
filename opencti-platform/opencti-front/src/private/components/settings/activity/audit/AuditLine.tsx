@@ -1,11 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { DataColumns } from '../../../../../components/list_lines';
 import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
@@ -17,30 +16,9 @@ import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import AuditDrawer from './AuditDrawer';
 import { EMPTY_VALUE } from '../../../../../utils/String';
 import MarkdownDisplay from '../../../../../components/markdownDisplay/MarkdownDisplay';
+import { bodyItemStyle } from '../../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface AuditLineProps {
   node: AuditLine_node$key;
@@ -76,8 +54,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   dataColumns,
   node,
 }) => {
-  const classes = useStyles();
-  const { fndt } = useFormatter();
+  const { ftdt } = useFormatter();
   const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
@@ -94,11 +71,11 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
         />
       )}
       <ListItemButton
-        classes={{ root: classes.item }}
+        sx={{ paddingLeft: '10px', height: 50 }}
         divider={true}
         onClick={() => setSelectedLog(data.id)}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon sx={{ color: theme.palette.primary.main }}>
           <ItemIcon
             color={color}
             type={data.context_data?.entity_type ?? data.event_scope}
@@ -107,32 +84,27 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
         <ListItemText
           primary={(
             <div>
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.timestamp.width }}
               >
-                {fndt(data.timestamp)}
-              </div>
-              <div
-                className={classes.bodyItem}
+                {ftdt(data.timestamp, 'numeric')}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.user.width }}
               >
                 {data.user?.name ?? EMPTY_VALUE}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.event_type.width }}
               >
                 {data.event_type}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.event_scope.width }}
               >
                 {data.event_scope ?? EMPTY_VALUE}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.message.width }}
               >
                 <span style={{ color }}>
@@ -142,7 +114,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                     commonmark={true}
                   />
                 </span>
-              </div>
+              </BodyItem>
             </div>
           )}
         />
@@ -156,17 +128,15 @@ export const AuditLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+    <ListItem sx={{ paddingLeft: '10px', height: 50 }} divider={true}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.timestamp.width }}
             >
               <Skeleton
@@ -175,9 +145,8 @@ export const AuditLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.user.width }}
             >
               <Skeleton
@@ -186,9 +155,8 @@ export const AuditLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.event_type.width }}
             >
               <Skeleton
@@ -197,9 +165,8 @@ export const AuditLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.event_scope.width }}
             >
               <Skeleton
@@ -208,9 +175,8 @@ export const AuditLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.message.width }}
             >
               <Skeleton
@@ -219,7 +185,7 @@ export const AuditLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

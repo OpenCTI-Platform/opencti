@@ -17,6 +17,7 @@ export const taskFragment = graphql`
     due_date
     description
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     revoked
     created_at
     updated_at
@@ -88,7 +89,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <TaskDetails
                       tasksData={task}
                     />
@@ -96,7 +97,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview
                       stixDomainObject={task}
                       displayAssignees
@@ -106,7 +107,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                 );
               case 'relatedEntities':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={task}
@@ -116,7 +117,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={task.id}
                     />
@@ -124,7 +125,7 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={task.id}
                       defaultMarkings={task.objectMarking ?? []}

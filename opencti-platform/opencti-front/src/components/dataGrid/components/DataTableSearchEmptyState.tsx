@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 import Box from '@mui/material/Box';
 import { DoNotDisturbOnOutlined, OpenInNew } from '@mui/icons-material';
 import { useFormatter } from '../../i18n';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../Theme';
 import { Typography } from '@mui/material';
 

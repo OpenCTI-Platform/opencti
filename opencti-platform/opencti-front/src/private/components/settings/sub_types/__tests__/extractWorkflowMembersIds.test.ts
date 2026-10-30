@@ -34,6 +34,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          order: 0,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
@@ -49,6 +50,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          order: 0,
           onEnter: [],
           onExit: [{
             type: 'updateAuthorizedMembers',
@@ -64,6 +66,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          order: 0,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: {
@@ -151,6 +154,7 @@ describe('extractWorkflowMembersIds', () => {
         states: [
           {
             statusId: 's1',
+            order: 0,
             onEnter: [{
               type: 'updateAuthorizedMembers',
               params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
@@ -159,6 +163,7 @@ describe('extractWorkflowMembersIds', () => {
           },
           {
             statusId: 's2',
+            order: 1,
             onEnter: [{
               type: 'updateAuthorizedMembers',
               params: { authorized_members: [{ id: 'user-1', access_right: 'admin' }] },
@@ -175,6 +180,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          order: 0,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: {
@@ -195,6 +201,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          order: 0,
           onEnter: [{
             type: 'updateAuthorizedMembers',
             params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },

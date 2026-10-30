@@ -8,10 +8,10 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,13 +23,9 @@ import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTas
 import { CaseTemplateTasksLinesPaginationQuery$data } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import CaseTemplateTasksEdition from './CaseTemplateTasksEdition';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+});
 
 const caseTemplateTasksPopoverDeletionMutation = graphql`
   mutation CaseTemplateTasksPopoverDeletionMutation($id: ID!) {
@@ -55,7 +51,6 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
   paginationOptions,
   task,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { caseTemplateId } = useParams() as { caseTemplateId: string };
@@ -133,7 +128,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
   };
 
   return (
-    <div className={classes.container}>
+    <Container>
       <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
         <MoreVert />
       </IconButton>
@@ -171,7 +166,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this task?')}
       />
-    </div>
+    </Container>
   );
 };
 

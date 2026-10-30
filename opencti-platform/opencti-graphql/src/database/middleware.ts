@@ -1,6 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
+import { GraphQLError } from 'graphql';
 import Bluebird, { Promise as BluePromise } from 'bluebird';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -13,9 +14,9 @@ import {
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
   DatabaseError,
+  DOC_INSUFFICIENT_CONFIDENCE_LEVEL,
   ForbiddenAccess,
   FunctionalError,
-  INSUFFICIENT_CONFIDENCE_LEVEL,
   LockTimeoutError,
   MissingReferenceError,
   TYPE_LOCK_ERROR,
@@ -24,7 +25,8 @@ import {
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
-import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
+import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
+import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -102,6 +104,7 @@ import {
 } from '../schema/identifier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
+import { isStreamPublishable } from './stream/stream-utils';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -151,7 +154,6 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
@@ -161,7 +163,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -170,11 +172,13 @@ import {
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
+  INTERNAL_USERS,
   isBypassUser,
   isMarkingAllowed,
   isOrganizationAllowed,
   isUserCanAccessStoreElement,
   isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
@@ -208,14 +212,24 @@ import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domai
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
-import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  confidence,
+  customFieldValues,
+  iAliasedIds,
+  iAttributes,
+  modified,
+  type RefAttribute,
+  updatedAt,
+} from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -236,7 +250,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from './markdown-embedded-images';
 import {
   collectTempImageTokensFromDescriptionFields,
   resolveEmbeddedImagesInDescriptionFieldsForExport,
@@ -280,6 +294,17 @@ import type * as S from '../types/stix-2-1-common';
 import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
+import {
+  foldCustomFieldValuesInputs,
+  isCustomFieldOptionsRemove,
+  mergeCustomFieldValues,
+  normalizeCustomFieldValues,
+  resolveCustomFieldValuesIdentity,
+  transformCustomFieldValueAddInput,
+  validateCustomFieldValues,
+  validateCustomFieldValuesEditInput,
+} from '../modules/customField/custom-field-validator';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -402,13 +427,39 @@ export const loadEntity = async <T extends BasicStoreEntity> (
 // endregion
 
 // region Loader element
+// Targets of refs relations, by internal id.
+// With objectsBaseData, the members of containers (object relations) are loaded with their base data only:
+// a container can hold tens of thousands of them, while a STIX conversion only reads their ids.
+// A member also targeted by another ref (author, marking...) keeps its full data.
+const loadRefsTargets = async (
+  context: AuthContext,
+  user: AuthUser,
+  refsRelations: BasicStoreRelation[],
+  objectsBaseData: boolean,
+): Promise<Record<string, BasicStoreBase>> => {
+  const isBaseDataRelation = (rel: BasicStoreRelation) => objectsBaseData && rel.entity_type === RELATION_OBJECT;
+  const fullRelations = refsRelations.filter((rel) => !isBaseDataRelation(rel));
+  const fullTargetIds = new Set(fullRelations.map((rel) => rel.toId));
+  const baseRelations = refsRelations.filter((rel) => isBaseDataRelation(rel) && !fullTargetIds.has(rel.toId));
+  const loadTargets = async (relations: BasicStoreRelation[], baseData: boolean) => {
+    if (relations.length === 0) {
+      return {};
+    }
+    const ids = R.uniq(relations.map((rel) => rel.toId));
+    const types = R.uniq(relations.map((rel) => rel.toType));
+    return await elFindByIds(context, user, ids, { type: types, toMap: true, baseData }) as Record<string, BasicStoreBase>;
+  };
+  const [fullTargets, baseTargets] = await Promise.all([loadTargets(fullRelations, false), loadTargets(baseRelations, true)]);
+  return Object.assign(baseTargets, fullTargets);
+};
+
 const loadElementMetaDependencies = async (
   context: AuthContext,
   user: AuthUser,
   elements: { internal_id: string; entity_type: string }[],
-  args: { onlyMarking?: boolean } = {},
+  args: { onlyMarking?: boolean; objectsBaseData?: boolean } = {},
 ): Promise<Map<string, BasicStoreBase>> => {
-  const { onlyMarking = true } = args;
+  const { onlyMarking = true, objectsBaseData = false } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
   const workingIds = Array.from(workingElementsMap.keys());
@@ -428,10 +479,7 @@ const loadElementMetaDependencies = async (
     await fullRelationsList<BasicStoreRelation>(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
   }
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
-  // Parallel resolutions
-  const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
-  const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, toMap: true }) as Record<string, BasicStoreBase>;
+  const toResolvedElements = await loadRefsTargets(context, user, refsRelations, objectsBaseData);
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map<string, BasicStoreBase>();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -484,7 +532,7 @@ export const loadElementsWithDependencies = async (
   context: AuthContext,
   user: AuthUser,
   elements: BasicStoreBase[],
-  opts: { onlyMarking?: boolean } = {},
+  opts: { onlyMarking?: boolean; objectsBaseData?: boolean } = {},
 ): Promise<BasicStoreCommon[]> => {
   const fileMarkings: string[] = [];
   const elementsToDeps: { internal_id: string; entity_type: string }[] = [...elements];
@@ -571,6 +619,8 @@ export const loadElementsWithDependencies = async (
 };
 type LoadByIdsWithDependeciesOpts = ElFindByIdsOpts & {
   onlyMarking?: boolean;
+  // Load the members of containers with their base data only, enough for a STIX conversion
+  objectsBaseData?: boolean;
 };
 const loadByIdsWithDependencies = async (
   context: AuthContext,
@@ -779,7 +829,6 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -885,7 +934,7 @@ export const distributionEntities = async (
 
   // Handle custom fields (x_opencti_cf_*) via nested aggregation
   if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
-    const customFieldDef = await getCustomFieldDefinitionByName(context, user, field);
+    const customFieldDef = await getCustomFieldDefinitionByNameOrAlias(context, user, field);
     // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
     // and date sub-fields are already aggregatable as-is.
     const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
@@ -960,7 +1009,7 @@ export const distributionRelations = async (
     relationship_type: string[];
     dateAttribute?: string | null;
     onlyInferred?: boolean; } & RelationFilters<BasicStoreCommon>,
-) => {
+): ReturnType<typeof convertAggregateDistributions> => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
@@ -1029,7 +1078,9 @@ export const inputResolveRefs = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
+  opts: { embeddedFromWithRefs?: boolean } = {},
 ): Promise<Record<string, any>> => {
+  const { embeddedFromWithRefs = true } = opts;
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map<string, { id: string; destKey?: string; multiple?: boolean; vocab?: { field: any; data: string } }[]>();
     const expectedIds: string[] = [];
@@ -1089,7 +1140,7 @@ export const inputResolveRefs = async (
             expectedIds.push(i);
           });
         } else { // Single
-          if (dst === 'from' && isStixRefRelationship(type)) {
+          if (dst === 'from' && isStixRefRelationship(type) && embeddedFromWithRefs) {
             // If resolution is due to embedded ref, the from must be fully resolved
             // This will be used to generated a correct stream message
             embeddedFromResolution = id;
@@ -1333,6 +1384,15 @@ const partialInstanceWithInputs = (instance: Record<string, any>, inputs: EditIn
     ...inputData,
   };
 };
+// Apply a json patch on a single attribute and return its patched value.
+// Only this attribute is cloned, cloning the whole instance is too expensive for big entities.
+// Operations rooted on other attributes cannot change this one, so they are skipped.
+const patchAttributeValue = (key: string, currentValue: any, patch: ReadonlyArray<jsonpatch.Operation>) => {
+  const keyPath = `/${key}`;
+  const keyPatch = patch.filter((operation) => operation.path === keyPath || operation.path.startsWith(`${keyPath}/`));
+  const document = { [key]: structuredClone(currentValue) };
+  return jsonpatch.applyPatch(document, keyPatch).newDocument[key];
+};
 const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Record<string, any>): EditInput | object => {
   const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
@@ -1382,8 +1442,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
             });
           }
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else {
         finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
       }
@@ -1400,13 +1459,14 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           // `field_id` is a stable per-entry identifier used by nested object attributes that don't
           // have a plain `id` (e.g. custom_field_values), allowing a precise removal that is recomputed
           // against the live value at apply time instead of a stale pre-computed snapshot.
-          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c)));
+          const isRemoved = (c: any) => toRemove.some((r) => (r.id !== undefined && r.id === c.id)
+            || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c));
+          const newValues = current.filter((c) => !isRemoved(c));
           patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
@@ -1417,8 +1477,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
         const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
         const patch = [{ op: 'replace' as const, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else { // Replace general
         finalVal = value;
       }
@@ -1431,13 +1490,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
     const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
     const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
     const patch = [{ op: operation as EditOperation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-    const clonedInstance = structuredClone(instance);
-    clonedInstance[key] = clonedInstance[key] ?? {}; // Patch on complete empty value is not supported by jsonpatch
-    const patchedInstance = jsonpatch.applyPatch(clonedInstance, patch).newDocument;
-    if (compareUnsorted(patchedInstance[key], instance[key])) {
+    // Patch on complete empty value is not supported by jsonpatch
+    const patchedValue = patchAttributeValue(key, instance[key] ?? {}, patch);
+    if (compareUnsorted(patchedValue, instance[key])) {
       return {}; // No need to update the attribute
     }
-    finalVal = [patchedInstance[key]];
+    finalVal = [patchedValue];
   } else {
     // now we  check if the new value would actually result in no change in database
     let evaluateValue = value ? R.head(value) : null;
@@ -1468,13 +1526,13 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   // endregion
   if (isDateAttribute(key)) {
-    const finalValElement = R.head(finalVal);
+    const finalValElement = R.head(finalVal ?? []);
     if (isEmptyField(finalValElement)) {
       finalVal = [null];
     }
   }
   if (dateForLimitsAttributes.includes(key)) {
-    const finalValElement = R.head(finalVal);
+    const finalValElement = R.head(finalVal ?? []);
     if (dateForStartAttributes.includes(key) && isEmptyField(finalValElement)) {
       finalVal = [FROM_START_STR];
     }
@@ -1484,8 +1542,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   return { key, value: finalVal, operation };
 };
-const mergeInstanceWithUpdateInputs = (base: Record<string, any>, inputs: EditInput[]) => {
-  const instance = structuredClone(base);
+// The instance is not mutated, no need to clone it.
+// The result shares the nested values of the attributes that are not updated with the instance: do not mutate it.
+const mergeInstanceWithUpdateInputs = (instance: Record<string, any>, inputs: EditInput[]) => {
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(instance.entity_type), ...schemaRelationsRefDefinition.getInputNames(instance.entity_type)];
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
@@ -1860,7 +1919,13 @@ const mergeEntitiesRaw = async (
     const sourceFieldValue = (takenFrom as Record<string, any>)[targetFieldKey];
     const fieldValues = R.flatten((sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isObjectAttribute(targetFieldKey)) {
+    if (targetFieldKey === customFieldValues.name) {
+      // Custom fields are merged one by one as standard attributes, not appended as a list of objects
+      if (fieldValues.length > 0) {
+        const sourcesCustomFieldValues = (sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey]);
+        updateAttributes.push({ key: targetFieldKey, value: mergeCustomFieldValues(mergedEntityCurrentFieldValue, sourcesCustomFieldValues) });
+      }
+    } else if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
       const isObjectMultiple = isMultipleAttribute(targetType, targetFieldKey);
       if (isObjectMultiple) {
@@ -1884,6 +1949,10 @@ const mergeEntitiesRaw = async (
       // standard_id of merged entities must be kept in x_opencti_stix_ids
       if (targetFieldKey === IDS_STIX) {
         pushAll(sourceValues, sourceEntities.map((s) => s.standard_id));
+      }
+      // The merging user is folded into this same creator_id update (instead of a separate one) to avoid a second EditInput silently overwriting it.
+      if (targetFieldKey === 'creator_id' && !INTERNAL_USERS[user.id] && !user.no_creators) {
+        pushAll(sourceValues, [user.id]);
       }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
@@ -2006,7 +2075,22 @@ export const mergeEntities = async (
       throw FunctionalError('Cannot access initial instance', { targetEntityId });
     }
     const target = { ...initialInstance } as BasicStoreEntity;
-    const sources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
+    const loadedSources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
+    // storeLoadByIdsWithRefs relies on an unsorted elastic query, so re-align the sources on the requested
+    // ids order: for single meta refs (created-by, ...) the first source wins, the order must be deterministic.
+    const sourcesByIds = new Map<string, StoreObject>();
+    // Sources are indexed in internal_id order with a first-write-wins rule to keep the mapping
+    // deterministic even if several sources share a secondary id (duplicated standard_id, stix ids or aliases).
+    const orderedLoadedSources = R.sortBy((s) => s.internal_id, loadedSources);
+    orderedLoadedSources.forEach((source) => {
+      const sourceIds = [source.internal_id, source.standard_id, ...(source.x_opencti_stix_ids ?? []), ...(source.i_aliases_ids ?? [])];
+      sourceIds.forEach((id) => {
+        if (!sourcesByIds.has(id)) {
+          sourcesByIds.set(id, source);
+        }
+      });
+    });
+    const sources = R.uniqBy((s) => s.internal_id, sourceEntityIds.map((id) => sourcesByIds.get(id)).filter(isNotEmptyField));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
@@ -2037,18 +2121,14 @@ export const transformPatchToInput = (
   patch: Record<string, any>,
   operations: Record<string, undefined | 'add' | 'remove' | 'replace'> = {},
 ): EditInput[] => {
-  return R.pipe(
-    R.toPairs,
-    R.map((t) => {
-      const val = R.last(t) as any;
-      const key = R.head(t) as string;
-      const operation = operations[key] || UPDATE_OPERATION_REPLACE;
-      if (!R.isNil(val)) {
-        return { key, value: Array.isArray(val) ? val : [val], operation };
-      }
-      return { key, value: null, operation } as any;
-    }),
-  )(patch);
+  return Object.entries(patch).map(([key, val]) => {
+    const operation = (operations[key] || UPDATE_OPERATION_REPLACE) as EditOperation;
+    if (val !== undefined && val !== null) {
+      return { key, value: Array.isArray(val) ? val : [val], operation };
+    }
+    // A nil value means "reset the attribute": kept as null so downstream removes the field from the document.
+    return { key, value: null as unknown as EditInput['value'], operation };
+  });
 };
 const checkAttributeConsistency = (entityType: string, key: string) => {
   if (key.startsWith(RULE_PREFIX)) {
@@ -2161,7 +2241,8 @@ const getPreviousInstanceValue = (key: string, instance: Record<string, any>) =>
   if (key.includes('.')) {
     const [base, target] = key.split('.');
     const data = instance[base]?.[target];
-    return data ? [data] : data;
+    // Always return an array (or undefined) so callers relying on Array methods (e.g. draft consolidation) never crash on falsy scalars
+    return isEmptyField(data) ? undefined : [data];
   }
   const data = instance[key];
   if (isEmptyField(data)) {
@@ -2473,13 +2554,15 @@ const resolveRefsForInputs = async (
   return revolvedInputs;
 };
 
-type UpdateAttributeMetaResolvedOpts = {
+type UpdateAttributeMetaResolvedOpts = EventOpts & {
   locks?: string[];
   impactStandardId?: boolean;
   references?: string[];
   commitMessage?: string;
   bypassIndividualUpdate?: boolean;
   bypassValidation?: boolean;
+  // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
+  skipUserIndividualSync?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2487,7 +2570,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   initial: T,
   inputs: EditInput[],
   opts: UpdateAttributeMetaResolvedOpts = {},
-): Promise<{ element: T; event?: UpdateEvent | null; isCreation?: boolean }> => {
+): Promise<{ element: T; event?: UpdateEvent | null; isCreation?: boolean; workflowStatusChanged?: boolean }> => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -2557,12 +2640,6 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const updated = mergeInstanceWithUpdateInputs(initial, updates);
-  const removedEmbeddedStoragePaths = draftId
-    ? []
-    : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
-        entityType: initial.entity_type,
-        entityId: initial.internal_id,
-      });
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2847,7 +2924,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
       }
     }
-    if (updatedInputs.length > 0 && removedEmbeddedStoragePaths.length > 0) {
+    if (updatedInputs.some((i) => MARKDOWN_FIELD_KEY_SET.has(i.key))) {
+      const removedEmbeddedStoragePaths = draftId
+        ? []
+        : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
+            entityType: initial.entity_type,
+            entityId: initial.internal_id,
+          });
       for (let i = 0; i < removedEmbeddedStoragePaths.length; i += 1) {
         const storagePath = removedEmbeddedStoragePaths[i];
         try {
@@ -2863,7 +2946,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user) && !opts.skipUserIndividualSync) {
       const args = {
         filters: {
           mode: FilterMode.And,
@@ -2911,7 +2994,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       // TODO Implements a more generic approach to notify enrichment
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
-      if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
+      const shouldUpdateSecurityCoverage = data.updatedInstance[RELATION_COVERED]
+        && data.updatedInstance.entity_type !== ENTITY_TYPE_SECURITY_COVERAGE;
+      if (isRefUpdate && shouldUpdateSecurityCoverage) {
         const { element: securityCoverage } = await updateAttribute(
           context,
           user,
@@ -2923,7 +3008,8 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage as BasicStoreBase);
       }
       // endregion
-      return { element: updatedInstance as T, event, isCreation: false };
+      const workflowStatusChanged = updatedInputs.some((input) => input.key === X_WORKFLOW_ID);
+      return { element: updatedInstance as T, event, isCreation: false, workflowStatusChanged };
     }
     // Return updated element after waiting for it.
     return { element: updatedInstance as T, event: null, isCreation: false };
@@ -2976,7 +3062,10 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
+  // Set by the workflow projection so its own write is not synced back as an external write
+  workflowInternalWrite?: boolean;
+};
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -2992,11 +3081,37 @@ export const updateAttribute = async <T extends StoreObject>(
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
+  // Validate custom field values against their definitions (mandatory / min-max / select options)
+  let finalInputs = inputs;
+  const customFieldValuesInputs = inputs.filter((inputData) => inputData.key === customFieldValues.name);
+  if (customFieldValuesInputs.length > 0) {
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      const normalizedInputs: EditInput[] = [];
+      for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
+        const customFieldValuesInput = customFieldValuesInputs[i];
+        const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+        normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
+      }
+      // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
+      const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
+      const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
+      const customFieldValuesInput = isFolded
+        ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
+        : normalizedInputs[0];
+      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+      finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
+    } else {
+      throw FunctionalError('Custom fields feature is not enabled', { id, type });
+    }
+  }
   // Continue update
-  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, opts);
+  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, finalInputs, opts);
   if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
+  }
+  if (data.workflowStatusChanged && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    await syncWorkflowInstanceFromExternalWrite(context, user, data.element, (data.element as BasicStoreBase).x_opencti_workflow_id);
   }
   return data;
 };
@@ -3191,6 +3306,12 @@ const validateEntityAndRelationCreation = async (
     await validateInputCreation(context, user, type, input, entitySetting, {
       bypassMandatoryAttributes: opts.bypassMandatoryAttributes === true,
     });
+    // Custom field values are validated on the final values (default values included).
+    // Mandatory ones follow the same rules as mandatory standard attributes: bypassable.
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
+      await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
+    }
   }
 };
 
@@ -3386,6 +3507,71 @@ type CreateRelationRawOpts = UpdateEventOpts & {
   commitMessage?: string;
   restore?: boolean;
 };
+const checkRefRelationNotCyclic = async (
+  context: AuthContext,
+  user: AuthUser,
+  relationshipType: string,
+  from: any,
+  to: any,
+  fromRule?: string,
+) => {
+  const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
+  // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
+  // Checking the direction of the relation to allow relationships
+  const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
+  if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
+    throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
+  }
+};
+const replaceSingleRelationRef = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  from: any,
+  to: any,
+  key: string,
+  opts: CreateRelationRawOpts,
+) => {
+  const { relationship_type: relationshipType } = input;
+  const { locks = [], references, commitMessage, bypassValidation, publishStreamEvent } = opts;
+  // The update of the source rebuilds the ref with the default dates, so the dates of the input are set on it afterward
+  const dateFields = schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType) ? ['start_time', 'stop_time', 'created', 'modified'] : [];
+  const refDates = R.pick(dateFields.filter((field) => isNotEmptyField(input[field])), input);
+  if (utcDate(refDates.start_time ?? FROM_START_STR).isAfter(utcDate(refDates.stop_time ?? UNTIL_END_STR))) {
+    throw DatabaseError('You cant create a relation with a stop_time less than the start_time', { from: input.fromId, to: input.toId, type: relationshipType });
+  }
+  // The source stays locked until the dates are set on the ref created by its update
+  const participantIds = [from.internal_id].filter((id) => !locks.includes(id));
+  let lock;
+  try {
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    // A concurrent replacement may have set the same target while this one was waiting for the lock
+    const source = await storeLoadByIdWithRefs(context, user, from.internal_id) as Record<string, any>;
+    if (source?.[key]?.internal_id === to.internal_id) {
+      const element = await storeLoadByIdWithRefs(context, user, source[key].i_relation?.internal_id);
+      return { element, event: undefined, isCreation: false };
+    }
+    // The cyclic check reads the denormalized refs of the target, that the resolution of the input does not load
+    const target = await internalLoadById(context, user, to.internal_id);
+    await checkRefRelationNotCyclic(context, user, relationshipType, from, target);
+    const updateOpts = { locks: [...locks, ...participantIds], references, commitMessage, bypassValidation, publishStreamEvent };
+    const { event } = await updateAttribute(context, user, from.internal_id, from.entity_type, [{ key, value: [to.internal_id] }], updateOpts);
+    const updated = await storeLoadByIdWithRefs(context, user, from.internal_id) as Record<string, any>;
+    const relationId = updated?.[key]?.i_relation?.internal_id;
+    if (isNotEmptyField(refDates)) {
+      await patchAttribute(context, user, relationId, relationshipType, refDates);
+    }
+    const element = await storeLoadByIdWithRefs(context, user, relationId);
+    return { element, event, isCreation: false };
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
 export const createRelationRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -3402,6 +3588,18 @@ export const createRelationRaw = async (
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
   // endregion
 
+  // region custom field values handling
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    const rawInputCustomFieldValues = input.customFieldValues ?? [];
+    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
+    // Only keep empty custom fields values if it came from input
+    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+      (input as any).custom_field_values = customFieldValuesFromInput;
+    }
+  }
+  delete input.customFieldValues;
+  // endregion
+
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* v8 ignore next */
@@ -3411,7 +3609,17 @@ export const createRelationRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, relationshipType) as BasicStoreEntityEntitySetting;
 
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  // The full from of an embedded ref (all its refs) only feeds the update event: without event, a base resolution is enough.
+  // For a container with thousands of refs, the full resolution was the main cost of each created ref.
+  // Light from = multiple ref without event: no update event is built and the returned from is the one resolved (without the new ref).
+  const isEventPublished = isStreamPublishable(opts);
+  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting, { embeddedFromWithRefs: isEventPublished });
+  // A single ref reads the current target on the fully resolved from (kept, replaced or refused below): it keeps the full resolution
+  const isSingleRef = isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType);
+  if (!isEventPublished && isSingleRef) {
+    resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  }
+  const isLightFrom = isStixRefRelationship(relationshipType) && !isEventPublished && !isSingleRef;
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
@@ -3443,12 +3651,21 @@ export const createRelationRaw = async (
     const errorData = { from: input.fromId, to: input.toId, relationshipType, doc_code: 'SELF_REFERENCING_RELATION' };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
-  // It's not possible to create a single ref relationship if one already exists
-  if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
-    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(resolvedInput.from.entity_type, relationshipType);
-    if (key && isNotEmptyField(resolvedInput.from[key])) {
-      const errorData = { from: input.fromId, to: input.toId, relationshipType };
-      throw UnsupportedError('Cant add another relation on single ref', errorData);
+  // A single ref already set keeps its target when the same one is added again, and is replaced by another one.
+  // Rules and restorations must never overwrite the current target, so they still fail.
+  if (isSingleRelationsRef(from.entity_type, relationshipType)) {
+    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, relationshipType);
+    const currentTarget = key ? from[key] : null;
+    if (key && isNotEmptyField(currentTarget)) {
+      if (fromRule || opts.restore) {
+        const errorData = { from: input.fromId, to: input.toId, relationshipType };
+        throw UnsupportedError('Cant add another relation on single ref', errorData);
+      }
+      if (currentTarget.internal_id !== to.internal_id) {
+        return replaceSingleRelationRef(context, user, input, from, to, key, opts);
+      }
+      const element = await storeLoadByIdWithRefs(context, user, currentTarget.i_relation?.internal_id);
+      return { element, event: undefined, isCreation: false };
     }
   }
 
@@ -3486,6 +3703,7 @@ export const createRelationRaw = async (
       // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
+      resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
 
@@ -3500,13 +3718,7 @@ export const createRelationRaw = async (
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
-      const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
-      // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
-      // Checking the direction of the relation to allow relationships
-      const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
-      if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
-        throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
-      }
+      await checkRefRelationNotCyclic(context, user, relationshipType, from, to, fromRule);
     }
     // Just build a standard relationship
     const dataRel = await buildRelationData(context, user, resolvedInput, opts);
@@ -3515,20 +3727,21 @@ export const createRelationRaw = async (
     await indexCreatedElement(context, user, dataRel);
     // Push the input in the stream
     let event;
-    // In case on embedded relationship creation, we need to dispatch
-    // an update of the from entity that host this embedded ref.
-    if (isStixRefRelationship(relationshipType)) {
-      let referencesPromises;
-      if (opts.references) {
-        referencesPromises = internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) as Promise<BasicStoreBase[]>;
-      }
-      const references = referencesPromises ? await BluePromise.all(referencesPromises) : [];
+    // Commit references of an embedded ref are checked whether its event is built or not
+    let references: BasicStoreBase[] = [];
+    if (isStixRefRelationship(relationshipType) && opts.references) {
+      references = await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) as BasicStoreBase[];
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
         throw FunctionalError('Cant find element references for commit', {
           id: input.fromId,
           references: opts.references,
         });
       }
+    }
+    // In case on embedded relationship creation, we need to dispatch
+    // an update of the from entity that host this embedded ref.
+    // Light from: nothing is built, the update of the from (two STIX conversions and diffs of the whole from) would be wasted.
+    if (isStixRefRelationship(relationshipType) && !isLightFrom) {
       const previous = resolvedInput.from; // Complete resolution done by the input resolver
       const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
       const instance = { ...previous };
@@ -3554,7 +3767,7 @@ export const createRelationRaw = async (
       const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any };
       event = await storeUpdateEvent(context, user, previous, instance, changes, storeUpdateEventsOpts);
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
-    } else {
+    } else if (!isStixRefRelationship(relationshipType)) {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
@@ -3597,6 +3810,9 @@ export const createRelation = async (
   opts: CreateRelationRawOpts = {},
 ) => {
   const data = await createRelationRaw(context, user, input, opts);
+  if (data.isCreation && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
+  }
   return data.element;
 };
 type RuleContent = {
@@ -3718,6 +3934,18 @@ const internalCreateEntityRaw = async (
   delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
 
+  // region custom field values handling
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    const rawInputCustomFieldValues = input.customFieldValues ?? [];
+    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
+    // Only keep empty custom fields values if it came from input
+    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+      (input as any).custom_field_values = customFieldValuesFromInput;
+    }
+  }
+  delete input.customFieldValues;
+  // endregion
+
   // validate user access to create the entity in draft
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
@@ -3778,6 +4006,7 @@ const internalCreateEntityRaw = async (
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
+      resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
     // endregion
@@ -4030,7 +4259,7 @@ const createEntityRaw = async (
   } catch (e: any) {
     // In case of insufficient confidence level, don't reject and continue to upsert
     // as upsert have a complex strategy about confidence that doesn't reject everything
-    if (rawInput.update !== false && e?.extensions?.data?.doc_code === INSUFFICIENT_CONFIDENCE_LEVEL) {
+    if (rawInput.update !== false && e?.extensions?.data?.doc_code === DOC_INSUFFICIENT_CONFIDENCE_LEVEL) {
       logApp.warn('Merging stopped because of user confidence level, applying upsert', { cause: e });
       // Try to execute the method forcing update to false, prevent auto merging.
       return await internalCreateEntityRaw(context, user, { ...rawInput, update: false }, type, opts);
@@ -4046,7 +4275,7 @@ export const createEntity = async (
   user: AuthUser,
   input: Record<string, any>,
   type: string,
-  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+  opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
@@ -4054,8 +4283,16 @@ export const createEntity = async (
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
-  } else if (data.event !== null) { // upsert
-    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+    if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
+    }
+  } else { // upsert
+    if (data.event !== null && !opts.noEnrichOnUpdate) {
+      await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+    }
+    if (data.workflowStatusChanged && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      await syncWorkflowInstanceFromExternalWrite(context, user, data.element, data.element.x_opencti_workflow_id);
+    }
   }
   return isCompleteResult ? data : data.element;
 };
@@ -4177,6 +4414,10 @@ export const internalDeleteElementById = async <T extends StoreObject>(
       }
       const targetElement = { ...relationElement.to, i_relation: relationElement };
       const previous = await storeLoadByIdWithRefs(context, user, relationElement.fromId) as Record<string, any>;
+      if (!previous) {
+        // The source of the ref has been deleted in the meantime, along with its refs
+        throw AlreadyDeletedError({ id: relationElement.fromId });
+      }
       const instance = structuredClone(previous);
       const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationElement.entity_type);
       let inputs: EditInput[] = [];
@@ -4236,6 +4477,19 @@ export const internalDeleteElementById = async <T extends StoreObject>(
     if (lock) await lock.unlock();
   }
   // - TRANSACTION END
+  const isTrashableElement = !isInferredIndex(element._index)
+    && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
+  const isPermanentDelete = !!opts.forceDelete || !conf.get('app:trash:enabled') || !isTrashableElement;
+  if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && isPermanentDelete) {
+    // Clean up the WorkflowInstance (if any) so it doesn't stay orphaned after its entity is permanently deleted.
+    // Skipped for trash (soft) deletions: the `has-workflow` relation is kept for restoration and must still
+    // point to a live WorkflowInstance, otherwise restoring the entity from trash would fail.
+    try {
+      await cleanupEntityWorkflow(context, user, element as BasicStoreBase);
+    } catch (err) {
+      logApp.error('[OPENCTI] Error cleaning up WorkflowInstance after entity deletion', { cause: err, id: (element as BasicStoreBase).internal_id });
+    }
+  }
   return { element, event };
 };
 export const deleteElementById = async <T extends StoreObject>(
@@ -4303,8 +4557,8 @@ export const deleteInferredRuleElement = async (
       const ruleOpts = { fromRule, fromRuleDeletion: true };
       await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, ruleOpts);
     }
-  } catch (err: any) {
-    if (err.name === ALREADY_DELETED_ERROR) {
+  } catch (err: unknown) {
+    if (err instanceof GraphQLError && err.extensions.code === ALREADY_DELETED_ERROR) {
       logApp.info(err);
     } else {
       logApp.error('Error handling inference', { cause: err });

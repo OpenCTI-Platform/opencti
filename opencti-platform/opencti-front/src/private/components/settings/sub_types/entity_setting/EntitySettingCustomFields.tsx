@@ -6,6 +6,7 @@ import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import DialogActions from '@mui/material/DialogActions';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import FormHelperText from '@mui/material/FormHelperText';
 import MenuItem from '@mui/material/MenuItem';
 import Switch from '@mui/material/Switch';
 import MuiTextField from '@mui/material/TextField';
@@ -28,6 +29,9 @@ import { CUSTOM_FIELD_NOW_TOKEN } from '../../../../../utils/customFieldDefaults
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingCustomFieldsAddDialog from './EntitySettingCustomFieldsAddDialog';
 import { EntitySettingCustomFieldsQuery, EntitySettingCustomFieldsQuery$data } from './__generated__/EntitySettingCustomFieldsQuery.graphql';
+import { Input } from '@filigran/design-system';
+import EEChip from '../../../common/entreprise_edition/EEChip';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
 export const entitySettingCustomFieldsQuery = graphql`
   query EntitySettingCustomFieldsQuery {
@@ -80,7 +84,7 @@ export type CustomFieldDefinitionNode = NonNullable<NonNullable<EntitySettingCus
 export const getCustomFieldTypeLabel = (fieldType: string, t_i18n: (s: string) => string) => {
   switch (fieldType) {
     case 'integer':
-      return t_i18n('Number');
+      return t_i18n('Integer');
     case 'boolean':
       return t_i18n('Boolean');
     case 'date':
@@ -100,6 +104,7 @@ interface EntitySettingCustomFieldsTableProps {
   queryRef: PreloadedQuery<EntitySettingCustomFieldsQuery>;
   entityType: string;
   refresh: () => void;
+  canManage: boolean;
 }
 
 const getEntityTypeSetting = (cf: CustomFieldDefinitionNode, entityType: string) => (cf.entity_type_settings ?? []).find((setting) => setting.entity_type === entityType);
@@ -110,6 +115,8 @@ interface EntitySettingCustomFieldEditDialogProps {
   open: boolean;
   onClose: () => void;
   onUpdated: () => void;
+  // In Community Edition, the only change allowed is making a mandatory custom field optional
+  canOnlyMakeOptional: boolean;
 }
 
 const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomFieldEditDialogProps> = ({
@@ -118,6 +125,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
   open,
   onClose,
   onUpdated,
+  canOnlyMakeOptional,
 }) => {
   const { t_i18n } = useFormatter();
   const currentSetting = getEntityTypeSetting(customField, entityType);
@@ -166,7 +174,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         return (
           <MuiTextField
             select
-            variant="standard"
+            variant="outlined"
             fullWidth
             label={t_i18n('Default value')}
             value={defaultValue}
@@ -181,14 +189,14 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         );
       case 'integer':
         return (
-          <MuiTextField
-            type="number"
-            variant="standard"
-            fullWidth
+          <Input
+            // `isTypeNumber` (library #190) forces type="number" and suppresses the browser's
+            // own spinners, so the field carries the designed stepper instead of the UA's.
+            isTypeNumber
             label={t_i18n('Default value')}
             value={defaultValue}
             onChange={(event) => setDefaultValue(event.target.value)}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
         );
       case 'date': {
@@ -210,7 +218,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
                 value={defaultValue ? new Date(defaultValue) : null}
                 onChange={(date) => setDefaultValue(date ? date.toISOString() : '')}
                 label={t_i18n('Default value')}
-                slotProps={{ textField: { variant: 'standard', fullWidth: true, style: { marginTop: 20 } } }}
+                slotProps={{ textField: { variant: 'outlined', fullWidth: true, style: { marginTop: 20 } } }}
               />
             )}
           </>
@@ -229,13 +237,11 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         );
       default:
         return (
-          <MuiTextField
-            variant="standard"
-            fullWidth
+          <Input
             label={t_i18n('Default value')}
             value={defaultValue}
             onChange={(event) => setDefaultValue(event.target.value)}
-            style={{ marginTop: 20 }}
+            className="mt-5"
           />
         );
     }
@@ -248,17 +254,21 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         control={(
           <Switch
             checked={mandatory}
-            onChange={(_, checked) => setMandatory(checked)}
+            onChange={(_, checked) => setMandatory(canOnlyMakeOptional ? false : checked)}
+            disabled={canOnlyMakeOptional && !mandatory}
           />
         )}
         label={t_i18n('Mandatory')}
       />
-      {renderDefaultValueField()}
+      {canOnlyMakeOptional
+        ? <FormHelperText>{t_i18n('In Community Edition, a mandatory custom field can only be made optional')}</FormHelperText>
+        : renderDefaultValueField()}
       <DialogActions>
         <Button variant="secondary" onClick={onClose} disabled={submitting}>
           {t_i18n('Cancel')}
         </Button>
-        <Button onClick={handleSubmit} disabled={submitting}>
+        {/* In Community Edition, nothing can be saved until the custom field is made optional */}
+        <Button onClick={handleSubmit} disabled={submitting || (canOnlyMakeOptional && mandatory)}>
           {t_i18n('Update')}
         </Button>
       </DialogActions>
@@ -270,6 +280,7 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
   queryRef,
   entityType,
   refresh,
+  canManage,
 }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(entitySettingCustomFieldsQuery, queryRef);
@@ -325,10 +336,10 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
               <TableCell>{setting?.mandatory ? t_i18n('Yes') : t_i18n('No')}</TableCell>
               <TableCell>{setting?.default_value ?? '-'}</TableCell>
               <TableCell align="right">
-                <IconButton onClick={() => setEditing(cf)} aria-label={t_i18n('Update')}>
+                <IconButton onClick={() => setEditing(cf)} aria-label={t_i18n('Update')} disabled={!canManage && !setting?.mandatory}>
                   <EditOutlined fontSize="small" />
                 </IconButton>
-                <IconButton onClick={() => openRemove(cf.id)} aria-label={t_i18n('Remove')}>
+                <IconButton onClick={() => openRemove(cf.id)} aria-label={t_i18n('Remove')} disabled={!canManage}>
                   <DeleteOutlined fontSize="small" />
                 </IconButton>
               </TableCell>
@@ -347,6 +358,7 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
           entityType={entityType}
           open={editing !== null}
           onClose={() => setEditing(null)}
+          canOnlyMakeOptional={!canManage}
           onUpdated={refresh}
         />
       )}
@@ -372,6 +384,8 @@ const EntitySettingCustomFields = () => {
   const { subType } = useSubTypeOutletContext();
   const entityType = subType.id;
   const [addOpen, setAddOpen] = useState(false);
+  // Managing the custom field definitions is an Enterprise Edition feature: in Community, they are only listed
+  const isEnterpriseEdition = useEnterpriseEdition();
   const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<EntitySettingCustomFieldsQuery>(
     entitySettingCustomFieldsQuery,
     {},
@@ -381,11 +395,11 @@ const EntitySettingCustomFields = () => {
   return (
     <div style={{ marginTop: 24 }}>
       <Card
-        title={t_i18n('Custom fields')}
+        title={<>{t_i18n('Custom fields')} <EEChip feature={t_i18n('Custom fields')} /></>}
         titleSx={{ alignItems: 'end' }}
         sx={{ paddingTop: 0, paddingBottom: 0 }}
         action={(
-          <Button onClick={() => setAddOpen(true)}>
+          <Button onClick={() => setAddOpen(true)} disabled={!isEnterpriseEdition}>
             {t_i18n('Add custom field')}
           </Button>
         )}
@@ -397,6 +411,7 @@ const EntitySettingCustomFields = () => {
                 queryRef={queryRef}
                 entityType={entityType}
                 refresh={refresh}
+                canManage={isEnterpriseEdition}
               />
             </Suspense>
             <Suspense fallback={null}>

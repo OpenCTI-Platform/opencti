@@ -17,6 +17,8 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefR
 import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filtering-utils';
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { paginatedForExportContext } from '../modules/internal/document/document-domain';
+import { shouldHandleHasCoveredRel, transformHasCoveredFromId } from '../modules/securityCoverage/securityCoverage-utils';
 
 export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
@@ -79,6 +81,10 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
 // endregion
 
 // region export
+export const stixCoreRelationshipsExportFiles = async (context, user, exportContext, { first }) => {
+  return paginatedForExportContext(context, user, exportContext, { first });
+};
+
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { fromOrToId, elementWithTargetTypes, fromId, fromRole, fromTypes, toId, toRole, toTypes, relationship_type } = args;
@@ -97,6 +103,11 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
 export const addStixCoreRelationship = async (context, user, stixCoreRelationship) => {
   if (!isStixCoreRelationship(stixCoreRelationship.relationship_type)) {
     throw FunctionalError('Only stix-core-relationship can be created through this method.');
+  }
+  // To be able to manage OAEV bundles correctly
+  // (sending a fromId to a securityCoverage instead of securityCoverageResult)
+  if (shouldHandleHasCoveredRel(stixCoreRelationship)) {
+    stixCoreRelationship = await transformHasCoveredFromId(context, user, stixCoreRelationship);
   }
   const created = await createRelation(context, user, stixCoreRelationship);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);

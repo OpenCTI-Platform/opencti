@@ -81,7 +81,12 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri, settings }) => {
 
   return (
     <LoginLayout settings={settings}>
-      <Stack gap={1} sx={{ width: 500 }}>
+      <Stack
+        sx={{
+          gap: 1,
+          width: 500,
+        }}
+      >
         <LoginAlert severity={alertSeverity}>
           {alertMessage}
         </LoginAlert>
@@ -93,7 +98,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri, settings }) => {
             gap: 3,
           }}
         >
-          <img src={otpQrImage} style={{ width: 265 }} alt="" />
+          <img src={otpQrImage} style={{ width: 265 }} alt={t_i18n('QR code for two-factor authentication')} />
           <OtpInputField
             value={code}
             onChange={handleChange}

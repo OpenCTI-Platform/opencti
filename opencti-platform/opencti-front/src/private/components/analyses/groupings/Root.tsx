@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import { graphql, useSubscription } from 'react-relay';
 import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
@@ -16,6 +16,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { useFormatter } from '../../../../components/i18n';
@@ -175,6 +176,11 @@ const RootGrouping = () => {
                         <ContainerStixCyberObservables
                           container={grouping}
                           enableReferences={enableReferences}
+                        />
+                      ),
+                      relationships: (
+                        <ContainerStixCoreRelationships
+                          containerId={grouping.id}
                         />
                       ),
                       files: (

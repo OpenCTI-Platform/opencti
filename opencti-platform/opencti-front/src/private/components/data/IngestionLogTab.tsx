@@ -5,12 +5,12 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import IconButton from '@mui/material/IconButton';
+import { IconButton } from '@filigran/design-system';
 import Tag from '../../../components/common/tag/Tag';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Label from '../../../components/common/label/Label';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../utils/String';
@@ -57,7 +57,7 @@ const levelTagColor = (level: string, theme: Theme) => {
   }
 };
 
-const TIMESTAMP_WIDTH = '11.5rem';
+const TIMESTAMP_WIDTH = '13.5rem';
 const LEVEL_WIDTH = '8rem';
 const DETAILS_PREVIEW_MAX_LEN = 56;
 
@@ -247,16 +247,17 @@ const IngestionLogTab: React.FC<IngestionLogTabProps> = ({ name, logHistory }) =
                         </Box>
                         <Tooltip title={t_i18n('View full details')}>
                           <IconButton
-                            size="small"
+                            variant="default"
+                            priority="tertiary"
+                            size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               setDetailsOpen({ index, entry });
                             }}
-                            sx={{ flexShrink: 0, padding: 0.25 }}
+                            className="shrink-0"
                             aria-label={t_i18n('View full details')}
-                          >
-                            <OpenInNewOutlined sx={{ fontSize: '1rem' }} />
-                          </IconButton>
+                            icon={<OpenInNewOutlined sx={{ fontSize: '1rem' }} />}
+                          />
                         </Tooltip>
                       </Box>
                     ) : (
@@ -277,11 +278,19 @@ const IngestionLogTab: React.FC<IngestionLogTabProps> = ({ name, logHistory }) =
         size="large"
         header={
           detailsOpen !== null && logHistory.length > 0 ? (
-            <Stack direction="row" alignItems="center" gap={0.5}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
               <Tooltip title={t_i18n('Previous log')}>
                 <span>
                   <IconButton
-                    size="small"
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     onClick={() => {
                       if (detailsOpen.index > 0) {
                         const prevIndex = detailsOpen.index - 1;
@@ -290,15 +299,16 @@ const IngestionLogTab: React.FC<IngestionLogTabProps> = ({ name, logHistory }) =
                     }}
                     disabled={detailsOpen.index <= 0}
                     aria-label={t_i18n('Previous log')}
-                  >
-                    <ArrowUpward fontSize="small" />
-                  </IconButton>
+                    icon={<ArrowUpward fontSize="small" />}
+                  />
                 </span>
               </Tooltip>
               <Tooltip title={t_i18n('Next log')}>
                 <span>
                   <IconButton
-                    size="small"
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     onClick={() => {
                       if (detailsOpen.index < logHistory.length - 1) {
                         const nextIndex = detailsOpen.index + 1;
@@ -307,9 +317,8 @@ const IngestionLogTab: React.FC<IngestionLogTabProps> = ({ name, logHistory }) =
                     }}
                     disabled={detailsOpen.index >= logHistory.length - 1}
                     aria-label={t_i18n('Next log')}
-                  >
-                    <ArrowDownward fontSize="small" />
-                  </IconButton>
+                    icon={<ArrowDownward fontSize="small" />}
+                  />
                 </span>
               </Tooltip>
             </Stack>
@@ -319,17 +328,23 @@ const IngestionLogTab: React.FC<IngestionLogTabProps> = ({ name, logHistory }) =
         {detailsOpen !== null ? (
           <Stack
             sx={{
+              gap: 2,
               flex: 1,
               minHeight: 0,
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
             }}
-            gap={2}
           >
             <Box sx={{ flexShrink: 0 }}>
               <Label>{t_i18n('Timestamp')}</Label>
-              <Typography variant="body1" gutterBottom fontFamily="monospace">
+              <Typography
+                variant="body1"
+                gutterBottom
+                sx={{
+                  fontFamily: 'monospace',
+                }}
+              >
                 {formatTimestamp(detailsOpen.entry.timestamp) || EMPTY_VALUE}
               </Typography>
             </Box>
@@ -363,14 +378,14 @@ const IngestionLogTab: React.FC<IngestionLogTabProps> = ({ name, logHistory }) =
                 <Label>{t_i18n('Details')}</Label>
                 <Tooltip title={t_i18n('Copy')}>
                   <IconButton
-                    size="small"
+                    variant="default"
+                    priority="tertiary"
+                    size="sm"
                     onClick={handleCopyDetails}
-                    sx={{ padding: 0.25 }}
                     aria-label={t_i18n('Copy')}
                     disabled={detailsOpen.entry.meta == null || Object.keys(detailsOpen.entry.meta).length === 0}
-                  >
-                    <ContentCopyOutlined sx={{ fontSize: '1rem' }} />
-                  </IconButton>
+                    icon={<ContentCopyOutlined sx={{ fontSize: '1rem' }} />}
+                  />
                 </Tooltip>
               </Box>
               {detailsOpen.entry.meta != null && Object.keys(detailsOpen.entry.meta).length > 0 ? (

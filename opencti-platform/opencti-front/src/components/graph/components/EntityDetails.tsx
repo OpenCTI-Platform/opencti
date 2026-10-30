@@ -1,13 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import IconButton from '@common/button/IconButton';
+import { styled } from '@mui/material/styles';
 import { ListItemButton, Stack } from '@mui/material';
 import { useFormatter } from '../../i18n';
 import ItemAuthor from '../../ItemAuthor';
@@ -17,7 +17,6 @@ import ExpandableMarkdown from '../../ExpandableMarkdown';
 import ItemMarkings from '../../ItemMarkings';
 import ErrorNotFound from '../../ErrorNotFound';
 import ItemIcon from '../../ItemIcon';
-import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import ItemCreators from '../../ItemCreators';
@@ -28,10 +27,8 @@ import ItemEntityType from '../../ItemEntityType';
 import { GraphNode } from '../graph.types';
 import Label from '../../../components/common/label/Label';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttonExpand: {
+const ExpandButton = styled(IconButton)(({ theme }) => ({
+  '&&': {
     position: 'relative',
     left: 0,
     bottom: 0,
@@ -51,17 +48,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
           : 'rgba(0, 0, 0, .2)',
     },
   },
-  bodyItem: {
-    width: '100%',
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
 }));
+
+const BodyItem = styled('div')({
+  width: '100%',
+  height: 25,
+  fontSize: 13,
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+});
 
 const entityDetailsQuery = graphql`
   query EntityDetailsQuery($id: String!) {
@@ -292,7 +290,6 @@ interface EntityDetailsComponentProps {
 const EntityDetailsComponent: FunctionComponent<
   EntityDetailsComponentProps
 > = ({ queryRef }) => {
-  const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const entity = usePreloadedQuery<EntityDetailsQuery>(
     entityDetailsQuery,
@@ -314,9 +311,12 @@ const EntityDetailsComponent: FunctionComponent<
   }
   const entityDescription = stixCoreObject.description || stixCoreObject.x_opencti_description;
   return (
-    <Stack gap={2}>
+    <Stack sx={{
+      gap: 2,
+    }}
+    >
       {stixCoreObject.entity_type !== 'StixFile' && (
-        <div>
+        <div style={{ marginTop: 20 }}>
           <Label>
             {t_i18n('Value')}
           </Label>
@@ -440,7 +440,6 @@ const EntityDetailsComponent: FunctionComponent<
                   <ListItemButton
                     key={report.id}
                     dense={true}
-                    classes={{ root: classes.item }}
                     divider={true}
                     component={Link}
                     to={`/dashboard/analyses/reports/${report.id}`}
@@ -451,13 +450,13 @@ const EntityDetailsComponent: FunctionComponent<
                     <ListItemText
                       primary={(
                         <Tooltip title={report.name}>
-                          <div className={classes.bodyItem}>{report.name}</div>
+                          <BodyItem>{report.name}</BodyItem>
                         </Tooltip>
                       )}
                       secondary={(
-                        <div className={classes.bodyItem}>
+                        <BodyItem>
                           {report.createdBy?.name ?? EMPTY_VALUE}
-                        </div>
+                        </BodyItem>
                       )}
                     />
                   </ListItemButton>
@@ -509,14 +508,14 @@ const EntityDetailsComponent: FunctionComponent<
                       </ListItemIcon>
                       <ListItemText
                         primary={(
-                          <div className={classes.bodyItem}>
+                          <BodyItem>
                             {`${externalReference.node.source_name} ${externalReferenceId}`}
-                          </div>
+                          </BodyItem>
                         )}
                         secondary={(
-                          <div className={classes.bodyItem}>
+                          <BodyItem>
                             {externalReferenceSecondary}
-                          </div>
+                          </BodyItem>
                         )}
                       />
                     </ListItemButton>
@@ -529,18 +528,18 @@ const EntityDetailsComponent: FunctionComponent<
         )}
       </div>
       {expandable && (
-        <IconButton
+        <ExpandButton
           aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
           size="small"
           onClick={handleToggleExpand}
-          className={classes.buttonExpand}
+          aria-expanded={expanded}
         >
           {expanded ? (
             <ExpandLessOutlined />
           ) : (
             <ExpandMoreOutlined />
           )}
-        </IconButton>
+        </ExpandButton>
       )}
     </Stack>
   );

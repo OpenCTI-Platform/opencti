@@ -4,9 +4,9 @@ import { getDraftOperations } from '../modules/draftWorkspace/draftOperations';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
-import { DefaultFormating, type Formating } from '../utils/humanize';
+import { DefaultFormating, type Formating, humanizeDate } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
-import { TEST_MODE } from '../config/conf';
+import { CUSTOM_FIELDS_FEATURE_FLAG, TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
@@ -82,11 +82,12 @@ export type VocabAttribute = { type: 'string'; format: 'vocabulary'; vocabularyC
 export type JsonAttribute = { type: 'string'; format: 'json'; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string>; multiple: false; schemaDef?: Record<string, any> } & BasicDefinition;
 export type ObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; attrRawIds?: GetRawIdsFn<T>; representative?: RepresentativeFn<T> } & BasicDefinition;
 export type FlatObjectAttribute<T extends BasicStoreAttribute> = { type: 'object'; format: 'flat' } & ObjectDefinition<T>;
+export type RawObjectAttribute<T extends BasicStoreAttribute> = { type: 'object'; format: 'raw' } & ObjectDefinition<T>;
 export type ObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'standard' } & BasicObjectDefinition<T>;
 export type NestedObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'nested' } & BasicObjectDefinition<T>;
 export type RefAttribute = { type: 'ref'; attrRawIds?: GetRawIdsFn<string>; databaseName: string; stixName: string; isRefExistingForTypes: Checker; datable?: boolean; toTypes: string[] } & BasicDefinition;
 export type StringAttribute = IdAttribute | TextAttribute | EnumAttribute | VocabAttribute | JsonAttribute;
-export type ComplexAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = FlatObjectAttribute<T> | ObjectAttribute<T> | NestedObjectAttribute<T>;
+export type ComplexAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = FlatObjectAttribute<T> | ObjectAttribute<T> | NestedObjectAttribute<T> | RawObjectAttribute<T>;
 export type ComplexAttributeWithMappings<T extends BasicStoreAttribute = BasicStoreAttribute> = ObjectAttribute<T> | NestedObjectAttribute<T>;
 
 export type AttributeDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = NumericAttribute | DateAttribute | BooleanAttribute
@@ -690,4 +691,42 @@ export const identityClass: TextAttribute = {
   multiple: false,
   upsert: false,
   isFilterable: false,
+};
+
+// Value of a custom field entry, dates formatted as standard date attributes
+export const humanizeCustomFieldValue = (item: any, format: Formating = DefaultFormating): string => {
+  if (item.date_value) {
+    return humanizeDate(item.date_value, format);
+  }
+  const value = item.select_values ?? item.int_value ?? item.string_value ?? item.boolean_value ?? item.select_value;
+  return Array.isArray(value) ? value.join(', ') : `${value}`;
+};
+
+export const customFieldValues: NestedObjectAttribute = {
+  name: 'custom_field_values',
+  label: 'Custom field values',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isFilterable: false,
+  featureFlag: CUSTOM_FIELDS_FEATURE_FLAG,
+  mappings: [
+    { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'int_value', label: 'Integer value', type: 'numeric', precision: 'integer', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'string_value', label: 'String value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'boolean_value', label: 'Boolean value', type: 'boolean', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'date_value', label: 'Date value', type: 'date', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'select_value', label: 'Select value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'select_values', label: 'Select values', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: true, isFilterable: false },
+  ],
+  // The definition is resolved to display its label, the technical name is kept if it cannot be resolved (e.g. deleted)
+  attrRawIds: async (item: any, _) => (item.field_id ? [{ id: item.field_id }] : []),
+  representative: (item: any, translate, format = DefaultFormating): string => {
+    const fieldLabel = translate[item.field_id] ?? item.field_name;
+    return fieldLabel + ': ' + humanizeCustomFieldValue(item, format);
+  },
 };

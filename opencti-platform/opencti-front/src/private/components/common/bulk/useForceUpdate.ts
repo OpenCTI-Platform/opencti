@@ -5,6 +5,7 @@ type UseForceUpdateType = {
 };
 
 export const ForceUpdateEvent = 'ForceUpdateEvent';
+export const KnowledgeBarRefreshEvent = 'KnowledgeBarRefreshEvent';
 
 const useForceUpdate = (): UseForceUpdateType => {
   const [forceUpdate, setForceUpdate] = useState(String(new Date()));

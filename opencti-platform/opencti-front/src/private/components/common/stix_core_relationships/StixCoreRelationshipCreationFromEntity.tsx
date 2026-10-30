@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
+import { KnowledgeBarRefreshEvent } from '@components/common/bulk/useForceUpdate';
 import Drawer from '@components/common/drawer/Drawer';
 import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import {
@@ -11,7 +12,7 @@ import {
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
 import { Add, ChevronRightOutlined } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
 import { FunctionComponent, Suspense, useEffect, useRef, useState } from 'react';
@@ -22,7 +23,6 @@ import { PaginationOptions } from 'src/components/list_lines';
 import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
-import type { Theme } from '../../../../components/Theme';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../components/i18n';
@@ -41,15 +41,7 @@ import {
   type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
 } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import StixCoreRelationshipCreationHeaderButtons from './StixCoreRelationshipCreationHeaderButtons';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    flex: '1 0 0',
-    overflow: 'hidden',
-  },
-}));
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = graphql`
   query StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery(
@@ -192,6 +184,14 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
       name
       description
       security_platform_type
+    }
+    ... on SecurityCoverage {
+      name
+      description
+    }
+    ... on SecurityCoverageResult {
+      name
+      description
     }
     ... on Sector {
       name
@@ -474,7 +474,7 @@ export interface StixCoreRelationshipCreationFromEntityForm {
   killChainPhases: FieldOption[];
   objectMarking: FieldOption[];
   externalReferences: FieldOption[];
-  coverage_information?: Array<{ coverage_name: string; coverage_score: number }>;
+  coverage_information?: Array<CoverageInformation>;
 }
 
 export interface TargetEntity {
@@ -540,7 +540,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     ];
   }
 
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(targetEntitiesProps.length !== 0);
   const [step, setStep] = useState(targetEntitiesProps.length === 0 ? 0 : 1);
@@ -654,6 +653,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     if (typeof onCreate === 'function') {
       onCreate();
     }
+    // Update the knowledge bar counters
+    dispatchEvent(new CustomEvent(KnowledgeBarRefreshEvent));
     return true;
   };
 
@@ -741,7 +742,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           height: '100%',
         }}
       >
-        <div data-testid="stixCoreRelationshipCreationFromEntity-component" className={classes.container}>
+        <Box data-testid="stixCoreRelationshipCreationFromEntity-component" sx={{ flex: '1 0 0', overflow: 'hidden' }}>
           <UserContext.Consumer>
             {({ platformModuleHelpers }) => (
               <>
@@ -803,7 +804,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           >
             {t_i18n('Continue')}
           </Button>
-        </div>
+        </Box>
       </div>
     );
   };

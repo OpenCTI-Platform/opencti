@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { FiligranLoader } from 'filigran-icon';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
 import { UserContext } from '../utils/hooks/useAuth';
@@ -11,40 +11,40 @@ import { TEN_SECONDS } from '../utils/Time';
 
 const interval$ = interval(TEN_SECONDS);
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    minWidth: '100%',
-    height: '100%',
-    minHeight: 'calc(100vh - 180px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  containerInElement: {
-    width: '100%',
-    height: '100%',
-    display: 'table',
-  },
-  loader: {
-    width: '5rem',
-    zIndex: 20,
-  },
-  loaderInElement: {
-    width: '5rem',
-    margin: 0,
-    padding: 0,
-    display: 'table-cell',
-    verticalAlign: 'middle',
-    textAlign: 'center',
-  },
-  loaderCircle: {
-    width: '5rem',
-    display: 'inline-block',
-  },
-}));
+const containerSx = {
+  width: '100%',
+  minWidth: '100%',
+  height: '100%',
+  minHeight: 'calc(100vh - 180px)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const;
+
+const containerInElementSx = {
+  width: '100%',
+  height: '100%',
+  display: 'table',
+} as const;
+
+const loaderSx = {
+  width: '5rem',
+  zIndex: 20,
+} as const;
+
+const loaderInElementSx = {
+  width: '5rem',
+  margin: 0,
+  padding: 0,
+  display: 'table-cell',
+  verticalAlign: 'middle',
+  textAlign: 'center',
+} as const;
+
+const loaderCircleSx = {
+  width: '5rem',
+  display: 'inline-block',
+} as const;
 
 export enum LoaderVariant {
   container = 'container',
@@ -65,7 +65,6 @@ const Loader: FunctionComponent<LoaderProps> = ({
   withTopMargin = false,
   rotatingTexts,
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { settings } = useContext(UserContext);
   const [currentText, setCurrentText] = useState(0);
@@ -87,14 +86,19 @@ const Loader: FunctionComponent<LoaderProps> = ({
   }
   if (variant === 'inline') {
     return (
-      <div style={{ display: 'inline-flex', width: '4rem', height: 35, alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        role="progressbar"
+        aria-label="Loading..."
+        style={{ display: 'inline-flex', width: '4rem', height: 35, alignItems: 'center', justifyContent: 'center' }}
+      >
         {hasFiligranLoader ? (
           <FiligranLoader height={24} color={theme?.palette?.common?.grey} />
         ) : (
           <CircularProgress
+            aria-hidden
             size={24}
             thickness={1}
-            className={classes.loaderCircle}
+            sx={loaderCircleSx}
           />
         )}
         {rotatingTexts && rotatingTexts.length > 0 && (
@@ -106,8 +110,8 @@ const Loader: FunctionComponent<LoaderProps> = ({
     );
   }
   return (
-    <div
-      className={variant === 'inElement' ? classes.containerInElement : classes.container}
+    <Box
+      sx={variant === 'inElement' ? containerInElementSx : containerSx}
       style={
         variant === 'inElement'
           ? {
@@ -117,9 +121,11 @@ const Loader: FunctionComponent<LoaderProps> = ({
           : {}
       }
     >
-      <div
-        className={
-          variant === 'inElement' ? classes.loaderInElement : classes.loader
+      <Box
+        role="progressbar"
+        aria-label="Loading..."
+        sx={
+          variant === 'inElement' ? loaderInElementSx : loaderSx
         }
         style={
           variant !== 'inElement'
@@ -131,9 +137,10 @@ const Loader: FunctionComponent<LoaderProps> = ({
           <FiligranLoader height={variant === 'inElement' ? 40 : 80} color={theme?.palette?.common?.grey} />
         ) : (
           <CircularProgress
+            aria-hidden
             size={variant === 'inElement' ? 40 : 80}
             thickness={1}
-            className={classes.loaderCircle}
+            sx={loaderCircleSx}
           />
         )}
         {rotatingTexts && rotatingTexts.length > 0 && (
@@ -141,8 +148,8 @@ const Loader: FunctionComponent<LoaderProps> = ({
             {rotatingTexts[currentText]}...
           </Typography>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

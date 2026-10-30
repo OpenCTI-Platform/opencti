@@ -6,8 +6,8 @@ import { useCustomViewDashboardEdit_Mutation } from './__generated__/useCustomVi
 import { useCustomViewDashboardEdit_LayoutMutation } from './__generated__/useCustomViewDashboardEdit_LayoutMutation.graphql';
 import { useCustomViewDashboardEdit_WidgetImportMutation } from './__generated__/useCustomViewDashboardEdit_WidgetImportMutation.graphql';
 import { useCustomViewDashboardEdit_Query$data } from './__generated__/useCustomViewDashboardEdit_Query.graphql';
-import { useFormatter } from 'src/components/i18n';
 import { useCustomViewDashboardEdit_WidgetExportQuery } from '@components/settings/sub_types/custom_views/__generated__/useCustomViewDashboardEdit_WidgetExportQuery.graphql';
+import { useFormatter } from 'src/components/i18n';
 
 export const customViewQuery = graphql`
   query useCustomViewDashboardEdit_Query($id: ID!) {

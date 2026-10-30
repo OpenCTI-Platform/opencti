@@ -1,5 +1,5 @@
 import { Alert, AlertProps } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { PropsWithChildren } from 'react';
 import { Theme } from '../../../components/Theme';
 

@@ -12,6 +12,9 @@ import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
 import { Stack } from '@mui/material';
+import CustomFieldValuesDisplay from '../../common/custom_fields/CustomFieldValuesDisplay';
+
+const CASE_INCIDENT_TYPE = 'Case-Incident';
 
 const CaseIncidentDetailsFragment = graphql`
   fragment CaseIncidentDetails_case on CaseIncident {
@@ -41,6 +44,9 @@ const CaseIncidentDetailsFragment = graphql`
       }
     }
     workflowEnabled
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     relatedContainers(
       first: 10
       orderBy: modified
@@ -68,7 +74,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -76,7 +82,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Priority')}
             </Label>
@@ -88,7 +94,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               displayMode="chip"
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Severity')}
             </Label>
@@ -100,12 +106,18 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               displayMode="chip"
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Incident response type')}
             </Label>
             <FieldOrEmpty source={responseTypes}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {responseTypes.map((responseType) => (
                   <Tag
                     key={responseType}
@@ -115,6 +127,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
+          <CustomFieldValuesDisplay entityType={CASE_INCIDENT_TYPE} values={data.customFieldValues ?? []} />
         </Grid>
         <Divider />
         <RelatedContainers

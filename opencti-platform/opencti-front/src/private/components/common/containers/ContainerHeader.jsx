@@ -1,15 +1,14 @@
 import HeaderMainEntityLayout from '@common/header/HeaderMainEntityLayout';
+import { ButtonGroup, ButtonGroupItem } from '@filigran/design-system';
 import { ViewColumnOutlined } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import ExportButtons from '../../../../components/ExportButtons';
 import { useFormatter } from '../../../../components/i18n';
 import PopoverMenu from '../../../../components/PopoverMenu';
@@ -568,7 +567,13 @@ const ContainerHeader = (props) => {
 
   return (
     <div style={containerStyle}>
-      <Stack flex={1} gap={1} sx={{ width: '100%' }}>
+      <Stack
+        sx={{
+          flex: 1,
+          gap: 1,
+          width: '100%',
+        }}
+      >
         <React.Suspense fallback={<span />}>
           <HeaderMainEntityLayout
             title={title}
@@ -611,6 +616,8 @@ const ContainerHeader = (props) => {
                   <ExportButtons
                     domElementId="container"
                     name={t_i18n('Report representation')}
+                    // The graph views export the image of their drawing from their toolbar.
+                    exportToImage={currentMode !== 'graph' && currentMode !== 'correlation'}
                     pixelRatio={currentMode === 'graph' ? 1 : 2}
                     adjust={adjust}
                     containerId={container.id}
@@ -620,70 +627,63 @@ const ContainerHeader = (props) => {
                 {
                   modes && (
                     <div id="container-view-buttons">
-                      <ToggleButtonGroup size="small" exclusive={true}>
+                      {/* Each segment NAVIGATES, so it stays a real <a href>
+                          through `asChild` (lib #193, for LIBRARY-FEEDBACK #56).
+                          No onValueChange: the route IS the state. */}
+                      <ButtonGroup
+                        size="md"
+                        value={currentMode}
+                        aria-label={t_i18n('Change view')}
+                      >
                         {modes.includes('graph') && (
                           <Tooltip title={t_i18n('Graph view')}>
-                            <ToggleButton
+                            <ButtonGroupItem
+                              asChild
                               value="graph"
-                              component={Link}
-                              to={`${link}/graph`}
-                              selected={currentMode === 'graph'}
+                              aria-label={t_i18n('Graph view')}
+                              icon={<VectorPolygon sx={{ fontSize: 16 }} />}
                             >
-                              <VectorPolygon
-                                fontSize="small"
-                                color={currentMode === 'graph' ? 'primary' : 'inherit'}
-                              />
-                            </ToggleButton>
+                              <Link to={`${link}/graph`} />
+                            </ButtonGroupItem>
                           </Tooltip>
                         )}
                         {modes.includes('timeline') && (
                           <Tooltip title={t_i18n('TimeLine view')}>
-                            <ToggleButton
+                            <ButtonGroupItem
+                              asChild
                               value="timeline"
-                              component={Link}
-                              to={`${link}/timeline`}
-                              selected={currentMode === 'timeline'}
+                              aria-label={t_i18n('TimeLine view')}
+                              icon={<ChartTimeline sx={{ fontSize: 16 }} />}
                             >
-                              <ChartTimeline
-                                fontSize="small"
-                                color={currentMode === 'timeline' ? 'primary' : 'inherit'}
-                              />
-                            </ToggleButton>
+                              <Link to={`${link}/timeline`} />
+                            </ButtonGroupItem>
                           </Tooltip>
                         )}
                         {modes.includes('correlation') && (
                           <Tooltip title={t_i18n('Correlation view')}>
-                            <ToggleButton
+                            <ButtonGroupItem
+                              asChild
                               value="correlation"
-                              component={Link}
-                              to={`${link}/correlation`}
-                              selected={currentMode === 'correlation'}
+                              aria-label={t_i18n('Correlation view')}
+                              icon={<VectorLink sx={{ fontSize: 16 }} />}
                             >
-                              <VectorLink
-                                fontSize="small"
-                                color={
-                                  currentMode === 'correlation' ? 'primary' : 'inherit'
-                                }
-                              />
-                            </ToggleButton>
+                              <Link to={`${link}/correlation`} />
+                            </ButtonGroupItem>
                           </Tooltip>
                         )}
                         {modes.includes('matrix') && (
                           <Tooltip title={t_i18n('Tactics matrix view')}>
-                            <ToggleButton
+                            <ButtonGroupItem
+                              asChild
                               value="matrix"
-                              component={Link}
-                              to={`${link}/matrix`}
-                              selected={currentMode === 'matrix'}
+                              aria-label={t_i18n('Tactics matrix view')}
+                              icon={<ViewColumnOutlined sx={{ fontSize: 16 }} />}
                             >
-                              <ViewColumnOutlined
-                                fontSize="small"
-                                color={currentMode === 'matrix' ? 'primary' : 'inherit'}
-                              />
-                            </ToggleButton>
+                              <Link to={`${link}/matrix`} />
+                            </ButtonGroupItem>
                           </Tooltip>
                         )}
-                      </ToggleButtonGroup>
+                      </ButtonGroup>
                     </div>
                   )}
 

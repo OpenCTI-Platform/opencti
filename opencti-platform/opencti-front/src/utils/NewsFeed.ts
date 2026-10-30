@@ -1,4 +1,4 @@
-import { InsertChartOutlined, InsightsOutlined, LibraryBooksOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { InsertChartOutlined, InsightsOutlined, IntegrationInstructionsOutlined, LibraryBooksOutlined, NotificationsOutlined } from '@mui/icons-material';
 import type { ElementType } from 'react';
 
 interface NewsFeedTypeDefinition {
@@ -10,6 +10,7 @@ const NEWS_FEED_TYPE_MAP: Record<string, NewsFeedTypeDefinition> = {
   RESOURCE_CUSTOM_DASHBOARD: { icon: InsertChartOutlined, label: 'New Custom Dashboard' },
   RESOURCE_PLAYBOOK: { icon: LibraryBooksOutlined, label: 'New Playbook' },
   RESOURCE_CUSTOM_VIEW: { icon: InsightsOutlined, label: 'New Custom View' },
+  RESOURCE_INTEGRATION: { icon: IntegrationInstructionsOutlined, label: 'New Integration' },
 };
 
 export const isKnownNewsFeedType = (type: string): boolean =>

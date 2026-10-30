@@ -19,6 +19,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -84,6 +85,7 @@ const dataSourceMutationRelationDelete = graphql`
 const dataSourceEditionOverviewFragment = graphql`
   fragment DataSourceEditionOverview_dataSource on DataSource {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     confidence
@@ -262,7 +264,7 @@ const DataSourceEditionOverview: FunctionComponent<
           <AlertConfidenceForEntity entity={dataSource} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -357,6 +359,13 @@ const DataSourceEditionOverview: FunctionComponent<
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
             editContext={context}
+          />
+          <CustomFieldValuesEdition
+            entityType={dataSource.entity_type}
+            entityId={dataSource.id}
+            values={dataSource.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

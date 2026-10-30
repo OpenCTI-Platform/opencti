@@ -6,9 +6,8 @@ import ChartExportPopover from '../../private/components/common/charts/ChartExpo
 import { ErrorBoundary } from '@components/Error';
 import WidgetNoData from './WidgetNoData';
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../Theme';
-import { hexToRGB } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
 import Tag from '@common/tag/Tag';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
@@ -62,18 +61,17 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
         ? (
             <Card
               title={showPreviewTag ? (
-                <Stack direction="row" alignItems="center" gap={1}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
                   {formattedTitle}
                   <Tag
                     label={t_i18n('Preview data')}
-                    size="small"
-                    sx={{
-                      backgroundColor: hexToRGB(previewColor, 0.1),
-                      color: previewColor,
-                      border: `1px solid ${previewColor}`,
-                      fontWeight: 700,
-                      fontSize: '0.65rem',
-                    }}
+                    color={previewColor}
                   />
                 </Stack>
               ) : formattedTitle}

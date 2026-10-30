@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -13,26 +11,9 @@ import { QueryRenderer } from '../../../../relay/environment';
 import StixSightingRelationshipExternalReferencesLines, { stixSightingRelationshipExternalReferencesLinesQuery } from './StixSightingRelationshipExternalReferencesLines';
 import Card from '@common/card/Card';
 
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
-
 class StixSightingRelationshipExternalReferences extends Component {
   render() {
-    const { t, classes, stixSightingRelationshipId } = this.props;
+    const { t, stixSightingRelationshipId } = this.props;
     return (
       <QueryRenderer
         query={stixSightingRelationshipExternalReferencesLinesQuery}
@@ -57,7 +38,7 @@ class StixSightingRelationshipExternalReferences extends Component {
                       divider={true}
                     >
                       <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatarDisabled }}>
+                        <Avatar sx={{ width: 24, height: 24 }}>
                           {i}
                         </Avatar>
                       </ListItemIcon>
@@ -95,12 +76,8 @@ class StixSightingRelationshipExternalReferences extends Component {
 StixSightingRelationshipExternalReferences.propTypes = {
   stixSightingRelationshipId: PropTypes.string,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipExternalReferences);
+export default inject18n(StixSightingRelationshipExternalReferences);

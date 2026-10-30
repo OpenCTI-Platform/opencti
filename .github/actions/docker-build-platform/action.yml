@@ -15,6 +15,22 @@ inputs:
   docker_image_suffix:
     description: "Dockerfile image suffix such as _ubi9 or _fips"
     default: ""
+  tag_version:
+    description: "Value of the TAG_VERSION build-arg (release tag, used to fetch the connectors manifest of the tag). Empty for rolling builds."
+    required: false
+    default: ""
+  revision:
+    description: "Commit sha set as org.opencontainers.image.revision label. Empty to use the workflow commit."
+    required: false
+    default: ""
+  platform:
+    description: "Single target platform such as linux/arm64. Empty to build for the runner platform."
+    required: false
+    default: ""
+  artifact_suffix:
+    description: "Suffix appended to the artifact and archive names, such as -amd64"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -31,7 +47,7 @@ runs:
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c #v4.2.0
+      uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       with:
         name: gha-builder-platform
 
@@ -41,21 +57,24 @@ runs:
       with:
         images: filigran/platform
         tags: type=raw,value=${{ inputs.image_tag }}
+        labels: ${{ inputs.revision != '' && format('org.opencontainers.image.revision={0}', inputs.revision) || '' }}
 
 
     - name: Build (platform)
-      uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a #v7.3.0
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
       with:
-        context: opencti-platform
+        context: .
         file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
         push: 'false'
-        outputs: type=docker,dest=/tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
+        platforms: ${{ inputs.platform }}
+        build-args: ${{ inputs.tag_version != '' && format('TAG_VERSION={0}', inputs.tag_version) || '' }}
+        outputs: type=docker,dest=/tmp/opencti-platform${{ inputs.docker_image_suffix }}${{ inputs.artifact_suffix }}.tar
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Upload platform docker image artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        name: docker-image-opencti-platform${{ inputs.docker_image_suffix }}
-        path: /tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
-        retention-days: 1
+        name: docker-image-opencti-platform${{ inputs.docker_image_suffix }}${{ inputs.artifact_suffix }}
+        path: /tmp/opencti-platform${{ inputs.docker_image_suffix }}${{ inputs.artifact_suffix }}.tar
+        retention-days: 10

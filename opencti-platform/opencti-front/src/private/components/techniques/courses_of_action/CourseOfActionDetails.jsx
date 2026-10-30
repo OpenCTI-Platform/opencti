@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -23,7 +24,7 @@ class CourseOfActionDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Description')}
               </Label>
@@ -32,7 +33,7 @@ class CourseOfActionDetailsComponent extends Component {
                 limit={300}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Log sources')}
               </Label>
@@ -49,7 +50,7 @@ class CourseOfActionDetailsComponent extends Component {
                 </List>
               </FieldOrEmpty>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('External ID')}
               </Label>
@@ -57,10 +58,8 @@ class CourseOfActionDetailsComponent extends Component {
                 source={courseOfAction.x_mitre_id}
               >
                 <Chip
-                  size="small"
                   label={courseOfAction.x_mitre_id}
-                  color="primary"
-                  style={{ borderRadius: 4 }}
+                  severity="info"
                 />
               </FieldOrEmpty>
               <Label
@@ -73,6 +72,7 @@ class CourseOfActionDetailsComponent extends Component {
                 limit={300}
               />
             </Grid>
+            <CustomFieldValuesDisplay entityType={courseOfAction.entity_type} values={courseOfAction.customFieldValues ?? []} />
           </Grid>
           <CoursesOfActionAttackPatterns courseOfAction={courseOfAction} />
         </Card>
@@ -93,6 +93,10 @@ const CourseOfActionDetails = createFragmentContainer(
     courseOfAction: graphql`
       fragment CourseOfActionDetails_courseOfAction on CourseOfAction {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         description
         x_mitre_id
         x_opencti_threat_hunting

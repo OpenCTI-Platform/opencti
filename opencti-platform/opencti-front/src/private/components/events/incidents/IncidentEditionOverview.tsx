@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -21,6 +21,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -91,8 +92,10 @@ const incidentMutationRelationDelete = graphql`
 const incidentEditionOverviewFragment = graphql`
   fragment IncidentEditionOverview_incident on Incident {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     confidence
+    x_opencti_score
     entity_type
     description
     source
@@ -149,6 +152,7 @@ interface IncidentEditionFormValues {
   references?: FieldOption[];
   createdBy: FieldOption | undefined;
   x_opencti_workflow_id: FieldOption;
+  x_opencti_score: number | null;
   objectMarking?: FieldOption[];
   objectAssignee?: FieldOption[];
   objectParticipant?: FieldOption[];
@@ -168,6 +172,10 @@ const IncidentEditionOverviewComponent: FunctionComponent<
     incident_type: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     references: Yup.array(),
@@ -239,6 +247,7 @@ const IncidentEditionOverviewComponent: FunctionComponent<
     description: incident.description,
     incident_type: incident.incident_type,
     severity: incident.severity,
+    x_opencti_score: incident.x_opencti_score ?? null,
     createdBy: convertCreatedBy(incident) as FieldOption,
     objectMarking: convertMarkings(incident),
     objectAssignee: convertAssignees(incident),
@@ -268,7 +277,7 @@ const IncidentEditionOverviewComponent: FunctionComponent<
           <AlertConfidenceForEntity entity={incident} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -289,6 +298,26 @@ const IncidentEditionOverviewComponent: FunctionComponent<
             editContext={context}
             variant="edit"
           />
+          {/* A `style` on the field is unplaceable and sends it back to MUI. */}
+          <div style={{ marginTop: 20 }}>
+            <Field
+              component={TextField}
+              name="x_opencti_score"
+              required={(mandatoryAttributes.includes('x_opencti_score'))}
+              label={t_i18n('Score')}
+              type="number"
+              fullWidth={true}
+              disabled={isInferred}
+              onFocus={editor.changeFocus}
+              onSubmit={(name: string, value: string | null) => handleSubmitField(name, (value === '' ? null : value))}
+              helperText={(
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_score"
+                />
+              )}
+            />
+          </div>
           <OpenVocabField
             label={t_i18n('Incident type')}
             type="incident-type-ov"
@@ -384,6 +413,15 @@ const IncidentEditionOverviewComponent: FunctionComponent<
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          {!isInferred && (
+            <CustomFieldValuesEdition
+              entityType={incident.entity_type}
+              entityId={incident.id}
+              values={incident.customFieldValues ?? []}
+              fieldPatch={editor.fieldPatch}
+              enableReferences={enableReferences}
+            />
+          )}
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

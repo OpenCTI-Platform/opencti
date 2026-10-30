@@ -10,12 +10,12 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
-import { setCookieError } from './httpUtils';
+import { isBrowserSessionRequest, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
-import { issueXtmJwt } from '../domain/xtm-auth';
+import { getXtmOneIdentity, issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
-import { getHttpClient, getResponseError } from '../utils/http-client';
-import { redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
+import { getHttpClient, getResponseError, type HttpResponseError } from '../utils/http-client';
+import { redisDeleteXtmAgentResponse, redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
 import { checkDraftInContext } from './httpServer-draft';
 import { addAiInsightRequestCount, addChatbotMessageCount, addXtmAgentCallCount } from '../manager/telemetryManager';
 
@@ -48,9 +48,22 @@ const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number.isFinite(parsedAgentsRefreshTim
 const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = Math.floor(AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60);
 
 // Strict UUID shape check for path parameters forwarded to XTM One
-// (conversation ids, file ids). Rejecting anything else up-front keeps
-// arbitrary strings out of the upstream URL path.
+// (conversation ids, message ids, file ids). Rejecting anything else
+// up-front keeps arbitrary strings out of the upstream URL path.
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+// XTM One reports a refusal as `{detail: {code, message}}` as often as a bare
+// string, and an object interpolated into the SSE error line reaches the chat
+// bubble as "[object Object]".
+const detailToText = (detail: unknown, fallback: string): string => {
+  if (typeof detail === 'string' && detail.trim()) return detail.trim();
+  if (detail && typeof detail === 'object') {
+    const { message, detail: nested } = detail as { message?: unknown; detail?: unknown };
+    if (typeof message === 'string' && message.trim()) return message.trim();
+    if (typeof nested === 'string' && nested.trim()) return nested.trim();
+  }
+  return fallback;
+};
 
 // ── HTTP client (proxy-aware) ────────────────────────────────────────────
 const getXtmClient = (responseType: 'json' | 'stream', headers?: Record<string, string>) => {
@@ -113,8 +126,9 @@ const generateBasicHeaders = async (req: Express.Request, context: AuthContext):
  * Authenticate the request and verify chatbot prerequisites (CGU + license).
  * Returns the authenticated context or null (response already sent in that case).
  *
- * When XTM One is configured, the license check is relaxed because XTM One
- * handles its own licensing validation during registration.
+ * The license is the Enterprise Edition of the platform (getEnterpriseEditionInfo):
+ * OpenCTI's own license or a verified XTM license, never the ee_enabled of the
+ * XTM One registration answer.
  */
 const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
   const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -125,9 +139,7 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
 
   const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
   const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
-  const { pem } = getEnterpriseEditionActivePem(settings);
-  const licenseInfo = getEnterpriseEditionInfo(settings);
-  const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;
+  const isLicenseValidated = getEnterpriseEditionInfo(settings).license_validated;
 
   if (!isChatbotCGUAccepted || !isLicenseValidated) {
     logApp.info('Chatbot not enabled', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated });
@@ -139,7 +151,10 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
 };
 
 // ── GET /chatbot/config ──────────────────────────────────────────────────
-// Returns chatbot configuration (XTM One URL) for the frontend.
+// Returns chatbot configuration for the frontend. `xtm_one_url` is where the
+// browser opens XTM One (Ask Ariane's links, the CTEM Command Center, the MCP
+// card): its published identity, not `xtm:xtm_one_url`, which may be an
+// internal address only this backend reaches.
 export const getChatbotConfig = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -147,9 +162,12 @@ export const getChatbotConfig = async (req: Express.Request, res: Express.Respon
       res.sendStatus(403);
       return null;
     }
+    // Only a configured client reads XTM One's identity: the default
+    // configuration names a URL without a token, and this route serves every page.
+    const configured = xtmOneClient.isConfigured();
     res.json({
-      xtm_one_url: XTM_ONE_URL || null,
-      xtm_one_configured: xtmOneClient.isConfigured(),
+      xtm_one_url: configured ? ((await getXtmOneIdentity()) ?? null) : null,
+      xtm_one_configured: configured,
     });
   } catch (e: unknown) {
     logApp.error('Error in chatbot config', { cause: e });
@@ -232,7 +250,7 @@ export const getChatbotSessions = async (req: Express.Request, res: Express.Resp
     const { message } = e as Error;
     const httpErr = getResponseError(e);
     // Surface the upstream `detail` / `message` (e.g. FastAPI validation
-    // errors) instead of the generic axios "Request failed with status
+    // errors) instead of the generic "Request failed with status
     // code N", so failures are actionable in the UI and logs.
     const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
     res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
@@ -312,6 +330,241 @@ export const postChatbotMessageSteer = async (req: Express.Request, res: Express
   }
 };
 
+// ── POST /chatbot/messages/approve ──────────────────────────────────────
+// Human-in-the-loop: answers a turn that XTM One paused because the agent
+// proposed a tool call needing a person's consent. Shaped exactly like the
+// steer handler above — the widget already knows how to POST into a running
+// turn, so a decision travels the same way.
+//
+// The body is forwarded whole (`{ conversation_id, decisions: [...] }`) and
+// upstream statuses are passed through untouched: the chatbot distinguishes
+// 409 (nothing is waiting any more — the turn finished, was cancelled or was
+// answered elsewhere) from a transport failure, and keeps the prompt on
+// screen with the controls re-armed on anything else.
+export const postChatbotMessageApprove = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    // An approval is a person's consent, so it must come from a real browser
+    // session. Agent and service identities authenticate with an API token
+    // and have no business approving a tool call — least of all one they
+    // proposed themselves, which would defeat the whole control.
+    if (!isBrowserSessionRequest(req, context)) {
+      res.status(403).json({ status: 'error', error: 'Tool approval requires a user session' });
+      return;
+    }
+    if (!req.body) {
+      res.status(400).json({ error: 'Request body is missing' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.post('/api/v1/platform/chat/messages/approve', req.body, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot tool approval', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    if (httpErr) {
+      const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
+      res.status(httpErr.status).send({ status: 'error', error: detail });
+    } else {
+      res.status(503).send({ status: 'error', error: message });
+    }
+  }
+};
+
+// ── GET /chatbot/conversations/:conversationId/pending-approvals ─────────
+// What a paused turn in this conversation is still waiting on.
+//
+// `approval_required` is a single event on the SSE stream, so a page reload
+// loses it — including the `tool_call_id`s a decision has to name — while the
+// turn goes on waiting for an answer nobody can give any more. The widget
+// therefore re-reads this on mount and on every conversation switch, and
+// polls it after answering a recovered prompt (`turn: running | idle` is the
+// stop condition, because the resumed turn writes to the connection the
+// reload closed and nothing arrives live).
+//
+// An empty `proposals` array is the ordinary answer, not an error: most
+// conversations are not paused. Reaching this route also tells XTM One a
+// client is still present, which is what keeps a displayed prompt from being
+// discarded as abandoned.
+export const getChatbotPendingApprovals = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    // Same gate as the decision route. The proposals payload spells out the tool
+    // name, its arguments and its input schema, and merely reaching this route
+    // tells XTM One a client is still watching — which is what keeps a displayed
+    // prompt from being discarded as abandoned. Neither belongs to an API token.
+    if (!isBrowserSessionRequest(req, context)) {
+      res.status(403).json({ status: 'error', error: 'Tool approval requires a user session' });
+      return;
+    }
+    const conversationId = String(req.params.conversationId ?? '');
+    if (!conversationId || !UUID_RE.test(conversationId)) {
+      res.status(400).json({ error: 'Invalid conversation id' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get(`/api/v1/platform/chat/conversations/${conversationId}/pending-approvals`, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot pending approvals', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── GET /chatbot/prompts ────────────────────────────────────────────────
+// The user's reusable prompts for the composer's prompt picker. The chatbot
+// shows the picker only when this answers, so a failure simply hides it.
+export const getChatbotPrompts = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get('/api/v1/platform/chat/prompts', {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot prompts list', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── GET /chatbot/quota ──────────────────────────────────────────────────
+// The user's agentic quota for the composer's quota indicator. XTM One
+// answers 200 `null` when there is nothing to show; it is forwarded as is and
+// the chatbot then hides the indicator.
+export const getChatbotQuota = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get('/api/v1/platform/chat/quota', {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot quota', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// Both ids of a message feedback route end up in the upstream URL path, so
+// both are held to the UUID shape; answers 400 and returns null otherwise.
+const readFeedbackTarget = (req: Express.Request, res: Express.Response) => {
+  const conversationId = String(req.params.conversationId ?? '');
+  if (!conversationId || !UUID_RE.test(conversationId)) {
+    res.status(400).json({ error: 'Invalid conversation id' });
+    return null;
+  }
+  const messageId = String(req.params.messageId ?? '');
+  if (!messageId || !UUID_RE.test(messageId)) {
+    res.status(400).json({ error: 'Invalid message id' });
+    return null;
+  }
+  return { conversationId, messageId };
+};
+
+// ── POST /chatbot/conversations/:conversationId/messages/:messageId/feedback ──
+// Stores the user's thumbs rating of an answer (`{ rating, comment }`) on the
+// message in XTM One, where the agent's managers read it. The body is
+// forwarded whole; XTM One validates it and answers 404 for a message the
+// user cannot see, which is passed through.
+export const postChatbotMessageFeedback = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const target = readFeedbackTarget(req, res);
+    if (!target) return;
+    if (!req.body) {
+      res.status(400).json({ error: 'Request body is missing' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.post(
+      `/api/v1/platform/chat/conversations/${target.conversationId}/messages/${target.messageId}/feedback`,
+      req.body,
+      { timeout: DEFAULT_XTM_TIMEOUT },
+    );
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot message feedback', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── DELETE /chatbot/conversations/:conversationId/messages/:messageId/feedback ──
+// Retracts the user's rating of an answer. Idempotent upstream (204 whether
+// or not a rating was stored).
+export const deleteChatbotMessageFeedback = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const target = readFeedbackTarget(req, res);
+    if (!target) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.delete(
+      `/api/v1/platform/chat/conversations/${target.conversationId}/messages/${target.messageId}/feedback`,
+      { timeout: DEFAULT_XTM_TIMEOUT },
+    );
+    // Same forwarding as the session delete: an empty upstream body (the
+    // 204) is ended empty, never through `sendStatus` and its textual body.
+    if (response.data !== undefined && response.data !== null && response.data !== '') {
+      res.status(response.status).json(response.data);
+    } else {
+      res.status(response.status).end();
+    }
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot message feedback delete', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
 // ── POST /chatbot/messages ──────────────────────────────────────────────
 // Proxies to XTM One Platform Chat API (streaming SSE).
 // When file_ids are present in the body, routes to the conversation-level
@@ -336,7 +589,6 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
     const headers = await generateBasicHeaders(req, context);
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.post('/api/v1/platform/chat/messages', req.body, {
-      decompress: false,
       timeout: 0,
     });
 
@@ -401,9 +653,10 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
       res.setHeader('Connection', 'keep-alive');
       res.status(200);
 
+      const detailText = detailToText(detail, message);
       const errorContent = code === 429
-        ? `⚠️ **Quota exceeded** — ${detail}`
-        : `⚠️ **Error** — ${detail}`;
+        ? `⚠️ **Quota exceeded** — ${detailText}`
+        : `⚠️ **Error** — ${detailText}`;
 
       res.write(`data: ${JSON.stringify({ type: 'error', content: errorContent, code })}\n\n`);
       res.end();
@@ -432,6 +685,10 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
       res.status(400).json({ error: 'conversation_id field and at least one file are required' });
       return;
     }
+    if (!UUID_RE.test(conversationId)) {
+      res.status(400).json({ error: 'Invalid conversation id' });
+      return;
+    }
     const authHeaders = await generateBasicHeaders(req, context);
     const fileIds: string[] = [];
     for (const file of files) {
@@ -440,8 +697,8 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
       const httpClient = getXtmClient('json', { ...authHeaders, ...form.getHeaders() });
       const uploadRes = await httpClient.post(
         `/api/v1/chat/conversations/${conversationId}/upload?create_message=false`,
-        form,
-        { timeout: MULTIPART_XTM_TIMEOUT, maxContentLength: Infinity, maxBodyLength: Infinity },
+        form.getBuffer(),
+        { timeout: MULTIPART_XTM_TIMEOUT },
       );
       if (uploadRes.data?.file_id) {
         fileIds.push(uploadRes.data.file_id);
@@ -517,7 +774,6 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     headers['opencti-draft-id'] = context.draft_context ?? '';
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.get(`/api/v1/chat/files/${fileId}/download`, {
-      decompress: false,
       // Streaming pipe — no response timeout (matches the other streaming
       // proxy calls). A 2-minute cap could abort a large/slow download
       // prematurely; the stream ends naturally and `req.on('close')` below
@@ -527,8 +783,6 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
 
     // Forward the content headers so the browser saves the file with the
     // right name and type. `content-disposition` is built CRLF-safe by XTM One.
-    // `content-encoding` MUST be forwarded because `decompress: false` leaves a
-    // gzip/br payload compressed — the browser needs the header to decode it.
     const forwardHeaders = ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control'];
     Object.entries(response.headers).forEach(([key, value]) => {
       if (forwardHeaders.includes(key.toLowerCase()) && value) {
@@ -557,7 +811,7 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     setCookieError(res, message);
     if (httpErr) {
       // Surface the upstream `detail` (e.g. "File not found" / "Access denied")
-      // instead of the generic axios "Request failed with status code N".
+      // instead of the generic "Request failed with status code N".
       // With responseType 'stream' the error body may arrive as a stream, so
       // handle both the parsed-object and stream cases (matches the
       // `postChatbotMessage` error path).
@@ -579,6 +833,168 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
         // If parsing fails, fall back to the generic error message.
       }
       res.status(httpErr.status).json({ error: detail });
+    } else {
+      res.status(503).json({ error: 'XTM One is unreachable' });
+    }
+  }
+};
+
+// ── Decks, reports and videos an answer made ────────────────────────────
+// XTM One describes them in the chat answer (`artifacts`); the chatbot's
+// cards download them and follow a video's render through the two routes
+// below. As for files, the user is authenticated to OpenCTI only and the XTM
+// One JWT is minted here.
+const ARTIFACT_KINDS = new Set(['presentation', 'report', 'video']);
+const ARTIFACT_FORMAT_RE = /^[a-z0-9_]{1,20}$/;
+const ARTIFACT_FORWARD_HEADERS = ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control'];
+// An error body is a short `{detail}`: a larger one is not read, nor inflated past this.
+const UPSTREAM_ERROR_MAX_BYTES = 64 * 1024;
+
+/** The validated `kind` / `artifactId` of an artifact route, or null (anything else never reaches XTM One). */
+const artifactTarget = (req: Express.Request): { kind: string; artifactId: string } | null => {
+  const kind = String(req.params.kind ?? '');
+  const artifactId = String(req.params.artifactId ?? '');
+  return ARTIFACT_KINDS.has(kind) && UUID_RE.test(artifactId) ? { kind, artifactId } : null;
+};
+
+/** The upstream `detail` of a failed call, read from a parsed body or from a stream. */
+const upstreamDetail = async ({ data }: HttpResponseError, fallback: string): Promise<unknown> => {
+  try {
+    if (typeof data === 'object' && data !== null) {
+      if ('detail' in data) return data.detail;
+      if (typeof data.pipe === 'function') {
+        const chunks: Buffer[] = [];
+        let size = 0;
+        for await (const chunk of data as AsyncIterable<Buffer>) {
+          size += chunk.length;
+          if (size > UPSTREAM_ERROR_MAX_BYTES) return fallback;
+          chunks.push(Buffer.from(chunk));
+        }
+        return JSON.parse(Buffer.concat(chunks).toString('utf-8')).detail ?? fallback;
+      }
+    }
+  } catch {
+    // An unreadable body: the generic message stands.
+  }
+  return fallback;
+};
+
+/** An upstream refusal (unknown artifact, render not finished) answers the user; only the rest is a platform failure. */
+const logArtifactFailure = (message: string, cause: unknown, httpErr: HttpResponseError | null) => {
+  if (httpErr && httpErr.status < 500) {
+    logApp.warn(message, { cause, status: httpErr.status });
+  } else {
+    logApp.error(message, { cause });
+  }
+};
+
+/** Artifact routes reach XTM One with the validated draft, like file downloads. */
+const artifactHeaders = async (req: Express.Request, res: Express.Response, context: AuthContext) => {
+  try {
+    await checkDraftInContext(context);
+  } catch (draftErr: unknown) {
+    logApp.warn('Chatbot artifact request rejected due to invalid draft context', { cause: draftErr });
+    res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+    return null;
+  }
+  const headers = await generateBasicHeaders(req, context);
+  headers['opencti-draft-id'] = context.draft_context ?? '';
+  return headers;
+};
+
+// ── GET /chatbot/artifacts/:kind/:artifactId ────────────────────────────
+// The artifact described again, as of now: a card follows a video whose
+// render was still running when the answer arrived.
+export const getChatbotArtifact = async (req: Express.Request, res: Express.Response) => {
+  let signal: AbortSignal | undefined;
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    signal = context.requestAbortSignal;
+    const target = artifactTarget(req);
+    if (!target) {
+      res.status(400).json({ error: 'Invalid artifact' });
+      return;
+    }
+    const headers = await artifactHeaders(req, res, context);
+    if (!headers) return;
+    const httpClient = getXtmClient('json', headers);
+    const response = await httpClient.get(`/api/v1/platform/chat/artifacts/${target.kind}/${target.artifactId}`, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+      signal,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    // The browser left: the upstream call is cancelled and nobody reads an answer.
+    if (signal?.aborted) return;
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    logArtifactFailure('Error in chatbot artifact read', e, httpErr);
+    if (httpErr) {
+      const detail = await upstreamDetail(httpErr, message);
+      if (signal?.aborted) return;
+      res.status(httpErr.status).json({ error: detailToText(detail, message) });
+    } else {
+      res.status(503).json({ error: 'XTM One is unreachable' });
+    }
+  }
+};
+
+// ── POST /chatbot/artifacts/:kind/:artifactId/download ──────────────────
+// The file of a deck (pdf, pptx, pptx_native), a report (pdf) or a video
+// (mp4), streamed back with its content headers. XTM One exports a deck or
+// a report on the spot, against the user's export budget.
+export const postChatbotArtifactDownload = async (req: Express.Request, res: Express.Response) => {
+  let signal: AbortSignal | undefined;
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    signal = context.requestAbortSignal;
+    const target = artifactTarget(req);
+    const format = typeof req.body?.format === 'string' ? req.body.format : '';
+    if (!target || !ARTIFACT_FORMAT_RE.test(format)) {
+      res.status(400).json({ error: 'Invalid artifact download' });
+      return;
+    }
+    const headers = await artifactHeaders(req, res, context);
+    if (!headers) return;
+    const httpClient = getXtmClient('stream', headers);
+    const response = await httpClient.post(
+      `/api/v1/platform/chat/artifacts/${target.kind}/${target.artifactId}/download`,
+      { format },
+      // Streaming pipe, as for files: a deck export or a long video must not
+      // be cut by a response timeout. The browser leaving cancels it instead,
+      // during the export as during the stream; the request's own `close`
+      // cannot tell, it fires as soon as the JSON body has been read.
+      { timeout: 0, signal },
+    );
+    Object.entries(response.headers).forEach(([key, value]) => {
+      if (ARTIFACT_FORWARD_HEADERS.includes(key.toLowerCase()) && value) {
+        res.setHeader(key, value as string);
+      }
+    });
+    response.data.pipe(res);
+    response.data.on('error', (error: Error) => {
+      if (signal?.aborted) return;
+      logApp.error('Stream error in chatbot artifact download proxy', { cause: error });
+      if (res.headersSent) {
+        // Ending a chunked response would hand the browser a truncated file as complete.
+        res.destroy();
+      } else {
+        // The file's headers would mislabel the JSON error, which a `content-encoding` makes unreadable.
+        ARTIFACT_FORWARD_HEADERS.forEach((header) => res.removeHeader(header));
+        res.status(500).send({ status: 'error', error: error.message });
+      }
+    });
+  } catch (e: unknown) {
+    if (signal?.aborted) return;
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr);
+    if (httpErr) {
+      const detail = await upstreamDetail(httpErr, message);
+      if (signal?.aborted) return;
+      res.status(httpErr.status).json({ error: detailToText(detail, message) });
     } else {
       res.status(503).json({ error: 'XTM One is unreachable' });
     }
@@ -631,8 +1047,8 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
         const uploadClient = getXtmClient('json', { ...authHeaders, ...form.getHeaders() });
         const uploadRes = await uploadClient.post(
           `/api/v1/chat/conversations/${conversationId}/upload?create_message=false`,
-          form,
-          { timeout: MULTIPART_XTM_TIMEOUT, maxContentLength: Infinity, maxBodyLength: Infinity },
+          form.getBuffer(),
+          { timeout: MULTIPART_XTM_TIMEOUT },
         );
         if (uploadRes.data?.file_id) {
           fileIds.push(uploadRes.data.file_id);
@@ -703,6 +1119,33 @@ const writeAgentStreamHeaders = (res: Express.Response): void => {
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
+};
+
+// Whether an agent answer is XTM One's "I stopped, a human has to approve
+// this" message rather than a real answer.
+//
+// Unattended callers (AI Insights, NLQ search, playbook nodes) never declare
+// `supports_tool_approval`, so a gated tool ends their turn with this prose
+// instead of running. That degradation is correct for a reader — but not for a
+// cache: `extractFinalContent` cannot tell it from an answer, so caching it
+// would pin "I need approval before running X" to an entity for
+// `ai:agents_refresh_timeout` minutes (24h by default) and replay it to every
+// user, long after an administrator whitelists the tool.
+//
+// Prose matching because that is all XTM One emits here — the message is
+// deliberately plain, with no structured marker behind it (see
+// `docs/deployment/chat-approvals-in-clients.md` upstream). A wording change
+// upstream degrades to "cached for the TTL" rather than to a failure.
+//
+// Matched anywhere in the content rather than only at the start: the agent can
+// answer part of the question and *then* stop for approval ("Here is what I
+// found… I need approval before running `x`"), and a prefix test would let that
+// half-answer be cached with a stale approval request glued to it. Caching one
+// answer too few costs a re-run; caching this costs every user who opens the
+// entity for the next `ai:agents_refresh_timeout`.
+const APPROVAL_REQUIRED_MARKER = 'i need approval before running';
+const isApprovalRequiredMessage = (content: string): boolean => {
+  return content.toLowerCase().includes(APPROVAL_REQUIRED_MARKER);
 };
 
 // Parse a buffered SSE stream and return the content of the final `done` event,
@@ -783,7 +1226,14 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     const cacheKey = cacheEnabled ? buildAgentCacheKey(agent_slug, draftId, content) : null;
     if (cacheEnabled && cacheKey && !force_refresh) {
       const cached = await redisGetXtmAgentResponse(cacheKey);
-      if (cached) {
+      // A build without the write guard below could have cached an approval
+      // notice, and Redis outlives the deployment that wrote it. Drop such an
+      // entry on read instead of replaying it for the rest of its TTL — long
+      // after an administrator may have whitelisted the tool.
+      if (cached && isApprovalRequiredMessage(cached.content)) {
+        logApp.info('Evicting cached agent response that stopped for tool approval', { agent_slug });
+        await redisDeleteXtmAgentResponse(cacheKey);
+      } else if (cached) {
         logApp.info('Agent response served from cache', { agent_slug });
         // Telemetry: AI Insight served from cache.
         addAiInsightRequestCount('hit');
@@ -818,7 +1268,6 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       content,
       stream: true,
     }, {
-      decompress: false,
       timeout: 0,
     });
 
@@ -851,14 +1300,19 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       // aborts, capture overflow, or when the cache is disabled. Node
       // typically does not emit `'end'` after `'error'`, but the explicit
       // `streamErrored` guard is cheap insurance against caching a partial
-      // or transport-failed response if a future Node / undici / axios
+      // or transport-failed response if a future Node / undici
       // version reorders events.
       if (!cacheEnabled || !cacheKey || clientAborted || streamErrored || captureOverflow) return;
       const raw = Buffer.concat(captureChunks).toString('utf-8');
       const finalContent = extractFinalContent(raw);
-      if (finalContent !== null && finalContent.length > 0) {
-        await redisSetXtmAgentResponse(cacheKey, finalContent, AI_AGENTS_REFRESH_TIMEOUT_SECONDS);
+      if (finalContent === null || finalContent.length === 0) return;
+      // A turn that stopped for human approval is not an answer — never cache
+      // it, or the entity keeps showing it until the TTL expires.
+      if (isApprovalRequiredMessage(finalContent)) {
+        logApp.info('Agent response not cached: turn stopped for tool approval', { agent_slug });
+        return;
       }
+      await redisSetXtmAgentResponse(cacheKey, finalContent, AI_AGENTS_REFRESH_TIMEOUT_SECONDS);
     });
 
     response.data.pipe(res);
@@ -903,7 +1357,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache, no-transform');
       res.status(200);
-      res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detail}` })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detailToText(detail, message)}` })}\n\n`);
       res.end();
     } else {
       const userMessage = 'XTM One is unreachable';
@@ -976,7 +1430,6 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
 
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.post('/chatbot', enhancedBody, {
-      decompress: false,
       timeout: 0,
     });
 

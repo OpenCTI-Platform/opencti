@@ -2,12 +2,12 @@ import React, { Fragment, FunctionComponent } from 'react';
 import { last } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { Chip } from '@filigran/design-system';
+import { ChipOwnProps } from '@mui/material/Chip';
 import { WarningOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
-import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmptyShallow, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -17,6 +17,17 @@ import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 import type { WidgetHost } from '../../utils/widget/widget';
+import Button from '@common/button/Button';
+import { useOptionalDashboardVariableDefinitions } from '../dashboard/DashboardVariablesContext';
+import { getVariableTokenLabel } from '../dashboard/dashboardVariableTokenLabel';
+
+// The prop only ever arrives as 'warning' or 'success' (WidgetFilters, 4 call
+// sites), so it maps to two tones; absent keeps the library default.
+const chipSeverity = (color?: string) => {
+  if (color === 'warning') return 'high' as const;
+  if (color === 'success') return 'low' as const;
+  return undefined;
+};
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -54,6 +65,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { schema: { scos } } = useSchema();
+  // Only in a dashboard providing its variables: anywhere else a token-looking value stays a literal.
+  const variables = useOptionalDashboardVariableDefinitions();
 
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
@@ -61,26 +74,47 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const isOperatorChange = ['has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
-  const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
-  const labelStyle = deactivatePopoverMenu
-    ? undefined
-    : {
-        cursor: 'pointer',
-        '&:hover': {
-          textDecorationLine: 'underline',
-        },
-      };
+
+  const buttonStyles = {
+    minWidth: 'unset',
+    minHeight: 'unset',
+    height: 'unset',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    font: 'inherit',
+    color: 'inherit',
+    backgroundColor: 'inherit !important',
+    cursor: 'pointer',
+    '&:hover': {
+      textDecorationLine: 'underline',
+    },
+    ...(tooltip && {
+      pointerEvents: 'none',
+    }),
+  };
+
+  // A read-only filter has no editor to open: its label is plain text, not a
+  // focusable button that does nothing.
+  const filterLabel = deactivatePopoverMenu || !onClickLabel
+    ? (
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+          <strong>{label}</strong>
+        </Box>
+      )
+    : (
+        <Button type="button" sx={buttonStyles} onClick={onClickLabel}>
+          <strong>
+            {label}
+          </strong>
+        </Button>
+      );
 
   // special case for nil/not_nil
   if (isOperatorNil) {
     return (
       <>
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {filterLabel}{' '}
         <span>
           {filterOperator === 'nil' ? t_i18n('is empty') : t_i18n('is not empty')}
         </span>
@@ -92,12 +126,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   if (isOperatorChange) {
     return (
       <>
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {filterLabel}{' '}
         <span>
           {filterOperator === 'has_changed' ? t_i18n('has changed') : t_i18n('has not changed')}
         </span>
@@ -112,12 +141,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const relativeValue = translateDateInterval(filterValues, t_i18n);
     return (
       <>
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {filterLabel}{' '}
         <span>
           {relativeValue}
         </span>
@@ -132,48 +156,68 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && handleSwitchLocalMode
       && !filtersRestrictions?.preventLocalModeSwitchingFor?.includes(filterKey)
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
-    const localModeStyle = isLocalModeSwitchable
-      ? {
-          display: 'inline-block',
-          height: '100%',
-          borderRadius: 0,
-          margin: '0 5px 0 5px',
-          padding: '0 5px 0 5px',
-          cursor: 'pointer',
-          backgroundColor: theme.palette.action?.disabled,
-          fontFamily: 'Consolas, monaco, monospace',
-          '&:hover': {
-            textDecorationLine: 'underline',
-            backgroundColor: theme.palette.text?.disabled,
-          },
-        }
-      : {
-          display: 'inline-block',
-          height: '100%',
-          borderRadius: 0,
-          margin: '0 5px 0 5px',
-          padding: '0 5px 0 5px',
-          backgroundColor: theme.palette.action?.disabled,
-          fontFamily: 'Consolas, monaco, monospace',
-        };
+    const localModeStyle = {
+      minWidth: 'unset',
+      minHeight: 'unset',
+      background: 'none',
+      color: 'inherit',
+      display: 'inline-block',
+      borderRadius: 0,
+      margin: '0 5px 0 5px',
+      padding: '0 5px 0 5px',
+      cursor: 'pointer',
+      backgroundColor: theme.palette.action?.disabled,
+      fontWeight: 'unset',
+      fontFamily: 'Consolas, monaco, monospace',
+      textTransform: 'inherit',
+      ...(tooltip && {
+        // The library Button carries its own 14px type in an 11px tooltip, so the pill outgrew every word beside it.
+        fontSize: 'inherit',
+        lineHeight: 'inherit',
+        height: 'auto',
+        pointerEvents: 'none',
+      }),
+      ...(isLocalModeSwitchable && {
+        '&:hover': {
+          textDecorationLine: 'underline',
+          backgroundColor: theme.palette.text?.disabled,
+        },
+      }),
+    };
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
+    // A variable token is shown under the variable name, never through the representatives (that cannot resolve it).
+    const tokenLabel = getVariableTokenLabel(id, variables, t_i18n);
+    const variableToken = tokenLabel !== null && (
+      <span
+        data-variable-token={tokenLabel.variableId}
+        style={{
+          fontStyle: 'italic',
+          color: tokenLabel.isDeleted ? theme.palette.error.main : theme.palette.primary.main,
+          ...(tooltip && { whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }),
+        }}
+      >
+        {tooltip ? tokenLabel.label : truncate(tokenLabel.label, 20)}
+      </span>
+    );
     return (
       <Fragment key={id}>
         {filterOperator === 'within'
           ? (
               <>
                 {filterValues[0] === id && <span>[</span>}
-                <FilterValuesContent
-                  isFilterTooltip={!!tooltip}
-                  filterKey={filterKey}
-                  id={id}
-                  value={value}
-                  filterDefinition={filterDefinition}
-                  filterOperator={filterOperator}
-                  host={host}
-                />
+                {variableToken || (
+                  <FilterValuesContent
+                    isFilterTooltip={!!tooltip}
+                    filterKey={filterKey}
+                    id={id}
+                    value={value}
+                    filterDefinition={filterDefinition}
+                    filterOperator={filterOperator}
+                    host={host}
+                  />
+                )}
                 <span>
                   {last(filterValues) === id ? ']' : ', '}
                 </span>
@@ -181,37 +225,31 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             )
           : (
               <>
-                <FilterValuesContent
-                  redirection={tooltip ? false : redirection}
-                  isFilterTooltip={!!tooltip}
-                  filterKey={filterKey}
-                  id={id}
-                  value={value}
-                  filterDefinition={filterDefinition}
-                  filterOperator={filterOperator}
-                  host={host}
-                />
+                {variableToken || (
+                  <FilterValuesContent
+                    redirection={tooltip ? false : redirection}
+                    isFilterTooltip={!!tooltip}
+                    filterKey={filterKey}
+                    id={id}
+                    value={value}
+                    filterDefinition={filterDefinition}
+                    filterOperator={filterOperator}
+                    host={host}
+                  />
+                )}
                 {last(filterValues) !== id && isRegardingOfFilter
-                  && (
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        height: '100%',
-                        borderRadius: 0,
-                        margin: '0 2px 0 0',
-                        fontFamily: 'Consolas, monaco, monospace',
-                      }}
-                      onClick={operatorOnClick}
-                    >
-                      ,
-                    </div>
-                  )
+                  && <span style={{ marginRight: 2 }}>,</span>
                 }
                 {last(filterValues) !== id && !isRegardingOfFilter
                   && (
-                    <div style={localModeStyle} onClick={operatorOnClick}>
+                    <Button
+                      type="button"
+                      sx={localModeStyle}
+                      onClick={operatorOnClick}
+                      disabled={!operatorOnClick}
+                    >
                       {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
-                    </div>
+                    </Button>
                   )
                 }
               </>
@@ -228,11 +266,10 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const isWarning = isRegardingOfFilterWarning(currentFilter, scos.map((n) => n.id), filtersRepresentativesMap);
 
     return (
-      <Stack direction="row">
+      <Stack direction="row" sx={{ alignItems: 'center' }}>
         {isWarning && (
           <Tooltip title={
-            t_i18n('', {
-              id: 'All the results may not be displayed for these filter values, read documentation for more information.',
+            t_i18n('All the results may not be displayed for these filter values, {link} for more information.', {
               values: {
                 link: (
                   <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=regarding#the-regardingof-filter-key">
@@ -249,13 +286,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             />
           </Tooltip>
         )}
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
-        <Box sx={{ display: 'flex', flexDirection: 'row', overflow: 'hidden' }}>
+        {filterLabel}{' '}
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', overflow: 'hidden' }}>
           {sortedFilterValues
             .map((val) => {
               const subKey = val.key;
@@ -267,7 +299,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               );
               if (subKey === 'dynamic') {
                 const [dynamicValue] = val.values;
-                if (!isFilterGroupNotEmpty(dynamicValue)) {
+                if (!isFilterGroupNotEmptyShallow(dynamicValue)) {
                   return <div key={val.key} />;
                 }
                 return (
@@ -325,27 +357,17 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   if (filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return (
       <>
-        <strong
-          style={labelStyle}
-          onClick={onCLick}
-        >
-          {label}
-        </strong>{' '}
+        {filterLabel}{' '}
         <Chip
           label={t_i18n('Dynamic filter')}
-          color={chipColor}
+          severity={chipSeverity(chipColor)}
         />
       </>
     );
   }
   return (
     <>
-      <strong
-        style={labelStyle}
-        onClick={onCLick}
-      >
-        {label}
-      </strong>{' '}
+      {filterLabel}{' '}
       {values}
     </>
   );

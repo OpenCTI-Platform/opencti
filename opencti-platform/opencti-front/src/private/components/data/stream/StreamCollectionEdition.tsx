@@ -17,7 +17,14 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend, stixFilters, streamOriginFilters } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  getStixFiltersDisplayedKeys,
+  isFilterGroupNotEmpty,
+  serializeFilterGroupForBackend,
+  streamOriginFilters,
+  useStixFilters,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
@@ -55,6 +62,7 @@ const streamCollectionValidation = (requiredSentence: string) => Yup.object().sh
 const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const stixFilters = useStixFilters();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
   const initialValues = { ...streamCollection,
     restricted_members: convertAuthorizedMembers(streamCollection),
@@ -153,7 +161,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -161,11 +169,11 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onSubmit={handleSubmitField}
           />
           <Alert
@@ -255,6 +263,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
           <FilterIconButton
             filters={filters}
             helpers={helpers}
+            availableFilterKeys={getStixFiltersDisplayedKeys(stixFilters, filters)}
             redirection={true}
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
@@ -285,6 +294,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 <FilterIconButton
                   filters={originFilters}
                   helpers={originHelpers}
+                  availableFilterKeys={streamOriginFilters}
                   redirection={true}
                   searchContext={{ entityTypes: ['History'] }}
                   entityTypes={['History']}

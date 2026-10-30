@@ -1,10 +1,9 @@
-import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
+import { FunctionComponent, UIEvent, useMemo, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import stopEvent from '../../../../../utils/domEvent';
@@ -12,6 +11,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useCustomViewsData } from '../../../custom_views/useCustomViewsData';
 import { CustomViewDuplicationDialog_DuplicateMutation } from './__generated__/CustomViewDuplicationDialog_DuplicateMutation.graphql';
 import { CustomViewDuplicationDialog_Fragment$data, CustomViewDuplicationDialog_Fragment$key } from './__generated__/CustomViewDuplicationDialog_Fragment.graphql';
+import { Input } from '@filigran/design-system';
 
 const customViewDuplicationFragment = graphql`
   fragment CustomViewDuplicationDialog_Fragment on CustomView {
@@ -50,6 +50,7 @@ const CustomViewDuplicationDialog: FunctionComponent<
   handleCloseDuplicate,
 }) => {
   const { t_i18n } = useFormatter();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
   const customView = useFragment(customViewDuplicationFragment, data);
   const { refetchCustomViews } = useCustomViewsData();
 
@@ -108,18 +109,19 @@ const CustomViewDuplicationDialog: FunctionComponent<
       open={displayDuplicate}
       onClose={handleCloseDuplicate}
       size="small"
+      slotProps={{
+        // MUI's transition mounts asynchronously; focusing on mount would
+        // race the DOM insertion, so wait for it to fully enter instead.
+        transition: { onEntered: () => nameInputRef.current?.focus() },
+      }}
       title={t_i18n('Duplicate the custom view')}
     >
-      <TextField
-        error={!newName}
-        autoFocus
-        margin="dense"
+      <Input
+        ref={nameInputRef}
+        error={!newName ? t_i18n('This field is required') : undefined}
         id="duplicated_dashboard_name"
         label={t_i18n('New name')}
         type="text"
-        fullWidth
-        variant="standard"
-        helperText={!newName ? `${t_i18n('This field is required')}` : ''}
         defaultValue={newName}
         onChange={(event) => {
           event.preventDefault();

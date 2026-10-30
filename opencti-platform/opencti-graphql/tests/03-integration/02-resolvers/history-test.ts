@@ -82,8 +82,8 @@ describe('Testing History search', () => {
 
   it('Is history is searchable by keyword', async () => {
     const args: QueryLogsArgs = { orderBy: LogsOrdering.CreatedAt, orderMode: OrderingMode.Asc };
-    let logs = await findHistory(testContext, ADMIN_USER, { search: 'Administrative-Area', ...args });
-    logs = await findHistory(testContext, ADMIN_USER, { search: '"TO DESC UPPER"', ...args });
+    await findHistory(testContext, ADMIN_USER, { search: 'Administrative-Area', ...args });
+    const logs = await findHistory(testContext, ADMIN_USER, { search: '"TO DESC UPPER"', ...args });
     console.log(JSON.stringify(logs, null, 2));
     expect(logs.edges.length).toBe(2);
   });

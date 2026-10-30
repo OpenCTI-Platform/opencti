@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -36,10 +36,7 @@ const OrganizationKnowledgeComponent = ({
         <Route
           path="/relations/:relationId/*"
           element={(
-            <StixCoreRelationship
-              entityId={organization.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route
@@ -120,6 +117,9 @@ const OrganizationKnowledgeComponent = ({
               key={location.pathname}
               entityId={organization.id}
               relationshipTypes={['part-of', 'derived-from']}
+              // `role` is EntityStixCoreRelationships' own prop, the relationship
+              // role it filters on (toRole/fromRole), not an ARIA role.
+              // eslint-disable-next-line jsx-a11y/aria-role
               role="part-of_to"
               stixCoreObjectTypes={['Organization']}
               entityLink={link}

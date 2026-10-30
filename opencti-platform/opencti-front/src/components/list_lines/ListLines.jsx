@@ -2,25 +2,23 @@ import Button from '@common/button/Button';
 import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import { FileDelimitedOutline, FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
-import { compose, toPairs, uniq } from 'ramda';
+import { toPairs, uniq } from 'ramda';
 import { Component } from 'react';
 import { ErrorBoundary } from '../../private/components/Error';
 import FiligranIcon from '../../private/components/common/FiligranIcon';
@@ -37,82 +35,61 @@ import { export_max_size } from '../../utils/utils';
 import FilterIconButton from '../FilterIconButton';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
+import { onActivationKey } from '../../utils/domEvent';
 
-const styles = (theme) => ({
-  container: {
-    transition: theme.transitions.create('padding', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    padding: '0 0 50px 0',
-  },
-  containerNoPadding: {
-    transition: theme.transitions.create('padding', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    padding: '0 0 0 0',
-  },
-  parameters: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    paddingBottom: 10,
-    flexWrap: 'wrap',
-  },
-  parametersWithPadding: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    paddingBottom: 10,
-    flexWrap: 'wrap',
-  },
-  filler: {
-    flex: 'auto',
-  },
-  views: {
-    marginTop: -5,
-    display: 'flex',
-  },
-  linesContainer: {
-    margin: 0,
-    padding: 0,
-  },
-  linesContainerBottomNav: {
-    margin: '0 0 90px 0',
-    padding: 0,
-  },
-  item: {
-    paddingLeft: 10,
-  },
-  headerItem: {
-    display: 'flex',
-    fontSize: 12,
-    fontWeight: 700,
-    alignItems: 'center',
-  },
-  sortableHeaderItem: {
-    display: 'flex',
-    fontSize: 12,
-    fontWeight: '700',
-    cursor: 'pointer',
-    paddingRight: 10,
-    alignItems: 'center',
-  },
-  headerItemText: {
-    marginRight: theme.spacing(1),
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    textTransform: 'lowercase',
-    '&::first-letter': {
-      textTransform: 'uppercase',
-    },
-  },
-  info: {
-    paddingTop: 10,
-  },
+const Container = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'noPadding',
+})(({ theme, noPadding }) => ({
+  transition: theme.transitions.create('padding', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  padding: noPadding ? '0 0 0 0' : '0 0 50px 0',
+}));
+
+const Parameters = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  paddingBottom: 10,
+  flexWrap: 'wrap',
 });
+
+const Filler = styled('div')({
+  flex: 'auto',
+});
+
+const Views = styled('div')({
+  display: 'flex',
+});
+
+const HeaderItem = styled('div')({
+  display: 'flex',
+  fontSize: 12,
+  fontWeight: 700,
+  alignItems: 'center',
+});
+
+const SortableHeaderItem = styled('div')({
+  display: 'flex',
+  fontSize: 12,
+  fontWeight: '700',
+  cursor: 'pointer',
+  paddingRight: 10,
+  alignItems: 'center',
+});
+
+const HeaderItemText = styled('div')(({ theme }) => ({
+  marginRight: theme.spacing(1),
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  textTransform: 'lowercase',
+  '&::first-letter': {
+    textTransform: 'uppercase',
+  },
+}));
 
 class ListLines extends Component {
   constructor(props) {
@@ -133,36 +110,36 @@ class ListLines extends Component {
   }
 
   renderHeaderElement(field, label, width, isSortable) {
-    const { classes, t, sortBy, orderAsc } = this.props;
+    const { t, sortBy, orderAsc } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (<ArrowDropDown />) : (<ArrowDropUp />);
       return (
-        <div
+        <SortableHeaderItem
           key={field}
-          className={classes.sortableHeaderItem}
           style={{ width }}
           onClick={this.reverseBy.bind(this, field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={onActivationKey(() => this.reverseBy(field))}
         >
-          <div className={classes.headerItemText}>{t(label)}</div>
+          <HeaderItemText>{t(label)}</HeaderItemText>
           {sortBy === field ? orderComponent : ''}
-        </div>
+        </SortableHeaderItem>
       );
     }
     return (
-      <div
-        className={classes.headerItem}
+      <HeaderItem
         style={{ width }}
         key={field}
       >
-        <div className={classes.headerItemText}>{t(label)}</div>
-      </div>
+        <HeaderItemText>{t(label)}</HeaderItemText>
+      </HeaderItem>
     );
   }
 
   renderContent(availableFilterKeys, entityTypes, selectedIds = []) {
     const {
       t,
-      classes,
       handleSearch,
       handleChangeView,
       disableCards,
@@ -220,15 +197,9 @@ class ListLines extends Component {
       entityTypes: entityTypes ?? [],
     };
     return (
-      <div className={noPadding ? classes.containerNoPadding : classes.container}>
+      <Container noPadding={noPadding}>
         {!inline && (
-          <div
-            className={
-              parametersWithPadding
-                ? classes.parametersWithPadding
-                : classes.parameters
-            }
-          >
+          <Parameters>
 
             {typeof handleSearch === 'function' && (
               <SearchInput
@@ -254,16 +225,18 @@ class ListLines extends Component {
                 availableRelationFilterTypes={availableRelationFilterTypes}
               />
             )}
-            <div className={classes.filler} />
+            <Filler />
 
-            <div className={classes.views} style={{ display: 'flex', gap: 8 }}>
+            {/* alignItems: the row's own container centres its children, but this inner one did not, so the buttons
+                stretched to the row height instead of sitting on the filters' centre line. */}
+            <Views style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
 
               {numberOfElements && (
                 <div
                   style={
                     parametersWithPadding
                       ? { float: 'left', padding: '7px 20px 0 0' }
-                      : { float: 'left', padding: '7px 5px 0 0' }
+                      : { float: 'left', padding: '0px 5px 0 0' }
                   }
                 >
                   <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
@@ -417,8 +390,8 @@ class ListLines extends Component {
                 </ToggleButtonGroup>
               )}
               {createButton}
-            </div>
-          </div>
+            </Views>
+          </Parameters>
         )}
         <FilterIconButton
           helpers={helpers}
@@ -442,19 +415,19 @@ class ListLines extends Component {
                 severity="info"
                 variant="outlined"
                 style={{ padding: '0px 10px 0px 10px' }}
-                classes={{ message: classes.info }}
+                slotProps={{ message: { sx: { paddingTop: '10px' } } }}
               >
                 {message}
               </Alert>
             </div>
           )}
           <List
-            classes={{ root: bottomNav ? classes.linesContainerBottomNav : classes.linesContainer }}
+            sx={bottomNav ? { margin: '0 0 90px 0', padding: 0 } : { margin: 0, padding: 0 }}
             style={!handleToggleSelectAll ? { marginTop: 10 } : null}
           >
             {!noHeaders && (
               <ListItem
-                classes={{ root: classes.item }}
+                sx={{ paddingLeft: '10px' }}
                 divider={false}
                 style={{ paddingTop: 0 }}
                 secondaryAction={secondaryAction && (
@@ -465,15 +438,21 @@ class ListLines extends Component {
                   <ListItemIcon
                     style={{
                       minWidth: handleToggleSelectAll ? 40 : 56,
+                      // The MUI checkbox was a 42px control that carried its own centring; the
+                      // library box is a bare 16px button, so the slot has to do the centring
+                      // itself or the box rides to the top of the header row while the column
+                      // labels stay centred -- the misalignment reported on every list page.
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
                   >
                     <Checkbox
-                      edge="start"
+                      aria-label={t('Select all')}
                       checked={selectAll}
-                      disableRipple={true}
-                      onChange={
+                      onCheckedChange={
                         typeof handleToggleSelectAll === 'function'
-                        && handleToggleSelectAll.bind(this)
+                          ? handleToggleSelectAll.bind(this)
+                          : undefined
                       }
                       disabled={typeof handleToggleSelectAll !== 'function'}
                     />
@@ -551,30 +530,44 @@ class ListLines extends Component {
           )}
           {handleSwitchRedirectionMode && (
             <Dialog
+              slotProps={{
+                paper: {
+                  className: fdsLayerClass(SURFACE_LAYER),
+                  sx: {
+                    ...layerInputVars,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 3,
+                    padding: 3,
+                    '& .MuiDialogTitle-root, & .MuiDialogActions-root': { padding: 0 },
+                  },
+                },
+              }}
               open={this.state.openSettings}
               onClose={this.handleCloseSettings.bind(this)}
-              size="small"
-              title={t('List settings')}
             >
+              <DialogTitle>{t('List settings')}</DialogTitle>
               <FormControl style={{ width: '100%' }}>
-                <InputLabel id="redirectionMode">
-                  {t('Redirection mode')}
-                </InputLabel>
                 <Select
                   value={redirectionMode}
-                  onChange={(event) => handleSwitchRedirectionMode(event.target.value)
+                  onValueChange={(value) => handleSwitchRedirectionMode(value)
                   }
-                  fullWidth={true}
                 >
-                  <MenuItem value="overview">
-                    {t('Redirecting to the Overview section')}
-                  </MenuItem>
-                  <MenuItem value="knowledge">
-                    {t('Redirecting to the Knowledge section')}
-                  </MenuItem>
-                  <MenuItem value="content">
-                    {t('Redirecting to the Content section')}
-                  </MenuItem>
+                  <SelectLabel>{t('Redirection mode')}</SelectLabel>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t('Redirection mode')}>
+                    <SelectItem value="overview">
+                      {t('Redirecting to the Overview section')}
+                    </SelectItem>
+                    <SelectItem value="knowledge">
+                      {t('Redirecting to the Knowledge section')}
+                    </SelectItem>
+                    <SelectItem value="content">
+                      {t('Redirecting to the Content section')}
+                    </SelectItem>
+                  </SelectContent>
                 </Select>
               </FormControl>
 
@@ -586,7 +579,7 @@ class ListLines extends Component {
             </Dialog>
           )}
         </ErrorBoundary>
-      </div>
+      </Container>
     );
   }
 
@@ -623,7 +616,6 @@ class ListLines extends Component {
 }
 
 ListLines.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   children: PropTypes.object,
   handleSearch: PropTypes.func,
@@ -678,4 +670,4 @@ ListLines.propTypes = {
   createButton: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(ListLines);
+export default inject18n(ListLines);

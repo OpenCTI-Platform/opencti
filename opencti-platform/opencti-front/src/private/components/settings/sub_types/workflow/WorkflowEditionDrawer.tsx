@@ -20,9 +20,10 @@ interface WorkflowEditionDrawerProps {
   open: boolean;
   selectedElement: Node | Edge;
   onClose: () => void;
+  entityType: string;
 }
 
-const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditionDrawerProps) => {
+const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType }: WorkflowEditionDrawerProps) => {
   const { t_i18n } = useFormatter();
   const {
     drawerTitle,
@@ -44,14 +45,15 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
         >
           {({ submitForm, isSubmitting }) => (
             <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {isStatus ? (<StatusForm />) : (<TransitionForm />)}
+              {isStatus ? (<StatusForm entityType={entityType} />) : (<TransitionForm entityType={entityType} />)}
               <FormButtonContainer>
                 {isNewStatus ? (
-                  <Button variant="secondary" onClick={onDelete} disabled={isSubmitting}>
+                  <Button data-testid="workflow-edition-cancel-button" variant="secondary" onClick={onDelete} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
                 ) : (
                   <Button
+                    data-testid="workflow-edition-delete-button"
                     intent="destructive"
                     variant="secondary"
                     onClick={onDelete}
@@ -60,7 +62,7 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
                     {t_i18n('Delete')}
                   </Button>
                 )}
-                <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
+                <Button data-testid="workflow-edition-submit-button" color="secondary" onClick={submitForm} disabled={isSubmitting}>
                   {isNewStatus ? t_i18n('Add') : t_i18n('Update')}
                 </Button>
               </FormButtonContainer>

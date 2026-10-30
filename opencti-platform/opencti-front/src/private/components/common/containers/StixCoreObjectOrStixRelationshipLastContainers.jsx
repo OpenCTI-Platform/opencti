@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { graphql } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -7,7 +7,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { ListItemButton } from '@mui/material';
 import Card from '@common/card/Card';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -18,29 +18,17 @@ import ItemEntityType from '../../../../components/ItemEntityType';
 import { useFormatter } from '../../../../components/i18n';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
-const useStyles = makeStyles((theme) => ({
-  item: {
-    height: 50,
-    minHeight: 50,
-    maxHeight: 50,
-    paddingRight: 0,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-    display: 'flex',
-    alignItems: 'center',
-  },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
-  },
-}));
+const BodyItem = styled('div')({
+  height: 25,
+  fontSize: 13,
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+  display: 'flex',
+  alignItems: 'center',
+});
 
 const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
   query StixCoreObjectOrStixRelationshipLastContainersQuery(
@@ -298,7 +286,6 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
 const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
   const { stixCoreObjectOrStixRelationshipId = null, authorId = null } = props;
   const { t_i18n, fsd } = useFormatter();
-  const classes = useStyles();
   const filtersContent = [
     {
       key: 'entity_type',
@@ -347,7 +334,12 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                         <ListItemButton
                           key={container.id}
                           dense={true}
-                          classes={{ root: classes.item }}
+                          sx={{
+                            height: 50,
+                            minHeight: 50,
+                            maxHeight: 50,
+                            paddingRight: 0,
+                          }}
                           divider={true}
                           component={Link}
                           to={`${resolveLink(container.entity_type)}/${
@@ -360,30 +352,29 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                           <ListItemText
                             primary={(
                               <>
-                                <div
-                                  className={classes.bodyItem}
+                                <BodyItem
                                   style={{ width: '12%' }}
                                 >
                                   <ItemEntityType entityType={container.entity_type} />
-                                </div>
+                                </BodyItem>
                                 <Tooltip title={container.name}>
-                                  <div className={classes.bodyItem} style={{ width: '37%' }}>
+                                  <BodyItem style={{ width: '37%' }}>
                                     {container.name}
-                                  </div>
+                                  </BodyItem>
                                 </Tooltip>
-                                <div className={classes.bodyItem} style={{ width: '20%' }}>
+                                <BodyItem style={{ width: '20%' }}>
                                   {container.createdBy?.name ?? EMPTY_VALUE}
-                                </div>
-                                <div className={classes.bodyItem} style={{ width: '12%' }}>
+                                </BodyItem>
+                                <BodyItem style={{ width: '12%' }}>
                                   {fsd(container.created)}
-                                </div>
-                                <div className={classes.bodyItem} style={{ width: '15%' }}>
+                                </BodyItem>
+                                <BodyItem style={{ width: '15%' }}>
                                   <ItemMarkings
                                     variant="inList"
                                     markingDefinitions={container.objectMarking ?? []}
                                     limit={1}
                                   />
-                                </div>
+                                </BodyItem>
                               </>
                             )}
                           />
@@ -425,7 +416,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                   divider={true}
 
                 >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ListItemIcon sx={{ marginRight: 0, color: 'primary.main' }}>
                     <Skeleton
                       animation="wave"
                       variant="circular"

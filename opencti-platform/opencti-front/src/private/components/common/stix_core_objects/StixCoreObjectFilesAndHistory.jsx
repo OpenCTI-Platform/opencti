@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
-import withStyles from '@mui/styles/withStyles';
-import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -20,6 +18,7 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { commitMutation, handleError, MESSAGING$ } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
@@ -28,6 +27,7 @@ import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { convertMarkings } from '../../../../utils/edition';
+import { insertOngoingExports } from '../../../../utils/store';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../utils/hooks/useAuth';
 import AuthorizedMembersField from '../form/AuthorizedMembersField';
@@ -38,21 +38,8 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import { Stack } from '@mui/material';
-
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-});
+import { Box, Stack } from '@mui/material';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
   mutation StixCoreObjectFilesAndHistoryAskJobImportMutation(
@@ -139,7 +126,6 @@ const importValidation = (t_i18n, configurations) => {
 const StixCoreObjectFilesAndHistory = ({
   id,
   entity,
-  classes,
   connectorsExport,
   connectorsImport,
   withoutRelations,
@@ -203,17 +189,7 @@ const StixCoreObjectFilesAndHistory = ({
         objectAssignee: values.objectAssignee.map(({ value }) => value),
         objectParticipant: values.objectParticipant.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        authorized_members: !authorizedMembers
-          ? null
-          : authorizedMembers
-              .filter((v) => v.accessRight !== 'none')
-              .map((member) => ({
-                id: member.value,
-                access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
-              })),
+        authorized_members: authorizedMembers ? authorizedMembersToInput(authorizedMembers) : null,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -226,39 +202,16 @@ const StixCoreObjectFilesAndHistory = ({
   const onSubmitExport = (values, { setSubmitting, resetForm }) => {
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
-
+    const input = {
+      format: values.format,
+      exportType: values.type,
+      contentMaxMarkings,
+      fileMarkings,
+    };
     commitMutation({
       mutation: stixCoreObjectFilesAndHistoryExportMutation,
-      variables: {
-        id,
-        input: {
-          format: values.format,
-          exportType: values.type,
-          contentMaxMarkings,
-          fileMarkings,
-        },
-      },
-      updater: (store) => {
-        const root = store.getRootField('stixDomainObjectEdit');
-        const payloads = root.getLinkedRecords('exportAsk', {
-          input: {
-            format: values.format,
-            exportType: values.type,
-            contentMaxMarkings,
-            fileMarkings,
-          },
-        });
-        const entityPage = store.get(id);
-        const conn = ConnectionHandler.getConnection(
-          entityPage,
-          'Pagination_exportFiles',
-        );
-        for (let index = 0; index < payloads.length; index += 1) {
-          const payload = payloads[index];
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          ConnectionHandler.insertEdgeBefore(conn, newEdge);
-        }
-      },
+      variables: { id, input },
+      updater: (store) => insertOngoingExports(store, id, 'stixDomainObjectEdit', input),
       onError: (error) => {
         handleError(error);
       },
@@ -301,11 +254,11 @@ const StixCoreObjectFilesAndHistory = ({
     authorized_members: undefined,
   });
   return (
-    <div className={classes.container} data-testid="sco-data-file-and-history">
+    <Box sx={{ margin: 0 }} data-testid="sco-data-file-and-history">
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
         <FileImportViewer
           entity={entity}
@@ -327,7 +280,7 @@ const StixCoreObjectFilesAndHistory = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
-        <Grid item xs={12} style={{ paddingTop: 14 }}>
+        <Grid style={{ marginTop: -10 }} size={12}>
           <StixCoreObjectHistory
             stixCoreObjectId={id}
             withoutRelations={withoutRelations}
@@ -350,7 +303,7 @@ const StixCoreObjectFilesAndHistory = ({
             >
               <Field
                 component={SelectField}
-                variant="standard"
+                variant="outlined"
                 name="connector_id"
                 label={t_i18n('Connector')}
                 fullWidth={true}
@@ -378,7 +331,7 @@ const StixCoreObjectFilesAndHistory = ({
               {!draftContext && (
                 <Field
                   component={SelectField}
-                  variant="standard"
+                  variant="outlined"
                   name="validation_mode"
                   label={t_i18n('Validation mode')}
                   fullWidth={true}
@@ -445,7 +398,7 @@ const StixCoreObjectFilesAndHistory = ({
                 ? (
                     <Field
                       component={SelectField}
-                      variant="standard"
+                      variant="outlined"
                       name="configuration"
                       label={t_i18n('Configuration')}
                       fullWidth={true}
@@ -515,7 +468,13 @@ const StixCoreObjectFilesAndHistory = ({
                 fullWidth={true}
                 data-testid="StixCoreObjectFilesAndHistoryExportDialog"
                 title={(
-                  <Stack direction="row" alignItems="center" gap={1}>
+                  <Stack
+                    direction="row"
+                    sx={{
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     {t_i18n('Generate an export')}
                     <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
                       <InfoOutlined fontSize="small" color="primary" />
@@ -524,37 +483,37 @@ const StixCoreObjectFilesAndHistory = ({
                 )}
               >
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="format"
                   label={t_i18n('Export format')}
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 >
                   {exportScopes.map((value, i) => (
-                    <MenuItem
+                    <SelectItem
                       key={i}
                       value={value}
                       disabled={!isExportActive(value)}
                     >
                       {value}
-                    </MenuItem>
+                    </SelectItem>
                   ))}
                 </Field>
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="type"
                   label={t_i18n('Export type')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
-                  <MenuItem value="simple">
+                  <SelectItem value="simple">
                     {t_i18n('Simple export (just the entity)')}
-                  </MenuItem>
-                  <MenuItem value="full">
+                  </SelectItem>
+                  <SelectItem value="full">
                     {t_i18n('Full export (entity and first neighbours)')}
-                  </MenuItem>
+                  </SelectItem>
                 </Field>
                 <ObjectMarkingField
                   name="contentMaxMarkings"
@@ -588,7 +547,7 @@ const StixCoreObjectFilesAndHistory = ({
           )}
         </Formik>
       </div>
-    </div>
+    </Box>
   );
 };
 
@@ -634,7 +593,4 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectFilesAndHistoryFragment);
+export default inject18n(StixCoreObjectFilesAndHistoryFragment);

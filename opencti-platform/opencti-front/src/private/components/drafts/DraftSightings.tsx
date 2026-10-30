@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { graphql } from 'react-relay';
 import { DraftSightingsLinesPaginationQuery, DraftSightingsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftSightingsLinesPaginationQuery.graphql';
 import { DraftSightingsLines_data$data } from '@components/drafts/__generated__/DraftSightingsLines_data.graphql';
@@ -333,12 +333,12 @@ const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) 
       label: 'Name',
       percentWidth: 10,
       isSortable: false,
-      render: ({ from }, { fd }) => (from !== null
+      render: ({ from }, { ftd }) => (from !== null
         ? from.name
         || from.attribute_abstract
         || truncate(from.content, 30)
         || from.observable_value
-        || `${fd(from.first_observed)} - ${fd(from.last_observed)}`
+        || `${ftd(from.first_observed)} - ${ftd(from.last_observed)}`
         : t_i18n('Restricted')),
     },
     entity_type: {
@@ -353,12 +353,12 @@ const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) 
       label: 'Entity',
       percentWidth: 10,
       isSortable: false,
-      render: ({ to }, { fd }) => (to !== null
+      render: ({ to }, { ftd }) => (to !== null
         ? to.name
         || to.attribute_abstract
         || truncate(to.content, 30)
         || to.observable_value
-        || `${fd(to.first_observed)} - ${fd(to.last_observed)}`
+        || `${ftd(to.first_observed)} - ${ftd(to.last_observed)}`
         : t_i18n('Restricted')),
     },
     first_seen: { percentWidth: 12 },

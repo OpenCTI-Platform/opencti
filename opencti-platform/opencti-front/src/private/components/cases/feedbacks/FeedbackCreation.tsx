@@ -1,6 +1,9 @@
 import Button from '@common/button/Button';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -73,6 +76,7 @@ const FeedbackCreation: FunctionComponent<{
     { setSubmitting, resetForm },
   ) => {
     const input: FeedbackCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -115,6 +119,7 @@ const FeedbackCreation: FunctionComponent<{
       onClose={handleCloseDrawer}
     >
       <Formik<FormikFeedbackAddInput>
+        entityType={FEEDBACK_TYPE}
         initialValues={initialValues}
         validationSchema={validator}
         onSubmit={onSubmit}
@@ -139,7 +144,7 @@ const FeedbackCreation: FunctionComponent<{
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={fieldSpacingContainerStyle}
+              style={{ width: '100%' }}
               autoPersistOnBlur={false}
               registerMarkdownImagesController={registerMarkdownImagesController}
             />
@@ -174,6 +179,7 @@ const FeedbackCreation: FunctionComponent<{
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 onClick={handleReset}

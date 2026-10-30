@@ -1,6 +1,10 @@
 import { getHeapStatistics } from 'node:v8';
+import { promisify } from 'node:util';
+import { gunzip as gunzipCallback, gzip as gzipCallback } from 'node:zlib';
+import { buffer as streamToBuffer } from 'node:stream/consumers';
 import nconf from 'nconf';
 import ipaddr from 'ipaddr.js';
+import { rawUploadWithMetadata, deleteFileFromStorage, getFileMetadata } from '../database/raw-file-storage';
 import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
@@ -23,7 +27,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ForbiddenAccess, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
@@ -33,7 +37,8 @@ import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
-import { getXtmOneRegistrationVersion } from '../modules/xtm/one/xtm-one';
+import { checkDateDisplayInput } from '../utils/dateDisplay';
+import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -124,6 +129,7 @@ export const getSettingsFromDatabase = async (context) => {
 export const getSettings = async (context) => {
   const platformSettings = await getSettingsFromDatabase(context);
   const clusterInfo = await getClusterInformation();
+  await refreshXtmLicenseProof();
   const eeInfo = getEnterpriseEditionInfo(platformSettings);
   const platformTheme = await findThemeById(context, SYSTEM_USER, platformSettings.platform_theme);
 
@@ -138,8 +144,9 @@ export const getSettings = async (context) => {
     platform_demo: ENABLED_DEMO_MODE,
     platform_modules: clusterInfo.modules,
     platform_reference_attachment: conf.get('app:reference_attachment'),
-    platform_map_tile_server_dark: nconf.get('app:map_tile_server_dark'),
-    platform_map_tile_server_light: nconf.get('app:map_tile_server_light'),
+    // Deprecated: kept in the GraphQL schema for API backward-compatibility, no longer configurable.
+    platform_map_tile_server_dark: null,
+    platform_map_tile_server_light: null,
     platform_openaev_url: nconf.get('xtm:openaev_url'),
     platform_opengrc_url: nconf.get('xtm:opengrc_url'),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
@@ -148,6 +155,7 @@ export const getSettings = async (context) => {
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_theme: platformTheme,
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
+    platform_bootstrap_wizard_enabled: nconf.get('app:bootstrap_wizard:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
@@ -228,6 +236,8 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_favicon',
   'platform_email',
   'platform_language',
+  'platform_date_format',
+  'platform_time_format',
   'platform_whitemark',
   'platform_login_message',
   'platform_banner_text',
@@ -235,8 +245,6 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_consent_message',
   'platform_consent_confirm_text',
   'platform_no_access_message',
-  'platform_map_tile_server_dark',
-  'platform_map_tile_server_light',
   'platform_session_idle_timeout',
   'platform_session_timeout',
   'platform_session_max_concurrent',
@@ -294,7 +302,14 @@ const buildAuthorizedSettingsKeys = (user) => {
   return allowed;
 };
 
+// The bootstrap status is written by setPlatformBootstrapStatus only, whatever the capabilities of the caller
+const PLATFORM_BOOTSTRAP_STATUS_KEY = 'platform_bootstrap_status';
+const PLATFORM_BOOTSTRAP_STATUSES = ['pending', 'completed'];
+
 export const settingsEditField = async (context, user, settingsId, input) => {
+  if (input.some((i) => i.key === PLATFORM_BOOTSTRAP_STATUS_KEY)) {
+    throw ForbiddenAccess('The platform bootstrap status cannot be edited');
+  }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
   const allowedKeys = buildAuthorizedSettingsKeys(user);
@@ -325,6 +340,8 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
     }
   }
+
+  checkDateDisplayInput(data, 'platform_date_format', 'platform_time_format');
 
   const ipWhitelist = data.find((inputData) => inputData.key === 'platform_ip_whitelist');
   if (ipWhitelist && Array.isArray(ipWhitelist.value) && ipWhitelist.value.length > 0) {
@@ -406,6 +423,105 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
 
+const MAP_CUSTOM_FILE_KEY = 'maps/world.pmtiles';
+
+export const uploadMapCustomFile = async (context, user, file) => {
+  const { createReadStream, filename } = await file;
+  const stream = createReadStream();
+  const contentDisposition = `attachment; filename="${filename}"`;
+  await rawUploadWithMetadata(MAP_CUSTOM_FILE_KEY, stream, contentDisposition);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'uploads map custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'map_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const deleteMapCustomFile = async (context, user) => {
+  await deleteFileFromStorage(MAP_CUSTOM_FILE_KEY);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'deletes map custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'map_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const getMapCustomFileInfo = async () => {
+  return getFileMetadata(MAP_CUSTOM_FILE_KEY);
+};
+
+const COUNTRIES_CUSTOM_FILE_KEY = 'maps/countries.json.gz';
+const gunzip = promisify(gunzipCallback);
+const gzip = promisify(gzipCallback);
+
+const isGzipped = (content) => content.length >= 2 && content[0] === 0x1f && content[1] === 0x8b;
+
+export const decodeCountriesFile = async (content) => {
+  let json = content;
+  if (isGzipped(content)) {
+    try {
+      json = await gunzip(content);
+    } catch {
+      throw FunctionalError('Countries file is not a readable gzip archive');
+    }
+  }
+  let collection;
+  try {
+    collection = JSON.parse(json.toString('utf8'));
+  } catch {
+    throw FunctionalError('Countries file is not valid JSON');
+  }
+  if (collection?.type !== 'FeatureCollection' || !Array.isArray(collection.features) || collection.features.length === 0) {
+    throw FunctionalError('Countries file must be a GeoJSON FeatureCollection holding at least one feature');
+  }
+  if (collection.features.some((feature) => typeof feature?.properties?.ISO3 !== 'string' || isEmptyField(feature.properties.ISO3))) {
+    throw FunctionalError('Every feature of the countries file must carry an ISO3 code as a string');
+  }
+  return json;
+};
+
+export const uploadCountriesCustomFile = async (context, user, file) => {
+  const { createReadStream, filename } = await file;
+  const content = await streamToBuffer(createReadStream());
+  const json = await decodeCountriesFile(content);
+  const contentDisposition = `attachment; filename="${filename.replace(/\.gz$/i, '')}"`;
+  await rawUploadWithMetadata(COUNTRIES_CUSTOM_FILE_KEY, await gzip(json), contentDisposition, 'gzip');
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'uploads countries custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'countries_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const deleteCountriesCustomFile = async (context, user) => {
+  await deleteFileFromStorage(COUNTRIES_CUSTOM_FILE_KEY);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'deletes countries custom file',
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { key: 'countries_custom_file' } },
+  });
+  return getSettings(context);
+};
+
+export const getCountriesCustomFileInfo = async () => {
+  return getFileMetadata(COUNTRIES_CUSTOM_FILE_KEY);
+};
+
 export const getCriticalAlerts = async (context, user) => {
   // only 1 critical alert is checked: null confidence level on groups
   // it's for admins only (only them can take action)
@@ -428,4 +544,30 @@ export const getCriticalAlerts = async (context, user) => {
 
   // no alert
   return [];
+};
+
+// The default theme of the platform, undefined when none is set or it no longer exists
+export const getPlatformDefaultTheme = async (context, user) => {
+  const settings = await getSettingsFromDatabase(context);
+  return settings.platform_theme ? findThemeById(context, user, settings.platform_theme) : undefined;
+};
+
+// The only writer of platform_bootstrap_status
+export const setPlatformBootstrapStatus = async (context, user, status) => {
+  if (!PLATFORM_BOOTSTRAP_STATUSES.includes(status)) {
+    throw UnsupportedError(`Invalid platform bootstrap status, expected one of ${PLATFORM_BOOTSTRAP_STATUSES.join(', ')}`);
+  }
+  const settings = await getSettings(context);
+  const data = [{ key: PLATFORM_BOOTSTRAP_STATUS_KEY, value: [status] }];
+  await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, data);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${PLATFORM_BOOTSTRAP_STATUS_KEY}\` for \`platform settings\``,
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: data },
+  });
+  const updatedSettings = await getSettings(context);
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };

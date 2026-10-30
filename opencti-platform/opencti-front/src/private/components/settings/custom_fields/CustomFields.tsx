@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import ExtensionOutlined from '@mui/icons-material/ExtensionOutlined';
 import CustomFieldCreation from './CustomFieldCreation';
 import CustomFieldPopover from './CustomFieldPopover';
@@ -19,6 +19,8 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import TagsOverflow from '../../../../components/common/tag/TagsOverflow';
 import { getCustomFieldTypeLabel } from '../sub_types/entity_setting/EntitySettingCustomFields';
+import EnterpriseEdition from '../../common/entreprise_edition/EnterpriseEdition';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const customFieldsQuery = graphql`
   query CustomFieldsLinesPaginationQuery(
@@ -75,6 +77,7 @@ export const CustomFieldsLineFragment = graphql`
     id
     name
     label
+    aliases
     field_type
     entity_types
   }
@@ -111,6 +114,8 @@ const CustomFields = () => {
     filters: contextFilters,
   } as unknown as CustomFieldsLinesPaginationQuery$variables;
 
+  // Managing the custom field definitions is an Enterprise Edition feature
+  const isEnterpriseEdition = useEnterpriseEdition();
   const queryRef = useQueryLoading<CustomFieldsLinesPaginationQuery>(
     customFieldsQuery,
     queryPaginationOptions,
@@ -123,10 +128,28 @@ const CustomFields = () => {
       percentWidth: 20,
       render: (data: CustomFieldsLine_node$data) => defaultRender(data.label),
     },
+    aliases: {
+      id: 'aliases',
+      label: 'Aliases',
+      percentWidth: 20,
+      isSortable: false,
+      render: (data: CustomFieldsLine_node$data) => (
+        <FieldOrEmpty source={data.aliases}>
+          <TagsOverflow
+            items={data.aliases ?? []}
+            getKey={(alias) => alias}
+            getLabel={(alias) => alias}
+            renderTag={(alias) => (
+              <Chip key={alias} label={alias} style={{ marginRight: 5 }} />
+            )}
+          />
+        </FieldOrEmpty>
+      ),
+    },
     entity_types: {
       id: 'entity_types',
       label: 'Used in',
-      percentWidth: 38,
+      percentWidth: 24,
       isSortable: false,
       render: (data: CustomFieldsLine_node$data) => (
         <FieldOrEmpty source={data.entity_types}>
@@ -135,7 +158,11 @@ const CustomFields = () => {
             getKey={(entityType) => entityType}
             getLabel={(entityType) => t_i18n(`entity_${entityType}`)}
             renderTag={(entityType) => (
-              <Chip key={entityType} label={t_i18n(`entity_${entityType}`)} style={{ marginRight: 5 }} />
+              <Chip
+                key={entityType}
+                label={t_i18n(`entity_${entityType}`)}
+                style={{ marginRight: 5 }}
+              />
             )}
           />
         </FieldOrEmpty>
@@ -150,7 +177,7 @@ const CustomFields = () => {
     name: {
       id: 'name',
       label: 'Technical name',
-      percentWidth: 26,
+      percentWidth: 20,
     },
   };
 
@@ -165,7 +192,8 @@ const CustomFields = () => {
   return (
     <div style={{ marginRight: 200 }} data-testid="custom-fields-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Custom fields'), current: true }]} />
-      {queryRef && (
+      {!isEnterpriseEdition && <EnterpriseEdition feature={t_i18n('Custom fields')} />}
+      {isEnterpriseEdition && queryRef && (
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data) => data.customFieldDefinitions?.edges?.map(({ node }: { node: CustomFieldsLine_node$data }) => node)}

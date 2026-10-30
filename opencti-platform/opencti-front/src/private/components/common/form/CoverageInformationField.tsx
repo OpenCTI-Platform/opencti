@@ -1,9 +1,7 @@
-import React, { FunctionComponent, ReactElement } from 'react';
-import { Field, FieldArray } from 'formik';
+import { Field, FieldArray, FieldProps } from 'formik';
 import Button from '@common/button/Button';
-import { IconButton } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { DeleteOutlined } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
 import { graphql } from 'react-relay';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
@@ -11,8 +9,14 @@ import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../model/GenericContextModel';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
-import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
+import { FormGroup, FormLabel, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { Theme } from '../../../../components/Theme';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { CoverageInformationFieldEntityMutation } from './__generated__/CoverageInformationFieldEntityMutation.graphql';
+import { useEffect } from 'react';
+import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 
 export const coverageEntityInformationMutation = graphql`
   mutation CoverageInformationFieldEntityMutation($id: ID!, $input: [EditInput]!) {
@@ -27,77 +31,106 @@ export const coverageEntityInformationMutation = graphql`
 
 export const coverageRelationInformationMutation = graphql`
   mutation CoverageInformationFieldRelationMutation($id: ID!, $input: [EditInput]!) {
-      stixCoreRelationshipEdit(id: $id) {
-          fieldPatch(input: $input) {
-              coverage_information {
-                  coverage_name
-                  coverage_score
-              }
-          }
+    stixCoreRelationshipEdit(id: $id) {
+      fieldPatch(input: $input) {
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
+      }
     }
   }
 `;
 
-interface CoverageInformationInput {
-  coverage_name: string;
-  coverage_score: number | string;
-}
-
-interface CoverageInformationFieldAddProps {
-  name: string;
-  values: CoverageInformationInput[];
-  containerStyle?: React.CSSProperties;
-  setFieldValue?: (name: string, value: unknown) => void;
-}
-
-interface CoverageInformationFieldEditProps {
-  id: string;
-  name: string;
-  mode: 'entity' | 'relation';
-  values: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
-  containerStyle?: React.CSSProperties;
+interface CoverageInformationFieldProps extends FieldProps<CoverageInformation[]> {
+  id?: string;
+  mutationType?: 'entity' | 'relation';
   editContext?: readonly (GenericContext | null)[] | null;
 }
 
-export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationFieldAddProps> = ({
-  name,
-  values,
-  containerStyle,
-}): ReactElement => {
+const CoverageInformationField = ({
+  form: { getFieldMeta, submitCount, setFieldTouched, setFieldValue },
+  field: { value, name },
+  mutationType,
+  editContext,
+  id,
+}: CoverageInformationFieldProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { error, touched } = getFieldMeta(name);
+  const [entityMutation] = useApiMutation<CoverageInformationFieldEntityMutation>(coverageEntityInformationMutation);
+  const [relationshipMutation] = useApiMutation<CoverageInformationFieldEntityMutation>(coverageRelationInformationMutation);
 
-  const disabledOptions = values
+  const inEdition = !!id;
+  const showError = !!error && typeof error === 'string' && (touched || submitCount > 0);
+  const coverageInformationMutation = mutationType === 'entity' ? entityMutation : relationshipMutation;
+
+  const disabledOptions = value
     ?.map((v) => v.coverage_name)
     .filter((coverageName) => coverageName !== '');
 
+  // Debounce is used to be sure that validation by Formik has been executed after the value changes.
+  // Otherwise we could end up sending an update of an invalid config because of how react states work.
+  const submitUpdate = useDebounceCallback((val: typeof value, err: typeof error) => {
+    if (inEdition && !err && touched) {
+      coverageInformationMutation({
+        variables: {
+          id,
+          input: [{
+            key: 'coverage_information',
+            value: val,
+            operation: 'replace',
+          }],
+        },
+      });
+    }
+  }, 200);
+  useEffect(() => {
+    if (inEdition) submitUpdate(value, error);
+  }, [value, error]);
+
   return (
-    <div style={{ ...fieldSpacingContainerStyle, ...containerStyle }}>
-      <Typography variant="h4" gutterBottom>
-        {t_i18n('Coverage Information')}
-      </Typography>
-      <FieldArray
-        name={name}
-        render={(arrayHelpers) => (
-          <>
+    <div style={{ ...fieldSpacingContainerStyle }}>
+      <FormGroup>
+        <FormLabel
+          required
+          error={showError}
+          sx={{ mb: showError ? 0 : 1 }}
+        >
+          {t_i18n('Coverage Information')}
+        </FormLabel>
+        {showError && (
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.error.main,
+              mb: 1,
+            }}
+          >
+            {error}
+          </Typography>
+        )}
+        <FieldArray
+          name={name}
+          render={(arrayHelpers) => (
             <div>
-              {values?.map((_, index) => (
+              {value?.map((_, index) => (
                 <div
                   key={index}
                   style={{
-                    marginTop: index === 0 ? 10 : 20,
+                    marginBottom: 8,
                     width: '100%',
                     position: 'relative',
-                    paddingRight: 50,
+                    display: 'flex',
+                    gap: 8,
                   }}
                 >
                   <div
                     style={{
                       display: 'grid',
-                      gap: 20,
+                      gap: 12,
                       gridTemplateColumns: '1fr 1fr',
+                      flex: 1,
                     }}
                   >
                     <OpenVocabField
@@ -105,225 +138,64 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                       type="coverage_ov"
                       name={`${name}.${index}.coverage_name`}
                       required={true}
-                      onChange={(__, value) => {
-                        arrayHelpers.replace(index, { ...values[index], coverage_name: value.toString() });
+                      variant={inEdition ? 'edit' : undefined}
+                      onFocus={() => setFieldTouched(name, true)}
+                      onChange={async (__, vocab) => {
+                        arrayHelpers.replace(index, { ...value[index], coverage_name: vocab?.toString() });
                       }}
                       disabledOptions={disabledOptions}
-                      containerStyle={{ marginTop: 3, width: '100%' }}
-                      multiple={false}
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name={`${name}.${index}.coverage_score`}
                       label={t_i18n('Coverage score (0-100)')}
                       type="number"
                       fullWidth
-                      required
-                      slotProps={{
-                        input: {
-                          inputProps: {
-                            min: 0,
-                            max: 100,
-                          },
-                        },
-                      }}
-                    />
-                  </div>
-                  <IconButton
-                    id={`deleteCoverageInfo_${index}`}
-                    aria-label="Delete"
-                    onClick={() => {
-                      arrayHelpers.remove(index);
-                    }}
-                    style={{ position: 'absolute', right: -10, top: 5 }}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </div>
-              ))}
-              <Button
-                size="small"
-                aria-label={t_i18n('Add coverage metric')}
-                id="addCoverageInfo"
-                onClick={() => {
-                  arrayHelpers.push({ coverage_name: '', coverage_score: '' });
-                }}
-                style={{ marginTop: 20 }}
-              >
-                {t_i18n('Add coverage metric')}
-              </Button>
-            </div>
-          </>
-        )}
-      />
-    </div>
-  );
-};
-
-export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformationFieldEditProps> = ({
-  id,
-  name,
-  values,
-  containerStyle,
-  mode,
-  editContext = [],
-}): ReactElement => {
-  const { t_i18n } = useFormatter();
-  const coverageInformationMutation = mode === 'entity'
-    ? coverageEntityInformationMutation : coverageRelationInformationMutation;
-
-  const disabledOptions = values
-    ?.map((v) => v.coverage_name)
-    .filter((coverageName) => coverageName !== '');
-
-  return (
-    <div style={{ ...fieldSpacingContainerStyle, ...containerStyle }}>
-      <Typography variant="h4" gutterBottom>
-        {t_i18n('Coverage Information')}
-      </Typography>
-      <FieldArray
-        name={name}
-        render={(arrayHelpers) => (
-          <>
-            <div>
-              {(values ?? []).map((__, index) => (
-                <div
-                  key={index}
-                  style={{
-                    marginTop: index === 0 ? 10 : 20,
-                    width: '100%',
-                    position: 'relative',
-                    paddingRight: 50,
-                  }}
-                >
-                  <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>
-                    <OpenVocabField
-                      label={t_i18n('Coverage name')}
-                      type="coverage_ov"
-                      name={`${name}.${index}.coverage_name`}
-                      required={true}
-                      disabledOptions={disabledOptions}
-                      onChange={(_: string, value) => {
-                        const isCreation = isEmptyField(values?.[index]?.coverage_name);
-                        if (isNotEmptyField(value)) {
-                          if (isCreation) {
-                            commitMutation({
-                              ...defaultCommitMutation,
-                              mutation: coverageInformationMutation,
-                              variables: {
-                                id,
-                                input: {
-                                  key: 'coverage_information',
-                                  value: [{ coverage_name: value.toString(), coverage_score: values?.[index]?.coverage_score }],
-                                  operation: 'add',
-                                },
-                              },
-                            });
-                          } else {
-                            commitMutation({
-                              ...defaultCommitMutation,
-                              mutation: coverageInformationMutation,
-                              variables: {
-                                id,
-                                input: {
-                                  key: 'coverage_information',
-                                  value: [value.toString()],
-                                  object_path: `/coverage_information/${index}/coverage_name`,
-                                  operation: 'replace',
-                                },
-                              },
-                            });
-                          }
-                        }
-                      }}
-                      containerStyle={{ marginTop: 3, width: '100%' }}
-                      multiple={false}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name={`${name}.${index}.coverage_score`}
-                      label={t_i18n('Coverage score (0-100)')}
-                      type="number"
-                      fullWidth
-                      required
-                      slotProps={{
-                        input: {
-                          inputProps: {
-                            min: 0,
-                            max: 100,
-                          },
-                        },
-                      }}
-                      onSubmit={(_: string, score: string) => {
-                        if (isNotEmptyField(score)) {
-                          commitMutation({
-                            ...defaultCommitMutation,
-                            mutation: coverageInformationMutation,
-                            variables: {
-                              id,
-                              input: {
-                                key: 'coverage_information',
-                                value: [parseInt(score, 10)],
-                                object_path: `/coverage_information/${index}/coverage_score`,
-                                operation: 'replace',
-                              },
-                            },
-                          });
-                        }
-                      }}
-                      helperText={(
+                      min={0}
+                      max={100}
+                      onChange={(_: string, v: string) => setFieldValue(`${name}.${index}.coverage_score`, parseInt(v, 10))}
+                      onFocus={() => setFieldTouched(name, true)}
+                      helperText={editContext ? (
                         <SubscriptionFocus
                           context={editContext}
                           fieldName={`${name}.${index}.coverage_score`}
                         />
-                      )}
+                      ) : undefined}
                     />
                   </div>
-                  {(values?.length ?? 0) > 0 && (
-                    <IconButton
-                      id={`deleteCoverageInfo_${index}`}
-                      aria-label="Delete"
-                      onClick={() => {
-                        arrayHelpers.remove(index);
-                        commitMutation({
-                          ...defaultCommitMutation,
-                          mutation: coverageInformationMutation,
-                          variables: {
-                            id,
-                            input: {
-                              key: 'coverage_information',
-                              object_path: `/coverage_information/${index}`,
-                              value: [],
-                              operation: 'remove',
-                            },
-                          },
-                        });
-                      }}
-                      style={{ position: 'absolute', right: -10, top: 5 }}
-                    >
-                      <DeleteOutlined />
-                    </IconButton>
-                  )}
+                  <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    disabled={inEdition && value.length < 2}
+                    style={{ marginTop: 28 }}
+                    id={`deleteCoverageInfo_${index}`}
+                    aria-label="Delete"
+                    onClick={() => {
+                      setFieldTouched(name, true);
+                      arrayHelpers.remove(index);
+                    }}
+                    icon={<DeleteOutlined fontSize="small" />}
+                  />
                 </div>
               ))}
               <Button
-                size="small"
-                aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
+                variant="secondary"
+                aria-label={t_i18n('Add coverage score')}
                 onClick={() => {
-                  const newCoverage = { coverage_name: '', coverage_score: 0 };
-                  arrayHelpers.push(newCoverage);
+                  setFieldTouched(name, true);
+                  arrayHelpers.push({ coverage_name: null, coverage_score: null });
                 }}
-                style={{ marginTop: (values?.length ?? 0) > 0 ? 20 : 0 }}
               >
-                {t_i18n('Add coverage metric')}
+                {t_i18n('Add coverage score')}
               </Button>
             </div>
-          </>
-        )}
-      />
+          )}
+        />
+      </FormGroup>
     </div>
   );
 };
+
+export default CoverageInformationField;

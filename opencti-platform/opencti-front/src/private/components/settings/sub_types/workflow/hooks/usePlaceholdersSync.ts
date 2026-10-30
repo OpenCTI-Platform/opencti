@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Node, Edge, MarkerType, useReactFlow } from 'reactflow';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { WorkflowNodeType } from '../utils';
 

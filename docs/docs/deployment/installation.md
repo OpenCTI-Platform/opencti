@@ -56,9 +56,9 @@ There is one SBOM asset per Docker image base (for example: standard, FIPS, and 
 
 OpenCTI can be deployed using the *docker-compose* command.
 
-!!! note "Deploy FIPS 140-2 compliant components"
+!!! note "Deploy FIPS 140-3 compliant components"
 
-    We provide FIPS 140-2 compliant images. Please read the [dedicated documentation](../reference/fips.md) to understand how to deploy OpenCTI in FIPS-compliant mode.
+    We provide FIPS 140-3 compliant images. The [dedicated documentation](../reference/fips.md) explains how to deploy OpenCTI in FIPS 140-3 compliant mode and describes the exact compliance posture of these images.
 
 ### Pre-requisites
 
@@ -284,7 +284,7 @@ First, you have to [download and extract the latest release file](https://github
 
 **For Linux:**
 
-- If your OS supports libc (Ubuntu, Debian, ...) you have to install the `opencti-release_{RELEASE_VERSION}.tar.gz` version.
+- If your OS supports libc (Ubuntu, Debian, ...) you have to install the `opencti-release-{RELEASE_VERSION}.tar.gz` version.
 - If your OS uses musl (Alpine, ...) you have to install the `opencti-release-{RELEASE_VERSION}_musl.tar.gz` version.
 
 **For Windows:**
@@ -304,7 +304,7 @@ tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 The main application has just one JSON configuration file to change and a few Python modules to install
 
 ```bash
-cd opencti
+cd opencti/opencti-platform/opencti-graphql
 cp config/default.json config/production.json
 ```
 
@@ -333,7 +333,7 @@ corepack --version
 #0.34.0
 ```
 
-Once Node.js is setup, you can build and run with (from inside `opencti` folder):
+Once Node.js is setup, you can build and run with (from inside the `opencti/opencti-platform/opencti-graphql` folder):
 ```bash
 yarn install
 yarn build
@@ -349,7 +349,7 @@ The OpenCTI worker is used to write the data coming from the RabbitMQ messages b
 #### Configure the worker
 
 ```bash
-cd worker
+cd ../../worker
 pip3 install -r requirements.txt
 cp config.yml.sample config.yml
 ```
@@ -446,9 +446,9 @@ ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocati
 
 Redis has a very small footprint on keys but will consume memory for the stream. By default the size of the stream is limited to 2 millions which represents a memory footprint around `8 GB`. You can find more information in the [Redis docker hub](https://hub.docker.com/_/redis).
 
-#### MinIO / S3 Bucket
+#### S3 bucket / Silo
 
-MinIO is a small process and does not require a high amount of memory. More information are available for Linux here on the [Kernel tuning guide](https://github.com/minio/minio/tree/master/docs/deployment/kernel-tuning).
+Silo, the community-maintained fork of MinIO, is a small process and does not require a high amount of memory. More information is available in the [Silo documentation](https://silo.pgsty.com/docs/).
 
 #### RabbitMQ
 

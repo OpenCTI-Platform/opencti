@@ -2,7 +2,8 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { Stack, useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import FormHelperText from '@mui/material/FormHelperText';
 import Button from '@common/button/Button';
 import { commitMutation, handleError, MESSAGING$ } from '../../../../../relay/environment';
@@ -115,7 +116,7 @@ const UserEditionPasswordComponent = ({ user }) => {
             <PasswordPolicies />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="password"
               label={t('Password')}
               type="password"
@@ -123,7 +124,7 @@ const UserEditionPasswordComponent = ({ user }) => {
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="confirmation"
               label={t('Confirmation')}
               type="password"

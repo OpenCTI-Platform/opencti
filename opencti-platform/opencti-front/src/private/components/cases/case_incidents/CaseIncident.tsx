@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
 import { CaseUtils_case$key } from '@components/cases/__generated__/CaseUtils_case.graphql';

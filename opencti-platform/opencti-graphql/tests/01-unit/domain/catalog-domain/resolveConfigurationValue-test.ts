@@ -21,7 +21,7 @@ describe('resolveConfigurationValue', () => {
       propSchema,
       undefined,
       undefined,
-      TEST_PUBLIC_KEY
+      TEST_PUBLIC_KEY,
     );
     expect(result).toBeNull();
   });
@@ -29,30 +29,30 @@ describe('resolveConfigurationValue', () => {
   it('should use default value when no input provided', () => {
     const propSchema = {
       type: 'string',
-      default: 'default_value'
+      default: 'default_value',
     };
     const result = resolveConfigurationValue(
       'field_key',
       propSchema,
       undefined,
       undefined,
-      TEST_PUBLIC_KEY
+      TEST_PUBLIC_KEY,
     );
     expect(result).toEqual({
       key: 'field_key',
-      value: 'default_value'
+      value: 'default_value',
     });
   });
 
   it('should keep existing password when no new value provided', () => {
     const propSchema = {
       type: 'string',
-      format: 'password'
+      format: 'password',
     };
     const existingConfig: ConnectorContractConfiguration = {
       key: 'password_field',
       value: 'encrypted_old_password',
-      encrypted: true
+      encrypted: true,
     };
 
     const result = resolveConfigurationValue(
@@ -60,7 +60,7 @@ describe('resolveConfigurationValue', () => {
       propSchema,
       undefined,
       existingConfig,
-      TEST_PUBLIC_KEY
+      TEST_PUBLIC_KEY,
     );
     expect(result).toEqual(existingConfig);
   });
@@ -69,7 +69,7 @@ describe('resolveConfigurationValue', () => {
     const propSchema = { type: 'string' };
     const inputConfig: ContractConfigInput = {
       key: 'field_key',
-      value: ''
+      value: '',
     };
 
     const result = resolveConfigurationValue(
@@ -77,7 +77,7 @@ describe('resolveConfigurationValue', () => {
       propSchema,
       inputConfig,
       undefined,
-      TEST_PUBLIC_KEY
+      TEST_PUBLIC_KEY,
     );
     expect(result).toBeNull();
   });
@@ -86,11 +86,11 @@ describe('resolveConfigurationValue', () => {
     const propSchema = { type: 'string' };
     const existingConfig: ConnectorContractConfiguration = {
       key: 'field_key',
-      value: 'existing_value'
+      value: 'existing_value',
     };
     const inputConfig: ContractConfigInput = {
       key: 'field_key',
-      value: 'existing_value'
+      value: 'existing_value',
     };
 
     const result = resolveConfigurationValue(
@@ -98,7 +98,7 @@ describe('resolveConfigurationValue', () => {
       propSchema,
       inputConfig,
       existingConfig,
-      TEST_PUBLIC_KEY
+      TEST_PUBLIC_KEY,
     );
     expect(result).toEqual(existingConfig);
   });
@@ -107,7 +107,7 @@ describe('resolveConfigurationValue', () => {
     const propSchema = { type: 'string' };
     const inputConfig: ContractConfigInput = {
       key: 'field_key',
-      value: 'new_value'
+      value: 'new_value',
     };
 
     const result = resolveConfigurationValue(
@@ -115,11 +115,11 @@ describe('resolveConfigurationValue', () => {
       propSchema,
       inputConfig,
       undefined,
-      TEST_PUBLIC_KEY
+      TEST_PUBLIC_KEY,
     );
     expect(result).toEqual({
       key: 'field_key',
-      value: 'new_value'
+      value: 'new_value',
     });
   });
 
@@ -127,7 +127,7 @@ describe('resolveConfigurationValue', () => {
     const propSchema = { type: 'boolean' };
     const inputConfig: ContractConfigInput = {
       key: 'bool_field',
-      value: 'true'
+      value: 'true',
     };
 
     const result = resolveConfigurationValue(
@@ -135,11 +135,11 @@ describe('resolveConfigurationValue', () => {
       propSchema,
       inputConfig,
       undefined,
-      TEST_PUBLIC_KEY
+      TEST_PUBLIC_KEY,
     );
     expect(result).toEqual({
       key: 'bool_field',
-      value: 'true'
+      value: 'true',
     });
   });
 
@@ -147,7 +147,7 @@ describe('resolveConfigurationValue', () => {
     const propSchema = { type: 'integer' };
     const inputConfig: ContractConfigInput = {
       key: 'int_field',
-      value: '123'
+      value: '123',
     };
 
     const result = resolveConfigurationValue(
@@ -155,11 +155,11 @@ describe('resolveConfigurationValue', () => {
       propSchema,
       inputConfig,
       undefined,
-      TEST_PUBLIC_KEY
+      TEST_PUBLIC_KEY,
     );
     expect(result).toEqual({
       key: 'int_field',
-      value: '123'
+      value: '123',
     });
   });
 
@@ -167,11 +167,11 @@ describe('resolveConfigurationValue', () => {
     it('should encrypt new password value', () => {
       const propSchema = {
         type: 'string',
-        format: 'password'
+        format: 'password',
       };
       const inputConfig: ContractConfigInput = {
         key: 'password_field',
-        value: 'newPassword123'
+        value: 'newPassword123',
       };
 
       const result = resolveConfigurationValue(
@@ -179,7 +179,7 @@ describe('resolveConfigurationValue', () => {
         propSchema,
         inputConfig,
         undefined,
-        TEST_PUBLIC_KEY
+        TEST_PUBLIC_KEY,
       );
 
       expect(result).toBeDefined();
@@ -197,16 +197,16 @@ describe('resolveConfigurationValue', () => {
     it('should replace existing password with new encrypted value', () => {
       const propSchema = {
         type: 'string',
-        format: 'password'
+        format: 'password',
       };
       const existingConfig: ConnectorContractConfiguration = {
         key: 'password_field',
         value: 'old_encrypted_value',
-        encrypted: true
+        encrypted: true,
       };
       const inputConfig: ContractConfigInput = {
         key: 'password_field',
-        value: 'brandNewPassword456'
+        value: 'brandNewPassword456',
       };
 
       const result = resolveConfigurationValue(
@@ -214,7 +214,7 @@ describe('resolveConfigurationValue', () => {
         propSchema,
         inputConfig,
         existingConfig,
-        TEST_PUBLIC_KEY
+        TEST_PUBLIC_KEY,
       );
 
       expect(result).toBeDefined();
@@ -227,11 +227,11 @@ describe('resolveConfigurationValue', () => {
     it('should handle empty password encryption', () => {
       const propSchema = {
         type: 'string',
-        format: 'password'
+        format: 'password',
       };
       const inputConfig: ContractConfigInput = {
         key: 'password_field',
-        value: '' // Empty password
+        value: '', // Empty password
       };
 
       const result = resolveConfigurationValue(
@@ -239,7 +239,7 @@ describe('resolveConfigurationValue', () => {
         propSchema,
         inputConfig,
         undefined,
-        TEST_PUBLIC_KEY
+        TEST_PUBLIC_KEY,
       );
 
       // Empty string should return null (no value)
@@ -249,16 +249,16 @@ describe('resolveConfigurationValue', () => {
     it('should not re-encrypt when password value unchanged', () => {
       const propSchema = {
         type: 'string',
-        format: 'password'
+        format: 'password',
       };
       const existingConfig: ConnectorContractConfiguration = {
         key: 'password_field',
         value: 'existing_encrypted_value',
-        encrypted: true
+        encrypted: true,
       };
       const inputConfig: ContractConfigInput = {
         key: 'password_field',
-        value: 'existing_encrypted_value' // Same value
+        value: 'existing_encrypted_value', // Same value
       };
 
       const result = resolveConfigurationValue(
@@ -266,7 +266,7 @@ describe('resolveConfigurationValue', () => {
         propSchema,
         inputConfig,
         existingConfig,
-        TEST_PUBLIC_KEY
+        TEST_PUBLIC_KEY,
       );
 
       // Should return the existing config unchanged
@@ -276,11 +276,11 @@ describe('resolveConfigurationValue', () => {
     it('should encrypt password with special characters', () => {
       const propSchema = {
         type: 'string',
-        format: 'password'
+        format: 'password',
       };
       const inputConfig: ContractConfigInput = {
         key: 'password_field',
-        value: '!@#$%^&*()_+-=[]{}|;\':",./<>?'
+        value: '!@#$%^&*()_+-=[]{}|;\':",./<>?',
       };
 
       const result = resolveConfigurationValue(
@@ -288,7 +288,7 @@ describe('resolveConfigurationValue', () => {
         propSchema,
         inputConfig,
         undefined,
-        TEST_PUBLIC_KEY
+        TEST_PUBLIC_KEY,
       );
 
       expect(result).toBeDefined();
@@ -300,7 +300,7 @@ describe('resolveConfigurationValue', () => {
       const propSchema = {
         type: 'string',
         format: 'password',
-        default: 'defaultPassword'
+        default: 'defaultPassword',
       };
 
       const result = resolveConfigurationValue(
@@ -308,25 +308,25 @@ describe('resolveConfigurationValue', () => {
         propSchema,
         undefined,
         undefined,
-        TEST_PUBLIC_KEY
+        TEST_PUBLIC_KEY,
       );
 
       // Default passwords should not be encrypted automatically
       // They should be treated as regular defaults
       expect(result).toEqual({
         key: 'password_field',
-        value: 'defaultPassword'
+        value: 'defaultPassword',
       });
     });
 
     it('should validate password encryption produces different values each time', () => {
       const propSchema = {
         type: 'string',
-        format: 'password'
+        format: 'password',
       };
       const inputConfig: ContractConfigInput = {
         key: 'password_field',
-        value: 'samePassword'
+        value: 'samePassword',
       };
 
       const result1 = resolveConfigurationValue(
@@ -334,7 +334,7 @@ describe('resolveConfigurationValue', () => {
         propSchema,
         inputConfig,
         undefined,
-        TEST_PUBLIC_KEY
+        TEST_PUBLIC_KEY,
       );
 
       const result2 = resolveConfigurationValue(
@@ -342,7 +342,7 @@ describe('resolveConfigurationValue', () => {
         propSchema,
         inputConfig,
         undefined,
-        TEST_PUBLIC_KEY
+        TEST_PUBLIC_KEY,
       );
 
       // Same password should produce different encrypted values (due to random AES key)

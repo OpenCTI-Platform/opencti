@@ -14,7 +14,7 @@ import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
@@ -26,6 +26,7 @@ import type { Theme } from '../../../components/Theme';
 import { FieldOption } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
+import { isEnterpriseEditionFromXtmOne } from '../../../utils/hooks/useEnterpriseEdition';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -35,6 +36,8 @@ import ExperienceCard, { ExperienceHeadline } from './experience/ExperienceCard'
 import ExperienceDetailRow from './experience/ExperienceDetailRow';
 import ExperienceFeatureTile from './experience/ExperienceFeatureTile';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
+import ConfigPresetExportFooter from './config_preset/export/ConfigPresetExportFooter';
+import useConfigPresetExportAccess from './config_preset/export/useConfigPresetExportAccess';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 export enum CGUStatus {
@@ -61,6 +64,7 @@ const ExperienceFragment = graphql`
       license_type
       license_creator
       license_global
+      license_source
     }
     platform_ai_enabled
     filigran_chatbot_ai_cgu_status
@@ -101,11 +105,13 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const { xtmOneConfigured } = useChatbot();
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
+  const canExportConfigPreset = useConfigPresetExportAccess();
   const data = usePreloadedQuery(experienceQuery, queryRef);
   const settings = useFragment<Experience$key>(ExperienceFragment, data.settings);
   const enterpriseEdition = settings.platform_enterprise_edition;
   const isEnterpriseEditionActivated = enterpriseEdition.license_enterprise;
   const isEnterpriseEditionByConfig = enterpriseEdition.license_by_configuration;
+  const isEnterpriseEditionByXtmOne = isEnterpriseEditionFromXtmOne(enterpriseEdition);
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const experienceValidation = () => Yup.object().shape({
@@ -167,16 +173,19 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     return <Tag label={t_i18n('Activated')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
   })();
 
+  // With the XTM One license there is no OpenCTI license to disable: an OpenCTI license can still be added, and wins.
   const eeActivatedFooter = !isEnterpriseEditionByConfig && isGrantedToParameters
     ? (
         <>
-          <DangerZoneButton
-            sensitiveType="ce_ee_toggle"
-            size="default"
-            onClick={() => setOpenEEChanges(true)}
-          >
-            {t_i18n('Disable Enterprise Edition')}
-          </DangerZoneButton>
+          {!isEnterpriseEditionByXtmOne && (
+            <DangerZoneButton
+              sensitiveType="ce_ee_toggle"
+              size="default"
+              onClick={() => setOpenEEChanges(true)}
+            >
+              {t_i18n('Disable Enterprise Edition')}
+            </DangerZoneButton>
+          )}
           <EnterpriseEditionButton inLine size="default" title="Update license" />
         </>
       )
@@ -196,8 +205,16 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         </Button>
       );
 
+  const eeFooter = isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter;
+
   const eeActivatedBody = (
     <div>
+      <ExperienceDetailRow label={t_i18n('License source')}>
+        <ItemBoolean
+          neutralLabel={isEnterpriseEditionByXtmOne ? t_i18n('XTM One license') : t_i18n('OpenCTI license')}
+          status={null}
+        />
+      </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Organization')}>
         <ItemBoolean
           neutralLabel={enterpriseEdition.license_customer}
@@ -235,7 +252,13 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         <ExperienceDetailRow
           divider={!xtmOneConfigured}
           label={(
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               <Typography variant="body2" color="textSecondary">
                 {xtmOneConfigured ? t_i18n('XTM One (Agentic AI)') : t_i18n('Agentic AI (Ariane Assistant)')}
               </Typography>
@@ -319,15 +342,22 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   return (
     <div style={{ margin: 0, padding: '0 0 50px 0' }} data-testid="experience-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Filigran Experience'), current: true }]} />
-      <Grid container={true} spacing={3} alignItems="stretch" style={{ marginBottom: 23 }}>
-        <Grid item xs={6}>
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginBottom: 23 }}
+        sx={{
+          alignItems: 'stretch',
+        }}
+      >
+        <Grid size={6}>
           <ExperienceCard
             icon={<RocketLaunchOutlined />}
             overline={t_i18n('Filigran Experience')}
             title={t_i18n('Enterprise Edition')}
             accent={eeAccent}
             statusChip={eeStatusChip}
-            footer={isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter}
+            footer={canExportConfigPreset ? <ConfigPresetExportFooter>{eeFooter}</ConfigPresetExportFooter> : eeFooter}
             testId="experience-enterprise-edition-card"
           >
             {isEnterpriseEditionActivated ? eeActivatedBody : eeCommunityBody}
@@ -367,12 +397,12 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             </DialogActions>
           </Dialog>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <XtmHubSettings />
         </Grid>
 
         {isGrantedToSupport && (
-          <Grid item xs={12} style={{ marginTop: 15 }}>
+          <Grid style={{ marginTop: 15 }} size={12}>
             <SupportPackages />
           </Grid>
         )}

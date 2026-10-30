@@ -14,6 +14,10 @@ export const ALLOW_EMAIL_REWRITE = isEmptyField(SMTP_FORCED_EMAIL);
 const USE_SSL = booleanConf('smtp:use_ssl', false);
 const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
 const SMTP_ENABLE = booleanConf('smtp:enabled', true);
+const SMTP_TIMEOUTS = {
+  connectionTimeout: Number(conf.get('smtp:connection_timeout') ?? 10000),
+  greetingTimeout: Number(conf.get('smtp:greeting_timeout') ?? 10000),
+};
 
 export const SMTP_JSON_CONFIG = {
   smtp_enabled: SMTP_ENABLE,
@@ -36,12 +40,22 @@ const baseSmtpOptions = {
   host: conf.get('smtp:hostname') || 'localhost',
   port: conf.get('smtp:port') || 25,
   secure: USE_SSL,
+  ...SMTP_TIMEOUTS,
   tls: {
     rejectUnauthorized: REJECT_UNAUTHORIZED,
     maxVersion: conf.get('smtp:tls_max_version'),
     minVersion: conf.get('smtp:tls_min_version'),
     ciphers: conf.get('smtp:tls_ciphers'),
   },
+};
+
+const SMTP_TRANSPORT_SELECTORS = {
+  url: undefined,
+  pool: false,
+  sendmail: false,
+  streamTransport: false,
+  jsonTransport: false,
+  SES: undefined,
 };
 
 // OAuth2 caches:
@@ -155,6 +169,7 @@ const buildSmtpOptionsFromDb = (dbConfig) => ({
   host: dbConfig.hostname || 'localhost',
   port: dbConfig.port || 587,
   secure: dbConfig.use_ssl ?? false,
+  ...SMTP_TIMEOUTS,
   tls: {
     rejectUnauthorized: dbConfig.reject_unauthorized ?? false,
   },
@@ -192,7 +207,7 @@ const createSmtpTransporter = async () => {
   if (smtpAuth) {
     smtpOptions.auth = smtpAuth;
   }
-  return nodemailer.createTransport(smtpOptions);
+  return nodemailer.createTransport({ ...smtpOptions, ...SMTP_TRANSPORT_SELECTORS });
 };
 
 /**
@@ -279,8 +294,17 @@ export const sendMail = async (args, meterMetadata) => {
     // For OAuth2 the transporter is recreated so that the access token is
     // refreshed before each send (avoids failures once the token has expired).
     const transporter = await createSmtpTransporter();
-    await transporter.sendMail({ from, to, bcc, subject, html, attachments });
+    const sentMailInfos = await transporter.sendMail({ from, to, bcc, subject, html, attachments });
     meterManager.emailSent(meterMetadata);
+
+    if (sentMailInfos.rejected && sentMailInfos.rejected.length > 0) {
+      logApp.warn('SMTP message sent with partial recipient rejection', {
+        ...meterMetadata,
+        accepted: sentMailInfos.accepted.length,
+        rejected: sentMailInfos.rejected,
+        rejectedErrors: sentMailInfos.rejectedErrors,
+      });
+    }
   }
 };
 

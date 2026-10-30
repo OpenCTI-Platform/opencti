@@ -10,22 +10,18 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import FiligranIcon from '@components/common/FiligranIcon';
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
+import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
+
 import DialogActions from '@mui/material/DialogActions';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import TextField from '@mui/material/TextField';
+
 import Tooltip from '@mui/material/Tooltip';
-import { createStyles } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { type CSSObject, styled, type Theme } from '@mui/material/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { Theme } from '../../../../components/Theme';
+import { canonicalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useAI from '../../../../utils/hooks/useAI';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -35,95 +31,49 @@ import { useChatbot } from '../../chatbox/ChatbotContext';
 import { type AgentOption, fetchAgentsForIntent } from '../../../../utils/ai/agentApi';
 import Drawer from '../drawer/Drawer';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    paddingTop: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
+const aiChipStyle = (theme: Theme): CSSObject => ({
+  display: 'inline-flex',
+  fontWeight: 500,
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontSize: 12,
+  marginLeft: 6,
+  borderRadius: theme.borderRadius,
+  border: `1px solid ${theme.palette.ai?.main}`,
+  color: theme.palette.ai?.main,
+  backgroundColor: theme.palette.ai?.background,
+  cursor: 'pointer',
+  '&:hover': {
+    border: `1px solid ${theme.palette.ai?.light}`,
+    color: theme.palette.ai?.light,
   },
-  header: {
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
-    padding: '10px 0',
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  container: {
-    padding: `0 ${theme.spacing(2)} ${theme.spacing(2)}`,
-    height: '100%',
-    overflowY: 'auto',
-  },
-  chip: {
-    display: 'inline-flex',
-    fontWeight: 500,
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: 12,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'pointer',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
-    },
-  },
-  chipFloating: {
+});
+
+const AiChip = styled(IconButton)(({ theme }) => ({
+  '&&': aiChipStyle(theme),
+}));
+
+const AiChipFloating = styled(IconButton)(({ theme }) => ({
+  '&&': {
+    ...aiChipStyle(theme),
     float: 'right',
-    fontSize: 12,
-    fontWeight: 500,
     height: 25,
-    display: 'inline-flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginTop: -7,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'pointer',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
-    },
-  },
-  chipNoAction: {
-    display: 'flex',
-    alignItems: 'center',
-    textWrap: 'nowrap',
-    position: 'absolute',
-    right: 10,
-    fontWeight: 500,
-    justifyContent: 'center',
-    fontSize: 12,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'default',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
-    },
   },
 }));
 
+const Content = styled('div')(({ theme }) => ({
+  padding: `0 ${theme.spacing(2)} ${theme.spacing(2)}`,
+  height: '100%',
+  overflowY: 'auto',
+}));
+
+type AIInsightsTab = 'activity' | 'containers' | 'forecast' | 'history';
+
 interface AIInsightProps {
   id: string;
-  tabs?: Array<'activity' | 'containers' | 'forecast' | 'history'>;
-  defaultTab?: 'activity' | 'containers' | 'forecast' | 'history';
+  tabs?: Array<AIInsightsTab>;
+  defaultTab?: AIInsightsTab;
   floating?: boolean;
   onlyIcon?: boolean;
   isContainer?: boolean;
@@ -140,23 +90,23 @@ interface AiInsightButtonProps {
 
 const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEEChip = false, disabled = false, tooltipTitle }: AiInsightButtonProps) => {
   const { t_i18n } = useFormatter();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
-  const classes = useStyles({ bannerHeightNumber });
+  const ChipButton = floating ? AiChipFloating : AiChip;
   const buttonLabel = tooltipTitle || t_i18n('AI Insights');
 
   return (
     <Tooltip title={buttonLabel}>
       <span style={{ display: 'inline-flex' }}>
         {onlyIcon ? (
-          <IconButton
+          <ChipButton
             size="small"
             aria-label={buttonLabel}
             onClick={onClick}
-            className={floating ? classes.chipFloating : classes.chip}
             disabled={disabled}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size="small" />
-          </IconButton>
+            {/* 16, not `size="small"`: FiligranIcon's `small` is MUI's 20px, which overflowed the 24px small button
+                by a pixel and sat off its centre line. 16 is the library's own small-button glyph. */}
+            <FiligranIcon icon={LogoXtmOneIcon} size={16} />
+          </ChipButton>
         ) : (
           <Button
             variant="tertiary"
@@ -164,11 +114,13 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEECh
             onClick={onClick}
             intent="ai"
             aria-label={buttonLabel}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
+            // 16 is the library's small-button glyph; FiligranIcon's `small`
+            // is MUI's 20px, a pixel taller than the button itself.
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size={16} />}
             disabled={disabled}
           >
             {t_i18n('AI Insights')}
-            {showEEChip && <EEChip feature="AI Insights" />}
+            {showEEChip && <EEChip feature="AI Insights" size="sm" />}
           </Button>
         )}
       </span>
@@ -183,8 +135,7 @@ const AIInsights = ({
   onlyIcon = false,
   isContainer = false,
 }: AIInsightProps) => {
-  const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
-  const classes = useStyles({ bannerHeightNumber });
+  const { settings: { id: settingsId } } = useAuth();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const [display, setDisplay] = useState(false);
@@ -231,7 +182,7 @@ const AIInsights = ({
     });
   }, [useXtmOne, currentTab]);
 
-  const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
+  const handleAgentChange = (newValue: AgentOption | null) => {
     if (newValue) {
       setSelectedAgent(newValue);
     }
@@ -241,8 +192,9 @@ const AIInsights = ({
     setLoading(false);
     setDisplay(false);
   };
-  const handleChangeTab = (_: React.SyntheticEvent, newValue: 'activity' | 'containers' | 'forecast' | 'history') => {
-    setCurrentTab(newValue);
+  // Radix types onValueChange as (value: string); only AIInsightsTab triggers are registered.
+  const handleChangeTab = (newValue: string) => {
+    setCurrentTab(newValue as AIInsightsTab);
   };
 
   const initialContainersFilters = isContainer ? {
@@ -265,7 +217,9 @@ const AIInsights = ({
     filterGroups: [],
   };
   // TODO make the filter "objects" readonly?
-  const [containersFilters] = useFiltersState(initialContainersFilters);
+  const [containersFiltersState] = useFiltersState(initialContainersFilters);
+  // the filters state carries frontend-only ids the FilterGroup input rejects
+  const containersFilters = useMemo(() => canonicalizeFilterGroupForBackend(containersFiltersState), [containersFiltersState]);
   if (!enabled) return null;
   if (!isEnterpriseEdition && enabled) {
     return (
@@ -348,93 +302,82 @@ const AIInsights = ({
         onClose={handleClose}
         title={t_i18n('AI Insights')}
         header={useXtmOne ? (
-          <Autocomplete<AgentOption, false, true>
-            sx={{ width: 220 }}
-            size="small"
-            disableClearable
+          <Combobox<AgentOption>
+            labelPosition="none"
+            clearable={false}
             options={agentOptions}
-            getOptionLabel={(option) => option.name}
-            value={selectedAgent}
-            onChange={handleAgentChange}
+            getOptionLabel={(option) => option?.name ?? ''}
+            value={selectedAgent ?? null}
+            onValueChange={(next) => handleAgentChange(next as AgentOption | null)}
             loading={loadingAgents}
             disabled={agentOptions.length === 0 || loading}
-            noOptionsText={t_i18n('No agent available')}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                size="small"
+          >
+            <ComboboxField>
+              <ComboboxInput
+                aria-label={t_i18n('Select agent')}
                 placeholder={agentOptions.length === 0 ? t_i18n('No agent available') : t_i18n('Select agent')}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingAgents ? <CircularProgress color="inherit" size={16} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
               />
-            )}
-          />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t_i18n('No agent available')}
+              listAriaLabel={t_i18n('Select agent')}
+            />
+          </Combobox>
         ) : undefined}
       >
-        <div className={classes.container}>
-          <Box sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItem: 'center',
-          }}
-          >
-            <Tabs value={currentTab} onChange={handleChangeTab}>
-              {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
-              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
-              {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
-              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
-            </Tabs>
-            {loading && (
-              <div style={{ paddingTop: 10 }}>
-                <Loader variant={LoaderVariant.inline} />
-              </div>
-            )}
-          </Box>
-          {currentTab === 'activity' && (
-            <AISummaryActivity
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-              selectedAgent={selectedAgent}
-            />
-          )}
-          {currentTab === 'containers' && (
-            <AISummaryContainers
-              busId={containersBusId}
-              isContainer={isContainer}
-              filters={containersFilters}
-              loading={loading}
-              setLoading={setLoading}
-              selectedAgent={selectedAgent}
-            />
-          )}
-          {currentTab === 'forecast' && (
-            <AISummaryForecast
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-              selectedAgent={selectedAgent}
-            />
-          )}
-          {currentTab === 'history' && (
-            <AISummaryHistory
-              id={id}
-              loading={loading}
-              setLoading={setLoading}
-              selectedAgent={selectedAgent}
-            />
-          )}
-        </div>
+        <Content>
+          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+            <TabsList
+              actions={loading && (
+                <div style={{ paddingTop: 10 }}>
+                  <Loader variant={LoaderVariant.inline} />
+                </div>
+              )}
+            >
+              {tabs.includes('activity') && <TabsTrigger value="activity">{t_i18n('Activity')}</TabsTrigger>}
+              {tabs.includes('containers') && <TabsTrigger value="containers">{isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')}</TabsTrigger>}
+              {tabs.includes('forecast') && <TabsTrigger value="forecast">{t_i18n('Forecast')}</TabsTrigger>}
+              {tabs.includes('history') && <TabsTrigger value="history">{t_i18n('Internal history')}</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="activity">
+              <AISummaryActivity
+                id={id}
+                loading={loading}
+                setLoading={setLoading}
+                selectedAgent={selectedAgent}
+              />
+            </TabsContent>
+            <TabsContent value="containers">
+              <AISummaryContainers
+                busId={containersBusId}
+                isContainer={isContainer}
+                filters={containersFilters}
+                loading={loading}
+                setLoading={setLoading}
+                selectedAgent={selectedAgent}
+              />
+            </TabsContent>
+            <TabsContent value="forecast">
+              <AISummaryForecast
+                id={id}
+                loading={loading}
+                setLoading={setLoading}
+                selectedAgent={selectedAgent}
+              />
+            </TabsContent>
+            <TabsContent value="history">
+              <AISummaryHistory
+                id={id}
+                loading={loading}
+                setLoading={setLoading}
+                selectedAgent={selectedAgent}
+              />
+            </TabsContent>
+          </Tabs>
+        </Content>
       </Drawer>
     </>
   );

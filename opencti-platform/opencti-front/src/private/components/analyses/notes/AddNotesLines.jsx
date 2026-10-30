@@ -1,4 +1,4 @@
-import { CheckCircle, WorkOutline } from '@mui/icons-material';
+import { WorkOutlined } from '@mui/icons-material';
 import ListItemButton from '@mui/material/ListItemButton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -6,7 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import withStyles from '@mui/styles/withStyles';
+import { Checkbox } from '@filigran/design-system';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Component } from 'react';
@@ -16,13 +16,6 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import { EMPTY_VALUE, truncate } from '../../../../utils/String';
-
-const styles = () => ({
-  avatar: {
-    width: 24,
-    height: 24,
-  },
-});
 
 export const noteLinesMutationRelationAdd = graphql`
   mutation AddNotesLinesRelationAddMutation(
@@ -117,7 +110,7 @@ class AddNotesLinesContainer extends Component {
   }
 
   render() {
-    const { classes, data, stixCoreObjectOrStixCoreRelationshipNotes } = this.props;
+    const { data, stixCoreObjectOrStixCoreRelationshipNotes } = this.props;
     const entityNotesIds = R.map(
       (n) => n.node.id,
       stixCoreObjectOrStixCoreRelationshipNotes,
@@ -141,18 +134,13 @@ class AddNotesLinesContainer extends Component {
                 <TableRow
                   key={note.id}
                   component={ListItemButton}
-                  classes={{ root: classes.menuItem }}
                   onClick={this.toggleNote.bind(this, note)}
                 >
-                  <TableCell sx={{ width: 48, paddingY: 1, paddingX: 2 }}>
-                    {alreadyAdded ? (
-                      <CheckCircle
-                        color="primary"
-                        sx={{ marginTop: 0.5 }}
-                      />
-                    ) : (
-                      <WorkOutline sx={{ marginTop: 0.5 }} />
-                    )}
+                  <TableCell sx={{ width: 80, paddingY: 1, paddingX: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                      <Checkbox checked={alreadyAdded} />
+                      <WorkOutlined />
+                    </div>
                   </TableCell>
                   <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -187,7 +175,6 @@ AddNotesLinesContainer.propTypes = {
   paginationOptions: PropTypes.object,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -254,4 +241,4 @@ const AddNotesLines = createPaginationContainer(
   },
 );
 
-export default R.compose(inject18n, withStyles(styles))(AddNotesLines);
+export default inject18n(AddNotesLines);

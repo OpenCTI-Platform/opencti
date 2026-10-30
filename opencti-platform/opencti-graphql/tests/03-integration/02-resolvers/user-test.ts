@@ -21,6 +21,7 @@ import {
   USER_SECURITY,
 } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
@@ -37,7 +38,7 @@ import {
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
-import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/domain/user';
+import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/modules/user/user-domain';
 import { getSettingsFromDatabase } from '../../../src/domain/settings';
 import { updateLocalAuth } from '../../../src/domain/setting-auth';
 import type { BasicStoreSettings } from '../../../src/types/settings';
@@ -370,6 +371,12 @@ describe('User resolver standard behavior', () => {
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
     });
     expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
+  });
+  it('should not update api_tokens field', async () => {
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: { key: 'api_tokens', value: [] } },
+    }, undefined, FORBIDDEN_ACCESS);
   });
   it('should update language only if the value is valid', async () => {
     const validQueryResult = await queryAsAdmin({
@@ -858,6 +865,18 @@ describe('User has no settings capability and is organization admin query behavi
     }
   `;
 
+  const GROUPS_QUERY = gql`
+    query OrganizationAdminGroups {
+      groups {
+        edges {
+          node {
+            id
+          }
+        }
+      }
+    }
+  `;
+
   const ORGANIZATION_DELETE_QUERY = gql`
         mutation UserOrganizationDeleteMutation(
             $id: ID!
@@ -884,6 +903,24 @@ describe('User has no settings capability and is organization admin query behavi
     mutation UserRelationDeleteParticipateTo($id: ID!, $toId: StixRef!) {
       userEdit(id: $id) {
         relationDelete(toId: $toId, relationship_type: "participate-to") {
+          id
+        }
+      }
+    }
+  `;
+  const USER_RELATION_ADD_MEMBER_OF_QUERY = gql`
+    mutation UserRelationAddMemberOf($id: ID!, $toId: ID!) {
+      userEdit(id: $id) {
+        relationAdd(input: { toId: $toId, relationship_type: "member-of" }) {
+          id
+        }
+      }
+    }
+  `;
+  const USER_RELATION_DELETE_MEMBER_OF_QUERY = gql`
+    mutation UserRelationDeleteMemberOf($id: ID!, $toId: StixRef!) {
+      userEdit(id: $id) {
+        relationDelete(toId: $toId, relationship_type: "member-of") {
           id
         }
       }
@@ -937,6 +974,10 @@ describe('User has no settings capability and is organization admin query behavi
     const capabilities = editorUserQueryResult.data?.user.capabilities ?? [];
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
+  it('should list no group when its administrated organizations have no grantable group', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    expect(queryResult.data?.groups.edges).toEqual([]);
+  });
   it('should user created', async () => {
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     organizationsIds.push(testOrganizationId);
@@ -955,7 +996,7 @@ describe('User has no settings capability and is organization admin query behavi
       },
     };
 
-    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in modules/user/user-domain.ts
     const queryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
@@ -972,6 +1013,57 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data?.userAdd).not.toBeNull();
     expect(user.data?.userAdd.name).toEqual('User');
     userInternalId = user.data?.userAdd.id;
+  });
+  it('should list only the grantable groups of its administrated organizations', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    const groupsIds = queryResult.data?.groups.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(groupsIds).toEqual([amberGroupId]);
+  });
+  it('should not create user in an organization the org admin does not administrate', async () => {
+    const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+    const USER_TO_CREATE_WRONG_ORG = {
+      input: {
+        name: 'User wrong org',
+        password: 'user',
+        user_email: 'user.wrongorg@mail.com',
+        objectOrganization: [notAdministratedOrganizationId],
+        groups: [amberGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WRONG_ORG,
+    });
+  });
+  it('should not create user with a group not grantable by the administrated organization', async () => {
+    const notGrantableGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    const USER_TO_CREATE_WRONG_GROUP = {
+      input: {
+        name: 'User wrong group',
+        password: 'user',
+        user_email: 'user.wronggroup@mail.com',
+        objectOrganization: [testOrganizationId],
+        groups: [notGrantableGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: USER_TO_CREATE_WRONG_GROUP,
+    });
+  });
+  it('should not create service account', async () => {
+    const SERVICE_ACCOUNT_TO_CREATE = {
+      input: {
+        name: 'Service account',
+        user_service_account: true,
+        objectOrganization: [testOrganizationId],
+        groups: [amberGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: SERVICE_ACCOUNT_TO_CREATE,
+    });
   });
   it('should list users from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
@@ -1001,10 +1093,26 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data?.userEdit.fieldPatch.account_status).toEqual('Inactive');
   });
+  it('Org admins should NOT update user_service_account without SETTINGS_SETACCESSES capability', async () => {
+    // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
+    // Even for a user of its own administrated organization, editing user_service_account must be forbidden.
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: [{ key: 'user_service_account', value: [true] }] },
+    });
+  });
   it('should not update user with no organization', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: ADMIN_USER.id, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+  });
+  it('Org admins should NOT update user_email without SETTINGS_SETACCESSES capability', async () => {
+    // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
+    // Even for a user of its own administrated organization, editing user_email must be forbidden.
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: [{ key: 'user_email', value: ['test_email@org.com'] }] },
     });
   });
   it('should not update user from an other organization', async () => {
@@ -1051,7 +1159,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
   });
   it('should administrate more than 1 organization', async () => {
-    // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in modules/user/user-domain.ts
     const grantableGroupQueryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
@@ -1131,6 +1239,36 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userEditorId);
   });
+  it('should not remove user from a group not grantable by the administrated organization', async () => {
+    const notGrantableGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    await queryAsAdminWithSuccess({
+      query: USER_RELATION_ADD_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+
+    // the membership must still be there
+    const userQueryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    const groupsIds = userQueryResult.data?.user.groups.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(groupsIds).toContain(notGrantableGroupId);
+
+    // clean up
+    await queryAsAdminWithSuccess({
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+  });
+  it('should remove user from a group grantable by the administrated organization', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: amberGroupId },
+    });
+    expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
+  });
   it('should user deleted', async () => {
     // Delete user
     await queryAsUser(USER_EDITOR, {
@@ -1188,6 +1326,38 @@ describe('meUser specific resolvers', async () => {
       variables,
     });
     expect(queryResult.data?.meEdit.language).toEqual('en-us');
+  });
+
+  it('User should update the date and time display of tables', async () => {
+    const ME_EDIT_DATE_DISPLAY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) {
+          id
+          date_format
+          time_format
+        }
+      }
+    `;
+    let queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_DATE_DISPLAY,
+      variables: { input: [{ key: 'date_format', value: 'iso' }, { key: 'time_format', value: 'seconds' }] },
+    });
+    expect(queryResult.data?.meEdit.date_format).toEqual('iso');
+    expect(queryResult.data?.meEdit.time_format).toEqual('seconds');
+    // Back to the platform display
+    queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_DATE_DISPLAY,
+      variables: { input: [{ key: 'date_format', value: 'auto' }, { key: 'time_format', value: 'auto' }] },
+    });
+    expect(queryResult.data?.meEdit.date_format).toEqual('auto');
+    expect(queryResult.data?.meEdit.time_format).toEqual('auto');
+  });
+
+  it('User should NOT update the time display of tables with an unsupported value', async () => {
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: ME_EDIT,
+      variables: { input: [{ key: 'time_format', value: 'hours' }] },
+    }, 'Unsupported time format');
   });
 
   it('User should NOT update password without providing proper current password', async () => {
@@ -1454,6 +1624,58 @@ describe('Service account User coverage', async () => {
   });
 });
 
+describe('Service account conversion with password policy', () => {
+  let settings: BasicStoreSettings;
+  let serviceAccountId: string;
+  const resetPolicy = {
+    enabled: true,
+    password_policy_max_length: 0,
+    password_policy_min_length: 0,
+    password_policy_min_lowercase: 0,
+    password_policy_min_numbers: 0,
+    password_policy_min_symbols: 0,
+    password_policy_min_uppercase: 0,
+    password_policy_min_words: 0,
+    password_policy_validity_days: 0,
+  };
+
+  beforeAll(async () => {
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    const serviceAccount = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'Service account with policy', user_service_account: true, groups: [], objectOrganization: [] } },
+    });
+    serviceAccountId = serviceAccount.data.userAdd.id;
+    // Password policy set after the service account creation
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      ...resetPolicy,
+      password_policy_min_length: 12,
+      password_policy_min_uppercase: 4,
+      password_policy_min_symbols: 2,
+      password_policy_min_words: 3,
+      password_policy_validity_days: 20,
+    });
+  });
+
+  afterAll(async () => {
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, resetPolicy);
+    await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: serviceAccountId } });
+  });
+
+  it('should turn service account into user with a password matching the policy', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: { id: serviceAccountId, input: { key: 'user_service_account', value: [false] } },
+    });
+    expect(queryResult.data.userEdit.fieldPatch.user_service_account).toEqual(false);
+    const convertedUser: any = await storeLoadById(testContext, ADMIN_USER, serviceAccountId, ENTITY_TYPE_USER);
+    expect(convertedUser.password).toBeDefined();
+    // Password validity policy must apply to the generated password
+    expect(convertedUser.password_valid_until).toBeTruthy();
+    expect(new Date(convertedUser.password_valid_until).getTime()).toBeGreaterThan(DateTime.now().plus({ days: 19 }).toMillis());
+  });
+});
+
 describe('User API Token Mutation', () => {
   const USER_TOKEN_ADD_MUTATION = gql`
     mutation UserTokenAdd($input: UserTokenAddInput!) {
@@ -1583,9 +1805,9 @@ describe('Password expiration - computePasswordValidUntilFromPolicy', () => {
       password_policy_min_words: 0,
       password_policy_validity_days: 20,
     });
-    const before = DateTime.now().plus({ days: 20 }).toUTC();
+    const before = DateTime.utc().plus({ days: 20 });
     const result = await computePasswordValidUntilFromPolicy(testContext);
-    const after = DateTime.now().plus({ days: 20 }).toUTC();
+    const after = DateTime.utc().plus({ days: 20 });
 
     expect(result).not.toBeNull();
     const resultDate = DateTime.fromISO(result!);

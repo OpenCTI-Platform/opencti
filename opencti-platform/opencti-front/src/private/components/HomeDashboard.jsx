@@ -1,5 +1,5 @@
 import Grid from '@mui/material/Grid';
-import { makeStyles } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { assoc, head, last, map, pluck } from 'ramda';
 import React, { Suspense, useMemo } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
@@ -24,18 +24,6 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import XtmHubPermissionRequiredDialog from './settings/xtm-hub/XtmHubPermissionRequiredDialog';
-
-// region styles
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  root: {
-    marginRight: -20,
-    paddingRight: 20,
-    paddingBottom: 30,
-  },
-}));
-// endregion
 
 // region inner components
 
@@ -114,9 +102,8 @@ const TargetedCountriesComponent = ({ queryRef }) => {
   return (
     <LocationMiniMapTargets
       title={t_i18n('Targeted countries (Last 3 months)')}
-      center={[48.8566969, 2.3514616]}
-      countries={countries}
       zoom={2}
+      countries={countries}
     />
   );
 };
@@ -167,8 +154,9 @@ const DefaultDashboard = ({ timeField }) => {
       placeholder={<MarkdownDisplay content={noAccessMessage} />}
     >
       <Grid container={true} spacing={3}>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Intrusion-Set"
             config={config}
             parameters={{
@@ -189,8 +177,9 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Malware"
             config={config}
             parameters={{
@@ -211,8 +200,9 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Report"
             config={config}
             parameters={{
@@ -233,8 +223,9 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixCoreObjectsNumber
+            withoutContainerTitle
             entityType="Indicator"
             config={config}
             parameters={{
@@ -255,7 +246,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixRelationshipsHorizontalBars
             height={300}
             config={{
@@ -287,7 +278,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixRelationshipsHorizontalBars
             height={300}
             config={{
@@ -319,7 +310,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixRelationshipsMultiAreaChart
             height={300}
             config={{
@@ -347,7 +338,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixRelationshipsPolarArea
             height={400}
             config={{
@@ -378,7 +369,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixRelationshipsDistributionList
             overflow="hidden"
             parameters={{
@@ -411,12 +402,11 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Suspense
             fallback={(
               <LocationMiniMapTargets
                 title={t_i18n('Targeted countries (Last 3 months)')}
-                center={[48.8566969, 2.3514616]}
                 zoom={2}
               />
             )}
@@ -424,7 +414,7 @@ const DefaultDashboard = ({ timeField }) => {
             <TargetedCountries timeField={timeField} />
           </Suspense>
         </Grid>
-        <Grid item xs={8}>
+        <Grid size={8}>
           <StixCoreObjectsList
             title={t_i18n('Latest reports')}
             config={config}
@@ -455,7 +445,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <StixRelationshipsHorizontalBars
             height={410}
             config={{
@@ -559,7 +549,6 @@ const dashboardMeFragment = graphql`
 const LOCAL_STORAGE_KEY = 'dashboard';
 
 const HomeDashboardComponent = ({ queryRef }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const authContext = useAuth();
   const currentMe = authContext.me;
@@ -588,7 +577,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
 
   return (
     <UserContext.Provider value={dashboardContextValue}>
-      <div className={classes.root} data-testid="dashboard-page">
+      <Box sx={{ marginRight: '-20px', paddingRight: '20px', paddingBottom: '30px' }} data-testid="dashboard-page">
         <XtmHubPermissionRequiredDialog />
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
           <CustomHomeDashboard
@@ -598,7 +587,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
         ) : (
           <DefaultDashboard timeField={default_time_field} />
         )}
-      </div>
+      </Box>
     </UserContext.Provider>
   );
 };

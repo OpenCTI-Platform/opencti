@@ -4,7 +4,10 @@ import Typography from '@mui/material/Typography';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { ExpandLessOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
-import { Field, Formik } from 'formik';
+import { Field } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import { Stack, Box } from '@mui/material';
 import { NOTE_TYPE, noteCreationMutation, noteCreationUserMutation } from './NoteCreation';
@@ -91,6 +94,7 @@ const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
 
 const toFinalValues = (values: NoteAddInput, id: string) => {
   return {
+    ...getCustomFieldValues(values),
     attribute_abstract: values.attribute_abstract,
     content: values.content,
     confidence: parseInt(String(values.confidence), 10),
@@ -201,6 +205,7 @@ const NoteForm = ({
 
   return (
     <Formik<NoteAddInput>
+      entityType={NOTE_TYPE}
       initialValues={initialValues}
       validationSchema={noteValidator}
       onSubmit={onSubmit}
@@ -213,7 +218,10 @@ const NoteForm = ({
         values,
         isSubmitting,
       }) => (
-        <Stack gap={2}>
+        <Stack sx={{
+          gap: 2,
+        }}
+        >
           <Box>
             <Field
               component={MarkdownField}
@@ -242,7 +250,7 @@ const NoteForm = ({
                     label={t_i18n('Abstract')}
                     required={(mandatoryAttributes.includes('attribute_abstract'))}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                   <OpenVocabField
                     label={t_i18n('Note types')}
@@ -257,17 +265,17 @@ const NoteForm = ({
                     entityType="Note"
                     containerStyle={fieldSpacingContainerStyle}
                   />
-                  <Field
-                    component={SliderField}
-                    name="likelihood"
-                    label={t_i18n('Likelihood')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
+                  <div style={fieldSpacingContainerStyle}>
+                    <Field
+                      component={SliderField}
+                      name="likelihood"
+                      label={t_i18n('Likelihood')}
+                    />
+                  </div>
                   <ObjectLabelField
                     name="objectLabel"
                     required={(mandatoryAttributes.includes('objectLabel'))}
-                    style={{ marginTop: 10, width: '100%' }}
+                    style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                   />
@@ -276,11 +284,18 @@ const NoteForm = ({
             }
           </Box>
 
-          <Stack direction="row" justifyContent="space-between">
+          <CustomFieldValuesCreation />
+          <Stack
+            direction="row"
+            sx={{
+              justifyContent: 'space-between',
+            }}
+          >
             <Button
               onClick={handleToggleMore}
               disabled={isSubmitting}
               size="small"
+              aria-expanded={more}
               endIcon={
                 more ? <ExpandLessOutlined /> : <ExpandMoreOutlined />
               }

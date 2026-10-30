@@ -264,7 +264,7 @@ describe('Relations listing', () => {
     expect(entityTypeMap.get('external-reference')).toBe(relationsCounter['external-reference']);
     expect(entityTypeMap.get('object-marking')).toBe(relationsCounter['object-marking']);
     expect(entityTypeMap.get('operating-system')).toBe(relationsCounter['operating-system']);
-    expect(stixRefRelationships.edges.length).toEqual(129);
+    expect(stixRefRelationships.edges.length).toEqual(131);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', {
@@ -512,7 +512,7 @@ describe('Entities time series', () => {
     const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
     expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
+    expect(aggregationMap.get('2020-03-01T00:00:00.000Z')).toEqual(1);
   });
   it('should start time relation time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
@@ -532,7 +532,7 @@ describe('Entities time series', () => {
     const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Campaign'], { ...options, filters });
     expect(series.length).toEqual(13);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
+    expect(aggregationMap.get('2020-02-01T00:00:00.000Z')).toEqual(1);
   });
   it('should local filter time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
@@ -551,7 +551,7 @@ describe('Entities time series', () => {
     const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, filters });
     expect(series.length).toEqual(10);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
+    expect(aggregationMap.get('2020-02-01T00:00:00.000Z')).toEqual(1);
   });
 });
 
@@ -573,7 +573,7 @@ describe('Relations time series', () => {
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(3);
+    expect(aggregationMap.get('2020-02-01T00:00:00.000Z')).toEqual(3);
   });
   it('should relations time series with sightings relationship_type filter', async () => {
     const options = {
@@ -596,8 +596,8 @@ describe('Relations time series', () => {
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(13); // 13 months groups in the interval
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2016-04-30T23:00:00.000Z')).toEqual(0);
-    expect(aggregationMap.get('2016-07-31T23:00:00.000Z')).toEqual(2); // sighting--ee20065d-2555-424f-ad9e-0f8428623c75 and sighting--579a46af-a339-400d-809e-b92101fe7de8
+    expect(aggregationMap.get('2016-05-01T00:00:00.000Z')).toEqual(0);
+    expect(aggregationMap.get('2016-08-01T00:00:00.000Z')).toEqual(2); // sighting--ee20065d-2555-424f-ad9e-0f8428623c75 and sighting--579a46af-a339-400d-809e-b92101fe7de8
   });
   it('should relations with fromId time series', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
@@ -613,7 +613,7 @@ describe('Relations time series', () => {
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(3);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2019-12-31T23:00:00.000Z')).toEqual(2);
+    expect(aggregationMap.get('2020-01-01T00:00:00.000Z')).toEqual(2);
   });
 });
 
@@ -776,6 +776,18 @@ describe('Relations distribution', () => {
 const createThreat = async (input, user = ADMIN_USER) => {
   const threat = await addThreatActorGroup(testContext, user, input);
   return storeLoadByIdWithRefs(testContext, user, threat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+};
+// Creates a target/source pair of threats, merges them as mergingActor, and always cleans up both.
+const mergeThreatsAndLoad = async (suffix, targetCreator, sourceCreator, mergingActor) => {
+  const target = await createThreat({ name: `THREAT_CREATOR_MERGE_TARGET_${suffix}` }, targetCreator);
+  const source = await createThreat({ name: `THREAT_CREATOR_MERGE_SOURCE_${suffix}` }, sourceCreator);
+  try {
+    const merged = await mergeEntities(testContext, mergingActor, target.internal_id, [source.internal_id]);
+    return await storeLoadById(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+  } finally {
+    await deleteElementById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR_GROUP).catch(() => {});
+    await deleteElementById(testContext, ADMIN_USER, source.id, ENTITY_TYPE_THREAT_ACTOR_GROUP).catch(() => {});
+  }
 };
 const createOrganization = async (input) => {
   const organization = await addOrganization(testContext, ADMIN_USER, input);
@@ -1136,6 +1148,41 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, malware02.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, malware03.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, loadedThreat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+  });
+  it('should add the merging user as a creator of the merged entity', async () => {
+    const suffix = generateInternalId();
+    const mergingActor = buildStandardUser([], [], [], 100);
+    const loadedThreat = await mergeThreatsAndLoad(suffix, ADMIN_USER, ADMIN_USER, mergingActor);
+    expect(loadedThreat.creator_id).toContain(mergingActor.id);
+    expect(loadedThreat.creator_id).toContain(ADMIN_USER.id);
+  });
+  it('should keep both source and target original creators when they differ (no overwrite)', async () => {
+    // Regression test: a previous implementation pushed a second, separate creator_id update for the
+    // merging user, which (via mergeDeepRight's last-write-wins semantics on arrays) silently overwrote
+    // the creator_id computed by the main merge loop, dropping any creator not shared by target/source.
+    const suffix = generateInternalId();
+    const targetCreator = { ...buildStandardUser([], [], [], 100), id: generateInternalId(), internal_id: generateInternalId() };
+    const sourceCreator = { ...buildStandardUser([], [], [], 100), id: generateInternalId(), internal_id: generateInternalId() };
+    const mergingActor = { ...buildStandardUser([], [], [], 100), id: generateInternalId(), internal_id: generateInternalId() };
+    const loadedThreat = await mergeThreatsAndLoad(suffix, targetCreator, sourceCreator, mergingActor);
+    // Entity creation records creator_id from user.internal_id, while the merge convention (this fix
+    // included) uses user.id - both are asserted here using the field that actually applies.
+    expect(loadedThreat.creator_id).toContain(targetCreator.internal_id);
+    expect(loadedThreat.creator_id).toContain(sourceCreator.internal_id);
+    expect(loadedThreat.creator_id).toContain(mergingActor.id);
+  });
+  it('should not add an internal (system) user as creator of the merged entity', async () => {
+    const suffix = generateInternalId();
+    const loadedThreat = await mergeThreatsAndLoad(suffix, ADMIN_USER, ADMIN_USER, SYSTEM_USER);
+    expect(loadedThreat.creator_id).not.toContain(SYSTEM_USER.id);
+    expect(loadedThreat.creator_id).toContain(ADMIN_USER.id);
+  });
+  it('should not add a user with no_creators flag as creator of the merged entity', async () => {
+    const suffix = generateInternalId();
+    const mergingActor = { ...buildStandardUser([], [], [], 100), no_creators: true };
+    const loadedThreat = await mergeThreatsAndLoad(suffix, ADMIN_USER, ADMIN_USER, mergingActor);
+    expect(loadedThreat.creator_id).not.toContain(mergingActor.id);
+    expect(loadedThreat.creator_id).toContain(ADMIN_USER.id);
   });
   it('should upsert multiple threat actors that need merging when using lower confidence', async () => {
     // 01. Create Threat by admin

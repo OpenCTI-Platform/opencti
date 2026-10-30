@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { Field } from 'formik';
 import { FunctionComponent, useState } from 'react';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -11,18 +11,6 @@ import { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/us
 import Security from '../../../../utils/Security';
 import type { ExternalReferencesValues } from './ExternalReferencesField';
 import { ExternalReferencesField } from './ExternalReferencesField';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: 10,
-  },
-}));
 
 interface CommitMessageProps {
   id: string;
@@ -50,7 +38,6 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleOpenControl = () => setControlOpen(true);
   const handleCloseControl = () => setControlOpen(false);
@@ -70,12 +57,12 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   return (
     <>
       {!handleClose && (
-        <div className={classes.buttons}>
+        <Box sx={{ marginTop: '20px', textAlign: 'right' }}>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]}>
             <Button
               onClick={submitForm} // directly submit
               disabled={disabled}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: '10px' }}
             >
               {t_i18n('Update without references')}
             </Button>
@@ -83,11 +70,11 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           <Button
             onClick={handleOpenControl}
             disabled={disabled}
-            classes={{ root: classes.button }}
+            sx={{ marginLeft: '10px' }}
           >
             {t_i18n('Update')}
           </Button>
-        </div>
+        </Box>
       )}
       <Dialog
         data-testid="commit-message-page"

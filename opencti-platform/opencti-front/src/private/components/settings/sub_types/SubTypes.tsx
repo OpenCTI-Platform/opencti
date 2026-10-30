@@ -1,5 +1,5 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SubTypesLines, { subTypesLinesQuery } from './SubTypesLines';
@@ -14,17 +14,7 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 
 const LOCAL_STORAGE_KEY_SUB_TYPES = 'sub-types';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
-
 const SubTypes = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Entity Types | Customization | Settings'));
@@ -74,7 +64,7 @@ const SubTypes = () => {
     selectAll,
   } = useEntityToggle(LOCAL_STORAGE_KEY_SUB_TYPES);
   return (
-    <div className={classes.container} data-testid="subtypes-page">
+    <Box sx={{ margin: 0, padding: '0 200px 50px 0' }} data-testid="subtypes-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Entity types'), current: true }]} />
       <ListLines
         handleSearch={helpers.handleSearch}
@@ -114,7 +104,7 @@ const SubTypes = () => {
           </React.Suspense>
         )}
       </ListLines>
-    </div>
+    </Box>
   );
 };
 

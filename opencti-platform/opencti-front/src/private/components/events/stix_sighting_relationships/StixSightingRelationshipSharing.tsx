@@ -154,12 +154,19 @@ const StixSightingRelationshipSharing: FunctionComponent<
         </Label>
 
         {!isEnterpriseEdition && <EEChip />}
-        <Stack direction="row" gap={1} flexWrap="wrap">
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
           {edges.map((edge) => (
             <Tooltip key={edge.id} title={edge.name}>
               <Tag
                 icon={<AccountBalanceOutlined fontSize="small" />}
                 label={truncate(edge.name, 15)}
+                deleteLabel={`${t_i18n('Remove')} ${edge.name}`}
                 onDelete={() => removeOrganization(edge.id)}
               />
             </Tooltip>

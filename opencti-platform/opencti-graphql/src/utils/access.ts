@@ -15,10 +15,11 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalOb
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { isStixObject } from '../schema/stixCoreObject';
+import { isBasicObject, isStixObject } from '../schema/stixCoreObject';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import type { UpdateEvent } from '../types/event';
 import { fullEntitiesList, fullRelationsList, pageEntitiesConnection } from '../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -32,6 +33,9 @@ import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELAT
 import { pushAll } from './arrayUtil';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
+
+// Used in publicDashboard-utils.ts to construct a fake user to be able to call private API
+export const PUBLIC_DASHBOARD_REFERER = 'public-dashboard';
 
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
@@ -83,6 +87,7 @@ export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 const DATA_SANITY_MANAGER_USER_UUID = '4a25a566-017d-4455-811e-e8e1b3889390';
+const INGESTION_HEALTH_MANAGER_USER_UUID = 'c6efbb70-ae34-4677-8081-736578d87dab';
 
 export enum AccessOperation {
   EDIT = 'edit',
@@ -546,6 +551,31 @@ export const DATA_SANITY_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const INGESTION_HEALTH_MANAGER_USER: AuthUser = {
+  entity_type: ENTITY_TYPE_USER,
+  id: INGESTION_HEALTH_MANAGER_USER_UUID,
+  internal_id: INGESTION_HEALTH_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'INGESTION HEALTH MANAGER',
+  user_email: 'INGESTION HEALTH MANAGER',
+  origin: { user_id: INGESTION_HEALTH_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_tokens: [],
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: { max_confidence: 100, overrides: [] },
+  user_confidence_level: { max_confidence: 100, overrides: [] },
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export const WORKFLOW_MANAGER_USER: AuthUser = {
   entity_type: 'User',
   id: WORKFLOW_MANAGER_USER_UUID,
@@ -623,6 +653,7 @@ export const INTERNAL_USERS = {
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
+  [INGESTION_HEALTH_MANAGER_USER.id]: INGESTION_HEALTH_MANAGER_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -637,6 +668,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
+  [INGESTION_HEALTH_MANAGER_USER.id]: INGESTION_HEALTH_MANAGER_USER,
 };
 
 export enum OTPValidationStatus {
@@ -688,7 +720,7 @@ export const isServiceAccountUser = (user: AuthUser): boolean => {
 export const isUserHasCapability = (user: AuthUser, capability: string, options?: { forceCapabilityInDraft?: boolean }): boolean => {
   const isInDraftContext = !!user.draft_context;
   const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
-  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
+  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => capability !== BYPASS && s.name.includes(capability));
   const checkCapabilitiesInDraft = !!options?.forceCapabilityInDraft || isInDraftContext;
   return isBypassUser(user) || isIncludedInCapabilities || (checkCapabilitiesInDraft && isIncludedInDraftCapabilities);
 };
@@ -705,7 +737,7 @@ export const isOnlyOrgaAdmin = (user: AuthUser) => {
  * Construct a filter to restrict users visibility
  * In case the user has not set_access capa and is organization administrator, don't check regardingOf filter rights
  */
-export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup) => {
+export const buildUserOrganizationRestrictedFiltersOptions = (user: AuthUser, inputFilters?: FilterGroup | null) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
@@ -821,7 +853,12 @@ export const isOrganizationAllowed = (context: AuthContext, element: BasicStoreC
   return isEntityOrganizationsAllowed(context, element.internal_id, elementOrganizations, user, hasPlatformOrg);
 };
 
-const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
+const isOrganizationUnrestrictedForEntityType = (entityType: string | undefined) => {
+  // The type can be missing or unknown for raw stix coming from outside the platform (ex: a location
+  // without x_opencti_location_type in a bundle returned by a connector): apply the organization check.
+  if (!entityType || !(isBasicObject(entityType) || isBasicRelationship(entityType))) {
+    return false;
+  }
   const types = [entityType, ...getParentTypes(entityType)];
   if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
     return true;
@@ -1088,7 +1125,7 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
   return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
 };
 
-type ParticipantWithOrgIds = Participant & Creator & {
+export type ParticipantWithOrgIds = Participant & Creator & {
   representative?: {
     main: string;
     secondary: string;
@@ -1172,7 +1209,7 @@ interface ListArgs {
   [key: string]: any;
 }
 
-export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup) => {
+export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup | null) => {
   return {
     mode: FilterMode.And,
     filters: [

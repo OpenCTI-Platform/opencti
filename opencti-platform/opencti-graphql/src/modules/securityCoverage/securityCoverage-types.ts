@@ -1,6 +1,13 @@
-import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreObject, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type {
+  ATTRIBUTE_RESULT_OF,
+  BasicStoreEntitySecurityCoverageResult,
+  CoverageInformation,
+  INPUT_RESULT_OF,
+  RELATION_RESULT_OF,
+} from './securityCoverageResult/securityCoverageResult-types';
 
 export const ENTITY_TYPE_SECURITY_COVERAGE = 'Security-Coverage';
 export const RELATION_COVERED = 'object-covered';
@@ -13,7 +20,8 @@ export interface BasicStoreEntitySecurityCoverage extends BasicStoreEntity {
   duration: string;
   type_affinity: string;
   platforms_affinity: string[];
-  coverage_information: { coverage_name: string; coverage_score: number }[];
+  [RELATION_COVERED]: string;
+  [RELATION_RESULT_OF]: string[];
 }
 
 export interface StoreEntitySecurityCoverage extends StoreEntity {
@@ -22,9 +30,13 @@ export interface StoreEntitySecurityCoverage extends StoreEntity {
   type_affinity: string;
   platforms_affinity: string[];
   [INPUT_COVERED]: BasicStoreEntity;
-  coverage_information: { coverage_name: string; coverage_score: number }[];
+  [INPUT_RESULT_OF]: BasicStoreEntitySecurityCoverageResult[];
 }
-// endregion
+export interface CoveredEntity {
+  relationship_id: string;
+  coverage_information?: CoverageInformation[];
+  to: BasicStoreObject | null;
+}
 
 // region Stix type
 export interface StixSecurityCoverage extends StixDomainObject {
@@ -34,9 +46,8 @@ export interface StixSecurityCoverage extends StixDomainObject {
   duration: string;
   type_affinity: string;
   platforms_affinity: string[];
-  covered_ref: string;
-  covered: boolean;
-  coverage: { name: string; score: number }[];
+  [ATTRIBUTE_COVERED]: string;
+  [ATTRIBUTE_RESULT_OF]: string[];
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

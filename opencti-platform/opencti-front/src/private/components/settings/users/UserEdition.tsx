@@ -1,8 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import UserEditionConfidence from './edition/UserEditionConfidence';
@@ -16,6 +13,7 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import { RootUserEditionQuery$data } from './__generated__/RootUserEditionQuery.graphql';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const UserEditionFragment = graphql`
   fragment UserEdition_user on User
@@ -122,8 +120,8 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const user = useFragment<UserEdition_user$key>(UserEditionFragment, userRef);
   const isServiceAccount = user?.user_service_account;
-  const [currentTab, setCurrentTab] = useState(0);
-  const handleChangeTab = (value: number) => {
+  const [currentTab, setCurrentTab] = useState('overview');
+  const handleChangeTab = (value: string) => {
     setCurrentTab(value);
   };
   return (
@@ -136,42 +134,35 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
     >
       {user ? (
         <>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs
-              value={currentTab}
-              onChange={(event, value) => handleChangeTab(value)}
-            >
-              <Tab label={t_i18n('Overview')} />
-              <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
-              <Tab label={t_i18n('Groups')} />
-              {hasSetAccess
-                && (
-                  <Tab
-                    disabled={user.objectAssignedOrganization?.edges.length === 0}
-                    label={(
-                      <div style={{ alignItems: 'center', display: 'flex', textTransform: 'none' }}>
-                        {t_i18n('Organizations admin')}<EEChip />
-                      </div>
-                    )}
-                  />
-                )
-              }
-              {hasSetAccess && <Tab label={t_i18n('Confidences')} />}
-            </Tabs>
-          </Box>
-          {currentTab === 0 && (
-            <UserEditionOverview user={user} context={user.editContext} />
-          )}
-          {currentTab === 1 && (
-            <UserEditionPassword user={user} />
-          )}
-          {currentTab === 2 && <UserEditionGroups user={user} />}
-          {hasSetAccess && currentTab === 3 && (
-            <UserEditionOrganizationsAdmin user={user} />
-          )}
-          {hasSetAccess && currentTab === 4 && (
-            <UserEditionConfidence user={user} context={user.editContext} />
-          )}
+          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+            <TabsList>
+              <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+              <TabsTrigger value="password" disabled={!!user.external || isServiceAccount === true}>{t_i18n('Password')}</TabsTrigger>
+              <TabsTrigger value="groups">{t_i18n('Groups')}</TabsTrigger>
+              {hasSetAccess && (
+                <TabsTrigger
+                  value="organizations-admin"
+                  disabled={user.objectAssignedOrganization?.edges.length === 0}
+                >
+                  {t_i18n('Organizations admin')}<EEChip />
+                </TabsTrigger>
+              )}
+              {hasSetAccess && <TabsTrigger value="confidences">{t_i18n('Confidences')}</TabsTrigger>}
+            </TabsList>
+            <TabsContent value="overview">
+              <UserEditionOverview user={user} context={user.editContext} />
+            </TabsContent>
+            <TabsContent value="password">
+              <UserEditionPassword user={user} />
+            </TabsContent>
+            <TabsContent value="groups"><UserEditionGroups user={user} /></TabsContent>
+            <TabsContent value="organizations-admin">
+              {hasSetAccess && <UserEditionOrganizationsAdmin user={user} />}
+            </TabsContent>
+            <TabsContent value="confidences">
+              {hasSetAccess && <UserEditionConfidence user={user} context={user.editContext} />}
+            </TabsContent>
+          </Tabs>
         </>
       )
         : (<Loader />)}

@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Route, Routes, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router';
 import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import RoleDeletionDialog from '@components/settings/roles/RoleDeletionDialog';
 import RoleEdition from '@components/settings/roles/RoleEdition';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Role from './Role';
@@ -86,7 +86,14 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
               { label: role.name, current: true },
             ]}
           />
-          <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              paddingRight: '200px',
+              marginBottom: 3,
+            }}
+          >
             <TitleMainEntity sx={{ flex: 1 }}>
               {role.name}
             </TitleMainEntity>

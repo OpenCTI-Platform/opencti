@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { Checkbox } from '@filigran/design-system';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -17,14 +16,6 @@ import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from
 import { formatDate } from '../../../../utils/Time';
 import { findFlagUrl } from '../../../../utils/flags';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  icon: {
-    color: theme.palette.primary.main,
-  },
-}));
 
 const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
   mutation StixCoreRelationshipCreationFromEntityListRelationAddMutation(
@@ -282,7 +273,6 @@ const StixCoreRelationshipCreationFromEntityList = ({
   updaterOptions,
   isRelationReversed,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [commitRelationAdd] = useApiMutation(
@@ -407,21 +397,22 @@ const StixCoreRelationshipCreationFromEntityList = ({
                       divider={true}
                       onClick={() => toggle(node, alreadyAdded)}
                     >
+                      {/* The check no longer replaces the type icon: a row used
+                          to lose the only thing that said WHAT it was as soon as
+                          it was selected. Same slot width as the reference
+                          implementation in AddExternalReferencesLines. */}
+                      <ListItemIcon style={{ minWidth: 40 }}>
+                        <Checkbox checked={alreadyAdded} />
+                      </ListItemIcon>
                       <ListItemIcon>
-                        {alreadyAdded ? (
-                          <CheckCircle classes={{ root: classes.icon }} />
+                        {flagUrl ? (
+                          <img
+                            style={{ width: 20 }}
+                            src={flagUrl}
+                            alt={node.name}
+                          />
                         ) : (
-                          <>
-                            {flagUrl ? (
-                              <img
-                                style={{ width: 20 }}
-                                src={flagUrl}
-                                alt={node.name}
-                              />
-                            ) : (
-                              <ItemIcon type={node.entity_type} />
-                            )}
-                          </>
+                          <ItemIcon type={node.entity_type} />
                         )}
                       </ListItemIcon>
                       <ListItemText

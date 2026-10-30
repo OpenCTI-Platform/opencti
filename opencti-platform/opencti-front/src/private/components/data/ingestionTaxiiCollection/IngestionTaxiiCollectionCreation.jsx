@@ -1,11 +1,9 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import * as R from 'ramda';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -17,16 +15,6 @@ import ObjectMembersField from '../../common/form/ObjectMembersField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-
-const styles = (theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-});
 
 const IngestionTaxiiCollectionCreationMutation = graphql`
   mutation IngestionTaxiiCollectionCreationMutation($input: IngestionTaxiiCollectionAddInput!) {
@@ -112,18 +100,18 @@ const IngestionTaxiiCollectionCreation = (props) => {
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <CreatorField
                 name="user_id"
@@ -170,8 +158,6 @@ const IngestionTaxiiCollectionCreation = (props) => {
 
 IngestionTaxiiCollectionCreation.propTypes = {
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
@@ -179,7 +165,4 @@ IngestionTaxiiCollectionCreation.propTypes = {
   drawerSettings: PropTypes.object,
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IngestionTaxiiCollectionCreation);
+export default inject18n(IngestionTaxiiCollectionCreation);

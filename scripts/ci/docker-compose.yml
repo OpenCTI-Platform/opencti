@@ -2,7 +2,7 @@ services:
   redis:
     container_name: redis
     profiles: ["backend"]
-    image: redis:8.6.4
+    image: redis:8.6.7@sha256:e6dae84f7db289dde3384fdb18d182556784e5a681df3a3f54d1289952364ce8
     restart: unless-stopped
     networks:
       - runner-docker-network
@@ -11,7 +11,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     profiles: ["backend"]
-    image: elasticsearch:8.19.19
+    image: elasticsearch:8.19.23@sha256:3f4d63c59ca5a05b535179dfcced47a514119e351fa81653f69902beacae90c9
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -32,13 +32,12 @@ services:
   minio:
     container_name: minio
     profiles: ["backend"]
-    image: minio/minio:latest
+    image: pgsty/silo:RELEASE.2026-10-18T00-00-00Z@sha256:2636fc4155d9a7e41ff58cdb65ddd13ba9304e67184e13c25bc5cb34016269d7
     networks:
       - runner-docker-network
     ports:
       - "9000:9000"
       - "9001:9001"
-      - "35300:35300"
     environment:
       MINIO_ROOT_USER: ChangeMe
       MINIO_ROOT_PASSWORD: ChangeMe
@@ -52,7 +51,7 @@ services:
   rabbitmq:
     profiles: ["backend"]
     container_name: rabbitmq
-    image: rabbitmq:4.3-management
+    image: rabbitmq:4.3.6-management@sha256:54cb013d76cd1fd6c0a0708f34062ad61c452bb6f016b434c6c33f1a765d2b58
     restart: unless-stopped
     networks:
       - runner-docker-network
@@ -62,7 +61,7 @@ services:
   smtp:
     profiles: ["backend"]
     container_name: smtp
-    image: maildev/maildev:2.2.1
+    image: maildev/maildev:3.0.0@sha256:6e09695961f4aef9016a390ad391314a078220216601b15a35d389a7df2a3855
     restart: unless-stopped
     ports:
       - 1025:1025

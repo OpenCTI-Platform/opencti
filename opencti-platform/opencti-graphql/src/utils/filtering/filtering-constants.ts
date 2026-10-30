@@ -73,6 +73,9 @@ export const REQUEST_FOR_TAKEDOWN_TYPES_FILTER = 'takedown_types';
 export const NOTE_TYPES_FILTER = 'note_types';
 export const INCIDENT_TYPE_FILTER = 'incident_type';
 export const DESCRIPTION_FILTER = 'description';
+export const SSVC_EXPLOITATION_FILTER = 'x_opencti_ssvc_exploitation';
+export const SSVC_AUTOMATABLE_FILTER = 'x_opencti_ssvc_automatable';
+export const SSVC_TECHNICAL_IMPACT_FILTER = 'x_opencti_ssvc_technical_impact';
 
 // special cases
 export const IDS_FILTER = 'ids';
@@ -133,6 +136,9 @@ export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
 export const WORKFLOW_USER_FILTER = 'workflow_user';
 export const WORKFLOW_GROUP_FILTER = 'workflow_group';
 export const WORKFLOW_ORGANIZATION_FILTER = 'workflow_organization';
+export const WORKFLOW_ROLE_FILTER = 'workflow_role';
+// workflow condition keys evaluated against the workflow context (triggering user, entity name), not by the stix filtering engine
+export const WORKFLOW_CONTEXT_FILTER_KEYS = [WORKFLOW_USER_FILTER, WORKFLOW_GROUP_FILTER, WORKFLOW_ORGANIZATION_FILTER, WORKFLOW_ROLE_FILTER, 'name'];
 
 const COMPLEX_CONVERSION_FILTER_KEYS = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)

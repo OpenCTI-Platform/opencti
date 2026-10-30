@@ -4,7 +4,7 @@ import { IndicatorDetails_indicator$data } from '@components/observations/indica
 import { Stack, Typography } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import { FunctionComponent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Alert from '../../../../components/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
@@ -32,7 +32,13 @@ const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContent
       open={open}
       onClose={onClose}
       title={(
-        <Stack direction="row" justifyContent="space-between" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'space-between',
+            gap: 1,
+          }}
+        >
           {t_i18n('Lifecycle details')}
           <div>{indicator.decay_exclusion_applied_rule?.decay_exclusion_name ?? ''}</div>
         </Stack>

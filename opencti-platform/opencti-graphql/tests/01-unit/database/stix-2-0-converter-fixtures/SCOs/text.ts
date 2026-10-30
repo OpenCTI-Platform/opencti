@@ -25,4 +25,3 @@ export const EXPECTED_TEXT = {
   labels: [],
   external_references: [],
 };
-

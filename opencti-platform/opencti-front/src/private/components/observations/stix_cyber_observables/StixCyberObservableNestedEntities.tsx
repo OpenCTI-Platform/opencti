@@ -39,12 +39,16 @@ const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntit
       <Card
         title={t_i18n('Nested objects')}
         action={(
-          <Stack direction="row" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+            }}
+          >
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <StixNestedRefRelationshipCreationFromEntityContainer
                 paginationOptions={paginationOptions}
                 entityId={entityId}
-                variant="inLine"
                 entityType={entityType}
               />
             </Security>

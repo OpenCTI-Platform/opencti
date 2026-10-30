@@ -1,8 +1,10 @@
-import React, { Component } from 'react';
-import { injectIntl, useIntl } from 'react-intl';
-import moment from 'moment-timezone';
+import React, { Component, useContext } from 'react';
+import { useIntl } from 'react-intl';
+import moment from 'moment';
 import { bytesFormat, numberFormat } from '../utils/Number';
 import { EMPTY_VALUE } from '../utils/String';
+import { UserContext } from '../utils/hooks/useAuth';
+import { DEFAULT_DATE_DISPLAY, formatTableDate } from '../utils/dateDisplay';
 
 const FROM_START = 0;
 const UNTIL_END = 100000000000000;
@@ -139,6 +141,18 @@ const inject18n = (WrappedComponent) => {
         }
         return this.props.intl.formatDate(date, { year: 'numeric' });
       };
+      const tableDate = (date) => {
+        if (isNone(date)) {
+          return EMPTY_VALUE;
+        }
+        return formatTableDate(this.props.intl, date, this.props.dateDisplay, 'none');
+      };
+      const tableDateTime = (date, month) => {
+        if (isNone(date)) {
+          return EMPTY_VALUE;
+        }
+        return formatTableDate(this.props.intl, date, this.props.dateDisplay, 'seconds', month);
+      };
       return (
         <WrappedComponent
           {...this.props}
@@ -155,17 +169,30 @@ const inject18n = (WrappedComponent) => {
           {...{ mtd: monthTextDate }}
           {...{ mtdy: monthTextYearDate }}
           {...{ yd: yearDate }}
+          {...{ ftd: tableDate }}
+          {...{ ftdt: tableDateTime }}
         >
           {children}
         </WrappedComponent>
       );
     }
   }
-  return injectIntl(InjectIntl);
+  const WithIntl = (props) => (
+    <InjectIntl
+      {...props}
+      intl={useIntl()}
+      dateDisplay={useContext(UserContext).dateDisplay ?? DEFAULT_DATE_DISPLAY}
+    />
+  );
+  WithIntl.displayName = `WithIntl(${
+    WrappedComponent.displayName || WrappedComponent.name || 'Component'
+  })`;
+  return WithIntl;
 };
 
 export const useFormatter = () => {
   const intl = useIntl();
+  const dateDisplay = useContext(UserContext).dateDisplay ?? DEFAULT_DATE_DISPLAY;
   const translate = (message, { id, values } = {}) => intl.formatMessage({ id: id ?? message }, values);
   const formatNumber = (number) => {
     if (number === null || number === '') {
@@ -364,6 +391,29 @@ export const useFormatter = () => {
     }
     return intl.formatDate(date, { year: 'numeric' });
   };
+  /**
+   * Date of a table cell, displayed as the user set it. Date only by default, like fd.
+   * @param date
+   * @returns {string}
+   */
+  const tableDate = (date) => {
+    if (isNone(date)) {
+      return EMPTY_VALUE;
+    }
+    return formatTableDate(intl, date, dateDisplay, 'none');
+  };
+  /**
+   * Date of a table cell, displayed as the user set it. With seconds by default, like nsdt.
+   * @param date
+   * @param {'short' | 'long' | 'numeric'} [month] how the month is written by default: 'short' like nsdt, 'long' like fldt, 'numeric' like fndt
+   * @returns {string}
+   */
+  const tableDateTime = (date, month) => {
+    if (isNone(date)) {
+      return EMPTY_VALUE;
+    }
+    return formatTableDate(intl, date, dateDisplay, 'seconds', month);
+  };
   const numericTime = (date) => {
     if (isNone(date)) {
       return EMPTY_VALUE;
@@ -390,6 +440,8 @@ export const useFormatter = () => {
     mtdy: monthTextYearDate,
     yd: yearDate,
     nt: numericTime,
+    ftd: tableDate,
+    ftdt: tableDateTime,
     mhd: minuteHourDate,
     smhd: shortMinuteHourDate,
     rd: relativeDate,

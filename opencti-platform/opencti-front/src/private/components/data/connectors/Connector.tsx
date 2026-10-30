@@ -1,5 +1,6 @@
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import ConnectorHealthAlerts from '@components/data/connectors/ConnectorHealthAlerts';
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import UpdateIcon from '@mui/icons-material/Update';
 import Alert from '@mui/material/Alert';
@@ -9,13 +10,11 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { InformationOutline } from 'mdi-material-ui';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { interval } from 'rxjs';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -38,6 +37,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilt
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
 import Filters from '../../common/lists/Filters';
@@ -56,6 +56,8 @@ import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -135,7 +137,7 @@ export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps
   };
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} className="mb-5">
       <QueryRenderer
         key="connector-works-in-progress"
         query={connectorWorksQuery}
@@ -245,7 +247,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const connectorFiltersScope = useGetConnectorFilterEntityTypes(connectorConfig);
   const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connectorConfig);
   const [filters, helpers] = useFiltersState(connectorFilters);
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState('overview');
   const [editionOpen, setEditionOpen] = useState(false);
 
   // API mutations - defined early to avoid use-before-define errors
@@ -298,18 +300,18 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  const { isFeatureEnable } = useHelper();
+  const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
+  const compatibleUpdateVersion = isConnectorUpdateEnabled && connector.update_available ? connector.latest_compatible_version : null;
 
   // Component for Overview content (without ConnectorWorks)
   const connectorOverviewContent = useMemo(() => (
     <>
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Type')}
                 </Label>
@@ -318,13 +320,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   label={connector.connector_type ?? ''}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
-                  {t_i18n('Last update')}
+                  {t_i18n('Last seen')}
                 </Label>
-                {nsdt(connector.updated_at)}
+                {nsdt(connector.last_seen_at)}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Only contextual')}
                 </Label>
@@ -333,7 +335,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   label={connectorOnlyContextualStatus.label}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Automatic trigger')}
                 </Label>
@@ -342,7 +344,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   label={connectorTriggerStatus.label}
                 />
               </Grid>
-              <Grid item xs={connectorFiltersEnabled ? 6 : 12}>
+              <Grid size={connectorFiltersEnabled ? 6 : 12}>
                 <Label>
                   {t_i18n('Scope')}
                 </Label>
@@ -356,7 +358,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Box>
               </Grid>
               {connectorFiltersEnabled && (
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label action={(
                     <Tooltip
                       title={t_i18n('Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.')}
@@ -395,7 +397,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               )}
               <Security needs={[SETTINGS_SETACCESSES]}>
                 <>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Associated user')}
                     </Label>
@@ -410,13 +412,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                         <ListItemIcon>
                           <ItemIcon type="user" color={theme.palette.primary.main} />
                         </ListItemIcon>
-                        <ListItemText primary={connector.connector_user.name} />
+                        <ListItemText primary={connector.connector_user.name} slotProps={{ primary: { noWrap: true } }} />
                       </ListItemButton>
                     ) : (
                       <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
                     )}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Max confidence level')}
                     </Label>
@@ -428,7 +430,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
                     )}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n("User's roles")}
                     </Label>
@@ -462,7 +464,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
                     )}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n("User's groups")}
                     </Label>
@@ -501,7 +503,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )}
                   </Grid>
 
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n("User's organizations")}
                     </Label>
@@ -536,11 +538,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Details')}>
             <Grid container={true} spacing={2}>
               {connector.connector_info?.buffering && (
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1 }}>
                     <Alert
                       severity="warning"
@@ -556,7 +558,23 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Grid>
               )}
 
-              <Grid item={true} xs={12}>
+              <Grid size={12}>
+                <Label>
+                  {t_i18n('Version')}
+                </Label>
+                <FieldOrEmpty source={connector.version}>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {connector.version}
+                  </Typography>
+                </FieldOrEmpty>
+                {compatibleUpdateVersion && (
+                  <Box sx={{ marginTop: 1 }}>
+                    <ConnectorUpdateChip version={compatibleUpdateVersion} versionInLabel hasNewerIncompatibleVersion={!!connector.has_newer_incompatible_version} />
+                  </Box>
+                )}
+              </Grid>
+
+              <Grid size={12}>
                 <Label>
                   {t_i18n('State')}
                 </Label>
@@ -570,7 +588,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </FieldOrEmpty>
               </Grid>
 
-              <Grid item xs={6}>
+              <Grid size={6}>
                 {!connector.connector_info && (
                   connector.connector_state
                   && connectorStateConverted !== null
@@ -629,7 +647,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   )
                 )}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Next run')}
                 </Label>
@@ -659,13 +677,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               </Grid>
 
               {connector.is_managed && (
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>{t_i18n('Instance name')}</Label>
                   <Typography component="div" variant="body1">{connector.name}</Typography>
                 </Grid>
               )}
 
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Server capacity')}
                 </Label>
@@ -683,7 +701,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 }
               </Grid>
               {connector.is_managed && connector.manager_current_status === 'started' && connector.manager_connector_uptime != null && (
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t_i18n('Uptime')}
                   </Label>
@@ -712,6 +730,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     checkLastRunExistingInState,
     checkLastRunIsNumber,
     lastRunConverted,
+    compatibleUpdateVersion,
     theme,
     t_i18n,
     nsdt,
@@ -819,7 +838,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const aboutContent = contractDefinition && (
     <Box sx={{ marginBottom: '20px' }}>
       <Card title={t_i18n('About this connector')}>
-        <Stack gap={1.5}>
+        <Stack sx={{
+          gap: 1.5,
+        }}
+        >
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
             {contractDefinition.short_description || contractDefinition.description}
           </Typography>
@@ -830,7 +852,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               ))}
             </Box>
           )}
-          <Stack direction="row" gap={1} flexWrap="wrap">
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+              flexWrap: 'wrap',
+            }}
+          >
             {contractDefinition.slug && (
               <Button
                 variant="secondary"
@@ -891,7 +919,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           gap: theme.spacing(2),
         }}
       >
-        <Stack direction="row" gap={2} alignItems="center" sx={{ minWidth: 0 }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 2,
+            alignItems: 'center',
+            minWidth: 0,
+          }}
+        >
           <Box
             sx={{
               height: 56,
@@ -956,7 +991,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {managedConnectorDisplayName}
                 </span>
               </Tooltip>
-              <div style={{ display: 'inline-block', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexShrink: 0, gap: theme.spacing(1) }}>
                 <ConnectorStatusChip connector={connector} />
               </div>
             </TitleMainEntity>
@@ -988,6 +1023,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       },
                     },
                   })}
+                  keepMui
                 >
                   {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
                 </Button>
@@ -997,24 +1033,22 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </div>
       </div>
 
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-        }}
-      >
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label={t_i18n('Overview')} />
-          <Tab label={t_i18n('Works')} />
-          {connector.is_managed && <Tab label={t_i18n('Logs')} />}
-        </Tabs>
-      </Box>
-      <Box>
-        {tabValue === 0 && overviewTabContent}
-        {tabValue === 1 && <ConnectorWorksSection connectorId={connector.id} />}
-        {tabValue === 2 && connector.is_managed && connectorLogsContent}
-      </Box>
+      <ConnectorHealthAlerts ingestionHealth={connector.ingestionHealth} />
+
+      <Tabs value={tabValue} onValueChange={setTabValue}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+          <TabsTrigger value="works">{t_i18n('Works')}</TabsTrigger>
+          {connector.is_managed && <TabsTrigger value="logs">{t_i18n('Logs')}</TabsTrigger>}
+        </TabsList>
+        <Box>
+          <TabsContent value="overview">{overviewTabContent}</TabsContent>
+          <TabsContent value="works">
+            <ConnectorWorksSection connectorId={connector.id} />
+          </TabsContent>
+          <TabsContent value="logs">{connector.is_managed && connectorLogsContent}</TabsContent>
+        </Box>
+      </Tabs>
 
       {connector.is_managed && connector.manager_contract_definition && (
         <ManagedConnectorEdition
@@ -1053,8 +1087,12 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
+        version
         connector_user_id
         is_managed
+        ingestionHealth {
+          ...ConnectorHealthAlerts_ingestionHealth
+        }
         manager_contract_configuration {
           key
           value
@@ -1116,7 +1154,10 @@ const Connector = createRefetchContainer(
           messages_number
           messages_size
         }
-        updated_at
+        update_available
+        latest_compatible_version
+        has_newer_incompatible_version
+        last_seen_at
         created_at
         config {
           listen

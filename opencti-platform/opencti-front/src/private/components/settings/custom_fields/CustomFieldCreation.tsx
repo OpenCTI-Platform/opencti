@@ -4,21 +4,20 @@ import { Field, Form, Formik } from 'formik';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import MuiAutocomplete from '@mui/material/Autocomplete';
-import MuiTextField from '@mui/material/TextField';
-import Chip from '@mui/material/Chip';
+import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxHelperText, ComboboxInput, ComboboxLabel } from '@filigran/design-system';
 import * as Yup from 'yup';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import TextareaField from '../../../../components/TextareaField';
+import ComboboxFieldComponent from '../../../../components/ComboboxField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { CustomFieldDefinitionAddInput } from './__generated__/CustomFieldCreationMutation.graphql';
 import { CustomFieldsLinesPaginationQuery$variables } from './__generated__/CustomFieldsLinesPaginationQuery.graphql';
+import { areCustomFieldAliasesValid, buildCustomFieldNameSuffix } from '../../../../utils/customFields';
 
 export const CUSTOM_FIELD_NAME_PREFIX = 'x_opencti_cf_';
 
@@ -51,8 +50,10 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       .required(t_i18n('This field is required'))
       .matches(/^[a-z][a-z0-9_]*$/, t_i18n('Only lowercase letters, numbers and underscores, starting with a letter')),
     label: Yup.string().required(t_i18n('This field is required')),
+    aliases: Yup.array().of(Yup.string())
+      .test('alias-format', t_i18n('An alias must start with x_ and contain only lowercase letters, numbers and underscores'), (aliases) => areCustomFieldAliasesValid(aliases)),
     field_type: Yup.string().required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
+    description: Yup.string().trim().required(t_i18n('This field is required')),
     min_value: Yup.number().nullable(),
     max_value: Yup.number().nullable()
       .when('min_value', ([minValue], schema) => (minValue != null
@@ -66,7 +67,11 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
 
   const initialValues = {
     nameSuffix: '',
+    // The technical name follows the label until it is edited manually. Kept in the form values (never sent),
+    // so that any new form starts over, whatever the way the drawer was closed.
+    isNameSuffixEdited: false,
     label: '',
+    aliases: [] as string[],
     field_type: '',
     description: '',
     min_value: null as number | null,
@@ -85,8 +90,9 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
     const input: CustomFieldDefinitionAddInput = {
       name: `${CUSTOM_FIELD_NAME_PREFIX}${values.nameSuffix}`,
       label: values.label,
+      aliases: values.aliases,
       field_type: values.field_type,
-      description: values.description || undefined,
+      description: values.description,
       min_value: values.field_type === 'integer' && values.min_value !== null && String(values.min_value) !== '' ? Number(values.min_value) : undefined,
       max_value: values.field_type === 'integer' && values.max_value !== null && String(values.max_value) !== '' ? Number(values.max_value) : undefined,
       select_options: (values.field_type === 'select' || values.field_type === 'multi_select') ? values.select_options : undefined,
@@ -130,108 +136,126 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
           {({ submitForm, handleReset, isSubmitting, values, setFieldValue, setFieldTouched, touched, errors, submitCount }) => (
             <Form>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="field_type"
                 label={t_i18n('Field type')}
                 fullWidth={true}
+                required
                 containerstyle={{ width: '100%' }}
               >
-                <MenuItem value="" disabled>{t_i18n('Select a type')}</MenuItem>
-                <MenuItem value="string">{t_i18n('Text')}</MenuItem>
-                <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>
-                <MenuItem value="integer">{t_i18n('Number')}</MenuItem>
-                <MenuItem value="boolean">{t_i18n('Boolean')}</MenuItem>
-                <MenuItem value="date">{t_i18n('Date')}</MenuItem>
-                <MenuItem value="select">{t_i18n('Selection list')}</MenuItem>
-                <MenuItem value="multi_select">{t_i18n('Multiple selection list')}</MenuItem>
+                <SelectItem value="" disabled>{t_i18n('Select a type')}</SelectItem>
+                <SelectItem value="string">{t_i18n('Text')}</SelectItem>
+                <SelectItem value="markdown">{t_i18n('Markdown')}</SelectItem>
+                <SelectItem value="integer">{t_i18n('Integer')}</SelectItem>
+                <SelectItem value="boolean">{t_i18n('Boolean')}</SelectItem>
+                <SelectItem value="date">{t_i18n('Date')}</SelectItem>
+                <SelectItem value="select">{t_i18n('Selection list')}</SelectItem>
+                <SelectItem value="multi_select">{t_i18n('Multiple selection list')}</SelectItem>
               </Field>
               {values.field_type !== '' && (
                 <>
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="label"
                     label={t_i18n('Label')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    required
+                    className="mt-5"
+                    onChange={(_: string, value: string) => {
+                      if (!values.isNameSuffixEdited) setFieldValue('nameSuffix', buildCustomFieldNameSuffix(value));
+                    }}
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="nameSuffix"
                     label={t_i18n('Technical name')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    required
+                    // Once emptied, the technical name follows the label again
+                    onChange={(_: string, value: string) => setFieldValue('isNameSuffixEdited', value !== '')}
+                    className="mt-5"
+                    // The prefix is shown in the helper text, so that the field keeps the design system layout
                     helperText={`${t_i18n('Full technical name')}: ${CUSTOM_FIELD_NAME_PREFIX}${values.nameSuffix || '...'}`}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">{CUSTOM_FIELD_NAME_PREFIX}</InputAdornment>
-                      ),
-                    }}
+                  />
+                  <Field
+                    component={ComboboxFieldComponent<string>}
+                    name="aliases"
+                    label={t_i18n('Aliases')}
+                    multiple
+                    options={[]}
+                    allowCustomValue
+                    createValueFromInput={(input: string) => input}
+                    placeholder={t_i18n('Type and press Enter to add items')}
+                    helperText={t_i18n('When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create')}
+                    className="mt-5"
                   />
                   {values.field_type === 'integer' && (
                     <>
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         type="number"
                         name="min_value"
                         label={t_i18n('Min value')}
                         fullWidth={true}
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                       />
                       <Field
                         component={TextField}
-                        variant="standard"
+                        variant="outlined"
                         type="number"
                         name="max_value"
                         label={t_i18n('Max value')}
                         fullWidth={true}
-                        style={{ marginTop: 20 }}
+                        className="mt-5"
                       />
                     </>
                   )}
                   {(values.field_type === 'select' || values.field_type === 'multi_select') && (
                     <>
-                      <MuiAutocomplete
-                        multiple
-                        freeSolo
-                        options={[]}
-                        value={values.select_options}
-                        onChange={(_, newValue) => setFieldValue('select_options', newValue)}
-                        onBlur={() => setFieldTouched('select_options', true)}
-                        renderTags={(tagValue, getTagProps) => tagValue.map((option: string, index: number) => (
-                          <Chip label={option} {...getTagProps({ index })} key={option} />
-                        ))}
-                        renderInput={(params) => {
-                          const selectOptionsError = (touched.select_options || submitCount > 0) ? errors.select_options : undefined;
-                          return (
-                            <MuiTextField
-                              {...params}
-                              variant="standard"
-                              label={t_i18n('Select options')}
-                              placeholder={values.select_options.length === 0
-                                ? t_i18n('Type and press Enter to add items')
-                                : t_i18n('Add more items...')}
-                              error={Boolean(selectOptionsError)}
-                              helperText={selectOptionsError}
-                              style={{ marginTop: 20 }}
-                            />
-                          );
-                        }}
-                      />
+                      {(() => {
+                        const selectOptionsError = (touched.select_options || submitCount > 0) ? errors.select_options : undefined;
+                        return (
+                          <Combobox<string>
+                            multiple
+                            options={[]}
+                            allowCustomValue
+                            createValueFromInput={(input) => input}
+                            value={values.select_options}
+                            onValueChange={(newValue) => setFieldValue('select_options', newValue)}
+                            error={Boolean(selectOptionsError)}
+                            className="mt-5"
+                          >
+                            <ComboboxLabel required>{t_i18n('Select options')}</ComboboxLabel>
+                            <ComboboxField>
+                              <ComboboxChips aria-label={t_i18n('Select options')} />
+                              <ComboboxInput
+                                placeholder={values.select_options.length === 0
+                                  ? t_i18n('Type and press Enter to add items')
+                                  : t_i18n('Add more items...')}
+                                onBlur={() => setFieldTouched('select_options', true)}
+                              />
+                              <ComboboxControls />
+                            </ComboboxField>
+                            <ComboboxContent listAriaLabel={t_i18n('Select options')} />
+                            {selectOptionsError && (
+                              <ComboboxHelperText>{selectOptionsError}</ComboboxHelperText>
+                            )}
+                          </Combobox>
+                        );
+                      })()}
                     </>
                   )}
                   <Field
-                    component={TextField}
-                    variant="standard"
+                    component={TextareaField}
                     name="description"
                     label={t_i18n('Description')}
-                    fullWidth={true}
-                    multiline={true}
+                    required
                     rows={2}
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                 </>
               )}

@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { DataSourceDetails_dataSource$data, DataSourceDetails_dataSource$key } from './__generated__/DataSourceDetails_dataSource.graphql';
@@ -13,6 +14,10 @@ import TextList from '@common/text/TextList';
 const DataSourceDetailsFragment = graphql`
   fragment DataSourceDetails_dataSource on DataSource {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     description
     x_mitre_platforms
@@ -44,7 +49,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -52,7 +57,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Platforms')}
             </Label>
@@ -64,7 +69,8 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
             </Label>
             <TextList list={data.collection_layers} />
           </Grid>
-          <Grid item xs={12}>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
+          <Grid size={12}>
             <DataSourceDataComponents dataSource={data} />
           </Grid>
         </Grid>

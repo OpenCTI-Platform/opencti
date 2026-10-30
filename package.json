@@ -2,13 +2,20 @@
   "name": "opencti",
   "type": "module",
   "private": true,
-  "packageManager": "yarn@4.18.0+sha512.fcb8716fe7cd0eece141ffc18b92193a9df9204c1ba83189c288835223fc0bbe64af473bab0d5e9927a7daeb5caf2bb07eb2787cc9338ca040ea125f2a1f2f7e",
+  "workspaces": [
+    "opencti-platform/eslint-plugin-custom-rules",
+    "opencti-platform/opencti-front",
+    "opencti-platform/opencti-graphql"
+  ],
+  "packageManager": "yarn@4.18.1+sha512.b2e1e7524f654f2749d32b4ebcb4622473cb5bcbc485df2007e12a154e50162a4d795526768bc5f5b8f81717bfd79deb2472813d86fb5ae2eb551fa9c872b08f",
   "engines": {
-    "node": ">= 22.0.0"
+    "node": ">= 22.18.0"
   },
   "scripts": {
     "deps": "nx run-many --tuiAutoExit --target install",
     "dev": "nx run-many --target dev",
+    "dev:watch": "nx run-many --target dev:watch",
+    "dev:watch-with-graphql": "nx run-many --tuiAutoExit --target dev:watch-with-graphql",
     "build": "nx run-many --tuiAutoExit --target build",
     "test": "nx run-many --tuiAutoExit --target test,e2e",
     "lint": "nx run-many --tuiAutoExit --target lint",
@@ -17,19 +24,59 @@
     "deps:venv": "yarn with-python-venv yarn deps",
     "build:venv": "yarn with-python-venv yarn build",
     "dev:venv": "yarn with-python-venv yarn dev",
+    "dev:watch:venv": "yarn with-python-venv yarn dev:watch",
+    "dev:watch-with-graphql:venv": "yarn with-python-venv yarn dev:watch-with-graphql",
     "test:venv": "yarn with-python-venv yarn test",
     "build:ubi9": "nx run-many --tuiAutoExit --target build-ubi9",
     "push:ubi9": "nx run-many --tuiAutoExit --target push-ubi9",
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
   },
   "devDependencies": {
-    "nx": "23.1.1"
+    "nx": "24.0.0"
   },
   "resolutions": {
-    "axios": "1.19.0"
+    "@filigran/chatbot/lodash": "4.18.1",
+    "@filigran/chatbot/uuid": "14.0.3",
+    "@types/pdfmake": "0.3.3",
+    "axios": "1.20.0",
+    "babel-plugin-relay/graphql": "15.3.0",
+    "chokidar": "6.0.0",
+    "d3-color": "3.1.0",
+    "graphql": "patch:graphql@17.0.2#./patch/graphql-17.patch",
+    "ioredis": "5.11.1",
+    "json5": "2.2.3",
+    "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
+    "openid-clientv5": "patch:openid-client@5.7.1#./patch/openid-client.patch",
+    "openid-clientv5/jose": "5.10.0",
+    "react-relay": "patch:react-relay@21.0.1#./patch/react-relay.patch",
+    "unrs-resolver": "1.11.1"
   },
   "dependenciesMeta": {
+    "@apollo/protobufjs": {
+      "built": false
+    },
+    "@datadog/pprof": {
+      "built": false
+    },
+    "core-js": {
+      "built": false
+    },
+    "esbuild": {
+      "built": false
+    },
+    "node-calls-python": {
+      "built": true
+    },
     "nx": {
+      "built": false
+    },
+    "protobufjs": {
+      "built": false
+    },
+    "re2": {
+      "built": true
+    },
+    "unrs-resolver": {
       "built": false
     }
   }

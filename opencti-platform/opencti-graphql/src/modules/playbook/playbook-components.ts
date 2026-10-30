@@ -16,7 +16,8 @@ import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import { type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
-import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
+import { pushBundleToWorker } from '../../database/rabbitmq';
+import { pushToConnector } from '../connector/connector-rabbitmq';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import type { BasicStoreRelation, StoreRelation } from '../../types/store';
 import { utcDate } from '../../utils/format';
@@ -25,19 +26,18 @@ import { generateInternalType } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCyberObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
-import { connectorsForPlaybook } from '../../database/repository';
+import { connectorsForPlaybook } from '../connector/connector-domain';
 import { fullEntitiesList, fullRelationsList } from '../../database/middleware-loader';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { stixLoadByIds } from '../../database/middleware';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
-import type { StixRelation } from '../../types/stix-2-1-sro';
+import type { StixRelation, StixSighting } from '../../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { FilterMode } from '../../generated/graphql';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
@@ -52,6 +52,7 @@ import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observ
 import { PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT } from './components/ai-agent-component';
 import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from './components/ai-agent-send-component';
 import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
+import { buildPlaybookEventContext, extractBundleBaseElement } from './playbook-utils';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -201,14 +202,16 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   configuration_schema: undefined,
   schema: async () => undefined,
   executor: async ({ eventId, bundle, playbookId }) => {
+    const context = executionContext('playbook_components');
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-    await pushToWorkerForConnector(playbookId, {
+    await pushBundleToWorker(context, AUTOMATION_MANAGER_USER, playbookId, {
       type: 'bundle',
       event_id: eventId,
       playbook_id: playbookId,
       applicant_id: AUTOMATION_MANAGER_USER_UUID,
       content,
       update: false,
+      // No work_id on playbook messages, so pushBundleToWorker never tracks expectations for this call.
     });
     return { output_port: undefined, bundle, forceBundleTracking: true };
   },
@@ -237,23 +240,24 @@ export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> 
   ports: [{ id: 'out', type: 'out' }, { id: 'no-match', type: 'out' }],
   configuration_schema: PLAYBOOK_MATCHING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_MATCHING_COMPONENT_SCHEMA,
-  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
+  executor: async ({ playbookNode, dataInstanceId, bundle, event }) => {
     const context = executionContext('playbook_components');
     const { filters, all } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
+    const eventContext = buildPlaybookEventContext(event);
     // Checking on all bundle elements
     if (all) {
       let matchedElements = 0;
       for (let index = 0; index < bundle.objects.length; index += 1) {
         const bundleElement = bundle.objects[index];
-        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
+        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters, eventContext);
         if (isMatch) matchedElements += 1;
       }
       return { output_port: matchedElements > 0 ? 'out' : 'no-match', bundle };
     }
     // Only checking base data
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
+    const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters, eventContext);
     return { output_port: isMatch ? 'out' : 'no-match', bundle };
   },
 };
@@ -279,15 +283,16 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
   ports: [{ id: 'out', type: 'out' }, { id: 'unmatch', type: 'out' }],
   configuration_schema: PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
-  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
+  executor: async ({ playbookNode, dataInstanceId, bundle, event }) => {
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
+    const eventContext = buildPlaybookEventContext(event);
     const matchedElements = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
-      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
+      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters, eventContext);
       if (isMatch) {
         matchedElements.push(bundleElement);
       }
@@ -580,6 +585,11 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       const baseDataRelation = baseData as StixRelation;
       if (baseDataRelation.source_ref && baseDataRelation.target_ref) {
         idsToResolve = R.uniq([...idsToResolve, baseDataRelation.source_ref, baseDataRelation.target_ref]);
+      }
+      // In case of sighting, we also resolve the sighting_of and where_sighted
+      const baseDataSighting = baseData as StixSighting;
+      if (baseDataSighting.sighting_of_ref && baseDataSighting.where_sighted_refs) {
+        idsToResolve = R.uniq([...idsToResolve, baseDataSighting.sighting_of_ref, ...baseDataSighting.where_sighted_refs]);
       }
       const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve) as StixObject[];
       if (elements.length > 0) {

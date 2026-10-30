@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import GroupingDetails from './GroupingDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
@@ -9,17 +8,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOr
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
-
 const GroupingComponent = ({ grouping }) => {
-  const classes = useStyles();
-
   const overviewLayoutCustomization = useOverviewLayoutCustomization(grouping.entity_type);
 
   return (
@@ -27,20 +16,20 @@ const GroupingComponent = ({ grouping }) => {
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <GroupingDetails grouping={grouping} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview
                       stixDomainObject={grouping}
                     />
@@ -48,7 +37,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={grouping.id}
                     />
@@ -56,7 +45,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={grouping.id}
                     />
@@ -64,7 +53,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={grouping.id}
                       defaultMarkings={grouping.objectMarking ?? []}
@@ -128,6 +117,7 @@ export default createFragmentContainer(GroupingComponent, {
         }
       }
       workflowEnabled
+      ...WorkflowStatusStixDomainObject_data
       currentUserAccessRight
       ...GroupingDetails_grouping
       ...ContainerHeader_container

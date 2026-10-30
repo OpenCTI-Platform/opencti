@@ -69,9 +69,11 @@ const DraftAuthorizedMembers = ({ data }: DraftAuthorizedMembersProps) => {
         <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}>
           <Tooltip title={t_i18n('Authorized members')}>
             <IconButton
+              data-testid="draft-authorized-members-button"
               size="default"
               onClick={() => setOpen(true)}
               variant="secondary"
+              aria-label={t_i18n('Authorized members')}
             >
               <LockOutlined fontSize="small" />
             </IconButton>

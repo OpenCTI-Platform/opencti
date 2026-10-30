@@ -1,26 +1,26 @@
-import { type EntityOptions, type FilterGroupWithNested, countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { countAllThings, type EntityOptions, type FilterGroupWithNested, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import {
   type BasicStoreEntityCustomFieldDefinition,
-  CUSTOM_FIELD_PREFIX,
+  CUSTOM_FIELD_TYPES,
   type CustomFieldType,
   ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
   type StoreEntityCustomFieldDefinition,
 } from './custom-field-types';
-import type { CustomFieldDefinitionAddInput, EditInput } from '../../generated/graphql';
-import { BackgroundTaskScope, EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
+import { BackgroundTaskScope, type CustomFieldDefinitionAddInput, type EditInput, EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { createQueryTask } from '../../domain/backgroundTask';
 import { ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES } from '../../domain/backgroundTask-common';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { addCustomFieldCreatedCount } from '../../manager/telemetryManager';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { enforceEnableFeatureFlag, executionContext, SYSTEM_USER } from '../../utils/access';
-import { CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
-import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
 
 /**
  * Technical name must be the custom field prefix followed by lowercase letters,
@@ -30,10 +30,26 @@ import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitions, getCustomFi
 const CUSTOM_FIELD_NAME_REGEX = /^x_opencti_cf_[a-z][a-z0-9_]*$/;
 
 /**
- * Check if a filter key corresponds to a custom field.
+ * An alias matches a STIX custom property at ingestion, the only properties read being the ones
+ * starting with "x_": it must be "x_" followed by lowercase letters, numbers and underscores.
  */
-export const isCustomFieldKey = (key: string): boolean => {
-  return key.startsWith(CUSTOM_FIELD_PREFIX);
+const CUSTOM_FIELD_ALIAS_REGEX = /^x_[a-z0-9_]+$/;
+
+const checkCustomFieldAliasesFormat = (aliases: string[] | null | undefined) => {
+  const invalidAliases = (aliases ?? []).filter((alias) => !CUSTOM_FIELD_ALIAS_REGEX.test(alias));
+  if (invalidAliases.length > 0) {
+    throw ValidationError(
+      'An alias must start with "x_" and contain only lowercase letters, numbers and underscores',
+      'aliases',
+      { aliases: invalidAliases },
+    );
+  }
+};
+
+const checkCustomFieldDescription = (description: string | null | undefined) => {
+  if (!description || description.trim().length === 0) {
+    throw ValidationError('The description of a custom field is required', 'description');
+  }
 };
 
 // ----- Domain CRUD operations -----
@@ -55,24 +71,20 @@ export const findCustomFieldDefinitionsForEntityType = (context: AuthContext, us
   return pageEntitiesConnection<BasicStoreEntityCustomFieldDefinition>(context, user, [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION], { filters });
 };
 
-export const findCustomFieldDefinitionByName = async (
-  context: AuthContext,
-  user: AuthUser,
-  name: string,
-): Promise<BasicStoreEntityCustomFieldDefinition | null> => {
-  const result = await findCustomFieldDefinitionsPaginated(context, user, {
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['name'], values: [name], operator: FilterOperator.Eq }],
-      filterGroups: [],
-    },
-    first: 1,
+export const findCustomFieldStixFilterKeys = async (context: AuthContext, user: AuthUser, entityType?: string | null) => {
+  return getCustomFieldDefinitions(context, user).then((definitions) => {
+    if (!entityType) {
+      return definitions.map((def) => def.name);
+    }
+    const filtered = definitions.filter((def) => def.entity_types?.includes(entityType));
+    return filtered.map((def) => def.name);
   });
-  return result.edges.length > 0 ? result.edges[0].node : null;
 };
 
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
+  // Managing the custom field definitions is an Enterprise Edition feature, their values stay usable
+  await checkEnterpriseEdition(context);
   // Validate name starts with the required prefix and matches the allowed format
   if (!CUSTOM_FIELD_NAME_REGEX.test(input.name)) {
     throw ValidationError(
@@ -81,18 +93,25 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
       { name: input.name },
     );
   }
-  // Validate the technical name and label are unique among all custom fields (single cache read)
+  checkCustomFieldAliasesFormat(input.aliases);
+  checkCustomFieldDescription(input.description);
+  // Validate the technical name, label and aliases are unique among all custom fields (single cache read)
   const existingDefinitions = await getCustomFieldDefinitions(context, user);
-  if (existingDefinitions.some((def) => def.name === input.name)) {
-    throw ValidationError('A custom field with this technical name already exists', 'nameSuffix', { name: input.name });
-  }
-  if (existingDefinitions.some((def) => def.label === input.label)) {
-    throw ValidationError('A custom field with this label already exists', 'label', { label: input.label });
+  for (let i = 0; i < existingDefinitions.length; i++) {
+    const currentDefinition = existingDefinitions[i];
+    if (currentDefinition.name === input.name || currentDefinition.aliases?.some((a) => a === input.name)) {
+      throw ValidationError('A custom field with this technical name already exists', 'nameSuffix', { name: input.name });
+    }
+    if (currentDefinition.label === input.label) {
+      throw ValidationError('A custom field with this label already exists', 'label', { label: input.label });
+    }
+    if (input.aliases?.some((a) => a === currentDefinition.name || currentDefinition.aliases?.some((ca) => ca === a))) {
+      throw ValidationError('A custom field with this alias already exists', 'aliases', { aliases: input.aliases });
+    }
   }
   // Validate field_type is supported
-  const allowedTypes: CustomFieldType[] = ['integer', 'string', 'markdown', 'boolean', 'date', 'select', 'multi_select'];
-  if (!allowedTypes.includes(input.field_type as CustomFieldType)) {
-    throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: allowedTypes });
+  if (!CUSTOM_FIELD_TYPES.includes(input.field_type as CustomFieldType)) {
+    throw FunctionalError('Unsupported custom field type', { field_type: input.field_type, allowed: CUSTOM_FIELD_TYPES });
   }
   // Validate integer bounds
   if (input.field_type === 'integer' && input.min_value != null && input.max_value != null && input.min_value > input.max_value) {
@@ -106,6 +125,7 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
   // multi_select is intrinsically multi-valued; force the multiple flag so the entity attribute is indexed as an array
   const multiple = input.field_type === 'multi_select' ? true : (input.multiple ?? false);
   const created = await createEntity(context, user, { ...input, multiple }, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+  addCustomFieldCreatedCount();
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -151,6 +171,8 @@ const scheduleCustomFieldValuesCleanupTask = async (fieldName: string, fieldId: 
 
 export const customFieldDefinitionDelete = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
+  // Managing the custom field definitions is an Enterprise Edition feature, their values stay usable
+  await checkEnterpriseEdition(context);
   const element = await deleteElementById<StoreEntityCustomFieldDefinition>(context, user, customFieldDefinitionId, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   await publishUserAction({
@@ -166,7 +188,7 @@ export const customFieldDefinitionDelete = async (context: AuthContext, user: Au
   return customFieldDefinitionId;
 };
 
-export const customFieldDefinitionEdit = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
+const editCustomFieldDefinition = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
   enforceEnableFeatureFlag(CUSTOM_FIELDS_FEATURE_FLAG);
   // Prevent changing field_type (immutable after creation)
   const forbiddenKeys = ['field_type', 'name'];
@@ -181,6 +203,25 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
     const existing = await getCustomFieldDefinitionByLabel(context, user, newLabel);
     if (existing && existing.id !== customFieldDefinitionId) {
       throw ValidationError('A custom field with this label already exists', 'label', { label: newLabel });
+    }
+  }
+  // Validate the description stays set
+  const descriptionEdit = input.find((i) => i.key === 'description');
+  if (descriptionEdit) {
+    // A remove clears the description, whatever the given value
+    const description = descriptionEdit.operation === EditOperation.Remove ? undefined : descriptionEdit.value;
+    checkCustomFieldDescription(Array.isArray(description) ? description[0] : description);
+  }
+  // Validate the aliases stay well formed and unique among all custom fields
+  const aliasesEdit = input.find((i) => i.key === 'aliases');
+  if (aliasesEdit && aliasesEdit.operation !== EditOperation.Remove) {
+    checkCustomFieldAliasesFormat(aliasesEdit.value);
+    for (let i = 0; i < aliasesEdit.value.length; i++) {
+      const aliasEditValue = aliasesEdit.value[i];
+      const existing = await getCustomFieldDefinitionByNameOrAlias(context, user, aliasEditValue);
+      if (existing && existing.id !== customFieldDefinitionId) {
+        throw ValidationError('A custom field with this alias already exists', 'alias', { alias: aliasEditValue });
+      }
     }
   }
   // Prevent removing a select option that is still stored on at least one entity
@@ -298,6 +339,12 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
+export const customFieldDefinitionEdit = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
+  // Managing the custom field definitions is an Enterprise Edition feature, their values stay usable
+  await checkEnterpriseEdition(context);
+  return editCustomFieldDefinition(context, user, customFieldDefinitionId, input);
+};
+
 export const customFieldDefinitionAddEntityType = async (
   context: AuthContext,
   user: AuthUser,
@@ -306,6 +353,7 @@ export const customFieldDefinitionAddEntityType = async (
   mandatory: boolean,
   defaultValue?: string | null,
 ) => {
+  await checkEnterpriseEdition(context);
   const definition = await findById(context, user, customFieldDefinitionId);
   if (!definition) {
     throw FunctionalError('Custom field definition not found', { id: customFieldDefinitionId });
@@ -340,11 +388,18 @@ export const customFieldDefinitionUpdateEntityType = async (
     throw FunctionalError('Custom field definition is not attached to this entity type', { id: customFieldDefinitionId, entityType });
   }
   const currentSettings = definition.entity_type_settings ?? [];
+  // In Community, a mandatory custom field can still be made optional (and only that), so that the creation
+  // of the entities of this type never stays blocked by a setting that can no longer be managed
+  const currentSetting = currentSettings.find((setting) => setting.entity_type === entityType);
+  const isOnlyMadeOptional = !mandatory && (defaultValue ?? undefined) === (currentSetting?.default_value ?? undefined);
+  if (!isOnlyMadeOptional) {
+    await checkEnterpriseEdition(context);
+  }
   const nextSettings = [
     ...currentSettings.filter((setting) => setting.entity_type !== entityType),
     { entity_type: entityType, mandatory, default_value: defaultValue ?? undefined },
   ];
-  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
+  return editCustomFieldDefinition(context, user, customFieldDefinitionId, [
     { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
   ]);
 };
@@ -355,6 +410,7 @@ export const customFieldDefinitionRemoveEntityType = async (
   customFieldDefinitionId: string,
   entityType: string,
 ) => {
+  await checkEnterpriseEdition(context);
   const definition = await findById(context, user, customFieldDefinitionId);
   if (!definition) {
     throw FunctionalError('Custom field definition not found', { id: customFieldDefinitionId });

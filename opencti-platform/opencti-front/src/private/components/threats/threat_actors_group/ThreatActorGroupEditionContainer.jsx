@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import ThreatActorGroupEditionOverview from './ThreatActorGroupEditionOverview';
 import ThreatActorGroupEditionDetails from './ThreatActorGroupEditionDetails';
@@ -17,8 +15,8 @@ const ThreatActorGroupEditionContainer = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { editContext } = threatActorGroup;
-  const [currentTab, setCurrentTab] = useState(0);
-  const handleChangeTab = (event, value) => setCurrentTab(value);
+  const [currentTab, setCurrentTab] = useState('overview');
+  const enableReferences = useIsEnforceReference('Threat-Actor-Group');
   return (
     <Drawer
       title={t_i18n('Update a threat actor group')}
@@ -27,30 +25,28 @@ const ThreatActorGroupEditionContainer = ({
       context={editContext}
       controlledDial={controlledDial}
     >
-      <>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={currentTab} onChange={handleChangeTab}>
-            <Tab label={t_i18n('Overview')} />
-            <Tab label={t_i18n('Details')} />
-          </Tabs>
-        </Box>
-        {currentTab === 0 && (
+      <Tabs value={currentTab} onValueChange={setCurrentTab}>
+        <TabsList>
+          <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+          <TabsTrigger value="details">{t_i18n('Details')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview">
           <ThreatActorGroupEditionOverview
             threatActorGroup={threatActorGroup}
-            enableReferences={useIsEnforceReference('Threat-Actor-Group')}
+            enableReferences={enableReferences}
             context={editContext}
             handleClose={handleClose}
           />
-        )}
-        {currentTab === 1 && (
+        </TabsContent>
+        <TabsContent value="details">
           <ThreatActorGroupEditionDetails
             threatActorGroup={threatActorGroup}
-            enableReferences={useIsEnforceReference('Threat-Actor-Group')}
+            enableReferences={enableReferences}
             context={editContext}
             handleClose={handleClose}
           />
-        )}
-      </>
+        </TabsContent>
+      </Tabs>
     </Drawer>
   );
 };

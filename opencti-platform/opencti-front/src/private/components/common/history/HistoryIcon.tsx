@@ -3,8 +3,9 @@ import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutline
 import Avatar from '@mui/material/Avatar';
 import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
 
 interface IconConfig {
   color: string;
@@ -73,6 +74,7 @@ const HistoryIcon = ({
   onClick,
 }: HistoryIconProps) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const { color, Icon, clickable } = getHistoryIconConfig(eventScope, eventMessage, isRelation);
   const canClick = clickable && !!commit;
 
@@ -86,6 +88,9 @@ const HistoryIcon = ({
         color: theme.palette.text.primary,
         cursor: canClick ? 'pointer' : 'auto',
       }}
+      role={canClick ? 'button' : undefined}
+      tabIndex={canClick ? 0 : undefined}
+      aria-label={canClick ? t_i18n('View commit message') : undefined}
       onClick={canClick ? onClick : undefined}
     >
       <Icon style={{ fontSize: 12 }} />
