@@ -5,14 +5,17 @@ import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import EEChip from '../../common/entreprise_edition/EEChip';
+import EETooltip from '../../common/entreprise_edition/EETooltip';
 import type { Theme } from '../../../../components/Theme';
 import {
   ConfigPresetForcedItems,
-  ConfigPresetItemKey,
   ConfigPresetSelection,
   countConfigPresetCheckedItems,
   getConfigPresetCheckboxState,
   groupConfigPresetTypes,
+  isConfigPresetTypeLocked,
   isSingletonConfigPresetType,
   toggleConfigPresetTypes,
 } from './configPresetSelection';
@@ -88,7 +91,27 @@ export interface ConfigPresetAccordionType {
   readonly group: { readonly key: string; readonly label: string };
   readonly items: ReadonlyArray<AccordionItem>;
   readonly itemsPageInfo: { readonly globalCount: number; readonly hasNextPage?: boolean };
+  // The type is part of the Enterprise Edition: without it the platform has no item of it, and its row opens the license dialog
+  readonly requiresEnterpriseEdition?: boolean;
 }
+
+// A type that needs the Enterprise Edition the platform does not have: one row that stays unchecked, with the chip, and opens the license dialog
+const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string }> = ({ type, title }) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  // The whole row opens the license dialog: its disabled checkbox and chip let the row's pointer cursor through instead of showing their own
+  return (
+    <EETooltip title={title}>
+      <div style={{ cursor: isEnterpriseEdition ? undefined : 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), pointerEvents: 'none' }}>
+          <Checkbox label={t_i18n(type.label)} description={t_i18n(type.description)} checked={false} disabled />
+          <EEChip feature={t_i18n(type.label)} size="sm" clickable={false} />
+        </div>
+      </div>
+    </EETooltip>
+  );
+};
 
 interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionType> {
   types: ReadonlyArray<T>;
@@ -104,8 +127,8 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   renderTypeActions?: (type: T) => ReactNode;
   // Types with several items start expanded (default false)
   expandTypes?: boolean;
-  // Items that cannot be selected: they stay unchecked and do not keep their type or group from showing as checked
-  unselectable?: ReadonlyArray<ConfigPresetItemKey>;
+  // The tooltip of a type that needs the Enterprise Edition the platform does not have yet, which opens the license dialog
+  lockedTitle?: string;
 }
 
 // The groups, types and items of a bundle with their checkboxes, counts and chevrons: shared by the export drawer and the import preview
@@ -119,15 +142,17 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   renderItem,
   renderTypeActions,
   expandTypes = false,
-  unselectable,
+  lockedTitle,
 }: ConfigPresetSelectionAccordionProps<T>) => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const isLocked = (type: T) => isConfigPresetTypeLocked(type, isEnterpriseEdition);
   // Groups start expanded, types with several items collapsed
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<readonly string[]>([]);
   const [toggledTypeKeys, setToggledTypeKeys] = useState<readonly string[]>([]);
   const isExpanded = (type: T) => toggledTypeKeys.includes(type.key) !== expandTypes;
   const typeLabel = (type: T) => `${t_i18n(type.label)} (${countConfigPresetCheckedItems([type], selection, forced)}/${type.itemsPageInfo.globalCount})`;
-  const typeState = (type: T) => getConfigPresetCheckboxState([type], selection, forced, unselectable);
+  const typeState = (type: T) => getConfigPresetCheckboxState([type], selection, forced);
   const isEmpty = (type: T) => type.itemsPageInfo.globalCount === 0;
   const toggleType = (type: T, checked: boolean) => onSelectionChange(toggleConfigPresetTypes(selection, [type], checked));
   const theme = useTheme<Theme>();
@@ -137,13 +162,17 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
         <div key={group.key} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
           <ConfigPresetExpandableRow
             label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types, selection, forced)}/${group.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0)})`}
-            checked={getConfigPresetCheckboxState(group.types, selection, forced, unselectable)}
-            disabled={disabled}
+            checked={getConfigPresetCheckboxState(group.types, selection, forced)}
+            disabled={disabled || group.types.every(isLocked)}
             onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetTypes(selection, group.types, checked))}
             expanded={!collapsedGroupKeys.includes(group.key)}
             onToggleExpanded={() => setCollapsedGroupKeys((current) => toggleKey(current, group.key))}
           >
             {group.types.map((type) => {
+              // Nothing of the type is listed, checked or counted until the platform has the license
+              if (isLocked(type)) {
+                return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} />;
+              }
               // A type whose only item has the key of the type is one row, not a type with an item of the same name below it
               if (isSingletonConfigPresetType(type)) {
                 if (renderItem) {
