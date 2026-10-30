@@ -63,8 +63,8 @@ describe('HTTP secure defaults', () => {
     expect(httpConfig.getHttpMaxRedirects()).toBe(0);
   });
 
-  it('should fall back to the default number of redirects when the option is invalid', async () => {
-    const httpConfig = await loadHttpConfig({ APP__HTTP__SECURE_BY_DEFAULT: 'true', APP__HTTP__MAX_REDIRECTS: 'many' });
+  it.each(['many', '0.5', '21garbage', '-1', '9'.repeat(400)])('should fall back to the default number of redirects when the option is %s', async (maxRedirects) => {
+    const httpConfig = await loadHttpConfig({ APP__HTTP__SECURE_BY_DEFAULT: 'true', APP__HTTP__MAX_REDIRECTS: maxRedirects });
 
     expect(httpConfig.getHttpMaxRedirects()).toBe(5);
   });

@@ -55,9 +55,10 @@ export const getMaxPayloadBodySize = () => {
 };
 
 // Number of redirects followed by the outgoing requests of the platform HTTP client (feeds, synchronizers, notifiers...).
-// A value from a JSON file stays a string, and an invalid one falls back to the default.
-const HTTP_MAX_REDIRECTS_CONF: number = Number.parseInt(String(nconf.get('app:http:max_redirects')), 10);
-const HTTP_MAX_REDIRECTS: number = HTTP_MAX_REDIRECTS_CONF >= 0 ? HTTP_MAX_REDIRECTS_CONF : (HTTP_SECURE_BY_DEFAULT ? 5 : 21);
+// A value from a JSON file stays a string. Anything but a non-negative safe integer falls back to the default.
+const HTTP_MAX_REDIRECTS_CONF: string = String(nconf.get('app:http:max_redirects')).trim();
+const HTTP_MAX_REDIRECTS_PARSED: number = /^\d+$/.test(HTTP_MAX_REDIRECTS_CONF) ? Number(HTTP_MAX_REDIRECTS_CONF) : NaN;
+const HTTP_MAX_REDIRECTS: number = Number.isSafeInteger(HTTP_MAX_REDIRECTS_PARSED) ? HTTP_MAX_REDIRECTS_PARSED : (HTTP_SECURE_BY_DEFAULT ? 5 : 21);
 export const getHttpMaxRedirects = () => {
   return HTTP_MAX_REDIRECTS;
 };
