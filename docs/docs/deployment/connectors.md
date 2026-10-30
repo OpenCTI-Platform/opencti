@@ -121,7 +121,7 @@ connector:
 
 !!! warning "STIX bundles size limit"
 
-    Currently the connector cannot send bundle larger the the configuration of the OpenCTI backend (default 50Mb). This configuration can be changed using the parameter `APP__MAX_PAYLOAD_BODY_SIZE=50mb` on the platform side.
+    Currently the connector cannot send bundle larger than the configuration of the OpenCTI backend (default 50mb, 10mb when `APP__HTTP__SECURE_BY_DEFAULT=true`). This configuration can be changed using the parameter `APP__MAX_PAYLOAD_BODY_SIZE=50mb` on the platform side.
 
 #### Listening data / jobs using HTTP instead of RabbitMQ
 
