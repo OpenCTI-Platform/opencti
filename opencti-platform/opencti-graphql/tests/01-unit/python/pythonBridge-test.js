@@ -1,5 +1,8 @@
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { expect, it } from 'vitest';
-import { checkIndicatorSyntax, checkPythonAvailability, createStixPattern, execChildPython } from '../../../src/python/pythonBridge';
+import { checkIndicatorSyntax, checkPythonAvailability, createStixPattern, execChildPython, findVenvPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 it('Check if python is well configured', async () => {
@@ -84,5 +87,24 @@ it('Check child python execution ignores a shell set on the object prototype', a
     expect(result.data).toEqual("[file:hashes.'SHA-256' = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']");
   } finally {
     delete Object.prototype.shell;
+  }
+});
+
+it('Check child python interpreter of the virtual environment', () => {
+  const venv = mkdtempSync(path.join(tmpdir(), 'opencti-venv-'));
+  try {
+    const purelib = path.join(venv, 'lib', 'python3.12', 'site-packages');
+    mkdirSync(purelib, { recursive: true });
+    // a directory junction on Windows, where a symlink needs a privilege, as link_site_packages.py does
+    symlinkSync(purelib, path.join(venv, 'site-packages'), 'junction');
+    writeFileSync(path.join(venv, 'pyvenv.cfg'), 'home = /usr/bin\n');
+    const python = path.join(venv, 'bin', 'python3');
+    expect(findVenvPython(path.join(venv, 'site-packages'), 'linux')).toEqual(python);
+    expect(findVenvPython(purelib, 'linux')).toEqual(python);
+    expect(findVenvPython(path.join(venv, 'site-packages'), 'win32')).toEqual(path.join(venv, 'Scripts', 'python.exe'));
+    expect(findVenvPython(path.join(tmpdir(), 'no-such-venv', 'site-packages'))).toBeUndefined();
+    expect(findVenvPython(undefined)).toBeUndefined();
+  } finally {
+    rmSync(venv, { recursive: true, force: true });
   }
 });

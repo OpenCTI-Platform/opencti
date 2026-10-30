@@ -138,17 +138,15 @@ jobs:
           # Use the commit validated above, not the tag, in case the tag is moved in between
           ref: ${{ needs.validate.outputs.commit_sha }}
 
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 #v7.0.0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
+          version: "0.12.9"
           python-version: "3.13"
 
-      - name: Install build tools
-        run: pip install "build~=1.5.0" "twine>=6,<7"
-
+      # Same build as the CircleCI build_pycti job
       - name: Build sdist and wheel
-        working-directory: client-python
-        run: SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" python -m build
+        run: SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" uv build --package pycti --no-sources -o client-python/dist
 
       - name: Check distribution files
         working-directory: client-python
@@ -167,7 +165,7 @@ jobs:
             echo "::error::Unexpected files in dist/"
             exit 1
           fi
-          twine check --strict dist/*
+          uvx --from 'twine>=6,<7' twine check --strict dist/*
 
       - name: Upload pycti distribution
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -279,8 +277,8 @@ jobs:
   # -----------------------
   # Wait for the connectors release
   # -----------------------
-  # The platform build needs the connectors manifest of the tag (TAG_VERSION build-arg) and pycti on PyPI:
-  # the release script tags connectors only once pycti is available, so this job gates both.
+  # The platform build needs the connectors manifest of the tag (TAG_VERSION build-arg); pycti comes from
+  # the uv workspace of the same commit, not from PyPI.
   wait-connectors:
     name: Wait for connectors release
     runs-on: ubuntu-26.04
@@ -377,7 +375,7 @@ jobs:
     name: Build platform tarball (${{ matrix.variant }})
     runs-on: ubuntu-26.04
     timeout-minutes: 60
-    # wait-connectors: connectors tag to clone, connectors manifest of the tag, pycti on PyPI ("yarn build")
+    # wait-connectors: connectors tag to clone, connectors manifest of the tag ("yarn build:prod")
     needs: [validate, wait-connectors]
     strategy:
       fail-fast: false
@@ -417,9 +415,9 @@ jobs:
           ls -la "${ARCHIVE}"
           tar -tzf "${ARCHIVE}" > /tmp/tar-content.txt
           ERRORS=0
-          # The tarball keeps the Yarn workspace layout: root metadata in opencti/, the API in its workspace folder
+          # The tarball keeps the repository layout: Yarn and uv workspace metadata in opencti/, every member in its folder
           API=opencti/opencti-platform/opencti-graphql
-          for EXPECTED in opencti/package.json opencti/yarn.lock opencti/.yarnrc.yml "${API}/build/back.mjs" "${API}/package.json" "${API}/src/__generated__/opencti-manifest.json" opencti/worker/worker.py opencti/connectors/manifest.json "${API}/public/index.html"; do
+          for EXPECTED in opencti/package.json opencti/yarn.lock opencti/.yarnrc.yml "${API}/build/back.mjs" "${API}/package.json" "${API}/src/__generated__/opencti-manifest.json" "${API}/src/python/pyproject.toml" opencti/pyproject.toml opencti/uv.lock opencti/client-python/pycti/__init__.py opencti/opencti-worker/pyproject.toml opencti/opencti-worker/src/worker.py opencti/connectors/manifest.json "${API}/public/index.html"; do
             if ! grep -qx "${EXPECTED}" /tmp/tar-content.txt; then
               echo "::error::Missing in tarball: ${EXPECTED}"
               ERRORS=1
@@ -491,7 +489,7 @@ jobs:
             -v "${GITHUB_WORKSPACE}:/opt/opencti" \
             -w /opt/opencti/opencti-platform/opencti-graphql \
             "filigran/builder:${TAG}" \
-            sh -c "yarn workspaces focus opencti-graphql && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production opencti-graphql"
+            sh -c "yarn workspaces focus opencti-graphql && yarn build:prod && yarn workspaces focus --production opencti-graphql"
 
       - name: Generate graphql SBOM
         env:

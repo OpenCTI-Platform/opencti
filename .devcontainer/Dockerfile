@@ -5,6 +5,9 @@ RUN apt-get update \
 
 RUN apt-get install -y python3 python3-pip python3-dev python-is-python3
 
+# uv static binary, pinned by digest; Renovate updates the tag and the digest together. Installs the Python workspace (install.dependencies.sh)
+COPY --from=ghcr.io/astral-sh/uv:0.12.9@sha256:8b940d3a9d65bed080436972241af2e21c84b5e8c9193f7014ed71479ee795ff /uv /usr/local/bin/uv
+
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
  && apt-get install -y nodejs \
  && corepack enable

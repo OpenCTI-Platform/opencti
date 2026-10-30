@@ -56,3 +56,10 @@ __pycache__
 .env.test.local
 .env.production.local
 .playwright-mcp/
+
+# Python
+*.py[cod]
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+.coverage

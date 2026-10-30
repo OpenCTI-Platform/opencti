@@ -20,7 +20,7 @@ export default defineConfig({
     'src/__generated__/**',
   ],
   // Provided by the runtime image, not by npm.
-  ignoreBinaries: ['pip3', 'java', 'run'],
+  ignoreBinaries: ['uv', 'java', 'run'],
   ignoreUnresolved: [
     // Expanded at build time by esbuild-plugin-import-glob. Regex because knip reads the
     // literal `{js,ts}` form as a glob of its own and never matches it.
