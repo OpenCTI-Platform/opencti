@@ -87,6 +87,13 @@ const targets = { mode: 'and', filters: [{ key: ['relationship_type'], values: [
 const malwares = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 const sectors = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Sector'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 const breakdownParameters = { interval: 'week', breakdownBy: 'toTypes', breakdownLimit: 20, breakdownOrder: 'asc', breakdownOther: true };
+// The relationships the relationships widgets display, as the front restricts them (RELATIONSHIP_WIDGETS_TYPES)
+const relationshipWidgetsTypes = ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'];
+const widgetRelationships = (storedFilters?: unknown) => ({
+  mode: 'and',
+  filters: [{ key: ['entity_type'], values: relationshipWidgetsTypes, operator: 'eq', mode: 'or' }],
+  filterGroups: storedFilters ? [storedFilters] : [],
+});
 
 const storeWidget = (perspective: string | null, dataSelection: unknown[], parameters: unknown) => {
   vi.mocked(PublicDashboardUtils.getWidgetArguments).mockResolvedValue({ user: publicUser, perspective, dataSelection, parameters } as any);
@@ -115,7 +122,8 @@ describe('publicStixRelationshipsTimeSeriesBreakdown', () => {
       limit: 20,
       order: 'asc',
       includeOther: true,
-      filters: targets,
+      // the stored filters, restricted to the relationships the widget displays
+      filters: widgetRelationships(targets),
       dynamicFrom: malwares,
       dynamicTo: sectors,
       // the field is checked against the relationship types the filters restrict to
@@ -139,6 +147,24 @@ describe('publicStixRelationshipsTimeSeriesBreakdown', () => {
       includeOther: false,
       relationship_type: [],
     });
+  });
+
+  it('should only break the relationships the widgets display down, without relationship type filter', async () => {
+    // Without relationship type, every relationship would be broken down: the markings, the authors or the external
+    // references of the elements too, which can fill the top values
+    const notRevoked = { mode: 'and', filters: [{ key: ['revoked'], values: ['false'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+    for (const filters of [undefined, notRevoked]) {
+      vi.mocked(StixRelationshipDomain.stixRelationshipsTimeSeriesBreakdown).mockClear();
+      storeWidget('relationships', [{ date_attribute: 'created_at', filters, dynamicFrom: malwares }], { breakdownBy: 'relationship_type' });
+
+      await publicStixRelationshipsTimeSeriesBreakdown({} as any, request());
+
+      expect(vi.mocked(StixRelationshipDomain.stixRelationshipsTimeSeriesBreakdown).mock.calls[0][2]).toMatchObject({
+        filters: widgetRelationships(filters),
+        dynamicFrom: malwares,
+        relationship_type: [],
+      });
+    }
   });
 
   it('should refuse a widget without breakdown, or a request without start date', async () => {

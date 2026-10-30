@@ -51,7 +51,9 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeriesBreakdown,
 } from '../../domain/stixCoreObject';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../schema/stixRefRelationship';
 import {
   findStixRelationPaginated,
   stixRelationshipsDistribution,
@@ -65,7 +67,7 @@ import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
+import { RELATION_TYPE_FILTER, TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -429,6 +431,11 @@ export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthCont
   return stixCoreObjectsTimeSeriesBreakdown(context, user, standardArgs);
 };
 
+// Relationships the relationships widgets display, as the front restricts them (RELATIONSHIP_WIDGETS_TYPES in
+// opencti-front/src/utils/widget/widgetUtils.tsx): the knowledge relationships, the sightings, and the content and the
+// labels of the containers. Not the other references of the elements (markings, authors, external references...).
+const RELATIONSHIP_WIDGETS_TYPES = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT, RELATION_OBJECT_LABEL];
+
 // vertical-bar & line & area & heatmap of relationships with a breakdown
 export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixRelationshipsTimeSeriesBreakdownArgs) => {
   const { user, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
@@ -438,10 +445,13 @@ export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthCo
   const relationshipTypes = getBreakdownEntityTypes(selection.filters, RELATION_TYPE_FILTER);
   const standardArgs = {
     ...breakdownArgs,
+    // Restricted to the relationships the widget displays, as the private breakdown: without a relationship type,
+    // the references of the elements would be counted too, and could fill the top values
+    filters: addFilter(selection.filters, TYPE_FILTER, RELATIONSHIP_WIDGETS_TYPES),
     // The same relationships as publicStixRelationshipsMultiTimeSeries
     dynamicFrom: selection.dynamicFrom,
     dynamicTo: selection.dynamicTo,
-    // Without types, all the relationships
+    // Without types, every type the filters above allow
     relationship_type: relationshipTypes,
   };
   // Use standard API

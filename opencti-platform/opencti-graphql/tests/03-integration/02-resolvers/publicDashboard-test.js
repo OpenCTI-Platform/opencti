@@ -931,6 +931,24 @@ describe('PublicDashboard resolver', () => {
             expect(series[0].values.reduce((sum, value) => sum + value, 0)).toEqual(4); // same total as the 'Evolution of attacks' widget
           });
 
+          it('should only break down the relationships the widgets display, without relationship type filter', async () => {
+            const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { data, errors } = await queryAsAdmin({
+              query: API_SCR_BREAKDOWN_QUERY,
+              variables: {
+                uriKey: publicDashboardUriKey,
+                widgetId: '2f27537c-a5ae-45de-b8d4-1e85e325a71c',
+                startDate,
+              },
+            });
+            expect(errors).toBeUndefined();
+            const { truncated, series } = data.publicStixRelationshipsTimeSeriesBreakdown;
+            // The dataset of the 'Evolution of attacks without filters' widget, whose 7 relationships include references
+            // of their sources: only the 4 targets are displayed by the widgets, no reference gets a serie
+            expect(truncated).toEqual(false);
+            expect(series.map((serie) => [serie.label, serie.value])).toEqual([['targets', 4]]);
+          });
+
           it('should refuse the breakdown of a relationships widget without breakdown', async () => {
             const { data, errors } = await queryAsAdmin({
               query: API_SCR_BREAKDOWN_QUERY,

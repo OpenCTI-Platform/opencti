@@ -578,6 +578,49 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         static: false,
       },
     },
+    '2f27537c-a5ae-45de-b8d4-1e85e325a71c': {
+      id: '2f27537c-a5ae-45de-b8d4-1e85e325a71c',
+      type: 'line',
+      perspective: 'relationships',
+      dataSelection: [
+        {
+          label: 'relationships by type',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'relationships',
+          isTo: true,
+          // No relationship type: the same relationships as the 'Evolution of attacks without filters' widget
+          filters: undefined,
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or',
+            }],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of relationships by type',
+        interval: 'day',
+        breakdownBy: 'relationship_type',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: false,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 8,
+        y: 8,
+        i: '2f27537c-a5ae-45de-b8d4-1e85e325a71c',
+        moved: false,
+        static: false,
+      },
+    },
   },
   config: {
 
