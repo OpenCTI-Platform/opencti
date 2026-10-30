@@ -27,7 +27,7 @@ import { RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT } from '../..
 import { generateStandardId } from '../../../src/schema/identifier';
 import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import type { BasicStoreEntity, BasicCapabilityEntity } from '../../../src/types/store';
-import { up as addFormIntakeCapabilityMigration } from '../../../src/migrations/1791560871501-add-form-intake-capability';
+import { up as addFormIntakeCapabilityMigration } from '../../../src/migrations/1793357318727-add-form-intake-capability';
 
 const FORM_CAPABILITY = 'KNOWLEDGE_KNFORMINTAKE';
 

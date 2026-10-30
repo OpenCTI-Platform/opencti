@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { up } from '../../../src/migrations/1791560871501-add-form-intake-capability';
+import { up } from '../../../src/migrations/1793357318727-add-form-intake-capability';
 import { createCapabilities, FORM_INTAKE_CAPABILITY } from '../../../src/database/data-initialization';
 import { createRelation } from '../../../src/database/middleware';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
