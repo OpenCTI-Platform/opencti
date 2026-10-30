@@ -391,7 +391,6 @@ describe('ConfigPresetImportWizard', () => {
     it('sends a pending save before Apply, then the import with the current selection', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(checkbox('Messages (1/1)'));
-      // Apply waits for the expected results of the new selection
       await resolveSimulation(rendered);
       await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
@@ -910,27 +909,25 @@ describe('ConfigPresetImportWizard', () => {
       expect(within(screen.getByTestId('config-preset-import-item-branding-theme--1')).getByText('default')).toBeInTheDocument();
     });
 
-    it('computes them again on a selection change, Apply waiting for them and the checkboxes staying usable', async () => {
+    it('computes them again on a selection change, Apply and the checkboxes staying usable', async () => {
       const rendered = await renderPreview(session(), simulated);
       await rendered.user.click(checkbox('Messages (1/1)'));
-      expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
-      expect(screen.getByText('Checking what the import would do')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
       expect(checkbox('Messages (0/1)')).toBeEnabled();
       expect(screen.getByRole('button', { name: 'Start over' })).toBeEnabled();
-      // The previous results stay until the new ones are in
+      // The previous results stay until the new ones are in, and nothing says they are being computed
       expect(screen.getByText('Failed')).toBeInTheDocument();
-      await resolveSimulation(rendered, []);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
       expect(screen.queryByText('Checking what the import would do')).not.toBeInTheDocument();
-      expect(screen.queryByText('Failed')).not.toBeInTheDocument();
+      await resolveSimulation(rendered, []);
+      await waitFor(() => expect(screen.queryByText('Failed')).not.toBeInTheDocument());
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
     });
 
-    it('waits for the first ones before Apply', async () => {
+    it('does not make Apply wait for the first ones', async () => {
       const rendered = await openPreview();
-      expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
       expect(checkbox('Messages (1/1)')).toBeEnabled();
       await resolveSimulation(rendered);
-      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
     });
 
     it('keeps only the response of the latest request', async () => {
@@ -1072,7 +1069,6 @@ describe('ConfigPresetImportWizard', () => {
       // The choice says it is overwritten
       expect(within(screen.getByTestId('config-preset-import-item-branding-theme--2')).queryByText('Overwritten')).not.toBeInTheDocument();
       await choose(rendered, 'Add as a copy');
-      expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
       await waitFor(() => expect(dryRuns(rendered)).toHaveLength(1));
       expect(dryRuns(rendered)[0].request.variables).toMatchObject({ selections: [{ type: 'branding', item_modes: [{ key: 'theme--2', mode: 'COPY' }] }] });
       await resolveSimulation(rendered, [{ type: 'branding', key: 'theme--2', status: 'CREATED', reason: 'Added as "Existing theme (1)"' }]);

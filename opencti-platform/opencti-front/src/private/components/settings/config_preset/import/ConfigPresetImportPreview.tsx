@@ -159,7 +159,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   // The expected results, by `<type>/<key>`: held here only, never saved; computed again when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
   // True from a change of the selection until the results of the latest request are in: Apply waits
-  const [isSimulating, setIsSimulating] = useState(false);
   // Only the response of the latest request is kept
   const simulationRef = useRef(0);
   const hasSimulatedRef = useRef(false);
@@ -346,12 +345,10 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     if (selections.length === 0) {
       simulationRef.current += 1;
       setResults(null);
-      setIsSimulating(false);
       return undefined;
     }
     simulationRef.current += 1;
     const request = simulationRef.current;
-    setIsSimulating(true);
     const delay = hasSimulatedRef.current ? SIMULATE_DELAY_MS : 0;
     const timer = window.setTimeout(() => {
       hasSimulatedRef.current = true;
@@ -359,13 +356,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         // A response that arrives after a newer request, or after the wizard was closed, is dropped
         onCompleted: (simulated) => {
           if (isMountedRef.current && request === simulationRef.current) {
-            setIsSimulating(false);
             setResults(Object.fromEntries(simulated.map((result) => [`${result.type}/${result.key}`, result])));
           }
         },
         onError: (err) => {
           if (isMountedRef.current && request === simulationRef.current) {
-            setIsSimulating(false);
             // The results of the previous selection no longer describe this one
             setResults(null);
             if (getConfigPresetErrorReason(err) === 'file_missing') {
@@ -492,13 +487,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       >
         <ConfigPresetImportMessages
           itemsCount={itemsCount}
-          isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
           startedBy={startedBy}
         />
         <ConfigPresetImportActions
           hasSelection={selections.length > 0}
-          isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
           isStarting={isStarting}
           onStartOver={() => setConfirmStartOver(true)}
