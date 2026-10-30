@@ -18,6 +18,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
+  fullRelationsList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
@@ -37,6 +38,7 @@ import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { builtInTheme, customTheme, otherCustomTheme } from './configPreset-themes-fixtures';
 import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole } from './configPreset-roles-fixtures';
+import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -133,6 +135,21 @@ describe('Config preset exportable types query', () => {
         items: [administratorRole, analystRole].map((role) => ({ key: role.standard_id, label: role.name, translatable: false, dependsOn: [], isDefault: false })),
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'groups',
+        label: 'Groups',
+        description: 'Groups with their roles, markings and confidence level',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        // Each group depends on its roles
+        items: [[administratorsGroup, administratorRole], [analystsGroup, analystRole]].map(([group, role]) => ({
+          key: group.standard_id,
+          label: group.name,
+          translatable: false,
+          dependsOn: [{ type: 'roles', key: role.standard_id }],
+          isDefault: false,
+        })),
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -148,7 +165,7 @@ describe('Config preset exportable types query', () => {
   it('lists the messages set on the platform and hides the category when none is set', async () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'roles']);
+    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'roles', 'groups']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -207,6 +224,7 @@ describe('Config preset exportable types query', () => {
       ['whitemark', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
       ['roles', 'securityAccess'],
+      ['groups', 'securityAccess'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

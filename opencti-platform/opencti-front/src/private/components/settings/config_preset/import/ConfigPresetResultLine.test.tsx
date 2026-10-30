@@ -38,6 +38,14 @@ describe('ConfigPresetResultLine', () => {
     ['Grants sensitive rights', 'Grants sensitive rights'],
     ['Unknown capabilities: FOO, BAR', 'Unknown capabilities: FOO, BAR'],
     ['Capabilities not available in draft: SETTINGS_SETACCESSES', 'Capabilities not available in draft: SETTINGS_SETACCESSES'],
+    ['The standard id of the group does not match its name', 'The standard id of the group does not match its name'],
+    ['Group already exists', 'Group already exists'],
+    ['Group name already exists', 'Group name already exists'],
+    ['New users join this group automatically', 'New users join this group automatically'],
+    ['New integration users join this group automatically', 'New integration users join this group automatically'],
+    ['Roles could not be imported: Analyst', 'Roles could not be imported: Analyst'],
+    ['Markings not found: TLP:AMBER, PAP:RED', 'Markings not found: TLP:AMBER, PAP:RED'],
+    ['Default dashboard not found: SOC overview', 'Default dashboard not found: SOC overview'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();
@@ -53,6 +61,11 @@ describe('ConfigPresetResultLine', () => {
   it('keeps the status of a skipped item that is not unchanged, whatever its reason says', () => {
     testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" code="not_overwrite" />);
     expect(screen.getByText('Skipped')).toBeInTheDocument();
+  });
+
+  it('translates each reason of an item that has several, one per line', () => {
+    testRender(<ConfigPresetResultLine label="Group" status="CREATED" reason={'Added as "SOC (1)"\nMarkings not found: PAP:RED'} />);
+    expect(screen.getByText('Added as "SOC (1)" · Markings not found: PAP:RED')).toBeInTheDocument();
   });
 
   it('shows an unknown status as is, and no reason when there is none', () => {
