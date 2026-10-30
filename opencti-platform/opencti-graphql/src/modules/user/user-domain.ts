@@ -149,7 +149,7 @@ import type {
   StoreEntity,
   StoreMarkingDefinition,
 } from '../../types/store';
-import { apiTokens, ENTITY_TYPE_USER, type BasicStoreEntityUser, type StoreEntityUser, type UserBookmark } from './user-types';
+import { apiTokens, AVAILABLE_LANGUAGES, ENTITY_TYPE_USER, type BasicStoreEntityUser, type StoreEntityUser, type UserBookmark } from './user-types';
 import type { BasicStoreEntityEmailTemplate } from '../emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -214,7 +214,6 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'password',
   'draft_context',
 ];
-export const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
 
 const computeImpactedUsers = async (context: AuthContext, user: AuthUser, roleId: string) => {
   // Get all groups that have this role

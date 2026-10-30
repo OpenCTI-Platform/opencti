@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AVAILABLE_LANGUAGES } from '../user/user-domain';
+import { AVAILABLE_LANGUAGES } from '../user/user-types';
 import { THEME_STANDARD_ID_PATTERN } from '../theme/theme-import-schema';
 
 // Strict schemas of the settings a configuration can set (the platform, the messages): unknown keys are rejected,
