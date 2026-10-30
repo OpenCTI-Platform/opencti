@@ -8,6 +8,7 @@ import type { ConfigPresetComputedItem, ConfigPresetImportField } from '../impor
 // Export groups of the spec table; a group is added with its first category
 export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
 export const dataModelGroup = { id: 'dataModel', label: 'Data model' };
+export const securityAccessGroup = { id: 'securityAccess', label: 'Security & Access' };
 
 // The search does not apply to static items: their label is a source string the UI translates,
 // so a match on it would not be the text the user sees. They are always listed.

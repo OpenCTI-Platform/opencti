@@ -46,7 +46,37 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Built-in theme': return t_i18n('Built-in theme');
     case 'Theme already exists': return t_i18n('Theme already exists');
     case 'Theme name already exists': return t_i18n('Theme name already exists');
+    case 'The standard id of the role does not match its name': return t_i18n('The standard id of the role does not match its name');
+    case 'Role already exists': return t_i18n('Role already exists');
+    case 'Role name already exists': return t_i18n('Role name already exists');
+    case 'The Administrator role keeps the bypass capability': return t_i18n('The Administrator role keeps the bypass capability');
+    case 'Grants sensitive rights': return t_i18n('Grants sensitive rights');
+    case 'The standard id of the group does not match its name': return t_i18n('The standard id of the group does not match its name');
+    case 'Group already exists': return t_i18n('Group already exists');
+    case 'Group name already exists': return t_i18n('Group name already exists');
+    case 'New users join this group automatically': return t_i18n('New users join this group automatically');
+    case 'New integration users join this group automatically': return t_i18n('New integration users join this group automatically');
     default: break;
+  }
+  const missingRoles = reason.match(/^Roles could not be imported: (.+)$/)?.[1];
+  if (missingRoles) {
+    return t_i18n('Roles could not be imported: {roles}', { values: { roles: missingRoles } });
+  }
+  const missingMarkings = reason.match(/^Markings not found: (.+)$/)?.[1];
+  if (missingMarkings) {
+    return t_i18n('Markings not found: {markings}', { values: { markings: missingMarkings } });
+  }
+  const missingDashboard = reason.match(/^Default dashboard not found: (.+)$/)?.[1];
+  if (missingDashboard) {
+    return t_i18n('Default dashboard not found: {name}', { values: { name: missingDashboard } });
+  }
+  const unknownCapabilities = reason.match(/^Unknown capabilities: (.+)$/)?.[1];
+  if (unknownCapabilities) {
+    return t_i18n('Unknown capabilities: {capabilities}', { values: { capabilities: unknownCapabilities } });
+  }
+  const draftCapabilities = reason.match(/^Capabilities not available in draft: (.+)$/)?.[1];
+  if (draftCapabilities) {
+    return t_i18n('Capabilities not available in draft: {capabilities}', { values: { capabilities: draftCapabilities } });
   }
   const copyName = reason.match(/^Added as "(.+)"$/)?.[1];
   if (copyName) {
@@ -67,6 +97,9 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   return reason;
 };
 
+// An item can have several reasons, one per line: each is translated
+const translateReasons = (t_i18n: Translate, reason: string) => reason.split('\n').map((part) => translateReason(t_i18n, part)).join(' · ');
+
 // The result of an item of an import: its status and the reason
 const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason, isDone = false }) => {
   const { t_i18n } = useFormatter();
@@ -80,7 +113,7 @@ const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = (
         label={known ? t_i18n(STATUS_LABELS[status as ConfigPresetResultStatus]) : status}
         severity={known ? STATUS_SEVERITIES[status as ConfigPresetResultStatus] : 'neutral'}
       />
-      {reason && <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{translateReason(t_i18n, reason)}</Text>}
+      {reason && <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{translateReasons(t_i18n, reason)}</Text>}
     </div>
   );
 };
