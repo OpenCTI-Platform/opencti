@@ -68,7 +68,6 @@ import {
   type ElFindByIdsOpts,
   elHistogramBreakdownCount,
   getHistogramDateFormat,
-  HISTOGRAM_BREAKDOWN_OTHER_KEY,
   elHistogramCount,
   elIndexElements,
   elList,
@@ -1114,7 +1113,7 @@ const timeSeriesBreakdown = async (
   const filterPerKey = candidates.length >= MAX_AGGREGATION_SIZE || candidates.length >= BREAKDOWN_FILTER_PER_KEY_RATIO * seriesLimit;
   const keys = selected.map((candidate) => candidate.key);
   // The names of the vocabularies are read during the histogram, only for the values kept
-  const [histograms, vocabularyLabels] = await Promise.all([
+  const [{ histograms, other }, vocabularyLabels] = await Promise.all([
     elHistogramBreakdownCount(context, user, indices, {
       ...breakdownArgs,
       interval,
@@ -1134,7 +1133,7 @@ const timeSeriesBreakdown = async (
     return { label: vocabularyLabels.get(key) ?? label, value: sumOf(values), entity, isOther: false, values };
   });
   if (withOther) {
-    const otherValues = fillTimeSeriesValues(axis, histograms.get(HISTOGRAM_BREAKDOWN_OTHER_KEY) ?? []);
+    const otherValues = fillTimeSeriesValues(axis, other ?? []);
     series.push({ label: BREAKDOWN_OTHER_LABEL, value: sumOf(otherValues), entity: null, isOther: true, values: otherValues });
   }
   return { truncated, dates: axis.dates, series };

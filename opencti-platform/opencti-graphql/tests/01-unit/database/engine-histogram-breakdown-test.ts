@@ -1,5 +1,27 @@
-import { describe, expect, it } from 'vitest';
-import { buildHistogramBreakdownAggregations } from '../../../src/database/engine';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// The search requests are answered by a stub of the Elasticsearch client
+const { elkSearch, FakeElkClient, FakeOpenClient } = vi.hoisted(() => {
+  const elkSearchFn = vi.fn();
+  class ElkClientStub {
+    search = elkSearchFn;
+
+    ingest = { putPipeline: vi.fn(async () => ({})) };
+
+    info = vi.fn(async () => ({ version: { distribution: 'elasticsearch', number: '8.19.0' }, tagline: 'You Know, for Search' }));
+  }
+  class OpenClientStub {}
+  return { elkSearch: elkSearchFn, FakeElkClient: ElkClientStub, FakeOpenClient: OpenClientStub };
+});
+
+vi.mock('@elastic/elasticsearch', () => ({ Client: FakeElkClient }));
+vi.mock('@opensearch-project/opensearch', () => ({ Client: FakeOpenClient }));
+vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() => ({})) }));
+
+import conf from '../../../src/config/conf';
+import { buildHistogramBreakdownAggregations, elHistogramBreakdownCount, searchEngineInit } from '../../../src/database/engine';
+import { SYSTEM_USER } from '../../../src/utils/access';
+import type { AuthContext } from '../../../src/types/user';
 
 const countOverTime = { date_histogram: { field: 'created_at', calendar_interval: 'day' } };
 
@@ -72,5 +94,58 @@ describe('buildHistogramBreakdownAggregations', () => {
     const aggs = buildHistogramBreakdownAggregations({ field: 'connections.types', keys: ['sector'], connectionSide: 'to' }, countOverTime) as any;
     expect(aggs.breakdown.aggs.side.filter).toEqual({ query_string: { query: '*_to', fields: ['connections.role'] } });
     expect(aggs.other).toBeUndefined();
+  });
+});
+
+const context = { source: 'test' } as AuthContext;
+const searchResponse = (aggregations: Record<string, unknown>) => ({ _shards: { total: 2, successful: 2, failed: 0 }, aggregations });
+
+describe('engine: requests of the time series breakdowns', () => {
+  beforeAll(async () => {
+    const realGet = conf.get.bind(conf);
+    vi.spyOn(conf, 'get').mockImplementation((key?: string) => {
+      if (key === 'elasticsearch:engine_selector') return 'elk';
+      if (key === 'elasticsearch:engine_check') return false;
+      return realGet(key as string);
+    });
+    await searchEngineInit();
+  });
+
+  beforeEach(() => {
+    elkSearch.mockReset();
+  });
+
+  describe('elHistogramBreakdownCount', () => {
+    const points = (value: number) => ({ '2026-01-01': { weight: { value } } });
+
+    it('should return the Other histogram apart, even beside a value named like a reserved key', async () => {
+      elkSearch.mockResolvedValue(searchResponse({
+        breakdown: {
+          buckets: [
+            { key: '__other__', count_over_time: { buckets: points(4) } },
+            { key: 'label-b', count_over_time: { buckets: points(1) } },
+          ],
+        },
+        other: { count_over_time: { buckets: points(7) } },
+      }));
+
+      const { histograms, other } = await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', {
+        field: 'rel_object-label.internal_id',
+        interval: 'day',
+        keys: ['__other__', 'label-b'],
+        withOther: true,
+      });
+
+      expect(histograms).toEqual(new Map([['__other__', [{ date: '2026-01-01', value: 4 }]], ['label-b', [{ date: '2026-01-01', value: 1 }]]]));
+      expect(other).toEqual([{ date: '2026-01-01', value: 7 }]);
+    });
+
+    it('should not return any Other histogram unless it is requested', async () => {
+      elkSearch.mockResolvedValue(searchResponse({ breakdown: { buckets: [{ key: 'label-a', count_over_time: { buckets: points(2) } }] } }));
+
+      const { other } = await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { field: 'rel_object-label.internal_id', interval: 'day', keys: ['label-a'] });
+
+      expect(other).toBeNull();
+    });
   });
 });

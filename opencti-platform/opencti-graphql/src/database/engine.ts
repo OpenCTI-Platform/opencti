@@ -3669,8 +3669,7 @@ export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   // types: the terms aggregation restricted to the keys is used, whatever `filterPerKey`.
   connectionSide?: ConnectionSide | null;
 };
-// Reserved key of the histogram of the entities carrying none of the requested keys
-export const HISTOGRAM_BREAKDOWN_OTHER_KEY = '__other__';
+export type HistogramBreakdownPoint = { date: string; value: number };
 // Filters are keyed by position: a value, which may contain dots, never becomes a field name of the response
 const breakdownFilterKeyOf = (index: number) => `k${index}`;
 // Aggregations of elHistogramBreakdownCount: `breakdown` holds one bucket per key, `other` the documents carrying none of them
@@ -3724,12 +3723,13 @@ export const buildHistogramBreakdownAggregations = (
 };
 // One date histogram per term of `field`, restricted to the given raw `keys`, in a single query.
 // With `withOther`, a sibling aggregation counts the entities carrying none of the keys (entities without value included).
+// Its histogram is returned apart from the ones of the keys, whatever the keys are named (null without `withOther`).
 export const elHistogramBreakdownCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
   options: HistogramBreakdownCountOpts,
-): Promise<Map<string, { date: string; value: number }[]>> => {
+): Promise<{ histograms: Map<string, HistogramBreakdownPoint[]>; other: HistogramBreakdownPoint[] | null }> => {
   const { interval, keys, withOther = false, filterPerKey = false, connectionSide = null, types = null } = options;
   const dateAttribute = options.dateAttribute || 'created_at';
   const dateFormat = getHistogramDateFormat(interval);
@@ -3765,14 +3765,14 @@ export const elHistogramBreakdownCount = async (
   };
   logApp.debug('[SEARCH] histogramBreakdownCount', { query });
   // A histogram without any document is removed from the filtered response
-  const toPoints = (countOverTimeAggregation: any) => {
+  const toPoints = (countOverTimeAggregation: any): HistogramBreakdownPoint[] => {
     const dateBuckets = R.toPairs(countOverTimeAggregation?.buckets ?? {}) as [string, any][];
     return dateBuckets.map(([date, dateBucket]) => ({ date, value: dateBucket.weight.value }));
   };
   return elRawSearch(context, user, types, query)
     .then((data) => {
       const aggregations = data.aggregations ?? {};
-      const histograms = new Map<string, { date: string; value: number }[]>();
+      const histograms = new Map<string, HistogramBreakdownPoint[]>();
       if (connectionSide) {
         (aggregations.breakdown?.side?.types?.buckets ?? []).forEach((bucket: any) => {
           histograms.set(String(bucket.key), toPoints(bucket.relationships?.count_over_time));
@@ -3784,10 +3784,8 @@ export const elHistogramBreakdownCount = async (
           histograms.set(String(bucket.key), toPoints(bucket.count_over_time));
         });
       }
-      if (withOther) {
-        histograms.set(HISTOGRAM_BREAKDOWN_OTHER_KEY, toPoints(aggregations.other?.count_over_time));
-      }
-      return histograms;
+      const other = withOther ? toPoints(aggregations.other?.count_over_time) : null;
+      return { histograms, other };
     })
     .catch((err) => {
       throw DatabaseError('Histogram breakdown computation fail', { cause: err, query });
