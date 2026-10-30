@@ -195,6 +195,16 @@ describe('Ingestion health settings resolver', () => {
       'You cannot update incompatible attribute',
     );
   });
+
+  it('should keep both fields when they are edited at the same time', async () => {
+    await Promise.all([
+      queryAsAdminWithSuccess(editDelay(60000)),
+      queryAsUserWithSuccess(USER_PLATFORM_ADMIN, editChecks(['USER_MISSING'])),
+    ]);
+    const settings = await readSettings();
+    expect(settings.notification_delay).toEqual(60000);
+    expect(settings.disabled_health_checks).toEqual(['USER_MISSING']);
+  });
 });
 
 describe('Ingestion health field resolver', () => {

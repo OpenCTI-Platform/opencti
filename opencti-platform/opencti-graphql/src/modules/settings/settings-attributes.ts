@@ -1,9 +1,11 @@
 import { BUS_TOPICS } from '../../config/conf';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../../config/errors';
 import { getEntityFromCache } from '../../database/cache';
 import { patchAttributeFromLoadedWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { lockResources } from '../../lock/master-lock';
+import { getDraftContext } from '../../utils/draftContext';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
@@ -35,7 +37,9 @@ export const readSettingsAttribute = async <T>(context: AuthContext, user: AuthU
   return (settings as unknown as Record<string, T | null | undefined>)[name];
 };
 
-// The new value is built from the stored one, not the cached one: the module validates its input against it
+// The new value is built from the stored one, not the cached one: the module validates its input against it.
+// Read, built and written under the lock of the settings: two partial edits at once would otherwise both build
+// on the same stored value, and the last write would restore what the first one changed
 export const editSettingsAttribute = async <T>(
   context: AuthContext,
   user: AuthUser,
@@ -45,13 +49,27 @@ export const editSettingsAttribute = async <T>(
 ): Promise<T> => {
   checkModuleSettingsAttribute(name);
   const { id } = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-  const settings = await storeLoadByIdWithRefs<StoreEntity>(context, user, id, { type: ENTITY_TYPE_SETTINGS });
-  if (!settings) {
-    throw FunctionalError('Cant find the platform settings', { id });
+  const participantIds = [id];
+  let lock;
+  let element;
+  try {
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    const settings = await storeLoadByIdWithRefs<StoreEntity>(context, user, id, { type: ENTITY_TYPE_SETTINGS });
+    if (!settings) {
+      throw FunctionalError('Cant find the platform settings', { id });
+    }
+    const value = await buildValue((settings as unknown as Record<string, T | null | undefined>)[name]);
+    // From the loaded settings: patchAttribute would reject the attribute, not updatable.
+    // The lock already held is passed on: the patch would otherwise wait for it
+    ({ element } = await patchAttributeFromLoadedWithRefs(context, user, settings, { [name]: value }, { locks: participantIds }));
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
   }
-  const value = await buildValue((settings as unknown as Record<string, T | null | undefined>)[name]);
-  // From the loaded settings: patchAttribute would reject the attribute, not updatable
-  const { element } = await patchAttributeFromLoadedWithRefs(context, user, settings, { [name]: value });
   await publishUserAction({
     user,
     event_type: 'mutation',
