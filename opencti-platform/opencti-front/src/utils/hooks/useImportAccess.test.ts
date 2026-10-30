@@ -218,22 +218,6 @@ describe('Hook: useImportAccess - form intake capability', () => {
   });
 });
 
-describe('Hook: useImportAccess - canOpenDraft', () => {
-  it.each([
-    ['a form-only user in main', [KNOWLEDGE_KNFORMINTAKE], [], false],
-    ['a form-only user in draft', [], [KNOWLEDGE_KNFORMINTAKE], false],
-    ['a user who can only import', [KNOWLEDGE_KNASKIMPORT], [], false],
-    ['a user with Create / Update knowledge in main', [KNOWLEDGE_KNUPDATE], [], true],
-    ['a user with Create / Update knowledge in draft only', [], [KNOWLEDGE_KNUPDATE], true],
-  ])('%s', (_name, capabilities, capabilitiesInDraft, expected) => {
-    const { hook } = testRenderHook(
-      () => useImportAccess(),
-      { userContext: buildUserContext(capabilities, capabilitiesInDraft) },
-    );
-    expect(hook.result.current.canOpenDraft).toBe(expected);
-  });
-});
-
 describe('Hook: useImportAccess - isForcedFormSubmissionToDraft', () => {
   it.each([
     // the form capability in main lets the submission stay in main, whatever is granted in draft
@@ -244,6 +228,9 @@ describe('Hook: useImportAccess - isForcedFormSubmissionToDraft', () => {
     { capabilities: [], capabilitiesInDraft: [KNOWLEDGE_KNFORMINTAKE], expected: true },
     { capabilities: [], capabilitiesInDraft: [KNOWLEDGE_KNUPDATE], expected: true },
     { capabilities: [KNOWLEDGE_KNUPDATE], capabilitiesInDraft: [], expected: false },
+    // a user who cannot submit to main (Import knowledge is not enough) but can in draft
+    { capabilities: [KNOWLEDGE_KNASKIMPORT], capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT], expected: true },
+    { capabilities: [], capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT], expected: true },
   ])('should be $expected with $capabilities in main and $capabilitiesInDraft in draft', ({ capabilities, capabilitiesInDraft, expected }) => {
     const { hook } = testRenderHook(
       () => useImportAccess(),

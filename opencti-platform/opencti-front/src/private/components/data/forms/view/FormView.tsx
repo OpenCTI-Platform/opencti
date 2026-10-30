@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader, useRelayEnvironment } from 'react-relay';
 import { useNavigate, useParams } from 'react-router';
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
@@ -127,6 +127,14 @@ const entityCheckQuery = graphql`
   }
 `;
 
+const draftCheckQuery = graphql`
+  query FormViewDraftCheckQuery($id: String!) {
+    draftWorkspace(id: $id) {
+      id
+    }
+  }
+`;
+
 interface FormViewInnerProps {
   queryRef: PreloadedQuery<FormViewQuery>;
   embedded?: boolean;
@@ -157,7 +165,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
   const isBypass = useGranted([BYPASS]);
-  const { isForcedFormSubmissionToDraft, canOpenDraft } = useImportAccess();
+  const { isForcedFormSubmissionToDraft } = useImportAccess();
+  const relayEnvironment = useRelayEnvironment();
   const pendingStore = useIntakePendingStore();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
@@ -499,6 +508,19 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     };
   }, [pollingEntityId, pollingEntityType, navigate, isConnectorReader, onSuccess]);
 
+  // The draft of the submission is opened only when the user can read it (its authorized members), else it is confirmed
+  const openDraftOrConfirm = async (draftId?: string) => {
+    const result = draftId
+      ? await fetchQuery(relayEnvironment, draftCheckQuery, { id: draftId }).toPromise().catch(() => null) as { draftWorkspace?: { id: string } | null } | null
+      : null;
+    if (result?.draftWorkspace?.id) {
+      if (onSuccess) onSuccess(); // Close dialog before navigating
+      navigate(`/dashboard/data/import/draft/${draftId}`);
+    } else {
+      setSubmittedToDraft(true);
+    }
+  };
+
   const handleSubmit = async (values: Record<string, string | string[] | { value: string } | { value: string }[]>, { setSubmitting }: FormikHelpers<Record<string, unknown>>) => {
     setSubmitError(null);
     try {
@@ -517,16 +539,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           if (response?.formSubmit?.success) {
             setSubmitted(true);
             setSubmitting(false);
-            if (isDraft && !canOpenDraft) {
-              setSubmittedToDraft(true);
+            if (isDraft) {
+              openDraftOrConfirm(response.formSubmit.entityId);
             } else if (response.formSubmit.entityId) {
-              if (isDraft) {
-                if (onSuccess) onSuccess(); // Close dialog before navigating
-                navigate(`/dashboard/data/import/draft/${response.formSubmit.entityId}`);
-              } else {
-                setPollingEntityId(response.formSubmit.entityId);
-                setPollingEntityType(schema.mainEntityType || 'StixDomainObject');
-              }
+              setPollingEntityId(response.formSubmit.entityId);
+              setPollingEntityType(schema.mainEntityType || 'StixDomainObject');
             }
           } else {
             setSubmitError(response?.formSubmit?.message || 'Submission failed');

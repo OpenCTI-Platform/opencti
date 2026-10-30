@@ -320,12 +320,9 @@ describe('FormView submission into a draft', () => {
     vi.clearAllMocks();
   });
 
-  const submitForm = async (canOpenDraft: boolean, onSuccess = vi.fn(), embedded = false) => {
-    useGrantedSpy.mockImplementation((capabilities: string[]) => {
-      if (capabilities.includes(useGrantedModule.BYPASS)) return false;
-      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE)) return canOpenDraft;
-      return true;
-    });
+  // The draft returned by draftWorkspace(id) once submitted: null when the user cannot read it, an error without access
+  const submitForm = async (draft: { id: string } | null | Error, onSuccess = vi.fn(), embedded = false) => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => !capabilities.includes(useGrantedModule.BYPASS));
     const { relayEnv, user } = testRender(<FormView embedded={embedded} onSuccess={onSuccess} />, { userContext: mockUserContext });
     await resolveAndWait(relayEnv, defaultMockForm);
     await user.type(screen.getByRole('textbox', { name: /Name/ }), 'My report');
@@ -333,25 +330,38 @@ describe('FormView submission into a draft', () => {
     await waitFor(() => {
       relayEnv.mock.resolveMostRecentOperation({ data: { formSubmit: { success: true, message: null, entityId: 'draft-id' } } });
     });
+    await waitFor(() => {
+      const operation = relayEnv.mock.getMostRecentOperation();
+      expect(operation.request.node.params.name).toBe('FormViewDraftCheckQuery');
+      expect(operation.request.variables).toEqual({ id: 'draft-id' });
+      if (draft instanceof Error) relayEnv.mock.reject(operation, draft);
+      else relayEnv.mock.resolve(operation, { data: { draftWorkspace: draft } });
+    });
     return { user, onSuccess };
   };
 
-  it('opens the draft, closing the dialog first, when the user can open it', async () => {
-    const { onSuccess } = await submitForm(true, vi.fn(), true);
+  it('opens the draft, closing the dialog first, when the user can read it', async () => {
+    const { onSuccess } = await submitForm({ id: 'draft-id' }, vi.fn(), true);
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard/data/import/draft/draft-id');
     });
     expect(onSuccess).toHaveBeenCalled();
   });
 
-  it('confirms the submission instead of opening a draft the user cannot open', async () => {
-    await submitForm(false);
+  it('confirms the submission instead of opening a draft the user cannot read', async () => {
+    await submitForm(null);
+    expect(await screen.findByText('Your submission has been sent and is being processed.')).toBeTruthy();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('confirms the submission when the draft cannot be checked', async () => {
+    await submitForm(new Error('You are not allowed to do this.'));
     expect(await screen.findByText('Your submission has been sent and is being processed.')).toBeTruthy();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('offers to close the dialog, and to submit again, once the submission is confirmed', async () => {
-    const { user, onSuccess } = await submitForm(false, vi.fn(), true);
+    const { user, onSuccess } = await submitForm(null, vi.fn(), true);
     await screen.findByText('Your submission has been sent and is being processed.');
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(onSuccess).toHaveBeenCalled();
