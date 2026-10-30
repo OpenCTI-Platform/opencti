@@ -162,10 +162,10 @@ vi.mock('../../../src/utils/access', async (importOriginal) => {
 
 const defaultCreateDefinition = (WorkflowFactory.createDefinition as any).getMockImplementation();
 const mockContext = { user: { id: 'ctx-user-id' } } as any;
-const mockUser = { id: 'user-id' } as any;
+const mockUser = { id: 'user-id', effective_confidence_level: { max_confidence: 100, overrides: [] } } as any;
 
 describe('Workflow bypass', () => {
-  const user = { id: 'admin', capabilities: [{ name: 'BYPASS' }], draft_context: 'draft-id' } as any;
+  const user = { id: 'admin', capabilities: [{ name: 'BYPASS' }], draft_context: 'draft-id', effective_confidence_level: { max_confidence: 100, overrides: [] } } as any;
   const context = {} as any;
   let entity: any;
   let instance: any;
