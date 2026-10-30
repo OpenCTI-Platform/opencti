@@ -397,6 +397,18 @@ describe('getBreakdownFieldOptions', () => {
     it('refuses a widget without breakdown field', () => {
       expect(isBreakdownFieldSupported(schema, makeWidget({ parameters: { breakdownBy: null } }))).toBe(false);
     });
+
+    it('offers and accepts no field for draft workspaces, read from a saved filter', () => {
+      const withDrafts = new Map(schema);
+      withDrafts.set('DraftWorkspace', new Map([['creator_id', definition('creator_id', 'id', 'Creators', ['DraftWorkspace'])]]));
+      // The content of a saved filter, once read: the widget itself holds none, so it is eligible
+      const drafts = makeWidget({ parameters: { breakdownBy: 'creator_id' } }, ['DraftWorkspace']);
+      expect(getWidgetBreakdownFieldOptions(withDrafts, drafts)).toEqual([]);
+      expect(isBreakdownFieldSupported(withDrafts, drafts)).toBe(false);
+      // Not even the entity type, accepted for any other dataset
+      expect(isBreakdownFieldSupported(withDrafts, { ...drafts, parameters: { breakdownBy: 'entity_type' } })).toBe(false);
+      expect(getWidgetBreakdownFieldOptions(withDrafts, makeWidget({}, ['Report'])).length).toBeGreaterThan(0);
+    });
   });
 
   describe('with dashboard variables', () => {

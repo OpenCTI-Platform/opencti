@@ -11,6 +11,9 @@ import { parseVariableToken } from '../../components/dashboard/dashboardVariable
 export const BREAKDOWN_LIMIT_OPTIONS = [5, 10, 20, 50];
 export const DEFAULT_BREAKDOWN_LIMIT = 10;
 
+// Draft workspaces cannot be broken down: read on the filters of the widget, or on the content of its saved filter
+const isDraftWorkspaceDataset = (dataSelection: Widget['dataSelection']) => isDraftWorkspaceFilterGroup(dataSelection[0]?.filters);
+
 // Relation refs and id attributes with a small, stable cardinality. Vocabularies and enums are
 // always allowed, whatever their key. The backend enforces the same fields, split in three
 // (opencti-graphql/src/database/middleware.ts): BREAKDOWN_ALLOWED_REFS for the relation refs,
@@ -166,13 +169,16 @@ export const getBreakdownFieldOptions = (
  * Fields the first dataset of the widget can be broken down by: the fields of its entity or relationship
  * types for the entities and the relationships, the allowed fields of the logs for the audits.
  * The dataset filters are the ones of the widget, its saved filters read: its type variables are
- * resolved with the dashboard `variables`.
+ * resolved with the dashboard `variables`. None for draft workspaces, which a saved filter can select.
  */
 export const getWidgetBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection'>,
   variables?: DashboardVariable[],
 ): BreakdownField[] => {
+  if (isDraftWorkspaceDataset(widget.dataSelection)) {
+    return [];
+  }
   if (widget.perspective === 'audits') {
     return AUDITS_BREAKDOWN_FIELDS;
   }
@@ -191,9 +197,12 @@ export const isBreakdownFieldSupported = (
   widget: Pick<Widget, 'perspective' | 'dataSelection' | 'parameters'>,
 ) => {
   const breakdownBy = widget.parameters?.breakdownBy;
+  if (!breakdownBy || isDraftWorkspaceDataset(widget.dataSelection)) {
+    return false;
+  }
   // The API accepts the type itself for any dataset: it is only not offered for a single type, a single series.
   // A type variable may well hold a single type once resolved.
-  if (breakdownBy && getBreakdownPerspective(widget.perspective ?? 'entities')?.typeField.key === breakdownBy) {
+  if (getBreakdownPerspective(widget.perspective ?? 'entities')?.typeField.key === breakdownBy) {
     return true;
   }
   return getWidgetBreakdownFieldOptions(filterKeysSchema, widget).some(({ key }) => key === breakdownBy);
@@ -241,7 +250,7 @@ const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
     && getCurrentCategory(widget.type) === 'timeseries'
     && widget.dataSelection.length === 1
     && (dataset.perspective ?? widget.perspective) === widget.perspective
-    && !isDraftWorkspaceFilterGroup(dataset.filters)
+    && !isDraftWorkspaceDataset(widget.dataSelection)
     && !isCountingDistinctValues(widget);
 };
 
