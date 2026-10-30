@@ -169,7 +169,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       ...filesInput,
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && !isDeferredMode && values.authorized_members && {
         authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };

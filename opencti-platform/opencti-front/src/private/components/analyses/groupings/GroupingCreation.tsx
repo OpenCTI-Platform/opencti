@@ -151,7 +151,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && !isDeferredMode && values.authorized_members && {
         authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };

@@ -160,7 +160,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && !isDeferredMode && values.authorized_members && {
         authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
