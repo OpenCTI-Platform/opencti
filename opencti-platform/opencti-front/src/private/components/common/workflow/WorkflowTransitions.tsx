@@ -24,6 +24,7 @@ import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutlined, LockOpenOutl
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import { WorkflowStatus_data$data, WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
@@ -74,6 +75,7 @@ interface WorkflowTransitionsViewProps {
   processingCount?: number;
   workflowInstance: WorkflowStatus_data$data['workflowInstance'];
   entityType: string;
+  currentClosingReason?: string | null;
   refreshing?: boolean;
   onCompleted?: () => void;
 }
@@ -85,6 +87,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   processingCount = 0,
   workflowInstance,
   entityType,
+  currentClosingReason,
   refreshing = false,
   onCompleted,
 }) => {
@@ -250,6 +253,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                       transition.comment,
                       transition.requiresShareOrganizationInput,
                       transition.requiresUnshareOrganizationInput,
+                      transition.closingReason,
                     )}
                     style={{ display: 'flex', justifyContent: 'space-between', gap: 16, height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
                     endIcon={actionCount > 0 ? (
@@ -276,6 +280,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   transition.comment,
                   transition.requiresShareOrganizationInput,
                   transition.requiresUnshareOrganizationInput,
+                  transition.closingReason,
                 )}
                 disabled={approving || clearing || !!wizard}
               >
@@ -287,23 +292,36 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
       </Box>
       {wizard && (
         <Formik<TransitionFormValues>
-          initialValues={{ comment: '', shareOrganizations: [], unshareOrganizations: [] }}
+          initialValues={{ comment: '', closingReason: currentClosingReason ?? '', shareOrganizations: [], unshareOrganizations: [] }}
           validationSchema={Yup.object({
             comment: wizard.commentMode === CommentMode.required && !canBypassMandatoryFields
               ? Yup.string().trim().required(t_i18n('This field is required')).max(COMMENT_MAX_LENGTH)
               : Yup.string().trim().max(COMMENT_MAX_LENGTH),
+            closingReason: wizard.closingReasonMode === CommentMode.required && !canBypassMandatoryFields
+              ? Yup.string().nullable().required(t_i18n('This field is required'))
+              : Yup.string().nullable(),
             shareOrganizations: Yup.array(),
             unshareOrganizations: Yup.array(),
           })}
           onSubmit={handleApplyWizard}
           validateOnMount
         >
-          {({ values, isSubmitting, isValid }) => {
+          {({ values, isSubmitting, isValid, setFieldValue }) => {
             const disabled = isSubmitting || approving || clearing;
             const missingComment = wizard.commentMode === CommentMode.required && !canBypassMandatoryFields && !values.comment.trim();
-            // Radix gives every DialogDescription the same id, so the validation prompt uses it only when no comment prompt precedes it.
+            // Radix gives every DialogDescription the same id, so the closing reason and validation prompts use it only when no comment prompt precedes them.
             const showComment = wizard.commentMode === CommentMode.allowed || wizard.commentMode === CommentMode.required;
             const targetStatus = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event)?.toStatus;
+            const closingReasonPrompt = (
+              <>
+                <Text variant="title-sm">{t_i18n('Closing reason')}</Text>
+                <Text variant="content-compact">
+                  {wizard.closingReasonMode === CommentMode.required
+                    ? t_i18n('A closing reason is required before changing the status.')
+                    : t_i18n('You can optionally select a closing reason before changing the status.')}
+                </Text>
+              </>
+            );
             return (
               <Dialog
                 open
@@ -357,6 +375,22 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                               rows={3}
                               maxLength={COMMENT_MAX_LENGTH}
                               helperText={`${values.comment.length} / ${COMMENT_MAX_LENGTH}`}
+                            />
+                          </div>
+                        )}
+                        {wizard.closingReasonMode && (
+                          <div className="flex flex-col gap-4">
+                            {showComment
+                              ? <div className="flex flex-col gap-2">{closingReasonPrompt}</div>
+                              : <DialogDescription className="flex flex-col gap-2">{closingReasonPrompt}</DialogDescription>}
+                            <OpenVocabField
+                              type="closing_reason_ov"
+                              name="closingReason"
+                              label={t_i18n('Closing reason')}
+                              required={wizard.closingReasonMode === CommentMode.required && !canBypassMandatoryFields}
+                              disabled={disabled}
+                              multiple={false}
+                              onChange={setFieldValue}
                             />
                           </div>
                         )}
@@ -504,6 +538,7 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         entityId={entity.id}
         workflowInstance={entity.workflowInstance}
         entityType={entityType}
+        currentClosingReason={entity.x_opencti_closing_reason}
         refreshing={refreshing}
         onCompleted={refresh}
       />

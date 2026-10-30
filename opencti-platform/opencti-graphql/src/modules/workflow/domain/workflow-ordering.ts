@@ -142,6 +142,22 @@ export const computeStateOrder = (
 };
 
 /**
+ * Returns the states that at least one transition leaves (a transition on itself included). Every other state is
+ * final, an ending state: only a bypass or an external status write moves an entity out of it. Transitions from any
+ * state (`*`) are ignored.
+ */
+export const findStatesWithOutgoingTransitions = <T extends Pick<OrderingTransition, 'from'>>(transitions: T[]): Set<string> => {
+  const states = new Set<string>();
+  transitions.forEach((transition) => {
+    const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+    fromStates.forEach((from) => {
+      if (from && from !== '*') states.add(from);
+    });
+  });
+  return states;
+};
+
+/**
  * Returns the subset of `allStates` that cannot be reached from `initialState` via any transition
  * path (excluding `initialState` itself). Reachability here is independent of cycles: a state
  * inside a cycle it can be entered from is still reachable and is not reported.
