@@ -146,7 +146,7 @@ testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 7;
+testDeletedCounter['intrusion-set'] = 9;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
