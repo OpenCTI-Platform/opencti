@@ -1,35 +1,50 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import Notifications from './Notifications';
 import Profile from './Profile';
-import Triggers from './Triggers';
-import Alerts from './Alerts';
-import NewsFeed from './NewsFeed';
 
-const Root = () => (
-  <Routes>
-    <Route
-      path="/"
-      element={<Navigate to="/dashboard/profile/me" replace={true} />}
-    />
-    <Route
-      path="/me"
-      element={<Profile />}
-    />
-    <Route
-      path="/notifications"
-      element={boundaryWrapper(Notifications)}
-    >
-      <Route index element={<Navigate to="alerts" replace={true} />} />
-      <Route path="alerts" element={boundaryWrapper(Alerts)} />
-      <Route path="news-feed" element={boundaryWrapper(NewsFeed)} />
-    </Route>
-    <Route
-      path="/triggers"
-      element={boundaryWrapper(Triggers)}
-    />
-  </Routes>
-);
+const Root = () => {
+  const location = useLocation();
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={<Navigate to="/dashboard/profile/me" replace={true} />}
+      />
+      <Route
+        path="/me"
+        element={<Profile />}
+      />
+      <Route
+        path="/notifications/*"
+        element={boundaryWrapper(Notifications)}
+      />
+      {/* Legacy nested paths from before the news feed page extraction: keep bookmarks working. */}
+      <Route
+        path="/notifications/alerts"
+        element={<Navigate to="/dashboard/profile/notifications" replace={true} />}
+      />
+      <Route
+        path="/notifications/news-feed"
+        element={<Navigate to="/dashboard/news-feed" replace={true} />}
+      />
+      <Route
+        path="/triggers"
+        element={(
+          <Navigate
+            to={{
+              pathname: '/dashboard/profile/notifications/triggers',
+              search: location.search,
+              hash: location.hash,
+            }}
+            replace={true}
+          />
+        )}
+      />
+    </Routes>
+  );
+};
 
 export default Root;

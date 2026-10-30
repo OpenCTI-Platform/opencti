@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -18,6 +18,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -222,7 +223,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             label={t_i18n('External ID')}
             required={(mandatoryAttributes.includes('x_mitre_id'))}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -302,6 +303,13 @@ const AttackPatternEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={attackPattern.entity_type}
+            entityId={attackPattern.id}
+            values={attackPattern.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -322,6 +330,7 @@ export default createFragmentContainer(AttackPatternEditionOverviewComponent, {
   attackPattern: graphql`
     fragment AttackPatternEditionOverview_attackPattern on AttackPattern {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       x_mitre_id
       description

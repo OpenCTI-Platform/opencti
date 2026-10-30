@@ -10,38 +10,38 @@ const TLP_AMBER = {
   id: 'tlp_amber',
   definition_type: 'TLP',
   definition: 'TLP:AMBER',
-  x_opencti_order: 3
+  x_opencti_order: 3,
 } as unknown as StoreMarkingDefinition;
 const TLP_GREEN = {
   id: 'tlp_green',
   definition_type: 'TLP',
   definition: 'TLP:GREEN',
-  x_opencti_order: 2
+  x_opencti_order: 2,
 } as unknown as StoreMarkingDefinition;
 const TLP_CLEAR = {
   id: 'tlp_clear',
   definition_type: 'TLP',
   definition: 'TLP:CLEAR',
-  x_opencti_order: 1
+  x_opencti_order: 1,
 } as unknown as StoreMarkingDefinition;
 
 const TEST_AMBER = {
   id: 'test_amber',
   definition_type: 'TEST',
   definition: 'TEST:AMBER',
-  x_opencti_order: 3
+  x_opencti_order: 3,
 } as unknown as StoreMarkingDefinition;
 const TEST_GREEN = {
   id: 'test_green',
   definition_type: 'TEST',
   definition: 'TEST:GREEN',
-  x_opencti_order: 2
+  x_opencti_order: 2,
 } as unknown as StoreMarkingDefinition;
 const TEST_CLEAR = {
   id: 'test_clear',
   definition_type: 'TEST',
   definition: 'TEST:CLEAR',
-  x_opencti_order: 1
+  x_opencti_order: 1,
 } as unknown as StoreMarkingDefinition;
 
 const PUBLIC_DASHBOARD = {
@@ -61,7 +61,7 @@ describe('publicDashboard-utils', () => {
       vi.spyOn(cacheModule, 'getEntitiesListFromCache')
         .mockImplementation(async () => [
           TLP_AMBER, TLP_GREEN, TLP_CLEAR,
-          TEST_AMBER, TEST_GREEN, TEST_CLEAR
+          TEST_AMBER, TEST_GREEN, TEST_CLEAR,
         ] as unknown as BasicStoreIdentifier[]);
     });
     afterAll(() => {

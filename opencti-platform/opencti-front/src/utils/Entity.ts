@@ -10,8 +10,21 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/techniques/attack_patterns';
     case 'Campaign':
       return '/dashboard/threats/campaigns';
+    case 'Connector':
     case 'Connectors':
       return '/dashboard/integrations/connectors';
+    case 'Sync':
+      return '/dashboard/integrations/feeds/sync';
+    case 'IngestionRss':
+      return '/dashboard/integrations/feeds/rss';
+    case 'IngestionTaxii':
+      return '/dashboard/integrations/feeds/taxii';
+    case 'IngestionTaxiiCollection':
+      return '/dashboard/integrations/feeds/taxii-push';
+    case 'IngestionCsv':
+      return '/dashboard/integrations/feeds/csv';
+    case 'IngestionJson':
+      return '/dashboard/integrations/feeds/json';
     case 'FintelTemplate':
       return '/dashboard/settings/customization/entity_types';
     case 'FintelDesign':
@@ -21,6 +34,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Note':
       return '/dashboard/analyses/notes';
     case 'Security-Coverage':
+    case 'Security-Coverage-Result':
       return '/dashboard/analyses/security_coverages';
     case 'Observed-Data':
       return '/dashboard/events/observed_data';

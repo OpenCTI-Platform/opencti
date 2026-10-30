@@ -12,12 +12,30 @@ export const DEPLOYED_STATUS_FACETS: DeployedStatusFacet[] = ['active', 'process
 
 export const DEPLOYED_KIND_FACETS: DeployedKindFacet[] = ['connector', 'built-in'];
 
+export type DeployedHealthFacet = 'critical' | 'degraded';
+
+export const DEPLOYED_HEALTH_FACETS: DeployedHealthFacet[] = ['critical', 'degraded'];
+
 export interface DeployedFilterState {
   search: string;
   types: string[];
   statuses: DeployedStatusFacet[];
   kinds: DeployedKindFacet[];
+  updateAvailable: boolean;
+  // Health facet, also set by the health alerts of the page
+  healthStatuses: DeployedHealthFacet[];
 }
+
+// No filter at all: what clearing resets to, and the base of a filter set from scratch (the health alerts).
+// A new facet gets its empty value here only
+export const EMPTY_DEPLOYED_FILTERS: DeployedFilterState = {
+  search: '',
+  types: [],
+  statuses: [],
+  kinds: [],
+  updateAvailable: false,
+  healthStatuses: [],
+};
 
 export interface DeployedSection {
   key: string;
@@ -50,7 +68,7 @@ const itemStatusFacet = (item: DeployedIntegrationItem): DeployedStatusFacet => 
   return item.status;
 };
 
-type FacetGroup = 'types' | 'statuses' | 'kinds';
+type FacetGroup = 'types' | 'statuses' | 'kinds' | 'updateAvailable' | 'healthStatuses';
 
 const matchesFilters = (
   item: DeployedIntegrationItem,
@@ -70,15 +88,26 @@ const matchesFilters = (
   if (skip !== 'kinds' && filters.kinds.length > 0 && !filters.kinds.includes(itemKindFacet(item))) {
     return false;
   }
+  if (skip !== 'updateAvailable' && filters.updateAvailable && !item.updateAvailable) {
+    return false;
+  }
+  if (skip !== 'healthStatuses' && filters.healthStatuses.length > 0
+    && !(filters.healthStatuses as string[]).includes(item.healthStatus ?? '')) {
+    return false;
+  }
   return true;
 };
 
 interface UseDeployedIntegrationsFiltersProps {
   items: DeployedIntegrationItem[];
   searchParams: URLSearchParams;
+  // Without connector update detection, a shared link must not restore an update filter nothing can match
+  isConnectorUpdateEnabled: boolean;
+  // Without ingestion health (INGESTION_HEALTH feature flag), a shared link must not restore a health filter
+  isIngestionHealthEnabled?: boolean;
 }
 
-const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedIntegrationsFiltersProps) => {
+const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdateEnabled, isIngestionHealthEnabled = false }: UseDeployedIntegrationsFiltersProps) => {
   // The legacy feed screens redirect to /integrations/deployed?kind=<feed>:
   // the kind is folded into the type facet as an initial selection.
   const legacyKind = searchParams.get('kind');
@@ -94,6 +123,11 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       .filter((s): s is DeployedStatusFacet => (DEPLOYED_STATUS_FACETS as string[]).includes(s)),
     kinds: parseListParam(searchParams.get('deployment'))
       .filter((k): k is DeployedKindFacet => (DEPLOYED_KIND_FACETS as string[]).includes(k)),
+    updateAvailable: isConnectorUpdateEnabled && searchParams.get('updateAvailable') === 'true',
+    healthStatuses: isIngestionHealthEnabled
+      ? parseListParam(searchParams.get('health'))
+          .filter((h): h is DeployedHealthFacet => (DEPLOYED_HEALTH_FACETS as string[]).includes(h))
+      : [],
   });
   const [sort, setSort] = useState<DeployedSortMode>(
     (['name', 'status', 'lastRun', 'messages'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name',
@@ -105,6 +139,8 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
     if (filters.types.length > 0) params.set('type', [...filters.types].sort().join(','));
     if (filters.statuses.length > 0) params.set('status', [...filters.statuses].sort().join(','));
     if (filters.kinds.length > 0) params.set('deployment', [...filters.kinds].sort().join(','));
+    if (filters.updateAvailable) params.set('updateAvailable', 'true');
+    if (filters.healthStatuses.length > 0) params.set('health', [...filters.healthStatuses].sort().join(','));
     if (sort !== 'name') params.set('sort', sort);
 
     const queryString = params.toString();
@@ -144,6 +180,26 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
     return counts;
   }, [items, filters]);
 
+  const updateAvailableCount = useMemo(() => {
+    let count = 0;
+    for (const item of items) {
+      if (matchesFilters(item, filters, 'updateAvailable') && item.updateAvailable) {
+        count += 1;
+      }
+    }
+    return count;
+  }, [items, filters]);
+
+  const healthCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const item of items) {
+      if (item.healthStatus && matchesFilters(item, filters, 'healthStatuses')) {
+        counts[item.healthStatus] = (counts[item.healthStatus] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [items, filters]);
+
   const availableTypes = useMemo(() => {
     const present = [...new Set(items.map((item) => item.sectionKey))];
     const known = SECTION_ORDER.filter((key) => present.includes(key));
@@ -167,8 +223,8 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
         return statusRank(a) - statusRank(b);
       }
       if (sort === 'lastRun') {
-        const aDate = a.lastRunDate ?? a.updatedAt ?? '';
-        const bDate = b.lastRunDate ?? b.updatedAt ?? '';
+        const aDate = a.lastRunDate ?? a.lastSeenAt ?? a.updatedAt ?? '';
+        const bDate = b.lastRunDate ?? b.lastSeenAt ?? b.updatedAt ?? '';
         if (aDate !== bDate) return bDate.localeCompare(aDate);
       }
       // Largest backlog first, to quickly spot integrations with queued messages.
@@ -177,7 +233,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
         const bMessages = b.messagesCount ?? 0;
         if (aMessages !== bMessages) return bMessages - aMessages;
       }
-      return a.name.localeCompare(b.name);
+      return (a.name ?? '').localeCompare(b.name ?? '');
     });
     return availableTypes
       .map((key) => ({
@@ -190,10 +246,12 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
   const hasActiveFilters = filters.search !== ''
     || filters.types.length > 0
     || filters.statuses.length > 0
-    || filters.kinds.length > 0;
+    || filters.kinds.length > 0
+    || filters.updateAvailable
+    || filters.healthStatuses.length > 0;
 
   const clearAllFilters = () => {
-    setFilters({ search: '', types: [], statuses: [], kinds: [] });
+    setFilters(EMPTY_DEPLOYED_FILTERS);
   };
 
   return {
@@ -210,6 +268,8 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       typeCounts,
       statusCounts,
       kindCounts,
+      updateAvailableCount,
+      healthCounts,
     },
   };
 };

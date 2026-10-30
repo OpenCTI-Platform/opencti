@@ -5,7 +5,8 @@ import { Field } from 'formik';
 import { fetchQuery } from '../../../../../../relay/environment';
 import { useFormatter } from '../../../../../../components/i18n';
 import useAuth from '../../../../../../utils/hooks/useAuth';
-import AutocompleteField from '../../../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../../../components/ComboboxField';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { FieldOption } from '../../../../../../utils/field';
 import { PlaybookFlowFieldRunAsQuery$data } from './__generated__/PlaybookFlowFieldRunAsQuery.graphql';
@@ -60,8 +61,7 @@ const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = (
   };
   const [options, setOptions] = useState<OptionRunAs[]>([currentUserOption]);
 
-  const searchRunAs = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const search = event && event.target.value ? event.target.value : '';
+  const searchRunAs = (search: string) => {
     fetchQuery(playbookFlowFieldRunAsQuery, {
       search,
       first: 50,
@@ -98,32 +98,28 @@ const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = (
   return (
     <div style={{ width: '100%' }}>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         name={name}
         multiple={false}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n(label ?? 'Run as'),
-          helperText: t_i18n('Only yourself and service accounts can be selected'),
-          onFocus: searchRunAs,
-        }}
+        label={t_i18n(label ?? 'Run as')}
+        helperText={t_i18n('Only yourself and service accounts can be selected')}
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={options}
         groupBy={(option: OptionRunAs) => option.type}
-        onInputChange={searchRunAs}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: OptionRunAs,
-        ) => (
-          <li {...props}>
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchRunAs(search);
+        }}
+        onFocusInput={() => searchRunAs('')}
+        renderOption={(option: OptionRunAs) => (
+          <>
             <Box sx={{ paddingTop: '4px', display: 'inline-block', color: 'primary.main' }}>
               <ItemIcon type={option.type} />
             </Box>
             <Box sx={{ display: 'inline-block', flexGrow: 1, marginLeft: '10px' }}>
               {option.label}
             </Box>
-          </li>
+          </>
         )}
       />
     </div>

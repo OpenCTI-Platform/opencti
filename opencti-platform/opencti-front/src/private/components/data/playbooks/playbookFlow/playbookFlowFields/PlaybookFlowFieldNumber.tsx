@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { Field } from 'formik';
 import TextField from '../../../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 
 interface PlaybookFlowFieldNumberProps {
   name: string;
@@ -29,12 +28,12 @@ const PlaybookFlowFieldNumber = ({
   return (
     <Field
       fullWidth
-      variant="standard"
+      variant="outlined"
       type="number"
       name={name}
       label={label}
       component={TextField}
-      style={fieldSpacingContainerStyle}
+      className="mt-5"
     />
   );
 };

@@ -7,9 +7,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
@@ -18,21 +17,8 @@ import { commitMutation } from '../../../../relay/environment';
 import stopEvent from '../../../../utils/domEvent';
 import StixNestedRefRelationshipEdition from './StixNestedRefRelationshipEdition';
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -118,19 +104,26 @@ class StixNestedRefRelationshipPopover extends Component {
   }
 
   render() {
-    const { classes, t, stixNestedRefRelationshipId, disabled } = this.props;
+    const { t, stixNestedRefRelationshipId, disabled } = this.props;
     return (
-      <div className={classes.container}>
+      <Container>
         <IconButton
           aria-label={t('Open menu')}
           onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
+          aria-haspopup={disabled ? undefined : true}
           disabled={disabled}
           color="primary"
         >
           <MoreVertOutlined />
         </IconButton>
         <Menu
+          slotProps={{
+            list: {
+              onClick: (e) => {
+                e.stopPropagation();
+              },
+            },
+          }}
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
@@ -173,7 +166,7 @@ class StixNestedRefRelationshipPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
@@ -182,11 +175,7 @@ StixNestedRefRelationshipPopover.propTypes = {
   stixNestedRefRelationshipId: PropTypes.string,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixNestedRefRelationshipPopover);
+export default inject18n(StixNestedRefRelationshipPopover);

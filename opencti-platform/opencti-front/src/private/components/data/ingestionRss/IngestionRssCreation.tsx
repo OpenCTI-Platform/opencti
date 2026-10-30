@@ -163,27 +163,27 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <IngestionSchedulingField />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="uri"
                 label={t_i18n('RSS Feed URL')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <IngestionCreationUserHandling
                 default_confidence_level={50}
@@ -196,7 +196,7 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
                   label: t_i18n(
                     'Import from date (empty = all RSS feed possible items)',
                   ),
-                  variant: 'standard',
+                  variant: 'outlined',
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}

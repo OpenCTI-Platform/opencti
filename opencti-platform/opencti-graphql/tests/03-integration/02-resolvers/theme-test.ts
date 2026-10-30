@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const CREATE_THEME_MUTATION = gql`
   mutation ThemeAdd($input: ThemeAddInput!) {
@@ -141,6 +141,15 @@ const IMPORT_THEME_MUTATION = gql`
   }
 `;
 
+const EXPORT_THEME_QUERY = gql`
+  query ThemeExport($id: ID!) {
+    theme(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
+`;
+
 describe('Themes resolver testing', () => {
   let customThemeId = '';
   let darkThemeId = '';
@@ -153,12 +162,12 @@ describe('Themes resolver testing', () => {
     });
 
     const darkTheme = themes.data?.themes.edges.find(
-      (edge: any) => edge.node.name === 'Dark',
+      (edge: any) => edge.node.name === 'Filigran Dark',
     );
     darkThemeId = darkTheme?.node.id;
 
     const lightTheme = themes.data?.themes.edges.find(
-      (edge: any) => edge.node.name === 'Light',
+      (edge: any) => edge.node.name === 'Filigran Light',
     );
     lightThemeId = lightTheme?.node.id;
 
@@ -176,8 +185,15 @@ describe('Themes resolver testing', () => {
     expect(queryResult.data?.themes.edges.length).toBeGreaterThanOrEqual(2);
 
     const themeNames = queryResult.data?.themes.edges.map((edge: any) => edge.node.name);
-    expect(themeNames).toContain('Dark');
-    expect(themeNames).toContain('Light');
+    expect(themeNames).toContain('Filigran Dark');
+    expect(themeNames).toContain('Filigran Light');
+  });
+
+  it('should not list themes when not authenticated', async () => {
+    await queryUnauthenticatedIsExpectedForbidden({
+      query: LIST_THEMES_QUERY,
+      variables: { first: 10 },
+    });
   });
 
   it('should read a specific theme', async () => {
@@ -187,7 +203,7 @@ describe('Themes resolver testing', () => {
     });
 
     expect(queryResult.data?.theme).toBeDefined();
-    expect(queryResult.data?.theme.name).toBe('Dark');
+    expect(queryResult.data?.theme.name).toBe('Filigran Dark');
     expect(queryResult.data?.theme.built_in).toBe(true);
     expect(queryResult.data?.theme.theme_background).toBeDefined();
     expect(queryResult.data?.theme.theme_primary).toBeDefined();
@@ -270,6 +286,41 @@ describe('Themes resolver testing', () => {
     expect(updated.data?.themeFieldPatch.theme_primary).toBe('#00ff00');
   });
 
+  it('should not update a theme name to a name already used by another theme', async () => {
+    const UPDATE_INPUT = {
+      id: customThemeId,
+      input: [
+        { key: 'name', value: 'Filigran Dark' },
+      ],
+    };
+
+    const updated = await queryAsAdmin({
+      query: UPDATE_THEME_MUTATION,
+      variables: UPDATE_INPUT,
+    });
+
+    expect(updated.errors).toBeDefined();
+    expect(updated.errors?.[0].message).toContain('Theme name already exists');
+  });
+
+  it('should update a theme with its own unchanged name', async () => {
+    const UPDATE_INPUT = {
+      id: customThemeId,
+      input: [
+        { key: 'name', value: 'Updated Custom Theme' },
+        { key: 'theme_primary', value: '#123456' },
+      ],
+    };
+
+    const updated = await queryAsAdmin({
+      query: UPDATE_THEME_MUTATION,
+      variables: UPDATE_INPUT,
+    });
+
+    expect(updated.data?.themeFieldPatch.name).toBe('Updated Custom Theme');
+    expect(updated.data?.themeFieldPatch.theme_primary).toBe('#123456');
+  });
+
   it('should update theme login aside to color', async () => {
     const UPDATE_INPUT = {
       id: customThemeId,
@@ -317,6 +368,19 @@ describe('Themes resolver testing', () => {
 
     expect(queryResult.data?.themes.edges.length).toBeGreaterThanOrEqual(1);
     expect(queryResult.data?.themes.edges[0].node.name).toContain('Updated Custom');
+  });
+
+  it('should not update a built-in theme', async () => {
+    const updateResult = await queryAsAdmin({
+      query: UPDATE_THEME_MUTATION,
+      variables: {
+        id: darkThemeId,
+        input: [{ key: 'theme_primary', value: '#00ff00' }],
+      },
+    });
+
+    expect(updateResult.errors).toBeDefined();
+    expect(updateResult.errors?.[0].message).toContain('System default themes cannot be updated');
   });
 
   it('should not delete a built-in theme', async () => {
@@ -425,5 +489,65 @@ describe('Themes resolver testing', () => {
     });
 
     expect(queryResult.data?.theme).toBeNull();
+  });
+
+  it('should import a theme file exported from the UI, with http(s) URLs and null login background fields', async () => {
+    const FILE_NAME = 'test-theme-export.json';
+    const upload = await createUploadFromTestDataFile(`theme/${FILE_NAME}`, FILE_NAME, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeUndefined();
+    const importedThemeId = theme.data?.themeImport.id;
+    expect(theme.data?.themeImport.theme_logo).toBe('https://www.test.com/image.svg');
+    expect(theme.data?.themeImport.theme_login_aside_image).toBe('http://www.test.com/aside.png');
+    expect(theme.data?.themeImport.built_in).toBe(false);
+    await queryAsAdmin({ query: DELETE_THEME_MUTATION, variables: { id: importedThemeId } });
+  });
+
+  it('should import a theme file with a logo that is a path of the platform, as the theme form accepts and exports it', async () => {
+    const FILE_NAME = 'test-theme-relative-logo.json';
+    const upload = await createUploadFromTestDataFile(`theme/${FILE_NAME}`, FILE_NAME, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeUndefined();
+    expect(theme.data?.themeImport.theme_logo).toBe('/static/image.svg');
+    await queryAsAdmin({ query: DELETE_THEME_MUTATION, variables: { id: theme.data?.themeImport.id } });
+  });
+
+  it.each([
+    ['a colour that is not hex', 'test-theme-rgb-color.json', 'theme_background'],
+    ['an unknown key', 'test-theme-unknown-key.json', 'built_in'],
+  ])('should refuse to import a theme file with %s', async (_, fileName, invalidKey) => {
+    const upload = await createUploadFromTestDataFile(`theme/${fileName}`, fileName, 'application/json');
+    const theme = await queryAsAdmin({ query: IMPORT_THEME_MUTATION, variables: { file: upload } });
+    expect(theme.errors).toBeDefined();
+    expect(theme.errors?.[0].message).toContain('Invalid theme file');
+    expect(JSON.stringify(theme.errors)).toContain(invalidKey);
+  });
+
+  it('should export a theme as a file the import accepts, without its standard id', async () => {
+    const input = {
+      name: 'Theme to export',
+      theme_background: '#1a1a1a',
+      theme_paper: '#2a2a2a',
+      theme_nav: '#1a1a1a',
+      theme_primary: '#ff6b6b',
+      theme_secondary: '#4ecdc4',
+      theme_accent: '#45b7d1',
+      theme_text_color: '#ffffff',
+      theme_logo: 'https://example.com/logo.png',
+    };
+    const created = await queryAsAdminWithSuccess({ query: CREATE_THEME_MUTATION, variables: { input } });
+    const themeId = created.data?.themeAdd.id;
+    const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: themeId } });
+    // The fields that are not set are left out, and the standard id is not part of a theme file
+    expect(JSON.parse(exported.data?.theme.toConfigurationExport)).toEqual(input);
+    await queryAsAdminWithSuccess({ query: DELETE_THEME_MUTATION, variables: { id: themeId } });
+  });
+
+  it('should export a built-in theme without its standard id', async () => {
+    const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: darkThemeId } });
+    const file = JSON.parse(exported.data?.theme.toConfigurationExport);
+    expect(file.name).toBe('Filigran Dark');
+    expect(file).not.toHaveProperty('standard_id');
+    expect(file).not.toHaveProperty('built_in');
   });
 });

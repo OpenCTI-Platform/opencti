@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { map, keys, groupBy, assoc, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { map, keys, groupBy, assoc } from 'ramda';
+import { styled } from '@mui/material/styles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -16,30 +16,49 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 
-const styles = (theme) => ({
-  container: {
-    padding: '0 0 20px 0',
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  list: {
-    width: '100%',
-  },
-  listItem: {
-    width: '100M',
-  },
-  icon: {
-    color: theme.palette.primary.main,
+const Container = styled('div')({
+  padding: '0 0 20px 0',
+});
+
+const Heading = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.pxToRem(15),
+  flexBasis: '33.33%',
+  flexShrink: 0,
+}));
+
+const SecondaryHeading = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.pxToRem(15),
+  color: theme.palette.text.secondary,
+}));
+
+const PanelContent = styled(AccordionDetails)({
+  padding: 0,
+});
+
+const ObservableList = styled(List)({
+  width: '100%',
+});
+
+const Item = styled(ListItemButton)(({ theme }) => ({
+  minHeight: 48,
+  paddingTop: theme.spacing(0.5),
+  paddingBottom: theme.spacing(0.5),
+}));
+
+// The icon keeps the summary title's left edge; only the name track moves in.
+const ItemIconContainer = styled(ListItemIcon)(({ theme }) => ({
+  minWidth: 'auto',
+  marginRight: theme.spacing(2),
+}));
+
+const ItemText = styled(ListItemText)({
+  flex: '0 1 auto',
+  minWidth: 0,
+  margin: 0,
+  '& .MuiListItemText-primary, & .MuiListItemText-secondary': {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
 });
 
@@ -66,7 +85,7 @@ class StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesContainer
   }
 
   render() {
-    const { t, classes, data, handleSelect } = this.props;
+    const { t, data, handleSelect } = this.props;
     const stixCyberObservablesNodes = map(
       (n) => n.node,
       data.stixCyberObservables.edges,
@@ -78,7 +97,7 @@ class StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesContainer
     const stixCyberObservablesTypes = keys(stixCyberObservables);
 
     return (
-      <div className={classes.container}>
+      <Container>
         {stixCyberObservablesTypes.map((type) => (
           <Accordion
             key={type}
@@ -88,39 +107,41 @@ class StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesContainer
               stixCyberObservablesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
-            elevation={3}
+            // `disableGutters`: MUI otherwise margins every expanded panel, opening gaps.
+            elevation={0}
+            disableGutters
+            sx={{ backgroundColor: 'var(--bg-input-default)' }}
           >
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Typography className={classes.heading}>
+              <Heading>
                 {t(`entity_${type}`)}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
+              </Heading>
+              <SecondaryHeading>
                 {stixCyberObservables[type].length} {t('observable(s)')}
-              </Typography>
+              </SecondaryHeading>
             </AccordionSummary>
-            <AccordionDetails classes={{ root: classes.expansionPanelContent }}>
-              <List classes={{ root: classes.list }}>
+            <PanelContent>
+              <ObservableList>
                 {stixCyberObservables[type].map((stixCyberObservable) => (
-                  <ListItemButton
+                  <Item
                     key={stixCyberObservable.id}
-                    classes={{ root: classes.menuItem }}
                     divider={true}
                     onClick={handleSelect.bind(this, stixCyberObservable)}
                   >
-                    <ListItemIcon>
+                    <ItemIconContainer>
                       <ItemIcon type={type} />
-                    </ListItemIcon>
-                    <ListItemText
+                    </ItemIconContainer>
+                    <ItemText
                       primary={stixCyberObservable.observable_value}
                       secondary={truncate(stixCyberObservable.description, 100)}
                     />
-                  </ListItemButton>
+                  </Item>
                 ))}
-              </List>
-            </AccordionDetails>
+              </ObservableList>
+            </PanelContent>
           </Accordion>
         ))}
-      </div>
+      </Container>
     );
   }
 }
@@ -129,7 +150,6 @@ StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesContainer.propT
   handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -217,7 +237,4 @@ const StixCoreRelationshipCreationFromRelationStixCyberObservablesLines = create
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipCreationFromRelationStixCyberObservablesLines);
+export default inject18n(StixCoreRelationshipCreationFromRelationStixCyberObservablesLines);

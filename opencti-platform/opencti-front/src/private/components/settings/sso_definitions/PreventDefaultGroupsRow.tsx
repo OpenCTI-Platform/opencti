@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Field } from 'formik';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { InfoOutlined } from '@mui/icons-material';
@@ -58,13 +58,16 @@ const PreventDefaultGroupsRow = ({ fieldName }: PreventDefaultGroupsRowProps) =>
           <Chip
             key={name}
             label={name}
-            size="small"
-            variant="outlined"
-            sx={{ borderRadius: 1 }}
           />
         ))}
         {platformDefaultGroups.length === 0 && (
-          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              fontStyle: 'italic',
+            }}
+          >
             {t_i18n('No default groups configured')}
           </Typography>
         )}

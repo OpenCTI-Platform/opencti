@@ -25,4 +25,3 @@ export const EXPECTED_ICCID = {
   labels: [],
   external_references: [],
 };
-

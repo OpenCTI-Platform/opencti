@@ -1,9 +1,9 @@
-import React, { SyntheticEvent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDeleteDialog';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
-import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
+
 import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
 
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
@@ -22,7 +22,11 @@ export type SavedFiltersAutocompleteOptionType = {
   isOwner: boolean;
   ownerName?: string;
   canManage: boolean;
+  scope?: string;
+  disabled?: boolean;
 };
+
+export type WidgetSavedFilterScope = 'Stix-Core-Object' | 'stix-core-relationship' | 'History';
 
 const SavedFilterSelection = ({
   isDisabled,
@@ -104,9 +108,7 @@ const SavedFilterSelection = ({
     helpers.handleChangeSavedFilters(selectionOption.value);
   };
 
-  const onInputChange = (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
-    if (reason === 'input') setInputValue(value);
-  };
+  const onInputChange = (value: string) => setInputValue(value);
 
   const resetSavedFilterToDelete = () => setSavedFilterToDelete(undefined);
 

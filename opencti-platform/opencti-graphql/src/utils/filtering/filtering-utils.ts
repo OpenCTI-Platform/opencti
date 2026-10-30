@@ -33,7 +33,7 @@ import {
 } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
-import { UnsupportedError } from '../../config/errors';
+import { BadUserInputError, UnsupportedError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
 import { isInternalId, isValidDate } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -48,6 +48,13 @@ export const emptyFilterGroup: FilterGroup = {
   filters: [],
   filterGroups: [],
 };
+
+// Filter matching entities whose boolean attribute is true
+export const booleanTrueFilter = (key: string): FilterGroup => ({
+  mode: FilterMode.And,
+  filters: [{ key: [key], values: ['true'] }],
+  filterGroups: [],
+});
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
@@ -460,13 +467,22 @@ const getAvailableKeys = () => {
   return availableKeysCache;
 };
 
+// A filter key segment (once split on '.') must only contain characters that are legit in a
+// schema attribute / relation / sub-field name.
+const FILTER_KEY_SEGMENT_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9_*-]+$/;
+
 /**
  * Check the filter keys exist in the schema
  */
 const checkFilterKeys = (filterGroup: FilterGroup) => {
   // TODO improvement: check filters keys correspond to the entity types if types is given
-  const incorrectKeys = extractFilterKeys(filterGroup)
-    .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
+  const allKeys = extractFilterKeys(filterGroup);
+  const malformedKeys = allKeys.filter((k) => k.split('.').some((segment) => !FILTER_KEY_SEGMENT_ALLOWED_CHARS_REGEX.test(segment)));
+  if (malformedKeys.length > 0) {
+    throw BadUserInputError('Incorrect filter keys containing invalid characters', { keys: malformedKeys });
+  }
+  const incorrectKeys = allKeys
+    .map((k) => k.split('.')[0])
     .filter((k) => !(getAvailableKeys().has(k)
       || k.startsWith(RULE_PREFIX)
       || getMetricsAttributesNames().includes(k)
@@ -474,7 +490,7 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
     ));
 
   if (incorrectKeys.length > 0) {
-    throw UnsupportedError('Incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
+    throw BadUserInputError('Incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
   }
 };
 

@@ -1,5 +1,4 @@
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
 import React, { FunctionComponent } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
@@ -7,6 +6,7 @@ import { FiltersVariant, getFilterDefinitionFromFilterKeysMap, useBuildFilterKey
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { Input } from '@filigran/design-system';
 
 export type FilterElementsInputValue = {
   key: string;
@@ -81,12 +81,9 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
     <>
       <Grid container={true} spacing={2}>
         {variant === FiltersVariant.dialog && (
-          <Grid item xs={12}>
-            <TextField
+          <Grid size={12}>
+            <Input
               label={t_i18n('Global keyword')}
-              variant="outlined"
-              size="small"
-              fullWidth={true}
               value={keyword}
               onChange={handleChangeKeyword}
               disabled={disabled}
@@ -100,11 +97,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
           const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
           if (isDateFilter) {
             return (
-              <Grid
-                key={`${filterKey}_${index}`}
-                item
-                xs={6}
-              >
+              <Grid key={`${filterKey}_${index}`} size={6}>
                 <FilterDate
                   defaultHandleAddFilter={defaultHandleAddFilter}
                   filterKey={filterKey}
@@ -116,7 +109,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
             );
           }
           return (
-            <Grid key={filterKey} item xs={6}>
+            <Grid key={filterKey} size={6}>
               <FilterAutocomplete
                 filterKey={filterKey}
                 searchContext={searchContext}

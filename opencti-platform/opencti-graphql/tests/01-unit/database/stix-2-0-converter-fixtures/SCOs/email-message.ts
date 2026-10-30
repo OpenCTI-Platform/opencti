@@ -35,4 +35,3 @@ export const EXPECTED_EMAIL_MESSAGE = {
   body_multipart: [],
   x_opencti_contains_refs: [],
 };
-

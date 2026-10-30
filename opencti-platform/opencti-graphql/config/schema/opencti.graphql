@@ -262,6 +262,62 @@ input ExportContext {
   visible_columns: [String]
 }
 
+############## Exports
+input ExportAskInput {
+  format: String!
+  exportType: String!
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+}
+
+input StixCoreObjectsExportAskInput {
+  format: String!
+  exportType: String!
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+  search: String
+  exportContext: ExportContext
+  orderBy: StixCoreObjectsOrdering
+  orderMode: OrderingMode
+  filters: FilterGroup
+  selectedIds: [String]
+}
+
+input StixCoreRelationshipsExportAskInput {
+  format: String!
+  exportType: String!
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+  exportContext: ExportContext
+  search: String
+  orderBy: StixCoreRelationshipsOrdering
+  orderMode: OrderingMode
+  selectedIds: [String]
+  fromOrToId: [String]
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromRole: String
+  fromTypes: [String]
+  toId: [String]
+  toRole: String
+  toTypes: [String]
+  relationship_type: [String]
+  filters: FilterGroup
+}
+
+input StixCyberObservablesExportAskInput {
+  format: String!
+  exportType: String!
+  exportContext: ExportContext
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+  search: String
+  orderBy: StixCyberObservablesOrdering
+  orderMode: OrderingMode
+  filters: FilterGroup
+  selectedIds: [String]
+}
+
 type AppDebugDistribution {
   label: String!
   value: Int
@@ -513,6 +569,7 @@ type HistoryChange {
   changes_removed: [String!]
 }
 type ContextData {
+  file_id: String
   entity_id: String
   entity_name: String
   entity_type: String
@@ -631,6 +688,9 @@ type Status {
   order: Int!
   disabled: Boolean
   scope: StatusScope
+  # Set when a Status becomes orphaned by a workflow republish; hard-deleted once past this date
+  # if it is still unreferenced (see the workflow status-projection cleanup manager).
+  to_be_deleted_at: DateTime
 }
 type StatusConnection {
   pageInfo: PageInfo!
@@ -669,6 +729,9 @@ type Synchronizer {
   user: Creator
   running: Boolean!
   current_state_date: DateTime
+  last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
@@ -676,6 +739,7 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
+  ingestionHealth: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
 }
 
 type SynchronizerEdge {
@@ -780,6 +844,7 @@ type FileMetadata {
   analysis_content_source: String
   analysis_content_type: String
   analysis_type: String
+  fintel_template_id: String
 }
 enum FileOrdering {
   _score
@@ -950,6 +1015,8 @@ enum BackgroundTaskActionType {
   REMOVE_GROUPS
   SEND_EMAIL
   ENROLL_PLAYBOOK
+  ADD_RELATED_COVERED_ENTITIES
+  REMOVE_CUSTOM_FIELD_VALUES
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -1163,6 +1230,12 @@ type PlatformEE {
   license_global: Boolean!
   license_extra_expiration: Boolean!
   license_extra_expiration_days: Int
+  license_source: PlatformEESource
+}
+
+enum PlatformEESource {
+  OPENCTI_LICENSE
+  XTM_ONE_LICENSE
 }
 
 enum PlatformCriticalAlertType {
@@ -1191,6 +1264,10 @@ type PlatformProtectedSensitiveConfig {
   connector_reset: PlatformProtectedSubConfig!
   file_indexing: PlatformProtectedSubConfig!
   platform_organization: PlatformProtectedSubConfig!
+}
+enum PlatformBootstrapStatus {
+  pending
+  completed
 }
 enum CGUStatus {
   pending
@@ -1226,8 +1303,8 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_banner_text: String
   platform_banner_level: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_whitemark: Boolean
   platform_language: String
   platform_translations: String
@@ -1338,9 +1415,11 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
   platform_language: String
+  platform_date_format: DateFormat
+  platform_time_format: TimeFormat
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_openaev_url: String
   platform_opengrc_url: String
   platform_xtmhub_url: String
@@ -1361,6 +1440,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_feature_flags: [Module!]
   platform_critical_alerts: [PlatformCriticalAlert!]!
   platform_trash_enabled: Boolean!
+  platform_bootstrap_wizard_enabled: Boolean!
+  platform_bootstrap_status: PlatformBootstrapStatus @ff(flags: ["CONFIG_PRESET"], softFail: true)
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   is_authentication_by_env: Boolean
@@ -1412,6 +1493,14 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   # XTM1 AI
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
+  # Map file
+  platform_map_custom_file: MapCustomFile
+  platform_map_countries_custom_file: MapCustomFile
+}
+
+type MapCustomFile {
+  name: String!
+  size: Float!
 }
 
 ############## Groups
@@ -1496,20 +1585,17 @@ enum UnitSystem {
   Metric
   Imperial
 }
-enum UsersOrdering {
-  name
-  user_email
-  firstname
-  lastname
-  language
-  external
-  created_at
-  updated_at
-  _score
+# How dates are written in tables. "auto" follows the platform for a user, and the language for the platform.
+enum DateFormat {
+  auto
+  iso
 }
-type UserConnection {
-  pageInfo: PageInfo!
-  edges: [UserEdge!]!
+# Time shown with the dates of tables. "auto" follows the platform for a user, and keeps the default of each column for the platform.
+enum TimeFormat {
+  auto
+  none
+  minutes
+  seconds
 }
 type CreatorConnection {
   pageInfo: PageInfo!
@@ -1526,10 +1612,6 @@ type ParticipantConnection {
 type MemberConnection {
   pageInfo: PageInfo!
   edges: [MemberEdge!]!
-}
-type UserEdge {
-  cursor: String!
-  node: User!
 }
 type CreatorEdge {
   cursor: String!
@@ -1586,10 +1668,6 @@ input MemberAccessInput {
   access_right: String!
   groups_restriction_ids: [ID!]
 }
-type OtpElement {
-  secret: String!
-  uri: String!
-}
 type Creator {
   id: ID! # internal_id
   name: String!
@@ -1627,184 +1705,6 @@ enum EffectiveConfidenceLevelSourceType {
 }
 union EffectiveConfidenceLevelSourceObject = Group | User
 
-type ApiToken {
-  id: ID!
-  name: String
-  created_at: DateTime
-  expires_at: DateTime
-  masked_token: String
-  last_used_at: DateTime
-}
-
-type TokenGenerated {
-  token_id: String!
-  plaintext_token: String!
-  expires_at: DateTime
-  masked_token: String!
-}
-
-input UserTokenAddInput {
-  name: String!
-  duration: TokenDuration!
-}
-
-type User implements BasicObject & InternalObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # User
-  user_email: String!
-  api_tokens: [ApiToken!]! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  personal_notifiers: [Notifier!]
-  individual_id: String
-  name: String!
-  description: String
-  firstname: String
-  otp_activated: Boolean
-  otp_qr: String
-  otp_mandatory: Boolean
-  password_valid_until: DateTime
-  user_service_account: Boolean
-  lastname: String
-  theme: String
-  language: String
-  external: Boolean
-  roles(
-    orderBy: RolesOrdering
-    orderMode: OrderingMode
-  ): [Role!]!
-  capabilities: [Capability]!
-  capabilitiesInDraft: [Capability]!
-  default_hidden_types: [String!]!
-  user_confidence_level: ConfidenceLevel
-  effective_confidence_level: EffectiveConfidenceLevel
-  no_creators: Boolean
-  restrict_delete: Boolean
-  groups(
-    orderBy: GroupsOrdering
-    orderMode: OrderingMode
-  ): GroupConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  objectOrganization(
-    first: Int
-    orderBy: OrganizationsOrdering
-    orderMode: OrderingMode
-  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  objectAssignedOrganization(
-    first: Int
-    orderBy: OrganizationsOrdering
-    orderMode: OrderingMode
-  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  created_at: DateTime!
-  updated_at: DateTime!
-  refreshed_at: DateTime
-  sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  default_time_field: String
-  account_status: String! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  administrated_organizations: [Organization!]!
-  unit_system: UnitSystem
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  # Technical
-  editContext: [EditUserContext!]
-  creator: Creator
-}
-
-type MeUser implements BasicObject & InternalObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics:[Metric]
-  user_email: String!
-  name: String!
-  description: String
-  firstname: String
-  otp_activated: Boolean
-  otp_qr: String
-  password_valid_until: DateTime
-  lastname: String
-  theme: String
-  language: String
-  external: Boolean
-  individual_id: String
-  api_tokens: [ApiToken!]!
-  personal_notifiers: [Notifier!]
-  objectOrganization: MeOrganizationConnection
-  capabilities: [Capability!]!
-  capabilitiesInDraft: [Capability!]!
-  default_hidden_types: [String]!
-  user_confidence_level: ConfidenceLevel
-  effective_confidence_level: EffectiveConfidenceLevel
-  no_creators: Boolean
-  restrict_delete: Boolean
-  allowed_marking: [MarkingDefinition!]
-  default_marking: [DefaultMarking!]
-  max_shareable_marking: [MarkingDefinition!]
-  otp_mandatory: Boolean
-  groups(
-    orderBy: GroupsOrdering
-    orderMode: OrderingMode
-  ): GroupConnection
-  default_dashboards: [Workspace!]!
-  default_dashboard: Workspace
-  default_time_field: String
-  account_status: String!
-  account_lock_after_date: DateTime
-  administrated_organizations: [Organization!]!
-  unit_system: UnitSystem
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  can_manage_sensitive_config: Boolean
-  draftContext: DraftWorkspace
-}
-type SessionDetail {
-  id: ID!
-  created: DateTime
-  ttl: Int
-  originalMaxAge: Int
-}
-type UserSession {
-  user: Creator
-  sessions: [SessionDetail]
-}
-input UserAddInput {
-  user_email: String @constraint(minLength: 5, format: "email")
-  name: String! @constraint(minLength: 2, format: "not-blank")
-  password: String
-  firstname: String
-  lastname: String
-  description: String
-  language: String
-  theme: String
-  objectOrganization: [ID!]
-  account_status: String
-  account_lock_after_date: DateTime
-  unit_system: String
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  groups: [ID!]
-  user_confidence_level: ConfidenceLevelInput
-  prevent_default_groups: Boolean
-  user_service_account: Boolean
-  email_template_id: String
-}
-
-input SendUserMailInput {
-  target_user_id: ID!
-  email_template_id: ID!
-}
-
 input ConfidenceLevelInput {
   max_confidence: Int
   overrides: [ConfidenceLevelOverrideInput!]!
@@ -1815,23 +1715,9 @@ input ConfidenceLevelOverrideInput {
   max_confidence: Int!
 }
 
-input UserLoginInput {
-  email: String!
-  password: String!
-}
-
-input UserOTPLoginInput {
-  code: String!
-}
-
 input LicenseActivationInput {
   settingId: ID!
   license: String! @constraint(minLength: 2, format: "not-blank")
-}
-
-input UserOTPActivationInput {
-  secret: String!
-  code: String!
 }
 
 ############## Roles
@@ -1898,399 +1784,6 @@ type Capability implements BasicObject & InternalObject {
   refreshed_at: DateTime
   # Technical
   editContext: [EditUserContext!]
-}
-
-############## Connectors
-enum ConnectorType {
-  EXTERNAL_IMPORT
-  INTERNAL_IMPORT_FILE
-  INTERNAL_ENRICHMENT
-  INTERNAL_ANALYSIS
-  INTERNAL_EXPORT_FILE
-  STREAM
-}
-
-input ConnectorWithConfig {
-  connectorId: String
-  configuration: String
-}
-
-input ExportAskInput {
-  format: String!
-  exportType: String!
-  contentMaxMarkings: [String]
-  fileMarkings: [String]
-}
-
-input StixCoreObjectsExportAskInput {
-  format: String!
-  exportType: String!
-  contentMaxMarkings: [String]
-  fileMarkings: [String]
-  search: String
-  exportContext: ExportContext
-  orderBy: StixCoreObjectsOrdering
-  orderMode: OrderingMode
-  filters: FilterGroup
-  selectedIds: [String]
-}
-
-input StixCoreRelationshipsExportAskInput {
-  format: String!
-  exportType: String!
-  contentMaxMarkings: [String]
-  fileMarkings: [String]
-  exportContext: ExportContext
-  search: String
-  orderBy: StixCoreRelationshipsOrdering
-  orderMode: OrderingMode
-  selectedIds: [String]
-  fromOrToId: [String]
-  elementWithTargetTypes: [String]
-  fromId: [String]
-  fromRole: String
-  fromTypes: [String]
-  toId: [String]
-  toRole: String
-  toTypes: [String]
-  relationship_type: [String]
-  filters: FilterGroup
-}
-
-input StixCyberObservablesExportAskInput {
-  format: String!
-  exportType: String!
-  exportContext: ExportContext
-  contentMaxMarkings: [String]
-  fileMarkings: [String]
-  search: String
-  orderBy: StixCyberObservablesOrdering
-  orderMode: OrderingMode
-  filters: FilterGroup
-  selectedIds: [String]
-}
-
-input ContractConfigInput {
-  key: String!
-  value: String!
-}
-
-input RegisterConnectorInput {
-  id: ID!
-  name: String! @constraint(minLength:2, format: "not-blank")
-  type: ConnectorType!
-  scope: [String!]
-  auto: Boolean
-  auto_update: Boolean
-  enrichment_resolution: String
-  only_contextual: Boolean
-  playbook_compatible: Boolean
-  listen_callback_uri: String
-  xtm_one_intent: String
-}
-
-input EditManagedConnectorInput {
-  id: ID!
-  name: String! @constraint(minLength:2, format: "not-blank")
-  title: String! @constraint(minLength:2, format: "not-blank")
-  connector_user_id: ID!
-  manager_contract_configuration: [ContractConfigInput!]!
-}
-
-input AddManagedConnectorInput {
-  name: String! @constraint(minLength:2, format: "not-blank")
-  connector_user_id: ID
-  user_id: ID!
-  catalog_id: ID!
-  automatic_user: Boolean
-  confidence_level: String
-  manager_contract_image: String!
-  manager_contract_configuration: [ContractConfigInput!]!
-}
-
-input RegisterConnectorsManagerInput {
-  id: ID!
-  name: String! @constraint(minLength:2, format: "not-blank")
-  public_key: String!
-}
-
-input UpdateConnectorManagerStatusInput {
-  id: ID!
-}
-
-input RequestConnectorStatusInput {
-  id: ID!
-  status: ConnectorRequestStatus!
-}
-
-input CurrentConnectorStatusInput {
-  id: ID!
-  status: ConnectorCurrentStatus!
-}
-
-input LogsConnectorStatusInput {
-  id: ID!
-  logs: [String!]!
-}
-
-
-input HealthConnectorStatusInput {
-  id: ID!
-  restart_count: Int!
-  started_at: DateTime!
-  is_in_reboot_loop: Boolean!
-}
-
-type RabbitMQConnection {
-  host: String!
-  vhost: String!
-  use_ssl: Boolean!
-  port: Int!
-  user: String!
-  pass: String!
-}
-
-type S3Connection {
-  endpoint: String!
-  port: Int!
-  use_ssl: Boolean!
-  bucket_name: String!
-  bucket_region: String!
-  access_key: String!
-  secret_key: String!
-}
-
-input ConnectorInfoInput {
-  run_and_terminate: Boolean!
-  buffering: Boolean!
-  queue_threshold: Float!
-  queue_messages_size: Float!
-  next_run_datetime: DateTime
-  last_run_datetime: DateTime
-}
-
-type ConnectorInfo {
-  run_and_terminate: Boolean!
-  buffering: Boolean!
-  queue_threshold: Float!
-  queue_messages_size: Float!
-  next_run_datetime: DateTime
-  last_run_datetime: DateTime
-}
-
-type ConnectorConfig {
-  connection: RabbitMQConnection! @auth(for: [CONNECTORAPI])
-  s3: S3Connection! @auth(for: [CONNECTORAPI])
-  listen: String!
-  listen_routing: String!
-  listen_exchange: String!
-  listen_callback_uri: String
-  push: String!
-  push_routing: String!
-  push_exchange: String!
-  dead_letter_routing: String!
-}
-
-type ConnectorMetadata {
-  configuration: String!
-}
-type ConnectorConfiguration {
-  id: ID!
-  name: String!
-  configuration: String!
-}
-
-type ConnectorQueueDetails {
-  messages_number: Float!
-  messages_size: Float!
-}
-
-type ConnectorContractConfiguration {
-  key: String!
-  value: String
-  encrypted: Boolean
-}
-
-enum ConnectorRequestStatus {
-  starting
-  stopping
-}
-
-enum ConnectorCurrentStatus {
-  started
-  stopped
-}
-
-type ManagerContractConfiguration {
-  key: String
-  value: String
-}
-
-type ManagerContractExcerpt {
-  title: String!
-  slug: String!
-  logo: String!
-}
-
-enum ConnectorPriorityGroup {
-  REALTIME
-  DEFAULT
-}
-
-# CONNECTOR MIGRATION INPUT TYPES
-input ConnectorMigrationAssessmentInput {
-  connectorId: ID!
-  containerImage: String!
-  configuration: [ContractConfigInput!]
-}
-
-input MigrateConnectorToManagedInput {
-  connectorId: ID!
-  containerImage: String!
-  configuration: [ContractConfigInput!]
-  resetConnectorState: Boolean
-  convertUserToServiceAccount: Boolean
-}
-
-# CONNECTOR MIGRATION ASSESSMENT TYPES
-type MigrationAssessmentSummary {
-  total_source_keys: Int!
-  mapped_keys: Int!
-  ignored_keys: Int!
-  missing_mandatory_keys: Int!
-  can_migrate: Boolean!
-  assessment_date: DateTime!
-}
-
-type MappedConfigKey {
-  key: String!
-  sourceKey: String!
-  value: String!
-  type: String!
-  required: Boolean!
-}
-
-type IgnoredConfigKey {
-  key: String!
-  value: String!
-  reason: String!
-}
-
-type MissingConfigKey {
-  key: String!
-  type: String!
-  description: String!
-  format: String
-  enum: [String!]
-  default: JSON
-  required: Boolean!
-}
-
-type MigrationAssessment {
-  connector_id: ID!
-  connector_name: String!
-  contract_image: String!
-  summary: MigrationAssessmentSummary!
-  mapped: [MappedConfigKey!]!
-  ignored: [IgnoredConfigKey!]!
-  missing: [MissingConfigKey!]!
-}
-
-type Connector implements BasicObject & InternalObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # Connector
-  name: String!
-  title: String!
-  active: Boolean
-  auto: Boolean
-  auto_update: Boolean
-  enrichment_resolution: String
-  only_contextual: Boolean
-  playbook_compatible: Boolean
-  connector_trigger_filters: String
-  connector_type: String
-  connector_scope: [String!]
-  connector_state: String
-  connector_schema: String
-  connector_schema_ui: String
-  connector_state_reset: Boolean
-  connector_state_timestamp: DateTime
-  connector_user_id: ID
-  connector_user: User
-  connector_queue_details: ConnectorQueueDetails!
-  connector_info: ConnectorInfo
-  connector_priority_group: ConnectorPriorityGroup!
-  updated_at: DateTime
-  refreshed_at: DateTime
-  created_at: DateTime
-  config: ConnectorConfig
-  works(status: String): [Work]
-  is_managed: Boolean
-  manager_current_status: String
-  manager_requested_status: String
-  manager_contract_image: String
-  manager_contract_definition: String
-  manager_contract_excerpt: ManagerContractExcerpt
-  manager_contract_configuration: [ManagerContractConfiguration!]
-  manager_connector_logs: [String!]
-  manager_contract_hash: String
-  manager_health_metrics: ConnectorHealthMetrics
-  manager_connector_uptime: Int
-  built_in: Boolean
-  configurations: [ConnectorConfiguration!]
-  xtm_one_intent: String
-  jwks: String!
-}
-
-type ManagedConnector implements BasicObject & InternalObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # Connector
-  name: String!
-  connector_user_id: ID
-  connector_user: User
-  connector_state_timestamp: DateTime
-  ## Manager
-  manager: ConnectorManager
-  manager_contract_image: String!
-  manager_current_status: String
-  manager_requested_status: String!
-  manager_contract_configuration: [ConnectorContractConfiguration!]!
-  manager_contract_hash: String!
-  manager_connector_logs: [String!]!
-  manager_health_metrics: ConnectorHealthMetrics
-  manager_connector_uptime: Int
-}
-
-type ConnectorHealthMetrics {
-  restart_count: Int!
-  started_at: DateTime!
-  last_update: DateTime!
-  is_in_reboot_loop: Boolean!
-}
-
-type ConnectorManager implements BasicObject & InternalObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # Manager
-  name: String!
-  public_key: String!
-  last_sync_execution: DateTime
-  about_version: String!
-  active: Boolean!
 }
 
 ############## Rules
@@ -2897,6 +2390,8 @@ enum StixDomainObjectsOrdering {
   first_observed
   last_observed
   number_observed
+  number_seen
+  max_distinct_count
   incident_type
   severity
   priority
@@ -3063,7 +2558,9 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input StixDomainObjectAddInput {
   stix_id: StixId
@@ -3088,6 +2585,7 @@ input StixDomainObjectAddInput {
   modified: DateTime
   x_opencti_modified_at: DateTime
   update: Boolean
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## AttackPatterns
@@ -3283,7 +2781,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input AttackPatternAddInput {
   stix_id: StixId
@@ -3317,6 +2817,7 @@ input AttackPatternAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 type AttackPatternForMatrix {
   attack_pattern_id: String!
@@ -3510,7 +3011,9 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 input CampaignAddInput {
@@ -3544,6 +3047,7 @@ input CampaignAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Containers
@@ -3705,6 +3209,7 @@ interface Container {
   creators: [Creator!]
   workflowEnabled: Boolean
   status: Status
+  workflowInstance: WorkflowInstance
 }
 
 ################ Notes
@@ -3896,7 +3401,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input NoteAddInput {
   stix_id: StixId
@@ -3928,6 +3435,7 @@ input NoteAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 input NoteUserAddInput {
   stix_id: String
@@ -3948,6 +3456,7 @@ input NoteUserAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ ObservedDatas
@@ -3955,6 +3464,8 @@ enum ObservedDatasOrdering {
   first_observed
   last_observed
   number_observed
+  number_seen
+  max_distinct_count
   created
   modified
   created_at
@@ -4112,6 +3623,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  number_seen: Int
+  max_distinct_count: Int
   name: String!
   # Technical
   creators: [Creator!]
@@ -4139,7 +3652,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input ObservedDataAddInput {
   stix_id: StixId
@@ -4147,6 +3662,8 @@ input ObservedDataAddInput {
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  number_seen: Int
+  max_distinct_count: Int
   revoked: Boolean
   lang: String
   confidence: Int
@@ -4169,6 +3686,7 @@ input ObservedDataAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Opinions
@@ -4358,7 +3876,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input OpinionAddInput {
   stix_id: StixId
@@ -4387,6 +3907,7 @@ input OpinionAddInput {
   filesMarkings: [[String]]
   noTriggerImport: [Boolean]
   embedded: [Boolean]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 input OpinionUserAddInput {
   stix_id: String
@@ -4407,6 +3928,7 @@ input OpinionUserAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   clientMutationId: String
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Reports
@@ -4601,8 +4123,10 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 input ReportAddInput {
@@ -4640,6 +4164,7 @@ input ReportAddInput {
   embedded: [Boolean]
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## CoursesOfAction
@@ -4808,7 +4333,9 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input CourseOfActionAddInput {
   stix_id: StixId
@@ -4838,6 +4365,7 @@ input CourseOfActionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Identities
@@ -5007,6 +4535,8 @@ interface Identity {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 input IdentityAddInput {
   stix_id: StixId
@@ -5037,6 +4567,7 @@ input IdentityAddInput {
   embedded: [Boolean]
   update: Boolean
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Individuals
@@ -5208,8 +4739,10 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input IndividualAddInput {
   stix_id: StixId
@@ -5243,6 +4776,7 @@ input IndividualAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Sectors
@@ -5416,7 +4950,9 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input SectorAddInput {
   stix_id: StixId
@@ -5446,6 +4982,7 @@ input SectorAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Systems
@@ -5617,7 +5154,9 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input SystemAddInput {
   stix_id: StixId
@@ -5651,6 +5190,7 @@ input SystemAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Infrastructures
@@ -5824,7 +5364,9 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input InfrastructureAddInput {
   stix_id: StixId
@@ -5857,6 +5399,7 @@ input InfrastructureAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## IntrusionSets
@@ -5869,6 +5412,7 @@ enum IntrusionSetsOrdering {
   x_opencti_workflow_id
   resource_level
   primary_motivation
+  x_opencti_score
   confidence
   _score
   objectMarking
@@ -6003,6 +5547,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   locations: LocationConnection
   # Technical
   creators: [Creator!]
@@ -6030,7 +5575,9 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 input IntrusionSetAddInput {
@@ -6045,6 +5592,7 @@ input IntrusionSetAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -6067,6 +5615,7 @@ input IntrusionSetAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Locations
@@ -6232,6 +5781,8 @@ interface Location {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 input LocationAddInput {
   stix_id: StixId
@@ -6263,6 +5814,7 @@ input LocationAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Positions
@@ -6434,7 +5986,9 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input PositionAddInput {
   stix_id: StixId
@@ -6467,6 +6021,7 @@ input PositionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Cities
@@ -6638,7 +6193,9 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input CityAddInput {
   stix_id: StixId
@@ -6670,6 +6227,7 @@ input CityAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum CountriesOrdering {
@@ -6836,7 +6394,9 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input CountryAddInput {
   stix_id: StixId
@@ -6867,6 +6427,7 @@ input CountryAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Regions
@@ -7036,7 +6597,9 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input RegionAddInput {
   stix_id: StixId
@@ -7067,6 +6630,7 @@ input RegionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Malware
@@ -7083,6 +6647,7 @@ enum MalwaresOrdering {
   objectLabel
   x_opencti_workflow_id
   is_family
+  x_opencti_score
   confidence
   _score
 }
@@ -7221,6 +6786,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   # Technical
@@ -7249,7 +6815,9 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input MalwareAddInput {
   stix_id: StixId
@@ -7264,6 +6832,7 @@ input MalwareAddInput {
   architecture_execution_envs: [String]
   implementation_languages: [String]
   capabilities: [String]
+  x_opencti_score: Int
   confidence: Int
   revoked: Boolean
   lang: String
@@ -7288,6 +6857,7 @@ input MalwareAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## ThreatActorsGroup
@@ -7299,6 +6869,7 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  x_opencti_score
   sophistication
   resource_level
   _score
@@ -7469,7 +7040,9 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 type ThreatActorEdge {
@@ -7491,6 +7064,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
@@ -7636,12 +7210,15 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+  x_opencti_score: Int
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
@@ -7677,6 +7254,7 @@ input ThreatActorGroupAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Tools
@@ -7843,7 +7421,9 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input ToolAddInput {
   stix_id: StixId
@@ -7875,307 +7455,7 @@ input ToolAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
-}
-
-############## Vulnerabilities
-enum VulnerabilitiesOrdering {
-  name
-  x_opencti_cvss_base_score
-  x_opencti_cvss_base_severity
-  x_opencti_cvss_attack_vector
-  created
-  modified
-  created_at
-  updated_at
-  x_opencti_workflow_id
-  creator
-  confidence
-  _score
-}
-type VulnerabilityConnection {
-  pageInfo: PageInfo!
-  edges: [VulnerabilityEdge]
-}
-type VulnerabilityEdge {
-  cursor: String!
-  node: Vulnerability!
-}
-type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # StixObject
-  representative: Representative!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_modified_at: DateTime
-  refreshed_at: DateTime
-  draftVersion: DraftVersion
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
-  currentUserAccessRight: String
-  numberOfConnectedElement: Int!
-  objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!]
-  objectLabel: [Label!]
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-  ): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(
-    relationship_type: [String]
-    toTypes: [String]
-    field: String!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    types: [String]
-    filters: FilterGroup
-    search: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsDistribution(
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    isTo: Boolean
-    limit: Int
-    order: String
-    elementWithTargetTypes: [String]
-    fromId: [String]
-    fromRole: String
-    fromTypes: [String]
-    toId: [String]
-    toRole: String
-    toTypes: [String]
-    relationship_type: [String]
-    confidences: [Int]
-    search: String
-    filters: FilterGroup
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  opinions_metrics: OpinionsMetrics
-  # StixDomainObject
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: [Assignee!]
-  objectParticipant: [Participant!]
-  avatar: OpenCtiFile
-  fintelTemplates: [FintelTemplate!]
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  # Vulnerability
-  name: String!
-  description: String
-  x_opencti_aliases: [String]
-  # CVSS 3
-  x_opencti_cvss_vector_string: String
-  x_opencti_cvss_base_score: Float
-  x_opencti_cvss_base_severity: String
-  x_opencti_cvss_attack_vector: String
-  x_opencti_cvss_attack_complexity: String
-  x_opencti_cvss_privileges_required: String
-  x_opencti_cvss_user_interaction: String
-  x_opencti_cvss_scope: String
-  x_opencti_cvss_confidentiality_impact: String
-  x_opencti_cvss_integrity_impact: String
-  x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_exploit_code_maturity: String
-  x_opencti_cvss_remediation_level: String
-  x_opencti_cvss_report_confidence: String
-  x_opencti_cvss_temporal_score: Float
-  # CVSS2
-  x_opencti_cvss_v2_vector_string: String
-  x_opencti_cvss_v2_base_score: Float
-  x_opencti_cvss_v2_access_vector: String
-  x_opencti_cvss_v2_access_complexity: String
-  x_opencti_cvss_v2_authentication: String
-  x_opencti_cvss_v2_confidentiality_impact: String
-  x_opencti_cvss_v2_integrity_impact: String
-  x_opencti_cvss_v2_availability_impact: String
-  x_opencti_cvss_v2_exploitability: String
-  x_opencti_cvss_v2_remediation_level: String
-  x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: Float
-  # CVSS 4
-  x_opencti_cvss_v4_vector_string: String
-  x_opencti_cvss_v4_base_score: Float
-  x_opencti_cvss_v4_base_severity: String
-  x_opencti_cvss_v4_attack_vector: String
-  x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirements: String
-  x_opencti_cvss_v4_privileges_required: String
-  x_opencti_cvss_v4_user_interaction: String
-  x_opencti_cvss_v4_confidentiality_impact_v: String
-  x_opencti_cvss_v4_confidentiality_impact_s: String
-  x_opencti_cvss_v4_integrity_impact_v: String
-  x_opencti_cvss_v4_integrity_impact_s: String
-  x_opencti_cvss_v4_availability_impact_v: String
-  x_opencti_cvss_v4_availability_impact_s: String
-  x_opencti_cvss_v4_exploit_maturity: String
-  # Others
-  x_opencti_cwe: [String]
-  x_opencti_cisa_kev: Boolean
-  x_opencti_epss_score: Float
-  x_opencti_epss_percentile: Float
-  x_opencti_score: Int
-  x_opencti_first_seen_active: DateTime
-  softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
-  # Technical
-  creators: [Creator!]
-  toStix(version: Version): String
-  importFiles(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  pendingFiles(
-    first: Int
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-}
-input VulnerabilityAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2, format: "not-blank")
-  description: String
-  x_opencti_aliases: [String]
-  # CVSS 3
-  x_opencti_cvss_vector_string: String
-  x_opencti_cvss_base_score: Float
-  x_opencti_cvss_base_severity: String
-  x_opencti_cvss_attack_vector: String
-  x_opencti_cvss_attack_complexity: String
-  x_opencti_cvss_privileges_required: String
-  x_opencti_cvss_user_interaction: String
-  x_opencti_cvss_scope: String
-  x_opencti_cvss_confidentiality_impact: String
-  x_opencti_cvss_integrity_impact: String
-  x_opencti_cvss_availability_impact: String
-  x_opencti_cvss_exploit_code_maturity: String
-  x_opencti_cvss_remediation_level: String
-  x_opencti_cvss_report_confidence: String
-  x_opencti_cvss_temporal_score: Float
-  # CVSS2
-  x_opencti_cvss_v2_vector_string: String
-  x_opencti_cvss_v2_base_score: Float
-  x_opencti_cvss_v2_access_vector: String
-  x_opencti_cvss_v2_access_complexity: String
-  x_opencti_cvss_v2_authentication: String
-  x_opencti_cvss_v2_confidentiality_impact: String
-  x_opencti_cvss_v2_integrity_impact: String
-  x_opencti_cvss_v2_availability_impact: String
-  x_opencti_cvss_v2_exploitability: String
-  x_opencti_cvss_v2_remediation_level: String
-  x_opencti_cvss_v2_report_confidence: String
-  x_opencti_cvss_v2_temporal_score: Float
-  # CVSS 4
-  x_opencti_cvss_v4_vector_string: String
-  x_opencti_cvss_v4_base_score: Float
-  x_opencti_cvss_v4_base_severity: String
-  x_opencti_cvss_v4_attack_vector: String
-  x_opencti_cvss_v4_attack_complexity: String
-  x_opencti_cvss_v4_attack_requirements: String
-  x_opencti_cvss_v4_privileges_required: String
-  x_opencti_cvss_v4_user_interaction: String
-  x_opencti_cvss_v4_confidentiality_impact_v: String
-  x_opencti_cvss_v4_confidentiality_impact_s: String
-  x_opencti_cvss_v4_integrity_impact_v: String
-  x_opencti_cvss_v4_integrity_impact_s: String
-  x_opencti_cvss_v4_availability_impact_v: String
-  x_opencti_cvss_v4_availability_impact_s: String
-  x_opencti_cvss_v4_exploit_maturity: String
-  # Others
-  x_opencti_cwe: [String]
-  x_opencti_cisa_kev: Boolean
-  x_opencti_epss_score: Float
-  x_opencti_epss_percentile: Float
-  x_opencti_score: Int
-  x_opencti_first_seen_active: DateTime
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectOrganization: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  x_opencti_modified_at: DateTime
-  x_opencti_workflow_id: String
-  clientMutationId: String
-  update: Boolean
-  file: Upload
-  fileMarkings: [String]
-  files: [Upload]
-  filesMarkings: [[String]]
-  noTriggerImport: [Boolean]
-  embedded: [Boolean]
-  upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Incident
@@ -8186,6 +7466,7 @@ enum IncidentsOrdering {
   incident_type
   severity
   source
+  x_opencti_score
   created
   modified
   created_at
@@ -8326,6 +7607,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: String
   source: String
+  x_opencti_score: Int
   objectParticipant: [Participant!]
   # Technical
   creators: [Creator!]
@@ -8353,7 +7635,9 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 input IncidentAddInput {
@@ -8371,6 +7655,7 @@ input IncidentAddInput {
   incident_type: String
   severity: String
   source: String
+  x_opencti_score: Int
   createdBy: String
   objectOrganization: [String]
   objectMarking: [String]
@@ -8391,6 +7676,7 @@ input IncidentAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ######## STIX CYBER OBSERVABLES ENTITIES
@@ -14013,6 +13299,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Organization
   | SecurityPlatform
   | SecurityCoverage
+  | SecurityCoverageResult
   | Sector
   | System
   | Indicator
@@ -14182,6 +13469,7 @@ union StixObjectOrStixRelationship =
   | PublicDashboard
   | Pir
   | SecurityCoverage
+  | SecurityCoverageResult
   | CustomView
   | IMEI
   | ICCID
@@ -14460,6 +13748,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 input SecurityCoverageExpectation {
@@ -14491,11 +13781,13 @@ input StixCoreRelationshipAddInput {
   killChainPhases: [String]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
   # Technical
   clientMutationId: String
   update: Boolean
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## StixSightingRelationships
@@ -14581,6 +13873,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input StixSightingRelationshipAddInput {
   # StixRelationship
@@ -14607,6 +13901,7 @@ input StixSightingRelationshipAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## StixRefRelationships
@@ -14844,9 +14139,6 @@ type Query {
   @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
-  me: MeUser! @auth
-  otpGeneration: OtpElement @auth @allowUnprotectedOTP
-  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])
   assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE])
   participants(entityTypes: [String!]): ParticipantConnection @auth(for: [KNOWLEDGE])
@@ -14858,30 +14150,9 @@ type Query {
     entityTypes: [MemberType!]
   ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION, INGESTION_SETINGESTIONS])
   systemMembers: MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION, INGESTION_SETINGESTIONS])
-  users(
-    first: Int
-    after: ID
-    orderBy: UsersOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
-    search: String
-    toStix: Boolean
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   capabilitiesInDraft(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
-  connector(id: String!): Connector @auth(for: [MODULES])
-  connectors: [Connector!]! @auth(for: [MODULES])
-  connectorManager(managerId: ID!): ConnectorManager! @auth(for: [MODULES])
-  connectorManagers: [ConnectorManager!]! @auth(for: [MODULES])
-  connectorsForManagers: [ManagedConnector!] @auth(for: [SETTINGS_SETACCESSES])
-  connectorsForWorker: [Connector] @auth(for: [MODULES])
-  connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
-  connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
-  connectorsForAnalysis: [Connector] @auth(for: [KNOWLEDGE])
-  connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
-  connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment! @auth(for: [MODULES_MODMANAGE])
   work(id: ID!): Work @auth(for: [MODULES])
   isWorkAlive(id: ID!): Boolean @auth(for: [MODULES])
   works(
@@ -14936,6 +14207,7 @@ type Query {
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
+  synchronizerLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION])
   synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
 
   synchronizers(
@@ -15117,14 +14389,6 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  bookmarks(
-    first: Int,
-    after: ID,
-    types: [String],
-    orderBy: StixDomainObjectsOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
@@ -15531,16 +14795,6 @@ type Query {
     search: String
     toStix: Boolean
   ): ToolConnection @auth(for: [KNOWLEDGE])
-  vulnerability(id: String): Vulnerability @auth(for: [KNOWLEDGE])
-  vulnerabilities(
-    first: Int
-    after: ID
-    orderBy: VulnerabilitiesOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
-    search: String
-    toStix: Boolean
-  ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
   incident(id: String): Incident @auth(for: [KNOWLEDGE])
   incidents(
     first: Int
@@ -15963,11 +15217,9 @@ type Query {
 ### SUBSCRIPTIONS
 
 type Subscription {
-  me: MeUser @auth
   settings(id: ID!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   settingsMessages(id: ID!): Settings @auth
   group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])
-  user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
   label(id: ID!): Label @auth(for: [SETTINGS_SETLABELS])
   statusTemplate(id: ID!): StatusTemplate @auth(for: [SETTINGS_SETLABELS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
@@ -15999,7 +15251,7 @@ type WorkEditMutations {
 ######## INTERNAL OBJECT ENTITIES
 
 type SettingsEditMutations {
-  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION])
+  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETAUTH, SETTINGS_SETMANAGEXTMHUB])
   contextPatch(input: EditContext): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   contextClean: Settings @auth(for: [SETTINGS_SETPARAMETERS])
   editMessage(input: SettingsMessageInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
@@ -16007,6 +15259,10 @@ type SettingsEditMutations {
   updateLocalAuth(input: LocalAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
   updateCertAuth(input: CertAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
+  uploadMapCustomFile(file: Upload!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  deleteMapCustomFile: Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  uploadCountriesCustomFile(file: Upload!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  deleteCountriesCustomFile: Settings @auth(for: [SETTINGS_SETPARAMETERS])
 }
 type SubTypeEditMutations {
   statusAdd(input: StatusAddInput!): SubType
@@ -16021,16 +15277,6 @@ type GroupEditMutations {
   relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(fromId: StixRef, toId: StixRef, relationship_type: String!): Group
   editDefaultMarking(input: DefaultMarkingInput!): Group
-}
-type UserEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!): User
-  contextPatch(input: EditContext): User
-  contextClean: User
-  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): User
-  organizationAdd(organizationId: ID!): User
-  organizationDelete(organizationId: ID!): User
 }
 type RoleEditMutations {
   delete: ID
@@ -16141,7 +15387,7 @@ type StixCoreObjectEditMutations {
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT], forDraft: [KNOWLEDGE_KNASKIMPORT])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
@@ -16167,7 +15413,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean, embedded: Boolean, fintelTemplateId: String): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!, file_markings: [String]!): Boolean @auth(for: [CONNECTORAPI])
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -16357,14 +15603,6 @@ type ToolEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-type VulnerabilityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-}
 type IncidentEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -16480,12 +15718,7 @@ type Mutation {
 
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
-  token(input: UserLoginInput): String @public @rateLimit(limit: 1, duration: 1) # Use for login
   connectorJWT: String! @auth(for: [SETTINGS_SETACCESSES])
-  otpActivation(input: UserOTPActivationInput): MeUser @auth @allowUnprotectedOTP
-  otpDeactivation: MeUser @auth
-  otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
-  otpLogin(input: UserOTPLoginInput): Boolean @auth @rateLimit(limit: 1, duration: 1) @allowUnprotectedOTP
   settingsEdit(id: ID!): SettingsEditMutations @auth
   setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB]) @allowUnlicensedLTS
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
@@ -16496,35 +15729,8 @@ type Mutation {
   statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
   groupAdd(input: GroupAddInput!): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  userTokenAdd(input: UserTokenAddInput!): TokenGenerated! @auth(for: [APIACCESS_USETOKEN])
-  userTokenRevoke(id: ID!): ID @auth(for: [APIACCESS_USETOKEN])
-  userAdminTokenRevoke(userId: ID!, id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
-  userAdminTokenAdd(userId: ID!, input: UserTokenAddInput!): TokenGenerated! @auth(for: [SETTINGS_SETACCESSES])
-  meEdit(input: [EditInput]!, password: String): MeUser @auth
-  bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
-  bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
-  sendUserMail(input: SendUserMailInput!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  logout: ID @auth @allowUnprotectedOTP
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
-  sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
-  userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector @auth(for: [CONNECTORAPI])
-  registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
-  managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector @auth(for: [CONNECTORAPI])
-  managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector @auth(for: [CONNECTORAPI])
-  registerConnectorsManager(input: RegisterConnectorsManagerInput): ConnectorManager @auth(for: [CONNECTORAPI])
-  updateConnectorManagerStatus(input: UpdateConnectorManagerStatusInput): ConnectorManager @auth(for: [CONNECTORAPI])
-  resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
-  deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
-  updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector @auth(for: [MODULES_MODMANAGE])
-  updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector @auth(for: [CONNECTORAPI])
-  updateConnectorLogs(input: LogsConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
-  updateConnectorHealth(input: HealthConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
-  updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector @auth(for: [MODULES_MODMANAGE])
-  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector! @auth(for: [MODULES_MODMANAGE])
 
   ######## STIX OBJECT
   stixEdit(id: ID!): StixEditMutations @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE])
@@ -16614,8 +15820,6 @@ type Mutation {
   threatActorGroupEdit(id: ID!): ThreatActorGroupEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   toolAdd(input: ToolAddInput!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   toolEdit(id: ID!): ToolEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   incidentAdd(input: IncidentAddInput!): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   incidentEdit(id: ID!): IncidentEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 

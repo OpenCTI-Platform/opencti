@@ -769,6 +769,8 @@ export enum FilterEnum {
   FIRST_OBSERVED = 'first_observed',
   LAST_OBSERVED = 'last_observed',
   NUMBER_OBSERVED = 'number_observed',
+  NUMBER_SEEN = 'number_seen',
+  MAX_DISTINCT_COUNT = 'max_distinct_count',
   VALID_FROM = 'valid_from',
   VALID_UNTIL = 'valid_until',
   PATTERN_TYPE = 'pattern_type',

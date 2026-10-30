@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { OrganizationDetails_organization$key } from '@components/entities/organizations/__generated__/OrganizationDetails_organization.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -14,6 +15,10 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 const organizationDetailsFragment = graphql`
   fragment OrganizationDetails_organization on Organization {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     description
     contact_information
     x_opencti_score
@@ -38,7 +43,7 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -47,7 +52,7 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
               limit={400}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Organization type')}
             </Label>
@@ -57,7 +62,7 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Contact information')}
             </Label>
@@ -73,6 +78,7 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
             </Label>
             <ItemScore score={organization.x_opencti_score} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={organization.entity_type} values={organization.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>

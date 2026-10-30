@@ -24,7 +24,7 @@ import {
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
-import { resolveUserIndividual } from '../domain/user';
+import { resolveUserIndividual } from '../modules/user/user-domain';
 import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 import { isEmptyField } from '../database/utils';

@@ -31,7 +31,11 @@ A perspective is the way the platform will count the data to display in your wid
 
 Filters vary based on the selected perspective, defining the dataset to be utilized in the widget. Filters are instrumental in narrowing down the scope of data for a more focused analysis.
 
-While filters in the "Entities" and "Activity & History" perspectives align with the platform's familiar search and feed creation filters, the "Knowledge Graph" perspective introduces a more intricate filter configuration. Therefore, they need to be addressed in more detail.
+You can either construct your own custom filters or select a saved filter (see [Saved filters in widgets](#saved-filters-in-widgets) below).
+
+![Widget filters with the 'entities' perspective](assets/widget-filters-entities.png)
+
+While filters in the "Entities" and "Activity & History" perspectives align with the platform's familiar search and feed creation filters, the "Knowledge Graph" perspective introduces a more intricate filter configuration. Therefore, they need to be addressed in more detail (see the section 'Filter in the context of Knowledge Graph' below).
 
 #### Filter in the context of Knowledge Graph
 
@@ -59,11 +63,35 @@ Let's consider an example scenario: Analyzing the initial access attack patterns
 
 By leveraging these advanced filters, users can conduct detailed analyses within the Knowledge Graph perspective, unlocking insights that are crucial for understanding intricate relationships and statistics.
 
-![Widget filters](assets/widget-filters.png)
+![Widget filters with the 'knowledge' perspective](assets/widget-filters-knowledge.png)
 
 In certain views, you can access buttons like `+`, `+ Relationships,` or `+ Entities`. These buttons enable you to incorporate different data into the same widget for comparative analysis. For instance, in a Line view, adding a second set of filters will display two curves in the widget, each corresponding to one of the filtered data sets. Depending on the view, you can work with 1 to 5 sets of filters. The `Label` field allows you to name a data set, and this label can then be shown as a legend in the widget using the `Display legend` button in the widget parameters (see the next section).
 
 ![Widget multiple filters](assets/widget-multiple-filters.png)
+
+
+#### Saved filters in widgets
+
+In widgets (dashboards or custom views), you can either create custom filters or select a saved filter. Use the button to switch between the two modes.
+
+![Button to switch between saved and custom filters in widgets](assets/widget-savedFilters-button.png)
+
+Saved filters are predefined filters created from list views in the platform. You can reuse them in widgets, feeds, lists, and other areas to apply consistent filtering criteria.
+
+Only saved filters compatible with the selected perspective are available:
+
+- In **Activity & History**, no saved filters are currently available.
+- In **Knowledge Graph**, only saved filters created from relationship lists are available.
+- In **Entities**, saved filters from entity lists are available (for example Reports, Malware, and Advanced Search).
+
+![Widget saved filters list](assets/widget-savedFilters-list.png)
+
+When you duplicate a dashboard, saved filter references used by widgets are preserved.
+When you export a widget, a dashboard, or a custom view, or when you create a public dashboard, saved filter references are resolved and replaced with the saved filter content.
+
+If a saved filter is no longer available, the widget cannot be displayed. Exports and public dashboard creations will fail. In this case, recreate the saved filter or remove it before retrying.
+
+![Widget saved filters unavailable](assets/widget-savedFilters-unavailable.png)
 
 #### 4. Parameters
 

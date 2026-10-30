@@ -19,13 +19,16 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import StatusField from '../../common/form/StatusField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 export const organizationEditionOverviewFragment = graphql`
   fragment OrganizationEditionOverview_organization on Organization {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     confidence
@@ -250,7 +253,7 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
           <AlertConfidenceForEntity entity={organization} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -286,14 +289,11 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
             variant="edit"
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="contact_information"
             label={t_i18n('Contact information')}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -328,13 +328,13 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="x_opencti_score"
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string | null) => handleSubmitField(name, (value === '' ? null : value))}
             helperText={(
@@ -376,6 +376,13 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={organization.entity_type}
+            entityId={organization.id}
+            values={organization.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

@@ -1,9 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -15,7 +18,6 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import type { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -24,17 +26,10 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+const FormButtons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+});
 
 export const opinionCreationUserMutation = graphql`
   mutation OpinionCreationUserMutation($input: OpinionUserAddInput!) {
@@ -100,7 +95,6 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   defaultMarkingDefinitions,
   inputValue,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -123,6 +117,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const input: OpinionCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       opinion: values.opinion,
       explanation: values.explanation,
       confidence: parseInt(String(values.confidence), 10),
@@ -171,6 +166,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
 
   return (
     <Formik<OpinionAddInput>
+      entityType={OPINION_TYPE}
       initialValues={initialValues}
       validationSchema={opinionValidator}
       validateOnChange={true}
@@ -233,23 +229,24 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          <div className={classes.buttons}>
+          <CustomFieldValuesCreation />
+          <FormButtons>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtons>
         </Form>
       )}
     </Formik>
@@ -265,7 +262,6 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   defaultMarkingDefinitions,
   inputValue,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -288,6 +284,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const finalValues: OpinionCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       opinion: values.opinion,
       explanation: values.explanation,
       confidence: parseInt(String(values.confidence), 10),
@@ -336,6 +333,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
 
   return (
     <Formik<OpinionAddInput>
+      entityType={OPINION_TYPE}
       initialValues={initialValues}
       validationSchema={opinionValidator}
       validateOnChange={true}
@@ -392,23 +390,24 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          <div className={classes.buttons}>
+          <CustomFieldValuesCreation />
+          <FormButtons>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Create')}
             </Button>
-          </div>
+          </FormButtons>
         </Form>
       )}
     </Formik>

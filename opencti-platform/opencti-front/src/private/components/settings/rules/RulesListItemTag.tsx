@@ -16,13 +16,14 @@ export const RuleTag = ({ action = false, color, label }: RuleTagProps) => {
     flex: 1,
     width: '100%',
     borderRadius: 4,
+    // The tag is stretched to fill its column; the chip lays out from the start.
+    justifyContent: 'center',
   };
 
   if (action) {
     style.flex = '0 0 auto';
     style.width = 80;
     style.marginRight = theme.spacing(3);
-    style.paddingLeft = '4px';
   }
 
   const tagColor = action ? theme.palette.secondary.main : color;

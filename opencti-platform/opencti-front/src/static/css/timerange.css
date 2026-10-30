@@ -115,7 +115,7 @@
 .react_time_range__tick_label {
     position: absolute;
     margin-top: 28px;
-    font-size: 10px;
+    font-size: 12px;
     text-align: center;
     z-index: 2;
     color: #77828c;

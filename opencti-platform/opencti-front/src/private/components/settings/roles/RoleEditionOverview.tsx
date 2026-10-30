@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -90,7 +90,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
           <Form style={{ marginTop: theme.spacing(2) }}>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}

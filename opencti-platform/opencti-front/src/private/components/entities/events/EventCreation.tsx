@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
@@ -9,6 +12,7 @@ import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
+import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -58,6 +62,7 @@ const EVENT_TYPE = 'Event';
 interface EventAddInput {
   name: string;
   description: string;
+  x_opencti_score?: string;
   confidence: number | null;
   event_types: string[];
   start_time: Date | null;
@@ -97,6 +102,10 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     confidence: Yup.number().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date()
@@ -143,12 +152,14 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
-    const variables: EventCreationMutation$variables[] = allNames.map((name) => ({
-      input: {
+    const variables: EventCreationMutation$variables[] = allNames.map((name) => {
+      const input: EventCreationMutation$variables['input'] = {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         event_types: values.event_types,
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : undefined,
         confidence: parseInt(String(values.confidence), 10),
         start_time: values.start_time ? parse(values.start_time).format() : null,
         stop_time: values.stop_time ? parse(values.stop_time).format() : null,
@@ -156,8 +167,9 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-      },
-    }));
+      };
+      return { input };
+    });
 
     bulkCommit({
       variables,
@@ -177,6 +189,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const initialValues = useDefaultValues(EVENT_TYPE, {
     name: inputValue ?? '',
     description: '',
+    x_opencti_score: undefined,
     event_types: [],
     start_time: null,
     confidence: null,
@@ -190,6 +203,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
 
   return (
     <Formik<EventAddInput>
+      entityType={EVENT_TYPE}
       initialValues={initialValues}
       validationSchema={eventValidator}
       validateOnChange={false}
@@ -227,7 +241,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -262,7 +276,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               textFieldProps={{
                 label: t_i18n('Start date'),
                 required: (mandatoryAttributes.includes('start_time')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
               }}
@@ -273,7 +287,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               textFieldProps={{
                 label: t_i18n('End date'),
                 required: (mandatoryAttributes.includes('stop_time')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
               }}
@@ -282,6 +296,17 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               entityType="Event"
               containerStyle={fieldSpacingContainerStyle}
             />
+            {/* A `style` on the field is unplaceable and sends it back to MUI. */}
+            <div style={fieldSpacingContainerStyle}>
+              <Field
+                component={TextField}
+                name="x_opencti_score"
+                required={(mandatoryAttributes.includes('x_opencti_score'))}
+                label={t_i18n('Score')}
+                fullWidth={true}
+                type="number"
+              />
+            </div>
             <CreatedByField
               name="createdBy"
               required={(mandatoryAttributes.includes('createdBy'))}
@@ -318,6 +343,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

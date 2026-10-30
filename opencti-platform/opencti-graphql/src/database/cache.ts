@@ -18,7 +18,7 @@ import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { pushAll } from '../utils/arrayUtil';
 
-const STORE_ENTITIES_LINKS: Record<string, string[]> = {
+export const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir/label modifications
   [ENTITY_TYPE_STREAM_COLLECTION]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_TRIGGER]: [ENTITY_TYPE_RESOLVED_FILTERS],
@@ -40,14 +40,6 @@ const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>)
   for (let i = 0; i < entities.length; i += 1) {
     const entity = entities[i];
     const ids = [entity.internal_id, ...(entity.x_opencti_stix_ids ?? [])];
-    // Use the user api_tokens hashes as ids
-    if ('api_tokens' in entity && Array.isArray(entity.api_tokens)) {
-      (entity.api_tokens as Array<{ hash: string }>).forEach((token) => {
-        if (token.hash) {
-          ids.push(token.hash);
-        }
-      });
-    }
     if (entity.standard_id) {
       ids.push(entity.standard_id);
     }

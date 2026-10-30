@@ -1,9 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@common/button/IconButton';
 import { MoreVertOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { PopoverProps } from '@mui/material/Popover';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
@@ -15,14 +14,11 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import { IconButton } from '@filigran/design-system';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+});
 
 interface VocabularyPopoverProps {
   vocab: useVocabularyCategory_Vocabularynode$data;
@@ -39,7 +35,6 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
   vocab,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
@@ -92,10 +87,16 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
     });
   };
   return (
-    <div className={classes.container}>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
-        <MoreVertOutlined />
-      </IconButton>
+    <Container>
+      <IconButton
+        variant="default"
+        priority="tertiary"
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+        icon={<MoreVertOutlined />}
+      />
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete} disabled={!deletable}>
@@ -114,7 +115,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
       >
         <VocabularyEdition vocab={vocab} handleClose={handleCloseUpdate} />
       </Drawer>
-    </div>
+    </Container>
   );
 };
 

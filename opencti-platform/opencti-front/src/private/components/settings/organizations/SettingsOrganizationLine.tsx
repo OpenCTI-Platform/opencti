@@ -4,43 +4,16 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Skeleton from '@mui/material/Skeleton';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined, MoreVertOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
-import makeStyles from '@mui/styles/makeStyles';
+import { Link } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
-import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { SettingsOrganizationLine_node$key } from './__generated__/SettingsOrganizationLine_node.graphql';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface SettingsOrganizationLineProps {
   node: SettingsOrganizationLine_node$key;
@@ -61,14 +34,13 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
   node,
   dataColumns,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const organization = useFragment(SettingsOrganizationFragment, node);
   return (
     <ListItemButton
       key={organization.id}
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: '50px' }}
       divider={true}
       component={Link}
       to={`/dashboard/settings/accesses/organizations/${organization.id}`}
@@ -77,18 +49,17 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(organization, { t: t_i18n, classes })}
-              </div>
+                {value.render?.(organization, { t: t_i18n })}
+              </BodyItem>
             ))}
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
@@ -100,27 +71,21 @@ export const SettingsOrganizationLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: '50px' }}
       divider={true}
-      secondaryAction={(
-        <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined />
-        </Box>
-      )}
+      secondaryAction={<MoreVertOutlined />}
     >
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 <Skeleton
@@ -129,7 +94,7 @@ export const SettingsOrganizationLineDummy = ({
                   width="90%"
                   height={20}
                 />
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}

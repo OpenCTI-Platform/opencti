@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, getAuthUser, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { addDraftWorkspace } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
-import { meEditField } from '../../../src/domain/user';
+import { meEditField } from '../../../src/modules/user/user-domain';
 import { deleteElementById } from '../../../src/database/middleware';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { executionContext } from '../../../src/utils/access';

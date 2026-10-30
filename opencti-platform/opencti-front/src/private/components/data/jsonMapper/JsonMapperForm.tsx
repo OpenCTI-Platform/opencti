@@ -1,18 +1,17 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import * as Yup from 'yup';
-import { IconButton, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { Add } from '@mui/icons-material';
 import { FormikHelpers } from 'formik/dist/types';
 import JsonMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/jsonMapper/representations/JsonMapperRepresentationForm';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
-import classNames from 'classnames';
 import { JsonMapperProvider } from '@components/data/jsonMapper/JsonMapperContext';
 import { formDataToJsonMapper } from '@components/data/jsonMapper/JsonMapperUtils';
 import JsonMapperTestDialog from '@components/data/jsonMapper/JsonMapperTestDialog';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -22,21 +21,16 @@ import {
 } from './representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  center: {
-    display: 'flex',
-    alignItems: 'center',
-  },
-  marginTop: {
-    marginTop: 20,
-  },
-  representationContainer: {
-    marginTop: 20,
-    display: 'flex',
-  },
-}));
+const SectionHeader = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  marginTop: 20,
+});
+
+const RepresentationContainer = styled('div')({
+  marginTop: 20,
+  display: 'flex',
+});
 
 const jsonMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
   name: Yup.string().trim().required(t_i18n('This field is required')),
@@ -54,7 +48,6 @@ interface JsonMapperFormProps {
 
 const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, onSubmit, isDuplicated, attributes }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   // accordion state
   const [open, setOpen] = useState(false);
@@ -163,31 +156,30 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth
               />
-              <div className={classNames(classes.center, classes.marginTop)}>
+              <SectionHeader>
                 <Typography variant="h3" sx={{ m: 0 }}>
                   {t_i18n('Representations for entity')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)}
-                >
-                  <Add fontSize="small" />
-                </IconButton>
-              </div>
+                  icon={<Add fontSize="small" />}
+                />
+              </SectionHeader>
               <FieldArray
                 name="entity_representations"
                 render={(arrayHelpers) => (
                   <>
                     {values.entity_representations.map((_, idx) => (
-                      <div
+                      <RepresentationContainer
                         key={`entity-${idx}`}
-                        className={classes.representationContainer}
                       >
                         <Field
                           component={JsonMapperRepresentationForm}
@@ -199,32 +191,31 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                           prefixLabel="entity_"
                           onDelete={() => arrayHelpers.remove(idx)}
                         />
-                      </div>
+                      </RepresentationContainer>
                     ))}
                   </>
                 )}
               />
 
-              <div className={classNames(classes.center, classes.marginTop)}>
+              <SectionHeader>
                 <Typography variant="h3" sx={{ m: 0 }}>
                   {t_i18n('Representations for relationship')}
                 </Typography>
                 <IconButton
-                  color="secondary"
+                  variant="default"
+                  priority="tertiary"
                   aria-label="Add"
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
-                >
-                  <Add fontSize="small" />
-                </IconButton>
-              </div>
+                  icon={<Add fontSize="small" />}
+                />
+              </SectionHeader>
               <FieldArray
                 name="relationship_representations"
                 render={(arrayHelpers) => (
                   <>
                     {values.relationship_representations.map((_, idx) => (
-                      <div
+                      <RepresentationContainer
                         key={`relationship-${idx}`}
-                        className={classes.representationContainer}
                       >
                         <Field
                           component={JsonMapperRepresentationForm}
@@ -236,7 +227,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                           prefixLabel="relationship_"
                           onDelete={() => arrayHelpers.remove(idx)}
                         />
-                      </div>
+                      </RepresentationContainer>
                     ))}
                   </>
                 )}

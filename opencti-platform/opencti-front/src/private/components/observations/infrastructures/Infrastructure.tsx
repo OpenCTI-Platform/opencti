@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import InfrastructureDetails from './InfrastructureDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -11,14 +10,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import { Infrastructure_infrastructure$key } from './__generated__/Infrastructure_infrastructure.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const infrastructureFragment = graphql`
   fragment Infrastructure_infrastructure on Infrastructure {
@@ -68,6 +59,7 @@ const infrastructureFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...InfrastructureDetails_infrastructure
   }
 `;
@@ -79,7 +71,6 @@ const Infrastructure = ({
 }) => {
   useInitCreateRelationshipContext();
 
-  const classes = useStyles();
   const infrastructureData = useFragment<Infrastructure_infrastructure$key>(
     infrastructureFragment,
     data,
@@ -89,36 +80,36 @@ const Infrastructure = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <InfrastructureDetails infrastructure={infrastructureData} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixDomainObjectOverview stixDomainObject={infrastructureData} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={infrastructureData.id}
             stixObjectOrStixRelationshipLink={`/dashboard/observations/infrastructures/${infrastructureData.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={infrastructureData.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={infrastructureData.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={infrastructureData.id}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <StixCoreObjectOrStixCoreRelationshipNotes
             stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
             defaultMarkings={infrastructureData.objectMarking ?? []}

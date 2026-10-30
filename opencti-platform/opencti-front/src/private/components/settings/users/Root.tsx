@@ -1,12 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router';
 import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 import type { RootUserQuery, RootUserQuery$variables } from './__generated__/RootUserQuery.graphql';
 import type { RootUserEditionQuery } from './__generated__/RootUserEditionQuery.graphql';
@@ -25,6 +23,7 @@ import UserEdition from './UserEdition';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import UserHistoryTab from './UserHistoryTab';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const userEditionQuery = graphql`
   query RootUserEditionQuery($id: String!) {
@@ -104,6 +103,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const theme = useTheme<Theme>();
 
   useSubscription(subConfig);
@@ -127,7 +127,13 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
             { label: data.name || data.user_email, current: true },
           ]}
           />
-          <Stack direction="row" alignItems="center" marginBottom={3}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              marginBottom: 3,
+            }}
+          >
             <TitleMainEntity sx={{ flex: 1 }}>
               {data.name}
             </TitleMainEntity>
@@ -152,10 +158,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
                   )}
                 </PopoverMenu>
               )}
-              <ConvertUser
-                userId={data.id}
-                userServiceAccount={data.user_service_account ?? false}
-              />
+              {hasSetAccess && (
+                <ConvertUser
+                  userId={data.id}
+                  userServiceAccount={data.user_service_account ?? false}
+                />
+              )}
               <UserDeletionDialog
                 userId={data.id}
                 isOpen={openDelete}
@@ -166,30 +174,19 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
           </Stack>
 
           <div className="clearfix" />
-          <Box
-            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
-          >
-            <Tabs value={location.pathname}>
-              <Tab
-                component={Link}
-                to={`/dashboard/settings/accesses/users/${data.id}`}
-                value={`/dashboard/settings/accesses/users/${data.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/settings/accesses/users/${data.id}/analytics`}
-                value={`/dashboard/settings/accesses/users/${data.id}/analytics`}
-                label={t_i18n('Analytics')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/settings/accesses/users/${data.id}/history`}
-                value={`/dashboard/settings/accesses/users/${data.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
+          <Tabs value={location.pathname} panels="external">
+            <TabsList className="mb-6">
+              <TabsTrigger value={`/dashboard/settings/accesses/users/${data.id}`} asChild>
+                <Link to={`/dashboard/settings/accesses/users/${data.id}`}>{t_i18n('Overview')}</Link>
+              </TabsTrigger>
+              <TabsTrigger value={`/dashboard/settings/accesses/users/${data.id}/analytics`} asChild>
+                <Link to={`/dashboard/settings/accesses/users/${data.id}/analytics`}>{t_i18n('Analytics')}</Link>
+              </TabsTrigger>
+              <TabsTrigger value={`/dashboard/settings/accesses/users/${data.id}/history`} asChild>
+                <Link to={`/dashboard/settings/accesses/users/${data.id}/history`}>{t_i18n('History')}</Link>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <Routes>
             <Route
               path="/"

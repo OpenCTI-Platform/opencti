@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import Card from '../../../../components/common/card/Card';
+import { paperBorder } from '../paperSurface';
 
 export interface BuiltInIntegrationCardProps {
   definition: BuiltInIntegrationDefinition;
@@ -31,7 +32,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
       sx={{
         height: '100%',
         '& .MuiCard-root': {
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+          border: `1px solid ${paperBorder(theme)}`,
           transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {
@@ -53,7 +54,14 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
           cursor: canCreate ? 'pointer' : undefined,
         }}
       >
-        <Stack direction="row" gap={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1.5,
+            alignItems: 'flex-start',
+            width: '100%',
+          }}
+        >
           <Box
             sx={{
               height: 56,
@@ -135,9 +143,12 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
                 (configuration import) must not bubble up to it. */}
             <Stack
               direction="row"
-              alignItems="center"
               onClick={(event) => event.stopPropagation()}
-              sx={{ marginLeft: 'auto', flexShrink: 0 }}
+              sx={{
+                alignItems: 'center',
+                marginLeft: 'auto',
+                flexShrink: 0,
+              }}
             >
               {isImportableBuiltInKind(definition.kind) && (
                 <>
@@ -146,7 +157,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
                 </>
               )}
               <Button
-                size="small"
+                size="default"
                 onClick={onClickCreate}
                 sx={{ marginLeft: 1 }}
               >

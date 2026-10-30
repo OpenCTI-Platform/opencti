@@ -1,0 +1,259 @@
+# The catalog objects are identified by a key, not an id: a singleton category and its only item share the same key, and the
+# front-end Relay store caches every object that has an id by that id alone, which would merge them into one record.
+
+# An item another item needs: it is exported with it, whatever the selection.
+type ConfigPresetItemReference {
+    type: String!
+    key: String!
+}
+
+type ConfigPresetExportableItem {
+    key: String!
+    label: String!
+    # True when the label is a static string the UI translates, false when it is user data shown as is.
+    translatable: Boolean!
+    dependsOn: [ConfigPresetItemReference!]!
+    # The item is the platform default (the default theme).
+    isDefault: Boolean!
+}
+
+type ConfigPresetExportableItemEdge {
+    cursor: String!
+    node: ConfigPresetExportableItem!
+}
+
+type ConfigPresetExportableItemConnection {
+    pageInfo: PageInfo!
+    edges: [ConfigPresetExportableItemEdge!]!
+}
+
+# An export group (Platform settings, Data model...): it groups types in the export dialog.
+type ConfigPresetExportableGroup {
+    key: String!
+    label: String!
+}
+
+# A category of configuration, in registry order, when it has at least one item. A singleton category has exactly one item, whose key is the key of the category.
+type ConfigPresetExportableType {
+    key: String!
+    label: String!
+    # What the category holds, translated by the UI like the label.
+    description: String!
+    group: ConfigPresetExportableGroup!
+    # First page of the items; the next pages come from configPresetExportableItems.
+    items: [ConfigPresetExportableItem!]!
+    # Page info of items: globalCount is the number of exportable items of the type.
+    itemsPageInfo: PageInfo!
+}
+
+# A value the import would write; a null value is left untouched.
+type ConfigPresetImportField {
+    key: String!
+    value: String
+}
+
+# An item of an uploaded bundle: type is the bare family id, key the bundle id (the pair the results of the import carry).
+type ConfigPresetImportItem {
+    key: String!
+    label: String!
+    translatable: Boolean!
+    isDefault: Boolean!
+    # The item already exists on the platform.
+    exists: Boolean!
+    # The item conflicts with one of the platform: it exists, or another one has its name. The dialog offers a choice of what to do with it.
+    conflict: Boolean!
+    fields: [ConfigPresetImportField!]!
+    # Items imported with this one, whatever the selection.
+    dependsOn: [ConfigPresetItemReference!]!
+}
+
+type ConfigPresetImportType {
+    key: String!
+    label: String!
+    description: String!
+    group: ConfigPresetExportableGroup!
+    items: [ConfigPresetImportItem!]!
+    # The modes the type supports for an item in conflict; the dialog shows a choice on such an item when there is more than one.
+    modes: [ConfigImportMode!]!
+}
+
+type ConfigPresetImportPreview {
+    bundle_name: String
+    openCTI_version: String!
+    generated_at: String!
+    types: [ConfigPresetImportType!]!
+    # Paths of the entries of the zip that are not importable.
+    ignored: [String!]!
+}
+
+enum ConfigPresetImportSessionStatus {
+    DRAFT
+    APPLYING
+    FINISHED
+    # Derived when the session is read, never stored: it is stored as applying but the import no longer runs (a node stopped).
+    INTERRUPTED
+}
+
+enum ConfigPresetImportOutcome {
+    COMPLETED
+    # Every item has a result, but the import was stopped before the end (lost lock, unexpected error): the status stays pending.
+    STOPPED
+}
+
+# The events the current state of the session accepts: the wizard enables its buttons from them.
+enum ConfigPresetImportSessionEvent {
+    UPLOAD
+    SAVE
+    START_OVER
+    START
+    ITEM_PROCESSED
+    FINISH
+    ABORT
+    BACK_TO_SELECTION
+    CLOSE
+}
+
+enum ConfigPresetImportResultStatus {
+    CREATED
+    OVERWRITTEN
+    SKIPPED
+    FAILED
+}
+
+# What an import does with an item that already exists on the platform: ADD refuses it, OVERWRITE patches it, COPY adds it under a free name
+# (and a new identity when its own is taken). A type offers the modes it supports, OVERWRITE always; ADD is for the import of a single item
+# (a theme file) and no type offers it. An item has the mode OVERWRITE unless its own is given.
+
+enum ConfigImportMode {
+    ADD
+    OVERWRITE
+    COPY
+}
+
+# The result of one processed item: type is the bare family id, key the bundle id, the pair the preview rows carry.
+type ConfigPresetImportResult {
+    type: String!
+    key: String!
+    status: ConfigPresetImportResultStatus!
+    reason: String
+    # The name of the item, and whether the UI translates it; the key for a result stored before the names were kept.
+    label: String!
+    translatable: Boolean!
+    # The type of the item, to group the results like the selection: its label, its place among the types, and its group.
+    type_label: String!
+    type_index: Int!
+    group: ConfigPresetExportableGroup!
+}
+
+type ConfigPresetImportCounts {
+    created: Int!
+    overwritten: Int!
+    skipped: Int!
+    failed: Int!
+}
+
+type ConfigPresetImportSessionSelection {
+    type: ID!
+    items: [ID!]
+    excluded_items: [ID!]
+    # The items that are not imported with OVERWRITE; null for none.
+    item_modes: [ConfigPresetItemMode!]
+}
+
+type ConfigPresetItemMode {
+    key: ID!
+    mode: ConfigImportMode!
+}
+
+# The wizard state of the calling administrator: the pending zip, the selection, and the progress and result of the last import.
+type ConfigPresetImportSession {
+    status: ConfigPresetImportSessionStatus!
+    file_id: ID!
+    selections: [ConfigPresetImportSessionSelection!]!
+    revision: Int!
+    started_at: DateTime
+    total: Int!
+    results: [ConfigPresetImportResult!]!
+    outcome: ConfigPresetImportOutcome
+    counts: ConfigPresetImportCounts
+    report_id: String
+    available_events: [ConfigPresetImportSessionEvent!]!
+}
+
+# The results of an import, one per processed item (the required dependencies included), and the settings so that the front store learns the new values; settings is null for a dry run.
+type ConfigPresetImportOutput {
+    results: [ConfigPresetImportResult!]!
+    # The import report, null for a dry run or when it could not be written.
+    report_id: String
+    settings: Settings
+    # The entity settings after a real import (null for a dry run), so that the front store learns the hidden entity types.
+    entity_settings: [EntitySetting!]
+}
+
+# The import that runs on the platform, read from its running record: name is null when the user no longer exists.
+type ConfigPresetImportRunningDetails {
+    name: String
+    is_mine: Boolean!
+    started_at: DateTime!
+    processed: Int!
+    total: Int!
+}
+
+type ConfigPresetImportRunning {
+    # Null when no import runs.
+    running: ConfigPresetImportRunningDetails
+    # When the last import ended (completed or stopped), null when unknown: the wizard clears its simulation when it changes.
+    last_finished_at: DateTime
+}
+
+extend type Query {
+    configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Items of one type, by page; ids, the keys of the items, keeps only those items, excludedIds removes those.
+    configPresetExportableItems(
+        type: ID!
+        first: Int
+        after: ID
+        search: String
+        ids: [ID!]
+        excludedIds: [ID!]
+    ): ConfigPresetExportableItemConnection! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # What the uploaded zip of the caller holds; reads only, never changes the import session.
+    configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # The import session of the caller, null when there is none.
+    configPresetImportSession: ConfigPresetImportSession @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    configPresetImportRunning: ConfigPresetImportRunning! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+}
+
+input ConfigPresetSelectionInput {
+    # Key of a type returned by configPresetExportableTypes
+    type: ID!
+    # Item keys of the type; null or omitted exports every item of the type at export time, an empty list none.
+    items: [ID!]
+    # With items null or omitted only: every item of the type except these. An unknown id is ignored (a stale exclusion is harmless),
+    # unlike an unknown id in items, which fails the export.
+    excluded_items: [ID!]
+    # Import only: what to do with the items that already exist, by item; an item that is not listed is imported with OVERWRITE.
+    # The export ignores it.
+    item_modes: [ConfigPresetItemModeInput!]
+}
+
+input ConfigPresetItemModeInput {
+    # Key of an item of the type
+    key: ID!
+    mode: ConfigImportMode!
+}
+
+extend type Mutation {
+    # Builds the bundle of the selected items, and of the items they depend on, and returns the stored zip; bundle_name only goes into metadata.json.
+    configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Stores the zip of a configuration bundle for the caller (one pending upload per user) and returns its file; the preview and the import only take its id.
+    configPresetImportUpload(file: Upload!): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Saves the selection of the draft session, for its own file only; a revision lower than the stored one is ignored.
+    configPresetImportSessionSave(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Start over (draft) or Close (finished): deletes the session, and the pending zip with delete_file.
+    configPresetImportSessionClear(delete_file: Boolean): Boolean! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Applies the selected items of the pending zip of the caller (and the items they depend on); with dry_run nothing is written and the expected results are returned.
+    configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # From an interrupted import: back to the selection, with the file and the selection kept.
+    configPresetImportSessionBackToSelection: ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+}

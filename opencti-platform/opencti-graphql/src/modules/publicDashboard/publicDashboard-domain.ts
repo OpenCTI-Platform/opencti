@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -25,14 +26,15 @@ import {
   type QueryPublicStixRelationshipsNumberArgs,
 } from '../../generated/graphql';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
-import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
-import { getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
+import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -42,7 +44,7 @@ import {
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findStixRelationPaginated, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
-import { bookmarks, checkUserCanShareMarkings } from '../../domain/user';
+import { bookmarks, checkUserCanShareMarkings } from '../user/user-domain';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
@@ -50,6 +52,9 @@ import { findById as findMarkingDefinitionById } from '../../domain/markingDefin
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
+import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS } from '../workspace/workspace-variables-types';
 
 export const findById = (
   context: AuthContext,
@@ -141,7 +146,8 @@ export const getAllowedMarkings = async (
 
 /**
  * Creates the private manifest by resolving saved filter references
- * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters.
+ * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters,
+ * then dashboard variable tokens into their default values.
  */
 const createPrivateManifest = async (
   context: AuthContext,
@@ -151,15 +157,27 @@ const createPrivateManifest = async (
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const widgetDefinitions = Object.values(parsedManifest.widgets);
     await Promise.all(widgetDefinitions.map((widget: any) => resolveSavedFiltersInDataSelection(context, user, widget)));
+    // Variable values are frozen at publication: the private manifest never holds a token.
+    // A token without value would otherwise reach the queries as a literal (with not_eq, matching everything).
+    const variableValues = buildDashboardVariableDefaultValues(parsedManifest.variables);
+    const dateVariableIds = buildDashboardDateVariableIds(parsedManifest.variables);
+    const { widgets, unresolved } = resolveDashboardVariablesInWidgets(parsedManifest.widgets, variableValues, { dateVariableIds });
+    if (unresolved.length > 0) {
+      throw FunctionalError('Cannot publish this dashboard, some widgets use dashboard variables without value', { variableIds: unresolved });
+    }
+    return toB64({ ...R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest), widgets });
   }
-  return toB64(parsedManifest ?? '{}');
+  return toB64(parsedManifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest) : '{}');
 };
 
 /**
  * Creates the public manifest by stripping each widget's dataSelection
  * to only keep display-related properties (no filters, no query data).
  */
-const createPublicManifest = (parsedManifest: any) => {
+const createPublicManifest = (manifest: any) => {
+  // Dashboard variables and presets are internal definitions (filters, ids, default values):
+  // the public manifest is served to anonymous visitors and must never carry them.
+  const parsedManifest = manifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest) : manifest;
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const publicWidgets = Object.fromEntries(
       Object.entries(parsedManifest.widgets).map(([widgetId, widget]: [string, any]) => {
@@ -218,7 +236,7 @@ export const addPublicDashboard = async (
     const markingLevels = await Promise.all(input.allowed_markings_ids.map((id) => {
       return findMarkingDefinitionById(context, user, id);
     }));
-    await checkUserCanShareMarkings(context, user, markingLevels);
+    await checkUserCanShareMarkings(context, user, markingLevels as StoreMarkingDefinition[]);
   }
 
   const uriKey = sanitizePublicDashboardUriKey(input.uri_key);
@@ -329,9 +347,9 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
   const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
   context.user = user;
-  context.user_inside_platform_organization = true;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-
   return { user, dataSelection, parameters };
 };
 

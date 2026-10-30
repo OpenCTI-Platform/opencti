@@ -1,14 +1,97 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, logApp } from '../config/conf';
-import { GARBAGE_COLLECTION_MANAGER_USER, executionContext } from '../utils/access';
+import conf, { booleanConf, CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
+import { GARBAGE_COLLECTION_MANAGER_USER, executionContext, SYSTEM_USER } from '../utils/access';
 import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
+import { rawFetchStreamInfo, STREAM_FILE_DIRECTORY } from '../database/redis-stream';
+import { loadedFilesListing } from '../database/file-storage';
+import { deleteFileFromStorage } from '../database/raw-file-storage';
+import type { AuthContext } from '../types/user';
+import type { ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
+import { elDeleteElements, elDeleteInstances, elFindByIds } from '../database/engine';
+import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from '../database/utils';
+import { lockResources } from '../lock/master-lock';
+import { elUpdateRemovedFiles } from '../database/file-search';
+import type { BasicStoreBase } from '../types/store';
+import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
+import { deleteExpiredConfigPresetExports } from '../modules/configPreset/export/configPreset-export-domain';
+import { deleteExpiredConfigPresetImportFiles } from '../modules/configPreset/import/configPreset-import-domain';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
 const GARBAGE_COLLECTION_MANAGER_KEY = conf.get('garbage_collection_manager:lock_key') || 'garbage_collection_manager_lock';
 const SCHEDULE_TIME = conf.get('garbage_collection_manager:interval') || 60000; // 1 minute
 const BATCH_SIZE = conf.get('garbage_collection_manager:batch_size') || 10000;
+const REDIS_STREAM_GARBAGE_FREQUENCY = conf.get('garbage_collection_manager:redis_stream_garbage_frequency') || 86400000;
 const DELETED_RETENTION_DAYS = conf.get('garbage_collection_manager:deleted_retention_days') || 7;
+
+let nextRedisStreamFilesGarbageTime = new Date().getTime();
+const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
+  const currentTime = new Date().getTime();
+  if (nextRedisStreamFilesGarbageTime < currentTime) {
+    nextRedisStreamFilesGarbageTime += REDIS_STREAM_GARBAGE_FREQUENCY;
+
+    const { firstEventId } = await rawFetchStreamInfo();
+    const timestamp = firstEventId.split('-')[0];
+    const allRedisLargeEventFiles = await loadedFilesListing(context, GARBAGE_COLLECTION_MANAGER_USER, STREAM_FILE_DIRECTORY, { rawFormat: true }) as ListObjectsV2CommandOutput;
+    if (!allRedisLargeEventFiles || !allRedisLargeEventFiles.KeyCount || !allRedisLargeEventFiles.Contents) {
+      return;
+    }
+    const allFileContents = allRedisLargeEventFiles.Contents.sort((a, b) => (a.Key ?? '').localeCompare(b.Key ?? ''));
+    let deletedCount = 0;
+    for (let i = 0; i < allFileContents.length; i += 1) {
+      const file = allFileContents[i];
+      if (!file.Key) {
+        continue;
+      }
+      const currentTimestamp = file.Key.slice(STREAM_FILE_DIRECTORY.length).split('-')[0];
+      if (currentTimestamp < timestamp) {
+        await deleteFileFromStorage(file.Key);
+        deletedCount += 1;
+        logApp.info('[OPENCTI-MODULE] Garbage collection: cleaned up offloaded redis stream event file from storage', {
+          manager: 'GARBAGE_MANAGER',
+          filePath: file.Key,
+        });
+      } else {
+        break;
+      }
+    }
+    if (deletedCount > 0) {
+      logApp.info('[OPENCTI-MODULE] Garbage collection: redis stream event files cleanup complete', {
+        manager: 'GARBAGE_MANAGER',
+        deletedCount,
+      });
+    }
+  }
+};
+
+// Main entity also live (interrupted deletion, partial restore): only purge the trash copies, keep the live entity and its files
+export const purgeTrashIfMainEntityLive = async (context: AuthContext, deleteOperation: BasicStoreEntityDeleteOperation) => {
+  const { main_entity_id: mainEntityId, deleted_elements: deletedElements } = deleteOperation;
+  let lock;
+  try {
+    // Lock the entity too, so a concurrent deletion cannot replace its trash copy between the check and the purge
+    lock = await lockResources([deleteOperation.id, mainEntityId]);
+    const liveHits = await elFindByIds(context, SYSTEM_USER, [mainEntityId], { indices: READ_DATA_INDICES, baseData: true }) as BasicStoreBase[];
+    const mainEntityLive = liveHits.find((el) => el.internal_id === mainEntityId);
+    if (!mainEntityLive) {
+      return false;
+    }
+    const trashElements = await elFindByIds(context, SYSTEM_USER, deletedElements.map((el) => el.id), { indices: READ_INDEX_DELETED_OBJECTS }) as BasicStoreBase[];
+    logApp.warn('[OPENCTI-MODULE] Garbage collection: main entity is still live, only purging trash copies', {
+      manager: 'GARBAGE_MANAGER',
+      id: deleteOperation.id,
+      mainEntityId,
+      liveIndex: mainEntityLive._index,
+    });
+    // The interrupted deletion may have flagged the entity files as removed: make them searchable again, as restore does
+    await elUpdateRemovedFiles(mainEntityLive, false);
+    await elDeleteInstances(context, trashElements);
+    await elDeleteElements(context, GARBAGE_COLLECTION_MANAGER_USER, [deleteOperation]);
+    return true;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
 
 /**
  * Search for N (batch_size) older than DELETED_RETENTION_DAYS DeleteOperations
@@ -22,13 +105,23 @@ export const garbageCollectionHandler = async () => {
   for (let i = 0; i < deleteOperationsToManage.length; i += 1) {
     try {
       const deleteOperation = deleteOperationsToManage[i];
-      await confirmDelete(context, GARBAGE_COLLECTION_MANAGER_USER, deleteOperation.id);
+      const isPurged = await purgeTrashIfMainEntityLive(context, deleteOperation);
+      if (!isPurged) {
+        await confirmDelete(context, GARBAGE_COLLECTION_MANAGER_USER, deleteOperation.id);
+      }
     } catch (e) {
-      logApp.error('[OPENCTI-MODULE] Garbage collection delete error', { cause: e, manager: 'GARBAGE_MANAGER', id: deleteOperationsToManage[i].id, errorCount });
+      logApp.warn('[OPENCTI-MODULE] Garbage collection delete error', { cause: e, manager: 'GARBAGE_MANAGER', id: deleteOperationsToManage[i].id, errorCount });
       errorCount += 1;
     }
   }
   logApp.debug('[OPENCTI-MODULE] Garbage collection manager deletion process complete', { count: deleteOperationsToManage.length });
+
+  await garbageCollectRedisStreamFiles(context);
+  // The configuration preset exports, the uploads of an import and its history are only kept for a while, they belong to no entity
+  if (isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)) {
+    await deleteExpiredConfigPresetExports(context, GARBAGE_COLLECTION_MANAGER_USER);
+    await deleteExpiredConfigPresetImportFiles(context, GARBAGE_COLLECTION_MANAGER_USER);
+  }
 };
 
 const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {

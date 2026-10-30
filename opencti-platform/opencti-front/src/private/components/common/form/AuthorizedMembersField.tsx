@@ -1,3 +1,6 @@
+// FDS-WORKAROUND #44: kept on MUI Select — converting made
+// `tests_e2e/dashboardRestriction` intermittent, cause unidentified. See
+// fds-migration/LIBRARY-FEEDBACK.md #44 and fds-migration/MIGRATION-DECISIONS.md#authorized-members-select
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import ObjectMembersField, { OptionMember } from '@components/common/form/ObjectMembersField';
@@ -425,7 +428,8 @@ const AuthorizedMembersField = ({
                     mt: '16px',
                     width: '100%',
                     paddingBottom: '16px',
-                    '.MuiAlert-message': { width: '100%' },
+                    // MUI's `overflow: auto` here clips the focus ring.
+                    '.MuiAlert-message': { width: '100%', overflow: 'visible' },
                   }}
                   severity="info"
                   icon={false}
@@ -435,7 +439,7 @@ const AuthorizedMembersField = ({
                   <div
                     style={{
                       display: 'flex',
-                      alignItems: 'flex-start',
+                      alignItems: 'flex-end',
                       gap: 16,
                     }}
                   >
@@ -449,9 +453,8 @@ const AuthorizedMembersField = ({
                         dynamicAuthorOrgLabel={dynamicAuthorOrgLabel}
                         includeBundleOrganizationDynamicOption={includeBundleOrganizationDynamicOption}
                       />
-                      {value?.find(
-                        (a) => a.value === values.newAccessMember?.value,
-                      ) && (
+                      {/* Same check as the Add button: a member restricted to other groups is another rule, not a duplicate */}
+                      {doesNewMemberAlreadyExist(values) && (
                         <FormHelperText style={{ position: 'absolute' }}>
                           {t_i18n('Access already granted')}
                         </FormHelperText>
@@ -461,7 +464,7 @@ const AuthorizedMembersField = ({
                       name="newAccessRight"
                       component={SelectField}
                       label={t_i18n('Access right')}
-                      style={{ m: 1, minWidth: 120 }}
+                      style={{ minWidth: 124 }}
                       size="small"
                       disabled={!values.applyAccesses}
                     >
@@ -483,7 +486,6 @@ const AuthorizedMembersField = ({
                         || doesNewMemberAlreadyExist(values)
                         || !values.applyAccesses
                       }
-                      style={{ marginTop: 10 }}
                     >
                       {t_i18n('Add')}
                     </Button>

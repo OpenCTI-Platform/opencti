@@ -19,6 +19,7 @@ Example:
 
 import asyncio
 import base64
+import concurrent.futures
 import copy
 import datetime
 import json
@@ -34,6 +35,7 @@ import threading
 import time
 import uuid
 from collections import deque
+from collections.abc import Iterable, Mapping
 from enum import Enum
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
@@ -48,9 +50,10 @@ from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
 from jwt import PyJWKSet
 from pika.exceptions import NackError, UnroutableError
-from pydantic import TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
+from pycti.connector import opencti_connector_build
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
@@ -532,6 +535,18 @@ class ListenQueue(threading.Thread):
         self.queue_name = connector_config["listen"]
         self.exit_event = threading.Event()
         self.thread = None
+        # API listen protocol only: a dedicated single-worker executor keeps
+        # _data_handler off the Uvicorn event loop (so /health stays responsive)
+        # while explicitly serializing callback execution (single-flight), since
+        # _data_handler mutates shared helper state (work_id, draft_id,
+        # validation_mode) with no thread-safety contract beyond that.
+        self._callback_executor = (
+            concurrent.futures.ThreadPoolExecutor(
+                max_workers=1, thread_name_prefix="listen-api-callback"
+            )
+            if listen_protocol == "API"
+            else None
+        )
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body) -> None:
@@ -814,7 +829,13 @@ class ListenQueue(threading.Thread):
                 content={"error": "Invalid JSON payload"},
             )
         try:
-            self._data_handler(data)
+            # Offloaded to a dedicated single-worker executor: the event loop
+            # (and /health) stays responsive, callback executions are
+            # serialized (single-flight, see __init__ for the rationale).
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(
+                self._callback_executor, self._data_handler, data
+            )
         except Exception as e:
             self.helper.connector_logger.error(
                 "Error processing message", {"cause": str(e)}
@@ -827,6 +848,22 @@ class ListenQueue(threading.Thread):
         return JSONResponse(
             status_code=202, content={"message": "Message successfully received"}
         )
+
+    # noinspection PyUnusedLocal
+    async def _http_health_callback(self, request: Request) -> JSONResponse:
+        """Handle health-check requests for the API listen protocol.
+
+        Answered directly on the event loop (never routed through the
+        callback executor), so it stays responsive while a message is
+        being processed.
+
+        :param request: The incoming FastAPI request object
+        :type request: Request
+
+        :return: JSON response confirming liveness
+        :rtype: JSONResponse
+        """
+        return JSONResponse(status_code=200, content={"status": "ok"})
 
     def run(self) -> None:
         """Execute the message listening thread.
@@ -895,6 +932,11 @@ class ListenQueue(threading.Thread):
         elif self.listen_protocol == "API":
             self.helper.connector_logger.info("Starting Listen HTTP thread")
             app.add_api_route(
+                "/health",
+                self._http_health_callback,
+                methods=["GET"],
+            )
+            app.add_api_route(
                 self.listen_protocol_api_path,
                 self._http_process_callback,
                 methods=["POST"],
@@ -925,9 +967,12 @@ class ListenQueue(threading.Thread):
         """
         self.helper.connector_logger.info("Preparing ListenQueue for clean shutdown")
         self.exit_event.set()
-        self.pika_connection.close()
+        if self.pika_connection:
+            self.pika_connection.close()
         if self.thread:
             self.thread.join()
+        if self._callback_executor:
+            self._callback_executor.shutdown(wait=True)
 
 
 class PingAlive(threading.Thread):
@@ -988,7 +1033,7 @@ class PingAlive(threading.Thread):
         self.set_state = set_state
         self.exit_event = threading.Event()
         self.metric = metric
-        self.connector_info = connector_info
+        self.connector_info: ConnectorInfo = connector_info
 
     def ping(self) -> None:
         """Execute the ping loop to maintain connector heartbeat.
@@ -1021,9 +1066,9 @@ class PingAlive(threading.Thread):
                     else None
                 )
                 if initial_state != remote_state:
-                    self.set_state(result["connector_state"])
+                    self.set_state(remote_state)
                     self.connector_logger.info(
-                        "Connector state has been remotely reset",
+                        "Connector state has been remotely updated",
                         {"state": self.get_state()},
                     )
 
@@ -1762,6 +1807,72 @@ class ListenStream(threading.Thread):
             self.callback.stop()
 
 
+CONNECTOR_ERRORS_MAX_COUNT = 20
+CONNECTOR_ERROR_CODE_MAX_LENGTH = 256
+CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024
+
+
+# The platform only accepts a GraphQL Int (32 bits)
+_GRAPHQL_INT_MIN = -(2**31)
+_GRAPHQL_INT_MAX = 2**31 - 1
+
+
+# Private for now: returned dicts and add_error are the documented contract, exporting it later stays compatible
+class _ConnectorRunError(BaseModel):
+    """Error returned by a connector run"""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    code: str
+    message: str
+    criticity: int = Field(ge=_GRAPHQL_INT_MIN, le=_GRAPHQL_INT_MAX)
+
+
+def _parse_criticity(value) -> int:
+    # bool is an int subclass
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"criticity must be an integer, got {type(value).__name__}")
+    if not _GRAPHQL_INT_MIN <= value <= _GRAPHQL_INT_MAX:
+        raise ValueError(f"criticity {value} is out of the GraphQL Int range")
+    return value
+
+
+def _sanitize_connector_error(error) -> Optional[Dict]:
+    try:
+        code = error.get("code")
+        if code is None:
+            return None
+        code = str(code).strip()[:CONNECTOR_ERROR_CODE_MAX_LENGTH]
+        if not code:
+            return None
+        message = error.get("message")
+        message = ("" if message is None else str(message).strip())[
+            :CONNECTOR_ERROR_MESSAGE_MAX_LENGTH
+        ]
+        criticity = _parse_criticity(error.get("criticity"))
+        return {"code": code, "message": message, "criticity": criticity}
+    # A malformed error must never make the ping mutation fail.
+    except Exception:  # pylint: disable=broad-except
+        return None
+
+
+def _sanitize_connector_errors(errors) -> List[Dict]:
+    try:
+        sanitized = [
+            sanitized_error
+            for sanitized_error in map(_sanitize_connector_error, errors)
+            if sanitized_error is not None
+        ]
+    except Exception:  # pylint: disable=broad-except
+        return []
+    # The platform merges errors by code, the last report wins: a repeated code takes a single slot
+    last_error_by_code = {error["code"]: error for error in sanitized}
+    deduplicated = sorted(
+        last_error_by_code.values(), key=lambda error: error["criticity"], reverse=True
+    )
+    return deduplicated[:CONNECTOR_ERRORS_MAX_COUNT]
+
+
 class ConnectorInfo:
     """Container for connector runtime information and status.
 
@@ -1780,6 +1891,10 @@ class ConnectorInfo:
     :type next_run_datetime: datetime or None
     :param last_run_datetime: Datetime of the last connector run
     :type last_run_datetime: datetime or None
+    :param errors: List of errors reported to the platform, each a dict with
+        ``code`` (str), ``message`` (str) and ``criticity`` (int, higher is
+        more critical)
+    :type errors: list or None
 
     Example:
         >>> info = ConnectorInfo(run_and_terminate=False, queue_threshold=500.0)
@@ -1796,6 +1911,8 @@ class ConnectorInfo:
         queue_messages_size: float = 0.0,
         next_run_datetime: datetime = None,
         last_run_datetime: datetime = None,
+        errors: Optional[List[Dict]] = None,
+        logger=None,
     ):
         """Initialize ConnectorInfo with runtime parameters.
 
@@ -1811,6 +1928,9 @@ class ConnectorInfo:
         :type next_run_datetime: datetime or None
         :param last_run_datetime: Last run time
         :type last_run_datetime: datetime or None
+        :param errors: Errors to report (dicts with code, message, criticity)
+        :type errors: list or None
+        :param logger: Connector logger, used to warn about an error that add_error ignores
         """
         self._run_and_terminate = run_and_terminate
         self._buffering = buffering
@@ -1818,6 +1938,10 @@ class ConnectorInfo:
         self._queue_messages_size = queue_messages_size
         self._next_run_datetime = next_run_datetime
         self._last_run_datetime = last_run_datetime
+        self._errors: List[Dict] = list(errors) if errors else []
+        # Until errors are reported, none are sent: a restarted process must not clear the previous one's
+        self._errors_reported = errors is not None
+        self.logger = logger
 
     @property
     def all_details(self):
@@ -1826,7 +1950,7 @@ class ConnectorInfo:
         :return: Dictionary containing all connector status information
         :rtype: dict
         """
-        return {
+        details = {
             "run_and_terminate": self._run_and_terminate,
             "buffering": self._buffering,
             "queue_threshold": self._queue_threshold,
@@ -1834,6 +1958,10 @@ class ConnectorInfo:
             "next_run_datetime": self._next_run_datetime,
             "last_run_datetime": self._last_run_datetime,
         }
+        # An explicit list, even empty, replaces the errors stored by the platform
+        if self._errors_reported:
+            details["errors"] = _sanitize_connector_errors(self._errors)
+        return details
 
     @property
     def run_and_terminate(self) -> bool:
@@ -1942,6 +2070,64 @@ class ConnectorInfo:
         :type value: datetime
         """
         self._last_run_datetime = value
+
+    @property
+    def errors(self) -> List[Dict]:
+        """Get the errors reported to the platform.
+
+        :return: List of dicts with ``code``, ``message`` and ``criticity``
+        :rtype: list
+        """
+        return self._errors
+
+    @errors.setter
+    def errors(self, value: Optional[List[Dict]]) -> None:
+        """Replace the errors reported to the platform.
+
+        :param value: List of dicts with ``code``, ``message`` and ``criticity``
+        :type value: list or None
+        """
+        self._errors = list(value) if value else []
+        self._errors_reported = True
+
+    def add_error(
+        self,
+        code: str,
+        message: str,
+        criticity: int,
+    ) -> None:
+        """Add an error, sent on every ping until the errors are cleared.
+
+        A scheduled connector's errors are cleared before each run. An invalid
+        error is ignored with a warning, never raised. When sent, code and
+        message are truncated, a repeated code keeps its last report, and only
+        the most critical errors are kept.
+
+        :param code: Error code
+        :type code: str
+        :param message: Human readable error message
+        :type message: str
+        :param criticity: Criticity level, higher is more critical
+        :type criticity: int
+        """
+        try:
+            error = _ConnectorRunError.model_validate(
+                {"code": code, "message": message, "criticity": criticity}
+            )
+        except ValidationError as e:
+            if self.logger is not None:
+                self.logger.warning(
+                    "Malformed error ignored by add_error",
+                    {"received": repr((code, message, criticity)), "reason": str(e)},
+                )
+            return
+        self._errors.append(error.model_dump())
+        self._errors_reported = True
+
+    def clear_errors(self) -> None:
+        """Remove all reported errors."""
+        self._errors = []
+        self._errors_reported = True
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
@@ -2365,6 +2551,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             bundle_send_to_queue=self.bundle_send_to_queue,
         )
         self.connector_logger = self.api.logger_class(self.connect_name)
+        self.connector_info.logger = self.connector_logger
         # For retro compatibility
         self.log_debug = self.connector_logger.debug
         self.log_info = self.connector_logger.info
@@ -2378,6 +2565,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             metrics_namespace,
             metrics_subsystem,
             metrics_port,
+        )
+        # Read from the build manifest/stamp only, so the reported values match the running image
+        self.connect_version, self.connect_slug, build_source = (
+            opencti_connector_build.resolve()
+        )
+        self.connector_logger.debug(
+            "Connector build metadata resolved",
+            {
+                "version": self.connect_version,
+                "slug": self.connect_slug,
+                "source": build_source,
+            },
         )
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
@@ -2396,6 +2595,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 else None
             ),
             xtm_one_intent=self.connect_xtm_one_intent,
+            version=self.connect_version,
+            slug=self.connect_slug,
         )
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_logger.info(
@@ -2614,7 +2815,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type bundle: str
         :param entities_types: List of entity types in the bundle
         :type entities_types: list
-        :param update: Whether this is an update operation
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation. Has no effect on the standard single-match
+            upsert path, as OpenCTI always upserts by standard id/hash regardless of this flag.
         :type update: bool
         :return: Message bundle dictionary
         :rtype: dict
@@ -3017,7 +3220,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_iso(
-        self, message_callback: Callable[[], None], duration_period: str
+        self, message_callback: Callable[[], Optional[List[Dict]]], duration_period: str
     ) -> None:
         """Schedule connector execution using ISO 8601 duration format.
 
@@ -3046,10 +3249,44 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             sys.excepthook(*sys.exc_info())
 
+    def _run_and_collect_errors(
+        self, message_callback: Callable[[], Optional[List[Dict]]]
+    ) -> None:
+        # Errors belong to a run: cleared before it so those added with add_error during it are kept
+        self.connector_info.clear_errors()
+        error_list = message_callback()
+        # Other non-list returns (True, a status string...) predate errors reporting and stay silent
+        if isinstance(error_list, Mapping):
+            self.connector_logger.warning(
+                "Connector run returned a single error instead of a list, ignored",
+                {"received": repr(error_list)},
+            )
+        # Strings, bytes and mappings are iterable but are not a list of errors
+        if isinstance(error_list, Iterable) and not isinstance(
+            error_list, (str, bytes, Mapping)
+        ):
+            returned_errors: List[Dict] = []
+            for error in error_list:
+                try:
+                    returned_errors.append(
+                        _ConnectorRunError.model_validate(error).model_dump()
+                    )
+                except ValidationError as e:
+                    self.connector_logger.warning(
+                        "Malformed error response from the connector",
+                        {"received": repr(error), "reason": str(e)},
+                    )
+            self.connector_info.errors = self.connector_info.errors + returned_errors
+        if self.connector_info.errors:
+            self.connector_logger.info(
+                "Errors reported by the connector run",
+                {"errors": self.connector_info.errors},
+            )
+
     def _schedule_process(
         self,
         scheduler: sched.scheduler,
-        message_callback: Callable[[], None],
+        message_callback: Callable[[], Optional[List[Dict]]],
         duration_period: Union[int, float],
     ) -> None:
         """Execute scheduled connector process if queue is not buffering.
@@ -3060,7 +3297,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param scheduler: Scheduler containing tasks to be started
         :type scheduler: sched.scheduler
         :param message_callback: The connector process callback function
-        :type message_callback: Callable[[], None]
+        :type message_callback: Callable[[], Optional[List[Dict]]]
         :param duration_period: The connector's interval in seconds
         :type duration_period: Union[int, float]
         """
@@ -3070,7 +3307,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
             if not check_connector_buffering:
                 # Start running the connector
-                message_callback()
+                self._run_and_collect_errors(message_callback)
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
 
@@ -3094,7 +3331,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
 
     def schedule_process(
-        self, message_callback: Callable[[], None], duration_period: Union[int, float]
+        self,
+        message_callback: Callable[[], Optional[List[Dict]]],
+        duration_period: Union[int, float],
     ) -> None:
         """Schedule the execution of a connector process.
 
@@ -3103,7 +3342,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         the next run based on the interval.
 
         :param message_callback: The connector process callback function
-        :type message_callback: Callable[[], None]
+        :type message_callback: Callable[[], Optional[List[Dict]]]
         :param duration_period: The connector's interval in seconds
         :type duration_period: Union[int, float]
         """
@@ -3117,7 +3356,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
                 if not check_connector_buffering:
                     # Start running the connector
-                    message_callback()
+                    self._run_and_collect_errors(message_callback)
 
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
@@ -3126,7 +3365,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 sys.exit(0)
             else:
                 # Start running the connector
-                message_callback()
+                self._run_and_collect_errors(message_callback)
+
                 # Set queue_threshold and queue_messages_size for the first run
                 self.check_connector_buffering()
                 # Lets you know what is the last run of the connector datetime
@@ -3508,7 +3748,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type draft_id: str, optional
         :param entities_types: List of entity types to filter (default: None)
         :type entities_types: list, optional
-        :param update: Whether to update existing data in the database (default: False)
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation (default: False). OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param event_version: Event version for the bundle (default: None)
         :type event_version: str, optional
@@ -3790,7 +4033,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type sequence: int, optional
         :param entities_types: List of entity types to filter (default: None)
         :type entities_types: list, optional
-        :param update: Whether to update existing data in the database (default: False)
+        :param update: Whether to force-merge entities that ambiguously match multiple
+            existing records during creation (default: False). OpenCTI always upserts
+            data by standard id/hash regardless of this flag; it only affects the rare
+            case where a single incoming entity matches more than one existing entity.
         :type update: bool, optional
         :param draft_id: Draft context ID for the bundle (default: None)
         :type draft_id: str, optional

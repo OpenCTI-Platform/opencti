@@ -1,12 +1,12 @@
-import React, { CSSProperties, ReactNode } from 'react';
-import Chip from '@mui/material/Chip';
+import React, { ReactNode } from 'react';
+import { Chip } from '@filigran/design-system';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { DraftChip, DraftStatusChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '@components/analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps } from './dataTableTypes';
@@ -32,20 +32,11 @@ import { useFormatter } from '../i18n';
 import Tag from '../common/tag/Tag';
 import { resolveLink } from '../../utils/Entity';
 import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
-import { Stack } from '@mui/material';
-
-const chipStyle: CSSProperties = {
-  fontSize: '12px',
-  lineHeight: '12px',
-  height: '20px',
-  marginRight: '7px',
-  borderRadius: '4px',
-  textTransform: 'uppercase',
-};
+import { Box, Stack } from '@mui/material';
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -69,9 +60,11 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (
       <Tooltip title={displayedData}>
         <Stack
           direction="row"
-          gap={1}
-          alignItems="center"
-          sx={{ maxWidth: '100%' }}
+          sx={{
+            gap: 1,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
         >
           <Truncate>{displayedData}</Truncate>
           {displayDraftChip && <DraftChip />}
@@ -152,7 +145,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Allowed markings',
     isSortable: false,
     render: ({ allowed_markings }) => (
-      <ItemMarkings markingDefinitions={allowed_markings ?? []} limit={2} />
+      <ItemMarkings markingDefinitions={allowed_markings ?? []} limit={1} />
     ),
   },
   analyses: {
@@ -167,7 +160,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const link = `${resolveLink(entity_type)}/${id}`;
       const linkAnalyses = `${link}/analyses`;
       return (
-        <>
+        <Box
+          component="span"
+          sx={{
+            display: 'inline-flex',
+            '& button:hover::before': {
+              backgroundColor: 'color-mix(in srgb, var(--color-feedback-neutral-secondary) 55%, transparent) !important',
+            },
+          }}
+        >
           {typesWithNoAnalysesTab.includes(entity_type) ? (
             <Tag label={n(analysesNumber)} disableTooltip />
           ) : (
@@ -181,7 +182,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               }}
             />
           )}
-        </>
+        </Box>
       );
     },
   },
@@ -190,7 +191,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Restriction Date',
     isSortable: true,
     render: ({ authorized_members_activation_date }, helpers) =>
-      defaultRender(helpers.fd(authorized_members_activation_date)),
+      defaultRender(helpers.ftd(authorized_members_activation_date)),
   },
   attribute_abstract: {
     id: 'attribute_abstract',
@@ -224,7 +225,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ color }) => (
       <Tooltip title={color}>
-        <>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 0.5,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
+        >
           <div
             style={{
               backgroundColor: color,
@@ -236,7 +244,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           />
           <Truncate>{color}</Truncate>
-        </>
+        </Stack>
       </Tooltip>
     ),
   },
@@ -263,21 +271,47 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Last result',
     percentWidth: 12,
     isSortable: true,
-    render: ({ coverage_last_result }, { fndt }) => fndt(coverage_last_result),
+    render: ({ coverage_last_result }, { ftdt }) => defaultRender(ftdt(coverage_last_result, 'numeric')),
+  },
+  coverage_last_modified_date: {
+    id: 'coverage_last_modified_date',
+    label: 'Coverage Last modified date',
+    percentWidth: 16,
+    isSortable: false,
+    render: ({ updated_at }, { ftdt }) => defaultRender(ftdt(updated_at, 'long')),
+  },
+  coverage: {
+    id: 'coverage',
+    label: 'Coverage Score',
+    percentWidth: 11,
+    isSortable: false,
+    render: ({ coverage_information }, { t_i18n }) => (
+      coverage_information?.length
+        ? (
+            <SecurityCoverageScores
+              coverage_information={coverage_information}
+              variant="header"
+            />
+          ) : (
+            <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')}>
+              <span style={{ width: '100%' }}>-</span>
+            </Tooltip>
+          )
+    ),
   },
   created: {
     id: 'created',
     label: 'Original creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created }, helpers) => defaultRender(helpers.fd(created)),
+    render: ({ created }, helpers) => defaultRender(helpers.ftd(created)),
   },
   created_at: {
     id: 'created_at',
     label: 'Platform creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created_at }, helpers) => defaultRender(helpers.fd(created_at)),
+    render: ({ created_at }, helpers) => defaultRender(helpers.ftd(created_at)),
   },
   createdBy: {
     id: 'createdBy',
@@ -343,15 +377,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ draftVersion }) => (
       <ItemOperations draftOperation={draftVersion?.draft_operation} />
-    ),
-  },
-  workflowInstance: {
-    id: 'workflowInstance',
-    label: 'Workflow status',
-    percentWidth: 12,
-    isSortable: false,
-    render: ({ workflowInstance }) => (
-      <ItemStatus status={workflowInstance?.currentStatus ?? null} disabled={!workflowInstance?.currentStatus} />
     ),
   },
   draft_status: {
@@ -470,8 +495,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           ? data.importFiles.edges[0]?.node
           : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
-        <Tooltip title={file?.metaData?.mimetype}>
-          <>{b(file?.size)}</>
+        <Tooltip title={b(file?.size)}>
+          <span>{b(file?.size)}</span>
         </Tooltip>
       );
     },
@@ -488,14 +513,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'First obs.',
     percentWidth: 14,
     isSortable: true,
-    render: ({ first_observed }, { nsdt }) => nsdt(first_observed),
+    render: ({ first_observed }, { ftdt }) => defaultRender(ftdt(first_observed)),
   },
   first_seen: {
     id: 'first_seen',
     label: 'First obs.',
     percentWidth: 12,
     isSortable: true,
-    render: ({ first_seen }, { nsdt }) => nsdt(first_seen),
+    render: ({ first_seen }, { ftdt }) => defaultRender(ftdt(first_seen)),
   },
   fromName: {
     id: 'fromName',
@@ -530,7 +555,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ from }, helpers) => {
       const { created_at } = from;
-      return defaultRender(helpers.fd(created_at));
+      return defaultRender(helpers.ftd(created_at));
     },
   },
   from_creator: {
@@ -719,14 +744,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Last obs.',
     percentWidth: 14,
     isSortable: true,
-    render: ({ last_observed }, { nsdt }) => nsdt(last_observed),
+    render: ({ last_observed }, { ftdt }) => defaultRender(ftdt(last_observed)),
   },
   last_seen: {
     id: 'last_seen',
     label: 'Last obs.',
     percentWidth: 12,
     isSortable: true,
-    render: ({ last_seen }, { nsdt }) => nsdt(last_seen),
+    render: ({ last_seen }, { ftdt }) => defaultRender(ftdt(last_seen)),
   },
   malware_types: {
     id: 'malware_types',
@@ -742,7 +767,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Modification date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ modified }, { fd }) => fd(modified),
+    render: ({ modified }, { ftd }) => defaultRender(ftd(modified)),
   },
   name: {
     id: 'name',
@@ -784,7 +809,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ number_observed }, { n }) => (
       <Tooltip title={number_observed}>
-        <>{n(number_observed)}</>
+        <span>{n(number_observed)}</span>
       </Tooltip>
     ),
   },
@@ -852,7 +877,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ operatingSystem }) => (
       <Tooltip title={operatingSystem?.name}>
-        <>{operatingSystem?.name ?? EMPTY_VALUE}</>
+        <span>{operatingSystem?.name ?? EMPTY_VALUE}</span>
       </Tooltip>
     ),
   },
@@ -952,7 +977,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Date',
     percentWidth: 10,
     isSortable: true,
-    render: ({ published }, { fd }) => fd(published),
+    render: ({ published }, { ftd }) => defaultRender(ftd(published)),
   },
   rating: {
     id: 'rating',
@@ -1074,6 +1099,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(secondary_motivations);
     },
   },
+  security_coverage_result_name: {
+    id: 'security_coverage_result_name',
+    label: 'Security Coverage Result Name',
+    percentWidth: 12,
+    isSortable: false,
+    render: ({ from }) => defaultRender(from?.name),
+  },
   security_platform_type: {
     id: 'security_platform_type',
     label: 'Type',
@@ -1121,28 +1153,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Start date',
     percentWidth: 25,
     isSortable: true,
-    render: ({ start_date }, { fd }) => fd(start_date),
+    render: ({ start_date }, { ftd }) => defaultRender(ftd(start_date)),
   },
   start_time: {
     id: 'start_time',
     label: 'Start date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ start_time }, { fd }) => fd(start_time),
+    render: ({ start_time }, { ftd }) => defaultRender(ftd(start_time)),
   },
   stop_time: {
     id: 'stop_time',
     label: 'End date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ stop_time }, { fd }) => fd(stop_time),
+    render: ({ stop_time }, { ftd }) => defaultRender(ftd(stop_time)),
   },
   submitted: {
     id: 'submitted',
     label: 'Submission date',
     percentWidth: 12,
     isSortable: true,
-    render: ({ submitted }, { fd }) => fd(submitted),
+    render: ({ submitted }, { ftd }) => defaultRender(ftd(submitted)),
   },
   takedown_types: {
     id: 'takedown_types',
@@ -1183,14 +1215,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           title={(
             <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: '4px' }}>
               {tags.map((tag: string) => (
-                <Chip key={tag} label={tag} style={chipStyle} />
+                <Chip key={tag} label={tag} style={{ marginRight: 7 }} />
               ))}
             </div>
           )}
         >
           <div>
-            <Chip label={tags[0]} style={chipStyle} />
-            <Chip label="..." style={chipStyle} />
+            <Chip label={tags[0]} style={{ marginRight: 7 }} />
+            {tags.length > 1 && (
+              <Chip label="..." style={{ marginRight: 7 }} />
+            )}
           </div>
         </Tooltip>
       );
@@ -1210,7 +1244,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Timestamp',
     percentWidth: 50,
     isSortable: true,
-    render: ({ timestamp }, { nsdt }) => defaultRender(nsdt(timestamp)),
+    render: ({ timestamp }, { ftdt }) => defaultRender(ftdt(timestamp)),
   },
   toName: {
     id: 'toName',
@@ -1309,7 +1343,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Modification date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ updated_at }, { fd }) => fd(updated_at),
+    render: ({ updated_at }, { ftd }) => defaultRender(ftd(updated_at)),
   },
   url: {
     id: 'url',
@@ -1339,18 +1373,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Valid until',
     percentWidth: 10,
     isSortable: true,
-    render: ({ valid_until }, { nsdt }) => (
-      <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>
-    ),
+    render: ({ valid_until }, { ftdt }) => defaultRender(ftdt(valid_until)),
   },
   valid_from: {
     id: 'valid_from',
     label: 'Valid from',
     percentWidth: 10,
     isSortable: true,
-    render: ({ valid_from }, { nsdt }) => (
-      <Tooltip title={nsdt(valid_from)}>{nsdt(valid_from)}</Tooltip>
-    ),
+    render: ({ valid_from }, { ftdt }) => defaultRender(ftdt(valid_from)),
   },
   value: {
     id: 'value',
@@ -1381,7 +1411,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ x_opencti_color }) => (
       <Tooltip title={x_opencti_color}>
-        <>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 0.5,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
+        >
           <div
             style={{
               backgroundColor: x_opencti_color,
@@ -1393,7 +1430,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           />
           <Truncate>{x_opencti_color}</Truncate>
-        </>
+        </Stack>
       </Tooltip>
     ),
   },
@@ -1593,7 +1630,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           >
             {x_opencti_aliases.map((value: string) => (
-              <Chip key={value} label={value} size="small" />
+              <Chip key={value} label={value} />
             ))}
           </div>
         </Tooltip>

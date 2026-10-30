@@ -2,36 +2,17 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql, useFragment } from 'react-relay';
 import TableViewIcon from '@mui/icons-material/TableView';
 import { CsvMapperLine_csvMapper$key } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
 import CsvMapperPopover from '@components/data/csvMapper/CsvMapperPopover';
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
-import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary?.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const csvMapperFragment = graphql`
   fragment CsvMapperLine_csvMapper on CsvMapper {
@@ -52,7 +33,6 @@ const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({
   dataColumns,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const csvMapper = useFragment(csvMapperFragment, node);
 
   if (!csvMapper) {
@@ -62,7 +42,7 @@ const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({
   return (
     <ListItem
       key={csvMapper.id}
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       secondaryAction={(
         <CsvMapperPopover
@@ -71,20 +51,19 @@ const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({
         />
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 {value.render?.(csvMapper)}
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}

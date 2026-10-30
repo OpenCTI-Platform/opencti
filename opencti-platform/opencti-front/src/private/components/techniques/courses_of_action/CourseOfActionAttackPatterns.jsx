@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { filter } from 'ramda';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import IconButton from '@common/button/IconButton';
 import { ExpandLessOutlined, ExpandMoreOutlined, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
@@ -19,26 +18,6 @@ import { addAttackPatternsLinesMutationRelationDelete } from './AddAttackPattern
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Label from '../../../../components/common/label/Label';
-
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  list: {
-    padding: 0,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
 
 class CourseOfActionAttackPatternComponent extends Component {
   constructor(props) {
@@ -75,7 +54,7 @@ class CourseOfActionAttackPatternComponent extends Component {
   }
 
   render() {
-    const { t, classes, courseOfAction } = this.props;
+    const { t, courseOfAction } = this.props;
     const { expanded } = this.state;
     const attackPatternsEdges = courseOfAction.attackPatterns.edges;
     const expandable = attackPatternsEdges.length > 7;
@@ -92,6 +71,7 @@ class CourseOfActionAttackPatternComponent extends Component {
                 aria-label={expanded ? t('Collapse') : t('Expand')}
                 color="primary"
                 onClick={this.handleToggleExpand.bind(this)}
+                aria-expanded={expanded}
               >
                 {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
               </IconButton>
@@ -101,7 +81,7 @@ class CourseOfActionAttackPatternComponent extends Component {
         >
           {t('Mitigated attack patterns')}
         </Label>
-        <List classes={{ root: classes.list }}>
+        <List sx={{ padding: 0 }}>
           {R.take(expanded ? 200 : 7, attackPatternsEdges).map(
             (attackPatternEdge) => {
               const attackPattern = attackPatternEdge.node;
@@ -128,7 +108,13 @@ class CourseOfActionAttackPatternComponent extends Component {
                     to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
                   >
                     <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatar }}>
+                      <Avatar
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          backgroundColor: 'primary.main',
+                        }}
+                      >
                         {attackPattern.name.substring(0, 1)}
                       </Avatar>
                     </ListItemIcon>
@@ -148,7 +134,6 @@ class CourseOfActionAttackPatternComponent extends Component {
 }
 
 CourseOfActionAttackPatternComponent.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   courseOfAction: PropTypes.object,
@@ -178,7 +163,4 @@ const CourseOfActionAttackPattern = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CourseOfActionAttackPattern);
+export default inject18n(CourseOfActionAttackPattern);

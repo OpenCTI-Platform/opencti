@@ -135,13 +135,12 @@ const StixRelationshipsMapComponent = ({
 
   return (
     <LocationMiniMapTargets
-      center={[
-        selection.centerLat ?? 48.8566969,
-        selection.centerLng ?? 2.3514616,
-      ]}
+      zoom={selection.zoom ?? 2}
+      center={selection.centerLat && selection.centerLng
+        ? { latitude: selection.centerLat, longitude: selection.centerLng }
+        : undefined}
       countries={countries}
       cities={cities}
-      zoom={selection.zoom ?? 2}
     />
   );
 };
@@ -189,7 +188,7 @@ const StixRelationshipsMap = ({
   refreshRate = null,
 }: StixRelationshipsMapProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMapStixRelationshipsDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMapStixRelationshipsDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -209,8 +208,7 @@ const StixRelationshipsMap = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

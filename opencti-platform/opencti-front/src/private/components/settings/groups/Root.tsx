@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
-import { Route, Routes, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import GroupDeletionDialog from '@components/settings/groups/GroupDeletionDialog';
 import GroupEdition from '@components/settings/groups/GroupEdition';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Group from './Group';
@@ -90,7 +90,14 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
               { label: group.name, current: true },
             ]}
           />
-          <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              paddingRight: '200px',
+              marginBottom: 3,
+            }}
+          >
             <TitleMainEntity sx={{ flex: 1 }}>
               {group.name}
             </TitleMainEntity>

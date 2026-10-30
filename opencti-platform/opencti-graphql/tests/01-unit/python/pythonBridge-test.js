@@ -24,7 +24,7 @@ it('Check createStixPattern hash', async () => {
     testContext,
     ADMIN_USER,
     'File_sha256',
-    'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88'
+    'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88',
   );
   expect(check).toEqual("[file:hashes.'SHA-256' = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']");
 });
@@ -69,4 +69,20 @@ it('Check yara indicator syntax', async () => {
 it('Check yara indicator bad pattern', async () => {
   const check = await checkIndicatorSyntax(testContext, ADMIN_USER, 'yara', 'rule aa');
   expect(check).toEqual(false);
+});
+
+it('Check child python execution ignores a shell set on the object prototype', async () => {
+  Object.prototype.shell = '/nonexistent/shell';
+  try {
+    const result = await execChildPython(
+      testContext,
+      ADMIN_USER,
+      './src/python/runtime',
+      'stix2_create_pattern.py',
+      ['File_sha256', 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88'],
+    );
+    expect(result.data).toEqual("[file:hashes.'SHA-256' = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']");
+  } finally {
+    delete Object.prototype.shell;
+  }
 });

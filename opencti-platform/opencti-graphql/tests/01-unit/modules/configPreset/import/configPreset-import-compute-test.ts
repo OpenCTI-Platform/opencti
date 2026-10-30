@@ -1,0 +1,212 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../../../../src/modules/theme/theme-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/theme/theme-domain')>()),
+  findById: vi.fn(),
+  checkExistingTheme: vi.fn(),
+}));
+
+import { findById, checkExistingTheme } from '../../../../../src/modules/theme/theme-domain';
+import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
+import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
+import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
+import { BUILT_IN_THEME_STANDARD_IDS } from '../../../../../src/modules/theme/theme-constants';
+import { CUSTOM_THEME_ID, themeConfiguration } from '../../../../utils/configPresetBundle';
+
+const context = { source: 'test' } as AuthContext;
+const user = { id: 'user-id' } as AuthUser;
+
+const compute = (
+  type: string,
+  id: string,
+  configuration: Record<string, unknown>,
+  plan: ConfigPresetImportPlan = { created: new Set() },
+  mode: ConfigImportMode = ConfigImportMode.Overwrite,
+) => {
+  const family = CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === type)!;
+  const item: ConfigPresetBundleItem = { type, id, path: `${id}.json`, configuration };
+  return family.importer!.compute(context, user, item, plan, mode);
+};
+
+const apply = (type: string, id: string, configuration: Record<string, unknown>, computed: ConfigPresetComputedItem, mode: ConfigImportMode = ConfigImportMode.Overwrite) => {
+  const family = CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === type)!;
+  const item: ConfigPresetBundleItem = { type, id, path: `${id}.json`, configuration };
+  return family.importer!.apply(context, user, item, computed, mode);
+};
+
+beforeEach(() => {
+  vi.resetAllMocks();
+  vi.mocked(findById).mockResolvedValue(undefined as never);
+  vi.mocked(checkExistingTheme).mockResolvedValue(false);
+});
+
+describe('Messages import (compute)', () => {
+  it('overwrites a message, null meaning untouched', async () => {
+    expect(await compute('messages', 'banner', { platform_banner_text: 'Hello', platform_banner_level: null })).toMatchObject({ status: 'overwritten', exists: true });
+  });
+
+  it.each(['constructor', '__proto__', 'toString', 'hasOwnProperty'])('fails the inherited property name %s as an unknown message, without throwing', async (id) => {
+    expect(await compute('messages', id, { platform_banner_text: 'x' })).toMatchObject({ label: id, status: 'failed', reason: 'Unknown message' });
+  });
+
+  it('skips an item with only null values', async () => {
+    expect(await compute('messages', 'consent', { platform_consent_message: null, platform_consent_confirm_text: null })).toMatchObject({ status: 'skipped', reason: 'Nothing to import' });
+    expect(await compute('messages', 'login', {})).toMatchObject({ status: 'skipped' });
+  });
+
+  it('fails with the reason on an unknown key, an invalid level, a text too long or an unknown message', async () => {
+    expect(await compute('messages', 'banner', { platform_banner_text: 'x', extra: 1 })).toMatchObject({ status: 'failed' });
+    expect(await compute('messages', 'banner', { platform_banner_text: 'x', platform_banner_level: 'PURPLE' })).toMatchObject({ status: 'failed', reason: expect.stringContaining('platform_banner_level') });
+    expect(await compute('messages', 'login', { platform_login_message: 'x'.repeat(6000) })).toMatchObject({ status: 'failed' });
+    expect(await compute('messages', 'other', {})).toMatchObject({ status: 'failed', reason: 'Unknown message' });
+  });
+});
+
+describe('Platform import (compute)', () => {
+  const platform = (overrides: Record<string, unknown> = {}) => ({ platform_title: 'Title', platform_favicon: null, platform_language: 'en-us', default_theme: null, ...overrides });
+
+  it('overwrites the platform', async () => {
+    expect(await compute('platform', 'platform', platform({ platform_favicon: 'https://example.com/favicon.ico' }))).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('accepts a favicon that was cleared in the settings, as the export keeps it, and a scheme in any case', async () => {
+    expect(await compute('platform', 'platform', platform({ platform_favicon: '' }))).toMatchObject({ status: 'overwritten' });
+    expect(await compute('platform', 'platform', platform({ platform_favicon: 'HTTPS://example.com/favicon.ico' }))).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('fails on a default theme whose standard id is not one', async () => {
+    expect(await compute('platform', 'platform', platform({ default_theme: { standard_id: 'not-a-standard-id', name: 'Mine' } }))).toMatchObject({ status: 'failed' });
+  });
+
+  it('fails on an item that is not the platform', async () => {
+    expect(await compute('platform', 'other', platform())).toMatchObject({ label: 'Platform configuration', status: 'failed', reason: 'Unexpected item id' });
+  });
+
+  it('does not fail on a null default theme, and skips an item with only null values', async () => {
+    expect(await compute('platform', 'platform', platform())).toMatchObject({ status: 'overwritten' });
+    expect(await compute('platform', 'platform', { platform_title: null, platform_favicon: null, platform_language: null, default_theme: null })).toMatchObject({ status: 'skipped' });
+  });
+
+  it('fails on a favicon that is not an http(s) URL, an invalid language and an unknown key', async () => {
+    expect(await compute('platform', 'platform', platform({ platform_favicon: 'javascript:alert(1)' }))).toMatchObject({ status: 'failed' });
+    expect(await compute('platform', 'platform', platform({ platform_language: 'klingon' }))).toMatchObject({ status: 'failed' });
+    expect(await compute('platform', 'platform', platform({ platform_theme: 'x' }))).toMatchObject({ status: 'failed' });
+  });
+
+  it('resolves the default theme on the platform or among the themes the import creates', async () => {
+    const defaultTheme = { default_theme: { standard_id: CUSTOM_THEME_ID, name: 'Mine' } };
+    expect(await compute('platform', 'platform', platform(defaultTheme))).toMatchObject({ status: 'failed', reason: 'Default theme Mine could not be imported' });
+    vi.mocked(findById).mockResolvedValueOnce({ id: 'internal' } as never);
+    expect(await compute('platform', 'platform', platform(defaultTheme))).toMatchObject({ status: 'overwritten' });
+    expect(await compute('platform', 'platform', platform(defaultTheme), { created: new Set([`branding/${CUSTOM_THEME_ID}`]) })).toMatchObject({ status: 'overwritten' });
+  });
+});
+
+describe('Branding import (compute)', () => {
+  it('skips a built-in theme without looking it up', async () => {
+    const [standardId] = Object.values(BUILT_IN_THEME_STANDARD_IDS);
+    expect(await compute('branding', standardId, themeConfiguration({ standard_id: standardId, name: 'Filigran Dark' }))).toMatchObject({ status: 'skipped', exists: true, reason: 'Built-in theme' });
+    expect(findById).not.toHaveBeenCalled();
+  });
+
+  it('creates a custom theme that is absent with a free name, and records it in the plan', async () => {
+    const plan = { created: new Set<string>() };
+    const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan);
+    expect(result).toMatchObject({ status: 'created', exists: false, conflict: false, label: 'Import test theme' });
+    expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
+  });
+
+  it('reserves in the plan the name of a theme the dry run would create, for the next ones', async () => {
+    const plan = { created: new Set<string>(), themeNames: new Set<string>() };
+    const otherId = 'theme--8b0d3c1e-5f4a-4a2b-8c3d-1e2f3a4b5c6d';
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan)).toMatchObject({ status: 'created' });
+    expect(await compute('branding', otherId, themeConfiguration({ standard_id: otherId }), plan)).toMatchObject({ status: 'failed', conflict: true, reason: 'Theme name already exists' });
+  });
+
+  it('overwrites a custom theme whose standard id exists, never reports it created', async () => {
+    vi.mocked(findById).mockResolvedValue({ id: 'internal', built_in: false } as never);
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'overwritten', exists: true, conflict: true });
+  });
+
+  it('fails when the name is already used by another theme', async () => {
+    vi.mocked(checkExistingTheme).mockResolvedValue(true);
+    const plan = { created: new Set<string>() };
+    // The theme is not on the platform, but its name is: a conflict that a copy gets out of
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan)).toMatchObject({ status: 'failed', exists: false, conflict: true, reason: 'Theme name already exists' });
+    expect(plan.created.size).toBe(0);
+  });
+
+  it('fails when an existing theme is renamed to a name used by another theme, as the import would', async () => {
+    vi.mocked(findById).mockResolvedValue({ id: 'internal', built_in: false } as never);
+    vi.mocked(checkExistingTheme).mockResolvedValue(true);
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration())).toMatchObject({ status: 'failed', exists: true, conflict: true, reason: 'Theme name already exists' });
+    expect(checkExistingTheme).toHaveBeenCalledWith(context, user, 'Import test theme', 'internal');
+  });
+
+  it('refuses to apply a theme whose name was taken since the preview, so the item fails', async () => {
+    vi.mocked(checkExistingTheme).mockResolvedValue(true);
+    const computed = await compute('branding', CUSTOM_THEME_ID, themeConfiguration());
+    await expect(apply('branding', CUSTOM_THEME_ID, themeConfiguration(), { ...computed, status: 'created' } as ConfigPresetComputedItem)).rejects.toThrow('Theme name already exists');
+  });
+
+  it('fails on a standard id that differs from the id or is badly formed', async () => {
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ standard_id: 'theme--other' }))).toMatchObject({ status: 'failed', conflict: false });
+    expect(await compute('branding', 'theme--NOT-LOWER', themeConfiguration({ standard_id: 'theme--NOT-LOWER' }))).toMatchObject({ status: 'failed' });
+  });
+
+  it('fails on a bad colour, an image URL with a forbidden character and an unknown key', async () => {
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_primary: 'red; background: url(x)' }))).toMatchObject({ status: 'failed' });
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_logo: 'https://example.com/a.png);color:red' }))).toMatchObject({ status: 'failed' });
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ built_in: true }))).toMatchObject({ status: 'failed' });
+  });
+
+  it('accepts an http or https URL, or a path of the platform, for the logos and the login background image', async () => {
+    const urls = { theme_logo: 'http://example.com/a.png', theme_logo_collapsed: 'https://example.com/b.png', theme_logo_login: '/static/c.svg', theme_login_aside_image: 'http://example.com/d.jpg' };
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration(urls))).toMatchObject({ status: 'created' });
+  });
+
+  it.each([
+    ['a path that does not start with a slash', 'static/logo.png'],
+    ['a scheme that is not http(s)', 'javascript:alert(1)'],
+    ['a protocol-relative URL', '//example.com/a.png'],
+    ['a space', 'http://example.com/a b.png'],
+  ])('fails on an image URL that is %s', async (_, url) => {
+    const keys = ['theme_logo', 'theme_logo_collapsed', 'theme_logo_login', 'theme_login_aside_image'];
+    const results = await Promise.all(keys.map((key) => compute('branding', CUSTOM_THEME_ID, themeConfiguration({ [key]: url }))));
+    expect(results.map(({ status }) => status)).toEqual(keys.map(() => 'failed'));
+  });
+
+  it.each(['rgb(0, 0, 0)', 'rgba(0,0,0,0.5)', 'red', '#12345', '#1234567', 'hsl(0, 0%, 0%)'])('fails on the colour %s, only hex is accepted', async (color) => {
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_background: color }))).toMatchObject({ status: 'failed' });
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_login_aside_color: color }))).toMatchObject({ status: 'failed' });
+  });
+
+  it.each(['#abc', '#abcd', '#aabbcc', '#AABBCC80'])('accepts the hex colour %s', async (color) => {
+    expect(await compute('branding', CUSTOM_THEME_ID, themeConfiguration({ theme_background: color }))).toMatchObject({ status: 'created' });
+  });
+
+  it('offers to overwrite or copy the themes, and only to overwrite the other families', () => {
+    const modes = (id: string) => CONFIG_PRESET_FAMILIES.find((family) => family.id === id)!.importModes;
+    expect(modes('branding')).toEqual(['OVERWRITE', 'COPY']);
+    expect(modes('platform')).toBeUndefined();
+    expect(modes('messages')).toBeUndefined();
+  });
+
+  it('copies a theme that exists under a free name, which is not the theme the items depend on', async () => {
+    vi.mocked(findById).mockResolvedValue({ id: 'internal', built_in: false } as never);
+    vi.mocked(checkExistingTheme).mockImplementation(async (_context, _user, name) => name === 'Import test theme');
+    const plan = { created: new Set<string>() };
+    const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
+    expect(result).toMatchObject({ status: 'created', exists: true, conflict: true, reason: 'Added as "Import test theme (1)"' });
+    expect(plan.created.size).toBe(0);
+  });
+
+  it('copies a theme that is new as it is, and it is the theme the items depend on', async () => {
+    const plan = { created: new Set<string>() };
+    const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
+    expect(result).toMatchObject({ status: 'created', exists: false, conflict: false });
+    expect(result.reason).toBeUndefined();
+    expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
+  });
+});

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, Stack, useTheme } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Box, Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
@@ -23,13 +24,18 @@ const ForcePasswordChange = () => {
   };
 
   return (
-    <Stack direction="row" height="100vh">
+    <Stack
+      direction="row"
+      sx={{
+        height: '100vh',
+      }}
+    >
       <Stack
-        flex={1}
-        justifyContent="center"
-        alignItems="center"
-        gap={4}
         sx={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 4,
           minWidth: 500,
           overflow: 'hidden',
           background: theme.palette.designSystem?.background?.main ?? theme.palette.background.default,
@@ -42,7 +48,12 @@ const ForcePasswordChange = () => {
           alt="OpenCTI Logo"
           width={180}
         />
-        <Stack gap={1} sx={{ width: 500 }}>
+        <Stack
+          sx={{
+            gap: 1,
+            width: 500,
+          }}
+        >
           <Box
             sx={{
               background: theme.palette.background.paper,
@@ -62,8 +73,8 @@ const ForcePasswordChange = () => {
         </Stack>
       </Stack>
       <Box
-        flex={1}
         sx={{
+          flex: 1,
           background: theme.palette.mode === 'dark'
             ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%)'
             : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)',

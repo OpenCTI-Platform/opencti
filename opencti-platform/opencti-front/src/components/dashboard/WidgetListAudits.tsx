@@ -1,10 +1,10 @@
 import List from '@mui/material/List';
 import { ListItemButton } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { AuditsListComponentQuery$data } from '../../private/components/common/audits/__generated__/AuditsListComponentQuery.graphql';
 import MarkdownDisplay from '../markdownDisplay/MarkdownDisplay';
 import ItemIcon from '../ItemIcon';

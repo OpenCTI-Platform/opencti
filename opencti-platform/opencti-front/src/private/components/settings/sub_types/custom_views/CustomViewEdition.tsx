@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import Box from '@mui/material/Box';
 import { Stack } from '@mui/material';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -39,8 +39,14 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
   }
 
   return (
-    <Stack gap={2}>
-      <Stack gap={2}>
+    <Stack sx={{
+      gap: 2,
+    }}
+    >
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <CustomViewEditionHeader
           data={customView}
           onCreateWidget={handleAddWidget}

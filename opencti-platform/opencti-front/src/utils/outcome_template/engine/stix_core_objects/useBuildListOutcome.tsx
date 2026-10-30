@@ -4,23 +4,100 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { stixRelationshipsListQuery } from '../../../../private/components/common/stix_relationships/StixRelationshipsList';
 import { StixRelationshipsListQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
-import { fetchQuery } from '../../../../relay/environment';
+import { FINTEL_ENTITY_LINK_ATTRIBUTE } from '@components/widgets/WidgetListsDefaultColumns';
+import { APP_BASE_PATH, fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import type { Widget, WidgetPerspective } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../../../widget/widgetUtils';
+import useAuth from '../../../hooks/useAuth';
+import { type CustomFieldStoredValue, getCustomFieldRawValueByFieldName, isCustomFieldAttribute } from '../../../customFields';
+
+export type ListOutcome = {
+  html: string;
+  isEmpty: boolean;
+};
 
 type ListItem = object & { id: string };
+type DisplayScalar = string | number | boolean;
+type DisplayInputValue
+  = | DisplayScalar
+    | null
+    | undefined
+    | DisplayInputValue[]
+    | { [key: string]: DisplayInputValue };
+type NormalizedDisplayValue = DisplayScalar | DisplayScalar[];
+
+const resolveWorkflowPath = (attribute?: string | null) => {
+  if (attribute === 'x_opencti_workflow_id') {
+    return 'status.template.name';
+  }
+  return attribute ?? '';
+};
+
+const hasDisplayableValue = (value: NormalizedDisplayValue | null | undefined) => {
+  if (Array.isArray(value)) return value.length > 0;
+  return value !== '' && value !== null && value !== undefined;
+};
+
+const normalizeObjectForDisplay = (value: DisplayInputValue): NormalizedDisplayValue => {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => {
+        const normalizedItem = normalizeObjectForDisplay(item);
+        return Array.isArray(normalizedItem) ? normalizedItem : [normalizedItem];
+      })
+      .filter(hasDisplayableValue);
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, DisplayInputValue>;
+    const preferredKeys = ['name', 'value', 'definition', 'main', 'label'];
+    for (const key of preferredKeys) {
+      const normalized = normalizeObjectForDisplay(record[key]);
+      if (hasDisplayableValue(normalized)) return normalized;
+    }
+    for (const nestedValue of Object.values(record)) {
+      const normalized = normalizeObjectForDisplay(nestedValue);
+      if (hasDisplayableValue(normalized)) return normalized;
+    }
+    return '';
+  }
+
+  return value ?? '';
+};
+
+// Links must be absolute to be usable outside the platform (exported files).
+// Fall back on the current location if the platform URL is missing or relative.
+export const resolvePlatformBaseUrl = (platformUrl?: string | null) => {
+  const baseUrl = platformUrl && /^https?:\/\//i.test(platformUrl)
+    ? platformUrl
+    : `${window.location.origin}${APP_BASE_PATH}`;
+  return baseUrl.replace(/\/+$/, '');
+};
 
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
   const { buildReadableAttribute } = useBuildReadableAttribute();
+  const { settings } = useAuth();
+  const platformBaseUrl = resolvePlatformBaseUrl(settings.platform_url);
 
-  const buildListOutcome = async (
+  function buildListOutcome(
+    dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
+    widgetPerspective: WidgetPerspective | null | undefined,
+    options: { includeMetadata: true },
+  ): Promise<ListOutcome>;
+  function buildListOutcome(
     dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
     widgetPerspective?: WidgetPerspective | null,
-  ) => {
+    options?: { includeMetadata?: boolean },
+  ): Promise<string>;
+  async function buildListOutcome(
+    dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
+    widgetPerspective?: WidgetPerspective | null,
+    options?: { includeMetadata?: boolean },
+  ): Promise<string | ListOutcome> {
     const variables = {
       first: dataSelection.number ?? 10,
       orderBy: dataSelection.sort_by ?? 'created_at',
@@ -46,12 +123,12 @@ const useBuildListOutcome = () => {
       { label: t_i18n('Creation date'), attribute: 'created_at' },
     ];
 
-    return renderToString(
+    const html = renderToString(
       <table>
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.attribute}>{col.label}</th>
+              <th key={col.attribute}>{col.label ?? t_i18n(col.attribute ?? '')}</th>
             ))}
           </tr>
         </thead>
@@ -59,13 +136,28 @@ const useBuildListOutcome = () => {
           {nodes.map((n) => (
             <tr key={n.id}>
               {columns.map((col) => {
-                let property;
+                if (widgetPerspective === 'entities' && col.attribute === FINTEL_ENTITY_LINK_ATTRIBUTE) {
+                  return (
+                    <td key={`${n.id}-${col.attribute}`}>
+                      <a href={`${platformBaseUrl}/dashboard/id/${n.id}`}>{t_i18n('View in OpenCTI')}</a>
+                    </td>
+                  );
+                }
+                let property: DisplayInputValue;
+                const attributePath = resolveWorkflowPath(col.attribute);
                 try {
-                  property = getObjectPropertyWithoutEmptyValues(n, col.attribute ?? '');
+                  // Custom field values are not properties of the entity, they are read from its customFieldValues
+                  property = isCustomFieldAttribute(col.attribute)
+                    ? getCustomFieldRawValueByFieldName(
+                      (n as { customFieldValues?: readonly CustomFieldStoredValue[] | null }).customFieldValues,
+                      col.attribute ?? '',
+                    ) as DisplayInputValue
+                    : getObjectPropertyWithoutEmptyValues(n, attributePath) as DisplayInputValue;
                 } catch (_e) {
                   property = '';
                 }
-                const readableAttribute = buildReadableAttribute(property, col, true);
+                const normalizedProperty = normalizeObjectForDisplay(property);
+                const readableAttribute = buildReadableAttribute(normalizedProperty, col, true);
                 return <td key={`${n.id}-${col.attribute}`}>{readableAttribute}</td>;
               })}
             </tr>
@@ -73,7 +165,14 @@ const useBuildListOutcome = () => {
         </tbody>
       </table>,
     );
-  };
+
+    const outcome = {
+      html,
+      isEmpty: nodes.length === 0,
+    };
+
+    return options?.includeMetadata ? outcome : outcome.html;
+  }
 
   return { buildListOutcome };
 };

@@ -4,40 +4,19 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { CircleOutlined } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import { ListItemButton } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const ContainerAddStixCoreObjectsLineComponent = ({
   dataColumns,
@@ -46,50 +25,35 @@ const ContainerAddStixCoreObjectsLineComponent = ({
   onToggleEntity,
   addedElements,
 }) => {
-  const classes = useStyles();
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       onClick={(event) => onToggleEntity(node, event)}
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
-        {node.id in (addedElements || {}) ? (
-          <CheckCircleOutlined
-            classes={{ root: classes.icon }}
-            color="primary"
-          />
-        ) : (
-          <CircleOutlined classes={{ root: classes.icon }} />
-        )}
-      </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.entity_type} />
+        <Checkbox checked={node.id in (addedElements || {})} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
-              <ItemEntityType entityType={node.entity_type} />
-            </div>
-            <div
-              className={classes.bodyItem}
+              <ItemEntityType showIcon entityType={node.entity_type} />
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(node)}
               {node.draftVersion && (<DraftChip />)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               {node.createdBy?.name ?? EMPTY_VALUE}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -97,9 +61,8 @@ const ContainerAddStixCoreObjectsLineComponent = ({
                 labels={node.objectLabel}
                 onClick={onLabelClick}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
@@ -107,7 +70,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
                 markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
@@ -269,80 +232,71 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
 );
 
 export const ContainerAddStixCoreObjecstLineDummy = ({ dataColumns }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       style={{ minWidth: 40, paddingLeft: 20 }}
     >
       <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
+        sx={{ color: 'grey.700' }}
+        style={{ minWidth: 44 }}
       >
         <CircleOutlined />
-      </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <Skeleton
                 animation="wave"
-                variant="rectangular"
-                width="90%"
+                variant="rounded"
+                width="100%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.value.width }}
             >
               <Skeleton
                 animation="wave"
-                variant="rectangular"
-                width="90%"
+                variant="rounded"
+                width="100%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               <Skeleton
                 animation="wave"
-                variant="rectangular"
-                width="90%"
+                variant="rounded"
+                width="100%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
                 animation="wave"
-                variant="rectangular"
-                width="90%"
+                variant="rounded"
+                width="100%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <Skeleton
                 animation="wave"
-                variant="rectangular"
-                width={100}
+                variant="rounded"
+                width="100%"
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

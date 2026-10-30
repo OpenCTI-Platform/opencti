@@ -1,10 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import classNames from 'classnames';
-import MuiTextField from '@mui/material/TextField';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger, Input } from '@filigran/design-system';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
-import makeStyles from '@mui/styles/makeStyles';
 import { FieldProps } from 'formik';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
@@ -12,7 +9,8 @@ import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMappe
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
-import { useTheme } from '@mui/styles';
+import Box from '@mui/material/Box';
+import { styled, useTheme } from '@mui/material/styles';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
@@ -30,32 +28,19 @@ interface JsonMapperRepresentationAttributeRefFormProps
   handleErrors: (key: string, value: string | null) => void;
 }
 
+const Container = styled('div')({
+  width: '100%',
+  display: 'inline-grid',
+  gridTemplateColumns: '2fr 3fr 50px',
+  alignItems: 'center',
+  marginTop: '10px',
+  gap: '10px',
+});
+
 const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   JsonMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const theme = useTheme<Theme>();
-  // Deprecated - https://mui.com/system/styles/basics/
-  // Do not use it for new code.
-  const useStyles = makeStyles(() => ({
-    container: {
-      width: '100%',
-      display: 'inline-grid',
-      gridTemplateColumns: '2fr 3fr 50px',
-      alignItems: 'center',
-      marginTop: '10px',
-      gap: '10px',
-    },
-    inputError: {
-      '& fieldset': {
-        borderColor: theme.palette.error.main,
-      },
-    },
-    redStar: {
-      color: theme.palette.designSystem.tertiary.red[400],
-      marginLeft: '5px',
-    },
-  }));
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { name, value } = field;
@@ -151,7 +136,6 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   }, [errors]);
 
   const handleRepresentationChange = async (
-    event: React.SyntheticEvent,
     value: JsonMapperRepresentationFormData[],
   ) => {
     const selectedIds = value.map((v) => v.id);
@@ -204,34 +188,32 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   };
 
   return (
-    <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}`, padding: 10 }}>
+    <Container style={{ border: `1px solid ${theme.palette.divider}`, padding: 10 }}>
       <div>
         {label}
-        {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
+        {schemaAttribute.mandatory && <Box component="span" sx={{ color: theme.palette.designSystem.tertiary.red[400], marginLeft: '5px' }}>*</Box>}
       </div>
       <div>
-        <MUIAutocomplete<JsonMapperRepresentationFormData, true>
+        <Combobox<JsonMapperRepresentationFormData>
           selectOnFocus
           openOnFocus
-          autoSelect={false}
-          autoHighlight
           multiple
           getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
           options={options}
           value={getBasedOnRepresentations(field.value, options) ?? []}
-          onChange={handleRepresentationChange}
-          renderInput={(params) => (
-            <MuiTextField
-              {...params}
-              label={t_i18n('Representation entity')}
-              variant="outlined"
-              size="small"
-            />
-          )}
-          className={classNames({
-            [classes.inputError]: errors,
-          })}
-        />
+          onValueChange={(val) => handleRepresentationChange((val ?? []) as JsonMapperRepresentationFormData[])}
+          error={errors}
+        >
+          <ComboboxLabel>{t_i18n('Representation entity')}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxChips aria-label={t_i18n('Representation entity')} />
+            <ComboboxInput />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent listAriaLabel={t_i18n('Representation entity')} />
+        </Combobox>
       </div>
       {schemaAttribute.editDefault ? (
         <JsonMapperRepresentationDialogOption configuration={value}>
@@ -265,16 +247,14 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
             return (
               <React.Fragment key={rep.id}>
                 <div>
-                  {t_i18n('', {
-                    id: 'Identifier ({label})',
+                  {t_i18n('Identifier ({label})', {
                     values: { label },
                   })}
                 </div>
                 <div>
-                  <MuiTextField
+                  <Input
                     label={t_i18n('JSON Path')}
-                    variant="standard"
-                    style={{ width: '100%' }}
+                    className="w-full"
                     value={identifierValue}
                     onChange={(e) => handleIdentifierChange(rep.id, e.target.value)}
                   />
@@ -285,7 +265,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
           });
         })()}
       </>
-    </div>
+    </Container>
   );
 };
 

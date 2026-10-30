@@ -28,15 +28,23 @@ import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
+import { filterUnwantedEntitiesOut } from '../../domain/container';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
+import { withWorkspaceManifestLock } from './workspace-variables-domain';
+import { preserveServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
 export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspace) => {
   // Because manifest can be huge we remove this data from activity logs.
   return { ...element, manifest: undefined };
+};
+
+export const sanitizeManifestAuditInput = (inputs: EditInput[]) => {
+  // Because manifest can be huge we remove this data from activity logs.
+  return inputs.map((entry) => (entry.key === 'manifest' ? { ...entry, value: ['[sanitized]'] } : entry));
 };
 
 export const findById = (
@@ -157,6 +165,7 @@ export const initializeAuthorizedMembers = (
   }
   return initializedAuthorizedMembers;
 };
+
 export const addWorkspace = async (
   context: AuthContext,
   user: AuthUser,
@@ -247,7 +256,16 @@ export const workspaceEditField = async (
   inputs: EditInput[],
 ) => {
   await checkInvestigatedEntitiesInputs(context, user, inputs);
-  return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
+  const opts = { auditLogContextSanitizer: sanitizeManifestAuditInput };
+  if (!inputs.some((input) => input.key === 'manifest')) {
+    return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs, opts);
+  }
+  // Same lock as the variables mutations: the stored server-owned keys are read and written atomically.
+  return withWorkspaceManifestLock(workspaceId, async () => {
+    const workspace = await findById(context, user, workspaceId);
+    const safeInputs = preserveServerOwnedManifestKeys(inputs, workspace?.manifest);
+    return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, safeInputs, opts);
+  });
 };
 
 export const workspaceCleanContext = async (
@@ -321,7 +339,8 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
     type: parsedData.type,
     openCTI_version: parsedData.openCTI_version,
     name: parsedData.configuration.name,
-    manifest: generatedManifest,
+    // Dashboard variables of an imported file go through the same validation as the typed API
+    manifest: validateManifestVariables(generatedManifest),
     restricted_members: authorizedMembers,
   };
   const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
@@ -342,11 +361,55 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   return workspaceId;
 };
 
+// TODO: Refactor dashboard duplication to load and validate the source by ID, as investigationDuplicate does.
+// Preserve the legacy metadata input until a separate change addresses API compatibility.
 export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
+  // The manifest comes from the client: its dashboard variables go through the same validation as the typed API
+  const workspaceToCreate = { ...input, manifest: validateManifestVariables(input.manifest), restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   const sanitizeElement = { ...input, manifest: undefined };
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `creates ${created.type} workspace \`${created.name}\` from custom-named duplication`,
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElement },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
+};
+
+export const investigationDuplicate = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: { id: string; name: string },
+) => {
+  const source = await findById(context, user, input.id);
+  if (!source || source.type !== 'investigation') {
+    throw ForbiddenAccess();
+  }
+  if (!isUserHasCapability(user, 'INVESTIGATION_INUPDATE')) {
+    throw ForbiddenAccess();
+  }
+  const investigatedEntitiesIds = await filterUnwantedEntitiesOut({
+    context,
+    user,
+    ids: source.investigated_entities_ids ?? [],
+  });
+  const authorizedMembers = initializeAuthorizedMembers([], user);
+  // Intentionally omit graph_data to avoid copying stale or inaccessible graph references.
+  const workspaceToCreate = {
+    type: 'investigation',
+    name: input.name,
+    manifest: source.manifest,
+    tags: source.tags,
+    description: source.description,
+    investigated_entities_ids: investigatedEntitiesIds,
+    restricted_members: authorizedMembers,
+  };
+  const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
+  const sanitizeElement = { ...workspaceToCreate, manifest: undefined };
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -370,13 +433,13 @@ export const workspaceImportWidgetConfiguration = async (
     input.file,
     input.dashboardManifest,
   );
-  const { element } = await updateAttribute<StoreEntityWorkspace>(
-    context,
-    user,
-    workspaceId,
-    ENTITY_TYPE_WORKSPACE,
-    [{ key: 'manifest', value: [updatedManifest] }],
-  );
+  // The manifest comes from the client: same protection as workspaceFieldPatch.
+  const element = await withWorkspaceManifestLock(workspaceId, async () => {
+    const workspace = await findById(context, user, workspaceId);
+    const safeInputs = preserveServerOwnedManifestKeys([{ key: 'manifest', value: [updatedManifest] }], workspace?.manifest);
+    const { element: updated } = await updateAttribute<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, safeInputs);
+    return updated;
+  });
 
   await publishUserAction({
     user,

@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -8,6 +11,7 @@ import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
+import TextField from '../../../../components/TextField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -56,6 +60,7 @@ interface ThreatActorGroupAddInput {
   name: string;
   threat_actor_types: string[];
   confidence: number | null;
+  x_opencti_score: string | undefined;
   description: string;
   createdBy: FieldOption | null;
   objectMarking: FieldOption[];
@@ -99,6 +104,10 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
     name: Yup.string(),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     description: Yup.string().nullable(),
   }, mandatoryAttributes);
   const threatActorGroupValidator = useDynamicSchemaCreationValidation(
@@ -140,11 +149,13 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
     const allNames = splitMultilines(values.name);
     const variables: ThreatActorGroupCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         threat_actor_types: values.threat_actor_types,
         confidence: parseInt(String(values.confidence), 10),
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : undefined,
         createdBy: values.createdBy?.value,
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
@@ -171,6 +182,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
     name: inputValue ?? '',
     threat_actor_types: [],
     confidence: defaultConfidence ?? null,
+    x_opencti_score: undefined,
     description: '',
     createdBy: defaultCreatedBy ?? null,
     objectMarking: defaultMarkingDefinitions ?? [],
@@ -181,6 +193,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
 
   return (
     <Formik<ThreatActorGroupAddInput>
+      entityType={THREAT_ACTOR_GROUP_TYPE}
       initialValues={initialValues}
       validationSchema={threatActorGroupValidator}
       validateOnChange={true}
@@ -257,6 +270,16 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
+            <Field
+              component={TextField}
+              variant="outlined"
+              name="x_opencti_score"
+              required={(mandatoryAttributes.includes('x_opencti_score'))}
+              label={t_i18n('Score')}
+              fullWidth={true}
+              type="number"
+              className="mt-5"
+            />
             <CreatedByField
               name="createdBy"
               required={(mandatoryAttributes.includes('createdBy'))}
@@ -293,6 +316,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

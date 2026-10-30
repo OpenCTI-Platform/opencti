@@ -27,4 +27,3 @@ export const EXPECTED_EMAIL_MIME_PART = {
   labels: [],
   external_references: [],
 };
-

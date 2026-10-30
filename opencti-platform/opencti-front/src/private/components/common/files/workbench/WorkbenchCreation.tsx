@@ -8,7 +8,7 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import { FormikConfig } from 'formik/dist/types';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { WorkbenchCreationMutation } from '@components/common/files/workbench/__generated__/WorkbenchCreationMutation.graphql';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { WorkbenchFileCreatorStixCoreObjectQuery$data } from '@components/common/files/workbench/__generated__/WorkbenchFileCreatorStixCoreObjectQuery.graphql';
 import { v4 as uuid } from 'uuid';
 import { workbenchFileCreatorStixCoreObjectQuery } from '@components/common/files/workbench/WorkbenchFileCreator';
@@ -20,7 +20,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import AutocompleteFreeSoloField from '../../../../../components/AutocompleteFreeSoloField';
 import ItemIcon from '../../../../../components/ItemIcon';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption } from '../../../../../utils/field';
 import type { Theme } from '../../../../../components/Theme';
 import CreateEntityControlledDial from '../../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
@@ -169,55 +169,49 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth
-            askIa
+            askAi
           />
-          <Field
-            component={AutocompleteFreeSoloField}
-            style={{ marginTop: 20 }}
-            name="labels"
-            multiple
-            textfieldprops={{
-              variant: 'standard',
-              label: t_i18n('Labels'),
-            }}
-            options={[]}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: FieldOption,
-            ) => (
-              <li {...props}>
-                <div style={{
-                  paddingTop: 4,
-                  display: 'inline-block',
-                  color: theme.palette.primary.main,
-                }}
-                >
-                  <ItemIcon type="Label" />
-                </div>
-                <div style={{
-                  display: 'inline-block',
-                  flexGrow: 1,
-                  marginLeft: 10,
-                }}
-                >
-                  {option.label}
-                </div>
-              </li>
-            )}
-            classes={{
-              clearIndicator: {
-                display: 'none',
-              },
-            }}
-          />
+          {/* This field drops `style`; the spacing goes on a wrapper. */}
+          <div style={{ marginTop: 24 }}>
+            <Field
+              component={AutocompleteFreeSoloField}
+              name="labels"
+              multiple
+              textfieldprops={{
+                variant: 'outlined',
+                label: t_i18n('Labels'),
+              }}
+              options={[]}
+              renderOption={(option: FieldOption) => (
+                <>
+                  <div style={{
+                    paddingTop: 4,
+                    display: 'inline-block',
+                    color: theme.palette.primary.main,
+                  }}
+                  >
+                    <ItemIcon type="Label" />
+                  </div>
+                  <div style={{
+                    display: 'inline-block',
+                    flexGrow: 1,
+                    marginLeft: 10,
+                  }}
+                  >
+                    {option.label}
+                  </div>
+                </>
+              )}
+            />
+          </div>
           <ObjectMarkingField
             name="fileMarkings"
             label={t_i18n('File marking definition levels')}
-            style={fieldSpacingContainerStyle}
+            style={{ marginTop: 24, width: '100%' }}
             setFieldValue={setFieldValue}
             required={false}
           />

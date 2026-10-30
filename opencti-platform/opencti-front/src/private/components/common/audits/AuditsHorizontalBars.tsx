@@ -17,8 +17,8 @@ import React, { CSSProperties, FunctionComponent, ReactNode, useCallback, useSta
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { ApexOptions } from 'apexcharts';
 import ApexCharts from 'apexcharts';
-import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router';
 import { AuditsHorizontalBarsDistributionQuery } from '@components/common/audits/__generated__/AuditsHorizontalBarsDistributionQuery.graphql';
 import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
@@ -189,7 +189,7 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -212,8 +212,7 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

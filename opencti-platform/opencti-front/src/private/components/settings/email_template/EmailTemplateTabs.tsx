@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useEmailTemplateContext } from '@components/settings/email_template/EmailTemplateContext';
 import { EmailTemplateTabs_template$key } from '@components/settings/email_template/__generated__/EmailTemplateTabs_template.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,6 +20,13 @@ interface ChildrenProps {
 interface EmailTemplateTabsProps {
   data: EmailTemplateTabs_template$key;
   children: (props: ChildrenProps) => ReactNode;
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `email-templates-tab-${index}`,
+    'aria-controls': `email-templates-tabpanel-${index}`,
+  };
 }
 
 const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
@@ -46,7 +53,7 @@ const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {
       }}
       >
         <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-          <Tab label={t_i18n('Template Editor')} />
+          <Tab label={t_i18n('Template Editor')} {...a11yProps(0)} />
         </Tabs>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>

@@ -2,9 +2,10 @@ import React, { FunctionComponent, useState } from 'react';
 import { union } from 'ramda';
 import { Field } from 'formik';
 import { CampaignOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { triggersQueriesKnowledgeSearchQuery } from './TriggersQueries';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
@@ -14,22 +15,16 @@ import { TriggerType } from './__generated__/TriggerLine_node.graphql';
 import { TriggersQueriesSearchKnowledgeQuery$data } from './__generated__/TriggersQueriesSearchKnowledgeQuery.graphql';
 import { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface TriggersFieldProps {
   name: string;
@@ -77,7 +72,6 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   paginationOptions,
   recipientId,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [triggerCreation, setTriggerCreation] = useState(false);
   const [triggers, setTriggers] = useState<
@@ -96,13 +90,13 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   const handleCloseTriggerCreation = () => {
     setTriggerCreation(false);
   };
-  const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchTriggers = (search: string) => {
     const filtersContent = [{ key: 'trigger_type', values: ['live'] }];
     if (recipientId) {
       filtersContent.push({ key: 'authorized_members.id', values: [recipientId] });
     }
     fetchQuery(triggersQueriesKnowledgeSearchQuery, {
-      search: event && event.target.value,
+      search,
       includeAuthorities: !!recipientId,
       filters: {
         mode: 'and',
@@ -141,33 +135,30 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   return (
     <div>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
         style={style}
         name={name}
         multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('Triggers'),
-          helperText: helpertext,
-          onFocus: searchTriggers,
-        }}
+        label={t_i18n('Triggers')}
+        helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
         options={triggers}
-        onInputChange={searchTriggers}
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchTriggers(search);
+        }}
+        onFocusInput={() => searchTriggers('')}
         openCreate={handleOpenTriggerCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props}>
-            <div className={classes.icon} style={{ color: option.color }}>
+        renderOption={(option: FieldOption) => (
+          <>
+            <OptionIcon style={{ color: option.color }}>
               <CampaignOutlined />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
       <TriggerLiveCreation
         contextual={true}

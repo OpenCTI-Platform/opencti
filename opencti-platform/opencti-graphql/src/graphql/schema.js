@@ -26,7 +26,6 @@ import stixCoreRelationshipResolvers from '../resolvers/stixCoreRelationship';
 import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelationship';
 import identityResolvers from '../resolvers/identity';
 import individualResolvers from '../resolvers/individual';
-import userResolvers from '../resolvers/user';
 import sectorResolvers from '../resolvers/sector';
 import systemResolvers from '../resolvers/system';
 import locationResolvers from '../resolvers/location';
@@ -46,7 +45,6 @@ import infrastructureResolvers from '../resolvers/infrastructure';
 import campaignResolvers from '../resolvers/campaign';
 import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
-import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
 import containerResolvers from '../resolvers/container';
 import noteResolvers from '../resolvers/note';
@@ -195,7 +193,6 @@ const schemaResolvers = [
   internalObjectResolvers,
   settingsResolvers,
   groupResolvers,
-  userResolvers,
   connectorResolvers,
   // STIX OBJECT ENTITIES
   basicObjectResolvers,
@@ -238,7 +235,6 @@ const schemaResolvers = [
   malwareResolvers,
   threatActorResolvers,
   toolResolvers,
-  vulnerabilityResolvers,
   incidentResolvers,
   // STIX CYBER OBSERVABLE ENTITIES
   stixCyberObservableResolvers,

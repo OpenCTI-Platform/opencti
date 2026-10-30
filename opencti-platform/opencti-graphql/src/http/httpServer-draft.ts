@@ -1,7 +1,7 @@
 import type { AuthContext } from '../types/user';
 import { DraftLockedError, FunctionalError } from '../config/errors';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
-import { userEditField } from '../domain/user';
+import { userEditField } from '../modules/user/user-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE, type BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
@@ -33,7 +33,10 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
             value: '',
           }]);
         }
-        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found`);
+        const serviceAccountHint = executeContext.user.user_service_account === true
+          ? ''
+          : ', consider switching the user associated to your connector to a service account (instead of a user)';
+        throw FunctionalError(`Draft ${executeContext.draft_context} cannot be found${serviceAccountHint}`);
       }
 
       if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {

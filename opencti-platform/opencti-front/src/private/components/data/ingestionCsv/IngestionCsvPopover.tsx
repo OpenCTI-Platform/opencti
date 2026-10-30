@@ -1,5 +1,4 @@
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
@@ -12,6 +11,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
+import ToggleButton from '@mui/material/ToggleButton';
 import fileDownload from 'js-file-download';
 import React, { Dispatch, FunctionComponent, UIEvent, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
@@ -49,6 +49,7 @@ const ingestionCsvPopoverExportQuery = graphql`
 interface IngestionCsvPopoverProps {
   ingestionCsvId: string;
   running?: boolean | null;
+  showStartStop?: boolean;
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
   setStateHash: Dispatch<string>;
   // Called after a successful deletion (e.g. to leave the detail page).
@@ -59,6 +60,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   ingestionCsvId,
   paginationOptions,
   running,
+  showStartStop = true,
   setStateHash,
   onDeleteComplete,
 }) => {
@@ -207,25 +209,27 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   return (
     <>
       <div style={{ margin: 0 }}>
-        <IconButton
-          aria-label={t_i18n('Open menu')}
+        <ToggleButton
           onClick={handleOpen}
+          aria-label={t_i18n('Open menu')}
           aria-haspopup="true"
-          style={{ marginTop: 3 }}
+          value="popover"
+          color="primary"
+          size="small"
         >
-          <MoreVert />
-        </IconButton>
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          {!running && (
+          {showStartStop && !running && (
             <MenuItem onClick={handleOpenStart}>
               {t_i18n('Start')}
             </MenuItem>
           )}
-          {running && (
+          {showStartStop && running && (
             <MenuItem onClick={handleOpenStop}>
               {t_i18n('Stop')}
             </MenuItem>

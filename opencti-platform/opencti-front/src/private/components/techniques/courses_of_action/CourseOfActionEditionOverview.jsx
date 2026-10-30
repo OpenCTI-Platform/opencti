@@ -16,8 +16,10 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
@@ -225,7 +227,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             label={t_i18n('External ID')}
             required={(mandatoryAttributes.includes('x_mitre_id'))}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -276,14 +278,12 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             )}
           />
           <Field
-            component={TextField}
+            component={TextareaField}
             name="x_opencti_log_sources"
             label={t_i18n('Log sources (1 / line)')}
             required={(mandatoryAttributes.includes('x_opencti_log_sources'))}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={(
@@ -329,6 +329,13 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={courseOfAction.entity_type}
+            entityId={courseOfAction.id}
+            values={courseOfAction.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -349,6 +356,7 @@ export default createFragmentContainer(CourseOfActionEditionOverviewComponent, {
   courseOfAction: graphql`
     fragment CourseOfActionEditionOverview_courseOfAction on CourseOfAction {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       description
       confidence

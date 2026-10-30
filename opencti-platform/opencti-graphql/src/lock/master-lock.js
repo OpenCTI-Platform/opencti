@@ -3,6 +3,7 @@ import * as crypto from 'crypto';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { lockResource } from '../database/redis';
+import { meterManager } from '../config/tracing';
 
 // Global variable for the child process
 const USE_CHILD_LOCK = booleanConf('app:child_locking_process:enabled', false);
@@ -10,6 +11,24 @@ const CHILD_PROCESS_MEMORY = conf.get('app:child_locking_process:max_memory') ??
 const lockProcess = {
   forked: undefined,
   callbacks: new Map(), // [op, { lock: fn, unlock: fn }]
+};
+
+// Node.js --watch mode sends internal IPC messages (e.g. { 'watch:require': ... })
+// to child processes. These are not application messages and should be silently ignored.
+const isNodeInternalMessage = (msg) => {
+  if (!msg || typeof msg !== 'object') return false;
+  return Object.keys(msg).some((key) => key.startsWith('watch:'));
+};
+
+const extractMessageKey = (msg) => {
+  if (!msg || typeof msg !== 'object') {
+    return undefined;
+  }
+  const { operation, type } = msg;
+  if (typeof operation !== 'string' || operation.length === 0 || typeof type !== 'string' || type.length === 0) {
+    return undefined;
+  }
+  return `${operation}-${type}`;
 };
 
 // -- Start the control lock manager
@@ -22,7 +41,19 @@ export const initLockFork = () => {
       execArgv: [`--max-old-space-size=${CHILD_PROCESS_MEMORY}`],
     }, { detached: false });
     lockProcess.forked.on('message', (msg) => {
-      const messageKey = `${msg.operation}-${msg.type}`;
+      const messageKey = extractMessageKey(msg);
+      if (!messageKey) {
+        // Silently ignore Node.js --watch internal IPC messages
+        if (isNodeInternalMessage(msg)) return;
+        const shape = (msg && typeof msg === 'object')
+          ? { keys: Object.keys(msg) }
+          : { receivedType: typeof msg };
+        logApp.warn('[LOCKING] Ignoring malformed message from child lock process', {
+          type: msg && typeof msg === 'object' ? msg.type : undefined,
+          ...shape,
+        });
+        return;
+      }
       if (lockProcess.callbacks.has(messageKey)) {
         lockProcess.callbacks.get(messageKey)(msg);
       } else {
@@ -37,6 +68,19 @@ export const initLockFork = () => {
     logApp.info('[LOCKING] Locking fork process started');
   } else {
     logApp.info('[LOCKING] Locking fork process already started');
+  }
+};
+
+// Record lock acquisition telemetry. Must run in THIS (main) process: it holds the metric exporter.
+// The measurement itself is done next to the redlock acquire (redis.ts lockResource), in whichever
+// process performs it (direct or lock child), and travels back with the lock/IPC message.
+const recordLockAcquire = (acquireWaitMs, acquireAttempts) => {
+  if (acquireWaitMs === undefined) {
+    return;
+  }
+  meterManager.lockWait(acquireWaitMs);
+  if (acquireAttempts > 1) {
+    meterManager.lockContention();
   }
 };
 
@@ -81,6 +125,7 @@ const childLockResources = async (ids, args = {}) => {
     // Set up the lock callback
     lockProcess.callbacks.set(`${operation}-lock`, (msg) => {
       if (msg.success) {
+        recordLockAcquire(msg.acquireWaitMs, msg.acquireAttempts);
         const unlock = () => childUnlockResources(msg.operation);
         resolve({ operation, signal, unlock, result: msg });
       } else {
@@ -96,5 +141,10 @@ const childLockResources = async (ids, args = {}) => {
 
 // Lock resources, direct or child, depending
 export const lockResources = async (ids, args = {}) => {
-  return USE_CHILD_LOCK ? childLockResources(ids, args) : lockResource(ids, args);
+  if (USE_CHILD_LOCK) {
+    return childLockResources(ids, args);
+  }
+  const lock = await lockResource(ids, args);
+  recordLockAcquire(lock.acquireWaitMs, lock.acquireAttempts);
+  return lock;
 };

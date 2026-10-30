@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -140,6 +143,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     const allNames = splitMultilines(values.name);
     const variables: AdministrativeAreaCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         latitude: parseFloat(values.latitude),
@@ -186,6 +190,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
 
   return (
     <Formik<AdministrativeAreaAddInput>
+      entityType={ADMINISTRATIVE_AREA_TYPE}
       initialValues={initialValues}
       validationSchema={administrativeAreaValidator}
       validateOnChange={false}
@@ -223,7 +228,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -249,21 +254,21 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="latitude"
               label={t_i18n('Latitude')}
               required={(mandatoryAttributes.includes('latitude'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="longitude"
               label={t_i18n('Longitude')}
               required={(mandatoryAttributes.includes('longitude'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <CreatedByField
               name="createdBy"
@@ -301,6 +306,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

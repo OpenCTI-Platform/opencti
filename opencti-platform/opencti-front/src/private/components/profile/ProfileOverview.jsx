@@ -4,20 +4,18 @@ import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Dialog from '@common/dialog/Dialog';
-import MenuItem from '@mui/material/MenuItem';
-import { useTheme } from '@mui/styles';
-import withStyles from '@mui/styles/withStyles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import qrcode from 'qrcode';
-import { compose, pick } from 'ramda';
+import { pick } from 'ramda';
 import { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as Yup from 'yup';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Label from '../../../components/common/label/Label';
-import SelectField from '../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
 import TextField from '../../../components/TextField';
@@ -35,27 +33,9 @@ import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
-import ProfileOverviewNewsFeed from './ProfileOverviewNewsFeed';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
-
-const styles = () => ({
-  container: {
-    width: 900,
-    margin: '0 auto',
-  },
-  paper: {
-    width: '100%',
-    margin: '0 auto',
-    marginBottom: 24,
-    padding: 20,
-    textAlign: 'left',
-    borderRadius: 4,
-    position: 'relative',
-  },
-  switchField: {
-    padding: '20px 0 0',
-  },
-});
+import TextareaField from '../../../components/TextareaField';
+import { dateFormatOptions, timeFormatOptions } from '../../../utils/dateDisplay';
 
 const profileOverviewFieldPatch = graphql`
   mutation ProfileOverviewFieldPatchMutation(
@@ -106,6 +86,8 @@ const userValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   otp_activated: Yup.boolean(),
   unit_system: Yup.string().nullable(),
+  date_format: Yup.string().nullable(),
+  time_format: Yup.string().nullable(),
   submenu_show_icons: Yup.boolean(),
   submenu_auto_collapse: Yup.boolean(),
   monochrome_labels: Yup.boolean(),
@@ -158,7 +140,7 @@ const Otp = ({ closeFunction, secret, uri }) => {
   }, [uri, theme]);
   return (
     <div style={{ textAlign: 'center' }}>
-      <img src={otpQrImage} style={{ width: 265 }} alt="" />
+      <img src={otpQrImage} style={{ width: 265 }} alt={t_i18n('QR code for two-factor authentication')} />
       {error ? (
         <Alert
           severity="error"
@@ -204,7 +186,7 @@ const OtpComponent = ({ closeFunction }) => (
 );
 
 const ProfileOverviewComponent = (props) => {
-  const { t, me, classes, about, settings, themes } = props;
+  const { t, me, about, settings, themes } = props;
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
   const { isPlaygroundEnable } = useHelper();
@@ -226,6 +208,8 @@ const ProfileOverviewComponent = (props) => {
     'language',
     'otp_activated',
     'unit_system',
+    'date_format',
+    'time_format',
     'submenu_show_icons',
     'submenu_auto_collapse',
     'monochrome_labels',
@@ -279,8 +263,11 @@ const ProfileOverviewComponent = (props) => {
 
   return (
     <Stack
-      gap={2}
-      sx={{ width: 900, margin: '0 auto' }}
+      sx={{
+        gap: 2,
+        width: 900,
+        margin: '0 auto',
+      }}
     >
       <TokenCreationDrawer
         userId={me.id}
@@ -305,7 +292,7 @@ const ProfileOverviewComponent = (props) => {
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 disabled={external}
                 label={t('Name')}
@@ -314,12 +301,12 @@ const ProfileOverviewComponent = (props) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="user_email"
                 disabled={external}
                 label={t('Email address')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <ObjectOrganizationField
@@ -331,32 +318,33 @@ const ProfileOverviewComponent = (props) => {
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
               />
               <Field
-                component={TextField}
-                variant="standard"
+                component={TextareaField}
+                variant="outlined"
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
-                style={{ marginTop: 16 }}
+                className="mt-4"
                 onSubmit={handleSubmitField}
+                resize="vertical"
               />
             </Form>
           )}
@@ -371,8 +359,8 @@ const ProfileOverviewComponent = (props) => {
           {() => (
             <Form>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="theme"
                 label={t('Theme')}
                 fullWidth={true}
@@ -383,14 +371,14 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={{ width: '100%' }}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="default">{t('Default')}</MenuItem>
+                <SelectItem value="default">{t('Default')}</SelectItem>
                 {themeList.map(({ id, name }) => (
-                  <MenuItem key={id} value={id}>{name}</MenuItem>
+                  <SelectItem key={id} value={id}>{name}</SelectItem>
                 ))}
               </Field>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="language"
                 label={t('Language')}
                 fullWidth={true}
@@ -401,14 +389,14 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
+                <SelectItem value="auto"><em>{t('Automatic')}</em></SelectItem>
                 {
-                  availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
+                  availableLanguage.map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)
                 }
               </Field>
               <Field
-                component={SelectField}
-                variant="standard"
+                component={SelectFieldFds}
+                variant="outlined"
                 name="unit_system"
                 label={t('Unit system')}
                 fullWidth={true}
@@ -416,9 +404,33 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
-                <MenuItem value="Imperial">{t('Imperial')}</MenuItem>
-                <MenuItem value="Metric">{t('Metric')}</MenuItem>
+                <SelectItem value="auto"><em>{t('Automatic')}</em></SelectItem>
+                <SelectItem value="Imperial">{t('Imperial')}</SelectItem>
+                <SelectItem value="Metric">{t('Metric')}</SelectItem>
+              </Field>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="date_format"
+                label={t('Date format in tables')}
+                fullWidth={true}
+                inputProps={{ name: 'date_format', id: 'date_format' }}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitField}
+              >
+                {dateFormatOptions(t, 'user').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+              </Field>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="time_format"
+                label={t('Time in tables')}
+                fullWidth={true}
+                inputProps={{ name: 'time_format', id: 'time_format' }}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitField}
+              >
+                {timeFormatOptions(t, 'user').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
               </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText
@@ -426,7 +438,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="submenu_show_icons"
                   checked={initialValues.submenu_show_icons}
                   onChange={(_, value) => handleSubmitField('submenu_show_icons', value)}
@@ -438,7 +450,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="submenu_auto_collapse"
                   checked={initialValues.submenu_auto_collapse}
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
@@ -450,7 +462,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <Field
                   component={Switch}
-                  variant="standard"
+                  variant="outlined"
                   name="monochrome_labels"
                   checked={initialValues.monochrome_labels}
                   onChange={(_, value) => handleSubmitField('monochrome_labels', value)}
@@ -482,13 +494,6 @@ const ProfileOverviewComponent = (props) => {
           <HomeDashboardSettings />
         </Card>
       ) : null}
-      {settings.xtm_hub_registration_status === 'registered' && settings.xtm_hub_available_news_feed_types?.length > 0 && (
-        <ProfileOverviewNewsFeed
-          availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
-          unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
-          onSubmitField={handleSubmitField}
-        />
-      )}
       <Card title={t('Authentication')}>
         <div style={{ float: 'right', marginTop: -5 }}>
           {useOtp && (
@@ -496,7 +501,7 @@ const ProfileOverviewComponent = (props) => {
               type="button"
               startIcon={<NoEncryptionOutlined />}
               onClick={disableOtp}
-              classes={{ root: classes.button }}
+              keepMui
               disabled={settings.otp_mandatory}
             >
               {t('Disable two-factor authentication')}
@@ -508,7 +513,7 @@ const ProfileOverviewComponent = (props) => {
               color="secondary"
               startIcon={<LockOutlined />}
               onClick={() => setDisplay2FA(true)}
-              classes={{ root: classes.button }}
+              keepMui
             >
               {t('Enable two-factor authentication')}
             </Button>
@@ -528,10 +533,13 @@ const ProfileOverviewComponent = (props) => {
           >
             {({ submitForm, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Stack gap={2}>
+                <Stack sx={{
+                  gap: 2,
+                }}
+                >
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="current_password"
                     label={t('Current password')}
                     type="password"
@@ -541,7 +549,7 @@ const ProfileOverviewComponent = (props) => {
                   <PasswordPolicies value={values.password} />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="password"
                     label={t('New password')}
                     type="password"
@@ -550,7 +558,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="confirmation"
                     label={t('Confirmation')}
                     type="password"
@@ -563,7 +571,7 @@ const ProfileOverviewComponent = (props) => {
                     type="button"
                     onClick={submitForm}
                     disabled={external || isSubmitting}
-                    classes={{ root: classes.button }}
+                    keepMui
                   >
                     {t('Update')}
                   </Button>
@@ -577,8 +585,17 @@ const ProfileOverviewComponent = (props) => {
         <div>
           <Label>{t('OpenCTI version')}</Label>
           <pre>{about.version}</pre>
-          <Stack gap={2}>
-            <Stack direction="row" justifyContent="flex-end" gap={1}>
+          <Stack sx={{
+            gap: 2,
+          }}
+          >
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: 'flex-end',
+                gap: 1,
+              }}
+            >
               {hasAccessTokenCapability && isPlaygroundEnable() && (
                 <Button
                   variant="secondary"
@@ -608,8 +625,6 @@ const ProfileOverviewComponent = (props) => {
 };
 
 ProfileOverviewComponent.propTypes = {
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   me: PropTypes.object,
   about: PropTypes.object,
@@ -631,6 +646,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       otp_activated
       description
       unit_system
+      date_format
+      time_format
       submenu_show_icons
       submenu_auto_collapse
       monochrome_labels
@@ -658,10 +675,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
       platform_notifier_auto_trigger_assignee
-      xtm_hub_registration_status
-      xtm_hub_available_news_feed_types
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ProfileOverview);
+export default inject18n(ProfileOverview);

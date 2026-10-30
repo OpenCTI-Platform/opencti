@@ -7,8 +7,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { TextField } from 'formik-mui';
 import { useCookies } from 'react-cookie';
 import { graphql } from 'react-relay';
-import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../relay/environment';
@@ -88,7 +86,6 @@ interface ResetPasswordProps {
 }
 
 const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const [transactionId, setTransactionId] = useState('');
@@ -263,14 +260,19 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
         height: '100%',
       }}
       >
-        <Box flex={1}>
+        <Box sx={{
+          flex: 1,
+        }}
+        >
           {children}
         </Box>
         <Stack
-          mt={3}
           direction="row"
-          alignItems="center"
-          justifyContent="space-between"
+          sx={{
+            mt: 3,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
           <div>
             <Button
@@ -358,9 +360,11 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
 
       {resetPwdStep === ResetPwdStep.MFA && (
         <Stack
-          height="100%"
-          justifyContent="space-between"
-          alignItems="start"
+          sx={{
+            height: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'start',
+          }}
         >
           <OtpValidation
             variant="resetPassword"
@@ -417,7 +421,7 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
                 label={t_i18n('Password validation')}
                 type="password"
                 fullWidth={true}
-                style={{ marginTop: theme.spacing(2) }}
+                className="mt-4"
               />
             </Form>
           )}

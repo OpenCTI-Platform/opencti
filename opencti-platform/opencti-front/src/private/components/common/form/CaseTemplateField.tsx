@@ -1,7 +1,7 @@
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import ComboboxField, { ComboboxFieldProps } from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -9,22 +9,16 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CaseTemplateFieldQuery } from './__generated__/CaseTemplateFieldQuery.graphql';
 import Field, { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const caseTemplateFieldQuery = graphql`
   query CaseTemplateFieldQuery {
@@ -58,7 +52,6 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
   label,
   isDisabled,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const data = usePreloadedQuery(caseTemplateFieldQuery, queryRef);
@@ -69,32 +62,32 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
 
   return (
     <div style={{ width: '100%' }}>
-      <Field<AutocompleteFieldProps>
-        component={AutocompleteField}
+      <Field<ComboboxFieldProps>
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         name="caseTemplates"
         multiple
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n(label ?? 'Default case templates'),
-          helperText: helpertext,
-        }}
+        label={t_i18n(label ?? 'Default case templates')}
+        helperText={helpertext}
         onChange={(name, value) => {
-          onChange?.(name, value);
-          onSubmit?.(name, value);
+          const templates = (value ?? []) as FieldOption[];
+          onChange?.(name, templates);
+          onSubmit?.(name, templates);
         }}
         style={containerStyle}
         disabled={isDisabled}
         noOptionsText={t_i18n('No available options')}
         options={caseTemplates}
-        renderOption={(props, option) => (
-          <li {...props}>
-            <div className={classes.icon} style={{ color: option.color }}>
+        renderOption={(option) => (
+          <>
+            <OptionIcon style={{ color: option.color }}>
               <ItemIcon type="Case-Template" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     </div>
   );

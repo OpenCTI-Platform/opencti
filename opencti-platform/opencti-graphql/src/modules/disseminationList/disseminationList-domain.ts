@@ -13,6 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import sanitizeHtml from 'sanitize-html';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
@@ -105,11 +106,11 @@ export const sendDisseminationEmail = async (
       throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: opts.htmlToBodyFileId });
     }
     const fileContent = await getFileContent(bodyFile.id);
-    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: fileContent });
+    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: sanitizeHtml(fileContent ?? '') });
     sentFiles.push(bodyFile);
   } else {
     const emailBodyFormatted = opts.body.replaceAll('\n', '<br/>');
-    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: emailBodyFormatted });
+    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: sanitizeHtml(emailBodyFormatted) });
   }
 
   const sendMailArgs: SendMailArgs = {

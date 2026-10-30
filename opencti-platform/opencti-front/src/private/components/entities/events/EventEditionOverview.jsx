@@ -20,6 +20,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const eventMutationFieldPatch = graphql`
@@ -83,6 +84,10 @@ const EventEditionOverviewComponent = (props) => {
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     confidence: Yup.number().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
@@ -143,12 +148,17 @@ const EventEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      editor.fieldPatch({
-        variables: {
-          id: event.id,
-          input: { key: name, value: finalValue ?? '' },
-        },
-      });
+      eventValidator
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          editor.fieldPatch({
+            variables: {
+              id: event.id,
+              input: { key: name, value: finalValue ?? [null] },
+            },
+          });
+        })
+        .catch(() => false);
     }
   };
 
@@ -157,6 +167,7 @@ const EventEditionOverviewComponent = (props) => {
     references: event.references || [],
     event_types: event.event_types || [],
     description: event.description || '',
+    x_opencti_score: event.x_opencti_score,
     start_time: buildDate(event.start_time),
     stop_time: buildDate(event.stop_time),
     confidence: event.confidence,
@@ -186,7 +197,7 @@ const EventEditionOverviewComponent = (props) => {
           <AlertConfidenceForEntity entity={event} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -234,7 +245,7 @@ const EventEditionOverviewComponent = (props) => {
             textFieldProps={{
               label: t_i18n('Start date'),
               required: (mandatoryAttributes.includes('start_time')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -250,7 +261,7 @@ const EventEditionOverviewComponent = (props) => {
             textFieldProps={{
               label: t_i18n('End date'),
               required: (mandatoryAttributes.includes('stop_time')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -266,6 +277,25 @@ const EventEditionOverviewComponent = (props) => {
             editContext={context}
             variant="edit"
           />
+          {/* A `style` on the field is unplaceable and sends it back to MUI. */}
+          <div style={{ marginTop: 20 }}>
+            <Field
+              component={TextField}
+              name="x_opencti_score"
+              required={(mandatoryAttributes.includes('x_opencti_score'))}
+              label={t_i18n('Score')}
+              type="number"
+              fullWidth={true}
+              onFocus={editor.changeFocus}
+              onSubmit={(name, value) => handleSubmitField(name, (value === '' ? null : value))}
+              helperText={(
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_score"
+                />
+              )}
+            />
+          </div>
           {event.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
@@ -299,6 +329,13 @@ const EventEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={event.entity_type}
+            entityId={event.id}
+            values={event.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -319,11 +356,13 @@ export default createFragmentContainer(EventEditionOverviewComponent, {
   event: graphql`
       fragment EventEditionOverview_event on Event {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         name
         event_types
         description
         start_time
         confidence
+        x_opencti_score
         entity_type
         stop_time
         createdBy {

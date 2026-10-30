@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -173,6 +176,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: PositionCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -220,6 +224,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
 
   return (
     <Formik<PositionAddInput>
+      entityType={POSITION_TYPE}
       initialValues={initialValues}
       validationSchema={positionValidator}
       validateOnChange={false}
@@ -257,7 +262,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -283,39 +288,39 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="latitude"
               label={t_i18n('Latitude')}
               required={(mandatoryAttributes.includes('latitude'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="longitude"
               label={t_i18n('Longitude')}
               required={(mandatoryAttributes.includes('longitude'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="street_address"
               label={t_i18n('Street address')}
               required={(mandatoryAttributes.includes('street_address'))}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="postal_code"
               required={(mandatoryAttributes.includes('postal_code'))}
               label={t_i18n('Postal code')}
               fullWidth={true}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <CreatedByField
               name="createdBy"
@@ -353,6 +358,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

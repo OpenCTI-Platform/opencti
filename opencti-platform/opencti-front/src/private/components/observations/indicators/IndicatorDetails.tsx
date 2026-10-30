@@ -6,6 +6,7 @@ import { TroubleshootOutlined } from '@mui/icons-material';
 import { Stack, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { InformationOutline } from 'mdi-material-ui';
 import { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -62,8 +63,8 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
           </FieldOrEmpty>
         </div>
 
-        <Grid container={true} spacing={2} sx={{ mt: 0 }}>
-          <Grid item xs={6}>
+        <Grid container={true} spacing={2} sx={{ mt: 2 }}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Valid from')}
             </Label>
@@ -82,7 +83,12 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             >
               {t_i18n('Score')}
             </Label>
-            <Stack direction="row" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+              }}
+            >
               <ItemScore score={indicator.x_opencti_score} />
               {(indicator.decay_applied_rule
                 || !!indicator.decay_exclusion_applied_rule) && (
@@ -91,8 +97,9 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                     size="small"
                     variant="secondary"
                     onClick={openLifecycleDialog}
-                    startIcon={<TroubleshootOutlined />}
+                    startIcon={<TroubleshootOutlined fontSize="small" />}
                     color={indicator.decay_exclusion_applied_rule ? 'warn' : 'primary'}
+                    keepMui
                   >
                     {t_i18n('Lifecycle')}
                   </Button>
@@ -113,7 +120,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               )}
             </Stack>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Valid until')}
             </Label>
@@ -135,14 +142,20 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
           </Grid>
         </Grid>
         <Grid container={true} spacing={3} sx={{ marginBottom: '10px' }}>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
               {t_i18n('Indicator types')}
             </Label>
             <FieldOrEmpty source={indicator.indicator_types}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {indicator.indicator_types?.map((indicatorType) => (
                   <Tag
                     key={indicatorType}
@@ -152,7 +165,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               </Stack>
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -164,7 +177,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -172,6 +185,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             </Label>
             <TextList list={indicator.x_mitre_platforms} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={indicator.entity_type} values={indicator.customFieldValues ?? []} />
         </Grid>
         <IndicatorObservables indicator={indicator} />
       </Card>
@@ -183,6 +197,10 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
   indicator: graphql`
     fragment IndicatorDetails_indicator on Indicator {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       description
       pattern
       valid_from

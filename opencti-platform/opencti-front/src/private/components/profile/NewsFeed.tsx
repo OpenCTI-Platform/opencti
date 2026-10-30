@@ -1,11 +1,12 @@
 import { NewsFeedLine_node$data } from '@components/profile/__generated__/NewsFeedLine_node.graphql';
 import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsFeedLines_data.graphql';
 import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
-import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
+import { Stack } from '@mui/material';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
+import IconButton from '@common/button/IconButton';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, useSubscription } from 'react-relay';
-import { Link } from 'react-router-dom';
 import Tag from '../../../components/common/tag/Tag';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -138,7 +139,14 @@ const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[]
       style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', overflow: 'hidden', width: '100%', position: 'relative', gap: 4, height: 20 }}
     >
       {/* Hidden measurement row */}
-      <Stack direction="row" position="absolute" visibility="hidden" gap={0.5}>
+      <Stack
+        direction="row"
+        sx={{
+          position: 'absolute',
+          visibility: 'hidden',
+          gap: 0.5,
+        }}
+      >
         {tagValues.map((tag, index) => (
           <div
             key={tag}
@@ -152,7 +160,14 @@ const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[]
       </Stack>
 
       {/* Visible tags + overflow tag in the same row */}
-      <Stack direction="row" gap={0.5} overflow="hidden" alignItems="center">
+      <Stack
+        direction="row"
+        sx={{
+          gap: 0.5,
+          overflow: 'hidden',
+          alignItems: 'center',
+        }}
+      >
         {tagValues.slice(0, visibleCount).map((tag) => (
           <Tag key={tag} label={tag.toLowerCase()} />
         ))}
@@ -177,16 +192,23 @@ const NewsFeedLineActions: FunctionComponent<{ data: NewsFeedLine_node$data }> =
   if (!href) return null;
 
   return (
-    <Tooltip title={t_i18n('Open in XTM Hub')}>
-      <IconButton
-        component="a"
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e: React.MouseEvent) => e.stopPropagation()}
-      >
-        <OpenInNewOutlined fontSize="small" color="primary" />
-      </IconButton>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span style={{ display: 'inline-flex' }}>
+          <IconButton
+            component="a"
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            size="small"
+            aria-label={t_i18n('Open in XTM Hub')}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
+            <OpenInNewOutlined fontSize="small" color="primary" />
+          </IconButton>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{t_i18n('Open in XTM Hub')}</TooltipContent>
     </Tooltip>
   );
 };
@@ -236,8 +258,11 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       isSortable: true,
       render: ({ title }: NewsFeedLine_node$data) => (
         <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
-          <Tooltip title={title ?? ''}>
-            <span>{title ?? ''}</span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>{title ?? ''}</span>
+            </TooltipTrigger>
+            <TooltipContent>{title ?? ''}</TooltipContent>
           </Tooltip>
         </div>
       ),
@@ -247,7 +272,7 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       label: 'Original creation date',
       percentWidth: 20,
       isSortable: true,
-      render: ({ creation_date }: NewsFeedLine_node$data, item) => defaultRender(item.fldt(creation_date)),
+      render: ({ creation_date }: NewsFeedLine_node$data, item) => defaultRender(item.ftdt(creation_date, 'long')),
     },
     tags: {
       id: 'tags',
@@ -270,12 +295,6 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
 
   return (
     <div>
-      <Alert severity="info" style={{ marginBottom: 16, backgroundColor: 'transparent', border: '1px solid #1976d2' }}>
-        {t_i18n('Want to control which news appear here?')}{' '}
-        <strong>{t_i18n('Manage your News Feed preferences')}</strong>{' '}
-        {t_i18n('in your')}{' '}
-        <Link to="/dashboard/profile/me">{t_i18n('profile settings')}</Link>.
-      </Alert>
       <DataTable
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={newsFeedInitialValues}

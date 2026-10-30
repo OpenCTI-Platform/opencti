@@ -1,7 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import LocationDetails from '@components/locations/LocationDetails';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -12,14 +11,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { AdministrativeArea_administrativeArea$key } from './__generated__/AdministrativeArea_administrativeArea.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const administrativeAreaFragment = graphql`
   fragment AdministrativeArea_administrativeArea on AdministrativeArea {
@@ -71,6 +62,7 @@ const administrativeAreaFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...LocationDetails_location
   }
 `;
@@ -82,7 +74,6 @@ const AdministrativeArea = ({
 }) => {
   useInitCreateRelationshipContext();
 
-  const classes = useStyles();
   const administrativeArea = useFragment<AdministrativeArea_administrativeArea$key>(
     administrativeAreaFragment,
     administrativeAreaData,
@@ -92,44 +83,39 @@ const AdministrativeArea = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
-        <Grid item xs={4}>
+        <Grid size={4}>
           <LocationDetails locationData={administrativeArea} />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <LocationMiniMap
-            center={
-              administrativeArea.latitude && administrativeArea.longitude
-                ? [administrativeArea.latitude, administrativeArea.longitude]
-                : [48.8566969, 2.3514616]
-            }
-            administrativeArea={administrativeArea}
             zoom={5}
+            location={administrativeArea}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <StixDomainObjectOverview
             stixDomainObject={administrativeArea}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={administrativeArea.id}
             stixObjectOrStixRelationshipLink={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={administrativeArea.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={administrativeArea.id}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={administrativeArea.id}
           />

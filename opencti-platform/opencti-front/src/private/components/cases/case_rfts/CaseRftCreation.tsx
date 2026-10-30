@@ -4,11 +4,14 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from 'src/relay/environment';
 import * as Yup from 'yup';
@@ -40,6 +43,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseRftAddInput, CaseRftCreationCaseMutation } from './__generated__/CaseRftCreationCaseMutation.graphql';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const caseRftMutation = graphql`
   mutation CaseRftCreationCaseMutation($input: CaseRftAddInput!) {
@@ -138,6 +142,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: CaseRftAddInput = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -155,11 +160,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({
@@ -214,6 +215,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   }
   return (
     <Formik<FormikCaseRftAddInput>
+      entityType={CASE_RFT_TYPE}
       initialValues={initialValues}
       validationSchema={validator}
       validateOnChange={true}
@@ -225,7 +227,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             required={(mandatoryAttributes.includes('name'))}
             label={t_i18n('Name')}
@@ -238,7 +240,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             required={(mandatoryAttributes.includes('created'))}
             textFieldProps={{
               label: t_i18n('Request For Takedown Date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
@@ -339,6 +341,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

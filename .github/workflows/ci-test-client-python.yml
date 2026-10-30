@@ -7,19 +7,23 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
+    secrets:
+      CODECOV_TOKEN:
+        description: "Token used to upload coverage reports to Codecov"
+        required: false
 
 jobs:
   ensure-formatting-pycti:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: pycti formatting check
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: ${{ inputs.checkout_ref }}
 
     - name: Set up Python
-      uses: actions/setup-python@v7
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: "3.12"
 
@@ -36,13 +40,13 @@ jobs:
       run: cd client-python && black --check .
 
     - name: flake8 Lint
-      uses: py-actions/flake8@v2
+      uses: py-actions/flake8@84ec6726560b6d5bd68f2a5bed83d62b52bb50ba #v2.3.0
       with:
         ignore: "E,W"
         path: "client-python"
 
   client-python-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     name: pycti test - python ${{ matrix.python-version }}
     strategy:
       fail-fast: false
@@ -50,7 +54,7 @@ jobs:
         python-version: [ "3.10", "3.11", "3.12" ]
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: ${{ inputs.checkout_ref }}
 
@@ -59,13 +63,13 @@ jobs:
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Set up Python environment for flake8 lint
-      uses: actions/setup-python@v7
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: docker-image-opencti-platform
         path: /tmp
@@ -106,7 +110,7 @@ jobs:
           '
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v7
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/client-python/coverage.xml

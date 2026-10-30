@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
@@ -14,18 +13,6 @@ import Tag from '@common/tag/Tag';
 import { Stack } from '@mui/material';
 import { resolveNoteEmbeddedImageUrl } from './note-utils';
 
-const styles = (theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text.primary,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    margin: '0 5px 5px 0',
-  },
-});
-
 class NoteDetailsComponent extends Component {
   render() {
     const { t, note } = this.props;
@@ -35,7 +22,7 @@ class NoteDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Entity details')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={9}>
+            <Grid size={9}>
               <Label>
                 {t('Abstract')}
               </Label>
@@ -56,12 +43,18 @@ class NoteDetailsComponent extends Component {
                 resolveImageUrl={noteImageResolver}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid size={3}>
               <Label>
                 {t('Note types')}
               </Label>
               <FieldOrEmpty source={note.note_types}>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    flexWrap: 'wrap',
+                    gap: 1,
+                  }}
+                >
                   {note.note_types?.map((noteType) => (
                     <Tag
                       key={noteType}
@@ -77,6 +70,7 @@ class NoteDetailsComponent extends Component {
               </Label>
               <ItemLikelihood likelihood={note.likelihood} />
             </Grid>
+            <CustomFieldValuesDisplay entityType={note.entity_type} values={note.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -86,7 +80,6 @@ class NoteDetailsComponent extends Component {
 
 NoteDetailsComponent.propTypes = {
   note: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -95,6 +88,10 @@ const NoteDetails = createFragmentContainer(NoteDetailsComponent, {
   note: graphql`
     fragment NoteDetails_note on Note {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       attribute_abstract
       content
       note_types
@@ -103,4 +100,4 @@ const NoteDetails = createFragmentContainer(NoteDetailsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(NoteDetails);
+export default inject18n(NoteDetails);

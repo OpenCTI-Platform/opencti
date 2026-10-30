@@ -45,5 +45,6 @@ export interface Stix2Event extends StixDomainObject2 {
   start_time: StixDate2;
   stop_time: StixDate2;
   aliases: Array<string>;
+  x_opencti_score: number;
 }
 // endregion

@@ -1,0 +1,144 @@
+import { describe, expect, it } from 'vitest';
+// Registers all entity/relation modules so schemaAttributesDefinition / schemaRelationsRefDefinition
+// are populated, without requiring a live DB/ES stack (pure in-memory schema registration).
+import '../../../src/modules/index';
+import { addFilter, booleanTrueFilter, checkFiltersValidity, convertRelationRefsFilterKeys } from '../../../src/utils/filtering/filtering-utils';
+import { buildRefRelationKey } from '../../../src/schema/general';
+import { RELATION_OBJECT, RELATION_CREATED_BY } from '../../../src/schema/stixRefRelationship';
+import type { FilterGroup } from '../../../src/generated/graphql';
+
+describe('Filtering utils', () => {
+  describe('report relationship filters', () => {
+    it('should convert report membership to the indexed object reference', () => {
+      const filters = addFilter(undefined, 'objects', 'report-id');
+
+      expect(() => checkFiltersValidity(filters)).not.toThrow();
+      expect(convertRelationRefsFilterKeys(filters)).toEqual({
+        mode: 'and',
+        filters: [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: ['report-id'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      });
+      expect(filters.filters[0].key).toEqual(['objects']);
+    });
+
+    it('should keep report membership mandatory when user filters use OR', () => {
+      const userFilters = {
+        mode: 'or',
+        filters: [
+          { key: ['relationship_type'], values: ['uses'], operator: 'eq', mode: 'or' },
+          { key: ['confidence'], values: ['80'], operator: 'gte', mode: 'or' },
+        ],
+        filterGroups: [],
+      } as FilterGroup;
+      const originalFilters = structuredClone(userFilters);
+      const filters = addFilter(userFilters, 'objects', 'report-id');
+
+      expect(convertRelationRefsFilterKeys(filters)).toEqual({
+        mode: 'and',
+        filters: [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: ['report-id'], operator: 'eq', mode: 'or' }],
+        filterGroups: [originalFilters],
+      });
+      expect(userFilters).toEqual(originalFilters);
+    });
+
+    it('should preserve report membership inside nested filter groups', () => {
+      const filters = addFilter(addFilter(undefined, 'objects', 'report-id'), 'relationship_type', 'uses');
+      const converted = convertRelationRefsFilterKeys(filters);
+
+      expect(converted.filters[0].key).toEqual(['relationship_type']);
+      expect(converted.filterGroups[0].filters[0]).toEqual({
+        key: [buildRefRelationKey(RELATION_OBJECT, '*')],
+        values: ['report-id'],
+        operator: 'eq',
+        mode: 'or',
+      });
+    });
+  });
+
+  it('should reject a filter key containing an extra invalid segment after the first dot', () => {
+    // "name" alone is a valid schema key, but the full composed key carries extra content
+    // after the first dot that should not be accepted.
+    const composedKey = "name.']; ctx._source.value = true; //";
+    const filterGroup = {
+      mode: 'or',
+      filters: [
+        { key: [composedKey], values: ['a'], operator: 'only_eq_to' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+
+    expect(() => checkFiltersValidity(filterGroup)).toThrowError('Incorrect filter keys containing invalid characters');
+  });
+
+  it('should not reject legitimate ref-relation keys with a non-schema second segment (e.g. wildcard or sub-field)', () => {
+    // buildRefRelationKey(TYPE, '*') / buildRefRelationKey(TYPE) are used all over the domain
+    // layer (container.js, note.js, opinion.js, report.js, grouping-domain.ts, ...) to filter
+    // by a relation ref. Their second segment ('*' or 'internal_id') is a marker/sub-field,
+    // not itself a registered top-level schema attribute — it must not be rejected.
+    const wildcardKey = buildRefRelationKey(RELATION_OBJECT, '*'); // "rel_object.*"
+    const defaultFieldKey = buildRefRelationKey(RELATION_CREATED_BY); // "rel_created-by.internal_id"
+    const filterGroup = {
+      mode: 'and',
+      filters: [
+        { key: [wildcardKey], values: ['some-id'] },
+        { key: [defaultFieldKey], values: ['some-id'] },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+
+    expect(() => checkFiltersValidity(filterGroup)).not.toThrow();
+  });
+
+  it('should not reject an unsupported operator at the format-check stage (checkFiltersValidity only checks keys and shape)', () => {
+    // isFilterFormatCorrect does not special-case any particular operator value, so a filter
+    // group with an operator outside the public enum still passes the format/key checks: it
+    // has a valid key and no invalid characters. This is expected: operator support is
+    // enforced later, at query-build time, by buildLocalMustFilter (see engine-test.js for
+    // that check, and tests/03-integration/01-database/filtering-utils-test.ts for the real
+    // end-to-end proof with a raw JSON-string filter input against a live search engine).
+    const filterGroup = {
+      mode: 'or',
+      filters: [
+        { key: ['name'], values: ['return true;'], operator: 'internal_script' },
+      ],
+      filterGroups: [],
+    } as unknown as FilterGroup;
+
+    expect(() => checkFiltersValidity(filterGroup)).not.toThrow();
+  });
+
+  describe('incorrect filter keys', () => {
+    // A bad key is a mistake of the caller, not a failure of the platform: it is a client error (400)
+    // carried by the BAD_USER_INPUT_ERROR code so that it is not logged like an unexpected technical error.
+    it.each([
+      { title: 'a key not existing in any schema definition', key: 'labels', message: 'Incorrect filter keys not existing in any schema definition' },
+      { title: 'a key containing invalid characters', key: "name.']; ctx._source.value = true; //", message: 'Incorrect filter keys containing invalid characters' },
+    ])('should throw a bad user input error for $title', ({ key, message }) => {
+      const filterGroup = { mode: 'and', filters: [{ key: [key], values: ['x'] }], filterGroups: [] } as FilterGroup;
+      let thrown: any;
+      try {
+        checkFiltersValidity(filterGroup);
+      } catch (e) {
+        thrown = e;
+      }
+      expect(thrown.message).toEqual(message);
+      expect(thrown.extensions.code).toEqual('BAD_USER_INPUT_ERROR');
+      expect(thrown.extensions.data.http_status).toEqual(400);
+      expect(thrown.extensions.data.keys).toEqual([key]);
+    });
+  });
+});
+
+describe('booleanTrueFilter', () => {
+  it('should build a filter group matching the entities whose boolean attribute is true', () => {
+    expect(booleanTrueFilter('ingestion_running')).toEqual({
+      mode: 'and',
+      filters: [{ key: ['ingestion_running'], values: ['true'] }],
+      filterGroups: [],
+    });
+  });
+
+  it('should build a valid filter group for a boolean attribute of the schema', () => {
+    expect(() => checkFiltersValidity(booleanTrueFilter('ingestion_running'))).not.toThrow();
+  });
+});

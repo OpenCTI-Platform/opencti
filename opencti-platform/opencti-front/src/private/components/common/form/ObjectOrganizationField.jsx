@@ -3,32 +3,22 @@ import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  message: {
-    width: '100%',
-    overflow: 'hidden',
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 export const searchObjectOrganizationFieldQuery = graphql`
   query ObjectOrganizationFieldQuery($search: String, $filters: FilterGroup) {
@@ -63,12 +53,11 @@ const ObjectOrganizationField = (props) => {
     value: n.id,
   }));
   const [organizations, setOrganizations] = useState(defaultStateOrganizations);
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const searchOrganizations = (event) => {
+  const searchOrganizations = (search) => {
     fetchQuery(searchObjectOrganizationFieldQuery, {
-      search: (event && event.target && event.target.value) ?? '',
+      search,
       filters,
     })
       .toPromise()
@@ -84,73 +73,69 @@ const ObjectOrganizationField = (props) => {
   if (outlined === false) {
     return (
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
         name={name}
         multiple={multiple}
         disabled={disabled}
         style={style}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ? t_i18n(label) : '',
-          helperText: helpertext,
-          onFocus: searchOrganizations,
-        }}
+        label={label ? t_i18n(label) : ''}
+        helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
         options={organizations}
-        onInputChange={searchOrganizations}
+        onInputChange={(search, meta) => {
+          if (meta.cause === 'type') searchOrganizations(search);
+        }}
+        onFocusInput={() => searchOrganizations('')}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(renderProps, option) => (
-          <li {...renderProps}>
-            <div className={classes.icon}>
+        renderOption={(option) => (
+          <>
+            <OptionIcon>
               <ItemIcon type="Organization" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
+          </>
         )}
       />
     );
   }
   const FieldElement = (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
+      // MUI hid its clear indicator here with display:none; the library defaults
+      // clearable to true, so the affordance must be declined explicitly.
       name={name}
       multiple={multiple}
       style={style}
       disabled={disabled}
-      textfieldprops={{
-        variant: 'standard',
-        label: t_i18n(label) ?? '',
-        helperText: helpertext,
-        onFocus: searchOrganizations,
-      }}
+      label={t_i18n(label) ?? ''}
+      helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
       options={organizations}
-      onInputChange={searchOrganizations}
+      onInputChange={(search, meta) => {
+        if (meta.cause === 'type') searchOrganizations(search);
+      }}
+      onFocusInput={() => searchOrganizations('')}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(renderProps, option) => (
-        <li {...renderProps}>
-          <div className={classes.icon}>
+      renderOption={(option) => (
+        <>
+          <OptionIcon>
             <ItemIcon type="Organization" />
-          </div>
-          <div className={classes.text}>{option.label}</div>
-        </li>
+          </OptionIcon>
+          <OptionText>{option.label}</OptionText>
+        </>
       )}
-      classes={{ clearIndicator: classes.autoCompleteIndicator }}
     />
   );
   if (!alert) {
     return FieldElement;
   }
   return (
-    <Alert
-      severity="warning"
-      variant="outlined"
-      style={style}
-      classes={{ message: classes.message }}
-    >
-      <AlertTitle>{t_i18n('Organizations restriction')}</AlertTitle>
-      <div style={{ marginTop: 10 }}>{FieldElement}</div>
-    </Alert>
+    <>
+      <Alert severity="warning" variant="outlined" style={style}>
+        <AlertTitle>{t_i18n('Organizations restriction')}</AlertTitle>
+      </Alert>
+      <div style={{ marginTop: 16 }}>{FieldElement}</div>
+    </>
   );
 };
 

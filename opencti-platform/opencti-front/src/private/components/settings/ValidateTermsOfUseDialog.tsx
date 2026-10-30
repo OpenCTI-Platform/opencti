@@ -2,13 +2,13 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { CGUStatus, experienceFieldPatch } from '@components/settings/Experience';
 import { DialogActions, FormControlLabel, Stack } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useFormatter } from '../../../components/i18n';
 import { FieldOption } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
+import { Checkbox } from '@filigran/design-system';
 
 type ValidateTermsOfUseDialogProps = {
   open: boolean;
@@ -49,12 +49,20 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
       title={t_i18n('Validate the Filigran AI Terms')}
       showCloseButton
     >
-      <Stack gap={3}>
+      <Stack sx={{
+        gap: 3,
+      }}
+      >
         <Typography>
           {t_i18n('Please take a moment to review our "Filigran AI Terms". Our chatbot is here to assist you, but it\'s important to understand how it works and what to expect. Please read the full terms to know how we protect your data and ensure service quality.')}
         </Typography>
 
-        <Stack alignItems="center" gap={2}>
+        <Stack
+          sx={{
+            alignItems: 'center',
+            gap: 2,
+          }}
+        >
           <Button
             href="https://filigran.io/app/uploads/2025/09/filigran-ai-terms-september-2025.pdf"
             target="_blank"
@@ -65,12 +73,17 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
           </Button>
 
           <FormControlLabel
-            checked={isChecked}
             required
-            control={<Checkbox />}
+            // MUI's `-11px` offsets its own Checkbox padding, which the library's has not.
+            sx={{ alignSelf: 'flex-start', margin: 0, gap: 1 }}
+            control={(
+              <Checkbox
+                checked={isChecked}
+                onCheckedChange={(state) => setIsChecked(state === true)}
+              />
+            )}
             label={t_i18n('I have read, I understand and I accept the Filigran AI terms')}
             labelPlacement="end"
-            onChange={(_, checked) => setIsChecked(checked)}
           />
         </Stack>
 

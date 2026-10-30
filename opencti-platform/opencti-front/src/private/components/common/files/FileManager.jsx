@@ -2,23 +2,22 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
-import MenuItem from '@mui/material/MenuItem';
-import withStyles from '@mui/styles/withStyles';
+import Box from '@mui/material/Box';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { convertMarkings } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { insertOngoingExports } from '../../../../utils/store';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import DraftWorkspaceViewer from './draftWorkspace/DraftWorkspaceViewer';
@@ -29,20 +28,6 @@ import PictureManagementViewer from './PictureManagementViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { Stack, Tooltip } from '@mui/material';
 import { InfoOutlined } from '@mui/icons-material';
-
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-});
 
 export const CONTENT_MAX_MARKINGS_TITLE = 'Content max marking definition levels';
 export const CONTENT_MAX_MARKINGS_HELPERTEXT = 'Entities with higher marking definition levels won\'t be included in the file content.';
@@ -184,7 +169,6 @@ const FileManager = ({
   id,
   entity,
   t,
-  classes,
   connectorsExport,
   connectorsImport,
   isArtifact,
@@ -250,38 +234,16 @@ const FileManager = ({
   const onSubmitExport = (values, { setSubmitting, setErrors, resetForm }) => {
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const input = {
+      format: values.format,
+      exportType: values.type,
+      contentMaxMarkings,
+      fileMarkings,
+    };
     commitMutation({
       mutation: fileManagerExportMutation,
-      variables: {
-        id,
-        input: {
-          format: values.format,
-          exportType: values.type,
-          contentMaxMarkings,
-          fileMarkings,
-        },
-      },
-      updater: (store) => {
-        const root = store.getRootField('stixCoreObjectEdit');
-        const payloads = root.getLinkedRecords('exportAsk', {
-          input: {
-            format: values.format,
-            exportType: values.type,
-            contentMaxMarkings,
-            fileMarkings,
-          },
-        });
-        const entityPage = store.get(id);
-        const conn = ConnectionHandler.getConnection(
-          entityPage,
-          'Pagination_exportFiles',
-        );
-        for (let index = 0; index < payloads.length; index += 1) {
-          const payload = payloads[index];
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          ConnectionHandler.insertEdgeBefore(conn, newEdge);
-        }
-      },
+      variables: { id, input },
+      updater: (store) => insertOngoingExports(store, id, 'stixCoreObjectEdit', input),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -326,11 +288,11 @@ const FileManager = ({
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
   return (
-    <div className={classes.container} data-testid="FileManager">
+    <Box sx={{ margin: 0 }} data-testid="FileManager">
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
         <FileImportViewer
           entity={entity}
@@ -375,8 +337,8 @@ const FileManager = ({
                 title={t('Launch an import')}
               >
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="connector_id"
                   label={t('Connector')}
                   fullWidth={true}
@@ -391,20 +353,20 @@ const FileManager = ({
                           connector.connector_scope,
                         ));
                     return (
-                      <MenuItem
+                      <SelectItem
                         key={i}
                         value={connector.id}
                         disabled={disabled || !connector.active}
                       >
                         {connector.name}
-                      </MenuItem>
+                      </SelectItem>
                     );
                   })}
                 </Field>
                 {selectedConnector?.configurations?.length > 0 && (
                   <Field
-                    component={SelectField}
-                    variant="standard"
+                    component={SelectFieldFds}
+                    variant="outlined"
                     name="configuration"
                     label={t('Configuration')}
                     fullWidth={true}
@@ -413,12 +375,12 @@ const FileManager = ({
                   >
                     {selectedConnector.configurations.map((config) => {
                       return (
-                        <MenuItem
+                        <SelectItem
                           key={config.id}
                           value={config.configuration}
                         >
                           {config.name}
-                        </MenuItem>
+                        </SelectItem>
                       );
                     })}
                   </Field>
@@ -471,7 +433,13 @@ const FileManager = ({
                 onClose={resetForm}
                 data-testid="FileManagerExportDialog"
                 title={(
-                  <Stack direction="row" alignItems="center" gap={1}>
+                  <Stack
+                    direction="row"
+                    sx={{
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     {t_i18n('Generate an export')}
                     <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
                       <InfoOutlined fontSize="small" color="primary" />
@@ -496,37 +464,37 @@ const FileManager = ({
                       return (
                         <>
                           <Field
-                            component={SelectField}
-                            variant="standard"
+                            component={SelectFieldFds}
+                            variant="outlined"
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
                             containerstyle={{ width: '100%' }}
                           >
                             {exportScopes.map((value, i) => (
-                              <MenuItem
+                              <SelectItem
                                 key={i}
                                 value={value}
                                 disabled={!isExportActive(value)}
                               >
                                 {value}
-                              </MenuItem>
+                              </SelectItem>
                             ))}
                           </Field>
                           <Field
-                            component={SelectField}
-                            variant="standard"
+                            component={SelectFieldFds}
+                            variant="outlined"
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}
                             containerstyle={fieldSpacingContainerStyle}
                           >
-                            <MenuItem value="simple">
+                            <SelectItem value="simple">
                               {t('Simple export (just the entity)')}
-                            </MenuItem>
-                            <MenuItem value="full">
+                            </SelectItem>
+                            <SelectItem value="full">
                               {t('Full export (entity and first neighbours)')}
-                            </MenuItem>
+                            </SelectItem>
                           </Field>
                           <ObjectMarkingField
                             name="contentMaxMarkings"
@@ -571,7 +539,7 @@ const FileManager = ({
           )}
         </Formik>
       </div>
-    </div>
+    </Box>
   );
 };
 
@@ -609,4 +577,4 @@ const FileManagerFragment = createFragmentContainer(FileManager, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(FileManagerFragment);
+export default inject18n(FileManagerFragment);

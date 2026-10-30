@@ -110,9 +110,9 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   ],
   // C
   coverage_ov: [
-    { key: 'prevention', description: 'Prevention' },
-    { key: 'detection', description: 'Detection' },
-    { key: 'vulnerability', description: 'Vulnerability' },
+    { key: 'prevention', description: 'Prevention', order: 1 },
+    { key: 'detection', description: 'Detection', order: 2 },
+    { key: 'vulnerability', description: 'Vulnerability', order: 3 },
   ],
   case_severity_ov: [
     { key: 'low', description: 'Low impact', aliases: ['low'], order: 1 },
@@ -1220,7 +1220,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
   return Object.entries(vocabularyDefinitions)
     .filter(([_, value]) => value.entity_types?.length > 0)
-    .map(([key, value]) => ({ key: key as VocabularyCategory, ...value }))
+    .map(([key, value]) => ({ key: key as VocabularyCategory, ...value, closed: value.closed ?? false }))
     .sort();
 };
 

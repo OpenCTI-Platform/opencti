@@ -1,11 +1,13 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { IntrusionSetDetails_intrusionSet$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetDetails_intrusionSet.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import IntrusionSetLocations from './IntrusionSetLocations';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ItemScore from '../../../../components/ItemScore';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import TextList from '../../../../components/common/text/TextList';
@@ -33,7 +35,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -43,11 +45,11 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             />
           </Grid>
           {hasImages && (
-            <Grid item xs={4}>
+            <Grid size={4}>
               <ImageCarousel data={imagesCarousel} />
             </Grid>
           )}
-          <Grid item xs={hasImages ? 8 : 12}>
+          <Grid size={hasImages ? 8 : 12}>
             <IntrusionSetLocations intrusionSet={intrusionSet} />
             <Label
               sx={{ marginTop: 2 }}
@@ -63,8 +65,14 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             {fldt(intrusionSet.last_seen)}
           </Grid>
         </Grid>
-        <Grid container spacing={2} mt={0}>
-          <Grid item xs={6}>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            mt: 2,
+          }}
+        >
+          <Grid size={6}>
             <Label>
               {t_i18n('Resource level')}
             </Label>
@@ -75,7 +83,13 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
+            <Label>
+              {t_i18n('Score')}
+            </Label>
+            <ItemScore score={intrusionSet.x_opencti_score} />
+          </Grid>
+          <Grid size={6}>
             <Label>
               {t_i18n('Primary motivation')}
             </Label>
@@ -86,7 +100,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Goals')}
             </Label>
@@ -94,7 +108,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               list={intrusionSet.goals}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Secondary motivations')}
             </Label>
@@ -102,6 +116,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               list={intrusionSet.secondary_motivations}
             />
           </Grid>
+          <CustomFieldValuesDisplay entityType={intrusionSet.entity_type} values={intrusionSet.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>
@@ -114,10 +129,15 @@ const IntrusionSetDetails = createFragmentContainer(
     intrusionSet: graphql`
       fragment IntrusionSetDetails_intrusionSet on IntrusionSet {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         first_seen
         last_seen
         description
         resource_level
+        x_opencti_score
         primary_motivation
         secondary_motivations
         goals

@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { ClearOutlined, FileOpenOutlined, LocalOfferOutlined, VisibilityOffOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import Drawer from '@mui/material/Drawer';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -11,40 +12,16 @@ import Switch from '@mui/material/Switch';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import { FunctionComponent, useEffect, useState } from 'react';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { entitySettingPatch } from './entity_setting/EntitySettingSettings';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  bottomNav: {
-    zIndex: 1,
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-    padding: '0 230px 0 0',
-  },
-  title: {
-    flex: '1 1 100%',
-    fontSize: '12px',
-  },
-  titleNumber: {
-    padding: '2px 5px 2px 5px',
-    marginRight: 5,
-    backgroundColor: theme.palette.secondary.main,
-    color: '#ffffff',
-  },
-}));
 
 const ToolBar: FunctionComponent<{
   keyword: string | undefined;
@@ -59,7 +36,6 @@ const ToolBar: FunctionComponent<{
   selectAll,
   handleClearSelectedElements,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const entitySettings = useEntitySettings();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
@@ -167,26 +143,45 @@ const ToolBar: FunctionComponent<{
     <Drawer
       anchor="bottom"
       variant="persistent"
-      classes={{ paper: classes.bottomNav }}
       open={numberOfSelectedElements > 0 || selectAll}
-      PaperProps={{
-        variant: 'elevation',
-        elevation: 1,
-        style: {
-          paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-          bottom: bannerHeightNumber,
+      slotProps={{
+        paper: {
+          variant: 'elevation',
+          elevation: 1,
+          sx: {
+            zIndex: 1,
+            display: 'flex',
+            height: 50,
+            overflow: 'hidden',
+            padding: '0 230px 0 0',
+          },
+          style: {
+            paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+            bottom: bannerHeightNumber,
+          },
         },
       }}
     >
       <Toolbar style={{ minHeight: 54 }}>
         <Typography
-          className={classes.title}
-          color="inherit"
           variant="subtitle1"
+          sx={{
+            color: 'inherit',
+            flex: '1 1 100%',
+            fontSize: '12px',
+          }}
         >
-          <span className={classes.titleNumber}>
+          <Box
+            component="span"
+            sx={{
+              padding: '2px 5px 2px 5px',
+              marginRight: '5px',
+              backgroundColor: 'secondary.main',
+              color: '#ffffff',
+            }}
+          >
             {numberOfSelectedElements}
-          </span>{' '}
+          </Box>{' '}
           {t_i18n('selected')}{' '}
           <IconButton
             aria-label="clear"

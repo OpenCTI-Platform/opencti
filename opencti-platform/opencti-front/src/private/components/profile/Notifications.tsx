@@ -1,132 +1,69 @@
-import { Badge } from '@mui/material';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
-import { Navigate, Outlet, useMatch, useNavigate } from 'react-router-dom';
+import React, { FunctionComponent } from 'react';
+import { AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { Link, Navigate, useLocation } from 'react-router';
+import { Tabs, TabsList, TabsTrigger, Text } from '@filigran/design-system';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
-import useAuth from '../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { requestSubscription } from '../../../relay/environment';
-import type { NotificationsUnreadNewsFeedsCountQuery } from './__generated__/NotificationsUnreadNewsFeedsCountQuery.graphql';
-import { NotificationsNotificationNumberSubscription$data } from '@components/profile/__generated__/NotificationsNotificationNumberSubscription.graphql';
-import { NotificationsNewsFeedNumberSubscription$data } from './__generated__/NotificationsNewsFeedNumberSubscription.graphql';
+import Alerts from './Alerts';
+import Triggers from './Triggers';
 
-const notificationsUnreadNewsFeedsCountQuery = graphql`
-  query NotificationsUnreadNewsFeedsCountQuery($skipNewsFeedsCount: Boolean!) {
-    myUnreadNewsFeedsCount @skip(if: $skipNewsFeedsCount)
-    myUnreadNotificationsCount
-  }
-`;
-
-const notificationsNumberSubscription = graphql`
-  subscription NotificationsNotificationNumberSubscription {
-    notificationsNumber {
-      count
-    }
-  }
-`;
-
-const newsFeedNumberSubscription = graphql`
-  subscription NotificationsNewsFeedNumberSubscription {
-    newsFeedsNumber {
-      count
-    }
-  }
-`;
+const alertsTabPath = '/dashboard/profile/notifications';
+const triggersTabPath = '/dashboard/profile/notifications/triggers';
 
 const Notifications: FunctionComponent = () => {
+  const location = useLocation();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { settings, me } = useAuth();
-  const isXTMHubRegistered = settings.xtm_hub_registration_status === 'registered';
-  const navigate = useNavigate();
 
-  setTitle(t_i18n('Notifications'));
+  const isTriggersTab = location.pathname === triggersTabPath;
+  const activeTabPath = isTriggersTab ? triggersTabPath : alertsTabPath;
+  const pageTitle = t_i18n('Notification Center');
 
-  const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
-  const isNewsFeedTabVisible = isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds;
-
-  const data = useLazyLoadQuery<NotificationsUnreadNewsFeedsCountQuery>(
-    notificationsUnreadNewsFeedsCountQuery,
-    { skipNewsFeedsCount: !isNewsFeedTabVisible },
-  );
-
-  const [liveNotificationsCount, setLiveNotificationsCount] = useState<number | null>(null);
-  const [liveNewsFeedsCount, setLiveNewsFeedsCount] = useState<number | null>(null);
-
-  const subConfig = useMemo(() => ({
-    subscription: notificationsNumberSubscription,
-    variables: {},
-    onNext: (response: NotificationsNotificationNumberSubscription$data | null | undefined | unknown) => {
-      const count = response ? (response as NotificationsNotificationNumberSubscription$data).notificationsNumber?.count : null;
-      setLiveNotificationsCount(count ?? null);
-    },
-  }), []);
-  useSubscription(subConfig);
-
-  useEffect(() => {
-    if (!isNewsFeedTabVisible) return undefined;
-    const sub = requestSubscription({
-      subscription: newsFeedNumberSubscription,
-      variables: {},
-      onNext: (response: NotificationsNewsFeedNumberSubscription$data | null | undefined | unknown) => {
-        const count = response ? (response as NotificationsNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
-        setLiveNewsFeedsCount(count ?? null);
-      },
-    });
-    return () => sub.dispose();
-  }, [isNewsFeedTabVisible]);
-
-  const unreadNotificationsCount = liveNotificationsCount !== null
-    ? liveNotificationsCount
-    : (data.myUnreadNotificationsCount ?? 0);
-  const unreadNewsFeedsCount = liveNewsFeedsCount !== null
-    ? liveNewsFeedsCount
-    : (data.myUnreadNewsFeedsCount ?? 0);
-
-  const activeTab = useMatch('/dashboard/profile/notifications/news-feed') ? 'news-feed' : 'alerts';
-
-  const handleTabChange = (_: React.SyntheticEvent, value: string) => {
-    navigate(value);
-  };
-
-  if (!isNewsFeedTabVisible) {
-    return (
-      <div>
-        <Breadcrumbs elements={[{ label: t_i18n('Notifications'), current: true }]} />
-        {activeTab === 'news-feed' && <Navigate to="alerts" replace />}
-        <Outlet />
-      </div>
-    );
+  if (location.pathname === `${alertsTabPath}/alerts`) {
+    return <Navigate to={`${alertsTabPath}${location.search}${location.hash}`} replace={true} />;
   }
+
+  if (location.pathname !== alertsTabPath && !isTriggersTab) {
+    return <Navigate to={`${alertsTabPath}${location.search}${location.hash}`} replace={true} />;
+  }
+
+  setTitle(pageTitle);
 
   return (
     <div>
-      <Breadcrumbs elements={[{ label: t_i18n('Notifications'), current: true }]} />
-      <Tabs value={activeTab} onChange={handleTabChange}>
-        <Tab
-          value="alerts"
-          sx={{ textTransform: 'none' }}
-          label={(
-            <Badge color="error" badgeContent={unreadNotificationsCount} max={99} invisible={unreadNotificationsCount === 0}>
-              {t_i18n('Alerts')}
-            </Badge>
-          )}
-        />
-        <Tab
-          value="news-feed"
-          sx={{ textTransform: 'none' }}
-          label={(
-            <Badge color="error" badgeContent={unreadNewsFeedsCount} max={99} invisible={unreadNewsFeedsCount === 0}>
-              {t_i18n('XTM Hub News Feed')}
-            </Badge>
-          )}
-        />
-      </Tabs>
+      <Breadcrumbs elements={[
+        { label: t_i18n('Notifications'), link: '/dashboard/profile/notifications', current: false },
+        { label: isTriggersTab ? t_i18n('Triggers') : t_i18n('Alerts'), current: true },
+      ]}
+      />
+      <Text variant="title-xl" className="mt-6 mb-6">
+        {t_i18n('Notification Center')}
+      </Text>
       <div style={{ marginTop: 20 }}>
-        <Outlet />
+        <Tabs value={activeTabPath} panels="external">
+          <TabsList>
+            <TabsTrigger value={alertsTabPath} asChild>
+              <Link to={alertsTabPath} data-testid="notifications-tab-alerts">
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <NotificationsOutlined fontSize="small" />
+                  {t_i18n('Alerts')}
+                </span>
+              </Link>
+            </TabsTrigger>
+            <TabsTrigger value={triggersTabPath} asChild>
+              <Link to={triggersTabPath} data-testid="notifications-tab-triggers">
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <AlarmOnOutlined fontSize="small" />
+                  {t_i18n('Triggers')}
+                </span>
+              </Link>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div style={{ marginTop: 20 }}>
+          {isTriggersTab ? <Triggers /> : <Alerts />}
+        </div>
       </div>
     </div>
   );

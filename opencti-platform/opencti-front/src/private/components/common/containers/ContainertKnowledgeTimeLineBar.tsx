@@ -4,7 +4,6 @@ import { RelationManyToMany, CalendarMultiselectOutline } from 'mdi-material-ui'
 import Tooltip from '@mui/material/Tooltip';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
-import { makeStyles } from '@mui/styles';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -13,18 +12,9 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import useAuth, { FilterDefinition, UserContext } from '../../../../utils/hooks/useAuth';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { Stack } from '@mui/material';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/useDraftContext';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  bottomNav: {
-    zIndex: 1,
-    display: 'flex',
-    overflow: 'hidden',
-  },
-}));
+import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 interface ContentKnowledgeTimeLineBarProps {
   handleTimeLineSearch: (search: string) => void;
@@ -41,6 +31,14 @@ interface ContentKnowledgeTimeLineBarProps {
 }
 
 // TODO Fix ContentKnowledge
+const TIMELINE_FILTER_KEYS = [
+  'entity_type',
+  'objectMarking',
+  'objectLabel',
+  'createdBy',
+  'relationship_type',
+];
+
 const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBarProps> = ({
   handleTimeLineSearch,
   timeLineSearchTerm,
@@ -55,7 +53,6 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
   handleSwitchFilterGlobalMode,
 }) => {
   const { filterKeysSchema } = useAuth().schema;
-  const classes = useStyles();
   const draftContext = useDraftContext();
   const { t_i18n } = useFormatter();
   const [navOpen, setNavOpen] = useState(
@@ -82,11 +79,19 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
         <Drawer
           anchor="bottom"
           variant="permanent"
-          classes={{ paper: classes.bottomNav }}
           slotProps={{
             paper: {
               variant: 'elevation',
               elevation: 1,
+              // Layer 1, like every other tab-scoped bar; on the same node as
+              // the input aliases so the search field inside resolves here.
+              className: fdsLayerClass(RIGHT_BAR_LAYER),
+              sx: {
+                ...layerInputVars,
+                zIndex: 1,
+                display: 'flex',
+                overflow: 'hidden',
+              },
               style: {
                 paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
                 bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
@@ -104,9 +109,9 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
           >
             <Stack
               direction="row"
-              alignItems="center"
-              gap={1}
               sx={{
+                alignItems: 'center',
+                gap: 1,
                 minHeight: 50,
               }}
             >
@@ -120,6 +125,8 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 <IconButton
                   color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
                   onClick={() => handleToggleTimeLineDisplayRelationships()}
+                  keepMui
+                  aria-label={t_i18n('Display relationships')}
                 >
                   <RelationManyToMany />
                 </IconButton>
@@ -134,6 +141,8 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 <IconButton
                   color={timeLineFunctionalDate ? 'secondary' : 'primary'}
                   onClick={() => handleToggleTimeLineFunctionalDate()}
+                  keepMui
+                  aria-label={t_i18n('Display functional dates')}
                 >
                   <CalendarMultiselectOutline />
                 </IconButton>
@@ -153,13 +162,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
 
               <div style={{ paddingTop: 0 }}>
                 <Filters
-                  availableFilterKeys={[
-                    'entity_type',
-                    'objectMarking',
-                    'objectLabel',
-                    'createdBy',
-                    'relationship_type',
-                  ]}
+                  availableFilterKeys={TIMELINE_FILTER_KEYS}
                   availableEntityTypes={[
                     'Stix-Domain-Object',
                     'Stix-Cyber-Observable',
@@ -171,6 +174,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
               <div style={{ flexGrow: 1 }}>
                 <FilterIconButton
                   filters={timeLineFilters}
+                  availableFilterKeys={TIMELINE_FILTER_KEYS}
                   handleRemoveFilter={handleRemoveTimeLineFilter}
                   handleSwitchLocalMode={handleSwitchFilterLocalMode}
                   handleSwitchGlobalMode={handleSwitchFilterGlobalMode}

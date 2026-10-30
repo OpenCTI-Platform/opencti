@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { Stream as StreamIcon } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import SharingMenu from './SharingMenu';
@@ -10,12 +9,11 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
 import { TAXIIAPI, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
 import StreamPopover from '@components/data/stream/StreamPopover';
-import stopEvent from '../../../utils/domEvent';
 import ItemCopy from '../../../components/ItemCopy';
 import { StreamLine_node$data } from '@components/data/__generated__/StreamLine_node.graphql';
 import ItemBoolean from '../../../components/ItemBoolean';
@@ -30,12 +28,10 @@ import { StreamLines_data$data } from '@components/data/__generated__/StreamLine
 
 const LOCAL_STORAGE_KEY = 'stream';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 const streamLineFragment = graphql`
     fragment StreamLine_node on StreamCollection {
@@ -105,7 +101,6 @@ export const streamLinesPaginationQuery = graphql`
 
 const Stream = () => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Live Streams | Data Sharing | Data'));
@@ -222,9 +217,9 @@ const Stream = () => {
           ? (
               <FilterIconButton
                 filters={deserializedFilters}
-                dataColumns={dataColumns}
                 variant="small"
-                entityTypes={['Stix-Filtering']}
+                // as the stream edition form, so that a custom field filter is shown with its label
+                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
               />
             )
           : EMPTY_VALUE;
@@ -241,7 +236,7 @@ const Stream = () => {
   } as UsePreloadedPaginationFragment<StreamLinesPaginationQuery>;
 
   return (
-    <div className={classes.container} data-testid="sharing-streams-page">
+    <Container data-testid="sharing-streams-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('Live streams'), current: true }]} />
       <SharingMenu />
       {queryRef && (
@@ -261,7 +256,7 @@ const Stream = () => {
             />
           )}
           actions={(node) => (
-            <div onClick={(event) => stopEvent(event)}>
+            <div>
               <Security needs={[TAXIIAPI]}>
                 <StreamPopover
                   streamCollection={node}
@@ -292,7 +287,7 @@ const Stream = () => {
           }}
         />
       </Security>
-    </div>
+    </Container>
   );
 };
 

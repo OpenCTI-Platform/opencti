@@ -14,7 +14,7 @@ import {
   IngestionCsvMapperType,
 } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import conf, { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import {
   type BasicStoreEntityCsvMapper,
@@ -27,7 +27,14 @@ import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } 
 import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
-import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, encryptIngestionCredential, decryptIngestionCredential, verifyIngestionUri } from './ingestion-common';
+import {
+  addAuthenticationCredentials,
+  verifyIngestionAuthenticationContent,
+  encryptIngestionCredential,
+  decryptIngestionCredential,
+  verifyIngestionUri,
+  FEED_REQUEST_TIMEOUT,
+} from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -36,11 +43,15 @@ import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { SYSTEM_USER } from '../../utils/access';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
-import { createOnTheFlyUser } from '../user/user-domain';
 import { findDefaultIngestionGroups } from '../../domain/group';
+import {
+  createIngestionAutomaticUser,
+  validateIngestionExecutionIdentity,
+  validateIngestionExecutionIdentityFromEditInputs,
+  validateStoredIngestionExecutionIdentity,
+} from './ingestion-execution-identity';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
-const DEFAULT_FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -78,12 +89,13 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   let onTheFlyCreatedUser;
   let finalInput;
   if (input.automatic_user) {
-    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level, serviceAccount: true });
+    onTheFlyCreatedUser = await createIngestionAutomaticUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level, serviceAccount: true });
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
       user_id: onTheFlyCreatedUser.id,
     };
   } else {
+    await validateIngestionExecutionIdentity(context, user, input.user_id);
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
     };
@@ -138,6 +150,8 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
   if (uriField && uriField.value[0]) {
     verifyIngestionUri(uriField.value[0]);
   }
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
 
   const parsedInput = await Promise.all(input.map(async (editInput) => {
     if (editInput.key === 'csv_mapper') {
@@ -205,13 +219,16 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
 
 export const ingestionCsvAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionId: string, input: IngestionCsvAddAutoUserInput) => {
   // Create new user
-  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
+  const onTheFlyCreatedUser = await createIngestionAutomaticUser(context, user, { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
 
   // Associate this user to the CSVFeed
   return ingestionCsvEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
 };
 
 export const ingestionCsvResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchCsvIngestion(context, user, ingestionId, { current_state_hash: '' });
   const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({
@@ -249,7 +266,7 @@ export const fetchCsvFromUrl = async (
   ingestion: BasicStoreEntityIngestionCsv,
   opts: { limit?: number; timeout?: number } = {},
 ): Promise<CsvResponseData> => {
-  const { limit = undefined, timeout = DEFAULT_FEED_REQUEST_TIMEOUT } = opts;
+  const { limit = undefined, timeout = FEED_REQUEST_TIMEOUT } = opts;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/csv';
   const decryptedAuthValue = await decryptIngestionCredential(ingestion.authentication_value);
@@ -285,13 +302,26 @@ export const fetchCsvFromUrl = async (
   return { csvLines, addedLast: resultHeaders['x-csv-date-added-last'] };
 };
 
+/**
+ * Returns the CSV mapper of a feed, parsed for the bundler: the inline JSON mapper,
+ * or the stored mapper referenced by `csv_mapper_id`.
+ */
+export const resolveCsvMapperParsed = async (
+  context: AuthContext,
+  user: AuthUser,
+  feed: { csv_mapper_type?: IngestionCsvMapperType | null; csv_mapper?: string | null; csv_mapper_id?: string | null },
+): Promise<CsvMapperParsed> => {
+  const csvMapper = feed.csv_mapper_type === IngestionCsvMapperType.Inline
+    ? JSON.parse(feed.csv_mapper ?? '') : await findCsvMapperById(context, user, feed.csv_mapper_id!);
+  return parseCsvMapper(csvMapper);
+};
+
 export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput): Promise<CsvMapperTestResult> => {
   verifyIngestionUri(input.uri);
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
-  const csvMapper = input.csv_mapper_type === IngestionCsvMapperType.Inline ? JSON.parse(input.csv_mapper ?? '') : await findCsvMapperById(context, user, input.csv_mapper_id!);
-  const parsedMapper = parseCsvMapper(csvMapper);
+  const parsedMapper = await resolveCsvMapperParsed(context, user, input);
   const ingestion = {
     uri: input.uri,
     authentication_type: input.authentication_type,

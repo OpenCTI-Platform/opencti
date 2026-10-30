@@ -1,29 +1,23 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { Field } from 'formik';
 import { JsonMapperFieldSearchQuery } from '@components/common/form/__generated__/JsonMapperFieldSearchQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemIcon from '../../../../components/ItemIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 export type JsonMapperFieldOption = FieldOption & { representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[] };
 interface JsonMapperFieldComponentProps {
@@ -54,7 +48,6 @@ const JsonMapperField: FunctionComponent<JsonMapperFieldComponentProps> = ({
   queryRef,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(jsonMapperQuery, queryRef);
   const jsonMappersPreloaded = (data?.jsonMappers?.edges || []).map(({ node }) => ({
@@ -65,30 +58,25 @@ const JsonMapperField: FunctionComponent<JsonMapperFieldComponentProps> = ({
   return (
     <>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
         style={fieldSpacingContainerStyle}
         name={name}
         multiple={false}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('JSON Mappers'),
-        }}
+        label={t_i18n('JSON Mappers')}
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={jsonMappersPreloaded}
         isOptionEqualToValue={isOptionEqualToValue}
         onChange={onChange}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props}>
-            <div className={classes.icon} style={{ color: option.color }}>
+        renderOption={(option: FieldOption) => (
+          <>
+            <OptionIcon style={{ color: option.color }}>
               <ItemIcon type="jsonmapper" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
+          </>
         )}
       />
     </>

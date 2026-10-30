@@ -500,6 +500,51 @@ describe('platformCrypto: JWT signing and verification', () => {
   });
 });
 
+describe('platformCrypto: secret derivation', () => {
+  const testSeed = Buffer.from('a'.repeat(64), 'hex');
+
+  it('should derive a deterministic base64 secret of 32 bytes by default', async () => {
+    const factory = createCryptoKeyFactory(testSeed);
+    const secret = await factory.deriveSecret(['test', 'path'], 1);
+    const sameSecret = await createCryptoKeyFactory(testSeed).deriveSecret(['test', 'path'], 1);
+
+    expect(secret).toEqual(sameSecret);
+    expect(Buffer.from(secret, 'base64')).toHaveLength(32);
+  });
+
+  it('should derive a secret of the requested length', async () => {
+    const factory = createCryptoKeyFactory(testSeed);
+    const secret = await factory.deriveSecret(['test', 'path'], 1, 64);
+    expect(Buffer.from(secret, 'base64')).toHaveLength(64);
+  });
+
+  it('should derive different secrets for different seeds, paths and versions', async () => {
+    const factory = createCryptoKeyFactory(testSeed);
+    const secret = await factory.deriveSecret(['test', 'path'], 1);
+
+    const otherSeedSecret = await createCryptoKeyFactory(Buffer.from('b'.repeat(64), 'hex')).deriveSecret(['test', 'path'], 1);
+    const otherPathSecret = await factory.deriveSecret(['test', 'other'], 1);
+    const otherVersionSecret = await factory.deriveSecret(['test', 'path'], 2);
+
+    expect(new Set([secret, otherSeedSecret, otherPathSecret, otherVersionSecret]).size).toEqual(4);
+  });
+
+  it('should not collide with the other derivations of the same path', async () => {
+    const factory = createCryptoKeyFactory(testSeed);
+    const secret = await factory.deriveSecret(['test', 'path'], 1);
+    const { hmac } = await factory.deriveHmac(['test', 'path'], 1);
+
+    expect(secret).not.toEqual(hmac(Buffer.from('')));
+  });
+
+  it('should reject invalid derivation path, version and length', async () => {
+    const factory = createCryptoKeyFactory(testSeed);
+    await expect(factory.deriveSecret(['test:invalid'], 1)).rejects.toThrow(/Invalid derivation path/);
+    await expect(factory.deriveSecret(['test'], 0)).rejects.toThrow(/Version must be positive/);
+    await expect(factory.deriveSecret(['test'], 1, 0)).rejects.toThrow(/Length must be positive/);
+  });
+});
+
 describe('platformCrypto: edge cases and error handling', () => {
   const testSeed = Buffer.from('a'.repeat(64), 'hex');
 

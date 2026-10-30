@@ -149,9 +149,13 @@ export const importDashboardWidgetConfiguration = async (
   };
 };
 
-// region workspace ids converter_2_1
-// Export => Dashboard filter ids must be converted to standard id
-// Import => Dashboards filter ids must be converted back to internal id
+/**
+ * Convert dashboard widget ids between internal and STIX 2_1 formats.
+ *
+ * - Export (`from = 'internal'`): filter ids are converted to STIX ids and
+ *   saved filter references are resolved to inline filter content.
+ * - Import (`from = 'stix'`): filter ids are converted back to internal ids.
+ */
 export const convertDashboardManifestIds = async (
   context: AuthContext,
   user: AuthUser,
@@ -162,10 +166,12 @@ export const convertDashboardManifestIds = async (
   // Regeneration for dashboards
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const { widgets } = parsedManifest;
-    const widgetDefinitions = Object.values(widgets);
+    const widgetDefinitions: Widget[] = Object.values(widgets);
+    if (from === 'internal') { // for exports: replace saved filters ids with the associated filters content
+      await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition)));
+    }
     await convertWidgetsIds(context, user, widgetDefinitions, from);
     return toB64(parsedManifest) as string;
   }
   return manifest;
 };
-// endregion

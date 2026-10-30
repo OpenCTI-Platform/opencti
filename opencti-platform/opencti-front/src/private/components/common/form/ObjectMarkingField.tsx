@@ -4,14 +4,12 @@ import { ObjectMarkingFieldAllowedMarkingQuery$data } from '@components/common/f
 import { ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldOtherUserAllowedMarkingsQuery.graphql';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import { useTheme } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { Field } from 'formik';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
-import { RenderOption } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
 import { convertMarking } from '../../../../utils/edition';
@@ -21,19 +19,16 @@ import MarkingIcon from '../../../../utils/MarkingIcon';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
 import { isEmptyField } from '../../../../utils/utils';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 export const objectMarkingFieldAllowedMarkingsQuery = graphql`
   query ObjectMarkingFieldAllowedMarkingsQuery {
@@ -128,7 +123,6 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   isOptionEqualToValue,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [newMarking, setNewMarking] = useState<
@@ -243,34 +237,33 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       setNewMarking({ currentValues: values, valueToReplace });
     } else onChange?.(name, values);
   };
-  const renderOption: RenderOption = (props, option) => (
-    <li {...props} key={option.value}>
-      <div className={classes.icon} style={{ color: option.color }}>
+  const renderOption = (option: FieldOption) => (
+    <>
+      <OptionIcon style={{ color: option.color }}>
         <MarkingIcon theme={theme} color={option.color} />
-      </div>
-      <div className={classes.text}>{option.label}</div>
-    </li>
+      </OptionIcon>
+      <OptionText>{option.label}</OptionText>
+    </>
   );
 
   return (
     <>
       <Field
-        component={AutocompleteField}
-        preserveCase
+        component={ComboboxField}
+
         style={style}
         name={name}
         required={required}
         multiple={true}
         disabled={disabled}
-        textfieldprops={{
-          variant: 'standard',
-          label: label ?? t_i18n('Markings'),
-          helperText: helpertext,
-        }}
+        label={label ?? t_i18n('Markings')}
+        helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
         options={optionSorted}
         isOptionEqualToValue={isOptionEqualToValue}
         onChange={handleOnChange}
+        // On a marking the colour IS the classification, not decoration.
+        getChipColor={(option: FieldOption) => option.color}
         renderOption={renderOption}
       />
       <Dialog

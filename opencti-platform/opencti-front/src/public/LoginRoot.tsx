@@ -49,7 +49,6 @@ export const rootPublicQuery = graphql`
       ...LoginLogoFragment
       ...AppIntlProvider_settings
       ...AppThemeProvider_settings
-      ...PublicSettingsProvider_settings
       ...ConsentMessageFragment
       metrics_definition {
         entity_type

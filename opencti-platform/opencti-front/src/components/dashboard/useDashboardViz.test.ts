@@ -1,6 +1,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createElement } from 'react';
 import useDashboardViz from './useDashboardViz';
+import { resolveDataSelection } from './dashboardVizUtils';
+import { DashboardVariableValuesProvider } from './DashboardVariableValuesContext';
+import { WidgetDataSelection, WidgetHost } from 'src/utils/widget/widget';
 
 const loadMocks: Array<ReturnType<typeof vi.fn>> = [];
 const disposeMocks: Array<ReturnType<typeof vi.fn>> = [];
@@ -51,6 +55,7 @@ vi.mock('./dashboardVizUtils', () => ({
       isMissingHostEntity: host?.kind === 'custom-view' && !host.customViewTargetEntityId,
       isPreviewMode: false,
       isMissingSavedFilters: false,
+      hasUnresolvedVariables: JSON.stringify(dataSelection).includes('$var:'),
     };
     return { then: (cb: (r: typeof result) => void) => cb(result) };
   }),
@@ -251,5 +256,85 @@ describe('useDashboardViz', () => {
     expect(disposeSpy).not.toHaveBeenCalled();
 
     hook.unmount();
+  });
+
+  it('reloads with the freshly resolved data selection when refresh token changes', () => {
+    // resolveDataSelection mock echoes dataSelection into resolvedDataSelection,
+    // so buildQueryVariables receives the resolved selection as its first argument.
+    const buildQueryVariables = vi.fn((resolvedDataSelection: WidgetDataSelection[]) => ({
+      field: resolvedDataSelection[0]?.field?.toUpperCase() ?? null,
+    }));
+
+    const hook = renderHook(({ dataSelection }: { dataSelection: WidgetDataSelection[] }) => useDashboardViz({
+      dataSelection,
+      perspective: 'entities',
+      refreshRate: null,
+      query: {} as never,
+      config: {},
+      parameters: {},
+      buildQueryVariables,
+    }), {
+      initialProps: { dataSelection: [{ field: 'selection1' }] },
+    });
+
+    const [loadSpy] = loadMocks;
+
+    // The load triggered by the initial call must use the resolved data selection.
+    let lastLoadVariables = loadSpy.mock.calls.at(-1)?.[0];
+    expect(lastLoadVariables).toEqual({ field: 'SELECTION1' });
+
+    // Change both the data selection and the refresh token in the same rerender.
+    refreshTokenMockValue = 2;
+    hook.rerender({ dataSelection: [{ field: 'selection2' }] });
+
+    act(() => {
+      vi.advanceTimersByTime(1_000);
+    });
+
+    // The reload triggered by the refresh token must use the new resolved data selection.
+    lastLoadVariables = loadSpy.mock.calls.at(-1)?.[0];
+    expect(lastLoadVariables).toEqual({ field: 'SELECTION2' });
+
+    hook.unmount();
+  });
+  it('disposes the query as soon as one guard blocks the widget', () => {
+    renderHook(() => useDashboardViz({
+      dataSelection: EMPTY_DATA_SELECTION,
+      perspective: 'entities',
+      host: { kind: 'custom-view' } as WidgetHost,
+      query: {} as never,
+    }));
+    // isMissingHostEntity alone (no target entity) must be enough to dispose the query
+    expect(disposeMocks.at(-1)).toHaveBeenCalled();
+  });
+  it('does not load the query and exposes the guard when a variable is unresolved', () => {
+    const dataSelection = [{ filters: { mode: 'and', filters: [{ key: 'createdBy', values: ['$var:11111111-1111-4111-8111-111111111111'] }], filterGroups: [] } }] as unknown as WidgetDataSelection[];
+    const { result } = renderHook(() => useDashboardViz({
+      dataSelection,
+      perspective: 'entities',
+      query: {} as never,
+      config: {},
+      buildQueryVariables: () => ({}),
+    }));
+    expect(result.current.renderGuards.hasUnresolvedVariables).toBe(true);
+    expect(loadMocks.at(-1)).not.toHaveBeenCalled();
+    expect(disposeMocks.at(-1)).toHaveBeenCalled();
+  });
+
+  it('passes the context variable values to the resolution', () => {
+    const values = new Map([['11111111-1111-4111-8111-111111111111', 'org-id']]);
+    renderHook(() => useDashboardViz({ dataSelection: EMPTY_DATA_SELECTION, perspective: 'entities', query: {} as never }), {
+      wrapper: ({ children }) => createElement(DashboardVariableValuesProvider, { values }, children),
+    });
+    expect(vi.mocked(resolveDataSelection)).toHaveBeenLastCalledWith(expect.objectContaining({ variableValues: values }));
+  });
+
+  it('passes the context date variable ids to the resolution, for the day shift of lte and gt', () => {
+    const values = new Map([['11111111-1111-4111-8111-111111111111', '2024-01-15T00:00:00.000Z']]);
+    const dateVariableIds = new Set(['11111111-1111-4111-8111-111111111111']);
+    renderHook(() => useDashboardViz({ dataSelection: EMPTY_DATA_SELECTION, perspective: 'entities', query: {} as never }), {
+      wrapper: ({ children }) => createElement(DashboardVariableValuesProvider, { values, dateVariableIds }, children),
+    });
+    expect(vi.mocked(resolveDataSelection)).toHaveBeenLastCalledWith(expect.objectContaining({ variableValues: values, dateVariableIds }));
   });
 });

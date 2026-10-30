@@ -16,7 +16,7 @@ const markings = [
     x_opencti_color: '#ffffff',
     definition: 'TEST:CLEAR',
     created: '2020-02-25T09:02:29.040Z',
-    modified: '2020-02-25T09:02:29.040Z'
+    modified: '2020-02-25T09:02:29.040Z',
   },
   {
     type: 'marking-definition',
@@ -26,7 +26,7 @@ const markings = [
     x_opencti_color: '#d62828',
     definition: 'TEST:RED',
     created: '2020-02-25T09:02:29.040Z',
-    modified: '2020-02-25T09:02:29.040Z'
+    modified: '2020-02-25T09:02:29.040Z',
   },
   {
     type: 'marking-definition',
@@ -36,7 +36,7 @@ const markings = [
     x_opencti_color: '#7da2e8',
     definition: 'cc-by-sa-4.0 disarm foundation',
     created: '2020-02-25T09:02:29.040Z',
-    modified: '2020-02-25T09:02:29.040Z'
+    modified: '2020-02-25T09:02:29.040Z',
   },
   {
     type: 'marking-definition',
@@ -46,7 +46,7 @@ const markings = [
     x_opencti_color: '#7da2e8',
     definition: 'Copyright 2020-2023, The MITRE Corporation. MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation.',
     created: '2020-02-25T09:02:29.040Z',
-    modified: '2020-02-25T09:02:29.040Z'
+    modified: '2020-02-25T09:02:29.040Z',
   },
 ];
 

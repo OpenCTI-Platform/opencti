@@ -1,14 +1,17 @@
 import { Handle, NodeProps, Position } from 'reactflow';
+import { useTheme } from '@mui/material/styles';
+import { Chip } from '@filigran/design-system';
 import { hexToRGB } from '../../../../../../utils/Colors';
-import { Chip, useTheme } from '@mui/material';
-import { NODE_SIZE } from '../utils';
+import { HIGHLIGHT_LABEL_SHADOW, NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
+import { hoverFade, useNodeHighlight } from '../hoverHighlight';
 
 const StatusNode = ({ id, data }: NodeProps) => {
   const theme = useTheme();
   const { name, color } = data.statusTemplate;
+  const { lit: highlighted, dimmed } = useNodeHighlight(id);
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="workflow-status-node" style={{ position: 'relative', ...hoverFade(dimmed) }}>
       <div
         style={{
           position: 'absolute',
@@ -26,19 +29,21 @@ const StatusNode = ({ id, data }: NodeProps) => {
       />
       <Chip
         key={id}
+        data-testid={`workflow-status-node-${id}`}
+        // NOT `color`: its wash is merged over the caller's own background.
         style={{
-          fontSize: 12,
           height: NODE_SIZE.height,
-          textTransform: 'uppercase',
           borderRadius: 4,
-          backgroundColor: hexToRGB(color),
-          color: color,
-          border: `1px solid ${color}`,
           minWidth: NODE_SIZE.width,
           cursor: 'pointer',
           position: 'relative',
+          // The chip starts its label and washes its border; a node is a box.
+          justifyContent: 'center',
+          // The label inherits it; the chip's own ink is off in the host sheet.
+          ...(color ? { border: `1px solid ${color}`, color, backgroundColor: hexToRGB(color) } : {}),
+          // Lit by a hover: a second 0.5px ring outside the border keeps the node's size unchanged.
+          ...(highlighted ? { boxShadow: `0 0 0 0.5px ${color ?? 'currentColor'}`, textShadow: HIGHLIGHT_LABEL_SHADOW } : {}),
         }}
-        variant="outlined"
         label={snakeCaseToSentenceCase(name)}
       />
       <Handle

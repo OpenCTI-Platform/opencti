@@ -1,5 +1,5 @@
 import React, { CSSProperties, FunctionComponent } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from './Theme';
 
 export const PageContainerContext = React.createContext({ inPageContainer: false });

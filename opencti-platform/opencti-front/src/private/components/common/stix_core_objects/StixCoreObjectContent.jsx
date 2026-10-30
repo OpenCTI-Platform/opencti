@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import Axios from 'axios';
 import { createRefetchContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import { styled } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/TextLayer.css';
@@ -31,97 +29,76 @@ import { isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
 
 import '../../../../utils/pdfWorker-setup';
 
-const styles = (theme) => ({
-  container: {
-    width: '100%',
-    height: '100%',
-    marginTop: theme.spacing(1),
+const Container = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: '100%',
+  marginTop: theme.spacing(1),
+}));
+
+const DocumentContainer = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'navOpen',
+})(({ navOpen }) => ({
+  margin: '5px 0 0 0',
+  overflow: 'scroll',
+  whiteSpace: 'nowrap',
+  minWidth: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  minHeight: 'calc(100vh - 310px)',
+  width: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  height: 'calc(100vh - 310px)',
+  maxWidth: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  maxHeight: 'calc(100vh - 310px)',
+  display: 'flex',
+  justifyContent: 'center',
+}));
+
+const AdjustedContainer = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'navOpen',
+})(({ navOpen }) => ({
+  margin: '5px 0 0 0',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+  minWidth: navOpen ? 'calc(100vw - 590px)' : 'calc(100vw - 465px)',
+  minHeight: 'calc(100vh - 310px)',
+  width: navOpen ? 'calc(100vw - 590px)' : 'calc(100vw - 465px)',
+  height: 'calc(100vh - 310px)',
+  maxWidth: navOpen ? 'calc(100vw - 590px)' : 'calc(100vw - 465px)',
+  maxHeight: 'calc(100vh - 310px)',
+  display: 'flex',
+  justifyContent: 'center',
+  position: 'relative',
+}));
+
+const DocumentContainerWithoutBar = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'navOpen',
+})(({ navOpen }) => ({
+  margin: 0,
+  overflow: 'scroll',
+  minWidth: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  minHeight: 'calc(100vh - 260px)',
+  width: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  height: 'calc(100vh - 260px)',
+  maxWidth: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  maxHeight: 'calc(100vh - 260px)',
+}));
+
+const EditorContainer = styled('div')(({ theme }) => ({
+  height: '100%',
+  minHeight: '100%',
+  padding: `0 0 ${theme.spacing(2)} 0`,
+  borderRadius: 4,
+  position: 'relative',
+}));
+
+const HtmlEditorContainer = styled(EditorContainer)({
+  '& .MuiToggleButtonGroup-root.MuiToggleButtonGroup-horizontal': {
+    // reduce gap between buttons in the toolbar to let space for the AI button
+    gap: 0,
   },
-  documentContainer: {
-    margin: '5px 0 0 0',
-    overflow: 'scroll',
-    whiteSpace: 'nowrap',
-    minWidth: 'calc(100vw - 455px)',
-    minHeight: 'calc(100vh - 310px)',
-    width: 'calc(100vw - 455px)',
-    height: 'calc(100vh - 310px)',
-    maxWidth: 'calc(100vw - 455px)',
-    maxHeight: 'calc(100vh - 310px)',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  adjustedContainer: {
-    margin: '5px 0 0 0',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    minWidth: 'calc(100vw - 465px)',
-    minHeight: 'calc(100vh - 310px)',
-    width: 'calc(100vw - 465px)',
-    height: 'calc(100vh - 310px)',
-    maxWidth: 'calc(100vw - 465px)',
-    maxHeight: 'calc(100vh - 310px)',
-    display: 'flex',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  documentContainerNavOpen: {
-    margin: '5px 0 0 0',
-    overflow: 'scroll',
-    whiteSpace: 'nowrap',
-    minWidth: 'calc(100vw - 580px)',
-    minHeight: 'calc(100vh - 310px)',
-    width: 'calc(100vw - 580px)',
-    height: 'calc(100vh - 310px)',
-    maxWidth: 'calc(100vw - 580px)',
-    maxHeight: 'calc(100vh - 310px)',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  adjustedContainerNavOpen: {
-    margin: '5px 0 0 0',
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    minWidth: 'calc(100vw - 590px)',
-    minHeight: 'calc(100vh - 310px)',
-    width: 'calc(100vw - 590px)',
-    height: 'calc(100vh - 310px)',
-    maxWidth: 'calc(100vw - 590px)',
-    maxHeight: 'calc(100vh - 310px)',
-    display: 'flex',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  documentContainerWithoutBar: {
-    margin: 0,
-    overflow: 'scroll',
-    minWidth: 'calc(100vw - 455px)',
-    minHeight: 'calc(100vh - 260px)',
-    width: 'calc(100vw - 455px)',
-    height: 'calc(100vh - 260px)',
-    maxWidth: 'calc(100vw - 455px)',
-    maxHeight: 'calc(100vh - 260px)',
-  },
-  documentContainerWithoutBarNavOpen: {
-    margin: 0,
-    overflow: 'scroll',
-    minWidth: 'calc(100vw - 580px)',
-    minHeight: 'calc(100vh - 260px)',
-    width: 'calc(100vw - 580px)',
-    height: 'calc(100vh - 260px)',
-    maxWidth: 'calc(100vw - 580px)',
-    maxHeight: 'calc(100vh - 260px)',
-  },
-  editorContainer: {
-    height: '100%',
-    minHeight: '100%',
-    padding: `0 0 ${theme.spacing(2)} 0`,
-    borderRadius: 4,
-    position: 'relative',
-  },
-  editorContainerPreview: {
-    overflowY: 'scroll',
-    overflowX: 'hidden',
-  },
+});
+
+const EditorContainerPreview = styled('div')({
+  overflowY: 'scroll',
+  overflowX: 'hidden',
 });
 
 const interval$ = interval(FIVE_SECONDS);
@@ -269,7 +246,7 @@ class StixCoreObjectContentComponent extends Component {
       ...getExportFiles(stixCoreObject),
       ...getFilesFromTemplate(stixCoreObject),
     ];
-    this.setState({ isLoading: true }, () => {
+    this.setState({ isLoading: true }, async () => {
       const { currentFileId } = this.state;
       if (!currentFileId) {
         return this.setState({ isLoading: false });
@@ -285,13 +262,13 @@ class StixCoreObjectContentComponent extends Component {
       const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
         currentFileId,
       )}`;
-      return Axios.get(url).then((res) => {
-        const content = res.data;
-        return this.setState({
-          initialContent: content,
-          currentContent: content,
-          isLoading: false,
-        });
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+      const content = await res.text();
+      return this.setState({
+        initialContent: content,
+        currentContent: content,
+        isLoading: false,
       });
     });
   }
@@ -495,7 +472,7 @@ class StixCoreObjectContentComponent extends Component {
   }
 
   render() {
-    const { classes, stixCoreObject, t, currentMode, typesWithFintelTemplates } = this.props;
+    const { stixCoreObject, t, currentMode, typesWithFintelTemplates } = this.props;
     const {
       currentFileId,
       totalPdfPageNumber,
@@ -521,7 +498,7 @@ class StixCoreObjectContentComponent extends Component {
     const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
     const hasFintelTemplates = (typesWithFintelTemplates ?? []).includes(stixCoreObject.entity_type);
     return (
-      <div className={classes.container} data-testid="sco-content-page">
+      <Container data-testid="sco-content-page">
         <StixCoreObjectContentFiles
           stixCoreObjectId={stixCoreObject.id}
           stixCoreObjectName={stixCoreObject.name}
@@ -552,15 +529,9 @@ class StixCoreObjectContentComponent extends Component {
             )}
             {currentFileType === 'text/plain' && currentMode === 'content' && (
               <>
-                <div
-                  className={
-                    navOpen
-                      ? classes.documentContainerWithoutBarNavOpen
-                      : classes.documentContainerWithoutBar
-                  }
-                >
+                <DocumentContainerWithoutBar navOpen={navOpen}>
                   {currentContent}
-                </div>
+                </DocumentContainerWithoutBar>
               </>
             )}
             {currentFileType === 'text/plain' && currentMode === 'editor' && (
@@ -570,8 +541,7 @@ class StixCoreObjectContentComponent extends Component {
                   handleSave={this.saveFile.bind(this)}
                   changed={changed}
                 />
-                <div
-                  className={classes.editorContainer}
+                <EditorContainer
                   style={{ minHeight: height }}
                 >
                   <TextField
@@ -597,19 +567,13 @@ class StixCoreObjectContentComponent extends Component {
                       },
                     }}
                   />
-                </div>
+                </EditorContainer>
               </>
             )}
             {currentFileType === 'text/html' && currentMode === 'content' && (
-              <div
-                className={
-                  navOpen
-                    ? classes.documentContainerWithoutBarNavOpen
-                    : classes.documentContainerWithoutBar
-                }
-              >
+              <DocumentContainerWithoutBar navOpen={navOpen}>
                 <HtmlDisplay content={currentContent} />
-              </div>
+              </DocumentContainerWithoutBar>
             )}
             {currentFileType === 'text/html' && currentMode === 'editor' && (
               <>
@@ -618,8 +582,7 @@ class StixCoreObjectContentComponent extends Component {
                   changed={changed}
                   navOpen={navOpen}
                 />
-                <div
-                  className={classes.editorContainer}
+                <HtmlEditorContainer
                   style={{ minHeight: height, height }}
                 >
                   <RichTextEditor
@@ -638,25 +601,19 @@ class StixCoreObjectContentComponent extends Component {
                     }}
                     format="html"
                     variant="html"
-                    style={{ position: 'absolute', top: 0, right: 10 }}
+                    style={{ position: 'absolute', top: 10, right: 0 }}
                   />
-                </div>
+                </HtmlEditorContainer>
               </>
             )}
             {currentFileType === 'text/markdown' && currentMode === 'content' && (
-              <div
-                className={
-                  navOpen
-                    ? classes.documentContainerWithoutBarNavOpen
-                    : classes.documentContainerWithoutBar
-                }
-              >
+              <DocumentContainerWithoutBar navOpen={navOpen}>
                 <MarkdownDisplay
                   content={currentContent}
                   remarkGfmPlugin={true}
                   commonmark={true}
                 />
-              </div>
+              </DocumentContainerWithoutBar>
             )}
             {currentFileType === 'text/markdown' && currentMode === 'editor' && (
               <>
@@ -665,8 +622,7 @@ class StixCoreObjectContentComponent extends Component {
                   handleSave={this.saveFile.bind(this)}
                   changed={changed}
                 />
-                <div
-                  className={classes.editorContainer}
+                <EditorContainer
                   style={{ minHeight: height, height }}
                 >
                   <ReactMde
@@ -677,13 +633,13 @@ class StixCoreObjectContentComponent extends Component {
                     selectedTab={markdownSelectedTab}
                     onTabChange={this.onMarkdownChangeTab.bind(this)}
                     generateMarkdownPreview={(markdown) => Promise.resolve(
-                      <div className={classes.editorContainerPreview} style={{ height: height - 80, maxHeight: height - 80 }}>
+                      <EditorContainerPreview style={{ height: height - 80, maxHeight: height - 80 }}>
                         <MarkdownDisplay
                           content={markdown}
                           remarkGfmPlugin={true}
                           commonmark={true}
                         />
-                      </div>,
+                      </EditorContainerPreview>,
                     )
                     }
                     l18n={{
@@ -701,7 +657,7 @@ class StixCoreObjectContentComponent extends Component {
                     format="markdown"
                     variant="markdown"
                   />
-                </div>
+                </EditorContainer>
               </>
             )}
             {currentFileType === 'application/pdf' && !isBlockedPdfPreview && (
@@ -712,14 +668,9 @@ class StixCoreObjectContentComponent extends Component {
                   currentZoom={this.state.pdfViewerZoom}
                   navOpen={navOpen}
                 />
-                <div
-                  className={
-                    navOpen
-                      ? classes.documentContainerNavOpen
-                      : classes.documentContainer
-                  }
-                >
+                <DocumentContainer navOpen={navOpen}>
                   <Document
+                    suspense={false}
                     onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                     onLoadError={this.handlePdfLoadError.bind(this)}
                     onPassword={this.handlePdfPasswordRequest.bind(this)}
@@ -735,17 +686,11 @@ class StixCoreObjectContentComponent extends Component {
                       />
                     ))}
                   </Document>
-                </div>
+                </DocumentContainer>
               </>
             )}
             {isBlockedPdfPreview && (
-              <div
-                className={
-                  navOpen
-                    ? classes.adjustedContainerNavOpen
-                    : classes.adjustedContainer
-                }
-              >
+              <AdjustedContainer navOpen={navOpen}>
                 <div
                   style={{
                     display: 'table',
@@ -763,16 +708,10 @@ class StixCoreObjectContentComponent extends Component {
                     {t('Unable to preview this PDF. It may be password protected. Select another file to continue.')}
                   </span>
                 </div>
-              </div>
+              </AdjustedContainer>
             )}
             {!currentFile && !contentSelected && (
-              <div
-                className={
-                  navOpen
-                    ? classes.adjustedContainerNavOpen
-                    : classes.adjustedContainer
-                }
-              >
+              <AdjustedContainer navOpen={navOpen}>
                 <div
                   style={{
                     display: 'table',
@@ -790,11 +729,11 @@ class StixCoreObjectContentComponent extends Component {
                     {t('No file selected.')}
                   </span>
                 </div>
-              </div>
+              </AdjustedContainer>
             )}
           </>
         )}
-      </div>
+      </Container>
     );
   }
 }
@@ -803,8 +742,6 @@ StixCoreObjectContentComponent.propTypes = {
   stixCoreObject: PropTypes.object,
   setMappingHeaderDisabled: PropTypes.func,
   setEditorHeaderDisabled: PropTypes.func,
-  theme: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   currentMode: PropTypes.string,
   typesWithFintelTemplates: PropTypes.array,
@@ -951,6 +888,7 @@ const StixCoreObjectContent = createRefetchContainer(
           fintelTemplates {
             id
             name
+            default
             template_content
           }
         }
@@ -1007,8 +945,6 @@ const withAttributes = (Component) => {
 
 export default R.compose(
   inject18n,
-  withTheme,
   withRouter,
-  withStyles(styles),
   withAttributes,
 )(StixCoreObjectContent);

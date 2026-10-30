@@ -14,14 +14,13 @@ import { useFormatter } from '../../../../components/i18n';
 import { SecurityCoverageEditionOverview_securityCoverage$key } from './__generated__/SecurityCoverageEditionOverview_securityCoverage.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { CoverageInformationFieldEdit } from '../../common/form/CoverageInformationField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
-import SelectField from '../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 
 const SECURITY_COVERAGE_TYPE = 'Security-Coverage';
@@ -88,6 +87,7 @@ const securityCoverageMutationRelationDelete = graphql`
 const securityCoverageEditionOverviewFragment = graphql`
   fragment SecurityCoverageEditionOverview_securityCoverage on SecurityCoverage {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     confidence
@@ -97,10 +97,6 @@ const securityCoverageEditionOverviewFragment = graphql`
     type_affinity
     platforms_affinity
     auto_enrichment_disable
-    coverage_information {
-      coverage_name
-      coverage_score
-    }
     createdBy {
       ... on Identity {
         id
@@ -146,7 +142,6 @@ interface SecurityCoverageEditionFormValues {
   external_uri: string | null;
   auto_enrichment_disable: boolean;
   confidence: number | null;
-  coverage_information: { coverage_name: string; coverage_score: number }[];
   createdBy: FieldOption | null;
   objectMarking: FieldOption[];
 }
@@ -175,15 +170,6 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     auto_enrichment_disable: Yup.boolean(),
-    coverage_information: Yup.array().of(
-      Yup.object().shape({
-        coverage_name: Yup.string().required(t_i18n('This field is required')),
-        coverage_score: Yup.number()
-          .required(t_i18n('This field is required'))
-          .min(0, t_i18n('Score must be at least 0'))
-          .max(100, t_i18n('Score must be at most 100')),
-      }),
-    ).nullable(),
     periodicity: Yup.string().nullable(),
     duration: Yup.string().nullable(),
     type_affinity: Yup.string().nullable(),
@@ -216,10 +202,6 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       external_uri: values.external_uri,
       auto_enrichment_disable: values.auto_enrichment_disable,
       confidence: parseInt(String(values.confidence), 10),
-      coverage_information: values.coverage_information?.map((info) => ({
-        coverage_name: info.coverage_name,
-        coverage_score: Number(info.coverage_score),
-      })),
     }).map(([k, v]) => ({ key: k, value: adaptFieldValue(v) }));
 
     editor.fieldPatch({
@@ -260,10 +242,6 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
     platforms_affinity: securityCoverageData.platforms_affinity ?? [],
     auto_enrichment_disable: securityCoverageData.auto_enrichment_disable ?? false,
     confidence: securityCoverageData.confidence ?? null,
-    coverage_information: (securityCoverageData.coverage_information ?? []).map((item) => ({
-      coverage_name: item.coverage_name,
-      coverage_score: item.coverage_score,
-    })),
     createdBy: convertCreatedBy(securityCoverageData) as FieldOption,
     objectMarking: convertMarkings(securityCoverageData),
   };
@@ -279,11 +257,11 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
         values,
         setFieldValue,
       }) => (
-        <div style={{ margin: '20px 0 20px 0' }}>
+        <div style={{ margin: '0px 0 20px 0' }}>
           <AlertConfidenceForEntity entity={securityCoverageData} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
@@ -332,8 +310,8 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             setFieldValue={setFieldValue}
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="type_affinity"
             onSubmit={handleSubmitField}
             onChange={(name: string, value: string) => setFieldValue(name, value)}
@@ -341,9 +319,9 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem key="ENDPOINT" value="ENDPOINT">
+            <SelectItem key="ENDPOINT" value="ENDPOINT">
               {t_i18n('Endpoint')}
-            </MenuItem>
+            </SelectItem>
           </Field>
           <OpenVocabField
             label={t_i18n('Platform(s) affinity')}
@@ -365,20 +343,14 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
           />
           {values.auto_enrichment_disable && (
             <>
-              <CoverageInformationFieldEdit
-                id={securityCoverageData.id}
-                mode="entity"
-                name="coverage_information"
-                values={values.coverage_information}
-              />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="external_uri"
                 onSubmit={handleSubmitField}
                 label={t_i18n('Source external link')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
             </>
           )}
@@ -399,6 +371,12 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={SECURITY_COVERAGE_TYPE}
+            entityId={securityCoverageData.id}
+            values={securityCoverageData.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
           />
         </div>
       )}

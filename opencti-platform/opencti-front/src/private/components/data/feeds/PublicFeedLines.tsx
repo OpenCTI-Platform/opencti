@@ -1,13 +1,14 @@
 import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItem from '@mui/material/ListItem';
-import { IconButton, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { ContentCopy, OpenInNew } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
 import { FeedLineDummy } from './FeedLine';
 import { PublicFeedLinesQuery } from './__generated__/PublicFeedLinesQuery.graphql';
 import { PublicFeedLines_node$key } from './__generated__/PublicFeedLines_node.graphql';
@@ -16,33 +17,11 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import { copyToClipboard } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    maxWidth: 120,
-    display: 'table-cell',
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const publicFeedLinesFragment = graphql`
   fragment PublicFeedLines_node on Feed {
@@ -94,9 +73,9 @@ const dataColumns: DataColumns = {
     label: 'Status',
     width: '20%',
     isSortable: false,
-    render: (node, { t, classes }) => (
+    render: (node, { t }) => (
       <Chip
-        classes={{ root: classes.chipInList }}
+        sx={{ fontSize: 12, height: 20, maxWidth: 120, display: 'table-cell' }}
         color="success"
         variant="outlined"
         label={t('Started')}
@@ -106,7 +85,6 @@ const dataColumns: DataColumns = {
 };
 
 const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const feed = useFragment(publicFeedLinesFragment, node);
   const browseClick = () => {
@@ -117,38 +95,45 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
   };
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       color="primary"
       divider={true}
       secondaryAction={(
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your csv client')}>
-            <IconButton onClick={copyClick} color="primary">
-              <ContentCopy />
-            </IconButton>
+            <IconButton
+              onClick={copyClick}
+              variant="default"
+              priority="tertiary"
+              aria-label={t_i18n('Copy uri to clipboard for your csv client')}
+              icon={<ContentCopy />}
+            />
           </Tooltip>
           <Tooltip title={t_i18n('Access CSV feeds directly in your browser')}>
-            <IconButton onClick={browseClick} color="primary">
-              <OpenInNew />
-            </IconButton>
+            <IconButton
+              onClick={browseClick}
+              variant="default"
+              priority="tertiary"
+              aria-label={t_i18n('Access CSV feeds directly in your browser')}
+              icon={<OpenInNew />}
+            />
           </Tooltip>
         </>
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon>
         <ItemIcon type="feed" />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(feed, { t: t_i18n, classes })}
-              </div>
+                {value.render?.(feed, { t: t_i18n })}
+              </BodyItem>
             ))}
           </div>
         )}

@@ -17,10 +17,8 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import FormGroup from '@mui/material/FormGroup';
-import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -30,21 +28,12 @@ import { ConnectedThemeProvider } from '../../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
 import { environment, handleError } from '../../relay/environment';
 import SystemBanners from '../../public/components/SystemBanners';
-import type { Theme } from '../../components/Theme';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import Message from '../../components/Message';
 import { isEmptyField } from '../../utils/utils';
 import ItemCopy from '../../components/ItemCopy';
-
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    textAlign: 'center',
-    margin: '0 auto',
-    width: '80%',
-    paddingBottom: 50,
-  },
-}));
+import { Textarea } from '@filigran/design-system';
 
 export const licenseQuery = graphql`
   query LtsLicenseRootQuery {
@@ -78,7 +67,6 @@ interface LicenseProps {
 }
 
 const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [enterpriseLicense, setEnterpriseLicense] = useState('');
   const [commitMutation] = useApiMutation(LicenseRootMutationFieldPatch);
@@ -102,7 +90,7 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
   return (
     <div>
       <SystemBanners settings={settings} />
-      <div className={classes.container}>
+      <Box sx={{ textAlign: 'center', margin: '0 auto', width: '80%', paddingBottom: '50px' }}>
         <Dialog
           open
           size="large"
@@ -120,13 +108,10 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
           </Alert>
           {isNoLicenseByConfig ? (
             <FormGroup style={{ marginTop: 15 }}>
-              <TextField
+              <Textarea
                 onChange={(event) => setEnterpriseLicense(event.target.value)}
-                multiline={true}
-                fullWidth={true}
                 minRows={10}
                 placeholder={t_i18n('Paste your Filigran OpenCTI LTS license')}
-                variant="outlined"
               />
             </FormGroup>
           ) : (
@@ -149,7 +134,7 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
             </DialogActions>
           )}
         </Dialog>
-      </div>
+      </Box>
     </div>
   );
 };

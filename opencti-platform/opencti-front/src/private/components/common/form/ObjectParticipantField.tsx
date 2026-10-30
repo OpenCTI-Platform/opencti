@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
 import { ObjectParticipantFieldMembersSearchQuery$data } from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { FieldOption } from '../../../../utils/field';
@@ -39,23 +39,17 @@ export const objectParticipantFieldParticipantsSearchQuery = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface OptionParticipant extends FieldOption {
   type: string;
@@ -79,14 +73,13 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   disabled,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { me } = useContext((UserContext));
   const [participants, setParticipants] = useState<OptionParticipant[]>([]);
 
-  const searchParticipants = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchParticipants = (search: string) => {
     fetchQuery(objectParticipantFieldMembersSearchQuery, {
-      search: (event && event.target && event.target.value) ?? '',
+      search,
       entityTypes: ['User'],
       first: 10,
     })
@@ -118,36 +111,32 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
   };
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
+      // MUI hid its clear indicator here with display:none; the library defaults
+      // clearable to true, so the affordance must be declined explicitly.
       style={style}
       name={name}
       required={required}
       disabled={disabled}
       multiple={true}
       groupBy={(option: OptionParticipant) => option.group}
-      textfieldprops={{
-        variant: 'standard',
-        label: label ?? t_i18n('Participant(s)'),
-        required,
-        helperText: helpertext,
-        onFocus: searchParticipants,
-      }}
+      label={label ?? t_i18n('Participant(s)')}
+      helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
       options={participants}
-      onInputChange={searchParticipants}
+      onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+        if (meta.cause === 'type') searchParticipants(search);
+      }}
+      onFocusInput={() => searchParticipants('')}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(
-        fieldProps: React.HTMLAttributes<HTMLLIElement>,
-        option: { type: string; label: string },
-      ) => (
-        <li {...fieldProps}>
-          <div className={classes.icon}>
+      renderOption={(option: { type: string; label: string }) => (
+        <>
+          <OptionIcon>
             <ItemIcon type={option.type} />
-          </div>
-          <div className={classes.text}>{option.label}</div>
-        </li>
+          </OptionIcon>
+          <OptionText>{option.label}</OptionText>
+        </>
       )}
-      classes={{ clearIndicator: classes.autoCompleteIndicator }}
     />
   );
 };

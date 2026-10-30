@@ -1,7 +1,7 @@
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Skeleton from '@mui/material/Skeleton';
@@ -10,37 +10,17 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import Drawer from '@components/common/drawer/Drawer';
 import CaseTaskOverview from '@components/cases/tasks/CaseTaskOverview';
 import { NorthEastOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
 import { tasksDataColumns } from './tasksDataColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';
 import TaskPopover from './TaskPopover';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 15,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-    minWidth: 52,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const CaseTaskFragment = graphql`
   fragment CaseTasksLine_data on Task {
@@ -88,7 +68,6 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
   paginationOptions,
   enableReferences,
 }) => {
-  const classes = useStyles();
   const { fld, t_i18n } = useFormatter();
   const task = useFragment(CaseTaskFragment, node);
   const [open, setOpen] = useState(false);
@@ -107,23 +86,22 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
         )}
       >
         <ListItemButton
-          classes={{ root: classes.item }}
+          sx={{ paddingLeft: '15px', height: 50 }}
           onClick={() => setOpen(true)}
         >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ListItemIcon sx={{ color: 'primary.main', minWidth: 52 }}>
             <ItemIcon type="Task" />
           </ListItemIcon>
           <ListItemText
             primary={(
               <>
                 {Object.values(tasksDataColumns).map((value) => (
-                  <div
+                  <BodyItem
                     key={value.label}
-                    className={classes.bodyItem}
                     style={{ width: value.width }}
                   >
-                    {value.render?.(task, { fld, classes })}
-                  </div>
+                    {value.render?.(task, { fld })}
+                  </BodyItem>
                 ))}
               </>
             )}
@@ -153,33 +131,30 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
 };
 
 export const CaseTasksLineDummy = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '15px', height: 50 }}
       divider={true}
       secondaryAction={(
         <IconButton
           aria-label={t_i18n('Open menu')}
           disabled={true}
-          aria-haspopup="true"
           style={{ marginTop: 3 }}
         >
           <MoreVert />
         </IconButton>
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main', minWidth: 52 }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(tasksDataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 <Skeleton
@@ -188,7 +163,7 @@ export const CaseTasksLineDummy = () => {
                   width="90%"
                   height="100%"
                 />
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}

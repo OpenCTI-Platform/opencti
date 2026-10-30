@@ -49,8 +49,24 @@ describe('Label resolver standard behavior', () => {
     });
     expect(label).not.toBeNull();
     expect(label.data.labelAdd).not.toBeNull();
-    expect(label.data.labelAdd.value).toEqual('state-sponsored');
+    expect(label.data.labelAdd.value).toEqual('State-Sponsored');
     labelInternalId = label.data.labelAdd.id;
+  });
+  it('should return existing label when created with same value but different case', async () => {
+    const CREATE_QUERY = gql`
+      mutation LabelAdd($input: LabelAddInput!) {
+        labelAdd(input: $input) {
+          id
+          value
+        }
+      }
+    `;
+    const duplicate = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: { input: { value: 'state-sponsored', color: '#111111' } },
+    });
+    expect(duplicate.data.labelAdd.id).toEqual(labelInternalId);
+    expect(duplicate.data.labelAdd.value).toEqual('State-Sponsored');
   });
   it('should label loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: labelInternalId } });
@@ -77,7 +93,7 @@ describe('Label resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: labelInternalId, input: { key: 'value', value: ['State-Sponsored2'] } },
     });
-    expect(queryResult.data.labelEdit.fieldPatch.value).toEqual('state-sponsored2');
+    expect(queryResult.data.labelEdit.fieldPatch.value).toEqual('State-Sponsored2');
   });
   it('should context patch label', async () => {
     const CONTEXT_PATCH_QUERY = gql`

@@ -1,4 +1,4 @@
-import moment from 'moment-timezone';
+import moment from 'moment';
 import { dispatch } from './hooks/useBus';
 import { isNotEmptyField } from './utils';
 import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';

@@ -1,6 +1,5 @@
 import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
-import makeStyles from '@mui/styles/makeStyles';
 import CoreForm from '@rjsf/core';
 import JsonForm from '@rjsf/mui';
 import type { RJSFSchema } from '@rjsf/utils';
@@ -11,7 +10,6 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -24,18 +22,6 @@ import notifierValidator from './NotifierValidator';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const notifierMutationFieldPatch = graphql`
   mutation NotifierEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -101,7 +87,6 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const formRef = useRef<CoreForm>(null);
 
   const [open, setOpen] = useState(false);
@@ -166,7 +151,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
           <Form>
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
@@ -174,10 +159,10 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
             <Field
               component={TextField}
               name="description"
-              variant="standard"
+              variant="outlined"
               label={t_i18n('Description')}
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              className="mt-5"
             />
             <NotifierConnectorField
               disabled={true}
@@ -222,14 +207,14 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                 <></>
               </JsonForm>
             </Box>
-            <div className={classes.buttons}>
+            <Box sx={{ marginTop: '20px', textAlign: 'right' }}>
               <Button
                 onClick={() => {
                   notifierConfiguration.current = JSON.stringify(formRef.current?.state.formData);
                   setOpen(true);
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Test')}
               </Button>
@@ -239,11 +224,11 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                   submitForm(setSubmitting, setErrors, values, formRef.current);
                 }}
                 disabled={isSubmitting}
-                classes={{ root: classes.button }}
+                sx={{ marginLeft: 2 }}
               >
                 {t_i18n('Save')}
               </Button>
-            </div>
+            </Box>
             <NotifierTestDialog
               open={open}
               onClose={() => {

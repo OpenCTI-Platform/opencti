@@ -27,6 +27,6 @@ describe('Database sync live', () => {
       // Post check
       await checkPostSyncContent(SYNC_LIVE_START_REMOTE_URI, objectMap, relMap, initStixReport);
     },
-    FIFTEEN_MINUTES
+    FIFTEEN_MINUTES,
   );
 });

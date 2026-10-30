@@ -9,7 +9,7 @@ import type { GraphQLTaggedNode } from 'relay-runtime';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
 import { useGraphContext } from '../GraphContext';
-import type { GraphNode, GraphLink } from '../graph.types';
+import { type GraphNode, type GraphLink, isInferredLink, isInferredNode } from '../graph.types';
 import { isStixNestedRefRelationship } from '../../../utils/Relation';
 import { fetchQuery } from '../../../relay/environment';
 import useGraphInteractions from '../utils/useGraphInteractions';
@@ -39,15 +39,28 @@ const GraphToolbarEditObject = ({
 
   const [category, setCategory] = useState<EditionCategory>();
 
+  const single = selectedNodes.length + selectedLinks.length === 1;
   let objectToEdit: GraphNode | GraphLink | undefined;
-  if (selectedNodes.length === 1 && !selectedNodes[0].isNestedInferred) {
+  if (single && selectedNodes.length === 1 && !isInferredNode(selectedNodes[0])) {
     [objectToEdit] = selectedNodes;
-  } else if (selectedLinks.length === 1 && (!selectedLinks[0].inferred || !selectedLinks[0].isNestedInferred)) {
+  } else if (single && selectedLinks.length === 1 && !isInferredLink(selectedLinks[0])) {
     [objectToEdit] = selectedLinks;
+  }
+  const isNotEditableFromGraph = !!objectToEdit
+    && (objectToEdit.parent_types.includes('Stix-Meta-Object')
+      || objectToEdit.parent_types.includes('Internal-Object')
+      || objectToEdit.parent_types.includes('internal-relationship'));
+  let editDisabledReason: string | undefined;
+  if (!objectToEdit) {
+    editDisabledReason = single
+      ? t_i18n('Inferred knowledge cannot be edited')
+      : t_i18n('Select one entity or relationship first');
+  } else if (isNotEditableFromGraph) {
+    editDisabledReason = t_i18n("This item can't be edited from the graph");
   }
 
   const openEditionForm = () => {
-    if (!objectToEdit) return;
+    if (!objectToEdit || isNotEditableFromGraph) return;
     const { parent_types, entity_type } = objectToEdit;
     if (!parent_types.includes('basic-relationship')
       && !parent_types.includes('Stix-Cyber-Observable')) {
@@ -83,12 +96,12 @@ const GraphToolbarEditObject = ({
     <>
       <GraphToolbarItem
         Icon={<EditOutlined />}
-        disabled={!objectToEdit}
+        disabledReason={editDisabledReason}
         color="primary"
         onClick={openEditionForm}
         title={t_i18n('Edit the selected item')}
       />
-      {objectToEdit && (
+      {objectToEdit && !isNotEditableFromGraph && (
         <>
           <StixDomainObjectEdition
             noStoreUpdate

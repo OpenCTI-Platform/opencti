@@ -6,13 +6,12 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { HelpOutlined, MoreVertOutlined } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
-import { Link } from 'react-router-dom';
+import { Chip } from '@filigran/design-system';
+import { Link } from 'react-router';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import Box from '@mui/material/Box';
 import { AutoFix } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { EntityStixSightingRelationshipLine_node$key } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipLine_node.graphql';
 import {
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
@@ -23,51 +22,10 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import { alpha } from '@mui/material/styles';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  positive: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
-    color: theme.palette.error.main,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  negative: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
-    color: theme.palette.success.main,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const EntityStixSightingRelationshipLineFragment = graphql`
     fragment EntityStixSightingRelationshipLine_node on StixSightingRelationship {
@@ -126,6 +84,10 @@ const EntityStixSightingRelationshipLineFragment = graphql`
                 description
             }
             ... on System {
+                name
+                description
+            }
+            ... on SecurityPlatform {
                 name
                 description
             }
@@ -209,6 +171,10 @@ const EntityStixSightingRelationshipLineFragment = graphql`
                 name
                 description
             }
+            ... on SecurityPlatform {
+                name
+                description
+            }
             ... on Position {
                 name
                 description
@@ -252,8 +218,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
     isTo,
   },
 ) => {
-  const classes = useStyles();
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const data = useFragment<EntityStixSightingRelationshipLine_node$key>(
     EntityStixSightingRelationshipLineFragment,
     node,
@@ -283,77 +248,66 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
       )}
     >
       <ListItemButton
-        classes={{ root: classes.item }}
+        sx={{ paddingLeft: '10px', height: 50 }}
         component={Link}
         to={link}
         disabled={restricted}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <ItemIcon type={!restricted ? entity?.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
           primary={(
             <div>
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.x_opencti_negative.width }}
               >
                 <Chip
-                  classes={{
-                    root: data.x_opencti_negative
-                      ? classes.negative
-                      : classes.positive,
-                  }}
+                  severity={data.x_opencti_negative ? 'low' : 'critical'}
                   label={
                     data.x_opencti_negative
                       ? t_i18n('False positive')
                       : t_i18n('True positive')
                   }
                 />
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.attribute_count.width }}
               >
                 {data.attribute_count}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.name.width }}
               >
                 {!restricted
                   ? entity?.name || entity?.observable_value
                   : t_i18n('Restricted')}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.entity_type.width }}
               >
                 {!restricted
                   ? t_i18n(`entity_${entity?.entity_type}`)
                   : t_i18n('Restricted')}
-              </div>
-              <div
-                className={classes.bodyItem}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.first_seen.width }}
               >
-                {nsdt(data.first_seen)}
-              </div>
-              <div
-                className={classes.bodyItem}
+                {ftdt(data.first_seen)}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.last_seen.width }}
               >
-                {nsdt(data.last_seen)}
-              </div>
-              <div
-                className={classes.bodyItem}
+                {ftdt(data.last_seen)}
+              </BodyItem>
+              <BodyItem
                 style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence
                   confidence={data.confidence}
                   entityType={data.entity_type}
                 />
-              </div>
+              </BodyItem>
             </div>
           )}
         />
@@ -367,25 +321,19 @@ export const EntityStixSightingRelationshipLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={(
-        <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined />
-        </Box>
-      )}
+      secondaryAction={<MoreVertOutlined />}
     >
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <HelpOutlined />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.x_opencti_negative.width }}
             >
               <Skeleton
@@ -394,9 +342,8 @@ export const EntityStixSightingRelationshipLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.attribute_count.width }}
             >
               <Skeleton
@@ -405,9 +352,8 @@ export const EntityStixSightingRelationshipLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -416,9 +362,8 @@ export const EntityStixSightingRelationshipLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <Skeleton
@@ -427,9 +372,8 @@ export const EntityStixSightingRelationshipLineDummy = ({
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.first_seen.width }}
             >
               <Skeleton
@@ -438,9 +382,8 @@ export const EntityStixSightingRelationshipLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.last_seen.width }}
             >
               <Skeleton
@@ -449,9 +392,8 @@ export const EntityStixSightingRelationshipLineDummy = ({
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.confidence.width }}
             >
               <Skeleton
@@ -460,7 +402,7 @@ export const EntityStixSightingRelationshipLineDummy = ({
                 width={100}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

@@ -1,18 +1,18 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import RawTag from '@common/tag/RawTag';
 import Tag from '@common/tag/Tag';
 import { Add } from '@mui/icons-material';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import { Box, Stack } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { Label as MdiLabel } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { filter, map, pipe } from 'ramda';
 import { useState } from 'react';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
@@ -24,25 +24,7 @@ import LabelCreation from '../../settings/labels/LabelCreation';
 import CommitMessage from '../form/CommitMessage';
 import Label from '../../../../components/common/label/Label';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
-
 const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
     sx,
@@ -78,21 +60,24 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const handleOpenLabels = () => setOpenLabels(true);
   const handleCloseLabels = () => setOpenLabels(false);
 
-  const searchLabels = async (event) => {
-    setLabelInput(event && event.target.value !== 0 ? event.target.value : '');
+  const searchLabels = async (search) => {
+    setLabelInput(search ?? '');
 
     const data = await fetchQuery(labelsSearchQuery, {
-      search: event && event.target.value !== 0 ? event.target.value : '',
+      search: search ?? '',
       orderBy: 'value',
       orderMode: 'asc',
     }).toPromise();
 
+    const existingLabelIds = new Set((labels ?? []).map((l) => l.id));
     const edges = data?.labels?.edges ?? [];
-    const labelOptions = edges.map((n) => ({
-      label: n.node.value,
-      value: n.node.id,
-      color: n.node.color,
-    }));
+    const labelOptions = edges
+      .filter((n) => !existingLabelIds.has(n.node.id))
+      .map((n) => ({
+        label: n.node.value,
+        value: n.node.id,
+        color: n.node.color,
+      }));
 
     setStateLabels(labelOptions);
   };
@@ -165,19 +150,21 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       >
         {t_i18n('Labels')}
       </Label>
-      <div className={classes.objectLabel} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
         <FieldOrEmpty source={labels}>
           {map(
             (label) => (
-              <Tag
+              <RawTag
                 key={label.id}
                 label={label.value}
                 color={label.color}
-                onDelete={canUpdateKnowledge ? () => (
-                  enableReferences
-                    ? handleOpenCommitDelete(label)
-                    : handleRemoveLabel(label.id)
-                ) : undefined
+                onDelete={
+                  canUpdateKnowledge
+                    ? () =>
+                        enableReferences
+                          ? handleOpenCommitDelete(label)
+                          : handleRemoveLabel(label.id)
+                    : undefined
                 }
               />
             ),
@@ -203,11 +190,14 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                       key={label.id}
                       label={label.value}
                       color={label.color}
-                      onDelete={canUpdateKnowledge ? () => (
-                        enableReferences
-                          ? handleOpenCommitDelete(label)
-                          : handleRemoveLabel(label.id)
-                      ) : undefined
+                      labelTextTransform="none"
+                      onDelete={
+                        canUpdateKnowledge
+                          ? () =>
+                              enableReferences
+                                ? handleOpenCommitDelete(label)
+                                : handleRemoveLabel(label.id)
+                          : undefined
                       }
                     />
                   ),
@@ -257,30 +247,36 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           >
             <Form>
               <Field
-                component={AutocompleteField}
+                component={ComboboxField}
+                // MUI hid its clear indicator here with display:none; the library defaults
+                // clearable to true, so the affordance must be declined explicitly.
                 name="new_labels"
                 multiple={true}
-                textfieldprops={{
-                  variant: 'standard',
-                  label: t_i18n('Labels'),
-                  onFocus: searchLabels,
-                }}
+                label={t_i18n('Labels')}
+                preserveCase
                 noOptionsText={t_i18n('No available options')}
                 options={stateLabels}
-                onInputChange={searchLabels}
-                openCreate={isLabelManager ? handleOpenCreate : null}
-                renderOption={(optionsProps, option) => (
-                  <li {...optionsProps}>
-                    <div
-                      className={classes.icon}
+                // This dialog is one field with its action bar directly under it, and the panel
+                // is portalled at --fds-z-overlay: 1400 — the level that lets it win over MUI
+                // Dialogs also lets it cover THIS dialog's own Add button.
+                closeOnSelect
+                onInputChange={(search, meta) => {
+                  if (meta.cause === 'type') searchLabels(search);
+                }}
+                onFocusInput={() => searchLabels('')}
+                getChipColor={(option) => option.color}
+                openCreate={isLabelManager ? handleOpenCreate : undefined}
+                renderOption={(option) => (
+                  <>
+                    <Box
+                      sx={{ paddingTop: '4px', display: 'inline-block' }}
                       style={{ color: option.color }}
                     >
                       <MdiLabel />
-                    </div>
-                    <div className={classes.text}>{option.label}</div>
-                  </li>
+                    </Box>
+                    <Box sx={{ display: 'inline-block', flexGrow: 1, marginLeft: '10px' }}>{option.label}</Box>
+                  </>
                 )}
-                classes={{ clearIndicator: classes.autoCompleteIndicator }}
               />
             </Form>
             <DialogActions>
@@ -315,6 +311,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 const newLabel = {
                   label: data.labelAdd.value,
                   value: data.labelAdd.id,
+                  color: data.labelAdd.color ?? undefined,
                 };
                 setFieldValue('new_labels', [...values.new_labels, newLabel]);
               }}

@@ -16,6 +16,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -213,7 +214,7 @@ const PositionEditionOverviewComponent = (props) => {
           <AlertConfidenceForEntity entity={position} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -250,8 +251,8 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
@@ -265,8 +266,8 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
@@ -280,8 +281,8 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="street_address"
             label={t_i18n('Street address')}
             required={(mandatoryAttributes.includes('street_address'))}
@@ -294,8 +295,8 @@ const PositionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="postal_code"
             label={t_i18n('Postal code')}
             required={(mandatoryAttributes.includes('postal_code'))}
@@ -342,6 +343,13 @@ const PositionEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={position.entity_type}
+            entityId={position.id}
+            values={position.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -362,6 +370,7 @@ export default createFragmentContainer(PositionEditionOverviewComponent, {
   position: graphql`
     fragment PositionEditionOverview_position on Position {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       latitude
       longitude

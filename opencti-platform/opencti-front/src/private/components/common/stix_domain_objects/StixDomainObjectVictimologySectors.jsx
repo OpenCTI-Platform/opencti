@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -32,28 +31,6 @@ import { export_max_size, isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { EMPTY_VALUE } from '../../../../utils/String';
-
-const styles = (theme) => ({
-  container: {
-    paddingBottom: 70,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-  subnested: {
-    paddingLeft: theme.spacing(8),
-  },
-  export: {
-    float: 'right',
-    marginTop: -10,
-  },
-  parameters: {
-    marginBottom: 10,
-  },
-});
 
 class StixDomainObjectVictimologySectorsComponent extends Component {
   constructor(props) {
@@ -119,7 +96,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     const { searchTerm, openExports } = this.state;
     const {
       t,
-      classes,
       data,
       entityLink,
       paginationOptions,
@@ -302,7 +278,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
 
     return (
       <div>
-        <div className={classes.parameters}>
+        <Box sx={{ marginBottom: '10px' }}>
           <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput
               variant="small"
@@ -310,7 +286,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
               keyword={searchTerm}
             />
           </div>
-          <div className={classes.views}>
+          <div>
             <div style={{ float: 'right', marginTop: -10 }}>
               <ToggleButtonGroup
                 size="small"
@@ -376,7 +352,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
             </div>
           </div>
           <div className="clearfix" />
-        </div>
+        </Box>
         <List>
           {orderedFinalSectors.map((sector) => {
             const orderedRelations = R.pipe(
@@ -396,7 +372,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                     <IconButton
                       aria-label={this.state.expandedLines[sector.id] ? t('Collapse') : t('Expand')}
                       onClick={this.handleToggleLine.bind(this, sector.id)}
-                      aria-haspopup="true"
+                      aria-expanded={this.state.expandedLines[sector.id]}
                     >
                       {this.state.expandedLines[sector.id] === true ? (
                         <ExpandLess />
@@ -454,7 +430,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               gap: 3,
                             }}
                           >
-                            <ListItemIcon className={classes.itemIcon}>
+                            <ListItemIcon sx={{ color: 'primary.main' }}>
                               <ItemIcon
                                 type={stixCoreRelationship.to.entity_type}
                               />
@@ -506,7 +482,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                   this,
                                   subsector.id,
                                 )}
-                                aria-haspopup="true"
+                                aria-expanded={this.state.expandedLines[subsector.id]}
                               >
                                 {this.state.expandedLines[subsector.id]
                                   === true ? (
@@ -518,7 +494,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                             )}
                           >
                             <ListItemButton
-                              classes={{ root: classes.nested }}
+                              sx={{ paddingLeft: 4 }}
                               onClick={this.handleToggleLine.bind(
                                 this,
                                 subsector.id,
@@ -574,12 +550,12 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                       )}
                                     >
                                       <ListItemButton
-                                        classes={{ root: classes.subnested }}
+                                        sx={{ paddingLeft: 8 }}
                                         component={Link}
                                         to={link}
                                       >
                                         <ListItemIcon
-                                          className={classes.itemIcon}
+                                          sx={{ color: 'primary.main' }}
                                         >
                                           <ItemIcon
                                             type={
@@ -658,7 +634,6 @@ StixDomainObjectVictimologySectorsComponent.propTypes = {
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
   handleChangeView: PropTypes.func,
-  classes: PropTypes.object,
   t: PropTypes.func,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
@@ -771,5 +746,4 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
 export default R.compose(
   inject18n,
   withRouter,
-  withStyles(styles),
 )(StixDomainObjectVictimologySectorsSectorLines);

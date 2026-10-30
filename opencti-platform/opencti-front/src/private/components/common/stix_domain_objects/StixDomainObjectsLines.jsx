@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { map, keys, groupBy, assoc, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { map, keys, groupBy, assoc } from 'ramda';
+import { styled } from '@mui/material/styles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -12,7 +12,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { ExpandMore } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
@@ -20,42 +20,20 @@ import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
-const styles = (theme) => ({
-  container: {
-    padding: '0 0 20px 0',
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  list: {
-    width: '100%',
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-  noResult: {
-    top: 180,
-    left: 50,
-    right: 0,
-    textAlign: 'center',
-    position: 'absolute',
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    zIndex: -5,
-  },
+const Container = styled('div')({
+  padding: '0 0 20px 0',
 });
+
+const NoResult = styled('div')(({ theme }) => ({
+  top: 180,
+  left: 50,
+  right: 0,
+  textAlign: 'center',
+  position: 'absolute',
+  color: theme.palette.text.primary,
+  fontSize: 15,
+  zIndex: -5,
+}));
 
 class StixDomainObjectsContainer extends Component {
   constructor(props) {
@@ -80,7 +58,7 @@ class StixDomainObjectsContainer extends Component {
   }
 
   render() {
-    const { t, classes, data, fd } = this.props;
+    const { t, data, fd } = this.props;
     const stixDomainObjectsNodes = map(
       (n) => n.node,
       data.stixDomainObjects.edges,
@@ -90,7 +68,7 @@ class StixDomainObjectsContainer extends Component {
     const stixDomainObjectsTypes = keys(stixDomainObjects);
     if (stixDomainObjectsTypes.length !== 0) {
       return (
-        <div className={classes.container}>
+        <Container>
           {stixDomainObjectsTypes.map((type) => (
             <Accordion
               key={type}
@@ -104,12 +82,22 @@ class StixDomainObjectsContainer extends Component {
             >
               <AccordionSummary
                 expandIcon={<ExpandMore />}
-                className={classes.summary}
               >
-                <Typography className={classes.heading}>
+                <Typography
+                  sx={(theme) => ({
+                    fontSize: theme.typography.pxToRem(15),
+                    flexBasis: '33.33%',
+                    flexShrink: 0,
+                  })}
+                >
                   {t(`entity_${type}`)}
                 </Typography>
-                <Typography classes={{ root: classes.secondaryHeading }}>
+                <Typography
+                  sx={(theme) => ({
+                    fontSize: theme.typography.pxToRem(15),
+                    color: theme.palette.text.secondary,
+                  })}
+                >
                   {stixDomainObjects[type].length}{' '}
                   {stixDomainObjects[type].length < 2
                     ? t('entity')
@@ -117,9 +105,9 @@ class StixDomainObjectsContainer extends Component {
                 </Typography>
               </AccordionSummary>
               <AccordionDetails
-                classes={{ root: classes.expansionPanelContent }}
+                sx={{ padding: 0 }}
               >
-                <List classes={{ root: classes.list }}>
+                <List sx={{ width: '100%' }}>
                   {stixDomainObjects[type].map((stixDomainObject) => {
                     const link = resolveLink(stixDomainObject.entity_type);
                     if (link) {
@@ -139,7 +127,7 @@ class StixDomainObjectsContainer extends Component {
                             component={Link}
                             to={`${link}/${stixDomainObject.id}`}
                           >
-                            <ListItemIcon classes={{ root: classes.itemIcon }}>
+                            <ListItemIcon sx={{ color: 'primary.main' }}>
                               <ItemIcon type={type} />
                             </ListItemIcon>
                             <ListItemText
@@ -175,7 +163,7 @@ class StixDomainObjectsContainer extends Component {
                           />
                         )}
                       >
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <ListItemIcon sx={{ color: 'primary.main' }}>
                           <ItemIcon type={type} />
                         </ListItemIcon>
                         <ListItemText
@@ -192,13 +180,13 @@ class StixDomainObjectsContainer extends Component {
               </AccordionDetails>
             </Accordion>
           ))}
-        </div>
+        </Container>
       );
     }
     return (
-      <div className={classes.noResult}>
+      <NoResult>
         {t('No entities were found for this search.')}
-      </div>
+      </NoResult>
     );
   }
 }
@@ -208,7 +196,6 @@ StixDomainObjectsContainer.propTypes = {
   reportObjectRefs: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   fd: PropTypes.func,
@@ -600,4 +587,4 @@ const StixDomainObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectsLines);
+export default inject18n(StixDomainObjectsLines);

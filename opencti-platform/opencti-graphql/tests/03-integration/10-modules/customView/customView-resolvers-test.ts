@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
 import { createEntity, deleteElementById } from '../../../../src/database/middleware';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsAdminWithError } from '../../../utils/testQueryHelper';
+import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsAdminWithError, awaitUntilCondition } from '../../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../../src/modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CUSTOM_VIEW, type StoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
@@ -11,6 +11,7 @@ import { fromB64, toB64 } from '../../../../src/utils/base64';
 import { fileToReadStream } from '../../../../src/database/file-storage';
 import { redisClearTelemetryGauge, redisGetTelemetry } from '../../../../src/database/redis';
 import { TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED, TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED } from '../../../../src/manager/telemetryManager';
+import { addSavedFilter, deleteSavedFilter } from '../../../../src/modules/savedFilter/savedFilter-domain';
 import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID, DASHBOARD_MANIFEST, DASHBOARD_MANIFEST_OBJECT } from './customView-fixtures';
 
 const READ_CUSTOM_VIEW_QUERY = gql`
@@ -191,6 +192,7 @@ const createUploadFile = (filePath: string, fileName: string) => {
 describe('CustomView resolvers', () => {
   let customView1: StoreEntityCustomView | undefined;
   let customView2: StoreEntityCustomView | undefined;
+  let savedFilterId: string | undefined;
   beforeAll(async () => {
     customView1 = await createEntity(
       testContext,
@@ -210,6 +212,16 @@ describe('CustomView resolvers', () => {
       CUSTOM_VIEW_ENTITY_INVALID,
       'CustomView',
     );
+    const savedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+      name: 'custom-view-widget-saved-filter',
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [{ key: 'objectLabel', values: ['custom-view-label'] }],
+        filterGroups: [],
+      }),
+      scope: 'Stix-Core-Object',
+    });
+    savedFilterId = savedFilter.id;
   });
   afterAll(async () => {
     await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
@@ -226,6 +238,9 @@ describe('CustomView resolvers', () => {
         ENTITY_TYPE_CUSTOM_VIEW,
       ),
     ));
+    if (savedFilterId) {
+      await deleteSavedFilter(testContext, ADMIN_USER, savedFilterId);
+    }
   });
 
   describe('display use cases', () => {
@@ -364,8 +379,39 @@ describe('CustomView resolvers', () => {
       it('should allow editing a custom view', async () => {
         const updatedDescription = 'Updated description';
         const updatedAtBefore = customView1?.updated_at;
+        expect(savedFilterId).toBeDefined();
         const updatedManifest = toB64({
-          widgets: {},
+          widgets: {
+            'widget-with-saved-filter-id': {
+              id: 'widget-with-saved-filter-id',
+              type: 'list',
+              perspective: 'entities',
+              parameters: {
+                title: 'Widget with saved filter id',
+              },
+              dataSelection: [
+                {
+                  label: 'saved-filter-selection',
+                  number: 10,
+                  sort_by: 'created_at',
+                  sort_mode: 'desc',
+                  attribute: 'entity_type',
+                  date_attribute: 'created_at',
+                  perspective: 'entities',
+                  filters_id: savedFilterId,
+                },
+              ],
+              layout: {
+                i: 'widget-with-saved-filter-id',
+                x: 0,
+                y: 0,
+                w: 6,
+                h: 4,
+                moved: false,
+                static: false,
+              },
+            },
+          },
           config: {
             relativeDate: 'months-3',
             startDate: null,
@@ -596,8 +642,29 @@ describe('CustomView resolvers', () => {
           openCTI_version: expect.stringMatching(/[0-9]{1}\.[0-9]{6}\.[0-9]{1}/),
           configuration: {
             name: result.data.customView.name,
-            manifest: result.data.customView.manifest,
           },
+        });
+      });
+
+      it('should resolve widget saved filters id in custom view export', async () => {
+        const exportResult = await queryAsAdminWithSuccess({
+          query: EXPORT_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView1?.id,
+          },
+        });
+
+        const parsedExport = JSON.parse(exportResult.data.customView.toConfigurationExport);
+        const exportedManifest = fromB64(parsedExport.configuration.manifest);
+        const exportedWidget = exportedManifest.widgets['widget-with-saved-filter-id'];
+
+        expect(exportedWidget).toBeDefined();
+        const selection = exportedWidget.dataSelection[0];
+        expect(selection.filters_id).toBeUndefined();
+        expect(selection.filters).toEqual({
+          mode: 'and',
+          filters: [{ key: 'objectLabel', values: ['custom-view-label'] }],
+          filterGroups: [],
         });
       });
 
@@ -688,9 +755,72 @@ describe('CustomView resolvers', () => {
 
     describe('telemetry', () => {
       it('gauges are updated', async () => {
+        // Redis telemetry writes are fire-and-forget, so poll until they land.
+        await awaitUntilCondition(async () => {
+          const created = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
+          const enabled = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
+          return created === 5 && enabled === 1;
+        }, 3000, { message: 'Custom view telemetry gauges were not updated in time' });
+
         expect(await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED)).toBe(5);
         expect(await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED)).toBe(1);
       });
     });
+  });
+});
+
+describe('CustomView and dashboard variables', () => {
+  const VARIABLES = [{ id: '11111111-1111-4111-8111-111111111111', name: 'Type', type: 'entityType', restriction: { mode: 'none' }, defaultValue: 'Malware' }];
+  const withVariables = (manifest: string | undefined) => toB64({ ...fromB64<Record<string, unknown>>(manifest), variables: VARIABLES, presets: [] });
+  const readStoredManifest = async (id: string) => {
+    const result = await queryAsAdminWithSuccess({ query: READ_CUSTOM_VIEW_QUERY, variables: { id } });
+    return fromB64(result.data.customView.manifest);
+  };
+  const createdIds: string[] = [];
+
+  afterAll(async () => {
+    for (let i = 0; i < createdIds.length; i += 1) {
+      await queryAsAdminWithSuccess({ query: DELETE_CUSTOM_VIEW_QUERY, variables: { id: createdIds[i] } });
+    }
+    // Creations count in the telemetry gauges checked by the next run
+    await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
+    await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
+  });
+
+  it('should never store dashboard variables in a custom view manifest', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Custom view with variables', manifest: withVariables(DASHBOARD_MANIFEST), targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    });
+    const customViewId = created.data.customViewAdd.id;
+    createdIds.push(customViewId);
+    expect(await readStoredManifest(customViewId)).not.toHaveProperty('variables');
+
+    await queryAsAdminWithSuccess({ query: EDIT_CUSTOM_VIEW_QUERY, variables: { id: customViewId, input: [{ key: 'manifest', value: [withVariables(DASHBOARD_MANIFEST)] }] } });
+    const edited = await readStoredManifest(customViewId);
+    expect(edited).not.toHaveProperty('variables');
+    expect(edited).not.toHaveProperty('presets');
+
+    await queryAsAdminWithSuccess({
+      query: IMPORT_WIDGET_CUSTOM_VIEW_QUERY,
+      variables: { id: customViewId, input: { file: createUploadFile('./tests/03-integration/10-modules/customView/data/', 'custom-view-widget.json'), manifest: withVariables(DASHBOARD_MANIFEST) } },
+    });
+    const withImportedWidget = await readStoredManifest(customViewId);
+    expect(Object.keys(withImportedWidget.widgets).length).toBeGreaterThan(Object.keys(fromB64(DASHBOARD_MANIFEST).widgets).length);
+    expect(withImportedWidget).not.toHaveProperty('variables');
+
+    const duplicated = await queryAsAdminWithSuccess({
+      query: DUPLICATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Duplicated custom view with variables', manifest: withVariables(DASHBOARD_MANIFEST), targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    });
+    createdIds.push(duplicated.data.customViewDuplicate.id);
+    expect(await readStoredManifest(duplicated.data.customViewDuplicate.id)).not.toHaveProperty('variables');
+
+    const imported = await queryAsAdminWithSuccess({
+      query: IMPORT_CUSTOM_VIEW_QUERY,
+      variables: { targetEntityType: ENTITY_TYPE_INTRUSION_SET, file: createUploadFile('./tests/data/dashboard-variables/', 'dashboard-import-valid-variables.json') },
+    });
+    createdIds.push(imported.data.customViewConfigurationImport.id);
+    expect(await readStoredManifest(imported.data.customViewConfigurationImport.id)).not.toHaveProperty('variables');
   });
 });

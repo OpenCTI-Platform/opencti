@@ -14,10 +14,12 @@ import {
   ingestionCsvResetState,
   testCsvIngestionMapping,
 } from './ingestion-csv-domain';
-import { removeAuthenticationCredentials } from './ingestion-common';
+import { findIngestionLogsForFeed, removeAuthenticationCredentials } from './ingestion-common';
 import { decryptIngestionCredential } from './ingestion-common';
 import { userAlreadyExists } from '../user/user-domain';
 import { loadCreator } from '../../database/members';
+import type { BasicStoreEntityIngestionCsv } from './ingestion-types';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-resolvers';
 
 const ingestionCsvResolvers: Resolvers = {
   Query: {
@@ -26,8 +28,13 @@ const ingestionCsvResolvers: Resolvers = {
     csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
     defaultIngestionGroupCount: (_, __, context) => defaultIngestionGroupsCount(context),
     userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name),
+    ingestionCsvLogs: async (_: unknown, { id }: { id: string }, context) => {
+      await findById(context, context.user, id);
+      return findIngestionLogsForFeed(id);
+    },
   },
   IngestionCsv: {
+    ...ingestionHealthFieldResolvers,
     authentication_value: async (ingestionCsv) => {
       const decrypted = await decryptIngestionCredential(ingestionCsv.authentication_value);
       return removeAuthenticationCredentials(ingestionCsv.authentication_type, decrypted);
@@ -36,6 +43,7 @@ const ingestionCsvResolvers: Resolvers = {
     csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
     toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
     duplicateCsvMapper: (ingestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),
+    ingestionLogs: (ingestionCsv: BasicStoreEntityIngestionCsv) => findIngestionLogsForFeed(ingestionCsv.internal_id),
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {

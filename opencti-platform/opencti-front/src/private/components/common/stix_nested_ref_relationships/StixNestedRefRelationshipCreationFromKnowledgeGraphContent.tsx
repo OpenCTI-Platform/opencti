@@ -1,4 +1,3 @@
-import { IconButton, Tooltip } from '@mui/material';
 import { ReadMoreOutlined } from '@mui/icons-material';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { stixNestedRefRelationshipCreationResolveQuery } from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
@@ -7,6 +6,7 @@ import {
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipCreationResolveQuery.graphql';
 import React, { FunctionComponent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
+import GraphToolbarItem from '../../../../components/graph/components/GraphToolbarItem';
 
 interface StixNestedRefRelationshipCreationFromKnowledgeGraphContentProps {
   queryRef: PreloadedQuery<StixNestedRefRelationshipCreationResolveQuery>;
@@ -35,15 +35,13 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraphContent: FunctionCompon
   }
 
   return (
-    <Tooltip title={t_i18n('Create a nested relationship')}>
-      <IconButton
-        color="primary"
-        onClick={() => handleOpenCreateNested()}
-        disabled={!nestedRelationExist}
-      >
-        <ReadMoreOutlined />
-      </IconButton>
-    </Tooltip>
+    <GraphToolbarItem
+      title={t_i18n('Create a nested relationship')}
+      color="primary"
+      Icon={<ReadMoreOutlined />}
+      onClick={() => handleOpenCreateNested()}
+      disabledReason={nestedRelationExist ? undefined : t_i18n('No nested relationship links these two elements')}
+    />
   );
 };
 

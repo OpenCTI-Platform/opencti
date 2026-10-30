@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@common/button/Button';
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import IconButton from '@common/button/IconButton';
@@ -57,7 +57,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
     { label: t_i18n('Entity types'), link: customizationLink },
     { label: translateEntityType(customView.targetEntityType), link: subTypeLink },
     { label: t_i18n('Custom Views') },
-    { label: customView.name },
+    { label: customView.name, current: true },
   ];
   const handleToggleEnabled = () => {
     commitCustomViewMutation({
@@ -103,6 +103,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
               size="default"
               disabled={mutating}
               onClick={handleToggleEnabled}
+              aria-label={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}
             >
               {customView.enabled ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>

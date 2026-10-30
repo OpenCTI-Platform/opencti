@@ -15,7 +15,7 @@ export default class SettingsCustomizationPage {
   }
 
   async navigateRightMenu(menu: string) {
-    await this.page.getByRole('menuitem', { name: menu, exact: true }).click();
+    await this.page.getByRole('link', { name: menu, exact: true }).click();
   }
 
   getCustomizationPages(name: string) {

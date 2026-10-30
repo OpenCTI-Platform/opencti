@@ -3,54 +3,36 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
 import { NotifierLine_node$data, NotifierLine_node$key } from './__generated__/NotifierLine_node.graphql';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import NotifierPopover from './NotifierPopover';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 5,
+const BodyItem = styled('div')({
+  height: 25,
+  fontSize: 13,
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 5,
 
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 0,
-    width: '100%',
-  },
-  bodyItemText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    minWidth: 0,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+  display: 'flex',
+  alignItems: 'center',
+  minWidth: 0,
+  width: '100%',
+});
+
+const BodyItemText = styled('span')({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  minWidth: 0,
+});
 
 interface NotifierLineProps {
   node: NotifierLine_node$key | NotifierLine_node$data;
@@ -77,35 +59,34 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
   node,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const data = useFragment(NotifierLineFragment, !isNotifierData(node) ? node : null) ?? node as NotifierLine_node$data;
 
   return (
     <>
-      <ListItem classes={{ root: classes.item }} divider>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItem sx={{ paddingLeft: '10px', height: '50px' }} divider>
+        <ListItemIcon sx={{ color: 'primary.main' }}>
           <ItemIcon type="Notifier" />
         </ListItemIcon>
         <ListItemText
           primary={(
             <div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
+              <BodyItem style={{ width: dataColumns.connector.width }}>
                 <Tag label={data.notifier_connector.name} />
-              </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
-                <span className={classes.bodyItemText}>
+              </BodyItem>
+              <BodyItem style={{ width: dataColumns.name.width }}>
+                <BodyItemText>
                   {data.name}
-                </span>
-              </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
-                <span className={classes.bodyItemText}>
+                </BodyItemText>
+              </BodyItem>
+              <BodyItem style={{ width: dataColumns.description.width, paddingRight: 40 }}>
+                <BodyItemText>
                   {data.description}
-                </span>
-              </div>
+                </BodyItemText>
+              </BodyItem>
             </div>
           )}
         />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
+        <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
           <NotifierPopover data={data} paginationOptions={paginationOptions} />
         </ListItemIcon>
       </ListItem>
@@ -114,39 +95,38 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
 };
 
 export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
-  const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+    <ListItem sx={{ paddingLeft: '10px', height: '50px' }} divider={true}>
+      <ListItemIcon sx={{ color: 'grey.700' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
+            <BodyItem style={{ width: dataColumns.connector.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+            </BodyItem>
+            <BodyItem style={{ width: dataColumns.name.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
+            </BodyItem>
+            <BodyItem style={{ width: dataColumns.description.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

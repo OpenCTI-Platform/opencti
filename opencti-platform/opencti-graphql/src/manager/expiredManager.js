@@ -9,7 +9,7 @@ import conf, { ACCOUNT_STATUS_EXPIRED, booleanConf, logApp } from '../config/con
 import { executionContext, EXPIRATION_MANAGER_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { userEditField } from '../domain/user';
+import { userEditField } from '../modules/user/user-domain';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 // Expired manager responsible to monitor expired elements

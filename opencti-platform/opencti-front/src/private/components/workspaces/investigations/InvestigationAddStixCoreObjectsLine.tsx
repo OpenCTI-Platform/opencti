@@ -4,43 +4,22 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { CircleOutlined } from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
 import { InvestigationAddStixCoreObjectsLine_node$data } from '@components/workspaces/investigations/__generated__/InvestigationAddStixCoreObjectsLine_node.graphql';
 import { ListItemButton } from '@mui/material';
+import { Checkbox } from '@filigran/design-system';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 interface InvestigationAddStixCoreObjectsLineComponentProps {
   dataColumns: DataColumns;
@@ -62,49 +41,37 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
   onToggleEntity,
   addedElements,
 }: InvestigationAddStixCoreObjectsLineComponentProps) => {
-  const classes = useStyles();
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       onClick={(event) => onToggleEntity(node, event)}
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
-        {node.id in (addedElements || {}) ? (
-          <CheckCircleOutlined
-            classes={{ root: classes.icon }}
-            color="primary"
-          />
-        ) : (
-          <CircleOutlined classes={{ root: classes.icon }} />
-        )}
+        <Checkbox checked={node.id in (addedElements || {})} />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <ItemEntityType entityType={node.entity_type} />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(node)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               {node.createdBy?.name ?? EMPTY_VALUE}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -112,16 +79,15 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
                 labels={node.objectLabel}
                 onClick={onLabelClick}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
                 markingDefinitions={(node.objectMarking ?? [])}
                 limit={1}
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
@@ -298,6 +264,9 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
         ... on SecurityCoverage {
           name
         }
+        ... on SecurityCoverageResult {
+          name
+        }
         ... on StixFile {
           observableName: name
         }
@@ -336,27 +305,25 @@ interface InvestigationAddStixCoreObjecstLineDummyProps {
 export const InvestigationAddStixCoreObjecstLineDummy = (
   { dataColumns }: InvestigationAddStixCoreObjecstLineDummyProps,
 ) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       style={{ minWidth: 40 }}
     >
       <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
+        sx={{ color: 'grey.700' }}
         style={{ minWidth: 40 }}
       >
         <CircleOutlined />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <Skeleton
@@ -365,9 +332,8 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.value.width }}
             >
               <Skeleton
@@ -376,9 +342,8 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               <Skeleton
@@ -387,9 +352,8 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
@@ -398,9 +362,8 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <Skeleton
@@ -409,7 +372,7 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
                 width={100}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

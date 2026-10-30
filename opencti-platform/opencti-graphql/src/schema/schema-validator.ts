@@ -20,6 +20,9 @@ import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, KNOWLEDGE_KNUPD
 
 const ajv = new Ajv();
 
+// Observed data counters are consolidated by accumulation or max on upsert, a negative value would break their semantics
+const NON_NEGATIVE_COUNTER_ATTRIBUTES = ['number_seen', 'max_distinct_count'];
+
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
 export const validateAndFormatSchemaAttribute = (
   attributeName: string,
@@ -80,8 +83,21 @@ export const validateAndFormatSchemaAttribute = (
   if (attributeDefinition.type === 'numeric') {
     // Test numeric value (Accept string)
     editInput.value.forEach((value) => {
-      if (value && Number.isNaN(Number(value))) {
+      if (value === null || value === undefined || value === '') {
+        return;
+      }
+
+      const parsedValue = Number(value);
+      if (Number.isNaN(parsedValue)) {
         throw ValidationError('Attribute must be a numeric/string', attributeName, extendedErrors({ input: editInput }));
+      }
+
+      if (attributeName === 'x_opencti_score' && (!Number.isInteger(parsedValue) || parsedValue < 0 || parsedValue > 100)) {
+        throw ValidationError('The score should be an integer between 0 and 100', attributeName, extendedErrors({ input: editInput }));
+      }
+
+      if (NON_NEGATIVE_COUNTER_ATTRIBUTES.includes(attributeName) && (!Number.isInteger(parsedValue) || parsedValue < 0)) {
+        throw ValidationError('The counter should be a non-negative integer', attributeName, extendedErrors({ input: editInput }));
       }
     });
   }

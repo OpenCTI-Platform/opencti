@@ -22,6 +22,31 @@ When reviewing code, focus on:
 - Use clear, descriptive naming conventions
 - Ensure proper error handling throughout
 
+## Log Severity
+Flag any logging call whose level does not match what actually happened. The rule
+is the pager test: `logApp.error` is for a failure **someone can act on** — work
+lost, or a platform function down. If the code skips one item and continues, takes
+a fallback, schedules a retry, or reports a remote/user-configured failure, it is
+`logApp.warn`. A message containing "skipping", "retrying" or "unsupported" at
+`error` level is almost always wrong. Full rules and the recurring patterns:
+[Logging Levels](backend/patterns/logging-levels.md).
+
+Comment with the level you'd expect and the reason, not just the rule — for example:
+"This skips one element and the loop continues, so `warn` fits better than `error`;
+consider an aggregate count after the loop." Only raise it when the current level is
+clearly wrong; a defensible judgement call is not worth a comment.
+
+Also flag, on any logging line: intelligence content in the metadata (STIX bundles,
+observable values, indicator patterns, resolved connector configs), and an exception
+passed as `{ error: e.message }` rather than `{ cause: e }`, which discards the stack.
+
+## Feature Flags
+When a change introduces or uses a feature flag (`*_FEATURE_FLAG`, `@ff`,
+`enforceEnableFeatureFlag`, `isFeatureEnabled`), check that every new attribute definition
+and every new nested `mappings` entry of the feature sets `featureFlag: <FLAG_CONSTANT>`.
+A missing one silently adds the field to the ElasticSearch mapping with the flag off.
+See [Feature Flags](backend/patterns/feature-flags.md).
+
 ## Review Style
 - Be specific and actionable in feedback
 - Explain the "why" behind recommendations

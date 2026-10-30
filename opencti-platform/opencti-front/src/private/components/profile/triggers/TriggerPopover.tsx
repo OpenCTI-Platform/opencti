@@ -72,6 +72,7 @@ const TriggerPopover = ({
           style={{ marginTop: 3 }}
           disabled={disabled}
           color="primary"
+          aria-label={t_i18n('Open the menu')}
         >
           <MoreVert />
         </IconButton>

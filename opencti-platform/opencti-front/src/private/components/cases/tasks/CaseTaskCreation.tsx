@@ -1,5 +1,7 @@
 import Button from '@common/button/Button';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -114,6 +116,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   };
   return (
     <Formik<FormikCaseTaskAddInput>
+      entityType={TASK_TYPE}
       initialValues={{
         name: '',
         description: '',
@@ -131,9 +134,9 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
       {({ values, isSubmitting, handleReset, submitForm, setFieldValue }) => (
         <Form>
           <Field
-            style={{ marginBottom: 20 }}
+            className="mb-5"
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -144,7 +147,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             name="due_date"
             textFieldProps={{
               label: t_i18n('Due Date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
             }}
           />
@@ -182,6 +185,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             registerMarkdownImagesController={registerMarkdownImagesController}
             uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               onClick={handleReset}

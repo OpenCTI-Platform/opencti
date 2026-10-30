@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 import { Field } from 'formik';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -35,29 +35,23 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
   }
   return (
     <Field
-      component={AutocompleteField}
+      component={ComboboxField}
       required
       name={name}
       multiple={multiple}
       disabled={disabled}
       style={style}
-      textfieldprops={{
-        variant: 'standard',
-        label: t_i18n(label) ?? '',
-      }}
+      label={t_i18n(label) ?? ''}
       noOptionsText={t_i18n('No available options')}
       options={myOrganizationList}
       onChange={onChange}
-      renderOption={(
-        renderProps: React.HTMLAttributes<HTMLLIElement>,
-        option: { value: string; label: string },
-      ) => (
-        <li {...renderProps}>
+      renderOption={(option: { value: string; label: string }) => (
+        <>
           <div style={{ paddingTop: 4, display: 'inline-block' }}>
             <ItemIcon type="Organization" />
           </div>
           <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>{option.label ?? ''}</div>
-        </li>
+        </>
       )}
     />
   );

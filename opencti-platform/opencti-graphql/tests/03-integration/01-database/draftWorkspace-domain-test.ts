@@ -135,8 +135,8 @@ describe('Drafts workspace domain testing', () => {
   });
 
   it('should validateDraftWorkspace as editor', async () => {
-    // Mock pushToWorkerForConnector => we don't want the bundle to be ingested for counters
-    vi.spyOn(rabbitMock, 'pushToWorkerForConnector').mockResolvedValue(true);
+    // Mock pushBundleToWorker => we don't want the bundle to be ingested for counters
+    vi.spyOn(rabbitMock, 'pushBundleToWorker').mockResolvedValue(undefined);
     const validateDraftWorkId = await validateDraftWorkspace(testContext, editorAuthUser, testDraftId);
     expect(validateDraftWorkId).toBeDefined();
   });

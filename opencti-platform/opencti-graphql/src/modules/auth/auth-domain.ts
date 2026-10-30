@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { findById, getUserByEmail, userEditField } from '../../domain/user';
+import { findById, getUserByEmail, userEditField } from '../user/user-domain';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
@@ -19,6 +19,7 @@ import { addForgotPasswordCount } from '../../manager/telemetryManager';
 import { sanitizeSettings } from '../../utils/templateContextSanitizer';
 import { safeRender } from '../../utils/safeEjs.client';
 import { totp } from '../../utils/totp';
+import { normalizeEmail } from '../../utils/email';
 
 export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
@@ -51,10 +52,10 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     return transactionId;
   }
   const { user_email, name, otp_activated: mfa_activated, id } = user;
-  const email = user_email.toLowerCase();
+  const email = normalizeEmail(user_email);
 
   // Don't generate new redis key under 30-second delay
-  const previousKey = await redisGetForgotPasswordOtpPointer(input.email);
+  const previousKey = await redisGetForgotPasswordOtpPointer(email);
   const isTooRecent = previousKey.ttl > (OTP_TTL - 30);
   if (isTooRecent) return transactionId;
 
@@ -108,8 +109,8 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
 };
 
 export const verifyOtp = async (input: VerifyOtpInput) => {
-  const { hashedOtp, email, mfa_activated } = await redisGetForgotPasswordOtp(input.transactionId);
-  if (!hashedOtp) {
+  const transaction = await redisGetForgotPasswordOtp(input.transactionId);
+  if (!transaction?.hashedOtp) {
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
@@ -120,6 +121,7 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
     });
     throw UnsupportedError('Password reset code expired or not found. Please request a new one.');
   }
+  const { hashedOtp, email, mfa_activated } = transaction;
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
   if (!isMatch) {
     await publishUserAction({
@@ -144,7 +146,11 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
 };
 
 export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => {
-  const { hashedOtp, email, mfa_activated, ttl, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+  const transaction = await redisGetForgotPasswordOtp(input.transactionId);
+  if (!transaction) {
+    throw AuthenticationFailure();
+  }
+  const { hashedOtp, email, mfa_activated, ttl, userId } = transaction;
   const { otp_secret: mfa_secret } = await findById(context, SYSTEM_USER, userId);
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
@@ -160,20 +166,21 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const { hashedOtp, email, mfa_activated, mfa_validated, userId } = await redisGetForgotPasswordOtp(input.transactionId);
-  const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
-  const isStateMfaValid = !mfa_activated || (mfa_activated && mfa_validated);
-  if (!isMatch || !isStateMfaValid) {
+  const transaction = await redisGetForgotPasswordOtp(input.transactionId);
+  const isMatch = !!transaction && bcrypt.compareSync(input.otp, transaction.hashedOtp);
+  const isStateMfaValid = !transaction?.mfa_activated || transaction.mfa_validated;
+  if (!transaction || !isMatch || !isStateMfaValid) {
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `Password reset code is invalid for ${email}`,
+      message: `Password reset code is invalid for ${transaction?.email ?? input.transactionId}`,
     });
     throw UnsupportedError('Invalid password reset code. Please check the code and try again.');
   }
+  const { email, userId } = transaction;
   try {
     const authUser = await findById(context, SYSTEM_USER, userId);
     await userEditField(context, SYSTEM_USER, authUser.id, [

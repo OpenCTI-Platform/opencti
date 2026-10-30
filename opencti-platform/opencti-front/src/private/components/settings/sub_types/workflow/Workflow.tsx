@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 import 'reactflow/dist/style.css';
 import WorkflowEditionDrawer from './WorkflowEditionDrawer';
-import useWorkflowLayout, { LayoutOptions, Direction } from './hooks/useWorkflowLayout';
+import useWorkflowLayout, { LayoutOptions } from './hooks/useWorkflowLayout';
 import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Box, Typography } from '@mui/material';
-import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
+import { getInitialState, NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
 import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
@@ -20,6 +20,10 @@ import { WorkflowRestorePublishedMutation } from './__generated__/WorkflowRestor
 import { useWorkflowInitialElements, convertEdgesToObject } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
+import { getHoverHighlight, HoverHighlightContext } from './hoverHighlight';
+import useDeleteConnection from './hooks/useDeleteConnection';
+import useDeleteKey from './hooks/useDeleteKey';
+import { WorkflowEdgeActionsContext, type EdgeRef } from './EdgeTypes/WorkflowEdgeActionsContext';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import PublishButton from './PublishButton';
@@ -137,10 +141,12 @@ const Workflow = ({
   queryRef,
   depsQueryRef,
   onRefetch,
+  entityType,
 }: {
   queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
   depsQueryRef: PreloadedQuery<SubTypeWorkflowDependenciesQuery>;
   onRefetch: () => void;
+  entityType: string;
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -163,10 +169,16 @@ const Workflow = ({
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
 
-  const layoutOptions: LayoutOptions = {
-    direction: 'TB' as Direction,
-    spacing: [50, 50],
-  };
+  // Store previous schema to avoid unnecessary mutations. It is the schema last sent, or loaded by
+  // a mount, refetch, reset or restore, and it holds the saved initial state: the autosave
+  // mutation does not return initialState, so workflowDefinition.initialState keeps the value
+  // fetched with the page.
+  const previousSchemaRef = useRef<string | null>(null);
+  const savedInitialState = (): string | null | undefined => (previousSchemaRef.current
+    ? JSON.parse(previousSchemaRef.current).initialState
+    : workflowDefinition?.initialState);
+  // The initial state the autosave is about to send, so the layout draws it on top.
+  const layoutOptions: LayoutOptions = { spacing: [50, 50], initialStatusId: getInitialState(nodes, edges, savedInitialState()) };
 
   // 3. Sync layout and recenter graph
   useWorkflowLayout(layoutOptions);
@@ -195,9 +207,6 @@ const Workflow = ({
     hasPublishedVersion: workflowDefinition?.hasPublishedVersion ?? false,
     validationErrors: workflowDefinition?.errors ? [...workflowDefinition.errors as WorkflowValidationError[]] : [],
   });
-
-  // Store previous schema to avoid unnecessary mutations
-  const previousSchemaRef = useRef<string | null>(null);
 
   // 4. When Relay delivers fresh data after a parent refetch (e.g., after restore),
   //    reset the React Flow state to reflect the new workflow definition.
@@ -231,7 +240,7 @@ const Workflow = ({
   }, []);
 
   useEffect(() => {
-    const finalSchema = transformToWorkflowDefinition(nodes, edges, workflowDefinition);
+    const finalSchema = transformToWorkflowDefinition(nodes, edges, { ...workflowDefinition, initialState: savedInitialState() });
     const schemaString = JSON.stringify(finalSchema);
 
     // Only save if schema has actually changed
@@ -242,7 +251,7 @@ const Workflow = ({
     previousSchemaRef.current = schemaString;
 
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: schemaString },
+      variables: { entityType, definition: schemaString },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -262,7 +271,7 @@ const Workflow = ({
         }
       },
     });
-  }, [nodes, edges]);
+  }, [nodes, edges, entityType]);
 
   // Handle reset action — clears the draft to an empty schema without touching the published version
   const handleReset = () => {
@@ -273,7 +282,7 @@ const Workflow = ({
     const emptySchemaString = JSON.stringify(transformToWorkflowDefinition([], [], workflowDefinition));
     previousSchemaRef.current = emptySchemaString;
     saveWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace', definition: emptySchemaString },
+      variables: { entityType, definition: emptySchemaString },
       onCompleted: (response) => {
         if (response.workflowDefinitionSet) {
           const { errors } = response.workflowDefinitionSet;
@@ -305,7 +314,7 @@ const Workflow = ({
       return;
     }
     commitPublish({
-      variables: { entityType: 'DraftWorkspace' },
+      variables: { entityType },
       onCompleted: () => {
         MESSAGING$.notifySuccess(t_i18n('Workflow successfully published'));
         setWorkflowDefinitionStatus({
@@ -333,7 +342,7 @@ const Workflow = ({
   // Handle restore action — reloads the published version into the draft
   const handleRestore = () => {
     restoreWorkflowDefinition({
-      variables: { entityType: 'DraftWorkspace' },
+      variables: { entityType },
       onCompleted: () => {
         // Directly reset local state to `initialNodes`/`initialEdges`.
         // The Relay store already holds the published states (only full queries update
@@ -371,107 +380,132 @@ const Workflow = ({
     [getNode],
   );
 
+  // Opens the drawer that inserts a status (and a transition) in the middle of an edge.
+  const openInsertDrawer = useCallback((edge: EdgeRef) => {
+    setSelectedElement({
+      id: edge.id,
+      type: WorkflowNodeType.placeholder,
+      data: { name: null, conditions: {} },
+      position: { x: 0, y: 0 },
+      source: edge.source,
+      target: edge.target,
+    });
+    setOpen(true);
+  }, []);
   const onEdgeClick: EdgeMouseHandler = useCallback(
     (_event, edge) => {
-      const newState = {
-        id: edge.id,
-        type: WorkflowNodeType.placeholder,
-        data: { name: null, conditions: {} },
-        position: { x: 0, y: 0 },
-        source: edge.source,
-        target: edge.target,
-      };
-      setSelectedElement(newState);
-      setOpen(true);
+      // Transition edges open their own menu (insert a status, delete the connection).
+      if (edge.type === WorkflowNodeType.transition) return;
+      openInsertDrawer(edge);
     },
-    [],
+    [openInsertDrawer],
   );
+  const deleteConnection = useDeleteConnection();
+  const edgeActions = useMemo(() => ({ insertStatus: openInsertDrawer, deleteConnection }), [openInsertDrawer, deleteConnection]);
 
   const onConnect = useStatusConnection();
+  useDeleteKey();
 
+  // Hover highlight: the hovered node's neighbourhood stays lit and everything else dims. Nodes
+  // and edges read it from HoverHighlightContext; the nodes/edges given to ReactFlow stay
+  // untouched, so nothing about a hover reaches state, the drawer or the layout.
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const onNodeMouseEnter: NodeMouseHandler = useCallback((_, node) => setHoveredId(node.id), []);
+  const onNodeMouseLeave: NodeMouseHandler = useCallback(() => setHoveredId(null), []);
+  const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onConnect={onConnect}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onNodeClick={onNodeClick}
-        onEdgeClick={onEdgeClick}
-        fitView
-        defaultViewport={defaultViewport}
-        minZoom={0.2}
-        fitViewOptions={fitViewOptions}
-        nodesDraggable={false}
-        zoomOnDoubleClick={false}
-        proOptions={proOptions}
-      >
-        {nodes.length ? (
-          <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <PublishButton
-              validationStatus={workflowDefinitionStatus}
-              onPublish={handlePublish}
-              onReset={handleReset}
-              onRestore={handleRestore}
-              hasPublishedVersion={workflowDefinitionStatus.hasPublishedVersion}
-            />
-            <Button
-              onClick={() => {
-                setSelectedElement({
-                  id: NEW_STATUS_NAME,
-                  type: WorkflowNodeType.placeholder,
-                  data: {},
-                  position: { x: 0, y: 0 },
-                });
-                setOpen(true);
-              }}
-            >
-              {t_i18n('Add Status')}
-            </Button>
-          </Panel>
-        ) : (
-          <Panel
-            position="top-center"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 12,
-              top: '40%',
-            }}
+      <WorkflowEdgeActionsContext.Provider value={edgeActions}>
+        <HoverHighlightContext.Provider value={highlight}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onConnect={onConnect}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
+            onNodeMouseEnter={onNodeMouseEnter}
+            onNodeMouseLeave={onNodeMouseLeave}
+            fitView
+            defaultViewport={defaultViewport}
+            minZoom={0.2}
+            fitViewOptions={fitViewOptions}
+            nodesDraggable={false}
+            // React Flow's delete key removes elements raw, which can leave a transition without
+            // sources. useDeleteKey handles Backspace / Delete instead.
+            deleteKeyCode={null}
+            zoomOnDoubleClick={false}
+            proOptions={proOptions}
           >
-            <Typography variant="subtitle2" color={theme.palette.text.light}>
-              {t_i18n('Start to define your workflow by adding a Status.')}
-            </Typography>
-            <Button
-              onClick={() => {
-                setSelectedElement({
-                  id: NEW_STATUS_NAME,
-                  type: WorkflowNodeType.placeholder,
-                  data: {},
-                  position: { x: 0, y: 0 },
-                });
-                setOpen(true);
-              }}
-            >
-              {t_i18n('Add Status')}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setEmptyStateRestoreConfirmOpen(true)}
-              disabled={!workflowDefinitionStatus.hasPublishedVersion || !workflowDefinitionStatus.hasUnpublishedChanges}
-            >
-              {t_i18n('Restore published version')}
-            </Button>
-          </Panel>
-        )}
-      </ReactFlow>
+            {nodes.length ? (
+              <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <PublishButton
+                  validationStatus={workflowDefinitionStatus}
+                  onPublish={handlePublish}
+                  onReset={handleReset}
+                  onRestore={handleRestore}
+                  hasPublishedVersion={workflowDefinitionStatus.hasPublishedVersion}
+                />
+                <Button
+                  onClick={() => {
+                    setSelectedElement({
+                      id: NEW_STATUS_NAME,
+                      type: WorkflowNodeType.placeholder,
+                      data: {},
+                      position: { x: 0, y: 0 },
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  {t_i18n('Add Status')}
+                </Button>
+              </Panel>
+            ) : (
+              <Panel
+                position="top-center"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 12,
+                  top: '40%',
+                }}
+              >
+                <Typography variant="subtitle2" color={theme.palette.text.light}>
+                  {t_i18n('Start to define your workflow by adding a Status.')}
+                </Typography>
+                <Button
+                  onClick={() => {
+                    setSelectedElement({
+                      id: NEW_STATUS_NAME,
+                      type: WorkflowNodeType.placeholder,
+                      data: {},
+                      position: { x: 0, y: 0 },
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  {t_i18n('Add Status')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setEmptyStateRestoreConfirmOpen(true)}
+                  disabled={!workflowDefinitionStatus.hasPublishedVersion || !workflowDefinitionStatus.hasUnpublishedChanges}
+                >
+                  {t_i18n('Restore published version')}
+                </Button>
+              </Panel>
+            )}
+          </ReactFlow>
+        </HoverHighlightContext.Provider>
+      </WorkflowEdgeActionsContext.Provider>
       <WorkflowEditionDrawer
         open={open}
         selectedElement={selectedElement}
+        entityType={entityType}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);

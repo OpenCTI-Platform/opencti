@@ -6,11 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Cache from '../../../../src/database/cache';
 import * as Middleware from '../../../../src/database/middleware';
-import {
-  getSmtpConfiguration,
-  smtpConfigurationEdit,
-  smtpConfigurationDelete,
-} from '../../../../src/modules/smtpConfiguration/smtpConfiguration-domain';
+import { getSmtpConfiguration, smtpConfigurationEdit, smtpConfigurationDelete } from '../../../../src/modules/smtpConfiguration/smtpConfiguration-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const MOCK_JSON_CONFIG = {

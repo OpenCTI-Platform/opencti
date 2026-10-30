@@ -213,6 +213,7 @@ const DataTableComponent = ({
 
   const tableWidthState = useState(0);
   const [tableWidth, setTableWidth] = tableWidthState;
+  const [visibleWidth, setVisibleWidth] = useState(0);
   const tableRef = useRef<HTMLDivElement | null>(null);
 
   const endActionsWidth = actionsColumnWidth ?? SELECT_COLUMN_SIZE;
@@ -238,6 +239,7 @@ const DataTableComponent = ({
         if ((el.clientWidth - offset) !== tableWidth) {
           setTableWidth(el.clientWidth - offset);
         }
+        setVisibleWidth(el.clientWidth);
       };
       resize(tableRef.current);
       observer = callbackResizeObserver(tableRef.current, resize);
@@ -284,6 +286,7 @@ const DataTableComponent = ({
         page,
         setPage,
         tableWidthState,
+        visibleWidth,
         startsWithAction,
         startsWithIcon,
         startColumnWidth,
@@ -295,6 +298,7 @@ const DataTableComponent = ({
     >
       {filtersComponent && <div>{filtersComponent}</div>}
       <div
+        role="grid"
         className="datatable-container"
         style={{ width: '100%', overflow: 'auto hidden' }}
         ref={tableRef}

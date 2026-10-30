@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import useBuildSavedFiltersOptions from './useBuildSavedFiltersOptions';
+import { SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 
 vi.mock('src/utils/hooks/useAuth', () => ({
   default: () => ({
@@ -9,12 +10,18 @@ vi.mock('src/utils/hooks/useAuth', () => ({
 }));
 
 describe('useBuildSavedFiltersOptions', () => {
-  const makeItem = (overrides = {}) => ({
+  const makeItem = (overrides = {}): SavedFiltersSelectionData => ({
     id: 'filter-1',
     name: 'My Filter',
     creator_id: 'user-1',
     currentUserAccessRight: 'admin',
     authorizedMembers: [],
+    scope: 'reports',
+    filters: JSON.stringify({
+      mode: 'and',
+      filters: [{ key: 'report_types', values: [], operator: 'not_nil' }],
+      filtersGroups: [],
+    }),
     ...overrides,
   });
 
@@ -107,5 +114,69 @@ describe('useBuildSavedFiltersOptions', () => {
     renderHook(() => useBuildSavedFiltersOptions(items));
 
     expect(items).toEqual(originalOrder);
+  });
+
+  describe('disabled construction', () => {
+    it('never disables an option when no scope is provided', () => {
+      const item = makeItem({ scope: 'relationships' });
+      const { result } = renderHook(() => useBuildSavedFiltersOptions([item]));
+
+      expect(result.current[0].disabled).toBe(false);
+    });
+
+    describe('with a "stix-core-relationship" scope', () => {
+      it('keeps a relationship filter enabled', () => {
+        const item = makeItem({ scope: 'relationships' });
+        const { result } = renderHook(() => useBuildSavedFiltersOptions([item], 'stix-core-relationship'));
+
+        expect(result.current[0].disabled).toBe(false);
+      });
+
+      it('disables a non-relationship filter', () => {
+        const item = makeItem({ scope: 'reports' });
+        const { result } = renderHook(() => useBuildSavedFiltersOptions([item], 'stix-core-relationship'));
+
+        expect(result.current[0].disabled).toBe(true);
+      });
+    });
+
+    describe('with a "History" scope', () => {
+      it('keeps an audit filter enabled', () => {
+        const item = makeItem({ scope: 'audit' });
+        const { result } = renderHook(() => useBuildSavedFiltersOptions([item], 'History'));
+
+        expect(result.current[0].disabled).toBe(false);
+      });
+
+      it('disables a non-audit filter', () => {
+        const item = makeItem({ scope: 'reports' });
+        const { result } = renderHook(() => useBuildSavedFiltersOptions([item], 'History'));
+
+        expect(result.current[0].disabled).toBe(true);
+      });
+    });
+
+    describe('with a "Stix-Core-Object" scope', () => {
+      it('keeps an entities filter enabled', () => {
+        const item = makeItem({ scope: 'reports' });
+        const { result } = renderHook(() => useBuildSavedFiltersOptions([item], 'Stix-Core-Object'));
+
+        expect(result.current[0].disabled).toBe(false);
+      });
+
+      it('disables an audit filter', () => {
+        const item = makeItem({ scope: 'audits' });
+        const { result } = renderHook(() => useBuildSavedFiltersOptions([item], 'Stix-Core-Object'));
+
+        expect(result.current[0].disabled).toBe(true);
+      });
+
+      it('disables a relationship filter', () => {
+        const item = makeItem({ scope: 'relationships' });
+        const { result } = renderHook(() => useBuildSavedFiltersOptions([item], 'Stix-Core-Object'));
+
+        expect(result.current[0].disabled).toBe(true);
+      });
+    });
   });
 });

@@ -3,11 +3,13 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
+import ItemScore from '../../../../components/ItemScore';
 import ThreatActorGroupLocation from './ThreatActorGroupLocation';
 import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
@@ -25,7 +27,7 @@ class ThreatActorGroupDetailsComponent extends Component {
     return (
       <Card title={t('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t('Description')}
             </Label>
@@ -34,19 +36,25 @@ class ThreatActorGroupDetailsComponent extends Component {
               limit={hasImages ? 400 : 600}
             />
           </Grid>
-          <Grid item xs={hasImages ? 7 : 6}>
+          <Grid size={hasImages ? 7 : 6}>
             <Grid container={true} spacing={2}>
               {hasImages && (
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <ImageCarousel data={threatActorGroup} />
                 </Grid>
               )}
-              <Grid item xs={hasImages ? 8 : 12}>
+              <Grid size={hasImages ? 8 : 12}>
                 <Label>
                   {t('Threat actor types')}
                 </Label>
                 <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
-                  <Stack direction="row" flexWrap="wrap" gap={1}>
+                  <Stack
+                    direction="row"
+                    sx={{
+                      flexWrap: 'wrap',
+                      gap: 1,
+                    }}
+                  >
                     {threatActorGroup.threat_actor_types
                       && threatActorGroup.threat_actor_types.map(
                         (threatActorGroupType) => (
@@ -61,7 +69,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={hasImages ? 5 : 6}>
+          <Grid size={hasImages ? 5 : 6}>
             <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
             <Label
               sx={{ marginTop: 2 }}
@@ -78,7 +86,7 @@ class ThreatActorGroupDetailsComponent extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={2}>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -91,7 +99,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -104,7 +112,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -117,7 +125,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>
               {t('Roles')}
             </Label>
@@ -125,7 +133,13 @@ class ThreatActorGroupDetailsComponent extends Component {
               list={threatActorGroup.roles}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
+            <Label>
+              {t('Score')}
+            </Label>
+            <ItemScore score={threatActorGroup.x_opencti_score} />
+          </Grid>
+          <Grid size={4}>
             <Label>
               {t('Goals')}
             </Label>
@@ -133,7 +147,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               list={threatActorGroup.goals}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>
               {t('Secondary motivations')}
             </Label>
@@ -141,6 +155,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               list={threatActorGroup.secondary_motivations}
             />
           </Grid>
+          <CustomFieldValuesDisplay entityType={threatActorGroup.entity_type} values={threatActorGroup.customFieldValues ?? []} />
         </Grid>
       </Card>
     );
@@ -159,12 +174,17 @@ const ThreatActorGroupDetails = createFragmentContainer(
     threatActorGroup: graphql`
       fragment ThreatActorGroupDetails_ThreatActorGroup on ThreatActorGroup {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         first_seen
         last_seen
         description
         threat_actor_types
         sophistication
         resource_level
+        x_opencti_score
         primary_motivation
         secondary_motivations
         goals

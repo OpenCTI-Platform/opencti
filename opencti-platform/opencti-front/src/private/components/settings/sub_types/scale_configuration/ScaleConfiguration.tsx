@@ -1,36 +1,15 @@
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import * as Yup from 'yup';
 import { FormikErrors, FormikValues } from 'formik';
 import { clone } from 'ramda';
 import { Add } from '@mui/icons-material';
-import { FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import { IconButton, Paper, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
-import type { Theme } from '../../../../../components/Theme';
 import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
 import type { ScaleConfig, Tick, UndefinedTick } from './scale';
 import ScaleConfigurationLine from './ScaleConfigurationLine';
 import ScaleBar from './ScaleBar';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    height: '100%',
-    position: 'relative',
-    paddingBottom: 50,
-  },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-    marginBottom: 0,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 15,
-    borderRadius: 4,
-  },
-}));
 
 const minMaxValidation = (
   t: (value: string) => string,
@@ -130,7 +109,6 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   style,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [tickDefinition, setTickDefinition] = useState<ScaleConfig>(
     clone(initialValues),
@@ -206,26 +184,23 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Scale configuration')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
-        <div className={classes.container}>
-          <FormControl sx={{ m: 1, minWidth: 140, margin: 0 }}>
-            <InputLabel id="scale-selector">
-              {t_i18n('Selected scale template')}
-            </InputLabel>
-            <Select
-              labelId="scale-selector"
-              value={currentScaleName}
-              onChange={(event) => selectScale(event.target.value)}
-            >
+      <Paper padding={16} style={{ marginTop: 8 }}>
+        <Box sx={{ height: '100%', position: 'relative', paddingBottom: '50px' }}>
+          <Select value={currentScaleName} onValueChange={selectScale}>
+            <SelectLabel>{t_i18n('Selected scale template')}</SelectLabel>
+            <SelectTrigger className="min-w-[140px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Selected scale template')}>
               {selectorScales.map((scale, i: number) => {
                 return (
-                  <MenuItem key={i} value={scale.name}>
+                  <SelectItem key={i} value={scale.name}>
                     {scale.name}
-                  </MenuItem>
+                  </SelectItem>
                 );
               })}
-            </Select>
-          </FormControl>
+            </SelectContent>
+          </Select>
           <ScaleBar scale={tickDefinition} />
           <Typography variant="h4">{t_i18n('Customize scale')}</Typography>
           <Typography variant="h3" gutterBottom={true}>
@@ -270,13 +245,13 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               {t_i18n('Ticks')}
             </Typography>
             <IconButton
-              color="secondary"
+              variant="default"
+              priority="tertiary"
+              style={{ float: 'left', marginTop: -15, marginBottom: 0 }}
               aria-label="Add"
               onClick={addTickRow}
-              classes={{ root: classes.createButton }}
-            >
-              <Add fontSize="small" />
-            </IconButton>
+              icon={<Add fontSize="small" />}
+            />
           </div>
           {tickDefinition.ticks.map((tick, index) => (
             <ScaleConfigurationLine
@@ -299,7 +274,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               noMargin={index === 0}
             />
           ))}
-        </div>
+        </Box>
       </Paper>
     </div>
   );

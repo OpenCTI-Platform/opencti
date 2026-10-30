@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { map, keys, groupBy, assoc, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { map, keys, groupBy, assoc } from 'ramda';
+import { styled } from '@mui/material/styles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -16,42 +16,64 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
+import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 
-const styles = (theme) => ({
-  container: {
-    padding: '20px 0 0 0',
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  list: {
-    width: '100%',
-  },
-  listItem: {
-    width: '100M',
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-  noResult: {
-    top: 95,
-    left: 16,
-    right: 0,
-    position: 'absolute',
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    zIndex: -5,
-  },
+const Container = styled('div')({
+  padding: '20px 0 0 0',
 });
+
+const Heading = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.pxToRem(15),
+  flexBasis: '33.33%',
+  flexShrink: 0,
+}));
+
+const SecondaryHeading = styled(Typography)(({ theme }) => ({
+  fontSize: theme.typography.pxToRem(15),
+  color: theme.palette.text.secondary,
+}));
+
+const Item = styled(ListItemButton)(({ theme }) => ({
+  minHeight: 48,
+  paddingTop: theme.spacing(0.5),
+  paddingBottom: theme.spacing(0.5),
+}));
+
+// The icon keeps the summary title's left edge; only the name track moves in.
+const ItemIconContainer = styled(ListItemIcon)(({ theme }) => ({
+  minWidth: 'auto',
+  marginRight: theme.spacing(2),
+}));
+
+// Shrink-to-fit, so the labels follow the name instead of a far column.
+const ItemText = styled(ListItemText)(({ theme }) => ({
+  flex: '0 1 auto',
+  minWidth: 0,
+  margin: 0,
+  marginRight: theme.spacing(2),
+  '& .MuiListItemText-primary, & .MuiListItemText-secondary': {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+}));
+
+// Without a shrinkable track of their own the labels win the row and the
+// name is the one that gets cut; they fold to `+N` instead.
+const ItemLabels = styled('div')({
+  flex: '0 1 auto',
+  minWidth: 0,
+});
+
+const NoResult = styled('div')(({ theme }) => ({
+  top: 95,
+  left: 16,
+  right: 0,
+  position: 'absolute',
+  color: theme.palette.text.primary,
+  fontSize: 15,
+  zIndex: -5,
+}));
 
 class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
   constructor(props) {
@@ -76,7 +98,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
   }
 
   render() {
-    const { t, classes, data, handleSelect } = this.props;
+    const { t, data, handleSelect } = this.props;
     const stixDomainObjectsNodes = map(
       (n) => n.node,
       data.stixDomainObjects.edges,
@@ -84,13 +106,11 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
     const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
     const stixDomainObjects = byType(stixDomainObjectsNodes);
     const stixDomainObjectsTypes = keys(stixDomainObjects);
-    let increment = 0;
 
     return (
-      <div className={classes.container}>
+      <Container>
         {stixDomainObjectsTypes.length > 0 ? (
           stixDomainObjectsTypes.map((type) => {
-            increment += 1;
             return (
               <Accordion
                 key={type}
@@ -100,59 +120,43 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                   stixDomainObjectsTypes.length,
                 )}
                 onChange={this.handleChangePanel.bind(this, type)}
-                elevation={3}
-                style={{
-                  marginBottom:
-                    increment === stixDomainObjectsTypes.length
-                    && this.isExpanded(
-                      type,
-                      stixDomainObjects[type].length,
-                      stixDomainObjectsTypes.length,
-                    )
-                      ? 16
-                      : 0,
-                }}
+                // `disableGutters`: MUI otherwise margins every expanded panel, opening gaps.
+                elevation={0}
+                disableGutters
+                sx={{ backgroundColor: 'var(--bg-input-default)' }}
               >
                 <AccordionSummary expandIcon={<ExpandMore />}>
-                  <Typography className={classes.heading}>
+                  <Heading>
                     {t(`entity_${type}`)}
-                  </Typography>
-                  <Typography className={classes.secondaryHeading}>
+                  </Heading>
+                  <SecondaryHeading>
                     {stixDomainObjects[type].length} {t('entitie(s)')}
-                  </Typography>
+                  </SecondaryHeading>
                 </AccordionSummary>
-                <AccordionDetails
-                  classes={{ root: classes.expansionPanelContent }}
-                >
-                  <List classes={{ root: classes.list }}>
+                <AccordionDetails sx={{ padding: 0 }}>
+                  <List sx={{ width: '100%' }}>
                     {stixDomainObjects[type].map((stixDomainObject) => (
-                      <ListItemButton
+                      <Item
                         key={stixDomainObject.id}
-                        classes={{ root: classes.menuItem }}
                         divider={true}
                         onClick={handleSelect.bind(this, stixDomainObject)}
                       >
-                        <ListItemIcon>
+                        <ItemIconContainer>
                           <ItemIcon type={type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            stixDomainObject.name
-                            || stixDomainObject.attribute_abstract
-                            || truncate(stixDomainObject.content, 30)
-                            || stixDomainObject.opinion
-                          }
-                          secondary={truncate(
-                            stixDomainObject.description,
-                            100,
-                          )}
+                        </ItemIconContainer>
+                        <ItemText
+                          primary={truncate(getMainRepresentative(stixDomainObject), 100)}
+                          secondary={truncate(stixDomainObject.description, 100)}
                         />
-                        <StixCoreObjectLabels
-                          variant="inList"
-                          labels={stixDomainObject.objectLabel}
-                          revoked={stixDomainObject.revoked}
-                        />
-                      </ListItemButton>
+                        <ItemLabels>
+                          <StixCoreObjectLabels
+                            variant="inList"
+                            labels={stixDomainObject.objectLabel}
+                            revoked={stixDomainObject.revoked}
+                            defaultValueIfEmpty=""
+                          />
+                        </ItemLabels>
+                      </Item>
                     ))}
                   </List>
                 </AccordionDetails>
@@ -160,11 +164,11 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
             );
           })
         ) : (
-          <div className={classes.noResult}>
+          <NoResult>
             {t('No entities were found for this search.')}
-          </div>
+          </NoResult>
         )}
-      </div>
+      </Container>
     );
   }
 }
@@ -173,7 +177,6 @@ StixCoreRelationshipCreationFromRelationLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -383,7 +386,4 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipCreationFromRelationStixDomainObjectsLines);
+export default inject18n(StixCoreRelationshipCreationFromRelationStixDomainObjectsLines);

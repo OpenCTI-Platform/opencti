@@ -4,11 +4,14 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
@@ -36,6 +39,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const groupingMutation = graphql`
   mutation GroupingCreationMutation($input: GroupingAddInput!) {
@@ -133,6 +137,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: GroupingCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -144,11 +149,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({
@@ -197,6 +198,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   }
   return (
     <Formik<GroupingAddInput>
+      entityType={GROUPING_TYPE}
       initialValues={initialValues}
       validationSchema={validator}
       validateOnChange={true}
@@ -282,6 +284,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

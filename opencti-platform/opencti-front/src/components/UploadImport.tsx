@@ -1,8 +1,6 @@
-import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
+import { Button, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { FileUploadOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
 import React, { useState } from 'react';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 import useDraftContext from '../utils/hooks/useDraftContext';
@@ -26,6 +24,7 @@ const UploadImport = ({
 }: UploadImportProps) => {
   const { t_i18n } = useFormatter();
   const title = t_i18n('Import data');
+  const librarySize = size === 'small' ? 'sm' : 'md';
   const [openImportFilesDialog, setOpenImportFilesDialog] = useState(false);
   // Remove import button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
@@ -45,25 +44,29 @@ const UploadImport = ({
         />
       )}
       {variant === 'icon' ? (
-        <Tooltip title={title}>
-          <IconButton
-            size={size}
-            aria-haspopup="true"
-            onClick={() => setOpenImportFilesDialog(true)}
-          >
-            <FileUploadOutlined fontSize={fontSize} />
-          </IconButton>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <IconButton
+              size={librarySize}
+              priority="tertiary"
+              aria-haspopup="true"
+              aria-label={title}
+              onClick={() => setOpenImportFilesDialog(true)}
+              icon={<FileUploadOutlined fontSize={fontSize} />}
+            />
+          </TooltipTrigger>
+          <TooltipContent>{title}</TooltipContent>
         </Tooltip>
       ) : (
+        // Importing data is not an AI affordance: this keeps the default
+        // variant, where the product's own button was `primary`.
         <Button
+          size={librarySize}
           onClick={() => setOpenImportFilesDialog(true)}
-          size={size}
           aria-label={title}
           title={title}
         >
-          <div style={{ display: 'flex' }}>
-            {title}
-          </div>
+          {title}
         </Button>
       )}
     </>

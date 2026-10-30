@@ -1,8 +1,15 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
 import { uniq } from 'ramda';
-import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, FilterSearchContext, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  emptyFilterGroup,
+  FilterSearchContext,
+  FiltersVariant,
+  canonicalizeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
@@ -29,7 +36,17 @@ interface FiltersProps {
   helpers?: handleFilterHelpers;
   required?: boolean;
   hideSavedFilters?: boolean;
+  disableAddFilterGroup?: boolean;
+  expandAddFilter?: boolean;
 }
+
+/**
+ * Builds the url search params holding the filters of the knowledge search,
+ * stripping the frontend-only ids at any depth.
+ */
+export const buildSearchFiltersUrlParams = (filters?: FilterGroup) => ({
+  filters: JSON.stringify(filters ? canonicalizeFilterGroupForBackend(filters) : filters),
+});
 
 const Filters: FunctionComponent<FiltersProps> = ({
   variant,
@@ -49,6 +66,8 @@ const Filters: FunctionComponent<FiltersProps> = ({
   helpers,
   required = false,
   hideSavedFilters = false,
+  disableAddFilterGroup = false,
+  expandAddFilter = false,
 }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -91,7 +110,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
     });
   const handleSearch = () => {
     handleCloseFilters();
-    const urlParams = { filters: JSON.stringify(filters) };
+    const urlParams = buildSearchFiltersUrlParams(filters);
     navigate(
       `/dashboard/search/knowledge${
         keyword.length > 0 ? `/${keyword}` : ''
@@ -152,6 +171,8 @@ const Filters: FunctionComponent<FiltersProps> = ({
           isDatatable={isDatatable}
           disabled={disabled}
           hideSavedFilters={hideSavedFilters}
+          disableAddFilterGroup={disableAddFilterGroup}
+          expandAddFilter={expandAddFilter}
         />
       ) : (
         <ListFiltersWithoutLocalStorage

@@ -2,18 +2,22 @@ import React, { FunctionComponent } from 'react';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, {
   SETTINGS_SETCASETEMPLATES,
+  SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
   SETTINGS_SETSTATUSTEMPLATES,
   SETTINGS_SETVOCABULARIES,
 } from '../../../utils/hooks/useGranted';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const LabelsVocabulariesMenu: FunctionComponent = () => {
+  const { isFeatureEnable } = useHelper();
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
+  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMIZATION]) && isFeatureEnable('CUSTOM_FIELDS');
   const entries: MenuEntry[] = [];
   if (isGrantedToLabels) {
     entries.push({
@@ -43,6 +47,12 @@ const LabelsVocabulariesMenu: FunctionComponent = () => {
     entries.push({
       path: '/dashboard/settings/vocabularies/case_templates',
       label: 'Case templates',
+    });
+  }
+  if (isGrantedToCustomFields) {
+    entries.push({
+      path: '/dashboard/settings/vocabularies/custom_fields',
+      label: 'Custom fields',
     });
   }
 

@@ -40,3 +40,12 @@ const RATE_PROTECTION_MAX_REQUESTS: number = nconf.get('app:rate_protection:max_
 export const getRateProtectionMaxRequests = () => {
   return RATE_PROTECTION_MAX_REQUESTS;
 };
+
+// Node.js defaults keepAliveTimeout to 5s, which is lower than the idle timeout of most load
+// balancers and reverse proxies (AWS ALB defaults to 60s). The platform then closes sockets the
+// load balancer still considers usable, producing intermittent 502 for the clients. Defaulting
+// above the usual 60s idle timeout removes the race for standard deployments.
+const KEEP_ALIVE_TIMEOUT: number = nconf.get('app:keep_alive_timeout') ?? 65000;
+export const getKeepAliveTimeout = () => {
+  return KEEP_ALIVE_TIMEOUT;
+};

@@ -1,10 +1,9 @@
-import { PropsWithChildren, ReactNode } from 'react';
-import { useTheme } from '@mui/styles';
-import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mui/material';
+import { CSSProperties, PropsWithChildren, ReactNode } from 'react';
+import { useTheme } from '@mui/material/styles';
+import { Stack, SxProps, Card as CardMui, CardActionArea } from '@mui/material';
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
-import { Link } from 'react-router-dom';
-import { hasCustomColor } from '../../../utils/theme';
+import { Link } from 'react-router';
 
 export interface CardProps extends PropsWithChildren {
   title?: ReactNode;
@@ -12,7 +11,7 @@ export interface CardProps extends PropsWithChildren {
   padding?: 'none' | 'small' | 'medium' | 'horizontal' | 'default';
   sx?: SxProps;
   titleSx?: SxProps;
-  titleAlignItems?: StackProps['alignItems'];
+  titleAlignItems?: CSSProperties['alignItems'];
   fullHeight?: boolean;
   onClick?: () => void;
   to?: string;
@@ -65,18 +64,14 @@ const Card = ({
     };
   }
 
-  const isCustomCardColor = hasCustomColor(theme, 'theme_paper');
-  const backgroundColor = isCustomCardColor
-    ? theme.palette.background.paper
-    : theme.palette.background.secondary;
+  const backgroundColor = 'var(--bg-elevation-default-layer-1)';
 
   const containerSx: SxProps = {
     position: 'relative',
     flexGrow: fullHeight ? 1 : 0,
     borderRadius: theme.spacing(0.5),
-    background: variant !== 'outlined'
-      ? backgroundColor
-      : 'transparent',
+    background: backgroundColor,
+    border: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
   };

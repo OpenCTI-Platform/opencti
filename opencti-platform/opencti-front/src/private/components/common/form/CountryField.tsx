@@ -1,29 +1,24 @@
-import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import React, { FunctionComponent, useState } from 'react';
+import { styled } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { CountryFieldSearchQuery$data } from '@components/common/form/__generated__/CountryFieldSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField, { asSingleValue, ComboboxFieldProps } from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Field, { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface CountryFieldProps {
   id: string;
@@ -57,13 +52,11 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
   helpertext,
   required = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [countries, setCountries] = useState<FieldOption[]>([]);
 
-  const searchCountries = (event?: SyntheticEvent<Element, Event>) => {
-    if (event?.target instanceof HTMLInputElement) {
-      const search = event.target.value ?? '';
+  const searchCountries = (search: string) => {
+    {
       fetchQuery(CountryFieldQuery, { search })
         .toPromise()
         .then((data) => {
@@ -87,33 +80,33 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
 
   return (
     <div style={{ width: '100%' }}>
-      <Field<AutocompleteFieldProps<false>>
+      <Field<ComboboxFieldProps>
         id={id}
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
         name={name}
         multiple={false}
         required={required}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n(label),
-          helperText: helpertext,
-          onFocus: searchCountries,
-          required,
-        }}
-        onChange={onChange}
+        label={t_i18n(label)}
+        helperText={helpertext}
+        onChange={asSingleValue(onChange)}
         style={containerStyle}
         noOptionsText={t_i18n('No available options')}
         options={countries}
-        onInputChange={searchCountries}
-        renderOption={(props, option) => (
-          <li {...props}>
-            <div className={classes.icon} style={{ color: option.color }}>
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchCountries(search);
+        }}
+        onFocusInput={() => searchCountries('')}
+        renderOption={(option) => (
+          <>
+            <OptionIcon style={{ color: option.color }}>
               <ItemIcon type="Country" />
-            </div>
-            <div className={classes.text}>{option.label ?? ''}</div>
-          </li>
+            </OptionIcon>
+            <OptionText>{option.label ?? ''}</OptionText>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
     </div>
   );

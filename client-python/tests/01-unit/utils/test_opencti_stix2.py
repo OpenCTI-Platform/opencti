@@ -2,12 +2,26 @@ import datetime
 
 import pytest
 
+from pycti import OpenCTIApiClient
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 
 @pytest.fixture
 def opencti_stix2(api_client):
     return OpenCTIStix2(api_client)
+
+
+@pytest.fixture
+def opencti_stix2_no_server():
+    """Same as opencti_stix2, but skips the live-server health check so these
+    tests can run without a running OpenCTI instance."""
+    client = OpenCTIApiClient(
+        "http://localhost:4000",
+        "test-token",
+        ssl_verify=False,
+        perform_health_check=False,
+    )
+    return OpenCTIStix2(client)
 
 
 def test_unknown_type(opencti_stix2: OpenCTIStix2, caplog):
@@ -534,6 +548,114 @@ def test_prepare_export_keeps_non_embedded_markdown_image_uri(
     assert len(fetch_calls) == 0
 
 
+def test_prepare_export_drops_restricted_created_by_ref(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    """When createdBy is a restricted placeholder (name and identity_class both
+    forced to "Restricted" by the backend), the export must not set
+    created_by_ref and must not include the placeholder identity in the
+    bundle (see OpenCTI-Platform/opencti#18026)."""
+    monkeypatch.setattr(
+        opencti_stix2_no_server.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    entity = {
+        "id": "report--44444444-4444-4444-8444-444444444444",
+        "type": "report",
+        "entity_type": "Report",
+        "x_opencti_id": "internal-report-id-restricted",
+        "createdBy": {
+            "id": "internal-identity-id-restricted",
+            "standard_id": "identity--55555555-5555-4555-8555-555555555555",
+            "entity_type": "Organization",
+            "parent_types": ["Stix-Domain-Object", "Identity"],
+            "name": "Restricted",
+            "identity_class": "Restricted",
+        },
+        "createdById": "internal-identity-id-restricted",
+    }
+
+    result = opencti_stix2_no_server.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 1
+    assert "created_by_ref" not in result[0]
+    assert not any(obj.get("type") == "identity" for obj in result)
+
+
+def test_prepare_export_keeps_created_by_ref_for_real_identity(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    """Regression guard: a real (accessible) createdBy must still be exported
+    and referenced normally."""
+    monkeypatch.setattr(
+        opencti_stix2_no_server.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    entity = {
+        "id": "report--66666666-6666-4666-8666-666666666666",
+        "type": "report",
+        "entity_type": "Report",
+        "x_opencti_id": "internal-report-id-real",
+        "createdBy": {
+            "id": "internal-identity-id-real",
+            "standard_id": "identity--77777777-7777-4777-8777-777777777777",
+            "entity_type": "Organization",
+            "parent_types": ["Stix-Domain-Object", "Identity"],
+            "name": "Acme Corp",
+            "identity_class": "organization",
+        },
+        "createdById": "internal-identity-id-real",
+    }
+
+    result = opencti_stix2_no_server.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 2
+    identity = next(obj for obj in result if obj["type"] == "identity")
+    report = next(obj for obj in result if obj["type"] == "report")
+    assert report["created_by_ref"] == identity["id"]
+    assert identity["name"] == "Acme Corp"
+
+
+def test_prepare_export_keeps_created_by_ref_for_identity_literally_named_restricted(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    """A real identity that happens to be named "Restricted" but has a real
+    identity_class must not be mistaken for the platform's restricted
+    placeholder."""
+    monkeypatch.setattr(
+        opencti_stix2_no_server.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    entity = {
+        "id": "report--88888888-8888-4888-8888-888888888888",
+        "type": "report",
+        "entity_type": "Report",
+        "x_opencti_id": "internal-report-id-named-restricted",
+        "createdBy": {
+            "id": "internal-identity-id-named-restricted",
+            "standard_id": "identity--99999999-9999-4999-8999-999999999999",
+            "entity_type": "Organization",
+            "parent_types": ["Stix-Domain-Object", "Identity"],
+            "name": "Restricted",
+            "identity_class": "organization",
+        },
+        "createdById": "internal-identity-id-named-restricted",
+    }
+
+    result = opencti_stix2_no_server.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 2
+    identity = next(obj for obj in result if obj["type"] == "identity")
+    report = next(obj for obj in result if obj["type"] == "report")
+    assert report["created_by_ref"] == identity["id"]
+
+
 def test_generate_export_fetches_external_reference_files_by_id(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):
@@ -687,3 +809,86 @@ def test_prepare_export_fetches_generic_import_files_by_id(
     assert fetch_by_id_calls == [
         ("import/Intrusion-Set/internal-intrusion-set-id/notes.txt", True, True)
     ]
+
+
+def test_import_relationship_guesses_default_date_from_external_reference(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    stix2 = opencti_stix2_no_server
+    stix2.mapping_cache_permanent["vocabularies_definition_fields"] = []
+    default_dates = []
+
+    def fake_import_from_stix2(**kwargs):
+        default_dates.append(kwargs["defaultDate"])
+        return None
+
+    monkeypatch.setattr(
+        stix2.opencti.stix_core_relationship,
+        "import_from_stix2",
+        fake_import_from_stix2,
+    )
+
+    for external_reference in (
+        {"source_name": "Example Labs", "description": "first seen 1970-01-01"},
+        {"source_name": "Example Labs report of January 20, 2021"},
+    ):
+        stix2.import_relationship(
+            {
+                "id": "relationship--66666666-6666-4666-8666-666666666666",
+                "type": "relationship",
+                "relationship_type": "uses",
+                "source_ref": "malware--77777777-7777-4777-8777-777777777777",
+                "target_ref": "attack-pattern--88888888-8888-4888-8888-888888888888",
+                "external_references": [external_reference],
+            }
+        )
+
+    assert default_dates == ["1970-01-01T00:00:00Z", "2021-01-20T00:00:00Z"]
+
+
+def test_extract_embedded_relationships_dates_external_reference_reports(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    stix2 = opencti_stix2_no_server
+    stix2.mapping_cache_permanent["vocabularies_definition_fields"] = []
+    stix2.set_in_cache("marking_tlpclear", {"id": "marking-tlp-clear-id"})
+    monkeypatch.setattr(
+        stix2.opencti.external_reference,
+        "create",
+        lambda **kwargs: {"id": "external-reference-" + kwargs["url"]},
+    )
+    published_dates = {}
+
+    def fake_report_create(**kwargs):
+        published_dates[kwargs["name"]] = kwargs["published"]
+        return {"id": kwargs["id"]}
+
+    monkeypatch.setattr(stix2.opencti.report, "create", fake_report_create)
+
+    embedded = stix2.extract_embedded_relationships(
+        {
+            "id": "malware--99999999-9999-4999-8999-999999999999",
+            "type": "malware",
+            "name": "Example malware",
+            "external_references": [
+                {
+                    "source_name": "Example Labs blog",
+                    "url": "https://labs.example/blog",
+                    "description": "Deep dive, retrieved January 20, 2021",
+                },
+                {
+                    "source_name": "Example Labs feed",
+                    "url": "https://labs.example/feed",
+                },
+            ],
+        },
+        types=["external-reference-as-report"],
+    )
+
+    # A reference without a past date falls back to one second after the epoch, in
+    # UTC whatever the worker time zone: the report id is derived from this date.
+    assert published_dates == {
+        "Example Labs blog": "2021-01-20T00:00:00Z",
+        "Example Labs feed": "1970-01-01T00:00:01Z",
+    }
+    assert len(embedded["reports"]) == 2

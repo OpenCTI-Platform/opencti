@@ -7,7 +7,7 @@ import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTab
 import { useFormatter } from '../../../../../components/i18n';
 import { FintelTemplatesManager_templates$data } from './__generated__/FintelTemplatesManager_templates.graphql';
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { EMPTY_VALUE } from 'src/utils/String';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 
@@ -58,7 +58,7 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
       label: 'Default',
       percentWidth: 15,
       isSortable: true,
-      render: ({ default: isDefault }) => isDefault ? (
+      render: ({ default: isDefault }: { default: boolean }) => isDefault ? (
         <Tag
           color={theme.palette.success.main}
           label={t_i18n('Default')}

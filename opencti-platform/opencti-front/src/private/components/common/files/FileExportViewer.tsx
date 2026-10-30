@@ -43,7 +43,7 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
   }, []);
 
   return (
-    <Grid item xs={6}>
+    <Grid size={6}>
       <Card
         padding="horizontal"
         title={t_i18n('Exported files')}
@@ -58,6 +58,7 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
               aria-haspopup="true"
               color="primary"
               size="small"
+              aria-label={t_i18n('Exported files')}
             >
               <FileExportOutline fontSize="small" />
             </IconButton>

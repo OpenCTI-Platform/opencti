@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -18,6 +18,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -95,6 +96,10 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
     name: Yup.string().trim().min(2),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     createdBy: Yup.object().nullable(),
@@ -179,6 +184,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
       'references',
       'threat_actor_types',
       'confidence',
+      'x_opencti_score',
       'description',
       'createdBy',
       'killChainPhases',
@@ -240,6 +246,20 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             variant="edit"
           />
           <Field
+            component={TextField}
+            name="x_opencti_score"
+            label={t_i18n('Score')}
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            type="number"
+            fullWidth={true}
+            className="mt-5"
+            onFocus={editor.changeFocus}
+            onSubmit={(name, value) => handleSubmitField(name, value === '' ? null : value)}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="x_opencti_score" />
+            }
+          />
+          <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
@@ -292,6 +312,13 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={threatActorGroup.entity_type}
+            entityId={threatActorGroup.id}
+            values={threatActorGroup.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -314,9 +341,11 @@ export default createFragmentContainer(
     threatActorGroup: graphql`
       fragment ThreatActorGroupEditionOverview_ThreatActorGroup on ThreatActorGroup {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         name
         threat_actor_types
         confidence
+        x_opencti_score
         entity_type
         description
         createdBy {

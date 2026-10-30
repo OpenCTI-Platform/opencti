@@ -10,10 +10,11 @@ import ItemSeverity from 'src/components/ItemSeverity';
 import TextList from '@common/text/TextList';
 import ItemOpenVocab from 'src/components/ItemOpenVocab';
 import { EMPTY_VALUE } from 'src/utils/String';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '@components/analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import ItemIcon from '../../components/ItemIcon';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { WidgetHost } from 'src/utils/widget/widget';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 type AttributeRenderer = (
   data: StixCoreObject,
@@ -47,7 +48,12 @@ const makeScoreRenderer = (scoreKey: string, severityKey?: string) => {
       ? getField<string>(data, severityKey)
       : getCvssCriticity(score ?? null) ?? undefined;
     return (
-      <Stack direction="row" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          gap: 1,
+        }}
+      >
         <ItemCvssScore score={score ?? 0} />
         <ItemSeverity severity={severity ?? null} label={severity ?? null} variant="high" />
       </Stack>
@@ -255,10 +261,7 @@ const securityCoverageRenderers: EntityRenderers = {
   },
 
   coverage_information: (data) => {
-    const coverageInformation = getField<ReadonlyArray<{
-      coverage_name: string;
-      coverage_score: number;
-    }>>(data, 'coverage_information');
+    const coverageInformation = getField<ReadonlyArray<CoverageInformation>>(data, 'coverage_information');
 
     return (
       <SecurityCoverageScores

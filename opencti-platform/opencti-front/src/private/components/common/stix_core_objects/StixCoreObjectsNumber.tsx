@@ -76,6 +76,8 @@ interface StixCoreObjectsNumberProps {
   host?: WidgetHost;
   config: DashboardConfig;
   refreshRate?: number | null;
+  /** The home dashboard names each card in its body, so the container title only repeats it. */
+  withoutContainerTitle?: boolean;
 }
 
 const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
@@ -105,13 +107,14 @@ const StixCoreObjectsNumber = ({
   config,
   refreshRate = null,
   host,
+  withoutContainerTitle = false,
 }: StixCoreObjectsNumberProps) => {
   const { t_i18n } = useFormatter();
   const DEFAULT_TITLE = t_i18n('Entities number');
 
   const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -125,15 +128,14 @@ const StixCoreObjectsNumber = ({
     <WidgetContainer
       padding="medium"
       height={height}
-      title={DEFAULT_TITLE}
+      title={withoutContainerTitle ? undefined : DEFAULT_TITLE}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
         <WidgetRenderContent
-          isMissingHostEntity={isMissingHostEntity}
-          isMissingSavedFilters={isMissingSavedFilters}
+          {...renderGuards}
           queryRef={queryRef}
           host={host}
         >

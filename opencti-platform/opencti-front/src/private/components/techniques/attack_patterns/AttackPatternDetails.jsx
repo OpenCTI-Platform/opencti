@@ -4,6 +4,7 @@ import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import inject18n from '../../../../components/i18n';
@@ -24,7 +25,7 @@ class AttackPatternDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Description')}
               </Label>
@@ -33,7 +34,7 @@ class AttackPatternDetailsComponent extends Component {
                 limit={300}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               {attackPattern.isSubAttackPattern && (
                 <AttackPatternParentAttackPatterns
                   attackPattern={attackPattern}
@@ -61,7 +62,7 @@ class AttackPatternDetailsComponent extends Component {
               </div>
               <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreObjectKillChainPhasesView
                 killChainPhases={attackPattern.killChainPhases}
                 firstLine={true}
@@ -84,6 +85,7 @@ class AttackPatternDetailsComponent extends Component {
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />
             </Grid>
+            <CustomFieldValuesDisplay entityType={attackPattern.entity_type} values={attackPattern.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -104,6 +106,10 @@ const AttackPatternDetails = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternDetails_attackPattern on AttackPattern {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         description
         x_mitre_platforms
         x_mitre_permissions_required

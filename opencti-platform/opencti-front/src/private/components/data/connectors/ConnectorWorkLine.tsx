@@ -1,14 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
+import { Paper, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Button from '@common/button/Button';
 import { Delete } from 'mdi-material-ui';
-import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
@@ -45,7 +43,7 @@ interface ConnectorWorkLineProps {
 const ConnectorWorkLine: FunctionComponent<
   ConnectorWorkLineProps
 > = ({ workId, workName, workStatus, workReceivedTime, workEndTime, workExpectedNumber, workProcessedNumber, workErrors, readOnly, statusLabel }) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
 
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
   const [openDrawerErrors, setOpenDrawerErrors] = useState<boolean>(false);
@@ -83,9 +81,9 @@ const ConnectorWorkLine: FunctionComponent<
   return (
     <>
       <Grid container={true} spacing={2}>
-        <Grid item xs={7}>
+        <Grid size={7}>
           <Grid container={true} spacing={1}>
-            <Grid item xs={8}>
+            <Grid size={8}>
               <Label>
                 {t_i18n('Name')}
               </Label>
@@ -95,29 +93,29 @@ const ConnectorWorkLine: FunctionComponent<
                 </Typography>
               </Tooltip>
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <Label>
                 {statusLabel ?? t_i18n('Status')}
               </Label>
               <TaskStatus status={workStatus} label={t_i18n(workStatus)} />
             </Grid>
-            <Grid item xs={8}>
+            <Grid size={8}>
               <Label>
                 {t_i18n('Work start time')}
               </Label>
-              {nsdt(workReceivedTime)}
+              {ftdt(workReceivedTime)}
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <Label>
                 {t_i18n('Work end time')}
               </Label>
-              {workEndTime ? nsdt(workEndTime) : EMPTY_VALUE}
+              {workEndTime ? ftdt(workEndTime) : EMPTY_VALUE}
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t_i18n('Operations completed')}
               </Label>
@@ -127,7 +125,7 @@ const ConnectorWorkLine: FunctionComponent<
                   : workProcessedNumber ?? EMPTY_VALUE}
               </span>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t_i18n('Total number of operations')}
               </Label>
@@ -135,7 +133,7 @@ const ConnectorWorkLine: FunctionComponent<
                 {workExpectedNumber ?? EMPTY_VALUE}
               </span>
             </Grid>
-            <Grid item xs={11}>
+            <Grid size={11}>
               <Label>
                 {t_i18n('Progress')}
               </Label>
@@ -158,6 +156,7 @@ const ConnectorWorkLine: FunctionComponent<
           intent={(workErrors ?? []).length >= 0 ? 'destructive' : undefined}
           onClick={() => handleOpenDrawerErrors(workErrors ?? [])}
           size="small"
+          keepMui
         >
           {workErrors?.length} {t_i18n('errors')}
         </Button>
@@ -182,34 +181,49 @@ const ConnectorWorkLine: FunctionComponent<
       >
         <>
           <Alert severity="info">{t_i18n('This page lists only the first 100 errors returned by the connector')}</Alert>
-          <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-            <Tab label={`${t_i18n('Critical')} (${criticals.length})`} value="Critical" />
-            <Tab label={`${t_i18n('Warning')} (${warnings.length})`} value="Warning" />
-            <Tab label={`${t_i18n('All')} (${errors.length})`} value="All" />
+          <Tabs value={tabValue} onValueChange={setTabValue}>
+            <TabsList>
+              <TabsTrigger value="Critical" badge={criticals.length} badgeLabel={`${criticals.length} ${t_i18n('errors')}`}>{t_i18n('Critical')}</TabsTrigger>
+              <TabsTrigger value="Warning" badge={warnings.length} badgeLabel={`${warnings.length} ${t_i18n('errors')}`}>{t_i18n('Warning')}</TabsTrigger>
+              <TabsTrigger value="All" badge={errors.length} badgeLabel={`${errors.length} ${t_i18n('errors')}`}>{t_i18n('All')}</TabsTrigger>
+            </TabsList>
+            <Paper padding={0}>
+              <TableContainer>
+                <Table aria-label="errors table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>{t_i18n('Timestamp')}</TableCell>
+                      <TableCell>{t_i18n('Code')}</TableCell>
+                      <TableCell>{t_i18n('Message')}</TableCell>
+                      <TableCell>{t_i18n('Source')}</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  {/* asChild: the panel IS the <tbody> — a TabsContent <div> is invalid inside <table> */}
+                  <TabsContent value="Critical" asChild>
+                    <TableBody>
+                      {criticals.map((error, i) => (
+                        <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                      ))}
+                    </TableBody>
+                  </TabsContent>
+                  <TabsContent value="Warning" asChild>
+                    <TableBody>
+                      {warnings.map((error, i) => (
+                        <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                      ))}
+                    </TableBody>
+                  </TabsContent>
+                  <TabsContent value="All" asChild>
+                    <TableBody>
+                      {errors.map((error, i) => (
+                        <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
+                      ))}
+                    </TableBody>
+                  </TabsContent>
+                </Table>
+              </TableContainer>
+            </Paper>
           </Tabs>
-          <TableContainer component={Paper}>
-            <Table aria-label="errors table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t_i18n('Timestamp')}</TableCell>
-                  <TableCell>{t_i18n('Code')}</TableCell>
-                  <TableCell>{t_i18n('Message')}</TableCell>
-                  <TableCell>{t_i18n('Source')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tabValue === 'Critical' && criticals.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-                {tabValue === 'Warning' && warnings.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-                {tabValue === 'All' && errors.map((error, i) => (
-                  <ConnectorWorksErrorLine key={error.rawError?.timestamp ?? i} error={error} />
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
         </>
       </Drawer>
     </>

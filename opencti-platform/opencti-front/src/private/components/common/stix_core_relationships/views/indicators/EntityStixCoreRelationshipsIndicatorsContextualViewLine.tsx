@@ -1,46 +1,23 @@
 import React, { FunctionComponent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { DataColumns } from '../../../../../../components/list_lines';
 import { UseEntityToggle } from '../../../../../../utils/hooks/useEntityToggle';
 import { resolveLink } from '../../../../../../utils/Entity';
 import ItemIcon from '../../../../../../components/ItemIcon';
-import type { Theme } from '../../../../../../components/Theme';
+import { Checkbox } from '@filigran/design-system';
+import { bodyItemStyle } from '../../../../../../components/list_lines/listLineStyles';
 import {
   EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
   EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key,
 } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary?.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const contextualViewLineFragment = graphql`
   fragment EntityStixCoreRelationshipsIndicatorsContextualViewLine_node on Indicator {
@@ -98,7 +75,6 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent
   onToggleShiftEntity,
   index,
 }) => {
-  const classes = useStyles();
   const stixCoreObject = useFragment(
     contextualViewLineFragment,
     node,
@@ -106,13 +82,13 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent
   return (
     <ListItemButton
       key={stixCoreObject.id}
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       component={Link}
       to={`${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`}
     >
       <ListItemIcon
-        classes={{ root: classes.itemIcon }}
+        sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, stixCoreObject)
@@ -120,33 +96,30 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent
         }
       >
         <Checkbox
-          edge="start"
           checked={
             (selectAll && !(stixCoreObject.id in (deSelectedElements || {})))
             || stixCoreObject.id in (selectedElements || {})
           }
-          disableRipple={true}
         />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 {value.render?.(stixCoreObject)}
-              </div>
+              </BodyItem>
             ))}
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRight />
       </ListItemIcon>
     </ListItemButton>

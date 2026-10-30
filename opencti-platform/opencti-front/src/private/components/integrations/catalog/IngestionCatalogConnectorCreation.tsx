@@ -3,14 +3,14 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
 import { Schema, Validator } from '@cfworker/json-schema';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { JsonSchema } from '@jsonforms/core';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -27,6 +27,9 @@ import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import Tooltip from '@mui/material/Tooltip';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/integrations/catalog/utils/JsonFormArrayRenderer';
+import JsonFormInputRenderer, { jsonFormInputTester } from '@components/integrations/catalog/utils/JsonFormInputRenderer';
+import JsonFormEnumRenderer, { jsonFormEnumTester } from '@components/integrations/catalog/utils/JsonFormEnumRenderer';
+import JsonFormBooleanRenderer, { jsonFormBooleanTester } from '@components/integrations/catalog/utils/JsonFormBooleanRenderer';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
 import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
@@ -40,6 +43,9 @@ import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
 import IngestionCatalogUnverifiedDeploymentPopover from '@components/integrations/catalog/IngestionCatalogUnverifiedDeploymentPopover';
+import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
+import IngestionCatalogCompatibilityAlert from '@components/integrations/catalog/IngestionCatalogCompatibilityAlert';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
@@ -84,6 +90,9 @@ const customRenderers = [
   { tester: jsonFormDeprecatedTester, renderer: JsonFormDeprecatedRenderer },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+  { tester: jsonFormInputTester, renderer: JsonFormInputRenderer },
+  { tester: jsonFormEnumTester, renderer: JsonFormEnumRenderer },
+  { tester: jsonFormBooleanTester, renderer: JsonFormBooleanRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 
@@ -92,6 +101,7 @@ interface IngestionCatalogConnectorCreationProps {
   open: boolean;
   onClose: () => void;
   catalogId: string;
+  isEnterpriseEdition: boolean;
   hasActiveManagers: boolean;
   deploymentCount?: number;
   onCreate?: (connectorId: string) => void;
@@ -115,7 +125,14 @@ const validationSchema = Yup.object().shape({
 });
 
 const IngestionCatalogConnectorCreation = ({
-  connector, open, onClose, catalogId, hasActiveManagers, deploymentCount = 0, onCreate,
+  connector,
+  open,
+  onClose,
+  catalogId,
+  isEnterpriseEdition,
+  hasActiveManagers,
+  deploymentCount = 0,
+  onCreate,
 }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -257,14 +274,20 @@ const IngestionCatalogConnectorCreation = ({
         open={open}
         onClose={onClose}
         header={(
-          <Stack direction="row" alignItems="center" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
             <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
               <Button
                 variant="secondary"
                 component={Link}
                 size="small"
                 to={buildConnectorsUrl()}
-                startIcon={<HubOutlined />}
+                startIcon={<HubOutlined fontSize="small" />}
                 disabled={deploymentCount === 0}
               >
                 {`${deploymentCount} ${t_i18n('instances deployed')}`}
@@ -306,7 +329,10 @@ const IngestionCatalogConnectorCreation = ({
           </Stack>
         )}
       >
-        <Stack gap={1}>
+        <Stack sx={{
+          gap: 1,
+        }}
+        >
           <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} isVerified={connector.verified} />
 
           <Formik<ManagedConnectorValues>
@@ -324,10 +350,15 @@ const IngestionCatalogConnectorCreation = ({
           >
             {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
               const errors = compiledValidator?.validate(values)?.errors;
+              const canDeploy = hasActiveManagers && isEnterpriseEdition && canDeployConnector(connector);
+              const disableForm = !canDeploy;
 
-              const disableCreate = !isValid || isSubmitting || !!errors?.[0];
+              const disableCreate = !canDeploy || !isValid || isSubmitting || !!errors?.[0];
 
               const createConnectorDeployment = () => {
+                if (!canDeploy) {
+                  return;
+                }
                 submitConnectorManagementCreation(values, {
                   setSubmitting,
                   resetForm,
@@ -344,18 +375,25 @@ const IngestionCatalogConnectorCreation = ({
 
               return (
                 <Form>
+                  {!isEnterpriseEdition && (
+                    <Alert severity="warning" variant="outlined">
+                      {t_i18n('Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.')}
+                    </Alert>
+                  )}
+                  <IngestionCatalogCompatibilityAlert connector={connector} />
+
                   <fieldset
-                    disabled={!hasActiveManagers}
+                    disabled={disableForm}
                     style={{
                       border: 'none',
                       padding: 0,
-                      ...(!hasActiveManagers && { opacity: 0.5, pointerEvents: 'none' }),
+                      ...(disableForm && { opacity: 0.5, pointerEvents: 'none' }),
                     }}
                   >
                     <Field
                       component={TextField}
-                      style={fieldSpacingContainerStyle}
-                      variant="standard"
+                      className="mt-5"
+                      variant="outlined"
                       name="display_name"
                       label={t_i18n('Display name')}
                       required
@@ -367,8 +405,8 @@ const IngestionCatalogConnectorCreation = ({
 
                     <Field
                       component={TextField}
-                      style={fieldSpacingContainerStyle}
-                      variant="standard"
+                      className="mt-5"
+                      variant="outlined"
                       name="name"
                       label={t_i18n('Instance name')}
                       fullWidth={true}
@@ -440,7 +478,7 @@ const IngestionCatalogConnectorCreation = ({
                     )}
                   </fieldset>
 
-                  <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: theme.spacing(1), marginTop: theme.spacing(2) }}>
                     <Button
                       variant="secondary"
                       onClick={() => {
@@ -451,14 +489,23 @@ const IngestionCatalogConnectorCreation = ({
                     </Button>
                     {
                       hasActiveManagers && (
-                        <Button
-                        // color="secondary"
-                          style={{ marginLeft: theme.spacing(2) }}
-                          onClick={handleCreate}
-                          disabled={disableCreate}
-                        >
-                          {t_i18n('Create')}
-                        </Button>
+                        isEnterpriseEdition ? (
+                          <Button
+                            onClick={handleCreate}
+                            disabled={disableCreate}
+                          >
+                            {t_i18n('Create')}
+                          </Button>
+                        ) : (
+                          <EnterpriseEditionButton
+                            title="Create"
+                            feature="Connector deployment"
+                            withEEChip
+                            inLine
+                            size="default"
+                            withIcon={false}
+                          />
+                        )
                       )
                     }
                   </div>

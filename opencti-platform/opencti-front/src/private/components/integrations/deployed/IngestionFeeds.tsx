@@ -20,6 +20,10 @@ export const ingestionFeedsQuery = graphql`
           running
           current_state_date
           queue_messages
+          ingestionHealth {
+            ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
+          }
           user {
             id
             name
@@ -43,6 +47,10 @@ export const ingestionFeedsQuery = graphql`
           last_execution_date
           created_at
           updated_at
+          ingestionHealth {
+            ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
+          }
           user {
             id
             name
@@ -67,6 +75,10 @@ export const ingestionFeedsQuery = graphql`
           last_execution_date
           created_at
           updated_at
+          ingestionHealth {
+            ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
+          }
           user {
             id
             name
@@ -86,6 +98,10 @@ export const ingestionFeedsQuery = graphql`
           ingestion_running
           created_at
           updated_at
+          ingestionHealth {
+            ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
+          }
           user {
             id
             name
@@ -109,6 +125,10 @@ export const ingestionFeedsQuery = graphql`
           last_execution_date
           created_at
           updated_at
+          ingestionHealth {
+            ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
+          }
           user {
             id
             name
@@ -132,6 +152,10 @@ export const ingestionFeedsQuery = graphql`
           last_execution_date
           created_at
           updated_at
+          ingestionHealth {
+            ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
+          }
           user {
             id
             name

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import FintelTemplatePopover from './FintelTemplatePopover';
 import { FintelTemplateHeader_template$key } from './__generated__/FintelTemplateHeader_template.graphql';
@@ -24,6 +24,8 @@ const headerFragment = graphql`
     start_date
     template_content
     default
+    includeCoverPageByDefault
+    includeBackPageByDefault
   }
 `;
 
@@ -55,7 +57,7 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
     { label: t_i18n('Entity types'), link: customizationLink },
     { label: t_i18n(`entity_${subTypeId}`), link: subTypeLink },
     { label: t_i18n('FINTEL Templates') },
-    { label: template.name },
+    { label: template.name, current: true },
   ];
 
   const onSubmit = () => {
@@ -132,6 +134,8 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
           description: template.description ?? null,
           published: !!template.start_date,
           default: !!template.default,
+          include_cover_page_by_default: template.includeCoverPageByDefault ?? true,
+          include_back_page_by_default: template.includeBackPageByDefault ?? true,
         }}
         currentDefaultName={template.default ? undefined : currentDefaultName}
         onClose={() => setFormOpen(false)}

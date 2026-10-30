@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -16,6 +16,7 @@ import { RootCaseRfiCaseQuery } from './__generated__/RootCaseRfiCaseQuery.graph
 import { RootCaseRfiCaseSubscription } from './__generated__/RootCaseRfiCaseSubscription.graphql';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
 import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -167,6 +168,11 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
             <ContainerStixCyberObservables
               container={caseData}
               enableReferences={enableReferences}
+            />
+          ),
+          relationships: (
+            <ContainerStixCoreRelationships
+              containerId={caseData.id}
             />
           ),
           files: (

@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -18,6 +18,7 @@ import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -95,6 +96,10 @@ const IntrusionSetEditionOverviewComponent = (props) => {
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     createdBy: Yup.object().nullable(),
@@ -178,6 +183,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       'name',
       'references',
       'confidence',
+      'x_opencti_score',
       'description',
       'createdBy',
       'objectMarking',
@@ -223,6 +229,20 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+          />
+          <Field
+            component={TextField}
+            name="x_opencti_score"
+            label={t_i18n('Score')}
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
+            type="number"
+            fullWidth={true}
+            className="mt-5"
+            onFocus={editor.changeFocus}
+            onSubmit={(name, value) => handleSubmitField(name, value === '' ? null : value)}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="x_opencti_score" />
+            }
           />
           <Field
             component={MarkdownField}
@@ -277,6 +297,13 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={intrusionSet.entity_type}
+            entityId={intrusionSet.id}
+            values={intrusionSet.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -297,8 +324,10 @@ export default createFragmentContainer(IntrusionSetEditionOverviewComponent, {
   intrusionSet: graphql`
     fragment IntrusionSetEditionOverview_intrusionSet on IntrusionSet {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       confidence
+      x_opencti_score
       entity_type
       description
       createdBy {

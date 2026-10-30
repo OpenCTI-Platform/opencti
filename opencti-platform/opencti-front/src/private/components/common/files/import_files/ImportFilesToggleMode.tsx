@@ -2,7 +2,7 @@ import { ImportMode, useImportFilesContext } from '@components/common/files/impo
 import { DescriptionOutlined, RouteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { Box, CardContent } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React from 'react';
 import Card from '../../../../../components/common/card/Card';
 import { useFormatter } from '../../../../../components/i18n';
@@ -57,12 +57,14 @@ const ImportFilesToggleMode = () => {
       {modes.map(({ mode, title, description, icon }) => (
         <Card
           aria-label={title}
-          variant="outlined"
           onClick={() => onSelectMode(mode)}
           key={mode}
           sx={{
             minWidth: 0,
             textAlign: 'center',
+            // The action area's hover overlay washed the token out.
+            '&:hover': { backgroundColor: 'var(--bg-elevation-default-layer-0)' },
+            '&:hover .MuiCardActionArea-focusHighlight': { opacity: 0 },
             ...(importMode === mode
               ? { borderColor: theme.palette.primary.main }
               : {}),

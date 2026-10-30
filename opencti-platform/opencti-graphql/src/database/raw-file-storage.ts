@@ -1,3 +1,9 @@
+import { createReadStream } from 'node:fs';
+import { stat } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { memoizeAsync } from '../utils/memoize';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import * as s3 from '@aws-sdk/client-s3';
 import {
   CopyObjectCommand,
@@ -10,7 +16,6 @@ import {
 } from '@aws-sdk/client-s3';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Upload } from '@aws-sdk/lib-storage';
-import type { Readable } from 'stream';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
@@ -162,6 +167,93 @@ export const downloadFile = async (id: string): Promise<Readable | null> => {
   }
 };
 
+export interface RangeDownloadResult {
+  stream: Readable;
+  contentLength: number;
+  contentRange?: string;
+  totalSize: number;
+  etag?: string;
+  rangeNotSatisfiable?: boolean;
+}
+
+export const downloadFileRange = async (id: string, range?: string): Promise<RangeDownloadResult | null> => {
+  let totalSize = 0;
+  try {
+    // First get file size via HEAD
+    const head = await s3Client.send(new s3.HeadObjectCommand({
+      Bucket: bucketName,
+      Key: id,
+    }));
+    totalSize = head.ContentLength ?? 0;
+
+    const getParams: s3.GetObjectCommandInput = {
+      Bucket: bucketName,
+      Key: id,
+    };
+    if (range) {
+      getParams.Range = range;
+    }
+
+    const object = await s3Client.send(new s3.GetObjectCommand(getParams));
+    if (!object || !object.Body) {
+      logApp.error('[FILE STORAGE] Cannot retrieve file from S3, null body in response', { fileId: id });
+      throw UnsupportedError('File body is null or undefined', { fileId: id });
+    }
+    return {
+      stream: object.Body as Readable,
+      contentLength: object.ContentLength ?? totalSize,
+      contentRange: object.ContentRange,
+      totalSize,
+      etag: head.ETag,
+    };
+  } catch (err: any) {
+    if (err.name === 'NoSuchKey' || err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
+      return null;
+    }
+    if (err.name === 'InvalidRange' || err.$metadata?.httpStatusCode === 416) {
+      return { stream: Readable.from([]), contentLength: 0, totalSize, rangeNotSatisfiable: true };
+    }
+    logApp.error('[FILE STORAGE] Cannot retrieve file range from S3', { cause: err, fileId: id });
+    throw err;
+  }
+};
+
+const localFileEtag = memoizeAsync(async (filePath: string): Promise<string> => {
+  const hash = createHash('sha256');
+  await pipeline(createReadStream(filePath), hash);
+  return `"bundled-${hash.digest('hex').slice(0, 32)}"`;
+}, (filePath) => filePath);
+
+export const downloadLocalFileRange = async (filePath: string, range?: string): Promise<RangeDownloadResult | null> => {
+  let fileStat;
+  try {
+    fileStat = await stat(filePath);
+  } catch {
+    return null;
+  }
+  const totalSize = fileStat.size;
+  const etag = await localFileEtag(filePath);
+  if (range) {
+    const match = range.match(/bytes=(\d+)-(\d*)/);
+    if (match) {
+      const start = parseInt(match[1], 10);
+      const end = match[2] ? Math.min(parseInt(match[2], 10), totalSize - 1) : totalSize - 1;
+      if (start > end || start >= totalSize) {
+        return { stream: Readable.from([]), contentLength: 0, totalSize, etag, rangeNotSatisfiable: true };
+      }
+      const contentLength = end - start + 1;
+      return {
+        stream: createReadStream(filePath, { start, end }),
+        contentLength,
+        contentRange: `bytes ${start}-${end}/${totalSize}`,
+        totalSize,
+        etag,
+      };
+    }
+  }
+  return { stream: createReadStream(filePath), contentLength: totalSize, totalSize, etag };
+};
+
 export const streamToString = (stream: any, encoding: BufferEncoding = 'utf8'): Promise<string> => {
   return new Promise((resolve, reject) => {
     if (!stream) {
@@ -220,6 +312,42 @@ export const rawUpload = async (key: string, body: string | Readable | Buffer) =
     },
   });
   await s3Upload.done();
+};
+
+export interface FileMetadata {
+  contentDisposition?: string;
+  contentLength?: number;
+  etag?: string;
+}
+
+export const rawUploadWithMetadata = async (key: string, body: Readable | Buffer, contentDisposition?: string, contentEncoding?: string) => {
+  const s3Upload = new Upload({
+    client: s3Client,
+    params: {
+      Bucket: bucketName,
+      Key: key,
+      Body: body,
+      ContentDisposition: contentDisposition,
+      ContentEncoding: contentEncoding,
+    },
+  });
+  await s3Upload.done();
+};
+
+export const getFileMetadata = async (key: string): Promise<FileMetadata | null> => {
+  try {
+    const head = await s3Client.send(new s3.HeadObjectCommand({ Bucket: bucketName, Key: key }));
+    return {
+      contentDisposition: head.ContentDisposition,
+      contentLength: head.ContentLength,
+      etag: head.ETag,
+    };
+  } catch (err: any) {
+    if (err.name === 'NoSuchKey' || err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
+      return null;
+    }
+    throw err;
+  }
 };
 
 export const rawListObjects = async (directory: string, recursive: boolean, continuationToken?: string): Promise<ListObjectsV2CommandOutput> => {

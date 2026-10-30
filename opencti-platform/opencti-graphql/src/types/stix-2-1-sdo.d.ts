@@ -200,6 +200,8 @@ export interface StixNote extends StixContainer {
 export interface StixObservedDataExtension extends StixOpenctiExtension {
   content: string;
   content_mapping: string;
+  number_seen?: number; // optional
+  max_distinct_count?: number; // optional
   object_refs_inferred?: Array<StixId>; // optional
 }
 
@@ -276,66 +278,4 @@ export interface StixTool extends StixDomainObject {
   aliases: Array<string>; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
   tool_version: string;
-}
-
-// Vulnerability Specific Properties
-export interface StixVulnerabilityExtension extends StixOpenctiExtension {
-  // CVSS3
-  cvss_vector: string;
-  cvss_base_score: number;
-  cvss_base_severity: string;
-  cvss_attack_vector: string;
-  cvss_attack_complexity: string;
-  cvss_privileges_required: string;
-  cvss_user_interaction: string;
-  cvss_scope: string;
-  cvss_confidentiality_impact: string;
-  cvss_integrity_impact: string;
-  cvss_availability_impact: string;
-  cvss_exploit_code_maturity: string;
-  cvss_remediation_level: string;
-  cvss_report_confidence: string;
-  cvss_temporal_score: number;
-  // CVSS2
-  cvss_v2_vector: string;
-  cvss_v2_base_score: number;
-  cvss_v2_access_vector: string;
-  cvss_v2_access_complexity: string;
-  cvss_v2_authentication: string;
-  cvss_v2_confidentiality_impact: string;
-  cvss_v2_integrity_impact: string;
-  cvss_v2_availability_impact: string;
-  cvss_v2_exploitability: string;
-  cvss_v2_remediation_level: string;
-  cvss_v2_report_confidence: string;
-  cvss_v2_temporal_score: number;
-  // CVSS4
-  cvss_v4_vector: string;
-  cvss_v4_base_score: number;
-  cvss_v4_base_severity: string;
-  cvss_v4_attack_vector: string;
-  cvss_v4_attack_complexity: string;
-  cvss_v4_attack_requirements: string;
-  cvss_v4_privileges_required: string;
-  cvss_v4_user_interaction: string;
-  cvss_v4_confidentiality_impact_v: string;
-  cvss_v4_confidentiality_impact_s: string;
-  cvss_v4_integrity_impact_v: string;
-  cvss_v4_integrity_impact_s: string;
-  cvss_v4_availability_impact_v: string;
-  cvss_v4_availability_impact_s: string;
-  cvss_v4_exploit_maturity: string;
-  // Others
-  cwe: string;
-  score: number;
-  epss_score: number;
-  epss_percentile: number;
-}
-// name, description
-export interface StixVulnerability extends StixDomainObject {
-  name: string;
-  description: string; // optional
-  extensions: {
-    [STIX_EXT_OCTI]: StixVulnerabilityExtension;
-  };
 }

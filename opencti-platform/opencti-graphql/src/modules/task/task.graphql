@@ -158,7 +158,9 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   # Task
   name: String!
   description: String
@@ -232,6 +234,7 @@ input TaskAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

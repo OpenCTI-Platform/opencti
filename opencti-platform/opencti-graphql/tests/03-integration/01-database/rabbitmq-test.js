@@ -1,14 +1,7 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import { v4 as uuid } from 'uuid';
-import {
-  getConnectorQueueDetails,
-  metrics,
-  purgeConnectorQueues,
-  pushToConnector,
-  rabbitMQIsAlive,
-  registerConnectorQueues,
-  unregisterConnector,
-} from '../../../src/database/rabbitmq';
+import { metrics, rabbitMQInit, rabbitMQIsAlive } from '../../../src/database/rabbitmq';
+import { getConnectorQueueDetails, purgeConnectorQueues, pushToConnector, registerConnectorQueues, unregisterConnector } from '../../../src/modules/connector/connector-rabbitmq';
 import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/schema/general';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { RABBIT_QUEUE_PREFIX, waitInSec } from '../../../src/database/utils';
@@ -39,6 +32,10 @@ describe('Rabbit connector management', () => {
 
   it('should rabbitMQIsAlive check without error', async () => {
     await expect(rabbitMQIsAlive()).resolves.not.toThrow();
+  });
+
+  it('should rabbitMQInit check without error', async () => {
+    await expect(rabbitMQInit()).resolves.not.toThrow();
   });
 
   it('should register the connector', async () => {

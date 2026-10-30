@@ -1,4 +1,4 @@
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent } from 'react';
@@ -6,7 +6,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../../components/ItemIcon';
-import { hexToRGB } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 
@@ -61,7 +60,6 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         { requestAccessWorkflowDisabled && (
           <Chip
             key={approvedToRfiStatus?.id}
-            variant="outlined"
             label={t_i18n('Disabled')}
             style={{
               fontSize: 12,
@@ -77,8 +75,8 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         { !requestAccessWorkflowDisabled && (
           <Chip
             key={approvedToRfiStatus?.id}
-            variant="outlined"
             label={t_i18n(approvedLabel)}
+            color={approvedColor}
             style={{
               fontSize: 12,
               lineHeight: '12px',
@@ -87,9 +85,6 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
               textTransform: 'uppercase',
               borderRadius: 4,
               width: 100,
-              color: approvedColor,
-              borderColor: approvedColor,
-              backgroundColor: hexToRGB(approvedColor),
             }}
           />
         )}
@@ -100,7 +95,6 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         { requestAccessWorkflowDisabled && (
           <Chip
             key={approvedToRfiStatus?.id}
-            variant="outlined"
             label={t_i18n('Disabled')}
             style={{
               fontSize: 12,
@@ -116,8 +110,8 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
         { !requestAccessWorkflowDisabled && (
           <Chip
             key={declinedToRfiStatus?.id}
-            variant="outlined"
             label={t_i18n(declinedLabel)}
+            color={declinedColor}
             style={{
               fontSize: 12,
               lineHeight: '12px',
@@ -126,9 +120,6 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
               textTransform: 'uppercase',
               borderRadius: 4,
               width: 100,
-              color: declinedColor,
-              borderColor: declinedColor,
-              backgroundColor: hexToRGB(declinedColor),
             }}
           />
         )}

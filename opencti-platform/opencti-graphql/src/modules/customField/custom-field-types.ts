@@ -7,19 +7,24 @@ export const ENTITY_TYPE_CUSTOM_FIELD_DEFINITION = 'CustomFieldDefinition';
 // Prefix for custom field names stored on entities
 export const CUSTOM_FIELD_PREFIX = 'x_opencti_cf_';
 
+// Date default_value meaning "the current date/time when the field gets populated"
+// Must stay in sync with CUSTOM_FIELD_NOW_TOKEN in opencti-front/src/utils/customFieldDefaults.ts
+export const CUSTOM_FIELD_NOW_TOKEN = '@now';
+
 // Field types supported by custom fields
 // `markdown` reuses the string value channel; `multi_select` reuses select_options but stores an array (select_values).
 export type CustomFieldType = 'integer' | 'string' | 'markdown' | 'boolean' | 'date' | 'select' | 'multi_select';
+export const CUSTOM_FIELD_TYPES: CustomFieldType[] = ['integer', 'string', 'markdown', 'boolean', 'date', 'select', 'multi_select'];
 
 export interface CustomFieldValue {
   field_id: string;
   field_name: string;
-  int_value?: number;
-  string_value?: string;
-  boolean_value?: boolean;
-  date_value?: string;
-  select_value?: string;
-  select_values?: string[];
+  int_value?: number | null;
+  string_value?: string | null;
+  boolean_value?: boolean | null;
+  date_value?: string | null;
+  select_value?: string | null;
+  select_values?: string[] | null;
 }
 
 // Per-entity-type settings of a custom field definition.
@@ -63,6 +68,7 @@ export interface StoreEntityCustomFieldDefinition extends StoreEntity {
 
 export interface StixCustomFieldDefinition extends StixObject {
   name: string;
+  aliases?: string[];
   description: string;
   label: string;
   field_type: CustomFieldType;

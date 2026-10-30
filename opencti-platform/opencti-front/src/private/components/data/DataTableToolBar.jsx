@@ -22,23 +22,43 @@ import {
   TransformOutlined,
   UnpublishedOutlined,
 } from '@mui/icons-material';
-import { DialogContentText, FormControlLabel, Switch } from '@mui/material';
+import { Box, FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Autocomplete from '@mui/material/Autocomplete';
+import {
+  Checkbox,
+  Chip as FdsChip,
+  Combobox,
+  ComboboxChips,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+  IconButton as FdsIconButton,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  Tooltip as FdsTooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import Avatar from '@mui/material/Avatar';
-import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
-import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
+
 import Radio from '@mui/material/Radio';
-import Select from '@mui/material/Select';
+
 import Slide from '@mui/material/Slide';
 import MuiSwitch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
@@ -51,8 +71,7 @@ import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
+import { styled, useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
@@ -60,7 +79,7 @@ import * as R from 'ramda';
 import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemMarkings from '../../../components/ItemMarkings';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
@@ -100,116 +119,54 @@ import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
+import { CustomFieldInput } from '../common/custom_fields/CustomFieldsInput';
+import useCustomFieldDefinitions from '../common/custom_fields/useCustomFieldDefinitions';
+import {
+  customFieldValueToTaskValues,
+  getCustomFieldDefinitionsOfTypes,
+  getTaskTargetedTypes,
+  isCustomFieldAttribute,
+  taskValuesToCustomFieldValue,
+} from '../../../utils/customFields';
 
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
+
+const EditButtons = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  '& > span': {
+    display: 'inline-flex',
+    alignItems: 'center',
   },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  buttonAdd: {
-    width: '100%',
-    height: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  aliases: {
-    margin: '0 7px 7px 0',
-  },
-  title: {
-    flex: '1 1 100%',
-    fontSize: '12px',
-    marginBottom: '1px',
-  },
-  chipValue: {
-    margin: 0,
-  },
-  filter: {
-    margin: '5px 10px 5px 0',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '5px 10px 5px 0',
-  },
-  step: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.background.accent}`,
-    borderRadius: 5,
-    display: 'flex',
-  },
-  formControl: {
-    width: '100%',
-  },
-  stepType: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepField: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepValues: {
-    paddingRight: 20,
-    margin: 0,
-  },
-  stepCloseButton: {
-    position: 'absolute',
-    top: -20,
-    right: -20,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  noResult: {
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 20,
-  },
+});
+
+const Step = styled('div')(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  margin: '0 0 20px 0',
+  padding: 15,
+  verticalAlign: 'middle',
+  border: `1px solid ${theme.palette.background.accent}`,
+  borderRadius: 5,
+  display: 'flex',
+}));
+
+const StepCloseButton = styled(IconButton)({
+  position: 'absolute',
+  top: 4,
+  right: 4,
 });
 
 const notMergableTypes = ['Playbook', 'Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
@@ -218,6 +175,7 @@ const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', '
 const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const typesWithScore = [
+  'Malware',
   'Stix-Cyber-Observable',
   'Indicator',
   'Autonomous-System',
@@ -251,6 +209,9 @@ const typesWithScore = [
   'Payment-Card',
   'Media-Content',
   'Persona',
+  'Threat-Actor-Group',
+  'Intrusion-Set',
+  'Event',
 ];
 const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
@@ -263,6 +224,7 @@ const typesWithDetection = ['Indicator'];
 const typesWithKillChains = ['Indicator'];
 const typesWithIndicatorTypes = ['Indicator'];
 const typesWithPlatforms = ['Indicator'];
+const typesWithTemporalRange = ['stix-core-relationship'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
 const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
@@ -609,16 +571,21 @@ class DataTableToolBar extends Component {
     });
   }
 
-  handleChangeActionInput(i, key, event) {
-    const { value } = event.target;
+  handleChangeActionInput(i, key, value) {
     const { actionsInputs } = this.state;
+    const currentActionInput = actionsInputs[i] || {};
 
-    actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
+    actionsInputs[i] = R.assoc(key, value, currentActionInput);
     if (key === 'field') {
-      if (value === 'x_opencti_detection') {
+      const customFieldDefinition = (this.props.customFieldDefinitions ?? []).find((d) => d.name === value);
+      if (customFieldDefinition?.field_type === 'boolean' && actionsInputs[i]?.type !== 'REMOVE') {
+        actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
+      } else if (value === 'x_opencti_detection') {
         actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
       } else if (value === 'password_valid_until') {
         actionsInputs[i] = R.assoc('values', [new Date().toISOString()], actionsInputs[i] || {});
+      } else if (['start_time', 'stop_time'].includes(value) && actionsInputs[i]?.type === 'REMOVE') {
+        actionsInputs[i] = R.assoc('values', [''], actionsInputs[i] || {});
       } else {
         const values = [];
         actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
@@ -647,7 +614,8 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
-  handleChangeActionInputValues(i, event, value) {
+  // Event last and optional: the library reports it on ComboboxChangeMeta.
+  handleChangeActionInputValues(i, value, event) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -661,11 +629,11 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
-  handleChangeActionInputOptions(i, key, event) {
+  handleChangeActionInputOptions(i, key, checked) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'options',
-      R.assoc(key, event.target.checked, actionsInputs[i]?.options || {}),
+      R.assoc(key, checked === true, actionsInputs[i]?.options || {}),
       actionsInputs[i] || {},
     );
     this.setState({ actionsInputs });
@@ -841,6 +809,19 @@ class DataTableToolBar extends Component {
     return type;
   }
 
+  static normalizeActionValue(element) {
+    if (element?.id) return element.id;
+    if (element?.value) return element.value;
+    if (typeof element?.toISOString === 'function') return element.toISOString();
+    return element;
+  }
+
+  static displayActionValue(element) {
+    if (typeof element === 'string') return element;
+    if (typeof element?.toISOString === 'function') return element.toISOString();
+    return getMainRepresentative(element);
+  }
+
   getUserDatatableFinalActions(actions) {
     return actions.map((action) => {
       const currentType = this.constructor.getActionType(action.type, action.context.field);
@@ -848,7 +829,7 @@ class DataTableToolBar extends Component {
         type: currentType,
         context: {
           ...action.context,
-          values: action.context.values.map((element) => element.id || element.value || element),
+          values: action.context.values.map((element) => this.constructor.normalizeActionValue(element)),
         },
         containerId: null,
       };
@@ -884,7 +865,7 @@ class DataTableToolBar extends Component {
             context: n.context
               ? {
                   ...n.context,
-                  values: n.context.values.map((o) => o.id || o.value || o),
+                  values: n.context.values.map((o) => this.constructor.normalizeActionValue(o)),
                 }
               : null,
             containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
@@ -952,7 +933,7 @@ class DataTableToolBar extends Component {
     }
   }
 
-  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
+  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, customFieldDefinitionsOfTypes = []) {
     const { t, taskScope } = this.props;
     const { actionsInputs } = this.state;
 
@@ -960,6 +941,10 @@ class DataTableToolBar extends Component {
     const disabled = actionsInputs[i]?.type == null || actionsInputs[i]?.type === '';
     const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
       && entityTypeFilterValues.every((type) => typesList.includes(type));
+    const hasTemporalRangeField = entityTypeFilterValues.some((type) => typesWithTemporalRange.includes(type))
+      || (this.props.types ?? []).some((type) => typesWithTemporalRange.includes(type))
+      || typesWithTemporalRange.includes(this.props.type)
+      || checkTypes(typesWithTemporalRange);
 
     let options = [];
     if (isUserDatatable) {
@@ -1003,6 +988,14 @@ class DataTableToolBar extends Component {
           label: t('Platforms'),
           value: 'platforms_ov',
         },
+        hasTemporalRangeField && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('Start time'),
+          value: 'start_time',
+        },
+        hasTemporalRangeField && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('Stop time'),
+          value: 'stop_time',
+        },
         ...(actionsInputs[i]?.type === 'REPLACE' ? [
           { label: t('Author'), value: 'created-by' },
           { label: t('Confidence'), value: 'confidence' },
@@ -1029,6 +1022,11 @@ class DataTableToolBar extends Component {
           },
         ] : []),
       ].filter(Boolean);
+      // As other attributes, a single value custom field is set by replace, a multi_select also accepts add
+      const customFieldOptions = customFieldDefinitionsOfTypes
+        .filter((d) => actionsInputs[i]?.type !== 'ADD' || d.field_type === 'multi_select')
+        .map((d) => ({ label: d.label, value: d.name }));
+      options = [...options, ...customFieldOptions];
     }
 
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
@@ -1038,37 +1036,41 @@ class DataTableToolBar extends Component {
 
     return (
       <Select
-        variant="standard"
         disabled={disabled}
-        value={actionsInputs[i]?.type}
-        onChange={this.handleChangeActionInput.bind(this, i, 'field')}
+        value={actionsInputs[i]?.field ?? ''}
+        onValueChange={this.handleChangeActionInput.bind(this, i, 'field')}
       >
-        {sortedOptions.length > 0 ? (
-          sortedOptions.map(
-            (n) => {
+        <SelectLabel>{t('Field')}</SelectLabel>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent aria-label={t('Field')}>
+          {sortedOptions.length > 0 ? (
+            sortedOptions.map(
+              (n) => {
               // disable some fields to prevent making several actions on the same key if one of them is a replace
-              const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
-                || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
-              return (
-                <MenuItem
-                  key={n.value}
-                  value={n.value}
-                  disabled={disableField}
-                >
-                  {n.label}
-                </MenuItem>
-              );
-            },
-          )
-        ) : (
-          <MenuItem value="none">{t('None')}</MenuItem>
-        )}
+                const disableField = (replaceSelectedFields.includes(n.value) && actionsInputs[i]?.field !== n.value)
+                  || (selectedFields.includes(n.value) && actionsInputs[i]?.type === 'REPLACE');
+                return (
+                  <SelectItem
+                    key={n.value}
+                    value={n.value}
+                    disabled={disableField}
+                  >
+                    {n.label}
+                  </SelectItem>
+                );
+              },
+            )
+          ) : (
+            <SelectItem value="none">{t('None')}</SelectItem>
+          )}
+        </SelectContent>
       </Select>
     );
   }
 
-  searchContainers(i, event, newValue) {
-    if (!event) return;
+  searchContainers(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1113,8 +1115,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchGroups(i, event, newValue) {
-    if (!event) return;
+  searchGroups(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1140,8 +1141,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchActionInputOrganizations(i, event, newValue) {
-    if (!event) return;
+  searchActionInputOrganizations(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1152,14 +1152,12 @@ class DataTableToolBar extends Component {
     this.fetchOrganizations(newValue);
   }
 
-  searchOrganizations(event, newValue) {
-    if (!event) return;
+  searchOrganizations(newValue) {
     this.setState({ organizationInput: newValue && newValue.length > 0 ? newValue : '' });
     this.fetchOrganizations(newValue);
   }
 
-  searchMarkingDefinitions(i, event, newValue) {
-    if (!event) return;
+  searchMarkingDefinitions(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1181,8 +1179,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchLabels(i, event, newValue) {
-    if (!event) return;
+  searchLabels(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1208,8 +1205,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchExternalReferences(i, event, newValue) {
-    if (!event) return;
+  searchExternalReferences(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1240,8 +1236,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchIdentities(i, event, newValue) {
-    if (!event) return;
+  searchIdentities(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1270,8 +1265,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchAccountStatus(i, event, newValue) {
-    if (!event) return;
+  searchAccountStatus(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1281,8 +1275,7 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
-  searchStatuses(i, selectedTypes, event, newValue) {
-    if (!event) return;
+  searchStatuses(i, selectedTypes, newValue) {
     const { actionsInputs } = this.state;
     let selectedType;
     if (selectedTypes.length === 1) {
@@ -1322,8 +1315,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchVocabulary(i, category, event, newValue) {
-    if (!event) return;
+  searchVocabulary(i, category, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1352,8 +1344,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchParticipants(i, event, newValue) {
-    if (!event) return;
+  searchParticipants(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = {
       ...actionsInputs[i],
@@ -1378,8 +1369,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchAssignees(i, event, newValue) {
-    if (!event) return;
+  searchAssignees(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = {
       ...actionsInputs[i],
@@ -1408,8 +1398,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchUsers(i, event, newValue) {
-    if (!event) return;
+  searchUsers(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(
       'inputValue',
@@ -1437,8 +1426,7 @@ class DataTableToolBar extends Component {
       });
   }
 
-  searchKillChains(i, event, newValue) {
-    if (!event) return;
+  searchKillChains(i, newValue) {
     const { actionsInputs } = this.state;
     actionsInputs[i] = {
       ...actionsInputs[i],
@@ -1473,6 +1461,9 @@ class DataTableToolBar extends Component {
 
   handleChangeDate(i, newValue) {
     const { actionsInputs } = this.state;
+    if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
+      return;
+    }
     actionsInputs[i] = R.assoc(
       'inputValue',
       newValue && newValue.length > 0 ? newValue : '',
@@ -1483,21 +1474,50 @@ class DataTableToolBar extends Component {
 
   handleAcceptDate(i, newValue) {
     const { actionsInputs } = this.state;
-    actionsInputs[i] = R.assoc(
-      'values',
-      Array.isArray(newValue) ? newValue : [newValue],
-      actionsInputs[i] || {},
-    );
+    if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
+      return;
+    }
+    // A typed date that does not exist (2023-02-30) is accepted as an invalid date. It empties
+    // the step, so the update stays disabled rather than sending the last valid date typed.
+    const isInvalidDate = newValue instanceof Date && Number.isNaN(newValue.getTime());
+    let values = Array.isArray(newValue) ? newValue : [newValue];
+    if (isInvalidDate) {
+      values = [];
+    }
+    actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
     this.setState({ actionsInputs });
   }
 
   renderValuesOptions(i, selectedTypes, userStatuses) {
-    const { t, classes } = this.props;
+    const { t } = this.props;
 
     const { actionsInputs } = this.state;
 
     const selectedField = actionsInputs[i]?.field;
     const disabled = selectedField == null || selectedField === '';
+
+    if (isCustomFieldAttribute(selectedField)) {
+      const definition = (this.props.customFieldDefinitions ?? []).find((d) => d.name === selectedField);
+      // Removing a single value clears it, only a multi_select takes the options to remove
+      if (!definition || (actionsInputs[i]?.type === 'REMOVE' && definition.field_type !== 'multi_select')) {
+        return null;
+      }
+      return (
+        <CustomFieldInput
+          definition={definition}
+          mandatory={false}
+          value={taskValuesToCustomFieldValue(definition.field_type, actionsInputs[i]?.values)}
+          onChange={(value) => {
+            const values = customFieldValueToTaskValues(value);
+            this.setState(({ actionsInputs: currentInputs }) => {
+              const nextInputs = [...currentInputs];
+              nextInputs[i] = { ...nextInputs[i], values };
+              return { actionsInputs: nextInputs };
+            });
+          }}
+        />
+      );
+    }
 
     switch (selectedField) {
       case 'container-object':
@@ -1519,190 +1539,192 @@ class DataTableToolBar extends Component {
                 this.setState(({ containers }) => ({
                   containers: [...(containers ?? []), element],
                 }));
-                this.handleChangeActionInputValues(i, null, [
+                this.handleChangeActionInputValues(i, [
                   ...(actionsInputs[i]?.values ?? []),
                   element,
                 ]);
               }}
             />
-            <Autocomplete
+            <Combobox
               disabled={disabled}
-              size="small"
-              fullWidth={true}
               selectOnFocus={true}
-              autoHighlight={true}
               getOptionLabel={(option) => option.label ?? ''}
               value={actionsInputs[i]?.values || []}
               multiple={true}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="standard"
-                  label={t('Values')}
-                  fullWidth={true}
-                  onFocus={this.searchContainers.bind(this, i)}
-                  style={{ marginTop: 3 }}
-                />
-              )}
-              noOptionsText={t('No available options')}
+              closeOnSelect
               options={this.state.containers}
-              onInputChange={this.searchContainers.bind(this, i)}
               inputValue={actionsInputs[i]?.inputValue || ''}
-              onChange={this.handleChangeActionInputValues.bind(this, i)}
-              renderOption={(props, option) => (
-                <li {...props}>
-                  <div className={classes.icon}>
+              onInputChange={(newValue, meta) => {
+                if (meta.cause === 'type') (this.searchContainers.bind(this, i))(newValue);
+              }}
+              onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+              renderOption={(option) => (
+                <>
+                  <OptionIcon>
                     <ItemIcon type={option.type} />
-                  </div>
-                  <div className={classes.text}>{option.label}</div>
-                </li>
+                  </OptionIcon>
+                  <OptionText>{option.label}</OptionText>
+                </>
               )}
-            />
-            <IconButton
-              aria-label={t('Create')}
-              onClick={() => this.setState({ containerCreation: true })}
-              edge="end"
-              style={{ position: 'absolute', top: 80, right: 50 }}
             >
-              <AddOutlined />
-            </IconButton>
+              <ComboboxLabel>{t('Values')}</ComboboxLabel>
+              {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
+              <ComboboxField adornment={(
+                <FdsTooltip>
+                  <TooltipTrigger asChild>
+                    <FdsIconButton
+                      size="sm"
+                      priority="tertiary"
+                      aria-label={t('Create')}
+                      onClick={() => this.setState({ containerCreation: true })}
+                      icon={<AddOutlined fontSize="small" />}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{t('Create')}</TooltipContent>
+                </FdsTooltip>
+              )}
+              >
+                <ComboboxChips aria-label={t('Values')} />
+                <ComboboxInput onFocus={() => (this.searchContainers.bind(this, i))('')} />
+                <ComboboxControls>
+                  <ComboboxClear />
+                  <ComboboxTrigger />
+                </ComboboxControls>
+              </ComboboxField>
+              <ComboboxContent
+                emptyMessage={t('No available options')}
+                listAriaLabel={t('Values')}
+              />
+            </Combobox>
           </>
         );
       case 'object-marking':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchMarkingDefinitions.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.markingDefinitions}
-            onInputChange={this.searchMarkingDefinitions.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon} style={{ color: option.color }}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchMarkingDefinitions.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon style={{ color: option.color }}>
                   <CenterFocusStrong />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchMarkingDefinitions.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'object-label':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchLabels.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.labels}
-            onInputChange={this.searchLabels.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon} style={{ color: option.color }}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchLabels.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon style={{ color: option.color }}>
                   <LabelOutline />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchLabels.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'created-by':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchIdentities.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            value={actionsInputs[i]?.values[0] || null}
             options={this.state.identities}
-            onInputChange={this.searchIdentities.bind(this, i)}
-            inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchIdentities.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput onFocus={() => (this.searchIdentities.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'x_opencti_workflow_id':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchStatuses.bind(this, i, selectedTypes)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            value={actionsInputs[i]?.values[0] || null}
             options={this.state.statuses}
-            onInputChange={this.searchStatuses.bind(this, i, selectedTypes)}
-            inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchStatuses.bind(this, i, selectedTypes))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon>
                   <Avatar
                     variant="square"
                     style={{
@@ -1713,119 +1735,140 @@ class DataTableToolBar extends Component {
                   >
                     {option.order}
                   </Avatar>
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput onFocus={() => (this.searchStatuses.bind(this, i, selectedTypes))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'external-reference':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchExternalReferences.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.externalReferences}
-            onInputChange={this.searchExternalReferences.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon} style={{ color: option.color }}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchExternalReferences.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon style={{ color: option.color }}>
                   <LanguageOutlined />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchExternalReferences.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'object-assignee':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchAssignees.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.assignees}
-            onInputChange={this.searchAssignees.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchAssignees.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchAssignees.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'object-participant':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchParticipants.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.participants}
-            onInputChange={this.searchParticipants.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchParticipants.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchParticipants.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'case_severity_ov':
       case 'case_priority_ov':
@@ -1833,110 +1876,111 @@ class DataTableToolBar extends Component {
       case 'request_for_information_types_ov':
       case 'request_for_takedown_types_ov':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || null}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Select Value')}
-                fullWidth={true}
-                onFocus={this.searchVocabulary.bind(this, i, selectedField)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
             options={this.state.vocabularies[selectedField] || []}
-            onInputChange={this.searchVocabulary.bind(this, i, selectedField)}
-            inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchVocabulary.bind(this, i, selectedField))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Select Value')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput onFocus={() => (this.searchVocabulary.bind(this, i, selectedField))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Select Value')}
+            />
+          </Combobox>
         );
       case 'indicator_type_ov':
       case 'platforms_ov':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || null}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Select Value')}
-                fullWidth={true}
-                onFocus={this.searchVocabulary.bind(this, i, selectedField)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.vocabularies[selectedField] || []}
-            onInputChange={this.searchVocabulary.bind(this, i, selectedField)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchVocabulary.bind(this, i, selectedField))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Select Value')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Select Value')} />
+              <ComboboxInput onFocus={() => (this.searchVocabulary.bind(this, i, selectedField))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Select Value')}
+            />
+          </Combobox>
         );
       case 'creator_id':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchUsers.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            value={actionsInputs[i]?.values[0] || null}
             options={this.state.users}
-            onInputChange={this.searchUsers.bind(this, i)}
-            inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchUsers.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput onFocus={() => (this.searchUsers.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'x_opencti_score':
       case 'confidence':
         return (
           <TextField
-            variant="standard"
+            variant="outlined"
             disabled={disabled}
             label={t('Values')}
             fullWidth={true}
@@ -1946,39 +1990,42 @@ class DataTableToolBar extends Component {
         );
       case 'killChainPhases':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchKillChains.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.killChainPhases}
-            onInputChange={this.searchKillChains.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon} style={{ color: option.color }}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchKillChains.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon style={{ color: option.color }}>
                   <ItemIcon type="Kill-Chain-Phase" />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchKillChains.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'x_opencti_detection':
         return (
@@ -1995,110 +2042,132 @@ class DataTableToolBar extends Component {
         );
       case 'organizations':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchActionInputOrganizations.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.organizations}
-            onInputChange={this.searchActionInputOrganizations.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchActionInputOrganizations.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchActionInputOrganizations.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'groups':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values || []}
             multiple={true}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                onFocus={this.searchGroups.bind(this, i)}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            closeOnSelect
             options={this.state.groups}
-            onInputChange={this.searchGroups.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.icon}>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchGroups.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionIcon>
                   <ItemIcon type={option.type} />
-                </div>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+                </OptionIcon>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxChips aria-label={t('Values')} />
+              <ComboboxInput onFocus={() => (this.searchGroups.bind(this, i))('')} />
+              <ComboboxControls>
+                <ComboboxClear />
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'account_status':
         return (
-          <Autocomplete
+          <Combobox
             disabled={disabled}
-            size="small"
-            fullWidth={true}
             selectOnFocus={true}
-            autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || []}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="standard"
-                label={t('Values')}
-                fullWidth={true}
-                style={{ marginTop: 3 }}
-              />
-            )}
-            noOptionsText={t('No available options')}
+            value={actionsInputs[i]?.values[0] || null}
             options={this.constructor.getUserStatusOptionList(userStatuses)}
-            onInputChange={this.searchAccountStatus.bind(this, i)}
-            inputValue={actionsInputs[i]?.inputValue || ''}
-            onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div className={classes.text}>{option.label}</div>
-              </li>
+            onInputChange={(newValue, meta) => {
+              if (meta.cause === 'type') (this.searchAccountStatus.bind(this, i))(newValue);
+            }}
+            onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
+            renderOption={(option) => (
+              <>
+                <OptionText>{option.label}</OptionText>
+              </>
             )}
-          />
+          >
+            <ComboboxLabel>{t('Values')}</ComboboxLabel>
+            <ComboboxField>
+              <ComboboxInput />
+              <ComboboxControls>
+                <ComboboxTrigger />
+              </ComboboxControls>
+            </ComboboxField>
+            <ComboboxContent
+              emptyMessage={t('No available options')}
+              listAriaLabel={t('Values')}
+            />
+          </Combobox>
         );
       case 'account_lock_after_date':
         return (
           <DateTimePicker
+            disabled={disabled}
+            variant="inline"
+            disableToolbar={false}
+            autoOk={true}
+            allowKeyboardControl={true}
+            onChange={this.handleChangeDate.bind(this, i)}
+            onAccept={this.handleAcceptDate.bind(this, i)}
+            views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+            format="yyyy-MM-dd hh:mm:ss a"
+          />
+        );
+      case 'start_time':
+      case 'stop_time':
+        return (
+          <DateTimePicker
+            disabled={disabled || (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(selectedField))}
             variant="inline"
             disableToolbar={false}
             autoOk={true}
@@ -2127,7 +2196,7 @@ class DataTableToolBar extends Component {
       default:
         return (
           <TextField
-            variant="standard"
+            variant="outlined"
             disabled={disabled}
             label={t('Values')}
             fullWidth={true}
@@ -2140,7 +2209,9 @@ class DataTableToolBar extends Component {
   areStepValid() {
     const { actionsInputs } = this.state;
     for (const n of actionsInputs) {
-      if (!n || !n.type || !n.field || !n.values || n.values.length === 0) {
+      // Removing a custom field without value clears it
+      const isCustomFieldClear = n?.type === 'REMOVE' && isCustomFieldAttribute(n.field) && Array.isArray(n.values);
+      if (!n || !n.type || !n.field || !n.values || (n.values.length === 0 && !isCustomFieldClear)) {
         return false;
       }
     }
@@ -2176,7 +2247,6 @@ class DataTableToolBar extends Component {
     const {
       t,
       n,
-      classes,
       numberOfSelectedElements,
       handleClearSelectedElements,
       selectedElements,
@@ -2308,6 +2378,12 @@ class DataTableToolBar extends Component {
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
 
           const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
+          // Only the custom fields carried by every targeted type are offered
+          const customFieldDefinitionsOfTypes = getCustomFieldDefinitionsOfTypes(
+            this.props.customFieldDefinitions ?? [],
+            getTaskTargetedTypes(selectAll, selectedElementsList, entityTypeFilterValues, this.props.types),
+            (type) => schema.scrs.some((scr) => scr.label === type),
+          );
           const filterKeysMap = new Map();
           entityTypes.forEach((entityType) => {
             const currentMap = schema.filterKeysSchema.get(entityType);
@@ -2318,12 +2394,16 @@ class DataTableToolBar extends Component {
           // endregion
           return (
             <>
-              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid="opencti-toolbar">
+              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8, alignItems: 'center' }} data-testid="opencti-toolbar">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
-                    className={classes.title}
-                    color="inherit"
                     variant="subtitle1"
+                    sx={{
+                      color: 'inherit',
+                      flex: '1 1 100%',
+                      fontSize: '12px',
+                      marginBottom: '1px',
+                    }}
                   >
                     <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
                   </Typography>
@@ -2338,7 +2418,7 @@ class DataTableToolBar extends Component {
                   </IconButton>
                 </div>
                 {displayEditButtons && (
-                  <div>
+                  <EditButtons>
                     {markAsReadEnabled && (
                       <>
                         <Tooltip title={t('Mark as read')}>
@@ -2347,10 +2427,9 @@ class DataTableToolBar extends Component {
                               aria-label={t('Mark as read')}
                               disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleLaunchRead.bind(this, true)}
-                              color="success"
                               size="small"
                             >
-                              <CheckCircleOutlined />
+                              <CheckCircleOutlined fontSize="small" color="success" />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -2360,10 +2439,9 @@ class DataTableToolBar extends Component {
                               aria-label={t('Mark as unread')}
                               disabled={numberOfSelectedElements === 0 || this.state.processing}
                               onClick={this.handleLaunchRead.bind(this, false)}
-                              color="error"
                               size="small"
                             >
-                              <UnpublishedOutlined />
+                              <UnpublishedOutlined fontSize="small" color="error" />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -2652,6 +2730,7 @@ class DataTableToolBar extends Component {
                               onClick={this.handleLaunchRestore.bind(this)}
                               color={warning ? 'error' : 'primary'}
                               size="small"
+                              keepMui
                             >
                               <RestoreOutlined fontSize="small" />
                             </IconButton>
@@ -2668,6 +2747,7 @@ class DataTableToolBar extends Component {
                               onClick={this.handleLaunchCompleteDelete.bind(this)}
                               color={warning ? 'error' : 'primary'}
                               size="small"
+                              keepMui
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>
@@ -2675,18 +2755,22 @@ class DataTableToolBar extends Component {
                         </Tooltip>
                       </Security>
                     )}
-                  </div>
+                  </EditButtons>
                 )}
               </Toolbar>
               <Dialog
                 open={this.state.displayTask}
                 onClose={this.handleCloseTask.bind(this)}
                 data-testid="background-task-popup"
-                title={t('Launch a background task')}
+                title={(
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span>{t('Launch a background task')}</span>
+                    <Typography variant="body1" color="textSecondary">
+                      {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
+                    </Typography>
+                  </Box>
+                )}
               >
-                <DialogContentText>
-                  {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
-                </DialogContentText>
                 {numberOfSelectedElements > 1000 && (
                   <Alert severity="warning">
                     {t(
@@ -2723,16 +2807,16 @@ class DataTableToolBar extends Component {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Chip style={{ borderRadius: 4 }} label="SCOPE" />
+                          <FdsChip label="SCOPE" />
                         </TableCell>
                         <TableCell>{t('N/A')}</TableCell>
                         <TableCell>
                           {selectAll ? (
-                            <div className={classes.filters}>
+                            <div>
                               {search && search.length > 0 && (
                                 <span>
                                   <Chip
-                                    classes={{ root: classes.filter }}
+                                    sx={{ margin: '5px 10px 5px 0' }}
                                     label={(
                                       <div>
                                         <strong>{t('Search')}</strong>: {search}
@@ -2740,10 +2824,7 @@ class DataTableToolBar extends Component {
                                     )}
                                   />
                                   {filters.filters.length > 0 && (
-                                    <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
-                                    />
+                                    <FdsChip label={t('AND')} />
                                   )}
                                 </span>
                               )}
@@ -2787,19 +2868,18 @@ class DataTableToolBar extends Component {
                               </span>
                             </TableCell>
                             <TableCell>
-                              <Chip label={o.type} />
+                              <FdsChip label={o.type} />
                             </TableCell>
                             <TableCell>
-                              {R.pathOr(t('N/A'), ['context', 'field'], o)}
+                              {(this.props.customFieldDefinitions ?? []).find((d) => d.name === o.context?.field)?.label
+                                ?? R.pathOr(t('N/A'), ['context', 'field'], o)}
                             </TableCell>
                             <TableCell>
                               {truncate(
                                 R.join(
                                   ', ',
                                   R.map(
-                                    (p) => (typeof p === 'string'
-                                      ? p
-                                      : getMainRepresentative(p)),
+                                    (p) => this.constructor.displayActionValue(p),
                                     R.pathOr([], ['context', 'values'], o),
                                   ),
                                 ),
@@ -2837,57 +2917,69 @@ class DataTableToolBar extends Component {
                   {Array(actionsInputs.length)
                     .fill(0)
                     .map((item, i) => (
-                      <div key={i} className={classes.step}>
-                        <IconButton
+                      <Step key={i}>
+                        <StepCloseButton
                           disabled={actionsInputs.length === 1}
                           aria-label="Delete"
-                          className={classes.stepCloseButton}
                           onClick={this.handleRemoveStep.bind(this, i)}
                           size="small"
                         >
                           <CancelOutlined fontSize="small" />
-                        </IconButton>
-                        <Grid container={true} spacing={3}>
-                          <Grid item xs={3}>
-                            <FormControl className={classes.formControl}>
-                              <InputLabel>{t('Action type')}</InputLabel>
+                        </StepCloseButton>
+                        <Grid container={true} spacing={3} sx={{ flex: 1 }}>
+                          <Grid size={3}>
+                            <FormControl sx={{ width: '100%' }}>
                               <Select
-                                variant="standard"
-                                value={actionsInputs[i]?.type}
-                                onChange={this.handleChangeActionInput.bind(
+                                value={actionsInputs[i]?.type ?? ''}
+                                onValueChange={this.handleChangeActionInput.bind(
                                   this,
                                   i,
                                   'type',
                                 )}
                               >
-                                <MenuItem value="ADD">{t('Add')}</MenuItem>
-                                <MenuItem value="REPLACE">
-                                  {t('Replace')}
-                                </MenuItem>
-                                <MenuItem value="REMOVE">{t('Remove')}</MenuItem>
+                                <SelectLabel>{t('Action type')}</SelectLabel>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent aria-label={t('Action type')}>
+                                  <SelectItem value="ADD">{t('Add')}</SelectItem>
+                                  <SelectItem value="REPLACE">
+                                    {t('Replace')}
+                                  </SelectItem>
+                                  <SelectItem value="REMOVE">{t('Remove')}</SelectItem>
+                                </SelectContent>
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid item xs={3}>
-                            <FormControl className={classes.formControl}>
-                              <InputLabel>{t('Field')}</InputLabel>
-                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
+                          <Grid size={3}>
+                            <FormControl sx={{ width: '100%' }}>
+                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, customFieldDefinitionsOfTypes)}
                             </FormControl>
                           </Grid>
-                          <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
+                          <Grid style={{ display: 'flex', flexDirection: 'column-reverse' }} size={6}>
                             {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
                           </Grid>
+                          {['start_time', 'stop_time'].includes(actionsInputs[i]?.field) && actionsInputs[i]?.type !== 'REMOVE' && (
+                            <Grid size={12}>
+                              <Alert
+                                severity="info"
+                                variant="outlined"
+                              >
+                                {t('The "start time" must be earlier than the "stop time".')}
+                              </Alert>
+                            </Grid>
+                          )}
                         </Grid>
-                      </div>
+                      </Step>
                     ))}
-                  <div className={classes.add}>
+                  <div>
                     <IconButton
                       aria-label={t('Add step')}
                       disabled={!this.areStepValid()}
                       variant="secondary"
                       size="small"
                       onClick={this.handleAddStep.bind(this)}
-                      classes={{ root: classes.buttonAdd }}
+                      sx={{ width: '100%', height: 36 }}
                     >
                       <AddOutlined fontSize="small" />
                     </IconButton>
@@ -2896,7 +2988,7 @@ class DataTableToolBar extends Component {
                     <Button
                       disabled={!this.areStepValid()}
                       onClick={this.handleLaunchUpdate.bind(this)}
-                      classes={{ root: classes.button }}
+                      sx={{ marginLeft: theme.spacing(2) }}
                     >
                       {t('Update')}
                     </Button>
@@ -2935,7 +3027,9 @@ class DataTableToolBar extends Component {
                             )}
                             value={element.id}
                             name="keptEntityID"
-                            inputProps={{ 'aria-label': 'keptEntityID' }}
+                            slotProps={{
+                              input: { 'aria-label': 'keptEntityID' },
+                            }}
                           />
                         )}
                       >
@@ -2994,11 +3088,7 @@ class DataTableToolBar extends Component {
                     {t('Aliases')}
                   </Typography>
                   {newAliases.map((label) => (label.length > 0 ? (
-                    <Chip
-                      key={label}
-                      classes={{ root: classes.aliases }}
-                      label={label}
-                    />
+                    <FdsChip key={label} label={label} />
                   ) : (
                     ''
                   )))}
@@ -3079,7 +3169,9 @@ class DataTableToolBar extends Component {
                               this,
                               connector.id,
                             )}
-                            inputProps={{ 'aria-label': 'controlled' }}
+                            slotProps={{
+                              input: { 'aria-label': 'controlled' },
+                            }}
                           />
                         )}
                       >
@@ -3167,64 +3259,70 @@ class DataTableToolBar extends Component {
                     ]);
                   }}
                 />
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
+                <Combobox
                   selectOnFocus={true}
-                  autoHighlight={true}
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={actionsInputs[0]?.values || []}
                   multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchContainers.bind(this, 0)}
-                      style={{ marginTop: 3 }}
-                    />
-                  )}
-                  noOptionsText={t('No available options')}
+                  closeOnSelect
                   options={this.state.containers}
-                  onInputChange={this.searchContainers.bind(this, 0)}
                   inputValue={actionsInputs[0]?.inputValue || ''}
-                  onChange={this.handleChangeActionInputValues.bind(this, 0)}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div className={classes.icon}>
+                  onInputChange={(newValue, meta) => {
+                    if (meta.cause === 'type') (this.searchContainers.bind(this, 0))(newValue);
+                  }}
+                  onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, 0))(next, meta.event)}
+                  renderOption={(option) => (
+                    <>
+                      <OptionIcon>
                         <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
+                      </OptionIcon>
+                      <OptionText>{option.label}</OptionText>
+                    </>
                   )}
                   disableClearable
-                />
-                <FormControlLabel
-                  style={{ marginTop: 20 }}
-                  control={(
-                    <Checkbox
-                      checked={
-                        actionsInputs[0]?.options?.includeNeighbours || false
-                      }
-                      onChange={this.handleChangeActionInputOptions.bind(
-                        this,
-                        0,
-                        'includeNeighbours',
-                      )}
-                    />
-                  )}
-                  label={t('Also include first neighbours')}
-                />
-                <IconButton
-                  aria-label={t('Create container')}
-                  onClick={() => this.setState({ containerCreation: true })}
-                  edge="end"
-                  style={{ position: 'absolute', top: 80, right: 50 }}
                 >
-                  <AddOutlined />
-                </IconButton>
-
+                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
+                  {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
+                  <ComboboxField adornment={(
+                    <FdsTooltip>
+                      <TooltipTrigger asChild>
+                        <FdsIconButton
+                          size="sm"
+                          priority="tertiary"
+                          aria-label={t('Create container')}
+                          onClick={() => this.setState({ containerCreation: true })}
+                          icon={<AddOutlined fontSize="small" />}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{t('Create container')}</TooltipContent>
+                    </FdsTooltip>
+                  )}
+                  >
+                    <ComboboxChips aria-label={t('Values')} />
+                    <ComboboxInput onFocus={() => (this.searchContainers.bind(this, 0))('')} />
+                    <ComboboxControls>
+                      <ComboboxClear />
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent
+                    emptyMessage={t('No available options')}
+                    listAriaLabel={t('Values')}
+                  />
+                </Combobox>
+                <div style={{ marginTop: 20 }}>
+                  <Checkbox
+                    checked={
+                      actionsInputs[0]?.options?.includeNeighbours || false
+                    }
+                    onCheckedChange={this.handleChangeActionInputOptions.bind(
+                      this,
+                      0,
+                      'includeNeighbours',
+                    )}
+                    label={t('Also include first neighbours')}
+                  />
+                </div>
                 <DialogActions>
                   <Button
                     variant="secondary"
@@ -3279,47 +3377,57 @@ class DataTableToolBar extends Component {
                     this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
                   }}
                 />
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
+                <Combobox
                   selectOnFocus={true}
-                  autoHighlight={true}
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={this.state.shareOrganizations}
                   multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchOrganizations.bind(this)}
-                      style={{ marginTop: 3 }}
-                    />
-                  )}
-                  noOptionsText={t('No available options')}
+                  closeOnSelect
                   options={this.state.organizations}
-                  onInputChange={this.searchOrganizations.bind(this)}
                   inputValue={this.state.organizationInput}
-                  onChange={(_, value) => this.setState({ shareOrganizations: value })}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div className={classes.icon}>
+                  onInputChange={(newValue, meta) => {
+                    if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
+                  }}
+                  onValueChange={(next) => this.setState({ shareOrganizations: next })}
+                  renderOption={(option) => (
+                    <>
+                      <OptionIcon>
                         <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
+                      </OptionIcon>
+                      <OptionText>{option.label}</OptionText>
+                    </>
                   )}
                   disableClearable
-                />
-                <IconButton
-                  aria-label={t('Create organization')}
-                  onClick={() => this.setState({ organizationCreation: true })}
-                  edge="end"
-                  style={{ position: 'absolute', top: 80, right: 50 }}
                 >
-                  <AddOutlined />
-                </IconButton>
+                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
+                  {/* The create control is interactive, so it takes the host-owned `adornment` slot. */}
+                  <ComboboxField adornment={(
+                    <FdsTooltip>
+                      <TooltipTrigger asChild>
+                        <FdsIconButton
+                          size="sm"
+                          priority="tertiary"
+                          aria-label={t('Create organization')}
+                          onClick={() => this.setState({ organizationCreation: true })}
+                          icon={<AddOutlined fontSize="small" />}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{t('Create organization')}</TooltipContent>
+                    </FdsTooltip>
+                  )}
+                  >
+                    <ComboboxChips aria-label={t('Values')} />
+                    <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
+                    <ComboboxControls>
+                      <ComboboxClear />
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent
+                    emptyMessage={t('No available options')}
+                    listAriaLabel={t('Values')}
+                  />
+                </Combobox>
                 <DialogActions>
                   <Button
                     variant="secondary"
@@ -3349,39 +3457,42 @@ class DataTableToolBar extends Component {
                 onClose={() => this.setState({ displayUnshare: false })}
                 title={t('Unshare with organizations')}
               >
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
+                <Combobox
                   selectOnFocus={true}
-                  autoHighlight={true}
                   getOptionLabel={(option) => (option.label ? option.label : '')}
                   value={this.state.shareOrganizations}
                   multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchOrganizations.bind(this)}
-                      style={{ marginTop: 3 }}
-                    />
-                  )}
-                  noOptionsText={t('No available options')}
+                  closeOnSelect
                   options={this.state.organizations}
-                  onInputChange={this.searchOrganizations.bind(this)}
                   inputValue={this.state.organizationInput}
-                  onChange={(_, value) => this.setState({ shareOrganizations: value })}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div className={classes.icon}>
+                  onInputChange={(newValue, meta) => {
+                    if (meta.cause === 'type') (this.searchOrganizations.bind(this))(newValue);
+                  }}
+                  onValueChange={(next) => this.setState({ shareOrganizations: next })}
+                  renderOption={(option) => (
+                    <>
+                      <OptionIcon>
                         <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
+                      </OptionIcon>
+                      <OptionText>{option.label}</OptionText>
+                    </>
                   )}
                   disableClearable
-                />
+                >
+                  <ComboboxLabel>{t('Values')}</ComboboxLabel>
+                  <ComboboxField>
+                    <ComboboxChips aria-label={t('Values')} />
+                    <ComboboxInput onFocus={() => (this.searchOrganizations.bind(this))('')} />
+                    <ComboboxControls>
+                      <ComboboxClear />
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent
+                    emptyMessage={t('No available options')}
+                    listAriaLabel={t('Values')}
+                  />
+                </Combobox>
                 <DialogActions>
                   <Button
                     variant="secondary"
@@ -3426,7 +3537,7 @@ class DataTableToolBar extends Component {
 }
 
 DataTableToolBar.propTypes = {
-  classes: PropTypes.object,
+  customFieldDefinitions: PropTypes.array,
   theme: PropTypes.object,
   t: PropTypes.func,
   numberOfSelectedElements: PropTypes.number,
@@ -3452,4 +3563,13 @@ DataTableToolBar.propTypes = {
   taskScope: PropTypes.string,
 };
 
-export default R.compose(inject18n, withTheme, withStyles(styles))(DataTableToolBar);
+const DataTableToolBarComponent = inject18n(DataTableToolBar);
+
+// The update entities drawer offers the custom fields: their definitions are loaded once elements are selected
+const DataTableToolBarWithCustomFields = (props) => {
+  const theme = useTheme();
+  const customFieldDefinitions = useCustomFieldDefinitions(props.numberOfSelectedElements > 0);
+  return <DataTableToolBarComponent {...props} theme={theme} customFieldDefinitions={customFieldDefinitions} />;
+};
+
+export default DataTableToolBarWithCustomFields;

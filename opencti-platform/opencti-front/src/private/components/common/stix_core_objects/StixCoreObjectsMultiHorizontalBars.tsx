@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
@@ -529,7 +529,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
   host,
 }: StixCoreObjectsMultiHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -549,8 +549,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

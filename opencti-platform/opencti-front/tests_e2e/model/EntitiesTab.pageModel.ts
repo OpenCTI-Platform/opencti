@@ -7,7 +7,7 @@ export default class EntitiesTabPageModel {
 
   constructor(private page: Page) {
     this.entireTab = this.page.getByRole('heading', { name: 'Add entities' }).locator('../../..');
-    this.searchField = new TextFieldPageModel(this.page, 'Search', 'text-no-label', this.entireTab);
+    this.searchField = new TextFieldPageModel(this.page, 'Search', 'search', this.entireTab);
   }
 
   clickAddEntities() {

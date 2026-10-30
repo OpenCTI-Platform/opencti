@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/material/styles';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
 import IconButton from '@common/button/IconButton';
@@ -16,10 +16,11 @@ import {
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
 import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
-import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '../../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
@@ -27,8 +28,9 @@ interface AccordionAttackPatternProps {
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
+  coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
+  expandAll?: boolean;
 }
 
 const AccordionAttackPattern = ({
@@ -39,15 +41,45 @@ const AccordionAttackPattern = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  expandAll,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(expandAll ?? false);
+  // Skip the collapse animation on expand/collapse all: animating every accordion at once is slow on large matrices
+  const [skipAnimation, setSkipAnimation] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { t_i18n } = useFormatter();
+
+  useEffect(() => {
+    if (expandAll !== undefined) {
+      setSkipAnimation(true);
+      setExpanded(expandAll);
+    }
+  }, [expandAll]);
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
 
+  const getAvgCoverageScore = (): { avg: number; count: number } | null => {
+    if (!isCoverage) {
+      return null;
+    }
+    // Calculate coverage including sub-techniques
+    const parentCoverage = attackPattern.isCovered ? coverage : null;
+    const subCoverages = attackPattern.subAttackPatterns
+      ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
+      ?.map((sub) => coverageMap?.get((sub as FilteredSubAttackPattern).attack_pattern_id))
+      .filter(Boolean)
+      .flat() || [];
+
+    const allCoverages = [...(parentCoverage || []), ...subCoverages];
+    // Get the average coverage score from all coverages (parent + sub-techniques)
+    let avgScore = 0;
+    if (allCoverages.length > 0) {
+      avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
+    }
+    return { avg: avgScore, count: allCoverages.length };
+  };
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
     if (!isCoverage) {
@@ -65,18 +97,9 @@ const AccordionAttackPattern = ({
       return { backgroundColor: defaultStyles.backgroundColor, border: defaultStyles.border };
     }
 
-    // Calculate coverage including sub-techniques
-    const parentCoverage = attackPattern.isCovered ? coverage : null;
-    const subCoverages = attackPattern.subAttackPatterns
-      ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
-      ?.map((sub) => coverageMap?.get((sub as FilteredSubAttackPattern).attack_pattern_id))
-      .filter(Boolean)
-      .flat() || [];
-
-    const allCoverages = [...(parentCoverage || []), ...subCoverages];
-
+    const avgCoverageScore = getAvgCoverageScore();
     // Box is covered and we're in coverage mode
-    if (allCoverages.length === 0) {
+    if (avgCoverageScore?.count === 0) {
       // No coverage data but box is covered - use blue for unknown
       const bgColor = isHovered
         ? hexToRGB(theme.palette.primary.main, 0.3)
@@ -88,13 +111,14 @@ const AccordionAttackPattern = ({
       };
     }
 
-    // Get the average coverage score from all coverages (parent + sub-techniques)
-    const avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
-
     // Calculate color based on score (0-100)
     // Green to red gradient
-    const red = Math.round(255 * (1 - avgScore / 100));
-    const green = Math.round(255 * (avgScore / 100));
+    let red = 255;
+    let green = 255;
+    if (avgCoverageScore) {
+      red = Math.round(255 * (1 - avgCoverageScore.avg / 100));
+      green = Math.round(255 * (avgCoverageScore.avg / 100));
+    }
     const bgOpacity = isHovered ? 0.25 : 0.15;
 
     return {
@@ -109,6 +133,16 @@ const AccordionAttackPattern = ({
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
   const { border, backgroundColor } = styles;
 
+  const a11yProps = () => {
+    const scoreValue = getAvgCoverageScore();
+    if (scoreValue) {
+      return {
+        'aria-label': `${Math.round(scoreValue.avg)}% ${t_i18n('Coverage')}`,
+      };
+    }
+    return undefined;
+  };
+
   return (
     <MuiAccordion
       expanded={expanded}
@@ -117,7 +151,7 @@ const AccordionAttackPattern = ({
       elevation={0}
       id={attackPattern.attack_pattern_id}
       key={attackPattern.attack_pattern_id}
-      slotProps={{ transition: { unmountOnExit: true } }}
+      slotProps={{ transition: { unmountOnExit: true, ...(skipAnimation && { enter: false, exit: false }) } }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       sx={{
@@ -131,13 +165,16 @@ const AccordionAttackPattern = ({
     >
       <MuiAccordionSummary
         onClick={(e) => handleOpen(attackPattern, e)}
+        {...a11yProps()}
         expandIcon={(
           <IconButton
             aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
             onClick={(event) => {
               event.stopPropagation();
+              setSkipAnimation(false);
               setExpanded(!expanded);
             }}
+            aria-expanded={expanded}
           >
             <ArrowForwardIosSharpIcon sx={{
               fontSize: '0.9rem',
@@ -158,7 +195,12 @@ const AccordionAttackPattern = ({
           '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
         }}
       >
-        <Typography variant="body2" fontSize={10}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontSize: 10,
+          }}
+        >
           {attackPattern.name}
         </Typography>
 

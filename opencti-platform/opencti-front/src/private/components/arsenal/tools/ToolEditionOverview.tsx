@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -20,6 +20,7 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
@@ -88,6 +89,7 @@ export const toolMutationRelationDelete = graphql`
 const toolEditionOverviewFragment = graphql`
   fragment ToolEditionOverview_tool on Tool {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     tool_types
@@ -331,10 +333,17 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             name="tool_version"
             label={t_i18n('Tool Version')}
             fullWidth
-            style={{ marginTop: theme.spacing(2) }}
+            className="mt-4"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={<SubscriptionFocus context={context} fieldName="tool_version" />}
+          />
+          <CustomFieldValuesEdition
+            entityType={TOOL_TYPE}
+            entityId={tool.id}
+            values={tool.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

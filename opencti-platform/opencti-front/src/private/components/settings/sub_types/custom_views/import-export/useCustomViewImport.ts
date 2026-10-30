@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { graphql } from 'react-relay';
 import { handleError, MESSAGING$ } from '../../../../../../relay/environment';
 import useDashboardImport from '../../../../../../components/dashboard/import-export/useDashboardImport';

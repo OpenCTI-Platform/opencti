@@ -2,8 +2,8 @@ import React, { BaseSyntheticEvent, FunctionComponent, useRef, useState } from '
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
-import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
-import { useNavigate, useParams } from 'react-router-dom';
+import ToggleButton from '@mui/material/ToggleButton';
+import { useNavigate, useParams } from 'react-router';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';

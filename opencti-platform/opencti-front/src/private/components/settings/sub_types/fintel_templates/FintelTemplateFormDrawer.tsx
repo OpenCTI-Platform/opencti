@@ -1,7 +1,7 @@
 import Drawer from '@components/common/drawer/Drawer';
 import { useState } from 'react';
 import { type FormikConfig } from 'formik';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { fetchQuery as relayFetchQuery, graphql } from 'react-relay';
 import useFintelTemplateAdd from './useFintelTemplateAdd';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
@@ -116,6 +116,8 @@ const FintelTemplateFormDrawer = ({
           start_date: values.published ? new Date() : null,
           settings_types: [entityType],
           default: values.default,
+          include_cover_page_by_default: values.include_cover_page_by_default,
+          include_back_page_by_default: values.include_back_page_by_default,
         },
       },
       onCompleted: (response) => {
@@ -160,9 +162,10 @@ const FintelTemplateFormDrawer = ({
 
   const onEdit = (field: FintelTemplateFormInputKeys, value: unknown) => {
     if (!template) return;
-
-    let input: { key: string; value: [unknown] } = { key: field, value: [value] };
-    if (field === 'published') input = { key: 'start_date', value: [value === 'true' ? new Date() : null] };
+    const isBooleanField = ['published', 'default', 'include_cover_page_by_default', 'include_back_page_by_default'].includes(field);
+    const normalizedValue = isBooleanField ? value === true || value === 'true' : value;
+    let input: { key: string; value: [unknown] } = { key: field, value: [normalizedValue] };
+    if (field === 'published') input = { key: 'start_date', value: [normalizedValue ? new Date() : null] };
     commitEditMutation({
       variables: { id: template.id, input: [input] },
     });

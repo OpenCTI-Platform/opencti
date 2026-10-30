@@ -2,7 +2,7 @@ import { OpenWithOutlined, Undo } from '@mui/icons-material';
 import React, { useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import InvestigationExpandForm, { InvestigationExpandFormProps } from '@components/workspaces/investigations/InvestigationExpandForm';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
 import InvestigationRollBackExpandDialog from '@components/workspaces/investigations/dialog/InvestigationRollBackExpandDialog';
@@ -13,6 +13,7 @@ import useGraphInteractions from '../utils/useGraphInteractions';
 import { fetchQuery } from '../../../relay/environment';
 import { GraphToolbarExpandToolsRelationshipsQuery$data } from './__generated__/GraphToolbarExpandToolsRelationshipsQuery.graphql';
 import { ObjectToParse } from '../utils/useGraphParser';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
 const expandRelationshipsQuery = graphql`
   query GraphToolbarExpandToolsRelationshipsQuery($filters: FilterGroup) {
@@ -78,10 +79,12 @@ const expandRelationshipsQuery = graphql`
           from {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }
             ... on StixCoreObject {
+              is_inferred
               created_at
               updated_at
               numberOfConnectedElement
@@ -102,6 +105,7 @@ const expandRelationshipsQuery = graphql`
             }
             ... on StixDomainObject {
               created
+              confidence
             }
             ... on AttackPattern {
               name
@@ -134,6 +138,12 @@ const expandRelationshipsQuery = graphql`
             ... on Grouping {
               name
               description
+            }
+            ... on SecurityCoverage {
+              name
+            }
+            ... on SecurityCoverageResult {
+              name
             }
             ... on Individual {
               name
@@ -272,6 +282,7 @@ const expandRelationshipsQuery = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -287,6 +298,7 @@ const expandRelationshipsQuery = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -319,10 +331,12 @@ const expandRelationshipsQuery = graphql`
           to {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }
             ... on StixCoreObject {
+              is_inferred
               created_at
               updated_at
               numberOfConnectedElement
@@ -343,6 +357,7 @@ const expandRelationshipsQuery = graphql`
             }
             ... on StixDomainObject {
               created
+              confidence
             }
             ... on AttackPattern {
               name
@@ -374,6 +389,12 @@ const expandRelationshipsQuery = graphql`
             ... on Grouping {
               name
               description
+            }
+            ... on SecurityCoverage {
+              name
+            }
+            ... on SecurityCoverageResult {
+              name
             }
             ... on Individual {
               name
@@ -481,6 +502,7 @@ const expandRelationshipsQuery = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -496,6 +518,7 @@ const expandRelationshipsQuery = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -646,7 +669,7 @@ const GraphToolbarExpandTools = ({
         color="primary"
         onClick={() => setRollBackOpen(true)}
         title={t_i18n('Restore the state of the graphic before the last expansion')}
-        disabled={!containsExpandOp()}
+        disabledReason={containsExpandOp() ? undefined : t_i18n('No expansion to roll back yet')}
       />
 
       <InvestigationRollBackExpandDialog
@@ -659,11 +682,13 @@ const GraphToolbarExpandTools = ({
         Icon={<OpenWithOutlined />}
         color="primary"
         onClick={() => setIsExpandOpen(true)}
-        title={t_i18n('Expand')}
-        disabled={selectedNodes.length === 0}
+        title={t_i18n('Expand the selected entities')}
+        disabledReason={selectedNodes.length === 0 ? t_i18n('Select entities first') : undefined}
       />
 
       <Dialog
+        // A dialog is a layer-2 surface, like a drawer. See utils/fdsLayer.ts.
+        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
         fullWidth
         maxWidth={false}
         open={isExpandOpen}

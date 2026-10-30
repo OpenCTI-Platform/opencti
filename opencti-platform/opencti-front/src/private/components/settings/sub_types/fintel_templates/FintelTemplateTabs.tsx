@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
 import { useFormatter } from '../../../../../components/i18n';
 import { FintelTemplateTabs_template$key } from './__generated__/FintelTemplateTabs_template.graphql';
@@ -22,6 +22,13 @@ interface ChildrenProps {
 interface FintelTemplateTabsProps {
   data: FintelTemplateTabs_template$key;
   children: (props: ChildrenProps) => ReactNode;
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `fintel-templates-tab-${index}`,
+    'aria-controls': `fintel-templates-tabpanel-${index}`,
+  };
 }
 
 const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
@@ -51,13 +58,13 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
           needs={[KNOWLEDGE]}
           placeholder={(
             <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-              <Tab label={t_i18n('Template Editor')} />
+              <Tab label={t_i18n('Template Editor')} {...a11yProps(0)} />
             </Tabs>
           )}
         >
           <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-            <Tab label={t_i18n('Template Editor')} />
-            <Tab label={t_i18n('Template Preview')} />
+            <Tab label={t_i18n('Template Editor')} {...a11yProps(0)} />
+            <Tab label={t_i18n('Template Preview')} {...a11yProps(1)} />
           </Tabs>
         </Security>
 

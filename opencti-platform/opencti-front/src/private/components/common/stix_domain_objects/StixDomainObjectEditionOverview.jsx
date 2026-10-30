@@ -18,6 +18,7 @@ import ConfidenceField from '../form/ConfidenceField';
 import { convertMarkings } from '../../../../utils/edition';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import DrawerHeader from '@common/drawer/DrawerHeader';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 
 const subscription = graphql`
   subscription StixDomainObjectEditionOverviewSubscription($id: ID!) {
@@ -295,7 +296,7 @@ const StixDomainObjectEditionContainer = (props) => {
               {'result_name' in stixDomainObject ? (
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="result_name"
                   label={t_i18n('Result Name')}
                   fullWidth={true}
@@ -308,7 +309,7 @@ const StixDomainObjectEditionContainer = (props) => {
               ) : ('name' in stixDomainObject && (
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t_i18n('Name')}
                   fullWidth={true}
@@ -325,11 +326,11 @@ const StixDomainObjectEditionContainer = (props) => {
               {'aliases' in stixDomainObject && stixDomainObject.aliases !== undefined && (
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="aliases"
                   label={t_i18n('Aliases separated by commas')}
                   fullWidth={true}
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
                   helperText={(
@@ -343,11 +344,11 @@ const StixDomainObjectEditionContainer = (props) => {
               {'x_opencti_aliases' in stixDomainObject && stixDomainObject.x_opencti_aliases !== undefined && (
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="x_opencti_aliases"
                   label={t_i18n('Aliases separated by commas')}
                   fullWidth={true}
-                  style={{ marginTop: 20 }}
+                  className="mt-5"
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
                   helperText={(
@@ -410,6 +411,13 @@ const StixDomainObjectEditionContainer = (props) => {
                 setFieldValue={setFieldValue}
                 onChange={handleChangeObjectMarking}
               />
+              <CustomFieldValuesEdition
+                entityType={stixDomainObject.entity_type}
+                entityId={stixDomainObject.id}
+                values={stixDomainObject.customFieldValues ?? []}
+                fieldPatch={(options) => commitMutation({ mutation: stixDomainObjectMutationFieldPatch, ...options })}
+                enableReferences={enableReferences}
+              />
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
@@ -435,6 +443,7 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
     stixDomainObject: graphql`
       fragment StixDomainObjectEditionOverview_stixDomainObject on StixDomainObject {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         entity_type
         parent_types
         confidence

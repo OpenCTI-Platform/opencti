@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Button from '@common/button/Button';
 import { Box, Stack, TextField } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import type { Theme } from '../../../../../components/Theme';
@@ -20,6 +20,14 @@ interface ImportFilesFreeTextProps {
 const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesFreeTextProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const contentInputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // The free-text form replaces the dropzone in an already open dialog, so no
+  // dialog-level focus trap re-arms and the previous trigger button unmounts.
+  // Explicitly focus the content field on mount to avoid losing keyboard focus.
+  useEffect(() => {
+    contentInputRef.current?.focus();
+  }, []);
 
   const createFileFreeText = (
     { content }: FileFreeTextType,
@@ -62,17 +70,24 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
               label={t_i18n('Content')}
               fullWidth
               multiline
-              autoFocus
               name="content"
               rows="10"
-              variant="standard"
-              InputProps={{ sx: { background: theme.palette.background.paper } }}
-              InputLabelProps={{ shrink: true }}
+              variant="outlined"
+              inputRef={contentInputRef}
               slotProps={{
+                input: { sx: { background: theme.palette.background.paper } },
+                inputLabel: { shrink: true },
                 htmlInput: { style: { padding: 8 } },
               }}
             />
-            <Stack direction="row" gap={1} justifyContent="flex-end" sx={{ width: '100%' }}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+                justifyContent: 'flex-end',
+                width: '100%',
+              }}
+            >
               <Button
                 variant="secondary"
                 disabled={isSubmitting}

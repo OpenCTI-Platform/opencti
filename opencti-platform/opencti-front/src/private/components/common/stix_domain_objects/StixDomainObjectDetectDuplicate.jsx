@@ -1,15 +1,14 @@
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { VisibilityOutlined } from '@mui/icons-material';
+import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -17,18 +16,6 @@ import { fetchQuery } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import { EMPTY_VALUE, truncate } from '../../../../utils/String';
 import { stixDomainObjectsLinesSearchQuery } from './StixDomainObjectsLines';
-
-const styles = () => ({
-  dialogPaper: {
-    maxHeight: '60vh',
-  },
-  noDuplicate: {
-    color: '#4caf50',
-  },
-  duplicates: {
-    color: '#ff9800',
-  },
-});
 
 class StixDomainObjectDetectDuplicate extends Component {
   constructor(props) {
@@ -69,14 +56,11 @@ class StixDomainObjectDetectDuplicate extends Component {
 
   render() {
     const { potentialDuplicates } = this.state;
-    const { t, classes, value } = this.props;
+    const { t, value } = this.props;
     return (
-      <span
-        className={
-          potentialDuplicates.length > 0
-            ? classes.duplicates
-            : classes.noDuplicate
-        }
+      <Box
+        component="span"
+        sx={{ color: potentialDuplicates.length > 0 ? '#ff9800' : '#4caf50' }}
       >
         {value && potentialDuplicates.length === 0
           ? t('No potential duplicate entities has been found.')
@@ -145,7 +129,7 @@ class StixDomainObjectDetectDuplicate extends Component {
             })}
           </List>
         </Dialog>
-      </span>
+      </Box>
     );
   }
 }
@@ -153,11 +137,7 @@ class StixDomainObjectDetectDuplicate extends Component {
 StixDomainObjectDetectDuplicate.propTypes = {
   types: PropTypes.array,
   value: PropTypes.string,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectDetectDuplicate);
+export default inject18n(StixDomainObjectDetectDuplicate);

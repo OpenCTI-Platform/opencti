@@ -5,12 +5,12 @@ import StixDomainObjectsExports from '@components/common/stix_domain_objects/Sti
 import StixCyberObservablesExports from '@components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { FileDownloadOutlined } from '@mui/icons-material';
 import { Stack, ToggleButtonGroup } from '@mui/material';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ExportContext } from '../../utils/ExportContextProvider';
-import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, canonicalizeFilterGroupForBackend } from '../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
@@ -56,6 +56,25 @@ export const DataTableDisplayFilters = ({
   );
 };
 
+/**
+ * Builds the filter group sent to the export mutations: the context filters and the current
+ * filters are kept as two sibling groups, and the frontend-only ids are stripped at any depth.
+ */
+export const buildExportFilterGroup = (contextFilters?: FilterGroup | null, filters?: FilterGroup | null): FilterGroup => {
+  const exportFilterGroups: FilterGroup[] = [];
+  if (isFilterGroupNotEmpty(contextFilters)) {
+    exportFilterGroups.push(canonicalizeFilterGroupForBackend(contextFilters!));
+  }
+  if (isFilterGroupNotEmpty(filters)) {
+    exportFilterGroups.push(canonicalizeFilterGroupForBackend(filters!));
+  }
+  return {
+    mode: 'and',
+    filters: [],
+    filterGroups: exportFilterGroups,
+  };
+};
+
 const DataTableFilters = ({
   contextFilters,
   availableFilterKeys,
@@ -95,25 +114,17 @@ const DataTableFilters = ({
 
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 
-  const exportFilterGroups: FilterGroup[] = [];
-  if (isFilterGroupNotEmpty(contextFilters)) {
-    exportFilterGroups.push(contextFilters!);
-  }
-  if (isFilterGroupNotEmpty(paginationOptions.filters)) {
-    exportFilterGroups.push(paginationOptions.filters);
-  }
   const exportPaginationOptions = {
     ...paginationOptions,
-    filters: {
-      mode: 'and',
-      filters: [],
-      filterGroups: exportFilterGroups,
-    },
+    filters: buildExportFilterGroup(contextFilters, paginationOptions.filters),
   };
 
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+      {/* `alignItems: center`: without it the row defaults to `stretch`, so the left group (which centres its own
+          children) and the right group of 36px toggles resolved to different centre lines — measured 305 against
+          303 on the entity Analyses tab, which is the 2px misalignment reported there. */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1, alignItems: 'center' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -183,8 +194,8 @@ const DataTableFilters = ({
             additionalHeaderButtons && (
               <Stack
                 direction="row"
-                gap={1}
                 sx={{
+                  gap: 1,
                   '&:empty': {
                     display: 'none',
                   },

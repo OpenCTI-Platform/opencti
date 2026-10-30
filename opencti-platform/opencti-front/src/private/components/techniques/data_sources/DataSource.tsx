@@ -60,6 +60,7 @@ const dataSourceFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...DataSourceDetails_dataSource
   }
 `;
@@ -85,19 +86,19 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <DataSourceDetailsComponent dataSource={dataSource} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview stixDomainObject={dataSource} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={dataSource.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/techniques/data_sources/${dataSource.id}/knowledge`}
@@ -106,7 +107,7 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={dataSource.id}
                     />
@@ -114,7 +115,7 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={dataSource.id}
                     />
@@ -122,7 +123,7 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={dataSource.id}
                     />
@@ -130,7 +131,7 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={dataSource.id}
                       defaultMarkings={dataSource.objectMarking ?? []}

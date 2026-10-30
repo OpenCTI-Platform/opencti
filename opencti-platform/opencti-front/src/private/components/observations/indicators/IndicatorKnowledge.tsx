@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import IndicatorEntities from './IndicatorEntities';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '@components/events/stix_sighting_relationships/StixSightingRelationship';
@@ -23,9 +23,7 @@ const IndicatorKnowledge = ({ indicatorId }: IndicatorKnowledgeProps) => (
     <Route
       path="/relations/:relationId"
       element={(
-        <StixCoreRelationship
-          entityId={indicatorId}
-        />
+        <StixCoreRelationship />
       )}
     />
     <Route

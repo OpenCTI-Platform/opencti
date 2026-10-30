@@ -9,6 +9,7 @@ import callbackResizeObserver from '../../../utils/resizeObservers';
 import { useDataTable } from '../dataTableHooks';
 import DataTableEmptyState from './DataTableEmptyState';
 import DataTableSearchEmptyState from './DataTableSearchEmptyState';
+import { removeEmptyFiltersFromList } from 'src/utils/filters/filtersUtils';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -185,9 +186,7 @@ const DataTableBody = ({
   }
 
   const isSearching = !!tableSearchTerm
-    || (filters?.filters ?? [])
-      .filter((f) => ['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(f.operator ?? 'eq') || f.values.length > 0)
-      .length > 0;
+    || removeEmptyFiltersFromList(filters?.filters ?? []).length > 0;
 
   return (
     <>
@@ -198,10 +197,10 @@ const DataTableBody = ({
       </div>
 
       <div ref={scrollContainerRef} style={containerLinesStyle}>
-        {resolvedData.length === 0 && isSearching && (
+        {resolvedData.length === 0 && !isLoading && isSearching && (
           <DataTableSearchEmptyState rawSearchTerm={tableSearchTerm} />
         )}
-        {resolvedData.length === 0 && !!emptyStateMessage && (
+        {resolvedData.length === 0 && !isLoading && !!emptyStateMessage && (
           <DataTableEmptyState message={emptyStateMessage} />
         )}
         {enableInfiniteScroll ? (() => {

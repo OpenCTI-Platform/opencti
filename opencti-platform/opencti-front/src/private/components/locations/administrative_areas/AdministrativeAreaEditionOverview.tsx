@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { AdministrativeAreaEditionOverview_administrativeArea$key } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -84,6 +85,7 @@ const administrativeAreaMutationRelationDelete = graphql`
 export const administrativeAreaEditionOverviewFragment = graphql`
   fragment AdministrativeAreaEditionOverview_administrativeArea on AdministrativeArea {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     latitude
@@ -252,7 +254,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           <AlertConfidenceForEntity entity={administrativeArea} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -289,8 +291,8 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
@@ -304,8 +306,8 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
@@ -352,6 +354,13 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={administrativeArea.entity_type}
+            entityId={administrativeArea.id}
+            values={administrativeArea.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

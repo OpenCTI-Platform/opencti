@@ -3,7 +3,7 @@ import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mu
 import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import AccordionAttackPattern from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixAccordion';
 import AttackPatternsMatrixBadge from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixBadge';
@@ -150,6 +150,7 @@ const AttackPatternsMatrixColumns = ({
   handleAdd,
   selectedKillChain,
   isModeOnlyActive,
+  expandAll,
   inPaper,
   isCoverage = false,
   coverageMap,
@@ -257,7 +258,12 @@ const AttackPatternsMatrixColumns = ({
               marginBlockStart: 3,
             }}
           >
-            <Box display="inline-flex" id="container">
+            <Box
+              id="container"
+              sx={{
+                display: 'inline-flex',
+              }}
+            >
               {filteredData?.map((col) => (
                 <Box key={col.kill_chain_id} sx={{ mr: 1.5, display: 'flex', flexDirection: 'column', minWidth: 150 }}>
                   <Box sx={{ textAlign: 'center', mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -316,6 +322,7 @@ const AttackPatternsMatrixColumns = ({
                                 isCoverage={isCoverage}
                                 coverageMap={coverageMap}
                                 entityId={entityId}
+                                expandAll={expandAll}
                               />
                             </AttackPatternsMatrixBadge>
                           );
@@ -349,10 +356,12 @@ const AttackPatternsMatrixColumns = ({
                     <ListItemIcon><InfoOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>View</ListItemText>
                   </MenuItem>
-                  <MenuItem onClick={() => handleAddAttackPattern(selectedAttackPattern)}>
-                    <ListItemIcon><AddCircleOutlineOutlined fontSize="small" /></ListItemIcon>
-                    <ListItemText>Add</ListItemText>
-                  </MenuItem>
+                  {!isCoverage && (
+                    <MenuItem onClick={() => handleAddAttackPattern(selectedAttackPattern)}>
+                      <ListItemIcon><AddCircleOutlineOutlined fontSize="small" /></ListItemIcon>
+                      <ListItemText>Add</ListItemText>
+                    </MenuItem>
+                  )}
                 </>
               )}
             </Menu>

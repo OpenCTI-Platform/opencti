@@ -8,24 +8,34 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  hasPublishedWorkflowDefinition,
   publishWorkflowDefinition,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
+  setWorkflowStatus,
+  getWorkflowBypassStatuses,
 } from '../domain/workflow-domain';
+import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
 
-const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
+const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_external_kept']);
 
 const workflowResolvers = {
   Query: {
     workflowDefinition: (_: any, { entityType, allowDraft = false }: { entityType: string; allowDraft?: boolean }, context: AuthContext) => {
       return getWorkflowDefinition(context, context.user!, entityType, allowDraft);
     },
+    workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return hasPublishedWorkflowDefinition(context, context.user!, entityType);
+    },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
     },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);
+    },
+    workflowBypassStatuses: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
+      return getWorkflowBypassStatuses(context, context.user!, entityId);
     },
   },
   Mutation: {
@@ -56,6 +66,25 @@ const workflowResolvers = {
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
     },
+    setWorkflowStatus: (_: any, {
+      entityId,
+      targetStatusId,
+      applyTransitionActions,
+      comment,
+      runtimeParams,
+    }: {
+      entityId: string;
+      targetStatusId: string;
+      applyTransitionActions: boolean;
+      comment?: string | null;
+      runtimeParams?: Record<string, unknown> | null;
+    }, context: AuthContext) => {
+      const normalizedComment = comment?.trim() || undefined;
+      if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
+        throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
+      }
+      return setWorkflowStatus(context, context.user!, entityId, targetStatusId, applyTransitionActions, normalizedComment, runtimeParams ?? {});
+    },
     reportWorkflowAsyncActionResult: async (_: any, args: { workflowInstanceId: string; workflowActionId: string; status: string; error?: string }, context: AuthContext) => {
       await reportWorkflowAsyncActionResult(
         context,
@@ -71,15 +100,17 @@ const workflowResolvers = {
   WorkflowInstance: {
     id: (instance: any) => instance.id || instance.internal_id,
     currentState: (instance: any) => instance.currentState,
-    currentStatus: (instance: any) => ({ id: instance.currentState, template_id: instance.currentState }),
+    currentStatus: (instance: any) => instance.currentStatus ?? null,
     allowedTransitions: (instance: any) => instance.allowedTransitions,
     lastHistoryEntry: (instance: any) => {
       const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
-      return history.length > 0 ? history[history.length - 1] : null;
+      // External writes that left the state unchanged must not hide the last real transition.
+      return history.findLast((entry) => !NON_STATE_CHANGING_EVENTS.has(entry.event)) ?? null;
     },
     pendingStatus: (instance: any) => instance.pendingStatus ?? null,
     pendingError: (instance: any) => instance.pendingError ?? null,
     pendingTransition: (instance: any) => instance.pendingTransition ?? null,
+    scope: (instance: any) => instance.scope ?? null,
   },
   WorkflowSerializedTransition: {
     from: (transition: any) => {
@@ -89,7 +120,7 @@ const workflowResolvers = {
     to: (transition: any) => transition.to ?? null,
   },
   WorkflowTransition: {
-    toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
+    toStatus: (transition: any) => transition.toStatus ?? null,
     comment: (transition: any) => transition.comment ?? null,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
@@ -113,7 +144,7 @@ const workflowResolvers = {
     asyncActions: (pt: any) => pt.asyncActions ?? [],
   },
   WorkflowTriggerResult: {
-    status: (result: any) => (result.newState ? { id: result.newState, template_id: result.newState } : null),
+    status: (result: any) => (result.newState ? result.instance?.currentStatus ?? null : null),
     instance: (result: any) => result.instance,
     entity: (result: any) => result.entity,
     executionStatus: (result: any) => result.executionStatus ?? null,
@@ -121,13 +152,37 @@ const workflowResolvers = {
   },
   EntitySetting: {
     workflow_published_version_id: (entitySetting: any, _: any, context: AuthContext) => {
-      return getWorkflowPublishedVersionId(context, entitySetting);
+      return getWorkflowPublishedVersionId(context, context.user!, entitySetting);
     },
   },
   DraftWorkspace: {
     workflowInstance: (draft: any, _: any, context: AuthContext) => {
       const draftId = draft.id || draft.internal_id;
       return getWorkflowInstance(context, context.user!, draftId);
+    },
+  },
+  StixDomainObject: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  Container: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  StixCoreRelationship: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
+    },
+  },
+  StixSightingRelationship: {
+    workflowInstance: (entity: any, _: any, context: AuthContext) => {
+      const entityId = entity.id || entity.internal_id;
+      return getWorkflowInstance(context, context.user!, entityId);
     },
   },
   WorkflowDefinitionMutationResult: {

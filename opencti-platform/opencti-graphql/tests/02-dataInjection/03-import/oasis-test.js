@@ -11,6 +11,6 @@ describe('Database provision', () => {
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

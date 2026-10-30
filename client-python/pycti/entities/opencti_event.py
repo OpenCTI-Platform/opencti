@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class Event:
     """Main Event class for OpenCTI
@@ -23,6 +25,16 @@ class Event:
         """
         self.opencti = opencti
         self.properties = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -37,6 +49,10 @@ class Event:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -111,12 +127,23 @@ class Event:
             modified
             name
             description
+            x_opencti_score
             aliases
             event_types
             start_time
             stop_time
         """
         self.properties_with_files = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -131,6 +158,10 @@ class Event:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -218,6 +249,7 @@ class Event:
             modified
             name
             description
+            x_opencti_score
             aliases
             event_types
             start_time
@@ -453,6 +485,8 @@ class Event:
         :type name: str
         :param description: description (optional)
         :type description: str
+        :param x_opencti_score: score level 0-100 (optional)
+        :type x_opencti_score: int
         :param aliases: list of aliases (optional)
         :type aliases: list
         :param start_time: start time of the event (optional)
@@ -471,10 +505,17 @@ class Event:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: Event object
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
@@ -486,6 +527,7 @@ class Event:
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
+        x_opencti_score = kwargs.get("x_opencti_score", None)
         aliases = kwargs.get("aliases", None)
         start_time = kwargs.get("start_time", None)
         stop_time = kwargs.get("stop_time", None)
@@ -513,6 +555,7 @@ class Event:
             """
             input_variables = {
                 "stix_id": stix_id,
+                "customFieldValues": custom_field_values,
                 "createdBy": created_by,
                 "objectMarking": object_marking,
                 "objectLabel": object_label,
@@ -524,6 +567,7 @@ class Event:
                 "modified": modified,
                 "name": name,
                 "description": description,
+                "x_opencti_score": x_opencti_score,
                 "aliases": aliases,
                 "start_time": start_time,
                 "stop_time": stop_time,
@@ -579,6 +623,7 @@ class Event:
                     )
                 )
             return self.create(
+                custom_field_values=extras.get("custom_field_values", None),
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None
@@ -608,6 +653,11 @@ class Event:
                     self.opencti.stix2.convert_markdown(stix_object["description"])
                     if "description" in stix_object
                     else None
+                ),
+                x_opencti_score=(
+                    stix_object["x_opencti_score"]
+                    if "x_opencti_score" in stix_object
+                    else self.opencti.get_attribute_in_extension("score", stix_object)
                 ),
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
                 event_types=(

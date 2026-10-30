@@ -2,7 +2,7 @@ import { defaultResource, resourceFromAttributes } from '@opentelemetry/resource
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider, type IMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { booleanConf, DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../database/cluster-module';
 import {
@@ -16,6 +16,7 @@ import type { HandlerInput, ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
+import { refreshConnectorsLiveness } from '../modules/connector/connector-domain';
 import {
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_FEED,
@@ -31,7 +32,7 @@ import {
 import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricReader';
 import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector, CachedConnector } from '../modules/connector/connector-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { elAggregationCount, elCount } from '../database/engine';
@@ -57,18 +58,24 @@ import {
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
+import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
-import { findRolesWithCapabilityInDraft } from '../domain/user';
+import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
+import { type BasicStoreEntityCustomFieldDefinition, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
+import { buildCustomFieldsTelemetryItems, isDashboardManifestUsingCustomField, isFilterGroupUsingCustomField } from '../modules/customField/custom-field-telemetry';
+import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
+import { booleanTrueFilter } from '../utils/filtering/filtering-utils';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -98,14 +105,9 @@ const KNOWLEDGE_OBJECT_TYPES = [
 // minimal so the collectors do not depend on each module's full store type.
 type DataShareLike = BasicStoreEntity & { stream_public?: boolean; enabled?: boolean };
 
-// Filter matching entities whose boolean attribute is true (ES count queries).
-const booleanTrueFilter = (key: string) => ({
-  mode: FilterMode.And,
-  filters: [{ key: [key], values: ['true'] }],
-  filterGroups: [],
-});
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
+const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', true);
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics'
   : 'https://telemetry.filigran.io/v1/metrics';
@@ -150,8 +152,10 @@ export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
+export const TELEMETRY_GAUGE_CUSTOM_FIELD_CREATED = 'customFieldCreatedCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+export const TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT = 'configPresetExportCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -289,6 +293,11 @@ export const addCustomViewEnabledCount = () => {
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
 };
 
+export const addCustomFieldCreatedCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_FIELD_CREATED, 1)
+    .catch((reason) => logApp.warn('Error adding custom field created count to telemetry', { reason }));
+};
+
 export const addSharedSavedFiltersPermissionChangesCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES, 1)
     .catch((reason) => logApp.warn('Error adding shared saved filters permission changes count to telemetry', { reason }));
@@ -297,6 +306,11 @@ export const addSharedSavedFiltersPermissionChangesCount = () => {
 export const addWorkflowPublishCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_PUBLISH, 1)
     .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
+};
+
+export const addConfigPresetExportCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT, 1)
+    .catch((reason) => logApp.warn('Error adding config preset export count to telemetry', { reason }));
 };
 
 // All the counters below are fire-and-forget: they are called from feature
@@ -483,15 +497,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Connectors information
-    const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+    const cachedConnectors = await getEntitiesListFromCache<CachedConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+    const connectors: BasicStoreEntityConnector[] = await refreshConnectorsLiveness(cachedConnectors);
     const activeConnectors = connectors.filter((c) => c.active);
+    const oaevConnectors = connectors.filter((c) => c.name.toLowerCase().startsWith('openaev coverage'));
     manager.setActiveConnectorsCount(activeConnectors.length);
+    manager.setOaevConnectorsCount(oaevConnectors.length);
     // Breakdown by catalog identity (see computeActiveConnectorsByIdentity):
     // composer-managed connectors resolve to the catalog contract slug
     // through their stored container image; manually registered connectors
     // fall back to their registered name, flagged managed=false.
-    const contractsByImage = await getSupportedContractsByImage();
-    manager.setActiveConnectorsByIdentity(computeActiveConnectorsByIdentity(activeConnectors, contractsByImage));
+    manager.setActiveConnectorsByIdentity(computeActiveConnectorsByIdentity(activeConnectors));
     // endregion
 
     // region Roles with draft capability information
@@ -546,10 +562,18 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion SSO providers
 
     // region Security Coverages
-    const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-      types: [ENTITY_TYPE_SECURITY_COVERAGE],
-    });
+    const [
+      securityCoveragesCount,
+      securityCoverageResultsCount,
+      relationshipsHasCoveredCount,
+    ] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_SECURITY_COVERAGE] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_SECURITY_COVERAGE_RESULT] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { types: [RELATION_HAS_COVERED] }),
+    ]);
     manager.setSecurityCoveragesCount(securityCoveragesCount);
+    manager.setSecurityCoverageResultsCount(securityCoverageResultsCount);
+    manager.setRelationshipsHasCoveredCount(relationshipsHasCoveredCount);
     // endregion
 
     // region Shared saved filters
@@ -557,10 +581,26 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
       context,
       TELEMETRY_MANAGER_USER,
       [ENTITY_TYPE_SAVED_FILTER],
-      { includeAuthorities: true, baseData: true, baseFields: ['creator_id', 'restricted_members'] },
+      { includeAuthorities: true, baseData: true, baseFields: ['creator_id', 'restricted_members', 'filters'] },
     );
     const sharedSavedFilters = savedFilters.filter((f) => isSavedFilterShared(f));
     manager.setSharedSavedFiltersCount(sharedSavedFilters.length);
+    // endregion
+
+    // region Custom fields
+    const customFieldDefinitions = await getEntitiesListFromCache<BasicStoreEntityCustomFieldDefinition>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+    const { byEntityType, byFieldType } = buildCustomFieldsTelemetryItems(customFieldDefinitions);
+    manager.setCustomFieldsByEntityType(byEntityType);
+    manager.setCustomFieldsByFieldType(byFieldType);
+    manager.setSavedFiltersWithCustomFieldCount(savedFilters.filter((f) => isFilterGroupUsingCustomField(f.filters)).length);
+    const dashboardFilter = { mode: FilterMode.And, filters: [{ key: ['type'], values: ['dashboard'] }], filterGroups: [] };
+    const dashboards = await fullEntitiesList<BasicStoreEntityWorkspace>(
+      context,
+      TELEMETRY_MANAGER_USER,
+      [ENTITY_TYPE_WORKSPACE],
+      { filters: dashboardFilter, baseData: true, baseFields: ['manifest'] },
+    );
+    manager.setDashboardsWithCustomFieldFilterCount(dashboards.filter((d) => isDashboardManifestUsingCustomField(d.manifest)).length);
     // endregion
 
     // region Knowledge graph scale
@@ -693,6 +733,22 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIndexedFilesCount(indexedFilesCount);
     // endregion
 
+    try {
+      const streamInfo = await rawFetchStreamInfo();
+      manager.setRedisStreamEventsCount(streamInfo.streamSize ?? 0);
+    } catch (streamErr) {
+      logApp.debug('[TELEMETRY] Could not fetch redis stream info, skipping redis stream events count', { cause: streamErr });
+      manager.setRedisStreamEventsCount(-1);
+    }
+    try {
+      const offloadedStreamEventsCount = await countOffloadedStreamEvents();
+      manager.setOffloadedStreamEventsCount(offloadedStreamEventsCount);
+    } catch (offloadErr) {
+      logApp.debug('[TELEMETRY] Could not count offloaded stream events, skipping offloaded stream events count', { cause: offloadErr });
+      manager.setOffloadedStreamEventsCount(-1);
+    }
+    // endregion
+
     // region Telemetry user events
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
@@ -742,10 +798,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
     manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
+    const customFieldCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_FIELD_CREATED);
+    manager.setCustomFieldCreatedCount(customFieldCreatedCountInRedis);
     const sharedSavedFiltersPermissionChangesCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES);
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
     manager.setWorkflowPublishCount(workflowPublishCountInRedis);
+    const configPresetExportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CONFIG_PRESET_EXPORT);
+    manager.setConfigPresetExportCount(configPresetExportCountInRedis);
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
     manager.setChatbotMessageCount(chatbotMessageCountInRedis);
     const aiInsightItems: DimensionalGaugeItem[] = [];
@@ -788,7 +848,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
 
     logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);
   } catch (e) {
-    logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
+    logApp.warn('[TELEMETRY] Error fetching platform information', { cause: e });
   }
 };
 
@@ -803,7 +863,7 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: TELEMETRY_MANAGER_KEY,
   },
-  enabledByConfig: true,
+  enabledByConfig: TELEMETRY_MANAGER_ENABLED,
   enabledToStart(): boolean {
     return this.enabledByConfig;
   },

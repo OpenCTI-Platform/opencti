@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { Field, Form, Formik, FormikConfig } from 'formik';
-import Axios from 'axios';
 import ItemIcon from 'src/components/ItemIcon';
 import Loader from 'src/components/Loader';
 import Button from '@common/button/Button';
@@ -13,7 +12,7 @@ import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { availableEntityTypes, exclusionListUpdateValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
 import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -123,11 +122,12 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     });
   };
 
-  const loadFileContent = () => {
+  const loadFileContent = async () => {
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(data.file_id)}`;
-    Axios.get(url).then((res) => {
-      handleSetInitialValues(res.data);
-    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+    const fileContent = await res.text();
+    handleSetInitialValues(fileContent);
   };
 
   useEffect(() => {
@@ -176,22 +176,18 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    component={AutocompleteField}
+                    component={ComboboxField}
                     name="exclusion_list_entity_types"
-                    fullWidth={true}
                     multiple
                     style={fieldSpacingContainerStyle}
                     options={entityTypesOptions}
-                    renderOption={(
-                      props: React.HTMLAttributes<HTMLLIElement>,
-                      option: FieldOption,
-                    ) => (
-                      <li key={option.value} {...props}>
+                    renderOption={(option: FieldOption) => (
+                      <>
                         <ItemIcon type={option.value} />
                         <span style={{ padding: '0 4px 0 4px' }}>{option.label}</span>
-                      </li>
+                      </>
                     )}
-                    textfieldprops={{ label: t_i18n('Apply on indicator observable types') }}
+                    label={t_i18n('Apply on indicator observable types')}
                     required
                   />
                   <div style={{ display: 'flex' }}>

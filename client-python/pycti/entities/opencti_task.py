@@ -5,6 +5,8 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class Task:
     """Main Task class for OpenCTI
@@ -23,6 +25,16 @@ class Task:
         """
         self.opencti = opencti
         self.properties = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -37,6 +49,10 @@ class Task:
                   name
                   color
                 }
+            }
+            creators {
+                id
+                name
             }
             createdBy {
                 ... on Identity {
@@ -507,6 +523,8 @@ class Task:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: Task object
         :rtype: dict or None
         """
@@ -529,6 +547,11 @@ class Task:
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
 
         if name is not None:
             self.opencti.app_logger.info("Creating Task", {"name": name})
@@ -565,6 +588,7 @@ class Task:
                         "noTriggerImport": no_trigger_import,
                         "embedded": embedded,
                         "upsertOperations": upsert_operations,
+                        "customFieldValues": custom_field_values,
                     }
                 },
             )
@@ -746,6 +770,7 @@ class Task:
                     )
                 )
             return self.create(
+                custom_field_values=extras.get("custom_field_values", None),
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None

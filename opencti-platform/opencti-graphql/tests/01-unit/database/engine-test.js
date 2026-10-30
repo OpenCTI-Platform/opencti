@@ -1,5 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildLocalMustFilter, isTransitoryError, prepareElementForIndexing } from '../../../src/database/engine';
+import {
+  buildDenormalizedRefsScriptParams,
+  buildLocalMustFilter,
+  buildReplaceScriptParams,
+  isTransitoryError,
+  isTransitoryNonCircuitBreakingError,
+  prepareElementForIndexing,
+} from '../../../src/database/engine';
+import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import * as engineConfig from '../../../src/database/engine-config';
 
 describe('prepareElementForIndexing testing', () => {
@@ -40,7 +49,7 @@ describe('buildLocalMustFilter testing', () => {
     expect(() => buildLocalMustFilter(scriptFilter)).toThrow(/Filter script is not allowed/);
   });
 
-  it('should buildLocalMustFilter with internal_script should work', () => {
+  it('unknown filter operators must be rejected by buildLocalMustFilter', () => {
     const scriptFilter = {
       key: ['name'],
       values: [
@@ -49,20 +58,7 @@ describe('buildLocalMustFilter testing', () => {
       operator: 'internal_script',
     };
 
-    const result = buildLocalMustFilter(scriptFilter);
-
-    expect(result).toStrictEqual({
-      bool: {
-        minimum_should_match: 1,
-        should: [
-          {
-            script: {
-              script: "doc.containsKey('name.keyword')",
-            },
-          },
-        ],
-      },
-    });
+    expect(() => buildLocalMustFilter(scriptFilter)).toThrow(/Not supported filter operator/);
   });
 
   it('buildLocalMustFilter with script should work when enabled', () => {
@@ -89,6 +85,112 @@ describe('buildLocalMustFilter testing', () => {
         ],
       },
     });
+  });
+
+  it('should buildLocalMustFilter wrap a negated nested filter in must_not', () => {
+    const nested = [
+      { key: 'field_name', values: ['x_opencti_cf_field'], operator: 'eq' },
+      { key: 'string_value', values: [], operator: 'not_nil' },
+    ];
+    const positive = buildLocalMustFilter({ key: ['custom_field_values'], values: [], nested });
+    const negated = buildLocalMustFilter({ key: ['custom_field_values'], values: [], nested, negateNested: true });
+    expect(positive.nested.path).toBe('custom_field_values');
+    expect(negated).toStrictEqual({ bool: { must_not: [positive] } });
+  });
+
+  const sampleKeys = [
+    "name']; ctx._source.value = true; //",
+    "name.foo']; ctx._source.value = true; //",
+    "name'].isEmpty(); return true; //",
+    'name" + ctx._source.value + "',
+  ];
+
+  it('should buildLocalMustFilter with only_eq_to build the same script source for any key value', () => {
+    const sources = sampleKeys.map((key) => {
+      const result = buildLocalMustFilter({ key: [key], values: ['a'], operator: 'only_eq_to' });
+      return result.bool.should[0].script.script;
+    });
+
+    sources.forEach((scriptClause) => {
+      expect(scriptClause.source).toBe(sources[0].source);
+      sampleKeys.forEach((key) => expect(scriptClause.source).not.toContain(key));
+    });
+    sources.forEach((scriptClause, i) => {
+      expect(scriptClause.params.field).toBe(`${sampleKeys[i]}.keyword`);
+    });
+  });
+
+  it('should buildLocalMustFilter with not_only_eq_to build the same script source for any key value', () => {
+    const sources = sampleKeys.map((key) => {
+      const result = buildLocalMustFilter({ key: [key], values: ['a'], operator: 'not_only_eq_to' });
+      return result.bool.should[0].bool.must_not[0].script.script;
+    });
+
+    sources.forEach((scriptClause) => {
+      expect(scriptClause.source).toBe(sources[0].source);
+      sampleKeys.forEach((key) => expect(scriptClause.source).not.toContain(key));
+    });
+    sources.forEach((scriptClause, i) => {
+      expect(scriptClause.params.field).toBe(`${sampleKeys[i]}.keyword`);
+    });
+  });
+
+  it('only_eq_to script params must be correctly built when the search-engine script filter is disabled', () => {
+    vi.spyOn(engineConfig, 'isEsScriptFilterEnabled').mockResolvedValue(false);
+    const filter = {
+      key: ['name'],
+      values: ['a', 'b'],
+      operator: 'only_eq_to',
+      mode: 'or',
+    };
+
+    expect(() => buildLocalMustFilter(filter)).not.toThrow();
+    const result = buildLocalMustFilter(filter);
+    const scriptClause = result.bool.should[0].script.script;
+    expect(scriptClause.params.field).toBe('name.keyword');
+    expect(scriptClause.params.values).toStrictEqual(['a', 'b']);
+    expect(scriptClause.params.mode).toBe('or');
+  });
+
+  it('should buildLocalMustFilter with wildcard build a well formed query_string clause', () => {
+    const value = '*" OR internal_id:* OR field:"';
+    const filter = {
+      key: ['name'],
+      values: [value],
+      operator: 'wildcard',
+    };
+
+    const result = buildLocalMustFilter(filter);
+    const query = result.bool.should[0].query_string.query;
+
+    expect(query).not.toBe(`"${value}"`);
+  });
+
+  it('should buildLocalMustFilter with not_wildcard build a well formed query_string clause', () => {
+    const value = '*" OR secret_field:*';
+    const filter = {
+      key: ['name'],
+      values: [value],
+      operator: 'not_wildcard',
+    };
+
+    const result = buildLocalMustFilter(filter);
+    const query = result.bool.should[0].bool.must_not[0].query_string.query;
+
+    expect(query).not.toBe(`"${value}"`);
+  });
+
+  it('should buildLocalMustFilter with nested wildcard escape the query_string syntax but keep wildcards', () => {
+    const buildNestedWildcardQuery = (value) => {
+      const nested = [{ key: 'name', values: [value], operator: 'wildcard' }];
+      const result = buildLocalMustFilter({ key: ['connections'], values: [], nested });
+      return result.nested.query.bool.must[0].bool.should[0].query_string.query;
+    };
+    expect(buildNestedWildcardQuery('*_from')).toBe('*_from');
+    expect(buildNestedWildcardQuery('rep?rt*')).toBe('rep?rt*');
+    expect(buildNestedWildcardQuery('*acme corp*')).toBe('*acme corp*');
+    expect(buildNestedWildcardQuery('* OR _exists_:internal_id')).toBe('* \\OR _exists_\\:internal_id');
+    expect(buildNestedWildcardQuery('a" || (b) && !c')).toBe('a\\" \\|\\| \\(b\\) \\&\\& \\!c');
   });
 
   it('should buildLocalMustFilter with contact_information emit a single terms clause for multiple values', () => {
@@ -287,6 +389,33 @@ describe('isTransitoryError testing', () => {
     expect(isTransitoryError(error)).toBe(true);
   });
 
+  // ── Circuit breaker durability ──────────────────────────────────────────────
+
+  it('should return true for a TRANSIENT circuit_breaking_exception', () => {
+    const error = {
+      meta: { statusCode: 429, body: { error: { type: 'circuit_breaking_exception', reason: '[parent] Data too large', durability: 'TRANSIENT' } } },
+    };
+    expect(isTransitoryError(error)).toBe(true);
+  });
+
+  it('should return false for a PERMANENT circuit_breaking_exception despite its 429 status', () => {
+    const error = {
+      meta: { statusCode: 429, body: { error: { type: 'circuit_breaking_exception', reason: '[fielddata] Data too large', durability: 'PERMANENT' } } },
+    };
+    expect(isTransitoryError(error)).toBe(false);
+  });
+
+  it('should return false for a PERMANENT circuit_breaking_exception wrapped in a DatabaseError', () => {
+    const error = {
+      extensions: { data: { cause: { meta: { statusCode: 429, body: { error: { type: 'circuit_breaking_exception', durability: 'PERMANENT' } } } } } },
+    };
+    expect(isTransitoryError(error)).toBe(false);
+  });
+
+  it('should return false for a PERMANENT circuit_breaking_exception on the root error', () => {
+    expect(isTransitoryError({ type: 'circuit_breaking_exception', reason: '[parent] Data too large', durability: 'PERMANENT' })).toBe(false);
+  });
+
   // ── False cases ─────────────────────────────────────────────────────────────
 
   it('should return false for a plain non-transitory error', () => {
@@ -307,5 +436,114 @@ describe('isTransitoryError testing', () => {
 
   it('should return false when text fields are empty strings (not matched)', () => {
     expect(isTransitoryError({ message: '', reason: '', type: '', name: '', stack: '' })).toBe(false);
+  });
+});
+
+describe('isTransitoryNonCircuitBreakingError testing', () => {
+  it('should return false for a TRANSIENT circuit_breaking_exception', () => {
+    const error = {
+      meta: { statusCode: 429, body: { error: { type: 'circuit_breaking_exception', reason: '[parent] Data too large', durability: 'TRANSIENT' } } },
+    };
+    expect(isTransitoryNonCircuitBreakingError(error)).toBe(false);
+  });
+
+  it('should return false for a circuit_breaking_exception wrapped in a DatabaseError', () => {
+    const error = {
+      extensions: { data: { cause: { meta: { statusCode: 429, body: { error: { type: 'circuit_breaking_exception', durability: 'TRANSIENT' } } } } } },
+    };
+    expect(isTransitoryNonCircuitBreakingError(error)).toBe(false);
+  });
+
+  it('should return false for a circuit_breaking_exception message', () => {
+    expect(isTransitoryNonCircuitBreakingError({ message: 'circuit_breaking_exception: [parent] Data too large' })).toBe(false);
+  });
+
+  it('should return true for other transitory errors', () => {
+    expect(isTransitoryNonCircuitBreakingError({ code: 'ECONNRESET' })).toBe(true);
+    expect(isTransitoryNonCircuitBreakingError({ statusCode: 503 })).toBe(true);
+    expect(isTransitoryNonCircuitBreakingError({ message: 'es_rejected_execution: queue capacity reached' })).toBe(true);
+  });
+
+  it('should return false for non transitory errors', () => {
+    expect(isTransitoryNonCircuitBreakingError({ statusCode: 500 })).toBe(false);
+    expect(isTransitoryNonCircuitBreakingError(null)).toBe(false);
+  });
+});
+
+describe('buildReplaceScriptParams testing', () => {
+  it('should split set and unset attributes', () => {
+    const params = buildReplaceScriptParams({ name: 'test', description: null, score: 0, revoked: false });
+    expect(params.replacements).toEqual({ name: 'test', score: 0, revoked: false });
+    expect(params.removals).toEqual(['description']);
+  });
+
+  it('should remove undefined attributes', () => {
+    const params = buildReplaceScriptParams({ name: 'test', current_state_cursor: undefined });
+    expect(params.replacements).toEqual({ name: 'test' });
+    expect(params.removals).toEqual(['current_state_cursor']);
+  });
+
+  it('should keep empty strings and empty arrays as replacements', () => {
+    const params = buildReplaceScriptParams({ name: '', objectLabel: [] });
+    expect(params.replacements).toEqual({ name: '', objectLabel: [] });
+    expect(params.removals).toEqual([]);
+  });
+
+  it('should support an empty document', () => {
+    const params = buildReplaceScriptParams({});
+    expect(params.replacements).toEqual({});
+    expect(params.removals).toEqual([]);
+  });
+});
+
+describe('buildDenormalizedRefsScriptParams testing', () => {
+  const UPDATED_AT = '2026-08-30T00:00:00.000Z';
+
+  it('should route unidirectional refs to distinct_refs and the others to appended_refs', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: RELATION_OBJECT_MARKING, field: 'internal_id', elements: [{ id: 'marking-1', side: 'from', type: 'Report' }] },
+      { relation: RELATION_OBJECT, field: 'internal_id', elements: [{ id: 'object-1', side: 'from', type: 'Report' }] },
+    ], UPDATED_AT);
+    expect(params.distinct_refs).toEqual([{ field: 'rel_object-marking.internal_id', ids: ['marking-1'] }]);
+    expect(params.appended_refs).toEqual([{ field: 'rel_object.internal_id', ids: ['object-1'] }]);
+    expect(params.updated_at).toEqual(UPDATED_AT);
+  });
+
+  it('should deduplicate the timestamp fields across targets', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: RELATION_OBJECT_MARKING, field: 'internal_id', elements: [{ id: 'marking-1', side: 'from', type: 'Report' }] },
+      { relation: RELATION_CREATED_BY, field: 'internal_id', elements: [{ id: 'author-1', side: 'from', type: 'Report' }] },
+    ], UPDATED_AT);
+    expect(params.timestamp_fields).toEqual(['updated_at', 'modified', 'refreshed_at']);
+  });
+
+  it('should not touch timestamps for a non ref relationship', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: 'uses', field: 'internal_id', elements: [{ id: 'target-1', side: 'from', type: 'Malware' }] },
+    ], UPDATED_AT);
+    expect(params.timestamp_fields).toEqual(['refreshed_at']);
+  });
+
+  it('should leave pir params null when no in-pir relationship is involved', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: RELATION_OBJECT_MARKING, field: 'internal_id', elements: [{ id: 'marking-1', side: 'from', type: 'Report' }] },
+    ], UPDATED_AT);
+    expect(params.pir_ids).toBeNull();
+    expect(params.new_pir_information).toBeNull();
+  });
+
+  it('should build pir params for in-pir relationships', () => {
+    const params = buildDenormalizedRefsScriptParams([
+      { relation: RELATION_IN_PIR, field: 'internal_id', elements: [{ id: 'pir-1', side: 'from', type: 'Report', pir_score: 42 }] },
+    ], UPDATED_AT);
+    expect(params.pir_ids).toEqual(['pir-1']);
+    expect(params.new_pir_information).toEqual([{ pir_id: 'pir-1', pir_score: 42, last_pir_score_date: UPDATED_AT }]);
+  });
+
+  it('should support an empty target list', () => {
+    const params = buildDenormalizedRefsScriptParams([], UPDATED_AT);
+    expect(params.appended_refs).toEqual([]);
+    expect(params.distinct_refs).toEqual([]);
+    expect(params.timestamp_fields).toEqual([]);
   });
 });

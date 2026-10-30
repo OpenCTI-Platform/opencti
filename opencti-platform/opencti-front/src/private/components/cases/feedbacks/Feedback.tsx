@@ -63,6 +63,7 @@ const feedbackFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...FeedbackDetails_case
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container
@@ -90,7 +91,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <FeedbackDetails
                       feedbackData={feedback}
                     />
@@ -98,7 +99,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview
                       stixDomainObject={feedback}
                       displayAssignees={true}
@@ -108,7 +109,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                 );
               case 'relatedEntities':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={feedback}
@@ -118,7 +119,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={feedback.id}
                     />
@@ -126,7 +127,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={feedback.id}
                     />

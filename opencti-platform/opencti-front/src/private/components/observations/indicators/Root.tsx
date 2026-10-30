@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootIndicatorQuery } from '@components/observations/indicators/__generated__/RootIndicatorQuery.graphql';
@@ -159,7 +159,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
               ),
               sightings: (
                 <EntityStixSightingRelationships
-                  entityId={indicatorId}
+                  entityId={indicator.id}
                   entityLink={link}
                   noPadding={true}
                   isTo={false}
@@ -171,6 +171,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                     'Organization',
                     'Individual',
                     'System',
+                    'SecurityPlatform',
                   ]}
                 />
               ),

@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import PageContainer from '../../../../components/PageContainer';
 import HealthMenu from './HealthMenu';
 import Operations from './Operations';

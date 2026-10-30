@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Box, ListItemButton } from '@mui/material';
-import withStyles from '@mui/styles/withStyles';
 import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -22,15 +21,6 @@ import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDom
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
-
-const styles = (theme) => ({
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-});
 
 class StixDomainObjectGlobalKillChainComponent extends Component {
   constructor(props) {
@@ -51,7 +41,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
   }
 
   render() {
-    const { t, classes, data, entityLink, paginationOptions, stixDomainObjectId } = this.props;
+    const { t, data, entityLink, paginationOptions, stixDomainObjectId } = this.props;
     // Extract all kill chain phases
     const killChainPhases = R.pipe(
 
@@ -126,7 +116,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                         this,
                         stixRelationship.id,
                       )}
-                      aria-haspopup="true"
+                      aria-expanded={this.state.expandedLines[stixRelationship.id]}
                     >
                       {this.state.expandedLines[stixRelationship.id]
                         === false ? (
@@ -198,16 +188,16 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             )}
                           >
                             <ListItemButton
-                              classes={{ root: classes.nested }}
                               component={Link}
                               to={link}
                               sx={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 3,
+                                paddingLeft: 4,
                               }}
                             >
-                              <ListItemIcon className={classes.itemIcon}>
+                              <ListItemIcon sx={{ color: 'primary.main' }}>
                                 <ItemIcon
                                   type={
                                     !restricted
@@ -266,7 +256,6 @@ StixDomainObjectGlobalKillChainComponent.propTypes = {
   data: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
@@ -479,7 +468,4 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectGlobalKillChain);
+export default inject18n(StixDomainObjectGlobalKillChain);

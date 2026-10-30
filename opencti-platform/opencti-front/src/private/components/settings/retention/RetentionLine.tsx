@@ -5,48 +5,21 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Chip } from '@filigran/design-system';
+import { styled } from '@mui/material/styles';
 import { RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { RetentionLine_node$key } from '@components/settings/retention/__generated__/RetentionLine_node.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import RetentionPopover from './RetentionPopover';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { DataColumns } from '../../../../components/list_lines';
-import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  chipInList: {
-    ...chipInListBasicStyle,
-    width: 100,
-    textTransform: 'uppercase',
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const RetentionLineFragment = graphql`
     fragment RetentionLine_node on RetentionRule {
@@ -69,30 +42,29 @@ interface RetentionLineProps {
 }
 
 export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColumns, node, paginationOptions }) => {
-  const classes = useStyles();
-  const { nsdt, n, t_i18n } = useFormatter();
+  const { ftdt, n, t_i18n } = useFormatter();
   const data = useFragment(RetentionLineFragment, node);
 
   const isActive = data.active;
   const filters = deserializeFilterGroupForFrontend(data.filters);
-  let scopeColor = 'success';
+  let scopeSeverity: 'low' | 'info' | 'high' | 'critical' = 'low';
   let appliedOnContent = t_i18n('Everything');
   if (data.scope === 'file') {
-    scopeColor = 'secondary';
+    scopeSeverity = 'critical';
     appliedOnContent = t_i18n('Global files');
   } else if (data.scope === 'workbench') {
-    scopeColor = 'primary';
+    scopeSeverity = 'info';
     appliedOnContent = t_i18n('All workbenches');
   } else if (data.scope === 'history') {
-    scopeColor = 'error';
+    scopeSeverity = 'critical';
     appliedOnContent = t_i18n('Knowledge history logs');
   } else if (data.scope === 'activity') {
-    scopeColor = 'warning';
+    scopeSeverity = 'high';
     appliedOnContent = t_i18n('Activity logs');
   }
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: '50px' }}
       divider={true}
       secondaryAction={(
         <RetentionPopover
@@ -101,64 +73,56 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
         />
       )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <LayersClearOutlined />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+            <BodyItem style={{ width: dataColumns.name.width }}>
               {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.max_retention.width }}
             >
               {data.max_retention} {t_i18n(data.retention_unit)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              {nsdt(data.last_execution_date)}
-            </div>
-            <div
-              className={classes.bodyItem}
+              {ftdt(data.last_execution_date)}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.remaining_count.width }}
             >
               {n(data.remaining_count)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.scope.width }}
             >
               <Chip
-                color={scopeColor as 'success' | 'secondary' | 'primary' | 'error' | 'warning'}
-                classes={{ root: classes.chipInList }}
+                severity={scopeSeverity}
                 label={t_i18n(data.scope)}
-                variant="outlined"
               />
-            </div>
+            </BodyItem>
             {dataColumns.active && (
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.active.width }}
               >
                 <ItemBoolean
                   status={isActive}
                   label={isActive ? t_i18n('Active') : t_i18n('Inactive')}
                 />
-              </div>
+              </BodyItem>
             )}
             {isFilterGroupNotEmpty(filters) ? (
               <FilterIconButton
                 filters={filters}
-                dataColumns={dataColumns}
                 variant="small"
                 redirection
               />
             ) : (
-              <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
+              <BodyItem style={{ width: dataColumns.filters.width }}>
                 <span>{appliedOnContent}</span>
                 {data.scope !== 'knowledge' && data.scope !== 'history' && data.scope !== 'activity'
                   && (
@@ -168,12 +132,12 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                       <InformationOutline
                         fontSize="small"
                         color="primary"
-                        style={{ position: 'absolute', marginLeft: 10 }}
+                        sx={{ ml: 1 }}
                       />
                     </Tooltip>
                   )
                 }
-              </div>
+              </BodyItem>
             )}
           </div>
         )}
@@ -183,18 +147,13 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
 };
 
 export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: '50px' }}
       divider={true}
-      secondaryAction={(
-        <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </Box>
-      )}
+      secondaryAction={<MoreVert />}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -205,8 +164,7 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -215,9 +173,8 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.max_retention.width }}
             >
               <Skeleton
@@ -226,10 +183,9 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 width="90%"
                 height="100%"
               />
-            </div>
+            </BodyItem>
 
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.last_execution_date.width }}
             >
               <Skeleton
@@ -238,9 +194,8 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 width="20%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.remaining_count.width }}
             >
               <Skeleton
@@ -249,9 +204,8 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 width="20%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.scope.width }}
             >
               <Skeleton
@@ -260,10 +214,9 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 width="70%"
                 height="100%"
               />
-            </div>
+            </BodyItem>
             {dataColumns.active && (
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.active.width }}
               >
                 <Skeleton
@@ -272,10 +225,9 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                   width="70%"
                   height="100%"
                 />
-              </div>
+              </BodyItem>
             )}
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.filters.width }}
             >
               <Skeleton
@@ -284,7 +236,7 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
                 width="70%"
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />

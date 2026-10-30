@@ -7,18 +7,17 @@ import { Add, Close, Delete } from '@mui/icons-material';
 import { Box } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import { useTheme } from '@mui/styles';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import TextField from '../../../../components/TextField';
@@ -305,9 +304,9 @@ const StixDomainObjectHeader = (props) => {
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canEdit = currentAccessRight.canEdit && (!draftContext || currentDraftAccessRight.canEdit);
 
-  const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
   const [openAliases, setOpenAliases] = useState(false);
+  const newAliasInputRef = useRef(null);
   const [openCommitCreate, setOpenCommitCreate] = useState(false);
   const [openCommitDelete, setOpenCommitDelete] = useState(false);
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
@@ -407,6 +406,17 @@ const StixDomainObjectHeader = (props) => {
     resetForm();
   };
 
+  // The field's Enter and the Add button both submit the form. With references
+  // enforced, that first opens the commit dialog, whose own buttons submit again.
+  const onSubmitAliasForm = (values, formikHelpers) => {
+    if (enableReferences && !openCommitCreate) {
+      formikHelpers.setSubmitting(false);
+      handleOpenCommitCreate();
+      return;
+    }
+    onSubmitCreateAlias(values, formikHelpers);
+  };
+
   const deleteAlias = (alias, data = {}) => {
     const currentAliases = getCurrentAliases();
     const aliases = R.filter((a) => a !== alias, currentAliases);
@@ -481,23 +491,28 @@ const StixDomainObjectHeader = (props) => {
         titleRight={
           typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
-              <InputLabel>
-                {t_i18n('Display as')}
-              </InputLabel>
-              <FormControl variant="outlined">
+              <FormControl
+                variant="outlined"
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 1,
+                  '&& > *': { marginBottom: 0, whiteSpace: 'nowrap', flexShrink: 0 },
+                }}
+              >
                 <Select
-                  size="small"
                   name="view-as"
                   value={viewAs}
-                  onChange={onViewAs}
-                  inputProps={{
-                    name: 'view-as',
-                    id: 'view-as',
-                  }}
-                  variant="outlined"
+                  onValueChange={onViewAs}
                 >
-                  <MenuItem value="knowledge">{t_i18n('Knowledge entity')}</MenuItem>
-                  <MenuItem value="author">{t_i18n('Author')}</MenuItem>
+                  <SelectLabel>{t_i18n('Display as')}</SelectLabel>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent aria-label={t_i18n('Display as')}>
+                    <SelectItem value="knowledge">{t_i18n('Knowledge entity')}</SelectItem>
+                    <SelectItem value="author">{t_i18n('Author')}</SelectItem>
+                  </SelectContent>
                 </Select>
               </FormControl>
             </div>
@@ -655,7 +670,7 @@ const StixDomainObjectHeader = (props) => {
                   onClick={handleToggleOpenAliases}
                   size="small"
                   variant="tertiary"
-                  startIcon={openAlias ? <Close fontSize="small" /> : <Add fontSize="small" />}
+                  startIcon={openAlias ? <Close sx={{ fontSize: 16 }} /> : <Add sx={{ fontSize: 16 }} />}
                 >
                   {t_i18n('add alias')}
                 </Button>
@@ -676,32 +691,45 @@ const StixDomainObjectHeader = (props) => {
           onClose={handleToggleOpenAliases}
           title={t_i18n('Entity aliases')}
           size="small"
+          slotProps={{
+            // Focus the field once the dialog has fully entered (only action
+            // of this dialog, replacing autoFocus).
+            transition: { onEntered: () => newAliasInputRef.current?.focus() },
+          }}
         >
           <Formik
             initialValues={{ new_alias: '' }}
-            onSubmit={onSubmitCreateAlias}
-            validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
+            onSubmit={onSubmitAliasForm}
+            // References are only asked for in the commit dialog, so they are
+            // only required once it is open.
+            validationSchema={enableReferences && !isBypassEnforcedRef && openCommitCreate ? aliasValidation(t_i18n) : null}
           >
             {({ submitForm, isSubmitting, setFieldValue, values }) => (
               <Form>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="new_alias"
-                  autoFocus={true}
-                  placeholder={t_i18n('New alias')}
-                  onChange={handleChangeNewAlias}
-                  value={newAlias}
-                  onKeyDown={(e) => {
-                    if (e.keyCode === 13) {
-                      if (enableReferences) {
-                        return handleOpenCommitCreate();
-                      }
-                      return submitForm();
-                    }
-                    return true;
-                  }}
-                />
+                <label className="sr-only" htmlFor="dialog-new-alias-input">{t_i18n('New alias')}</label>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Field
+                      id="dialog-new-alias-input"
+                      component={TextField}
+                      variant="outlined"
+                      name="new_alias"
+                      fullWidth={true}
+                      innerRef={(node) => {
+                        newAliasInputRef.current = node;
+                      }}
+                      placeholder={t_i18n('New alias')}
+                      onChange={handleChangeNewAlias}
+                      value={newAlias}
+                    />
+                  </Box>
+                  {/* Not disabled while empty (an empty submit is a no-op): the
+                      field is cleared on submit, which would disable the focused
+                      button and drop the focus to <body>. */}
+                  <Button type="submit">
+                    {t_i18n('Add')}
+                  </Button>
+                </Box>
                 {enableReferences && (
                   <CommitMessage
                     handleClose={handleCloseCommitCreate}
@@ -747,57 +775,6 @@ const StixDomainObjectHeader = (props) => {
               ),
             )}
           </List>
-          <div
-            style={{
-              display: openAliasesCreate ? 'block' : 'none',
-            }}
-          >
-            <Formik
-              initialValues={{ new_alias: '' }}
-              onSubmit={onSubmitCreateAlias}
-              validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
-            >
-              {({ submitForm, isSubmitting, setFieldValue, values }) => (
-                <Form>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="new_alias"
-                    autoFocus={true}
-                    fullWidth={true}
-                    placeholder={t_i18n('New aliases')}
-                    sx={{
-                      margin: '4px 15px 0 10px',
-                      float: 'left',
-                    }}
-                    onChange={handleChangeNewAlias}
-                    value={newAlias}
-                    onKeyDown={(e) => {
-                      if (e.keyCode === 13) {
-                        if (enableReferences && !openCommitCreate) {
-                          return handleOpenCommitCreate();
-                        }
-                        return submitForm();
-                      }
-                      return true;
-                    }}
-                  />
-                  {enableReferences && (
-                    <CommitMessage
-                      handleClose={handleCloseCommitCreate}
-                      open={openCommitCreate}
-                      submitForm={submitForm}
-                      disabled={isSubmitting}
-                      setFieldValue={setFieldValue}
-                      values={values.references}
-                      id={stixDomainObject.id}
-                    />
-                  )}
-                </Form>
-              )}
-            </Formik>
-          </div>
-
           <DialogActions>
             <Button onClick={handleToggleOpenAliases}>
               {t_i18n('Close')}

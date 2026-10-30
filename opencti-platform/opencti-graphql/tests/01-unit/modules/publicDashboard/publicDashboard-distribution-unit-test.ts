@@ -30,7 +30,10 @@ vi.mock('../../../../src/database/engine', () => ({
 
 vi.mock('../../../../src/database/redis', () => ({ notify: vi.fn() }));
 
-vi.mock('../../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
+vi.mock('../../../../src/database/cache', () => ({
+  getEntitiesMapFromCache: vi.fn(),
+  getEntityFromCache: vi.fn().mockResolvedValue({ platform_organization: null }),
+}));
 
 vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
@@ -48,7 +51,7 @@ vi.mock('../../../../src/modules/workspace/workspace-domain', () => ({
   findAllWorkspaces: vi.fn(),
 }));
 
-vi.mock('../../../../src/domain/user', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({
   bookmarks: vi.fn(),
   checkUserCanShareMarkings: vi.fn(),
 }));

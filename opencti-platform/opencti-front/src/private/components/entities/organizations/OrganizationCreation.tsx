@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -146,6 +149,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     const allNames = splitMultilines(values.name);
     const variables: OrganizationCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -194,6 +198,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
 
   return (
     <Formik<OrganizationAddInput>
+      entityType={ORGANIZATION_TYPE}
       initialValues={initialValues}
       validationSchema={organizationValidator}
       validateOnChange={false}
@@ -238,7 +243,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -283,13 +288,13 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="x_opencti_score"
               required={(mandatoryAttributes.includes('x_opencti_score'))}
               label={t_i18n('Score')}
               fullWidth={true}
               type="number"
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
             <CreatedByField
               name="createdBy"
@@ -327,6 +332,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

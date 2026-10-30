@@ -82,13 +82,18 @@ export const JsonFormDeprecatedRenderer = (props: ControlProps) => {
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+        }}
+      >
         <Typography component="label" variant="subtitle2" sx={{ fontSize: '11px' }}>
           {label}
         </Typography>
         <Tag
           tooltipTitle={formattedDescription}
-          sx={{ color: warningHintColor }}
           label={t_i18n('Deprecated')}
           color={theme.palette.designSystem.tertiary.orange[400] ?? '#F2933A'}
         />

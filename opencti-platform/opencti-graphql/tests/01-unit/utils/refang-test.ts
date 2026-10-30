@@ -41,6 +41,34 @@ describe('refang tests', () => {
     expect(output).toBe('http://site.com');
   });
 
+  it('should strip a trailing ellipsis without affecting the rest of the string', () => {
+    const input = 'hxxp://site[.]com…';
+    const output = refang(input);
+    expect(output).toBe('http://site.com');
+  });
+
+  it('should handle long sequences of trailing dots without ReDoS backtracking', () => {
+    const start = performance.now();
+    const input = `${'.'.repeat(200_000)}x`;
+    const output = refang(input);
+    const duration = performance.now() - start;
+    expect(output).toBe(input);
+    // Loose bound: this only needs to catch pathological (exponential/quadratic)
+    // backtracking, not enforce a tight timing budget on shared CI runners.
+    expect(duration).toBeLessThan(500);
+  });
+
+  it('should strip long runs of trailing dots in linear time', () => {
+    const start = performance.now();
+    const input = `hxxp://site[.]com${'.'.repeat(200_000)}`;
+    const output = refang(input);
+    const duration = performance.now() - start;
+    expect(output).toBe('http://site.com');
+    // Loose bound: this only needs to catch pathological (exponential/quadratic)
+    // backtracking, not enforce a tight timing budget on shared CI runners.
+    expect(duration).toBeLessThan(500);
+  });
+
   it('should handle mixed defanging styles in a single string', () => {
     const input = 'hxxp://example[.]com and hxxps://secure[.]site/path';
     const output = refang(input);

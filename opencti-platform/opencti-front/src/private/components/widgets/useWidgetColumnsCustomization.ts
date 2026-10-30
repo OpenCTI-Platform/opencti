@@ -6,13 +6,19 @@ const useWidgetColumnsCustomization = (
   availableColumns: WidgetColumn[],
   value: WidgetColumn[],
   onChange: (columns: WidgetColumn[]) => void,
+  // Some available columns (e.g. custom fields) are fetched asynchronously. While that fetch
+  // is still pending, `availableColumns` is temporarily incomplete: skip the auto-cleanup below
+  // in that case, otherwise already-selected columns not yet known would be wrongly stripped
+  // out (visible as "missing" from Selected columns when editing an existing widget).
+  isAvailableColumnsLoading = false,
 ) => {
   useEffect(() => {
+    if (isAvailableColumnsLoading) return;
     const filteredColumns = value.filter((col) => availableColumns.some((availableCol) => availableCol.attribute === col.attribute));
     if (filteredColumns.length !== value.length) {
       onChange(filteredColumns);
     }
-  }, [availableColumns, value]);
+  }, [availableColumns, value, isAvailableColumnsLoading]);
 
   const handleDragEndSingleColumn = (result: DropResult) => {
     if (!result.destination) return;

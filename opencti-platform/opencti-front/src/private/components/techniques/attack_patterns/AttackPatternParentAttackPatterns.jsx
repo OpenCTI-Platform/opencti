@@ -4,7 +4,7 @@ import { compose } from 'ramda';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { LockPattern } from 'mdi-material-ui';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { ListItemButton } from '@mui/material';

@@ -25,7 +25,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperParsed, type JsonMapperRepresentation } from '../internal/jsonMapper/jsonMapper-types';
 import { type EditInput, FilterMode, IngestionAuthType, type IngestionJsonAddInput, type JsonMapperTestResult } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import conf, { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../../config/conf';
+import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { getHttpClient, type GetHttpClient, OpenCTIHeaders } from '../../utils/http-client';
 import { isEmptyField, isNotEmptyField, wait } from '../../database/utils';
@@ -35,11 +35,12 @@ import jsonMappingExecution from '../../parser/json-mapper';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
+import { encryptIngestionCredential, decryptIngestionCredential, FEED_REQUEST_TIMEOUT } from './ingestion-common';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
+import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs, validateStoredIngestionExecutionIdentity } from './ingestion-execution-identity';
 
 const MINIMAL_JSON_FEED_COMPATIBLE_VERSION = '7.260722.0';
 
@@ -47,8 +48,6 @@ interface JsonQueryFetchOpts {
   maxResults?: number;
   timeout?: number;
 }
-
-const DEFAULT_FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
 
 const getValueFromPath = (path: string, json: any) => {
   return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
@@ -78,7 +77,41 @@ const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, r
   return params;
 };
 
-const replaceVariables = (body: string, variables: Record<string, object | string>) => {
+/**
+ * Computes the state to save after a JSON feed execution, used as variables by the next execution.
+ * Only the attributes declared in the feed's query attributes are kept, each according to its `state_operation`:
+ * - `sum`: previous and new values are added up (as integers, a missing side counts as 0), e.g. a pagination offset.
+ * - `replace`: the new value is kept, unless it is empty, then the previous one is kept, e.g. a cursor.
+ * @param queryParamsAttributes the feed's query attributes
+ * @param previousState the variables used for this execution
+ * @param newState the values extracted from this execution's response
+ */
+export const mergeIngestionJsonState = (queryParamsAttributes: Array<DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
+  const state: Record<string, any> = {};
+  const queryParams = queryParamsAttributes ?? [];
+  for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
+    const queryParamsAttribute = queryParams[attrIndex];
+    if (queryParamsAttribute.state_operation === 'sum') {
+      state[queryParamsAttribute.to] = parseInt(previousState[queryParamsAttribute.to] ?? 0, 10) + parseInt(newState[queryParamsAttribute.to] ?? 0, 10);
+    } else {
+      state[queryParamsAttribute.to] = isNotEmptyField(newState[queryParamsAttribute.to]) ? newState[queryParamsAttribute.to] : previousState[queryParamsAttribute.to];
+    }
+  }
+  return state;
+};
+
+/**
+ * Normalises the result of getValueFromPath (typed as unknown) to a string or null.
+ * JSONPath can return an array — in that case the first element is used.
+ * Non-string, non-array values (objects, numbers, …) are rejected (return null).
+ */
+const toUrlString = (value: unknown): string | null => {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return typeof candidate === 'string' ? candidate : null;
+};
+
+const replaceVariables = (body: string | undefined | null, variables: Record<string, object | string>) => {
+  if (body == null) return '';
   const regex = /\$\w+/g;
   return body.replace(regex, (match) => {
     const variableName = match.substring(1);
@@ -102,7 +135,7 @@ const filterVariablesForAttributes = (attributes: Array<DataParam>, variables: R
 };
 
 export const executeJsonQuery = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson, opts: JsonQueryFetchOpts = {}) => {
-  const { maxResults = 0, timeout = DEFAULT_FEED_REQUEST_TIMEOUT } = opts;
+  const { maxResults = 0, timeout = FEED_REQUEST_TIMEOUT } = opts;
   let certificates;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/json';
@@ -136,21 +169,24 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   }
   const httpClientOptions: GetHttpClient = {
     headers,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    rejectUnauthorized: ingestion.ssl_verify ?? true,
     timeout,
     responseType: 'json',
     certificates,
+    beforeRedirect: (redirectUrl) => verifyIngestionUri(redirectUrl),
   };
   const httpClient = getHttpClient(httpClientOptions);
   // Prepare query params
   const queryVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'query_param');
   const parsedUri = replaceVariables(ingestion.uri, queryVariables);
+  // Re-validate after variable substitution to prevent placeholder bypass of deny list
+  verifyIngestionUri(parsedUri);
   // Prepare body
   const bodyVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'body');
   const parsedBody = replaceVariables(ingestion.body, bodyVariables);
   // Execute the http query
   logApp.info(`> Main query: ${parsedUri}`, { body: parsedBody });
-  const { data: requestData, headers: responseHeaders } = await httpClient.call({
+  const { data: requestData, headers: responseHeaders } = await httpClient.request({
     method: ingestion.verb,
     url: parsedUri,
     data: parsedBody,
@@ -167,11 +203,12 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
   // region Try to paginate with next page style
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
-    let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
+    let url = toUrlString(getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData));
     while (isNotEmptyField(url) && (maxResults === 0 || objects.length < maxResults)) {
+      verifyIngestionUri(url);
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
-      const { data: paginationData } = await httpClient.call({
+      const { data: paginationData } = await httpClient.request({
         method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
         url,
         data: ingestion.body,
@@ -183,7 +220,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       if (paginationObjects.length > 0) {
         objects = objects.concat(paginationObjects);
       }
-      url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
+      url = toUrlString(getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData));
     }
   }
   // endregion
@@ -322,6 +359,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
+  await validateIngestionExecutionIdentity(context, user, input.user_id);
   const inputToCreate = { ...input };
   if (inputToCreate.authentication_value) {
     inputToCreate.authentication_value = await encryptIngestionCredential(inputToCreate.authentication_value);
@@ -348,6 +386,10 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
 };
 
 export const editIngestionJson = async (context: AuthContext, user: AuthUser, id: string, input: IngestionJsonAddInput) => {
+  if (input.uri) {
+    verifyIngestionUri(input.uri);
+  }
+  await validateIngestionExecutionIdentity(context, user, input.user_id);
   let authenticationValue = input.authentication_value;
   if (authenticationValue && input.authentication_type) {
     const { authentication_value: encrypted_value } = await findById(context, user, id);
@@ -373,6 +415,8 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
   if (uriField && uriField.value[0]) {
     verifyIngestionUri(uriField.value[0]);
   }
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
 
   const patchInput = [...input];
 
@@ -438,6 +482,9 @@ export const patchJsonIngestion = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionJsonResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchJsonIngestion(context, user, ingestionId, { ingestion_json_state: null });
   const ingestion = await findById(context, user, ingestionId);
   const connectorId = connectorIdFromIngestId(ingestion.id);

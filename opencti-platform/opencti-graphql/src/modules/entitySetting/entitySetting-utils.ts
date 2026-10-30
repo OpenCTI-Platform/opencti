@@ -16,7 +16,6 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
   isStixDomainObjectContainer,
 } from '../../schema/stixDomainObject';
@@ -25,7 +24,7 @@ import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './en
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { MEMBER_ACCESS_CREATOR, SYSTEM_USER } from '../../utils/access';
-import type { AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
@@ -38,6 +37,8 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
+import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
+import { fillCustomFieldsDefaultValues } from '../customField/custom-field-validator';
 
 export type typeAvailableSetting = boolean | string;
 
@@ -60,6 +61,7 @@ export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
   enforce_reference: false,
   attributes_configuration: JSON.stringify([]),
   workflow_configuration: true,
+  sync_workflow_status_by_name: false,
 };
 
 export const defaultScale = JSON.stringify({
@@ -85,13 +87,13 @@ export const defaultScale = JSON.stringify({
   },
 });
 
-const templateObjectSettings = ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'templates'];
+const templateObjectSettings = ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'templates', 'workflow_id'];
 
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
-  [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration'],
-  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'workflow_configuration'],
-  [STIX_SIGHTING_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'platform_hidden_type', 'workflow_configuration', 'workflow_id'],
+  [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [STIX_SIGHTING_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_hidden_type'],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: ['platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER]: templateObjectSettings,
@@ -103,12 +105,12 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_VULNERABILITY]: templateObjectSettings,
   [ENTITY_TYPE_INCIDENT]: templateObjectSettings,
   // enforce_reference not available on specific entities
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
-  [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
+  [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ENTITY_TYPE_CONTAINER_CASE_RFI]: [...templateObjectSettings, 'request_access_workflow'],
-  [ENTITY_TYPE_DRAFT_WORKSPACE]: ['attributes_configuration', 'platform_hidden_type', 'workflow_configuration', 'workflow_id'],
+  [ENTITY_TYPE_DRAFT_WORKSPACE]: ['attributes_configuration', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
 };
 
 export const getAvailableSettings = (targetType: string) => {
@@ -185,7 +187,7 @@ const getStaticDefaultValues = (input: any, entitySetting: BasicStoreEntityEntit
   return staticDefaultValues;
 };
 
-export const fillDefaultValues = (user: any, input: any, entitySetting: any) => {
+export const fillDefaultValues = (user: AuthUser, input: any, entitySetting: any) => {
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
   const filledValues = new Map();
   const staticDefaultValues = getStaticDefaultValues(input, entitySetting);
@@ -233,4 +235,15 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
   }
 
   return { ...input, ...Object.fromEntries(staticDefaultValues), ...Object.fromEntries(filledValues) };
+};
+
+export const fillDefaultCustomFieldValues = async (context: AuthContext, user: AuthUser, input: any, entitySetting: any) => {
+  // Fill custom fields default values
+  if (entitySetting?.target_type) {
+    const customFieldsWithDefaultValues = await fillCustomFieldsDefaultValues(context, user, input, entitySetting.target_type);
+    if (customFieldsWithDefaultValues) {
+      return { ...input, custom_field_values: customFieldsWithDefaultValues };
+    }
+  }
+  return input;
 };

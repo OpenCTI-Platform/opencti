@@ -64,6 +64,8 @@ interface StixOpenctiExtension {
   modified_at: StixDate;
   is_inferred: boolean;
   workflow_id: string | undefined;
+  workflow_status_name?: string;
+  workflow_status_scope?: string;
   assignee_ids: string[];
   participant_ids: string[];
   creator_ids: string[];

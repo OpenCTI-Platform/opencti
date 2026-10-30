@@ -1,10 +1,9 @@
 # Security Coverage
 
-When you review a report or an incident response, it is useful to evaluate whether
-your own computer systems are well protected against the threats described therein. A Security Coverage
-models this evaluation, allowing you to measure your actual exposure and validate your security posture.
+When you review a report, details of a threat actor, or involved in an incident response, one of the key tasks is to evaluate whether
+your own computer systems are well protected against the threats described therein. OpenCTI's Security Coverage capability allows you to model this evaluation, either automatically with OpenAEV or manually representing tests ran elsewhere. This provides you with the details of potential exposure and allows you to validate and identify priority tasks to improve your security posture.
 
-A Security Coverage can be created in relation to the following entities in OpenCTI:
+In OpenCTI Security Coverages can be created in relation to the following entities:
 
 * Campaign
 * Grouping
@@ -13,20 +12,16 @@ A Security Coverage can be created in relation to the following entities in Open
 * Intrusion Set
 * Report
 
-Security Coverages can be found under **Analyses > Security Coverages**, and are linked to the covered
-entity.
+Security Coverages can be found under **Analyses > Security Coverages**, and are linked to the covered entity.
 
 ## Creating a Security Coverage
 
 You can create a Security Coverage from scratch under **Analyses > Security Coverages** (in which case the form
-prompts you to select the entity to be covered), or directly from the context of a compatible entity.
-
-When you navigate to a compatible entity in OpenCTI, the "Add Security Coverage" button is displayed in the upper
-right corner of the page.
+prompts you to select the entity to be covered), or directly from the upper right corner of the overview page for any of the compatible entities listed above.
 
 ![Add Security Coverage button](assets/add-security-coverage-button.png)
 
-The button opens a panel where you create the Security Coverage. You can carry out the security coverage
+Either option takes you through the steps you need to create the Security Coverage. You can carry out the security coverage
 in one of two ways: automated or manual.
 
 An automated Security Coverage uses [OpenAEV](https://docs.openaev.io/), another component of the XTM Suite.
@@ -39,96 +34,95 @@ A manual security coverage allows you to conduct the analysis yourself and direc
 
 ## Automate a Security Coverage via XTM Suite (OpenAEV)
 
-As part of the XTM Suite, OpenCTI can request an automated evaluation of your computer systems' exposure
-from a compatible entity, through a connected OpenAEV instance.
+With the XTM Suite, OpenCTI can request OpenAEV to run an automated evaluation of your computer systems' exposure to techniques, indicators and vulnerabilities linked to a compatible entity.
 
 !!! note "Report entities eligible for automated coverage"
 
     Currently, the automated Security Coverage feature with OpenAEV can assess coverage for
-    the following entities:
+    the following entities, when atleast one of the following entities are present:
     
+    * Attack patterns
     * Vulnerability
+    * Domains
+    * Artifacts
 
-    At least one entity must be present in the covered entity for which an automated Security Coverage
-    is being requested.
-
-
-### Prerequisites for automated security coverage
+### Setting up OpenAEV for automated security coverage
 To activate this feature, make sure the following requirements are met:
 
-* An active OpenAEV instance, [here is the dedicated documentation](https://docs.openaev.io/)
-* That same instance must be configured as an Enrichment Connector by a system administrator ([see the specific documentation](https://docs.openaev.io/latest/usage/xtm-suite-connector/))
+* An active OpenAEV instance or tenant, [here is the dedicated documentation](https://docs.openaev.io/)
+* That same instance must be configured as an Enrichment Connector by a system administrator ([see the specific documentation](https://docs.openaev.io/latest/usage/xtm-suite-connector/)). An OpenCTI Administrator will need to generate an API token for the connector to use.    
  
 !!! note "Compatibility requirement"
 
     The Security Coverage **Result** tab requires OpenAEV version **2.3.1** or later to display automated coverage results correctly.
 
-
-When the above is completed, you should see OpenAEV being listed as an Enrichment Connector in **Data > Ingestion** :
+When the above steps have been completed, you should see OpenAEV being listed as an Enrichment Connector in **Data > Ingestion** :
 
 ![OpenAEV Coverage connector listing](assets/openaev-coverage-connector.png)
 
-### Request the automated Security Coverage
+If you need to setup multiple OpenAEV instances or tenants to a single OpenCTI instance then you need to set up an account and generate an API for each instance or tenant to use.   
 
-To request an automated Security Coverage, click the Add Security Coverage button mentioned above.
 
-In the first step of the creation form, select the **Automated using Enrichment** option.
-This option becomes available when the OpenAEV Coverage connector is running and healthy.
-Complete the second step of the form.
+### Using the automated Security Coverage
+
+To use an automated Security Coverage, click the Add Security Coverage button mentioned above for your chosen entity.
+
+In the first step of the creation form, select the **Automated using Enrichment** option. This option is only available when the OpenAEV Coverage connector is configured correctly, if this is not available you will need to follow the setup steps above. The second step of the form, will allow you to provide the following information: 
+
+* Name - this will be automatically generated from the name of the covered entity
+* Description - user updated description of the security coverage
+* Confidence - the confidence level you want to use for the automated tests
+* Coverage recurrence - the frequency of the simulations created by the scenario will run at (hours / days / weeks / months)
+* Duration - how long the scenario runs for
+* Type affinity - Set to Endpoint currently
+* Platform affinity - Choose which platforms the scenario should run against
+* Labels / Markings - set as required
 
 After you submit the form, OpenCTI creates the security coverage and waits for OpenAEV to run tests and return the results of any completed tests.
 
 ### Receive automated results from OpenAEV
 
 OpenAEV is responsible for running the assessment. Using its own internal library of automated tests,
-OpenAEV selects the most relevant tests to each of the eligible entities in the entity covered by the Security Coverage
+OpenAEV selects tests for each of the eligible entities in the entity covered by the Security Coverage
 and runs a periodic simulation to assess the coverage. See the [OpenAEV documentation](https://docs.openaev.io/) for
 details on how this process works.
 
-!!! note "Periodic simulations"
+When a simulation is completed, the coverage results are sent back to OpenCTI as a Security Coverage Result bundle and displayed automatically in the Security Coverage Overview page and Result tab. The results displayed will be the results of the last simulation ran in OpenAEV. To support results from multiple instances, the results are stored in a Security Coverage Result entity.  
 
-    OpenAEV triggers a simulation to assess the current exposure to the related threats periodically. The period
-    is set by the value of the "Coverage validity period" parameter specified during the creation of the Security
-    Coverage in OpenCTI.
+### Overview tab
 
-When a simulation is completed, the coverage results are sent back to OpenCTI and displayed automatically
-in the Security Coverage Overview page and Result tab.
-
-### Checking the automated Security Coverage enrichment state
-
-From the Security Coverage page, you can check the status of the Enrichment Connector's work in the Enrichment menu in the upper-right corner:
-
-![Security Coverage enrichment menu](assets/security-coverage-enrichment-menu.png)
-
-This opens a panel that lists all attempts to task OpenAEV for the automated coverage assessment.
-To retry the action manually, click the circular arrow icon (top right in the panel). You may need to retry if
-the previous attempt failed or it is necessary to request an updated assessment (e.g. because the contents of the
-linked report has changed):
-
-![Security Coverage enrichment retrigger](assets/security-coverage-enrichment-retrigger.png)
+The **Overview tab** provides summary information of the results of any tests ran by OpenAEV or added manually. This shows the following Security Coverage specific widgets: 
+* Coverage Information: Display of the average coverage score from any security coverage result(s)
+* Tested Entities: Total count of entities tested in Security Coverage Result(s)
+* Entity Details: Display of the covered entities
+* Vulnerabilities: Display of average coverage score per vulnerability
+* Attack Patterns Coverage: Display of the average coverage score per attack patterns, available in the Mitre Matrix view and Kill Chain list view
 
 ### Result tab
 
-The **Result tab** provides a detailed, entity-by-entity view of the simulation results for all the entities related to the Security Coverage. It provides a summary of the results of any simulations that were executed on OpenAEV. For full results you will need to navigate to OpenAEV using the **Open OpenAEV** button in the top right.
+The **Result tab** provides a table of the test results for all the valid entities related to the Security Coverage. Each tested entity and its coverage score is displayed for each security coverage result. In the circumstances that multiple OpenAEV instances are connected to OpenCTI then multiple security Coverage Results will be shown for each entity.   
+
+Each detection, prevention or vulnerability score represents the number of assets that were tested and returned results. For full results detail you will need to navigate to OpenAEV using the **Open OpenAEV** button in the top right.
 For each entity covered by the secured coverage, the table displays:
 
 | Column       | Description                                                                                                        |
 |--------------|--------------------------------------------------------------------------------------------------------------------|
-| **Type**     | The entity type.                                                                                                   |
-| **Name**     | The main entity label. For attack patterns, the MITRE ATT&CK ID is displayed when available.                       |
-| **Coverage** | The Prevention and Detection coverage value returned for that entity. " - " if no results are currently available. |
-| **Labels**   | Displays labels applied to the entity                                                                              |
-| **Markings** | Displays data segregation classifications applied to the entity                                                    | 
-
-The **Coverage Result Metric** represents both the Prevention and Detection scores for each entity involved in the executed AEV scenario, for detailed results please navigate to OpenAEV. Result will not be shown where injects were not run, these are shown instead by a " - " to represent a placeholder inject.
+| **Tested Entity Type**     | The type of the entity tested, e.g. Attack Pattern, Vulnerability etc.                                                                                                   |
+| **Tested Entity Name**     | The main entity name. For attack patterns, the MITRE ATT&CK ID is displayed when available.                       |
+| **Tested Entity Labels**   | Displays labels applied to the tested entity                                                                              |
+| **Tested Entity Marking** | Displays data marking classifications applied to the entity                                                    | 
+| **Coverage Score** | The Prevention and Detection coverage value returned for the tested entity. " - " if no results are currently available. This information is stored on a 'has covered' relationship between the security coverage result and the tested entity|
+| **Coverage Last modified date** | The Prevention and Detection coverage value returned for the tested entity. " - " if no results are currently available. This information is stored on a 'has covered' relationship between the security coverage result and the tested entity|
+| **Security Coverage Result Name** | The name of the security coverage result name, this will be represented in the format OpenAEV name - result of - security coverage name |
 
 #### Understanding Placeholder Injects
 
-When an entity displays a dash (`—`) in the coverage field, it means OpenAEV generated a **Placeholder Inject** instead of an executable test. This happens when one of the following conditions is not met:
+A dash (—) in the coverage field indicates OpenAEV generated a Placeholder Inject rather than an executable test. Placeholder Injects are created when, Either:
 
-1. The Attack Pattern exists in OpenAEV (matched by MITRE ATT&CK ID or name), **and**
-2. A compatible payload exists for the platforms and architectures derived from the Asset Groups assigned via the **Default Asset Rules** (`opencti` tag).
+* The Attack Pattern is not recognized — for example if you are using a custom technique, or an ATT&CK ID/name that doesn't exist in OpenAEV's library
 
+* Or no payload is available for that technique on the platform/architecture of the assets that are set to be tested. In OpenAEV the opencti tag sets the Default Asset Rules for the injects created in a scenario), see below for further details. 
+  
 #### Improving coverage results in OpenAEV
 OpenAEV documentation provides complete details of how to manage injects, however here are some steps that can help resolve missing or partial coverage.
 
@@ -155,6 +149,19 @@ Once saved, the payload becomes immediately available for future scenario genera
 
 **4. Retrigger the enrichment**
 Once any of the above steps are completed, return to the Security Coverage page in OpenCTI and use the **Enrichment menu** to manually retrigger the assessment. OpenAEV will rebuild the scenario using the updated payload and asset configuration.
+
+### Checking the automated Security Coverage enrichment state
+
+From the Security Coverage page, you can check the status of the Enrichment Connector's work in the Enrichment menu in the upper-right corner:
+
+![Security Coverage enrichment menu](assets/security-coverage-enrichment-menu.png)
+
+This opens a panel that lists all attempts to task OpenAEV for the automated coverage assessment.
+To retry the action manually, click the circular arrow icon (top right in the panel). You may need to retry if
+the previous attempt failed or it is necessary to request an updated assessment (e.g. because the contents of the
+linked report has changed):
+
+![Security Coverage enrichment retrigger](assets/security-coverage-enrichment-retrigger.png)
 
 ## Manual Security Coverage
 

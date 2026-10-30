@@ -4,13 +4,15 @@ import IngestionCatalogConnectorHeader from '@components/integrations/catalog/In
 import IngestionCatalogConnectorOverview from '@components/integrations/catalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/integrations/catalog/__generated__/IngestionCatalogConnectorQuery.graphql';
 import useConnectorDeployDialog from '@components/integrations/catalog/hooks/useConnectorDeployDialog';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import createDeploymentCountMap from '@components/integrations/catalog/utils/createDeploymentCountMap';
+import parseIngestionConnector from '@components/integrations/catalog/utils/parseIngestionConnector';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import { Stack } from '@mui/material';
 import React, { Suspense, useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -58,19 +60,21 @@ const IngestionCatalogConnectorComponent = ({
   );
 
   setTitle(t_i18n('Available | Integrations'));
-  const connector = contract ? JSON.parse(contract.contract) : null;
+  const connector = contract ? parseIngestionConnector(contract.contract) : null;
   const deploymentCounts = createDeploymentCountMap(connectors);
   const deploymentCount = connector
     ? (deploymentCounts.get(connector.container_image) ?? 0)
     : 0;
+  const canDeploy = connector ? canDeployConnector(connector) : false;
 
+  // connector and onClickDeploy are new on every render: depending on them would open the dialog in a loop
   useEffect(() => {
-    if (openConfig && contract && connector) {
+    if (openConfig && contract && connector && canDeploy) {
       onClickDeploy(connector, contract.catalog_id, hasActiveManagers, deploymentCount);
     }
-  }, [openConfig, contract]);
+  }, [openConfig, contract, canDeploy]);
 
-  if (!contract) return <ErrorNotFound />;
+  if (!contract || !connector) return <ErrorNotFound />;
 
   return (
     <>
@@ -82,10 +86,16 @@ const IngestionCatalogConnectorComponent = ({
         ]}
       />
 
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
 
-        <Stack gap={4}>
+        <Stack sx={{
+          gap: 4,
+        }}
+        >
           <IngestionCatalogConnectorHeader
             connector={connector}
             isEnterpriseEdition={isEnterpriseEdition}
@@ -100,6 +110,7 @@ const IngestionCatalogConnectorComponent = ({
 
 const IngestionCatalogConnector = () => {
   const { connectorSlug } = useParams();
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const [searchParams] = useSearchParams();
   const shouldAutoOpen = searchParams.get(SEARCH_PARAMS.OPEN_CONFIG) === 'true';
@@ -130,6 +141,7 @@ const IngestionCatalogConnector = () => {
             connector={catalogState.selectedConnector}
             onClose={handleCloseDeployDialog}
             catalogId={catalogState.selectedCatalogId}
+            isEnterpriseEdition={isEnterpriseEdition}
             hasActiveManagers={catalogState.hasActiveManagers}
             onCreate={handleCreate}
             deploymentCount={catalogState.deploymentCount}

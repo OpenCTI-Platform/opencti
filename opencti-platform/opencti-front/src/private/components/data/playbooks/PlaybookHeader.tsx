@@ -27,7 +27,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
@@ -82,8 +82,21 @@ const PlaybookHeaderComponent = ({
   const { t_i18n, nsdt, n } = useFormatter();
   return (
     <>
-      <Stack direction="row" alignItems="center" gap={1}>
-        <Stack sx={{ flex: 1 }} direction="row" alignItems="center" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+            flex: 1,
+          }}
+        >
           <TitleMainEntity>
             {playbook.name}
           </TitleMainEntity>
@@ -109,7 +122,13 @@ const PlaybookHeaderComponent = ({
             aria-label="cards"
             style={{ padding: '5px' }}
           >
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               <Tag
                 label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
                 labelTextTransform="none"
@@ -145,6 +164,7 @@ const PlaybookHeaderComponent = ({
                   divider={openExecution !== lastExecution.id}
                   onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
                   }
+                  aria-expanded={openExecution === lastExecution.id}
                 >
                   <ListItemIcon style={{ marginLeft: 10 }}>
                     <ItemIcon type="Playbook" color={theme.palette.primary.main} />

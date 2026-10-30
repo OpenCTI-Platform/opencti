@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Route, useLocation, useParams } from 'react-router-dom';
+import { Route, useLocation, useParams } from 'react-router';
 import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
@@ -169,9 +169,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps)
           <Route
             path="/knowledge/relations/:relationId"
             element={(
-              <StixCoreRelationship
-                entityId={feedbackData.id}
-              />
+              <StixCoreRelationship />
             )}
           />
         )}

@@ -30,6 +30,11 @@ vi.mock('../../../src/utils/platformCrypto', () => ({
   getPlatformCrypto: vi.fn(),
 }));
 
+// An XTM One that predates /xtm/auth/metadata: the configured URL is its identity.
+vi.mock('../../../src/utils/http-client', () => ({
+  getHttpClient: () => ({ get: () => Promise.reject(new Error('Request failed with status code 404')) }),
+}));
+
 // --- Imports (resolved after mocks are set up) ---
 
 import { getPlatformCrypto } from '../../../src/utils/platformCrypto';
@@ -86,16 +91,20 @@ describe('XTM Authentication', () => {
   });
 
   describe('isTrustedIssuer', () => {
-    it('should return true for the configured trusted issuer', () => {
-      expect(isTrustedIssuer(TRUSTED_XTM_URL)).toBe(true);
+    it('should return true for the configured trusted issuer', async () => {
+      expect(await isTrustedIssuer(TRUSTED_XTM_URL)).toBe(true);
     });
 
-    it('should return false for an unknown URL', () => {
-      expect(isTrustedIssuer('https://unknown.example.com')).toBe(false);
+    it('should return true for another spelling of the configured trusted issuer', async () => {
+      expect(await isTrustedIssuer('HTTPS://XTM-One.example.com:443/')).toBe(true);
     });
 
-    it('should return false for the platform own URL', () => {
-      expect(isTrustedIssuer(PLATFORM_URL)).toBe(false);
+    it('should return false for an unknown URL', async () => {
+      expect(await isTrustedIssuer('https://unknown.example.com')).toBe(false);
+    });
+
+    it('should return false for the platform own URL', async () => {
+      expect(await isTrustedIssuer(PLATFORM_URL)).toBe(false);
     });
   });
 
@@ -232,6 +241,26 @@ describe('XTM Authentication', () => {
 
       await expect(verifyXtmJwt(token))
         .rejects.toThrow('JWT signature verification failed');
+    });
+
+    it('should not resolve the kid to a key set on the object prototype', async () => {
+      const { publicKey, privateKey } = await generateKeyPair('EdDSA');
+      const token = await new SignJWT({ email: 'inherited-kid@test.com' })
+        .setSubject('inherited-kid-user')
+        .setIssuer(PLATFORM_URL)
+        .setAudience('https://audience.example.com')
+        .setIssuedAt()
+        .setExpirationTime('5m')
+        .setProtectedHeader({ alg: 'EdDSA', kid: 'inherited-kid' })
+        .sign(privateKey);
+      const prototype = Object.prototype as Record<string, unknown>;
+      prototype['inherited-kid'] = publicKey;
+      try {
+        await expect(verifyXtmJwt(token))
+          .rejects.toThrow('JWT signature verification failed');
+      } finally {
+        delete prototype['inherited-kid'];
+      }
     });
 
     it('should throw generic failure for a token signed with a different key', async () => {

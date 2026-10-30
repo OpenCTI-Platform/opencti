@@ -1,11 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import MenuItem from '@mui/material/MenuItem';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { graphql } from 'react-relay';
 import { PayloadError, RecordSourceSelectorProxy } from 'relay-runtime';
@@ -129,24 +128,24 @@ const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="duration"
             label={t_i18n('Duration')}
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
           >
-            <MenuItem value="30">{t_i18n('30 days')}</MenuItem>
-            <MenuItem value="60">{t_i18n('60 days')}</MenuItem>
-            <MenuItem value="90">{t_i18n('90 days')}</MenuItem>
-            <MenuItem value="365">{t_i18n('1 year')}</MenuItem>
-            <MenuItem value="legacy">{t_i18n('Unlimited')}</MenuItem>
+            <SelectItem value="30">{t_i18n('30 days')}</SelectItem>
+            <SelectItem value="60">{t_i18n('60 days')}</SelectItem>
+            <SelectItem value="90">{t_i18n('90 days')}</SelectItem>
+            <SelectItem value="365">{t_i18n('1 year')}</SelectItem>
+            <SelectItem value="legacy">{t_i18n('Unlimited')}</SelectItem>
           </Field>
           <FormButtonContainer>
             <Button

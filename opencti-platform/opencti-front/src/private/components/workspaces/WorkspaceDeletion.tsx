@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import WorkspacePopoverDeletionMutation from '@components/workspaces/WorkspacePopoverDeletionMutation';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -19,8 +19,7 @@ const WorkspaceDeletion = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Workspace') },
   });
 

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -11,7 +11,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import { InfoOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Drawer from '../../common/drawer/Drawer';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -84,19 +84,19 @@ const eventIdToDate = (eventId: string, dateFormatter: (date: string | Date) => 
 const getOutOfDepthStatus = (
   estimatedOutOfDepth: number | null | undefined,
   t_i18n: (key: string) => string,
-): { label: string; hexColor: string } => {
+): { label: string; severity: 'low' | 'high' | 'critical' } => {
   if (!estimatedOutOfDepth) {
-    return { label: t_i18n('Healthy'), hexColor: '#2e7d32' };
+    return { label: t_i18n('Healthy'), severity: 'low' };
   }
   const ONE_HOUR = 3600;
   const ONE_DAY = 86400;
   if (estimatedOutOfDepth < ONE_HOUR) {
-    return { label: formatDuration(estimatedOutOfDepth), hexColor: '#c62828' };
+    return { label: formatDuration(estimatedOutOfDepth), severity: 'critical' };
   }
   if (estimatedOutOfDepth < ONE_DAY) {
-    return { label: formatDuration(estimatedOutOfDepth), hexColor: '#d84315' };
+    return { label: formatDuration(estimatedOutOfDepth), severity: 'high' };
   }
-  return { label: formatDuration(estimatedOutOfDepth), hexColor: '#2e7d32' };
+  return { label: formatDuration(estimatedOutOfDepth), severity: 'low' };
 };
 
 interface MetricRowProps {
@@ -111,8 +111,10 @@ const MetricRow: FunctionComponent<MetricRowProps> = ({ label, value, tooltip, t
     <ListItem sx={{ py: 1, px: 0 }}>
       <ListItemText
         primary={label}
-        primaryTypographyProps={{ variant: 'body2', sx: { color: theme?.palette?.text?.secondary } }}
         sx={{ flex: '0 0 auto', minWidth: 160 }}
+        slotProps={{
+          primary: { variant: 'body2', sx: { color: theme?.palette?.text?.secondary } },
+        }}
       />
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -174,23 +176,15 @@ const SyncConsumersDrawer: FunctionComponent<SyncConsumersDrawerProps> = ({
         <ListItem sx={{ py: 1, px: 0 }}>
           <ListItemText
             primary={t_i18n('Status')}
-            primaryTypographyProps={{ variant: 'body2', sx: { color: theme?.palette?.text?.secondary } }}
             sx={{ flex: '0 0 auto', minWidth: 160 }}
+            slotProps={{
+              primary: { variant: 'body2', sx: { color: theme?.palette?.text?.secondary } },
+            }}
           />
           <Box sx={{ ml: 'auto' }}>
             <Chip
               label={depthStatus.label}
-              style={{
-                fontSize: 12,
-                lineHeight: '12px',
-                borderRadius: 4,
-                height: 25,
-                width: 125,
-                textAlign: 'center',
-                backgroundColor: `${depthStatus.hexColor}33`,
-                color: depthStatus.hexColor,
-                border: `2px solid ${depthStatus.hexColor}`,
-              }}
+              severity={depthStatus.severity}
             />
           </Box>
         </ListItem>
@@ -244,7 +238,13 @@ const SyncConsumersDrawer: FunctionComponent<SyncConsumersDrawerProps> = ({
   const drawerContent = () => {
     if (loading && !metrics) {
       return (
-        <Box display="flex" justifyContent="center" p={4}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            p: 4,
+          }}
+        >
           <CircularProgress />
         </Box>
       );

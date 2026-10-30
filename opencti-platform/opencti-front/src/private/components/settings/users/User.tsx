@@ -3,22 +3,20 @@ import IconButton from '@common/button/IconButton';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { Add, DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
 import { ListItemButton, Stack } from '@mui/material';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContentText from '@mui/material/DialogContentText';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
+import { SimplePaletteColorOptions } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ApexOptions } from 'apexcharts';
 import { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Card from '../../../../components/common/card/Card';
+import DeleteDialog from '../../../../components/DeleteDialog';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -31,6 +29,7 @@ import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { areaChartOptions } from '../../../../utils/Charts';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
@@ -48,6 +47,7 @@ import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import UserHistory from './UserHistory';
 import UserTokenList from './UserTokenList';
+import useTimeSeriesAxisFormatter from '../../../../utils/hooks/useTimeSeriesAxisFormatter';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -210,12 +210,12 @@ interface UserProps {
 }
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
-  const { t_i18n, nsdt, fsd, fldt, fd } = useFormatter();
+  const { t_i18n, nsdt, fldt, fd } = useFormatter();
+  const auditsAxisFormatter = useTimeSeriesAxisFormatter('month');
   const { me } = useAuth();
   const theme = useTheme<Theme>();
-  const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
-  const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
-  const [killing, setKilling] = useState<boolean>(false);
+  const killSessionDeletion = useDeletion({});
+  const killSessionsDeletion = useDeletion({});
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
   const [openTokenCreationDrawer, setOpenTokenCreationDrawer] = useState(false);
 
@@ -233,51 +233,45 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   const userHasSettingsCapability = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
   const handleOpenKillSession = (sessionId: string) => {
-    setDisplayKillSession(true);
+    killSessionDeletion.handleOpenDelete();
     setSessionToKill(sessionId);
   };
   const handleCloseKillSession = () => {
-    setDisplayKillSession(false);
+    killSessionDeletion.handleCloseDelete();
     setSessionToKill(null);
   };
   const submitKillSession = () => {
     if (sessionToKill) {
-      setKilling(true);
+      killSessionDeletion.setDeleting(true);
       commitUserSessionKill({
         variables: {
           id: sessionToKill,
         },
         onError: (error: Error) => {
           handleError(error);
-          setKilling(false);
+          killSessionDeletion.setDeleting(false);
         },
         onCompleted: () => {
-          setKilling(false);
+          killSessionDeletion.setDeleting(false);
           handleCloseKillSession();
           refetch();
         },
       });
     }
   };
-  const handleOpenKillSessions = () => {
-    setDisplayKillSessions(true);
-  };
-  const handleCloseKillSessions = () => {
-    setDisplayKillSessions(false);
-  };
   const submitKillSessions = () => {
-    setKilling(true);
+    killSessionsDeletion.setDeleting(true);
     commitUserUserSessionsKill({
       variables: {
         id: user.id,
       },
       onError: (error: Error) => {
         handleError(error);
-        setKilling(false);
+        killSessionsDeletion.setDeleting(false);
       },
       onCompleted: () => {
-        setKilling(false);
-        handleCloseKillSessions();
+        killSessionsDeletion.setDeleting(false);
+        killSessionsDeletion.handleCloseDelete();
         refetch();
       },
     });
@@ -324,18 +318,18 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           marginBottom: 50,
         }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
               {!isServiceAccount && (
                 <>
-                  <Grid item xs={8}>
+                  <Grid size={8}>
                     <Label>
                       {t_i18n('Email address')}
                     </Label>
                     <pre style={{ margin: 0 }}>{user.user_email}</pre>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label action={user.otp_activated && (
                       <IconButton
                         color="primary"
@@ -353,7 +347,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                     </pre>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label>
                       {t_i18n('Password valid until')}
                     </Label>
@@ -363,7 +357,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               )}
               {isServiceAccount && (
                 <>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label>
                       {t_i18n('Account type')}
                     </Label>
@@ -372,7 +366,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       : EMPTY_VALUE
                     }
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label>
                       {t_i18n('Account status')}
                     </Label>
@@ -384,7 +378,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       />
                     </FieldOrEmpty>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label>
                       {t_i18n('Account expiration date')}
                     </Label>
@@ -392,8 +386,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </Grid>
                 </>
               )}
-              <Grid item xs={12}>
-                <Stack gap={1}>
+              <Grid size={12}>
+                <Stack sx={{
+                  gap: 1,
+                }}
+                >
                   <Label
                     action={(
                       <Button
@@ -418,19 +415,19 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               </Grid>
               {!isServiceAccount && (
                 <>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Firstname')}
                     </Label>
                     {user.firstname || EMPTY_VALUE}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Lastname')}
                     </Label>
                     {user.lastname || EMPTY_VALUE}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Account status')}
                     </Label>
@@ -442,7 +439,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       />
                     </FieldOrEmpty>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Account expiration date')}
                     </Label>
@@ -452,13 +449,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               )}
               {isServiceAccount && (
                 <>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Created by')}
                     </Label>
                     {creatorName}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Creation date')}
                     </Label>
@@ -469,10 +466,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Permissions')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Roles')}
                 </Label>
@@ -502,7 +499,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Groups')}
                 </Label>
@@ -536,7 +533,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Organizations')}
                 </Label>
@@ -572,14 +569,14 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label action={(
                   <Security needs={[SETTINGS_SETACCESSES]}>
                     <Tooltip title={t_i18n('Kill all sessions')}>
                       <IconButton
                         color="primary"
                         aria-label={t_i18n('Delete all')}
-                        onClick={handleOpenKillSessions}
+                        onClick={killSessionsDeletion.handleOpenDelete}
                         size="small"
                       >
                         <DeleteForeverOutlined fontSize="small" />
@@ -632,13 +629,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               {!isServiceAccount && (
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <HiddenTypesChipList
                     hiddenTypes={user.default_hidden_types ?? []}
                   />
                 </Grid>
               )}
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Max Confidence Level')}
                 </Label>
@@ -650,7 +647,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         {!isServiceAccount && (
           <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         )}
-        <Grid item xs={6} style={{ marginTop: 10 }}>
+        <Grid style={{ marginTop: 10 }} size={6}>
           <Card
             title={t_i18n('Operations')}
             sx={{ minHeight: 500 }}
@@ -703,7 +700,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           areaChartOptions(
                             theme,
                             true,
-                            fsd,
+                            auditsAxisFormatter,
                             simpleNumberFormat,
                             undefined,
                           ) as ApexOptions
@@ -726,7 +723,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             )}
           </Card>
         </Grid>
-        <Grid item xs={6} style={{ marginTop: 10 }}>
+        <Grid style={{ marginTop: 10 }} size={6}>
           {isGrantedToAudit ? (
             <UserHistory userId={user.id} />
           ) : (
@@ -745,46 +742,17 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           )}
         </Grid>
       </Grid>
-      <Dialog
-        open={displayKillSession}
+      <DeleteDialog
+        deletion={killSessionDeletion}
+        submitDelete={submitKillSession}
         onClose={handleCloseKillSession}
-        title={t_i18n('Are you sure?')}
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to kill this session?')}
-        </DialogContentText>
-        <DialogActions>
-          <Button variant="secondary" onClick={handleCloseKillSession} disabled={killing}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitKillSession}
-            disabled={killing}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={displayKillSessions}
-        onClose={handleCloseKillSessions}
-        title={t_i18n('Are you sure?')}
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to kill all the sessions of this user?')}
-        </DialogContentText>
-        <DialogActions>
-          <Button variant="secondary" onClick={handleCloseKillSessions} disabled={killing}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitKillSessions}
-            disabled={killing}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        message={t_i18n('Do you want to kill this session?')}
+      />
+      <DeleteDialog
+        deletion={killSessionsDeletion}
+        submitDelete={submitKillSessions}
+        message={t_i18n('Do you want to kill all the sessions of this user?')}
+      />
     </>
   );
 };

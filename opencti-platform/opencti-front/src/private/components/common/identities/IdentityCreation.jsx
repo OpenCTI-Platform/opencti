@@ -1,68 +1,24 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import MenuItem from '@mui/material/MenuItem';
-import withStyles from '@mui/styles/withStyles';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/DynamicCustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose } from 'ramda';
 import { Component } from 'react';
 import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-});
 
 const identityMutation = graphql`
   mutation IdentityCreationMutation($input: IdentityAddInput!) {
@@ -137,6 +93,8 @@ class IdentityCreation extends Component {
     return (
       <>
         <Formik
+          typeField="type"
+          enabled={!dryrun}
           enableReinitialize={true}
           initialValues={{
             name: inputValue,
@@ -165,7 +123,7 @@ class IdentityCreation extends Component {
               >
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
@@ -181,17 +139,17 @@ class IdentityCreation extends Component {
                   style={{ marginTop: 20 }}
                 />
                 <Field
-                  component={SelectField}
-                  variant="standard"
+                  component={SelectFieldFds}
+                  variant="outlined"
                   name="type"
                   label={t('Entity type')}
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
-                  {!onlyAuthors && (<MenuItem value="Sector">{t('Sector')}</MenuItem>)}
-                  <MenuItem value="Organization">{t('Organization')}</MenuItem>
-                  <MenuItem value="System">{t('System')}</MenuItem>
-                  <MenuItem value="Individual">{t('Individual')}</MenuItem>
+                  {!onlyAuthors && (<SelectItem value="Sector">{t('Sector')}</SelectItem>)}
+                  <SelectItem value="Organization">{t('Organization')}</SelectItem>
+                  <SelectItem value="System">{t('System')}</SelectItem>
+                  <SelectItem value="Individual">{t('Individual')}</SelectItem>
                 </Field>
                 {!dryrun && (
                   <ObjectLabelField
@@ -216,6 +174,7 @@ class IdentityCreation extends Component {
                     values={values.externalReferences}
                   />
                 )}
+                {!dryrun && <CustomFieldValuesCreation />}
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
@@ -238,8 +197,6 @@ class IdentityCreation extends Component {
 
 IdentityCreation.propTypes = {
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
   t: PropTypes.func,
   contextual: PropTypes.bool,
   onlyAuthors: PropTypes.bool,
@@ -249,7 +206,4 @@ IdentityCreation.propTypes = {
   creationCallback: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IdentityCreation);
+export default inject18n(IdentityCreation);

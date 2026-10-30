@@ -3,9 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
 import { Box, Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
-import type { Theme } from '@mui/material/styles/createTheme';
 import Button from '@common/button/Button';
 import { useFormatter } from './i18n';
 import useApiMutation from '../utils/hooks/useApiMutation';
@@ -42,7 +40,6 @@ const ForcePasswordChangeForm = ({
   secondaryAction,
   renderPolicies,
 }: ForcePasswordChangeFormProps) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [commitMutation] = useApiMutation(forcePasswordChangeMutation);
 
@@ -88,7 +85,10 @@ const ForcePasswordChangeForm = ({
             height: '100%',
           }}
         >
-          <Box flex={1}>
+          <Box sx={{
+            flex: 1,
+          }}
+          >
             {renderPolicies?.(values.password)}
             <Field
               component={TextField}
@@ -96,7 +96,7 @@ const ForcePasswordChangeForm = ({
               label={t_i18n('New password')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: theme.spacing(2) }}
+              className="mt-4"
             />
             <Field
               component={TextField}
@@ -104,14 +104,16 @@ const ForcePasswordChangeForm = ({
               label={t_i18n('Confirmation')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: theme.spacing(2) }}
+              className="mt-4"
             />
           </Box>
           <Stack
-            mt={3}
             direction="row"
-            alignItems="center"
-            justifyContent={secondaryAction ? 'space-between' : 'flex-end'}
+            sx={{
+              mt: 3,
+              alignItems: 'center',
+              justifyContent: secondaryAction ? 'space-between' : 'flex-end',
+            }}
           >
             {secondaryAction}
             <Button

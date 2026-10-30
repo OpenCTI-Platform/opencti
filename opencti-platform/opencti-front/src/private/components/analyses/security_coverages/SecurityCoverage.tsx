@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import SecurityCoverageDetails from './SecurityCoverageDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
@@ -69,6 +69,7 @@ const securityCoverageFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     objectCovered {
       ... on Report {
         id
@@ -122,7 +123,7 @@ const SecurityCoverageComponent = ({
 
       <Grid size={12}>
         <SecurityCoverageAttackPatterns
-          data={securityCoverage}
+          securityCoverage={securityCoverage}
           dataKillChains={dataKillChains}
         />
       </Grid>

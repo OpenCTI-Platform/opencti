@@ -13,7 +13,7 @@ import {
   buildStandardUser,
 } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAuthUser } from '../../utils/testQueryHelper';
-import { resolveUserById } from '../../../src/domain/user';
+import { resolveUserById } from '../../../src/modules/user/user-domain';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';

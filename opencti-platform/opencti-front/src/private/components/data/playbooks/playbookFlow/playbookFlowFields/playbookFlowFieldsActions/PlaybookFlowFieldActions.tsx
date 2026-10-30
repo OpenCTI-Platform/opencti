@@ -15,19 +15,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import IconButton from '@common/button/IconButton';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
-import { Grid2 as Grid, Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { Grid, Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Field, FieldArray, useFormikContext } from 'formik';
 import type { Theme } from '../../../../../../../components/Theme';
-import AutocompleteField from '../../../../../../../components/AutocompleteField';
+import ComboboxField from '../../../../../../../components/ComboboxField';
 import Button from '../../../../../../../components/common/button/Button';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { capitalizeFirstLetter } from '../../../../../../../utils/String';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
 import PlaybookActionValueField from './PlaybookActionValueField';
-import { attributesMultiple, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
+import { isAttributeMultiple, isCustomFieldAttribute, isPlaybookUpdateActionValid, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
 import useActionFieldOptions from './useActionFieldOptions';
+import useCustomFieldDefinitions from '../../../../../common/custom_fields/useCustomFieldDefinitions';
 
 interface PlaybookFlowFieldActionsProps {
   operations?: string[];
@@ -43,15 +44,13 @@ const PlaybookFlowFieldActions = ({
     value: op,
   }));
 
-  const getActionFieldOptions = useActionFieldOptions();
+  const customFieldDefinitions = useCustomFieldDefinitions();
+  const getActionFieldOptions = useActionFieldOptions(customFieldDefinitions);
   const { values, setFieldValue } = useFormikContext<PlaybookUpdateActionsForm>();
   const actions = values.actions ?? [];
   const formActionsValues = values.actionsFormValues ?? [];
 
-  const actionsAreValid = actions.every((a) => {
-    if (a.attribute === 'x_opencti_detection') return true;
-    return a.op && a.attribute && a.value && a.value.length > 0;
-  });
+  const actionsAreValid = actions.every(isPlaybookUpdateActionValid);
 
   /**
    * Returns the label for a given option.
@@ -84,9 +83,14 @@ const PlaybookFlowFieldActions = ({
     const newAttribute = val?.value;
     const newAction: PlaybookUpdateAction = { op: currentOp };
     if (newAttribute) newAction.attribute = newAttribute;
+    // A custom field action always carries a value: empty to clear it, false for an untouched boolean
+    if (isCustomFieldAttribute(newAttribute)) {
+      const isBoolean = customFieldDefinitions.some((d) => d.name === newAttribute && d.field_type === 'boolean');
+      newAction.value = isBoolean && currentOp !== 'remove' ? [{ label: 'false', value: 'false', patch_value: 'false' }] : [];
+    }
     setFieldValue(`actions.${index}`, newAction);
     if (formActionsValues[index] !== undefined) {
-      const isMultiple = attributesMultiple.includes(newAttribute ?? '');
+      const isMultiple = isAttributeMultiple(newAttribute, customFieldDefinitions);
       setFieldValue(`actionsFormValues.${index}`, isMultiple ? [] : null);
     }
   };
@@ -125,32 +129,24 @@ const PlaybookFlowFieldActions = ({
                   <Grid container spacing={3} sx={{ width: '100%', alignItems: 'flex-end' }}>
                     <Grid size={{ xs: 3 }}>
                       <Field
-                        component={AutocompleteField}
+                        component={ComboboxField}
                         name={`actions.${i}.op`}
                         multiple={false}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t_i18n('Action type'),
-                        }}
+                        label={t_i18n('Action type')}
                         options={operationOptions}
-                        isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
                         getOptionLabel={getOptionLabel(operationOptions)}
                         onInternalChange={(_: string, val: FieldOption | null) => handleOperationChange(i, val)}
                       />
                     </Grid>
                     <Grid size={{ xs: 3 }}>
                       <Field
-                        component={AutocompleteField}
+                        component={ComboboxField}
                         name={`actions.${i}.attribute`}
                         multiple={false}
                         disabled={isEmptyField(action.op)}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t_i18n('Field'),
-                        }}
+                        label={t_i18n('Field')}
                         options={fieldOptions}
                         noOptionsText={t_i18n('None')}
-                        isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
                         getOptionLabel={getOptionLabel(fieldOptions)}
                         onInternalChange={(_: string, val: FieldOption | null) => handleAttributeChange(i, action.op, val)}
                       />
@@ -159,6 +155,7 @@ const PlaybookFlowFieldActions = ({
                       <PlaybookActionValueField
                         action={action}
                         index={i}
+                        customFieldDefinitions={customFieldDefinitions}
                       />
                     </Grid>
 
@@ -185,7 +182,10 @@ const PlaybookFlowFieldActions = ({
             );
           })}
 
-          <Stack alignItems="center">
+          <Stack sx={{
+            alignItems: 'center',
+          }}
+          >
             <Button
               variant="tertiary"
               color="secondary"

@@ -5,9 +5,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { BackupTableOutlined, AlarmOnOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
-import Box from '@mui/material/Box';
+import { styled, Theme, useTheme } from '@mui/material/styles';
 import { DataColumns } from '../../../../components/list_lines';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -18,41 +16,28 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import NotifierChips from './NotifierChips';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 40,
-    display: 'flex',
-    gap: '8px',
-    alignItems: 'center',
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  filtersItem: {
-    height: 40,
-    display: 'flex',
-    alignItems: 'center',
-    float: 'left',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const BodyItem = styled('div')({
+  height: 40,
+  display: 'flex',
+  gap: '8px',
+  alignItems: 'center',
+  fontSize: 13,
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+});
+
+const FiltersItem = styled('div')({
+  height: 40,
+  display: 'flex',
+  alignItems: 'center',
+  float: 'left',
+  paddingRight: 10,
+});
 
 interface TriggerLineProps {
   node: TriggerLine_node$key;
@@ -93,7 +78,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   bypassEditionRestriction,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n, nt } = useFormatter();
   const data = useFragment(triggerLineFragment, node);
@@ -107,7 +91,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
     : formatTimeForToday(currentTime[0]);
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       secondaryAction={(
         <TriggerPopover
@@ -127,8 +111,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
       <ListItemText
         primary={(
           <>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.trigger_type.width }}
             >
               <Tag
@@ -139,26 +122,18 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     : t_i18n('Regular digest')
                 }
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.notifiers.width }}
             >
-              {(data.notifiers
-                && data.notifiers.length > 0)
-                ? data.notifiers
-                    .map<React.ReactNode>((n) => <code key={n.id} style={{ marginRight: 5 }}>{n.name}</code>)
-                : EMPTY_VALUE
-              }
-            </div>
-            <div
-              className={classes.bodyItem}
+              <NotifierChips notifiers={data.notifiers} />
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.event_types.width }}
             >
               {data.event_types
@@ -176,57 +151,40 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     label={n?.name}
                   />
                 ))}
-            </div>
+            </BodyItem>
             {data.trigger_type === 'live' && (
-              <div
-                className={classes.filtersItem}
+              <FiltersItem
                 style={{ width: dataColumns.filters.width }}
               >
                 {isFilterGroupNotEmpty(filters) ? (
                   <FilterIconButton
                     filters={filters}
-                    dataColumns={dataColumns}
                     variant="small"
                     redirection
+                    showGroupsSummaryButtonOnReadOnly
                     entityTypes={data.instance_trigger ? ['Instance'] : ['Stix-Core-Object', 'Stix-Filtering']}
                   />
                 ) : EMPTY_VALUE}
-              </div>
+              </FiltersItem>
             )}
             {data.trigger_type === 'digest' && (
-              <div
-                className={classes.bodyItem}
+              <BodyItem
                 style={{ width: dataColumns.filters.width }}
               >
                 <Tag
-                  label={(
-                    <span>
-                      <strong>{t_i18n('Period: ')}</strong>
-                      {data.period}
-                    </span>
-                  )}
+                  label={`${t_i18n('Period: ')}${data.period}`}
                 />
                 {currentTime.length > 1 && (
                   <Tag
-                    label={(
-                      <span>
-                        <strong>{t_i18n('Day: ')}</strong>
-                        {day}
-                      </span>
-                    )}
+                    label={`${t_i18n('Day: ')}${day}`}
                   />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
                   <Tag
-                    label={(
-                      <span>
-                        <strong>{t_i18n('Time: ')}</strong>
-                        {nt(time)}
-                      </span>
-                    )}
+                    label={`${t_i18n('Time: ')}${nt(time)}`}
                   />
                 )}
-              </div>
+              </BodyItem>
             )}
           </>
         )}
@@ -240,27 +198,21 @@ export const TriggerLineDummy = ({
 }: {
   dataColumns: DataColumns;
 }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
-      secondaryAction={(
-        <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </Box>
-      )}
+      secondaryAction={<MoreVert />}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 <Skeleton
@@ -269,7 +221,7 @@ export const TriggerLineDummy = ({
                   width="90%"
                   height="50%"
                 />
-              </div>
+              </BodyItem>
             ))}
           </>
         )}

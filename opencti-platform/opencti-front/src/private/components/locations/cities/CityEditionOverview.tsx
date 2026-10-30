@@ -18,6 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -83,6 +84,7 @@ const cityMutationRelationDelete = graphql`
 export const cityEditionOverviewFragment = graphql`
   fragment CityEditionOverview_city on City {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     confidence
@@ -242,7 +244,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           <AlertConfidenceForEntity entity={city} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -279,8 +281,8 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
@@ -294,8 +296,8 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}
@@ -342,6 +344,13 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={city.entity_type}
+            entityId={city.id}
+            values={city.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

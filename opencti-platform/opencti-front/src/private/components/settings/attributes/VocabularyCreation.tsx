@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@common/button/Button';
 import { graphql } from 'react-relay';
@@ -7,7 +7,6 @@ import * as Yup from 'yup';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { VocabulariesLinesPaginationQuery$variables } from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { VocabularyAddInput, VocabularyCategory, VocabularyCreationMutation } from './__generated__/VocabularyCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
@@ -21,22 +20,16 @@ interface VocabularyCreationProps {
   category: VocabularyCategory;
 }
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+});
+
+const Text = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const vocabularyAdd = graphql`
   mutation VocabularyCreationMutation($input: VocabularyAddInput!) {
@@ -55,7 +48,6 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
   paginationOptions,
   category,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [addVocab] = useApiMutation<VocabularyCreationMutation>(vocabularyAdd);
@@ -122,18 +114,18 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="description"
                 label={t_i18n('Description')}
                 fullWidth={true}
-                style={fieldSpacingContainerStyle}
+                className="mt-5"
               />
               <Field
                 component={AutocompleteFreeSoloField}
@@ -141,46 +133,40 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 name="aliases"
                 multiple={true}
                 textfieldprops={{
-                  variant: 'standard',
+                  variant: 'outlined',
                   label: t_i18n('Aliases'),
                 }}
                 options={[]}
-                renderOption={(
-                  props: Record<string, unknown>,
-                  option: FieldOption,
-                ) => (
-                  <li {...props}>
-                    <div className={classes.text}>{option.label}</div>
-                  </li>
+                renderOption={(option: FieldOption) => (
+                  <Text>{option.label}</Text>
                 )}
-                classes={{ clearIndicator: classes.autoCompleteIndicator }}
               />
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="order"
                 label={t_i18n('Order')}
                 fullWidth={true}
                 type="number"
-                style={{ marginTop: 20 }}
+                className="mt-5"
               />
-              <div className={classes.buttons}>
+              <Buttons>
                 <Button
                   variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  sx={{ marginLeft: 2 }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting || !isValid || !dirty}
-                  classes={{ root: classes.button }}
+                  sx={{ marginLeft: 2 }}
                 >
                   {t_i18n('Create')}
                 </Button>
-              </div>
+              </Buttons>
             </Form>
           )}
         </Formik>

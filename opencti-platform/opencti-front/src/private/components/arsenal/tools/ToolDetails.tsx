@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Tooltip from '@mui/material/Tooltip';
 import { ToolDetails_tool$key } from '@components/arsenal/tools/__generated__/ToolDetails_tool.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -15,6 +16,10 @@ import TextList from '../../../../components/common/text/TextList';
 const ToolDetailsFragment = graphql`
  fragment ToolDetails_tool on Tool {
    id
+   entity_type
+   customFieldValues {
+     ...CustomFieldValuesDisplay_values @relay(mask: false)
+   }
    description
    tool_version
    tool_types
@@ -42,13 +47,13 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={tool.description} limit={400} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Tool version')}
             </Label>
@@ -58,7 +63,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
               </Tooltip>
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Tool types')}
             </Label>
@@ -67,6 +72,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
             />
             <StixCoreObjectKillChainPhasesView killChainPhases={tool.killChainPhases ?? []} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={tool.entity_type} values={tool.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>
