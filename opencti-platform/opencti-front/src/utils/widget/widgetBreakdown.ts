@@ -100,7 +100,9 @@ export const getBreakdownEntityTypes = (filters?: FilterGroup | null, perspectiv
   if (!filters || !typeFilterKey) return [];
   const isRestrictingGroup = filters.mode === 'and' || filters.filters.length + filters.filterGroups.length === 1;
   const typeFilter = filters.filters.find((filter) => filter.key === typeFilterKey);
-  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== 'eq') || typeFilter.mode === 'and') {
+  // Several types in "and" only keep the elements of every type, while a single one restricts the type whatever the mode
+  const isTypeIntersection = typeFilter?.mode === 'and' && typeFilter.values.length > 1;
+  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== 'eq') || isTypeIntersection) {
     return [];
   }
   return typeFilter.values.filter((value): value is string => typeof value === 'string');

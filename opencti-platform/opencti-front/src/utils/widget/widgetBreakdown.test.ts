@@ -174,8 +174,16 @@ describe('getBreakdownEntityTypes', () => {
     ]))).toEqual(['Report', 'Grouping']);
   });
 
+  it('reads a single type whatever the mode of its filter', () => {
+    // Left by removing a value from "type = Report AND Grouping"
+    expect(getBreakdownEntityTypes(group([{ key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'and' }]))).toEqual(['Report']);
+    expect(getBreakdownEntityTypes(group([{ key: 'relationship_type', values: ['targets'], operator: 'eq', mode: 'and' }]), 'relationships')).toEqual(['targets']);
+  });
+
   it('returns no type when the filters do not restrict it for sure', () => {
     expect(getBreakdownEntityTypes(undefined)).toEqual([]);
+    // An element is of a single type: several types in "and" are not the types of the dataset
+    expect(getBreakdownEntityTypes(group([{ key: 'entity_type', values: ['Report', 'Grouping'], operator: 'eq', mode: 'and' }]))).toEqual([]);
     expect(getBreakdownEntityTypes(group([{ key: 'objectLabel', values: ['label-id'], operator: 'eq', mode: 'or' }]))).toEqual([]);
     expect(getBreakdownEntityTypes(group([{ key: 'entity_type', values: ['Report'], operator: 'not_eq', mode: 'or' }]))).toEqual([]);
     // "type = Report OR label = A" can also return other types
