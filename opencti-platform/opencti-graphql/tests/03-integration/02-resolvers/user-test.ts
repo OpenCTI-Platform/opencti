@@ -1,7 +1,8 @@
 import gql from 'graphql-tag';
 import bcrypt from 'bcryptjs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { elLoadById } from '../../../src/database/engine';
+import { elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../../../src/database/utils';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import {
@@ -1637,6 +1638,35 @@ describe('Service account User coverage', async () => {
     expect(userEdit.fieldPatch.user_service_account).toEqual(true);
     const userUpdated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
     expect(userUpdated.password).toBeUndefined();
+  });
+  it('should change the password of a user without user_service_account when false is sent with it', async () => {
+    // Users created before service accounts existed have no user_service_account: false is not a switch for them
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'Legacy user', password: 'legacy-pass-1', user_email: 'legacy_user@mail.com' } },
+    });
+    const legacyUserId = created.data.userAdd.id;
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      wait_for_completion: true,
+      body: {
+        script: { source: "ctx._source.remove('user_service_account')" },
+        query: { term: { 'internal_id.keyword': { value: legacyUserId } } },
+      },
+    });
+    const legacyUser: any = await storeLoadById(testContext, ADMIN_USER, legacyUserId, ENTITY_TYPE_USER);
+    expect(legacyUser.user_service_account).toBeUndefined();
+    await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: legacyUserId,
+        input: [{ key: 'password', value: ['legacy-pass-2'] }, { key: 'user_service_account', value: [false] }],
+      },
+    });
+    const updated: any = await storeLoadById(testContext, ADMIN_USER, legacyUserId, ENTITY_TYPE_USER);
+    expect(bcrypt.compareSync('legacy-pass-2', updated.password)).toBe(true);
+    await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: legacyUserId } });
   });
   it('should service account user deleted', async () => {
     // Delete the users

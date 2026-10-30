@@ -1239,9 +1239,10 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   // Switching between user and service account sets or removes the password itself, so a password sent
-  // alongside is dropped, whatever the order of the inputs
-  const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
-  const switchesAccountType = userServiceAccountInput !== undefined && userToUpdate.user_service_account !== userServiceAccountInput.value[0];
+  // alongside is dropped, whatever the order of the inputs. Same conditions as the two switch branches below
+  // (user_service_account is not set on users created before service accounts existed)
+  const requestedServiceAccount = rawInputs.find((x) => x.key === 'user_service_account')?.value[0];
+  const switchesAccountType = userToUpdate.user_service_account ? requestedServiceAccount === false : requestedServiceAccount === true;
   checkDateDisplayInput(rawInputs, 'date_format', 'time_format');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
