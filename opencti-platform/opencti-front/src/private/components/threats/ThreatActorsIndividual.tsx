@@ -25,7 +25,7 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
@@ -99,7 +99,7 @@ const ThreatActorsIndividual = () => {
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         additionalHeaderButtons={[
-          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNFORMINTAKE]}>
+          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
             <StixCoreObjectForms entityType="Threat-Actor-Individual" />
           </Security>,
         ]}
@@ -188,7 +188,7 @@ const ThreatActorsIndividual = () => {
               </ToggleButton>,
             ]}
             additionalHeaderButtons={[
-              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNFORMINTAKE]}>
+              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
                 <StixCoreObjectForms entityType="Threat-Actor-Individual" />
               </Security>,
             ]}
