@@ -579,6 +579,8 @@
   "Kill chain name": "Nom de la chaîne de mise à mort",
   "Kill chain order": "Ordre de la chaîne de mise à mort",
   "Kill chain phase": "Phase de la chaîne de mise à mort",
+  "Kill chain phases": "Phases de kill chain",
+  "Kill chains, their phases and their order": "Kill chains, leurs phases et leur ordre",
   "Label": "Étiquette",
   "Label IDs": "Label IDs",
   "Label of related entity": "Label de l'entité apparentée",
