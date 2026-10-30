@@ -104,7 +104,7 @@ interface TimeSeriesBreakdownContentProps<TQuery extends OperationType> {
   selectBreakdown: TimeSeriesBreakdownQueryProps<TQuery>['selectBreakdown'];
   type: string;
   parameters: WidgetParameters;
-  onMounted: (chart: ApexCharts) => void;
+  onMounted: (chart?: ApexCharts) => void;
   onWarningChange: (warning?: string) => void;
 }
 

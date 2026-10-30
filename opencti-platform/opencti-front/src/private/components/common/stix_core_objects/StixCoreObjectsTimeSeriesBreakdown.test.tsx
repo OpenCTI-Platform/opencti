@@ -39,9 +39,10 @@ vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
-  default: ({ children, warning }: { children: React.ReactNode; warning?: string }) => (
+  default: ({ children, warning, chart }: { children: React.ReactNode; warning?: string; chart?: unknown }) => (
     <div>
       {warning && <div data-testid="widget-warning">{warning}</div>}
+      {chart ? <div data-testid="widget-export" /> : null}
       {children}
     </div>
   ),
@@ -421,6 +422,41 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
     mocks.error = new Error('Network error');
     expect(() => render(widget)).toThrow('Network error');
+    vi.mocked(console.error).mockRestore();
+  });
+
+  it('stops offering the export of a chart that is gone', async () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const widget = makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection);
+    let refresh = () => {};
+    const RefreshedWidget = () => {
+      const [, setRefreshCount] = useState(0);
+      refresh = () => setRefreshCount((count) => count + 1);
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+    };
+    // The chart says it is mounted once drawn
+    const mountChart = () => act(() => mocks.lines.mock.lastCall?.[0].onMounted({}));
+    respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
+    const { queryByTestId, getByText } = testRender(<RefreshedWidget />, { userContext });
+    await drawn(mocks.lines);
+    mountChart();
+    expect(queryByTestId('widget-export')).not.toBeNull();
+
+    // A refresh brings no series: the chart leaves, and its export with it
+    respond([]);
+    act(() => refresh());
+    expect(queryByTestId('widget-export')).toBeNull();
+
+    // Drawn again, then refused by the API: the refusal replaces the chart
+    respond([{ label: 'Report', entity: null, values: [1, 2, 4] }]);
+    act(() => refresh());
+    mountChart();
+    expect(queryByTestId('widget-export')).not.toBeNull();
+    mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
+    act(() => refresh());
+    expect(getByText('This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.')).toBeTruthy();
+    expect(queryByTestId('widget-export')).toBeNull();
     vi.mocked(console.error).mockRestore();
   });
 
