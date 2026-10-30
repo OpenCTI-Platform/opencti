@@ -5,7 +5,7 @@ import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
+import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { HttpClientError } from '../utils/http-client';
 import { isNotEmptyField } from '../database/utils';
@@ -126,10 +126,14 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
         ingestionLogger.info('Feed execution started', { uri: ingestion.uri });
         const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
           .then(async () => {
-            await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, {
-              last_execution_status: 'success',
-              last_execution_date: now(),
-            });
+            try {
+              await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, {
+                last_execution_status: 'success',
+                last_execution_date: now(),
+              });
+            } catch (patchErr) {
+              logApp.warn('[OPENCTI-MODULE] Failed to patch rss ingestion success status', { cause: patchErr });
+            }
             await ingestionLogger.success('Feed execution succeeded');
           })
           .catch((e) => {
@@ -304,13 +308,9 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const user = context.user ?? SYSTEM_USER;
   const csvMapperParsed = await resolveCsvMapperParsed(context, user, ingestion);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
-  try {
-    logApp.info(`[OPENCTI-MODULE] Executing CSV ingestion for ${ingestion.name}`);
-    const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion, { timeout: FEED_REQUEST_TIMEOUT });
-    return await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
-  } catch (e: any) {
-    throw UnknownError(e, { ingestionName: ingestion.name, ingestionId: ingestion.id });
-  }
+  logApp.info(`[OPENCTI-MODULE] Executing CSV ingestion for ${ingestion.name}`);
+  const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion, { timeout: FEED_REQUEST_TIMEOUT });
+  return processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
 };
 
 export const csvExecutor = async (context: AuthContext) => {

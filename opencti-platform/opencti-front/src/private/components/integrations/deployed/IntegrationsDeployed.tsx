@@ -1,4 +1,5 @@
 import React, { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router';
 import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -15,9 +16,10 @@ import { ConnectorsLogosQuery } from '@components/data/connectors/__generated__/
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import DeployedFacetSidebar, { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationCard from '@components/integrations/deployed/DeployedIntegrationCard';
+import IntegrationsHealthAlerts from '@components/integrations/deployed/IntegrationsHealthAlerts';
 import DeployedIntegrationLine, { DeployedIntegrationLinesHeader } from '@components/integrations/deployed/DeployedIntegrationLine';
 import useDeployedIntegrations from '@components/integrations/deployed/useDeployedIntegrations';
-import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
+import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode, EMPTY_DEPLOYED_FILTERS } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
 import useProgressiveReveal from '@components/integrations/components/useProgressiveReveal';
 import { IntegrationsData } from '@components/integrations/Integrations';
@@ -42,6 +44,7 @@ interface IntegrationsDeployedContentProps {
   connectorsStateData: ConnectorsStateQuery['response'] | null;
   logosBySlug: Map<string, string>;
   onConnectorsChange: () => void;
+  alertsSlot?: HTMLElement | null;
 }
 
 const IntegrationsDeployedContent = ({
@@ -50,6 +53,7 @@ const IntegrationsDeployedContent = ({
   connectorsStateData,
   logosBySlug,
   onConnectorsChange,
+  alertsSlot,
 }: IntegrationsDeployedContentProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -57,6 +61,7 @@ const IntegrationsDeployedContent = ({
   const typeMetadata = useDeployedTypeMetadata();
   const { isFeatureEnable } = useHelper();
   const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
+  const isIngestionHealthEnabled = isFeatureEnable('INGESTION_HEALTH');
   const { feedsData, formsData, refetchFeeds, refetchForms } = data;
 
   const items = useDeployedIntegrations({
@@ -78,21 +83,31 @@ const IntegrationsDeployedContent = ({
     hasActiveFilters,
     clearAllFilters,
     facets,
-  } = useDeployedIntegrationsFilters({ items, searchParams, isConnectorUpdateEnabled });
+  } = useDeployedIntegrationsFilters({
+    items,
+    searchParams,
+    isConnectorUpdateEnabled,
+    isIngestionHealthEnabled,
+  });
 
   const [searchInput, setSearchInput] = useState(filters.search);
 
-  const [view, setView] = useState<DeployedViewMode>(
-    () => (localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards'),
+  const [view, setView] = useState<DeployedViewMode>(() =>
+    localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards',
   );
-  const handleViewChange = (_: React.MouseEvent, value: DeployedViewMode | null) => {
+  const handleViewChange = (
+    _: React.MouseEvent,
+    value: DeployedViewMode | null,
+  ) => {
     if (!value) return;
     localStorage.setItem(VIEW_STORAGE_KEY, value);
     setView(value);
   };
 
   // Sections are collapsible to keep large fleets scannable.
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [collapsedSections, setCollapsedSections] = useState<
+    Record<string, boolean>
+  >({});
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -123,7 +138,10 @@ const IntegrationsDeployedContent = ({
 
   // Progressive mounting while scrolling, as on the available tab.
   const revealResetKey = JSON.stringify({ filters, sort });
-  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(filteredItems.length, revealResetKey);
+  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(
+    filteredItems.length,
+    revealResetKey,
+  );
   const visibleSections = useMemo(() => {
     const result: (DeployedSection & { totalCount: number })[] = [];
     let remaining = visibleCount;
@@ -142,161 +160,204 @@ const IntegrationsDeployedContent = ({
   // Below md the sidebar stacks full-width above the cards instead of
   // squeezing them against a fixed 250px column.
   return (
-    <Stack
-      data-testid="deployed-page"
-      direction={{ xs: 'column', md: 'row' }}
-      sx={{
-        gap: 2,
-        alignItems: { xs: 'stretch', md: 'flex-start' },
-      }}
-    >
-      <DeployedFacetSidebar
-        filters={filters}
-        onFiltersChange={setFilters}
-        hasActiveFilters={hasActiveFilters}
-        onClearAll={handleResetFilters}
-        showUpdateAvailableFacet={isConnectorUpdateEnabled}
-        facets={facets}
-      />
-
-      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Stack
-          direction="row"
-          sx={{
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 2,
+    <Stack data-testid="deployed-page" sx={{ gap: 2 }}>
+      {/* Above the tabs, where the page leaves a slot: the items and the filters live in this component */}
+      {alertsSlot && createPortal(
+        <IntegrationsHealthAlerts
+          items={items}
+          onShowIssue={(health) => {
+            setSearchInput('');
+            setFilters({ ...EMPTY_DEPLOYED_FILTERS, healthStatuses: [health] });
           }}
-        >
-          <SearchInput
-            data-testid="integrations-search-input"
-            value={searchInput}
-            onSubmit={handleSearchInputSubmit}
-            onChange={handleSearchInputChange}
-          />
-          <TextField
-            select
-            size="small"
-            variant="outlined"
-            label={t_i18n('Sort by')}
-            value={sort}
-            onChange={(event) => setSort(event.target.value as DeployedSortMode)}
-            sx={{ width: 200, backgroundColor: paperBg(theme) }}
-          >
-            <MenuItem value="name">{t_i18n('Name (A-Z)')}</MenuItem>
-            <MenuItem value="status">{t_i18n('Status')}</MenuItem>
-            <MenuItem value="lastRun">{t_i18n('Last run')}</MenuItem>
-            <MenuItem value="messages">{t_i18n('Queued messages')}</MenuItem>
-          </TextField>
-          <ResultCountChip count={filteredItems.length} />
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={view}
-            onChange={handleViewChange}
-            sx={{ backgroundColor: paperBg(theme) }}
-          >
-            <ToggleButton value="cards" aria-label="cards" data-testid="integrations-view-cards">
-              <Tooltip title={t_i18n('Cards view')}>
-                <ViewModuleOutlined fontSize="small" />
-              </Tooltip>
-            </ToggleButton>
-            <ToggleButton value="lines" aria-label="lines" data-testid="integrations-view-lines">
-              <Tooltip title={t_i18n('Lines view')}>
-                <ViewListOutlined fontSize="small" />
-              </Tooltip>
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Stack>
+        />,
+        alertsSlot,
+      )}
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        sx={{
+          gap: 2,
+          alignItems: { xs: 'stretch', md: 'flex-start' },
+        }}
+      >
+        <DeployedFacetSidebar
+          filters={filters}
+          onFiltersChange={setFilters}
+          hasActiveFilters={hasActiveFilters}
+          onClearAll={handleResetFilters}
+          showUpdateAvailableFacet={isConnectorUpdateEnabled}
+          showHealthFacet={isIngestionHealthEnabled}
+          facets={facets}
+        />
 
-        {sections.length === 0 ? (
-          <MarketplaceEmptyState
-            hasActiveFilters={hasActiveFilters}
-            onResetFilters={handleResetFilters}
-            extraAction={(
-              <Button
-                component={Link}
-                to="/dashboard/integrations/available"
+        <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 2,
+            }}
+          >
+            <SearchInput
+              data-testid="integrations-search-input"
+              value={searchInput}
+              onSubmit={handleSearchInputSubmit}
+              onChange={handleSearchInputChange}
+            />
+            <TextField
+              select
+              size="small"
+              variant="outlined"
+              label={t_i18n('Sort by')}
+              value={sort}
+              onChange={(event) =>
+                setSort(event.target.value as DeployedSortMode)
+              }
+              sx={{ width: 200, backgroundColor: paperBg(theme) }}
+            >
+              <MenuItem value="name">{t_i18n('Name (A-Z)')}</MenuItem>
+              <MenuItem value="status">{t_i18n('Status')}</MenuItem>
+              <MenuItem value="lastRun">{t_i18n('Last run')}</MenuItem>
+              <MenuItem value="messages">{t_i18n('Queued messages')}</MenuItem>
+            </TextField>
+            <ResultCountChip count={filteredItems.length} />
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={view}
+              onChange={handleViewChange}
+              sx={{ backgroundColor: paperBg(theme) }}
+            >
+              <ToggleButton
+                value="cards"
+                aria-label="cards"
+                data-testid="integrations-view-cards"
               >
-                {t_i18n('Browse the catalog')}
-              </Button>
-            )}
-          />
-        ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: view === 'lines' ? 3 : 4 }}>
-            {visibleSections.map((section) => {
-              const { label, icon } = typeMetadata(section.key);
-              if (collapsedSections[section.key]) {
+                <Tooltip title={t_i18n('Cards view')}>
+                  <ViewModuleOutlined fontSize="small" />
+                </Tooltip>
+              </ToggleButton>
+              <ToggleButton
+                value="lines"
+                aria-label="lines"
+                data-testid="integrations-view-lines"
+              >
+                <Tooltip title={t_i18n('Lines view')}>
+                  <ViewListOutlined fontSize="small" />
+                </Tooltip>
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
+
+          {sections.length === 0 ? (
+            <MarketplaceEmptyState
+              hasActiveFilters={hasActiveFilters}
+              onResetFilters={handleResetFilters}
+              extraAction={(
+                <Button component={Link} to="/dashboard/integrations/available">
+                  {t_i18n('Browse the catalog')}
+                </Button>
+              )}
+            />
+          ) : (
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: view === 'lines' ? 3 : 4,
+              }}
+            >
+              {visibleSections.map((section) => {
+                const { label, icon } = typeMetadata(section.key);
+                if (collapsedSections[section.key]) {
+                  return (
+                    <Box component="section" key={section.key}>
+                      <MarketplaceSectionHeader
+                        icon={icon}
+                        label={label}
+                        count={section.totalCount}
+                        collapsed
+                        onToggleCollapse={() => toggleSection(section.key)}
+                      />
+                    </Box>
+                  );
+                }
                 return (
                   <Box component="section" key={section.key}>
                     <MarketplaceSectionHeader
                       icon={icon}
                       label={label}
                       count={section.totalCount}
-                      collapsed
                       onToggleCollapse={() => toggleSection(section.key)}
                     />
+                    {view === 'lines' ? (
+                      <Box
+                        sx={{
+                          borderRadius: 1,
+                          border: `1px solid ${paperBorder(theme)}`,
+                          backgroundColor: paperBg(theme),
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <DeployedIntegrationLinesHeader />
+                        {section.items.map((item) => (
+                          <DeployedIntegrationLine
+                            key={item.id}
+                            item={item}
+                            onChange={handleItemChange}
+                          />
+                        ))}
+                      </Box>
+                    ) : (
+                      <Grid container spacing={2}>
+                        {section.items.map((item) => (
+                          <Grid
+                            key={item.id}
+                            size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
+                          >
+                            <DeployedIntegrationCard
+                              item={item}
+                              onChange={handleItemChange}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    )}
                   </Box>
                 );
-              }
-              return (
-                <Box component="section" key={section.key}>
-                  <MarketplaceSectionHeader
-                    icon={icon}
-                    label={label}
-                    count={section.totalCount}
-                    onToggleCollapse={() => toggleSection(section.key)}
-                  />
-                  {view === 'lines' ? (
-                    <Box
-                      sx={{
-                        borderRadius: 1,
-                        border: `1px solid ${paperBorder(theme)}`,
-                        backgroundColor: paperBg(theme),
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <DeployedIntegrationLinesHeader />
-                      {section.items.map((item) => (
-                        <DeployedIntegrationLine key={item.id} item={item} onChange={handleItemChange} />
-                      ))}
-                    </Box>
-                  ) : (
-                    <Grid container spacing={2}>
-                      {section.items.map((item) => (
-                        <Grid
-                          key={item.id}
-                          size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
-                        >
-                          <DeployedIntegrationCard item={item} onChange={handleItemChange} />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  )}
-                </Box>
-              );
-            })}
-            {hasMore && <Box ref={sentinelRef} sx={{ height: 1 }} />}
-          </Box>
-        )}
-      </Box>
+              })}
+              {hasMore && <Box ref={sentinelRef} sx={{ height: 1 }} />}
+            </Box>
+          )}
+        </Box>
+      </Stack>
     </Stack>
   );
 };
 
 interface IntegrationsDeployedProps {
   data: IntegrationsData;
+  // Element above the tabs receiving the health alerts
+  alertsSlot?: HTMLElement | null;
 }
 
 // The deployed tab: registered connectors and built-in feed instances merged
 // in a single faceted marketplace view, with live monitoring metrics.
-const IntegrationsDeployed = ({ data }: IntegrationsDeployedProps) => {
+const IntegrationsDeployed = ({
+  data,
+  alertsSlot,
+}: IntegrationsDeployedProps) => {
   const isConnectorReader = useGranted([MODULES]);
 
-  const [connectorsListRef, loadConnectorsList] = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
-  const [connectorsStateRef, loadConnectorsState] = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
-  const [connectorsLogosRef, loadConnectorsLogos] = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
-  const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(new Map());
+  const [connectorsListRef, loadConnectorsList]
+    = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
+  const [connectorsStateRef, loadConnectorsState]
+    = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
+  const [connectorsLogosRef, loadConnectorsLogos]
+    = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
+  const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(
+    new Map(),
+  );
 
   useEffect(() => {
     if (!isConnectorReader) return undefined;
@@ -327,6 +388,7 @@ const IntegrationsDeployed = ({ data }: IntegrationsDeployedProps) => {
       connectorsStateData={connectorsStateData}
       logosBySlug={logosBySlug}
       onConnectorsChange={onConnectorsChange}
+      alertsSlot={alertsSlot}
     />
   );
 

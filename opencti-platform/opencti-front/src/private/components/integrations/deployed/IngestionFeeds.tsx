@@ -22,6 +22,7 @@ export const ingestionFeedsQuery = graphql`
           queue_messages
           ingestionHealth {
             ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
           }
           user {
             id
@@ -48,6 +49,7 @@ export const ingestionFeedsQuery = graphql`
           updated_at
           ingestionHealth {
             ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
           }
           user {
             id
@@ -75,6 +77,7 @@ export const ingestionFeedsQuery = graphql`
           updated_at
           ingestionHealth {
             ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
           }
           user {
             id
@@ -97,6 +100,7 @@ export const ingestionFeedsQuery = graphql`
           updated_at
           ingestionHealth {
             ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
           }
           user {
             id
@@ -123,6 +127,7 @@ export const ingestionFeedsQuery = graphql`
           updated_at
           ingestionHealth {
             ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
           }
           user {
             id
@@ -149,6 +154,7 @@ export const ingestionFeedsQuery = graphql`
           updated_at
           ingestionHealth {
             ...IngestionHealthChip_ingestionHealth
+            ...IngestionHealthSummary_ingestionHealth
           }
           user {
             id

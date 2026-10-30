@@ -14,6 +14,7 @@ vi.mock('../../../../src/database/redis', () => ({
 }));
 
 vi.mock('../../../../src/modules/user/user-domain', () => ({
+  AVAILABLE_LANGUAGES: ['auto', 'en-us'],
   findById: vi.fn(),
   getUserByEmail: vi.fn(),
   userEditField: vi.fn(),

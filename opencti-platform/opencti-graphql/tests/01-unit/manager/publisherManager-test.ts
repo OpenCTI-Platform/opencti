@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getHttpClient } from '../../../src/utils/http-client';
-import { handleWebhookNotification, resolveNotificationDataMarkings } from '../../../src/manager/publisherManager';
+import { handleWebhookNotification, processNotificationData, resolveNotificationDataMarkings } from '../../../src/manager/publisherManager';
+import { buildActivityNotificationData } from '../../../src/manager/activityManager';
 import type { NotificationData } from '../../../src/utils/publisher-mock';
 import type { StoreMarkingDefinition } from '../../../src/types/store';
 import type { AuthUser } from '../../../src/types/user';
@@ -306,5 +307,25 @@ describe('resolveNotificationDataMarkings', () => {
     const rendered = await safeRender(template, sanitizeNotificationData({ data }));
 
     expect(rendered).toBe('TLP:AMBER');
+  });
+});
+
+describe('processNotificationData', () => {
+  const NOTIFICATION_ID = 'trigger-id';
+  const user = { user_id: 'user-id' } as any;
+  const notificationMap = new Map([[NOTIFICATION_ID, { id: NOTIFICATION_ID }]] as any);
+  const usersMap = new Map([['user-id', { id: 'user-id' }]] as any);
+
+  // The activity events title their notification with the element name, such as an ingestion name: any name is possible
+  it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__'])('should group the events of an element named %s under its name', async (name) => {
+    const instance = buildActivityNotificationData({ id: 'ingestion-id', entity_type: 'IngestionRss', entity_name: name } as any);
+    const data = [1, 2].map((index) => ({ notification_id: NOTIFICATION_ID, instance, type: 'action', message: `message ${index}` }));
+
+    const content = await processNotificationData({} as any, notificationMap as any, user, data as any, usersMap as any);
+
+    expect(Object.entries(content)).toEqual([[name, [
+      { operation: 'action', message: 'message 1', instance_id: 'ingestion-id', entity_type: 'IngestionRss' },
+      { operation: 'action', message: 'message 2', instance_id: 'ingestion-id', entity_type: 'IngestionRss' },
+    ]]]);
   });
 });
