@@ -6,6 +6,14 @@ from typing import Dict, Optional
 TLS_REJECT_UNAUTHORIZED_ENV = "OPENCTI_TLS_REJECT_UNAUTHORIZED"
 
 
+_TRUE_VALUES = ["1", "true", "yes", "on"]
+_FALSE_VALUES = ["0", "false", "no", "off"]
+
+
+def _is_unset(value) -> bool:
+    return value is None or (isinstance(value, str) and value.strip() == "")
+
+
 def get_tls_reject_unauthorized(config: Optional[Dict] = None) -> bool:
     """Return the global TLS certificate verification setting.
 
@@ -14,6 +22,7 @@ def get_tls_reject_unauthorized(config: Optional[Dict] = None) -> bool:
     WORKER_LISTEN_API_SSL_VERIFY and the OpenCTIApiClient ssl_verify).
     Looks up the OPENCTI_TLS_REJECT_UNAUTHORIZED environment variable, then
     the opencti.tls_reject_unauthorized key of the YAML configuration.
+    Accepts 1/0, true/false, yes/no and on/off, case-insensitive.
     Disabled by default for now, it will be enabled by default in an
     upcoming version.
 
@@ -22,13 +31,30 @@ def get_tls_reject_unauthorized(config: Optional[Dict] = None) -> bool:
 
     :return: True if TLS certificates must be verified
     :rtype: bool
+    :raises ValueError: if the value is not a boolean
     """
     value = os.getenv(TLS_REJECT_UNAUTHORIZED_ENV)
-    if value is None:
+    source = TLS_REJECT_UNAUTHORIZED_ENV
+    if _is_unset(value):
         value = ((config or {}).get("opencti") or {}).get("tls_reject_unauthorized")
+        source = "opencti.tls_reject_unauthorized"
+    if _is_unset(value):
+        return False
     if isinstance(value, bool):
         return value
-    return value in ["yes", "true", "True"]
+    normalized = str(value).strip().lower()
+    if normalized in _TRUE_VALUES:
+        return True
+    if normalized in _FALSE_VALUES:
+        return False
+    raise ValueError(
+        "Invalid value "
+        + repr(value)
+        + " for "
+        + source
+        + ", expected one of: "
+        + ", ".join(_TRUE_VALUES + _FALSE_VALUES)
+    )
 
 
 _tls_warning_logged = False

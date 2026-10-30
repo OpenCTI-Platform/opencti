@@ -21,11 +21,35 @@ def test_tls_reject_unauthorized_is_disabled_by_default():
 
 @pytest.mark.parametrize(
     "value, expected",
-    [("true", True), ("True", True), ("yes", True), ("false", False), ("", False)],
+    [
+        ("true", True),
+        ("TRUE", True),
+        (" yes ", True),
+        ("1", True),
+        ("On", True),
+        ("false", False),
+        ("False", False),
+        ("no", False),
+        ("0", False),
+        ("OFF", False),
+        ("", False),
+    ],
 )
 def test_tls_reject_unauthorized_reads_environment(value, expected):
     with patch.dict(os.environ, {"OPENCTI_TLS_REJECT_UNAUTHORIZED": value}, clear=True):
         assert get_tls_reject_unauthorized() is expected
+
+
+@pytest.mark.parametrize("value", ["ture", "2", "enabled"])
+def test_tls_reject_unauthorized_rejects_unknown_environment_value(value):
+    with patch.dict(os.environ, {"OPENCTI_TLS_REJECT_UNAUTHORIZED": value}, clear=True):
+        with pytest.raises(ValueError, match="OPENCTI_TLS_REJECT_UNAUTHORIZED"):
+            get_tls_reject_unauthorized()
+
+
+@patch.dict(os.environ, {"OPENCTI_TLS_REJECT_UNAUTHORIZED": ""}, clear=True)
+def test_tls_reject_unauthorized_empty_environment_falls_back_to_config():
+    assert get_tls_reject_unauthorized({"opencti": {"tls_reject_unauthorized": True}})
 
 
 @patch.dict(os.environ, {}, clear=True)
@@ -34,6 +58,9 @@ def test_tls_reject_unauthorized_reads_config():
     assert not get_tls_reject_unauthorized(
         {"opencti": {"tls_reject_unauthorized": "false"}}
     )
+    assert get_tls_reject_unauthorized({"opencti": {"tls_reject_unauthorized": 1}})
+    with pytest.raises(ValueError, match="opencti.tls_reject_unauthorized"):
+        get_tls_reject_unauthorized({"opencti": {"tls_reject_unauthorized": "maybe"}})
 
 
 @patch.dict(os.environ, {"OPENCTI_TLS_REJECT_UNAUTHORIZED": "false"}, clear=True)
