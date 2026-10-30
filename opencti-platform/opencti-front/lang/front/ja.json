@@ -88,6 +88,7 @@
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "ランダムなパスワードが生成されます: メールとパスワードでログインできるようにするには、パスワードを変更する必要があります。パスワードを忘れるワークフローを使用してください。",
   "A result with this external link already exists in this security coverage": "この外部リンクの結果はこのセキュリティカバレッジに既に存在します",
   "A result with this name already exists in this security coverage": "この名前の結果はこのセキュリティカバレッジに既に存在します",
+  "A URL or an external ID is required": "URL または外部 ID が必要です",
   "A value cannot reference another variable": "値は他の変数を参照できません",
   "A variable with this name already exists": "この名前の変数は既に存在します",
   "A widget has a @me filter enabled...": "ウィジェットで@meフィルタが有効になっています。このダッシュボードをパブリックダッシュボードとして共有する場合、@meフィルターはダッシュボードを共有している人の\"{name}\"に置き換えられます。ダッシュボードに表示されるデータに影響を与える可能性があります。",

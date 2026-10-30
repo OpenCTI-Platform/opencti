@@ -4,6 +4,7 @@ import { useLazyLoadQuery } from 'react-relay';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import {
   buildCustomFieldsValidationSchema,
   buildCustomFieldValuesAddInput,
@@ -75,13 +76,15 @@ const CustomFieldsFormWithDefinitions = <Values extends FormikValues>(props: Pro
 // Wait for definitions before mounting Formik so async defaults cannot erase user input.
 const CustomFieldsFormik = <Values extends FormikValues>({ enabled = true, ...props }: Props<Values>) => {
   const { isFeatureEnable } = useHelper();
+  const { isDeferredMode } = useDeferredCreation();
   if (!enabled) {
     const { entityType: _entityType, ...formikProps } = props;
     return <Formik {...formikProps} />;
   }
   return (
     <Suspense fallback={null}>
-      {isFeatureEnable('CUSTOM_FIELDS') && props.entityType
+      {/* A form submission does not create custom field values */}
+      {isFeatureEnable('CUSTOM_FIELDS') && props.entityType && !isDeferredMode
         ? <CustomFieldsFormWithDefinitions {...props} />
         : <CustomFieldsForm {...props} definitions={[]} />}
     </Suspense>

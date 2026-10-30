@@ -209,6 +209,23 @@ Forms can be submitted from three locations:
 
 Note: The form intake button is hidden if the user does not have Create/update capabilities.
 
+## Creating objects on the fly
+
+While you fill in a form, you can create objects on the fly from its fields: entities, observables, labels and external references, with their attached files and markdown images.
+These objects are **not created immediately**. They are kept in your browser, and they are only created, together with the rest of the submission, when you submit the form.
+
+- Leaving or cancelling the form creates nothing: the objects you prepared are discarded.
+- The objects follow the destination of the submission: they are created in the main knowledge, or in the draft created by the submission.
+- When you create an object from within the creation of another one, the nested object is kept inside its parent until the parent is accepted.
+- Authors cannot be created in a form, only selected among existing ones.
+- The "Create and map" option is not offered inside a form. Map the entity after the submission.
+- These options of the creation dialogs are not offered inside a form either: creating an indicator from an observable or observables from an indicator, case templates, authorized members, the entities contained in an observed data or a feedback, and custom fields. Set them after the submission.
+- An Artifact created in a form is stored as uploaded: an archive protected by the `infected` password is not extracted, as it is when the Artifact is created outside a form ([#19285](https://github.com/OpenCTI-Platform/opencti/issues/19285)).
+
+!!! note "Asynchronous processing"
+
+    The submission is processed asynchronously. A success message means that the submission has been queued, not that all objects already exist.
+
 ## Submission process
 When a form is submitted, the following 7-step pipeline executes:
 

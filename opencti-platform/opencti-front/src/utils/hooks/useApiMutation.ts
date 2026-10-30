@@ -1,9 +1,15 @@
-import { Disposable, GraphQLTaggedNode, IEnvironment, MutationConfig, MutationParameters, PayloadError } from 'relay-runtime';
+import { Disposable, getRequest, GraphQLTaggedNode, IEnvironment, MutationConfig, MutationParameters, PayloadError } from 'relay-runtime';
 import { useMutation, UseMutationConfig } from 'react-relay';
 import { ReactNode, useCallback } from 'react';
 import { MESSAGING$, relayErrorHandling } from '../../relay/environment';
 import { RelayError } from '../../relay/relayTypes';
 import { useDeferredCreation } from './useDeferredCreation';
+
+// A creation mutation has a `<type>Add` root field. The other mutations a creation dialog can send (e.g. Ask AI) are not deferred.
+const isCreationMutation = (query: GraphQLTaggedNode) => {
+  const [root] = getRequest(query).operation.selections;
+  return root !== undefined && 'name' in root && root.name.endsWith('Add');
+};
 
 export interface UsiApiMutationOptions {
   errorMessage?: string | ReactNode;
@@ -14,10 +20,10 @@ export interface UsiApiMutationOptions {
 /**
  * Hook wrapping Relay useMutation to automatically display an error popup with a message if the mutation fails.
  *
- * When `DeferredCreationContext.isDeferredMode` is active (e.g. a draft-only user is
- * creating an entity on the fly inside a Form Intake), the mutation is NOT dispatched
- * to the server. Instead, the raw `input` from `variables` is captured via the context
- * so it can be bundled and created in draft when the form intake is submitted.
+ * When `DeferredCreationContext.isDeferredMode` is active (an entity created on the fly
+ * inside a Form Intake), a creation mutation (`<type>Add`) is NOT dispatched to the server.
+ * Instead, the raw `input` from `variables` is captured via the context so it can be
+ * created with the form intake submission. The other mutations are sent as usual.
  */
 const useApiMutation = <T extends MutationParameters>(
   query: GraphQLTaggedNode,
@@ -27,7 +33,7 @@ const useApiMutation = <T extends MutationParameters>(
   const { isDeferredMode, captureInput } = useDeferredCreation();
   const [commit, inFlight] = useMutation(query, fn);
   const commitWithError = useCallback((args: UseMutationConfig<T>) => {
-    if (isDeferredMode) {
+    if (isDeferredMode && isCreationMutation(query)) {
       // Intercept the mutation: capture the raw input data and fake a successful
       // completion so the creation form closes gracefully without any server call.
       //
@@ -61,7 +67,7 @@ const useApiMutation = <T extends MutationParameters>(
         if (options?.successMessage) MESSAGING$.notifySuccess(options.successMessage);
       },
     });
-  }, [commit, isDeferredMode, captureInput]);
+  }, [commit, query, isDeferredMode, captureInput]);
   return [commitWithError, inFlight];
 };
 
