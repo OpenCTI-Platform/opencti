@@ -345,6 +345,9 @@ class OpenCTIApiClient:
         # Keep track of draft context
         self.draft_id = ""
 
+        # Sync whose queue is being processed, sent when attaching staged sync files
+        self.sync_id = None
+
         # Check if openCTI is available
         if perform_health_check and not self.health_check():
             raise ValueError(
