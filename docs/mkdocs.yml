@@ -271,6 +271,7 @@ nav:
         - Email templates: administration/email-templates.md
       - Customization:
         - Entity types: administration/entities.md
+        - Custom fields: administration/custom-fields.md
         - Rules engine: administration/reasoning.md
         - Notifiers:
           - Custom notifiers: administration/notifiers.md

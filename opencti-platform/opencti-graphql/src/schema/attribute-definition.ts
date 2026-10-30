@@ -6,7 +6,7 @@ import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating, humanizeDate } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
-import { CUSTOM_FIELDS_FEATURE_FLAG, TEST_MODE } from '../config/conf';
+import { TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
@@ -712,7 +712,6 @@ export const customFieldValues: NestedObjectAttribute = {
   multiple: true,
   upsert: true,
   isFilterable: false,
-  featureFlag: CUSTOM_FIELDS_FEATURE_FLAG,
   mappings: [
     { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },

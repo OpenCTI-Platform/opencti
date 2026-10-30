@@ -13,7 +13,6 @@ import {
 } from '../../../../utils/customFields';
 import { useFormatter } from '../../../../components/i18n';
 import type useFormEditor from '../../../../utils/hooks/useFormEditor';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { CustomFieldInput, CustomFieldsLoader } from './CustomFieldsInput';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -43,7 +42,6 @@ interface CustomFieldValuesEditionProps {
 }
 
 const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps> = ({ entityType, entityId, values, fieldPatch, enableReferences = false }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [definitions, setDefinitions] = useState<CustomFieldDef[]>([]);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
@@ -113,15 +111,11 @@ const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps>
     flushChanges();
   };
 
-  if (!isFeatureEnable('CUSTOM_FIELDS')) return null;
-
   return (
     <>
-      {isFeatureEnable('CUSTOM_FIELDS') && (
-        <Suspense fallback={null}>
-          <CustomFieldsLoader entityType={entityType} onLoaded={setDefinitions} />
-        </Suspense>
-      )}
+      <Suspense fallback={null}>
+        <CustomFieldsLoader entityType={entityType} onLoaded={setDefinitions} />
+      </Suspense>
       {definitions.length > 0 && (
         <>
           <Divider style={{ marginTop: 20 }} />
