@@ -79,11 +79,26 @@ const REPORT_ADD_QUERY = gql`
     }
   }
 `;
+const MALWARE_READ_QUERY = gql`
+  query Malware($id: String!) {
+    malware(id: $id) {
+      id
+      name
+      description
+      is_family
+      creators {
+        id
+      }
+    }
+  }
+`;
 const MALWARE_ADD_QUERY = gql`
   mutation MalwareAdd($input: MalwareAddInput!) {
     malwareAdd(input: $input) {
       id
       name
+      description
+      is_family
       creators {
         id
       }
@@ -335,6 +350,20 @@ describe('Form submission by a form-only user, imported by the worker on its beh
     expect(upsert.data.killChainPhaseAdd).toEqual({ id: data.killChainPhaseAdd.id, x_opencti_order: 1 });
     const create = await queryInitPlatformAsTokenBearer(ADMIN_API_TOKEN, KILL_CHAIN_PHASE_ADD_QUERY, { input: { ...phase, phase_name: 'new' } }, worker);
     expect(create.errors?.[0].extensions?.code, JSON.stringify(create)).toBe(FORBIDDEN_ACCESS);
+  });
+
+  // The form capability creates, it never changes the knowledge that exists: no upsert, no merge, even with update
+  it('should leave an existing entity as it is when the worker imports it as the applicant', async () => {
+    const name = 'Form intake IT existing malware';
+    const { data } = await queryAsAdminWithSuccess({ query: MALWARE_ADD_QUERY, variables: { input: { name, description: 'by admin', is_family: true } } });
+    createdMalwareIds.push(data.malwareAdd.id);
+    const worker = { workId: mainWork.workId, applicantId: formOnlyUserId };
+    const input = { name, description: 'by the form', is_family: false, update: true };
+    const upsert = await queryInitPlatformAsTokenBearer(ADMIN_API_TOKEN, MALWARE_ADD_QUERY, { input }, worker);
+    expect(upsert.errors, JSON.stringify(upsert)).toBeUndefined();
+    expect(upsert.data.malwareAdd).toEqual(data.malwareAdd);
+    const { data: after } = await queryAsAdminWithSuccess({ query: MALWARE_READ_QUERY, variables: { id: data.malwareAdd.id } });
+    expect(after.malware).toEqual(data.malwareAdd);
   });
 
   describe('forged attempts', () => {
