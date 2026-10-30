@@ -8,8 +8,9 @@ import { Readable } from 'node:stream';
 import { gzipSync } from 'node:zlib';
 import forge from 'node-forge';
 import { ProxyAgent } from 'undici';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { getPlatformHttpProxyAgent } from '../../../src/config/conf';
+import * as httpConfig from '../../../src/http/httpConfig';
 import { getHttpClient, getResponseError, HttpClientError } from '../../../src/utils/http-client';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
@@ -178,6 +179,10 @@ afterAll(async () => {
 const lastRequest = () => received[received.length - 1];
 
 describe('getHttpClient', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('should parse json responses and expose lower-cased headers', async () => {
     const response = await getHttpClient({ baseURL, responseType: 'json' }).get('/json');
 
@@ -333,6 +338,17 @@ describe('getHttpClient', () => {
     const error = await getHttpClient({ baseURL, responseType: 'json' }).get('/redirect-loop', { maxRedirects: 3 }).catch((e) => e);
 
     expect(error.code).toBe('ERR_FR_TOO_MANY_REDIRECTS');
+  });
+
+  it('should follow the configured number of redirects by default', async () => {
+    vi.spyOn(httpConfig, 'getHttpMaxRedirects').mockReturnValue(2);
+    const redirects: string[] = [];
+    const client = getHttpClient({ baseURL, responseType: 'json', beforeRedirect: (url) => redirects.push(url) });
+
+    const error = await client.get('/redirect-loop').catch((e) => e);
+
+    expect(error.code).toBe('ERR_FR_TOO_MANY_REDIRECTS');
+    expect(redirects).toHaveLength(2);
   });
 
   it('should drop credentials when redirected to another host', async () => {

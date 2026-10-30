@@ -22,6 +22,7 @@ import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils'
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 import { initializeAdminUser } from './modules/user/user-domain';
+import { isHttpSecureByDefault } from './http/httpConfig';
 import type { BasicStoreEntityMigrationStatus } from './types/store';
 import type { AuthContext } from './types/user';
 
@@ -32,6 +33,13 @@ const PLATFORM_LOCK_ID = 'platform_init_lock';
 export const checkFeatureFlags = () => {
   if (ENABLED_FEATURE_FLAGS.length > 0) {
     logApp.info(`[FEATURE-FLAG] Activated features still in development: ${ENABLED_FEATURE_FLAGS}`);
+  }
+};
+
+export const checkHttpSecurity = () => {
+  if (!isHttpSecureByDefault()) {
+    logApp.warn('[OPENCTI] HTTP secure defaults are disabled for the protections that do not set their own option (app:http:secure_by_default=false). '
+      + 'They will be enabled by default in an upcoming version: set APP__HTTP__SECURE_BY_DEFAULT=true to opt in now.');
   }
 };
 

@@ -3,6 +3,7 @@ import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { Agent, type Dispatcher, fetch, FormData, Headers, type Response } from 'undici';
 import { getPlatformHttpProxyAgent } from '../config/conf';
 import { fromBase64, isNotEmptyField } from '../database/utils';
+import { getHttpMaxRedirects } from '../http/httpConfig';
 
 export class OpenCTIHeaders {
   [name: string]: string;
@@ -86,7 +87,6 @@ export const getResponseError = (error: unknown): HttpResponseError | null => {
 };
 
 const DEFAULT_ACCEPT = 'application/json, text/plain, */*';
-const DEFAULT_MAX_REDIRECTS = 21;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const METHODS_WITH_DEFAULT_FORM_CONTENT_TYPE = new Set(['POST', 'PUT', 'PATCH']);
 const METHODS_WITHOUT_BODY = new Set(['GET', 'HEAD']);
@@ -415,7 +415,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
   const request = async (config: HttpRequestConfig, useClientTransport: boolean): Promise<HttpResponse> => {
     const method = (config.method ?? 'GET').toUpperCase();
     const requestTimeout = config.timeout ?? timeout ?? 0;
-    const maxRedirects = config.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
+    const maxRedirects = config.maxRedirects ?? getHttpMaxRedirects();
     const requestHeaders = buildHeaders(headers, config.headers);
     const watchdog = requestTimeout > 0 ? createTimeoutWatchdog(requestTimeout) : undefined;
     const signals = [watchdog?.signal, config.signal].filter((s): s is AbortSignal => s !== undefined);
