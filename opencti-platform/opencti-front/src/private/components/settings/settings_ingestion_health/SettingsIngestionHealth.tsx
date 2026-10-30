@@ -22,7 +22,6 @@ const settingsIngestionHealthFragment = graphql`
         health_check_label
         health_check_kind
         enabled
-      
     }
   }
 `;
@@ -50,8 +49,9 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
   const ingestion_health_settings = useFragment(settingsIngestionHealthFragment, settings);
   const [commitEdit, isSaving] = useApiMutation<SettingsIngestionHealthEditMutation>(settingsIngestionHealthEdit);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const notificationDelay = ingestion_health_settings?.notification_delay ?? 0;
-  const disabledHealthChecks = ingestion_health_settings?.disabled_health_checks ?? [];
+  // Null when the user is not allowed: the backend resolves every field otherwise
+  if (!ingestion_health_settings) return null;
+  const { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks } = ingestion_health_settings;
 
   const validation = Yup.object().shape({
     notification_delay: Yup.number()
@@ -115,7 +115,7 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
       <Box component="h4" sx={{ marginTop: 3, marginBottom: 2 }}>{t_i18n('Health checks')}</Box>
       {/* 20px between the toggles, as between the switches of the group edition form */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', columnGap: 2, rowGap: '20px' }}>
-        {[...(ingestion_health_settings?.health_checks ?? [])]
+        {[...ingestion_health_settings.health_checks]
           // Configuration checks first, then runtime ones; by translated label within each kind
           .sort((a, b) => Number(a.health_check_kind === 'runtime') - Number(b.health_check_kind === 'runtime')
             || t_i18n(a.health_check_label).localeCompare(t_i18n(b.health_check_label)))
