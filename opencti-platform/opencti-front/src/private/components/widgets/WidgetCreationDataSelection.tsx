@@ -11,7 +11,11 @@ import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
-import { Icon, IconButton as FdsIconButton, Input, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Alert as FdsAlert, Icon, IconButton as FdsIconButton, Input, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { isBreakdownField, isWidgetBreakdownEligible } from '../../../utils/widget/widgetBreakdown';
+import useHelper from '../../../utils/hooks/useHelper';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
+import useWidgetBreakdownFieldOptions from './useWidgetBreakdownFieldOptions';
 
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
@@ -48,8 +52,9 @@ const StepContainer = ({ perspective, children, id }: StepContainerProps) => {
 
 const WidgetCreationDataSelection = () => {
   const { t_i18n } = useFormatter();
-  const { config, setStep, setDataSelection, setDataSelectionWithIndex } = useWidgetConfigContext();
-  const { type, dataSelection, perspective } = config.widget;
+  const { isFeatureEnable } = useHelper();
+  const { config, setStep, setDataSelection, setDataSelectionWithIndex, host } = useWidgetConfigContext();
+  const { type, dataSelection, perspective, parameters } = config.widget;
 
   const [itemIds, setItemIds] = useState<string[]>(() => dataSelection.map(() => uuidv4()));
 
@@ -102,6 +107,55 @@ const WidgetCreationDataSelection = () => {
   // the "add" buttons at all, as they would be permanently disabled and
   // never clickable (e.g. the Number widget). See issue #16360.
   const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
+  // A breakdown generates its series from a single dataset
+  const isBreakdownEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
+  const isBreakdownEligible = isBreakdownEnabled && isWidgetBreakdownEligible(config.widget, host);
+  const { fieldOptions, isResolved } = useWidgetBreakdownFieldOptions({ perspective, dataSelection }, isBreakdownEligible);
+  const breakdownBy = parameters?.breakdownBy;
+  // Only a field the parameters step keeps locks the dataset: one the filters no longer offer is dropped there,
+  // once the saved filter is read
+  const isBreakdownActive = isBreakdownEligible
+    && isBreakdownField(breakdownBy)
+    && (!isResolved || fieldOptions.some(({ key }) => key === breakdownBy));
+  // A disabled button gets no pointer events: the wrapper carries the tooltip
+  const lockedByBreakdown = (button: React.ReactElement) => (isBreakdownActive ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+        <span style={{ display: 'flex', flex: 1 }} tabIndex={0}>{button}</span>
+      </TooltipTrigger>
+      <TooltipContent>{t_i18n('A breakdown uses a single dataset.')}</TooltipContent>
+    </Tooltip>
+  ) : button);
+  const isAddRelationshipsDisabled = isBreakdownActive || getCurrentDataSelectionLimit(type) === dataSelection.length;
+  const relationshipsAddButtons = (
+    <Stack direction="row">
+      <Button
+        disabled={isAddRelationshipsDisabled}
+        startIcon={<AddOutlined />}
+        onClick={() => handleAddDataSelection('relationships')}
+        style={{
+          width: '100%',
+          flex: 1,
+          marginRight: 20,
+        }}
+      >
+        {t_i18n('Relationships')}
+      </Button>
+      <Button
+        disabled={isAddRelationshipsDisabled}
+        color="secondary"
+        startIcon={<AddOutlined />}
+        onClick={() => handleAddDataSelection('entities')}
+        style={{
+          width: '100%',
+          flex: 1,
+        }}
+      >
+        {t_i18n('Entities')}
+      </Button>
+    </Stack>
+  );
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -171,70 +225,65 @@ const WidgetCreationDataSelection = () => {
         })
       }
 
+      {isBreakdownEligible && (
+        <FdsAlert
+          severity="info"
+          title={t_i18n('You can break this dataset down into one series per field value in the Parameters step.')}
+          style={{ marginTop: 20 }}
+        />
+      )}
+
       {perspective === 'entities' && canAddDataSelection && (
         <div style={{ display: 'flex' }}>
-          <IconButton
-            aria-label={t_i18n('Add')}
-            disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
-            color="secondary"
-            // The wrapper has no default size: omitting it resolves to `sm`, not `md`.
-            size="default"
-            onClick={() => handleAddDataSelection('entities')}
-            style={{
-              width: '100%',
-              flex: 1,
-            }}
-          >
-            <AddOutlined fontSize="small" />
-          </IconButton>
+          {lockedByBreakdown(
+            <IconButton
+              aria-label={t_i18n('Add')}
+              disabled={isBreakdownActive || getCurrentDataSelectionLimit(type) === dataSelection.length}
+              color="secondary"
+              // The wrapper has no default size: omitting it resolves to `sm`, not `md`.
+              size="default"
+              onClick={() => handleAddDataSelection('entities')}
+              style={{
+                width: '100%',
+                flex: 1,
+              }}
+            >
+              <AddOutlined fontSize="small" />
+            </IconButton>,
+          )}
         </div>
       )}
 
-      {perspective === 'relationships' && canAddDataSelection && (
-        <Stack direction="row">
-          <Button
-            disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
-            startIcon={<AddOutlined />}
-            onClick={() => handleAddDataSelection('relationships')}
-            style={{
-              width: '100%',
-              flex: 1,
-              marginRight: 20,
-            }}
-          >
-            {t_i18n('Relationships')}
-          </Button>
-          <Button
-            disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
-            color="secondary"
-            startIcon={<AddOutlined />}
-            onClick={() => handleAddDataSelection('entities')}
-            style={{
-              width: '100%',
-              flex: 1,
-            }}
-          >
-            {t_i18n('Entities')}
-          </Button>
-        </Stack>
-      )}
+      {perspective === 'relationships' && canAddDataSelection && (isBreakdownActive ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {/* Disabled buttons get no pointer events: the wrapper carries the tooltip */}
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+            <div tabIndex={0}>{relationshipsAddButtons}</div>
+          </TooltipTrigger>
+          <TooltipContent>{t_i18n('A breakdown uses a single dataset.')}</TooltipContent>
+        </Tooltip>
+      ) : relationshipsAddButtons)}
 
       {perspective === 'audits' && canAddDataSelection && (
         <Stack direction="row">
-          <Button
-            disabled={
-              getCurrentDataSelectionLimit(type) === dataSelection.length
-              || getCurrentCategory(type) === 'distribution'
-            }
-            aria-label={t_i18n('Add')}
-            color="secondary"
-            startIcon={<AddOutlined />}
-            onClick={() => handleAddDataSelection('audits')}
-            style={{
-              width: '100%',
-              flex: 1,
-            }}
-          />
+          {lockedByBreakdown(
+            <Button
+              disabled={
+                isBreakdownActive
+                || getCurrentDataSelectionLimit(type) === dataSelection.length
+                || getCurrentCategory(type) === 'distribution'
+              }
+              aria-label={t_i18n('Add')}
+              color="secondary"
+              startIcon={<AddOutlined />}
+              onClick={() => handleAddDataSelection('audits')}
+              style={{
+                width: '100%',
+                flex: 1,
+              }}
+            />,
+          )}
         </Stack>
       )}
 

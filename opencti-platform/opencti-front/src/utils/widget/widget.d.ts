@@ -91,6 +91,10 @@ interface WidgetParameters {
   legend?: boolean | null;
   distributed?: boolean | null;
   content?: string | null;
+  breakdownBy?: string | null; // field the series are broken down by: a filter key for the entities, an indexed field for the audits
+  breakdownLimit?: number | null;
+  breakdownOrder?: 'asc' | 'desc' | null; // series ordered by their total, highest first by default
+  breakdownOther?: boolean | null; // adds a series grouping the entities outside the displayed values
 }
 
 interface WidgetLayout {
