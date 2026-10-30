@@ -12,6 +12,7 @@ import { Checkbox } from '@filigran/design-system';
 type CheckboxesFieldProps = FieldProps<FieldOption[]> & {
   label: string;
   items: FieldOption[];
+  disabled?: boolean;
 };
 
 const CheckboxesField = ({
@@ -19,6 +20,7 @@ const CheckboxesField = ({
   field,
   label,
   items,
+  disabled,
 }: CheckboxesFieldProps) => {
   const { t_i18n } = useFormatter();
 
@@ -45,14 +47,14 @@ const CheckboxesField = ({
 
       <Stack direction="row" spacing={1} sx={{ marginY: 1.5 }}>
         <Button
-          disabled={items.length === 0}
+          disabled={items.length === 0 || disabled}
           variant={(items.length > 0 && value.length === items.length) ? 'primary' : 'secondary'}
           onClick={checkAll}
         >
           {t_i18n('All')}
         </Button>
         <Button
-          disabled={items.length === 0}
+          disabled={items.length === 0 || disabled}
           variant={(items.length > 0 && value.length === 0) ? 'primary' : 'secondary'}
           onClick={checkNone}
         >
@@ -73,6 +75,7 @@ const CheckboxesField = ({
             label={item.label}
             control={(
               <Checkbox
+                disabled={disabled}
                 checked={isChecked(item)}
                 name={item.value}
                 onCheckedChange={() => toggle(item)}

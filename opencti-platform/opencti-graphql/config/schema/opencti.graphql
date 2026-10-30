@@ -39,6 +39,10 @@ enum State {
   complete
   timeout
 }
+enum WorkInvestigationStatus {
+  TO_REVIEW
+  DONE
+}
 enum Capabilities {
   BYPASS
   APIACCESS_USETOKEN
@@ -806,6 +810,7 @@ type Work {
   timestamp: DateTime!
   status: State!
   event_source_id: String
+  eventSource: StixObjectOrStixRelationship @auth(for: [KNOWLEDGE])
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
@@ -814,6 +819,8 @@ type Work {
   errors: [WorkMessage]
   tracking: WorkTracking
   draft_context: String
+  touchedElements(first: Int = 100): [StixObjectOrStixRelationship]
+  investigation_status: WorkInvestigationStatus
 }
 type WorkEdge {
   cursor: String!
@@ -1129,6 +1136,7 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  investigationId: String
 }
 
 input BackgroundTaskContextInput {
@@ -13947,7 +13955,9 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
+  fromId: String!
   from: StixObjectOrStixRelationshipOrCreator
+  toId: String!
   to: StixObjectOrStixRelationshipOrCreator
   x_opencti_inferences: [Inference]
   spec_version: String!
@@ -14026,7 +14036,7 @@ type SynchronizerAddInputFromImport {
 
 type Query {
   stix(id: String!): String @auth(for: [KNOWLEDGE])
-  enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES])
+  enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES, KNOWLEDGE_KNENRICHMENT])
 
   ###### INTERNAL
 
@@ -15325,8 +15335,8 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  askEnrichments(connectorIds: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: ID!, investigationId: ID): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
 }
 type KillChainPhaseEditMutations {
@@ -15382,8 +15392,8 @@ type StixCoreObjectEditMutations {
   clearAccessRestriction: StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  askEnrichments(connectorIds: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: ID!, investigationId: ID): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])

@@ -49,6 +49,11 @@ enum State {
   timeout
 }
 
+enum WorkInvestigationStatus {
+  TO_REVIEW
+  DONE
+}
+
 enum Capabilities {
   BYPASS
   APIACCESS_USETOKEN
@@ -853,6 +858,7 @@ type Work {
   timestamp: DateTime!
   status: State!
   event_source_id: String
+  eventSource: StixObjectOrStixRelationship
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
@@ -861,6 +867,8 @@ type Work {
   errors: [WorkMessage]
   tracking: WorkTracking
   draft_context: String
+  touchedElements(first: Int = 100): [StixObjectOrStixRelationship]
+  investigation_status: WorkInvestigationStatus
 }
 
 type WorkEdge {
@@ -1191,6 +1199,7 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  investigationId: String
 }
 
 input BackgroundTaskContextInput {
@@ -8713,7 +8722,9 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
+  fromId: String!
   from: StixObjectOrStixRelationshipOrCreator
+  toId: String!
   to: StixObjectOrStixRelationshipOrCreator
   x_opencti_inferences: [Inference]
   spec_version: String!
@@ -9347,8 +9358,8 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
-  askEnrichment(connectorId: ID!): Work
-  askEnrichments(connectorIds: [ID!]!): [Work!]
+  askEnrichment(connectorId: ID!, investigationId: ID): Work
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!]
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File
 }
 
@@ -9403,8 +9414,8 @@ type StixCoreObjectEditMutations {
   clearAccessRestriction: StixCoreObject
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
-  askEnrichment(connectorId: ID!): Work
-  askEnrichments(connectorIds: [ID!]!): [Work!]
+  askEnrichment(connectorId: ID!, investigationId: ID): Work
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!]
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
@@ -9958,6 +9969,7 @@ type Mutation {
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
   workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace
   workspaceVariableDelete(id: ID!, variableId: ID!): Workspace
+  workInvestigationStatusEdit(workId: ID!, status: WorkInvestigationStatus!): Work
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
   malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis
@@ -13062,6 +13074,7 @@ type Workspace implements InternalObject & BasicObject {
   toWidgetExport(widgetId: ID!): String!
   isShared: Boolean
   variables: [DashboardVariable!]!
+  enrichmentWorks(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup, entityIds: [String!]): WorkConnection
 }
 
 enum WorkspacesOrdering {

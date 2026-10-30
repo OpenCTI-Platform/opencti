@@ -88,6 +88,7 @@ export interface GraphEntity {
   createdBy?: unknown | null | undefined;
   published?: string | null | undefined;
   objectMarking?: readonly DefaultMarking[] | null | undefined;
+  currentUserAccessRight?: string | null;
 }
 
 /** Deterministic layouts other than the tree modes: by entity tier, or rings around one node. */

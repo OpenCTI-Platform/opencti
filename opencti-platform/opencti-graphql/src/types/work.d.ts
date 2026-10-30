@@ -20,4 +20,7 @@ interface Work extends BasicStoreBase {
   completed_number: number;
   messages: string[];
   errors: string[];
+  investigation_id?: string;
+  investigation_status?: string;
+  touched_ids?: string[];
 }

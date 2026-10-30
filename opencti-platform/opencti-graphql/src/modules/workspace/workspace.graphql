@@ -36,6 +36,15 @@ type Workspace implements InternalObject & BasicObject {
     toWidgetExport(widgetId: ID!): String!
     isShared: Boolean
     variables: [DashboardVariable!]! @ff(flags: ["DASHBOARD_VARIABLES"], softFail: true, defaultValue: "[]")
+    enrichmentWorks(
+        first: Int
+        after: ID
+        orderBy: WorksOrdering
+        orderMode: OrderingMode
+        search: String
+        filters: FilterGroup
+        entityIds: [String!]
+    ): WorkConnection
 }
 
 # Ordering
@@ -178,6 +187,7 @@ type Mutation {
     workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace @auth(for: [EXPLORE_EXUPDATE]) @ff(flags: ["DASHBOARD_VARIABLES"])
     workspaceVariableDelete(id: ID!, variableId: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE]) @ff(flags: ["DASHBOARD_VARIABLES"])
+    workInvestigationStatusEdit(workId: ID!, status: WorkInvestigationStatus!): Work @auth(for: [INVESTIGATION_INUPDATE])
 }
 
 # Subscriptions

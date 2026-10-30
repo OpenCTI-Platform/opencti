@@ -22,7 +22,7 @@ import {
   TransformOutlined,
   UnpublishedOutlined,
 } from '@mui/icons-material';
-import { Box, FormControlLabel, Switch } from '@mui/material';
+import { FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import {
   Checkbox,
@@ -48,7 +48,6 @@ import {
   TooltipTrigger,
 } from '@filigran/design-system';
 import Avatar from '@mui/material/Avatar';
-import Chip from '@mui/material/Chip';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
@@ -56,17 +55,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-
 import Radio from '@mui/material/Radio';
-
 import Slide from '@mui/material/Slide';
 import MuiSwitch from '@mui/material/Switch';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
@@ -79,18 +70,16 @@ import * as R from 'ramda';
 import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemMarkings from '../../../components/ItemMarkings';
-import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import inject18n from '../../../components/i18n';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { hexToRGB } from '../../../utils/Colors';
 import Security from '../../../utils/Security';
 import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import { getEntityTypeThreeFirstLevelsFilterValues } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import {
   AUTOMATION,
@@ -130,6 +119,7 @@ import {
 } from '../../../utils/customFields';
 
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
+import BackgroundTaskLaunch from '../common/background_task/BackgroundTaskLaunch';
 
 const OptionIcon = styled('div')({
   paddingTop: 4,
@@ -233,24 +223,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const toolBarListTaskAddMutation = graphql`
-  mutation DataTableToolBarListTaskAddMutation($input: ListTaskAddInput!) {
-    listTaskAdd(input: $input) {
-      id
-      type
-    }
-  }
-`;
-
-const toolBarQueryTaskAddMutation = graphql`
-  mutation DataTableToolBarQueryTaskAddMutation($input: QueryTaskAddInput!) {
-    queryTaskAdd(input: $input) {
-      id
-      type
-    }
-  }
-`;
 
 const toolBarConnectorsQuery = graphql`
   query DataTableToolBarConnectorsQuery($type: String!) {
@@ -799,138 +771,15 @@ class DataTableToolBar extends Component {
     return t('Copy to clipboard');
   }
 
-  static getActionType(type, field) {
-    if (type === 'ADD' && field === 'groups') return 'ADD_GROUPS';
-    if (type === 'ADD' && field === 'organizations') return 'ADD_ORGANIZATIONS';
-
-    if (type === 'REMOVE' && field === 'groups') return 'REMOVE_GROUPS';
-    if (type === 'REMOVE' && field === 'organizations') return 'REMOVE_ORGANIZATIONS';
-
-    return type;
-  }
-
-  static normalizeActionValue(element) {
-    if (element?.id) return element.id;
-    if (element?.value) return element.value;
-    if (typeof element?.toISOString === 'function') return element.toISOString();
-    return element;
-  }
-
-  static displayActionValue(element) {
-    if (typeof element === 'string') return element;
-    if (typeof element?.toISOString === 'function') return element.toISOString();
-    return getMainRepresentative(element);
-  }
-
-  getUserDatatableFinalActions(actions) {
-    return actions.map((action) => {
-      const currentType = this.constructor.getActionType(action.type, action.context.field);
-      return {
-        type: currentType,
-        context: {
-          ...action.context,
-          values: action.context.values.map((element) => this.constructor.normalizeActionValue(element)),
-        },
-        containerId: null,
-      };
-    });
-  }
-
-  submitTask(availableFilterKeys, isInDraft) {
+  handleLaunch() {
     this.setState({ processing: true });
-    const { description, actions, mergingElement, promoteToContainer } = this.state;
-    const {
-      filters,
-      search,
-      selectAll,
-      selectedElements,
-      deSelectedElements,
-      numberOfSelectedElements,
-      handleClearSelectedElements,
-      container,
-      taskScope,
-      t,
-    } = this.props;
-    const scope = taskScope ?? 'KNOWLEDGE';
-    if (numberOfSelectedElements === 0) return;
-    const jsonFilters = serializeFilterGroupForBackend(
-      removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
-    );
+  }
 
-    const finalActions = taskScope === 'USER'
-      ? this.getUserDatatableFinalActions(actions)
-      : actions.map(
-          (n) => ({
-            type: n.type,
-            context: n.context
-              ? {
-                  ...n.context,
-                  values: n.context.values.map((o) => this.constructor.normalizeActionValue(o)),
-                }
-              : null,
-            containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-          }),
-        );
-
-    if (selectAll) {
-      commitMutation({
-        mutation: toolBarQueryTaskAddMutation,
-        variables: {
-          input: {
-            description,
-            filters: jsonFilters,
-            search,
-            actions: finalActions,
-            excluded_ids: Object.keys(deSelectedElements || {}),
-            scope,
-          },
-        },
-        onCompleted: () => {
-          handleClearSelectedElements();
-          const monitoringLink = !isInDraft ? <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link> : t('the draft processes tab');
-          MESSAGING$.notifySuccess(
-            <span>
-              {t(
-                'The background task has been executed. You can monitor it on',
-              )}{' '}
-              {monitoringLink}
-              .
-            </span>,
-          );
-          this.setState({ processing: false });
-          this.handleCloseTask();
-        },
-      });
-    } else {
-      commitMutation({
-        mutation: toolBarListTaskAddMutation,
-        variables: {
-          input: {
-            description,
-            ids: mergingElement
-              ? [mergingElement.id]
-              : Object.keys(selectedElements),
-            actions: finalActions,
-            scope,
-          },
-        },
-        onCompleted: () => {
-          handleClearSelectedElements();
-          const monitoringLink = !isInDraft ? <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link> : t('the draft processes tab');
-          MESSAGING$.notifySuccess(
-            <span>
-              {t(
-                'The background task has been executed. You can monitor it on',
-              )}{' '}
-              {monitoringLink}
-              .
-            </span>,
-          );
-          this.setState({ processing: false });
-          this.handleCloseTask();
-        },
-      });
-    }
+  handleCompleted() {
+    const { handleClearSelectedElements } = this.props;
+    handleClearSelectedElements();
+    this.setState({ processing: false });
+    this.handleCloseTask();
   }
 
   renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, customFieldDefinitionsOfTypes = []) {
@@ -2246,7 +2095,6 @@ class DataTableToolBar extends Component {
   render() {
     const {
       t,
-      n,
       numberOfSelectedElements,
       handleClearSelectedElements,
       selectedElements,
@@ -2268,6 +2116,7 @@ class DataTableToolBar extends Component {
       warning,
       warningMessage,
       taskScope,
+      deSelectedElements,
     } = this.props;
     const {
       actions,
@@ -2389,7 +2238,6 @@ class DataTableToolBar extends Component {
             const currentMap = schema.filterKeysSchema.get(entityType);
             currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
           });
-          const availableFilterKeys = Array.from(filterKeysMap.keys()).concat(['entity_type']);
           const isContainer = !!container?.id;
           // endregion
           return (
@@ -2758,156 +2606,27 @@ class DataTableToolBar extends Component {
                   </EditButtons>
                 )}
               </Toolbar>
-              <Dialog
-                open={this.state.displayTask}
+              <BackgroundTaskLaunch
+                display={this.state.displayTask}
+                search={search}
+                filters={filters}
                 onClose={this.handleCloseTask.bind(this)}
-                data-testid="background-task-popup"
-                title={(
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <span>{t('Launch a background task')}</span>
-                    <Typography variant="body1" color="textSecondary">
-                      {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
-                    </Typography>
-                  </Box>
-                )}
-              >
-                {numberOfSelectedElements > 1000 && (
-                  <Alert severity="warning">
-                    {t(
-                      'You\'re targeting more than 1000 entities with this background task, be sure of what you\'re doing!',
-                    )}
-                  </Alert>
-                )}
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>#</TableCell>
-                        <TableCell>{t('Step')}</TableCell>
-                        <TableCell>{t('Field')}</TableCell>
-                        <TableCell>{t('Values')}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          {' '}
-                          <span
-                            style={{
-                              padding: '2px 5px 2px 5px',
-                              marginRight: 5,
-                              color:
-                                  theme.palette.mode === 'dark'
-                                    ? '#000000'
-                                    : '#ffffff',
-                              backgroundColor: theme.palette.primary.main,
-                            }}
-                          >
-                            1
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <FdsChip label="SCOPE" />
-                        </TableCell>
-                        <TableCell>{t('N/A')}</TableCell>
-                        <TableCell>
-                          {selectAll ? (
-                            <div>
-                              {search && search.length > 0 && (
-                                <span>
-                                  <Chip
-                                    sx={{ margin: '5px 10px 5px 0' }}
-                                    label={(
-                                      <div>
-                                        <strong>{t('Search')}</strong>: {search}
-                                      </div>
-                                    )}
-                                  />
-                                  {filters.filters.length > 0 && (
-                                    <FdsChip label={t('AND')} />
-                                  )}
-                                </span>
-                              )}
-                              <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
-                            </div>
-                          ) : (
-                            <span>
-                              {mergingElement
-                                ? truncate(
-                                    R.join(', ', [
-                                      getMainRepresentative(mergingElement),
-                                    ]),
-                                    80,
-                                  )
-                                : truncate(
-                                    selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
-                                    80,
-                                  )}
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                      {R.map((o) => {
-                        const number = actions.indexOf(o);
-                        return (
-                          <TableRow key={o.type}>
-                            <TableCell>
-                              {' '}
-                              <span
-                                style={{
-                                  padding: '2px 5px 2px 5px',
-                                  marginRight: 5,
-                                  color:
-                                      theme.palette.mode === 'dark'
-                                        ? '#000000'
-                                        : '#ffffff',
-                                  backgroundColor: theme.palette.primary.main,
-                                }}
-                              >
-                                {number + 2}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <FdsChip label={o.type} />
-                            </TableCell>
-                            <TableCell>
-                              {(this.props.customFieldDefinitions ?? []).find((d) => d.name === o.context?.field)?.label
-                                ?? R.pathOr(t('N/A'), ['context', 'field'], o)}
-                            </TableCell>
-                            <TableCell>
-                              {truncate(
-                                R.join(
-                                  ', ',
-                                  R.map(
-                                    (p) => this.constructor.displayActionValue(p),
-                                    R.pathOr([], ['context', 'values'], o),
-                                  ),
-                                ),
-                                80,
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      }, actions)}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseTask.bind(this)}
-                    disabled={this.state.processing}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={this.submitTask.bind(this, availableFilterKeys, isInDraft)}
-                    disabled={this.state.processing}
-                  >
-                    {t('Launch')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
+                onLaunch={this.handleLaunch.bind(this)}
+                onCompleted={this.handleCompleted.bind(this)}
+                selectAll={selectAll}
+                numberOfSelectedElements={numberOfSelectedElements}
+                entityTypes={entityTypes}
+                processing={this.state.processing}
+                mergingElement={mergingElement}
+                selectedElements={selectedElements}
+                taskScope={taskScope}
+                containerId={container?.id}
+                promoteToContainer={promoteToContainer}
+                excludedIds={Object.keys(deSelectedElements || {})}
+                description={this.state.description}
+                actions={actions}
+                customFieldDefinitions={this.props.customFieldDefinitions}
+              />
               <Drawer
                 title={t('Update entities')}
                 open={this.state.displayUpdate}

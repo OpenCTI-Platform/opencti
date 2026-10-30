@@ -531,9 +531,82 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 // endregion
 
 // region work handling
+
+const WORKS_TTL = (conf.get('connector_manager:works_day_range') || 7);
+export const WORK_TOUCHED_TTL = WORKS_TTL * 24 * 60 * 60;
+export const WORK_TOUCHED_CAP = 1000; // safety net, enrichments touch far fewer elements
+
+// Touched elements of enrichment works: ids of elements created or updated while
+// processing the work. A separate key (not a field of the work hash) so that writing
+// it can never recreate an orphaned work hash. All operations are single-key (cluster safe).
+// work_touched:${workId} => Redis key of the set holding the ids touched by a work.
+const workTouchedKey = (workId: string) => `work_touched:${workId}`;
+
+// Cap checks, adds and TTL refresh in one atomic round-trip on a single key (cluster safe).
+// KEYS[1] touched set, ARGV[1] cap, ARGV[2] ttl, ARGV[3..] element ids.
+// Returns the number of ids refused by the cap; an id already in the set is never refused.
+const WORK_TOUCHED_ADD_SCRIPT = `
+  local refused = 0
+  for i = 3, #ARGV do
+    if redis.call('SCARD', KEYS[1]) < tonumber(ARGV[1]) then
+      redis.call('SADD', KEYS[1], ARGV[i])
+    elseif redis.call('SISMEMBER', KEYS[1], ARGV[i]) == 0 then
+      refused = refused + 1
+    end
+  end
+  redis.call('EXPIRE', KEYS[1], ARGV[2])
+  return refused`;
+
+/**
+ * Record element ids as touched by a work. The cap checks, the adds and the TTL refresh run
+ * atomically in one Lua script, so the cap is exact even under concurrent writers.
+ * @param cap maximum number of ids kept per work, beyond it new ids are dropped
+ * @returns false when at least one id was refused by the cap
+ */
+export const redisAddWorkTouchedElements = async (
+  workId: string,
+  elementIds: string[],
+  cap = WORK_TOUCHED_CAP,
+): Promise<boolean> => {
+  if (elementIds.length === 0) {
+    return true;
+  }
+  const refused = await getClientBase().eval(WORK_TOUCHED_ADD_SCRIPT, 1, workTouchedKey(workId), cap, WORK_TOUCHED_TTL, ...elementIds);
+  return refused === 0;
+};
+
+/**
+ * Read the ids touched by a work.
+ */
+export const redisGetWorkTouchedElements = async (workId: string) => {
+  const touched = await getClientBase().smembers(workTouchedKey(workId));
+  return { touched_ids: touched };
+};
+
+/**
+ * Delete the touched ids of the given works.
+ */
+export const redisDeleteWorkTouchedElements = async (workIds: Array<string>) => {
+  await Promise.all(workIds.map((id) => getClientBase().del(workTouchedKey(id))));
+};
+
+/**
+ * Read the event type, the investigation id and the internal id of the enriched entity stored
+ * when the work was initialized. Each field is null when the work has none.
+ */
+export const redisGetWorkTrackingInfo = async (workId: string) => {
+  const [eventType, investigationId, enrichedEntityId] = await getClientBase().hmget(workId, 'event_type', 'investigation_id', 'enriched_entity_id');
+  return { eventType, investigationId, enrichedEntityId };
+};
+
+/**
+ * Delete the work hashes together with their touched elements sets.
+ */
 export const redisDeleteWorks = async (internalIds: Array<string>) => {
+  await redisDeleteWorkTouchedElements(internalIds);
   return Promise.all(internalIds.map((id) => getClientBase().del(id)));
 };
+
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
 };
@@ -577,14 +650,29 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
-export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean) => {
+
+/**
+ * Initialize the work hash. The event type, the investigation id and the internal id of the enriched entity
+ * are only stored when given: they tell whether and how the touched elements of the work are tracked.
+ */
+export const redisInitializeWork = async (
+  workId: string,
+  isMultiPartWork: boolean,
+  eventType?: string,
+  investigationId?: string,
+  enrichedEntityId?: string,
+) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectRaw(tx, workId, {
       is_initialized: true,
       is_multipart: isMultiPartWork,
+      ...(eventType ? { event_type: eventType } : {}),
+      ...(investigationId ? { investigation_id: investigationId } : {}),
+      ...(enrichedEntityId ? { enriched_entity_id: enrichedEntityId } : {}),
     });
   });
 };
+
 // Atomic first-completion marker for a work: SET NX guarantees that exactly
 // one caller wins, whichever completion path (reportExpectation vs
 // updateProcessedTime) and whichever node observes the completion first.

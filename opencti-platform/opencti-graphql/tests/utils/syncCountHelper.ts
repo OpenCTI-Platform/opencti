@@ -39,10 +39,10 @@ testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 8;
+testCreatedCounter['intrusion-set'] = 54;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
-testCreatedCounter.label = 15;
+testCreatedCounter.label = 18;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 22;
 testCreatedCounter['mac-addr'] = 1;
@@ -51,15 +51,15 @@ testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
 testCreatedCounter['network-traffic'] = 1;
-testCreatedCounter.note = 6;
+testCreatedCounter.note = 7;
 // 1 in the dataset + 2 created by observedData-domain-test
 testCreatedCounter['observed-data'] = 3;
 testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 147;
-testCreatedCounter.report = 59;
+testCreatedCounter.relationship = 148;
+testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 5;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -80,7 +80,7 @@ testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 22;
 testUpdatedCounter.file = 27;
-testUpdatedCounter['intrusion-set'] = 5;
+testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
@@ -125,6 +125,7 @@ testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
 testMergedCounter['case-incident'] = 1;
+testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
@@ -150,9 +151,9 @@ testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 7;
+testDeletedCounter['intrusion-set'] = 49;
 testDeletedCounter['ipv4-addr'] = 1;
-testDeletedCounter.label = 2;
+testDeletedCounter.label = 3;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 17;
 testDeletedCounter['mac-addr'] = 1;

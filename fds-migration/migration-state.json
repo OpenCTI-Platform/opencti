@@ -791,6 +791,105 @@
       ]
     },
     {
+      "component": "Dialog",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "investigation enrichment: the confirmation before adding all the results of an enrichment to the graph (size md, the 640px of the review dialog, DialogDescription for the question), or, when everything is already on the graph, the empty state shared with the review dialog (InvestigationEnrichmentExpandEmpty). Closing by Escape, overlay or close button is refused while the expand is in flight.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentAddAllDialog.tsx"
+      ]
+    },
+    {
+      "component": "Dialog",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "investigation enrichment: the review dialog of one enrichment work, or of all the works to review (size md, the 640px the MUI dialog had; title-md title), replacing the MUI Dialog. layerInputVars is re-declared on the content, as in the dashboard variables dialog. It renders the expand form, or the empty state when everything is already on the graph.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentExpand.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "investigation enrichment: the title (title-md) of the review dialog.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentExpand.tsx"
+      ]
+    },
+    {
+      "component": "DialogBody",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "investigation enrichment: the empty state shared by the review and add all dialogs (DialogBody, DialogDescription, DialogFooter), replacing a MUI Stack with padding and MUI DialogActions. The explanation is the dialog description (content-base, was content-compact).",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentExpandEmpty.tsx"
+      ]
+    },
+    {
+      "component": "DialogBody",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "investigation expand form: its fields in a DialogBody and its buttons in a DialogFooter, replacing a MUI Stack with padding and MUI DialogActions. Rendered in the design system dialogs that review an enrichment and expand the graph toolbar selection.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/workspaces/investigations/InvestigationExpandForm.tsx"
+      ]
+    },
+    {
+      "component": "Dialog",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph toolbar: the expand dialog of the selected entities (size md, the 640px the MUI dialog had), replacing the MUI Dialog. layerInputVars is re-declared on the content, as in the dashboard variables dialog. The MUI dialog had no title: the design system one needs it, so it shows the toolbar button label.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarExpandTools.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph toolbar: the title (title-md) of the expand dialog.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarExpandTools.tsx"
+      ]
+    },
+    {
+      "component": "Button",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "investigation enrichment: the Review all button of the To review tab (secondary), opening one review of all the works to review.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentDrawer.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "investigation enrichment: the title (title-md) of the add all confirmation dialog, as in the dashboard variables deletion dialog.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentAddAllDialog.tsx"
+      ]
+    },
+    {
       "component": "DatePicker",
       "importFrom": "@filigran/design-system",
       "guards": [
@@ -799,6 +898,28 @@
       "reason": "dashboard variables: the value of a date variable (chip popover and default value of the variable dialog), stored as an ISO string, committed on accept (calendar pick, Enter, blur). Replaces the MUI X DatePicker; the platform language is passed as the picker locale.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/DateValueInput.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Connector work list shared by the entity and external reference enrichment drawers: the connector refresh button, the connector active/disconnected icon, and each work row with its messages and errors. The work row tooltip keeps the former 600px max width (inline style over the library's 300px default) so long work messages do not wrap more than before.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/work/ConnectorWorkList.tsx"
+      ]
+    },
+    {
+      "component": "Spinner",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Connector work list: the in-progress marker of a waiting or running work, at the md tier (20px), the size of the CircularProgress it replaces.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/work/ConnectorWorkList.tsx"
       ]
     }
   ]

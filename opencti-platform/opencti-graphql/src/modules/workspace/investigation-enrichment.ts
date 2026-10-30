@@ -1,0 +1,146 @@
+import type { AuthContext, AuthUser } from '../../types/user';
+import { fullEntitiesList, internalFindByIdsMapped } from '../../database/middleware-loader';
+import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, validateUserAccessOperation } from '../../utils/access';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { type BasicStoreEntityWorkspace } from './workspace-types';
+import { findWorkPaginated, loadWorkById } from '../../domain/work';
+import { elUpdate } from '../../database/engine';
+import { emptyPaginationResult, isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import type { WorkInvestigationStatus, WorkspaceEnrichmentWorksArgs } from '../../generated/graphql';
+import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
+import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
+import { xOpenctiStixIds } from '../../schema/attribute-definition';
+import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { findInvestigationById } from './workspace-domain';
+
+const INVESTIGATION_UPDATE_CAPABILITY = 'INVESTIGATION_INUPDATE';
+
+/**
+ * Tagging an enrichment with an investigation requires to be allowed to enrich and to edit that investigation.
+ * The enrichment capability is checked here for every caller: the bulk enrichment tasks are not guarded by it otherwise.
+ * A non member of a restricted investigation cannot load it, so it is reported as not found.
+ * Capabilities are checked before the load so that the error does not reveal whether the id exists.
+ */
+export const validateEnrichmentInvestigation = async (
+  context: AuthContext,
+  user: AuthUser,
+  investigationId: string,
+) => {
+  if (!isUserHasCapability(user, KNOWLEDGE_KNENRICHMENT) || !isUserHasCapability(user, INVESTIGATION_UPDATE_CAPABILITY)) {
+    throw ForbiddenAccess();
+  }
+  const investigation = await findInvestigationById(context, user, investigationId);
+  if (!validateUserAccessOperation(user, investigation, AccessOperation.EDIT)) {
+    throw ForbiddenAccess();
+  }
+  return investigation;
+};
+
+/**
+ * Retrieves the works of the enrichment connectors started from the given investigation.
+ *
+ * By default it returns the works of all the entities of the investigation, but a list of entity ids (internal
+ * or standard) can be given: only the works of those entities, among the entities of the investigation, are returned.
+ *
+ * The works are first listed to collect their sources (event_source_id), then those sources are loaded as the user and
+ * only the ones that are entities of the investigation (and of the selection) are kept. The final filter so holds at
+ * most one id per enriched entity, instead of all the ids of all the entities of the investigation, which could
+ * exceed the elastic terms limit on large investigations.
+ *
+ * Remark-1: a work stores in event_source_id the standard id its entity had when the enrichment started. The sources
+ * are matched on all the stix ids of the entities (standard_id and x_opencti_stix_ids), so the works of an entity
+ * merged into an entity of the investigation, or of an observable whose standard id was upgraded, are still found:
+ * both keep the previous standard id in their stix ids. The renaming of a domain object does not keep its previous
+ * standard id, nor does a merge update the entities of the investigation: those works are not found.
+ *
+ * Remark-2: the sources are loaded as the user, to benefit from our internal mechanisms of markings, organization
+ * sharing, etc.: a work concerning an entity the user cannot see is filtered before the pagination, so it is neither
+ * returned nor counted in the pageInfo.
+ */
+export const findInvestigationEnrichmentWorks = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspace: BasicStoreEntityWorkspace,
+  args: WorkspaceEnrichmentWorksArgs,
+) => {
+  if (workspace.type !== 'investigation') {
+    return emptyPaginationResult();
+  }
+  const { entityIds, ...paginationArgs } = args;
+  const investigationFilters = addFilter(args.filters, 'investigation_id', workspace.id);
+
+  // 01. Collect the sources of the works of the investigation, reading only that field
+  const works = await fullEntitiesList<BasicStoreEntity & { event_source_id?: string }>(
+    context,
+    user,
+    [ENTITY_TYPE_WORK],
+    {
+      indices: [READ_INDEX_HISTORY],
+      filters: investigationFilters,
+      baseData: true,
+      baseFields: ['event_source_id'],
+    },
+  );
+  const sourceIds = [...new Set(works.map((work) => work.event_source_id).filter(isNotEmptyField))];
+  if (sourceIds.length === 0) {
+    return emptyPaginationResult();
+  }
+
+  // 02. Load the sources as the user, keyed by all their ids (see Remark-1)
+  const sources = await internalFindByIdsMapped(
+    context,
+    user,
+    sourceIds,
+    {
+      type: [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP],
+      baseData: true,
+      baseFields: [xOpenctiStixIds.name],
+      mapWithAllIds: true,
+    },
+  );
+
+  // 03. Keep the sources that are entities of the investigation, and of the selection when given
+  const investigatedIds = new Set(workspace.investigated_entities_ids ?? []);
+  const selectedIds = entityIds ? new Set(entityIds) : undefined;
+  const allowedSourceIds = sourceIds.filter((sourceId) => {
+    const entity = sources[sourceId];
+    return !!entity
+      && investigatedIds.has(entity.internal_id)
+      && (!selectedIds || selectedIds.has(entity.internal_id) || selectedIds.has(entity.standard_id));
+  });
+  if (allowedSourceIds.length === 0) {
+    return emptyPaginationResult();
+  }
+
+  // 04. Paginate the works of the kept sources only
+  const filters = addFilter(investigationFilters, 'event_source_id', allowedSourceIds);
+  return findWorkPaginated(context, user, { ...paginationArgs, filters });
+};
+
+type InvestigationWork = BasicStoreBase & { _index: string; investigation_id?: string; investigation_status?: string };
+
+/**
+ * Change the review status of a work of an investigation, the only attribute of a work this allows to edit.
+ * Requires the right to edit the investigation of the work (see validateEnrichmentInvestigation).
+ * A work outside any investigation is reported as not found. A work without a status yet is not completed,
+ * so there is nothing to review: the edit is refused.
+ */
+export const editWorkInvestigationStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  workId: string,
+  status: WorkInvestigationStatus,
+) => {
+  const work: InvestigationWork | undefined = await loadWorkById(context, user, workId);
+  if (!work?.investigation_id) {
+    throw FunctionalError('Work not found', { workId });
+  }
+  await validateEnrichmentInvestigation(context, user, work.investigation_id);
+  if (!work.investigation_status) {
+    throw FunctionalError('Work is not completed yet', { workId });
+  }
+  const source = 'ctx._source.investigation_status = params.investigation_status;';
+  await elUpdate(context, work._index, workId, { script: { source, lang: 'painless', params: { investigation_status: status } } });
+  return loadWorkById(context, user, workId);
+};
